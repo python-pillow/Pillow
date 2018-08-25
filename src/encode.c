@@ -493,6 +493,38 @@ PyImaging_RawEncoderNew(PyObject* self, PyObject* args)
 
 
 /* -------------------------------------------------------------------- */
+/* TGA                                                                  */
+/* -------------------------------------------------------------------- */
+
+PyObject*
+PyImaging_TgaRleEncoderNew(PyObject* self, PyObject* args)
+{
+    ImagingEncoderObject* encoder;
+
+    char *mode;
+    char *rawmode;
+    int ystep = 1;
+
+    if (!PyArg_ParseTuple(args, "ss|i", &mode, &rawmode, &ystep))
+        return NULL;
+
+    encoder = PyImaging_EncoderNew(0);
+    if (encoder == NULL)
+        return NULL;
+
+    if (get_packer(encoder, mode, rawmode) < 0)
+        return NULL;
+
+    encoder->encode = ImagingTgaRleEncode;
+
+    encoder->state.ystep = ystep;
+
+    return (PyObject*) encoder;
+}
+
+
+
+/* -------------------------------------------------------------------- */
 /* XBM                                                                  */
 /* -------------------------------------------------------------------- */
 

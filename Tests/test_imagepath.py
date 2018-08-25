@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase
 
 from PIL import ImagePath, Image
+from PIL._util import py3
 
 import array
 import struct
@@ -17,6 +18,11 @@ class TestImagePath(PillowTestCase):
         self.assertEqual(p[0], (0.0, 1.0))
         self.assertEqual(p[-1], (8.0, 9.0))
         self.assertEqual(list(p[:1]), [(0.0, 1.0)])
+        with self.assertRaises(TypeError) as cm:
+            p['foo']
+        self.assertEqual(
+            str(cm.exception),
+            "Path indices must be integers, not str")
         self.assertEqual(
             list(p),
             [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)])
@@ -72,10 +78,10 @@ class TestImagePath(PillowTestCase):
             # This fails due to the invalid malloc above,
             # and segfaults
             for i in range(200000):
-                if str is bytes:
-                    x[i] = "0"*16
-                else:
+                if py3:
                     x[i] = b'0'*16
+                else:
+                    x[i] = "0"*16
 
 
 class evil:

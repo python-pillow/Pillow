@@ -65,7 +65,7 @@ def decode_dxt1(data, alpha=False):
     for block in range(blocks):
         # Decode next 8-byte block.
         idx = block * 8
-        color0, color1, bits = struct.unpack("<HHI", data[idx:idx + 8])
+        color0, color1, bits = struct.unpack_from("<HHI", data, idx)
 
         r0, g0, b0 = unpack_565(color0)
         r1, g1, b1 = unpack_565(color1)
@@ -121,10 +121,10 @@ def decode_dxt3(data):
         idx = block * 16
         block = data[idx:idx + 16]
         # Decode next 16-byte block.
-        bits = struct.unpack("<8B", block[:8])
-        color0, color1 = struct.unpack("<HH", block[8:12])
+        bits = struct.unpack_from("<8B", block)
+        color0, color1 = struct.unpack_from("<HH", block, 8)
 
-        code, = struct.unpack("<I", block[12:])
+        code, = struct.unpack_from("<I", block, 12)
 
         r0, g0, b0 = unpack_565(color0)
         r1, g1, b1 = unpack_565(color1)
@@ -174,17 +174,17 @@ def decode_dxt5(data):
         idx = block * 16
         block = data[idx:idx + 16]
         # Decode next 16-byte block.
-        a0, a1 = struct.unpack("<BB", block[:2])
+        a0, a1 = struct.unpack_from("<BB", block)
 
-        bits = struct.unpack("<6B", block[2:8])
+        bits = struct.unpack_from("<6B", block, 2)
         alphacode1 = (
             bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24)
         )
         alphacode2 = bits[0] | (bits[1] << 8)
 
-        color0, color1 = struct.unpack("<HH", block[8:12])
+        color0, color1 = struct.unpack_from("<HH", block, 8)
 
-        code, = struct.unpack("<I", block[12:])
+        code, = struct.unpack_from("<I", block, 12)
 
         r0, g0, b0 = unpack_565(color0)
         r1, g1, b1 = unpack_565(color1)

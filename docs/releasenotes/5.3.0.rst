@@ -1,0 +1,23 @@
+5.3.0
+-----
+
+API Additions
+=============
+
+ImageOps.colorize
+^^^^^^^^^^^^^^^^^
+
+Previously ``ImageOps.colorize`` only supported two-color mapping with
+``black`` and ``white`` arguments being mapped to 0 and 255 respectively.
+Now it supports three-color mapping with the optional ``mid`` parameter, and
+the positions for all three color arguments can each be optionally specified
+(``blackpoint``, ``whitepoint`` and ``midpoint``).
+For example, with all optional arguments::
+	ImageOps.colorize(im, black=(32, 37, 79), white='white', mid=(59, 101, 175),
+                          blackpoint=15, whitepoint=240, midpoint=100)
+
+
+
+Other Changes
+=============
+

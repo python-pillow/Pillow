@@ -1,22 +1,31 @@
-#
-# The Python Imaging Library.
-# $Id$
-#
-# package placeholder
-#
-# Copyright (c) 1999 by Secret Labs AB.
-#
-# See the README file for information on usage and redistribution.
-#
+"""Pillow {} (Fork of the Python Imaging Library)
 
-# ;-)
+Pillow is the friendly PIL fork by Alex Clark and Contributors.
+    https://github.com/python-pillow/Pillow/
 
-from . import version
+Pillow is forked from PIL 1.1.7.
 
+PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
+Copyright (c) 1999 by Secret Labs AB.
+
+Use PIL.__version__ for this Pillow version.
+PIL.VERSION is the old PIL version and will be removed in the future.
+
+;-)
+"""
+
+from . import _version
+
+# VERSION is deprecated and will be removed in Pillow 6.0.0.
+# PILLOW_VERSION is deprecated and will be removed after that.
+# Use __version__ instead.
 VERSION = '1.1.7'  # PIL Version
-PILLOW_VERSION = version.__version__
+PILLOW_VERSION = __version__ = _version.__version__
 
-__version__ = PILLOW_VERSION
+del _version
+
+__doc__ = __doc__.format(__version__)  # include version in docstring
+
 
 _plugins = ['BlpImagePlugin',
             'BmpImagePlugin',

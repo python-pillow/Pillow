@@ -96,8 +96,6 @@
 
 #undef    VERBOSE
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i)+1])
 #define L16(p, i) ((((int)p[(i)+1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -356,6 +354,7 @@ getbands(const char* mode)
 
 #define TYPE_UINT8 (0x100|sizeof(UINT8))
 #define TYPE_INT32 (0x200|sizeof(INT32))
+#define TYPE_FLOAT16 (0x500|sizeof(FLOAT16))
 #define TYPE_FLOAT32 (0x300|sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400|sizeof(double))
 
@@ -379,12 +378,12 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     PyObject* seq;
     PyObject* op;
 
-    if (!PySequence_Check(arg)) {
+    if ( ! PySequence_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
 
-    n = PyObject_Length(arg);
+    n = PySequence_Size(arg);
     if (length && wrong_length && n != *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
@@ -393,13 +392,12 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     /* malloc check ok, type & ff is just a sizeof(something)
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
-    if (!list)
+    if ( ! list)
         return PyErr_NoMemory();
 
     seq = PySequence_Fast(arg, must_be_sequence);
-    if (!seq) {
+    if ( ! seq) {
         free(list);
-        PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
 
@@ -410,7 +408,7 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         switch (type) {
         case TYPE_UINT8:
             itemp = PyInt_AsLong(op);
-            ((UINT8*)list)[i] = CLIP(itemp);
+            ((UINT8*)list)[i] = CLIP8(itemp);
             break;
         case TYPE_INT32:
             itemp = PyInt_AsLong(op);
@@ -427,13 +425,41 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         }
     }
 
+    Py_DECREF(seq);
+
+    if (PyErr_Occurred()) {
+        free(list);
+        return NULL;
+    }
+
     if (length)
         *length = n;
 
-    PyErr_Clear();
-    Py_DECREF(seq);
-
     return list;
+}
+
+FLOAT32
+float16tofloat32(const FLOAT16 in) {
+    UINT32 t1;
+    UINT32 t2;
+    UINT32 t3;
+    FLOAT32 out[1] = {0};
+
+    t1 = in & 0x7fff;                       // Non-sign bits
+    t2 = in & 0x8000;                       // Sign bit
+    t3 = in & 0x7c00;                       // Exponent
+
+    t1 <<= 13;                              // Align mantissa on MSB
+    t2 <<= 16;                              // Shift sign bit into position
+
+    t1 += 0x38000000;                       // Adjust bias
+
+    t1 = (t3 == 0 ? 0 : t1);                // Denormals-as-zero
+
+    t1 |= t2;                               // Re-insert sign bit
+
+    memcpy(out, &t1, 4);
+    return out[0];
 }
 
 static inline PyObject*
@@ -526,7 +552,7 @@ getink(PyObject* color, Imaging im, char* ink)
                     return NULL;
                 }
             }
-            ink[0] = CLIP(r);
+            ink[0] = CLIP8(r);
             ink[1] = ink[2] = ink[3] = 0;
         } else {
             a = 255;
@@ -546,10 +572,10 @@ getink(PyObject* color, Imaging im, char* ink)
                         return NULL;
                 }
             }
-            ink[0] = CLIP(r);
-            ink[1] = CLIP(g);
-            ink[2] = CLIP(b);
-            ink[3] = CLIP(a);
+            ink[0] = CLIP8(r);
+            ink[1] = CLIP8(g);
+            ink[2] = CLIP8(b);
+            ink[3] = CLIP8(a);
         }
         return ink;
     case IMAGING_TYPE_INT32:
@@ -696,8 +722,168 @@ _blend(ImagingObject* self, PyObject* args)
 }
 
 /* -------------------------------------------------------------------- */
-/* METHODS                                */
+/* METHODS                                                              */
 /* -------------------------------------------------------------------- */
+
+static INT16*
+_prepare_lut_table(PyObject* table, Py_ssize_t table_size)
+{
+    int i;
+    Py_buffer buffer_info;
+    INT32 data_type = TYPE_FLOAT32;
+    float item = 0;
+    void* table_data = NULL;
+    int   free_table_data = 0;
+    INT16* prepared;
+
+    /* NOTE: This value should be the same as in ColorLUT.c */
+    #define PRECISION_BITS (16 - 8 - 2)
+
+    const char* wrong_size = ("The table should have table_channels * "
+                              "size1D * size2D * size3D float items.");
+
+    if (PyObject_CheckBuffer(table)) {
+        if ( ! PyObject_GetBuffer(table, &buffer_info,
+                                  PyBUF_CONTIG_RO | PyBUF_FORMAT)) {
+            if (buffer_info.ndim == 1 && buffer_info.shape[0] == table_size) {
+                if (strlen(buffer_info.format) == 1) {
+                    switch (buffer_info.format[0]) {
+                        case 'e':
+                            data_type = TYPE_FLOAT16;
+                            table_data = buffer_info.buf;
+                            break;
+                        case 'f':
+                            data_type = TYPE_FLOAT32;
+                            table_data = buffer_info.buf;
+                            break;
+                        case 'd':
+                            data_type = TYPE_DOUBLE;
+                            table_data = buffer_info.buf;
+                            break;
+                    }
+                }
+            }
+            PyBuffer_Release(&buffer_info);
+        }
+    }
+
+    if ( ! table_data) {
+        free_table_data = 1;
+        table_data = getlist(table, &table_size, wrong_size, TYPE_FLOAT32);
+        if ( ! table_data) {
+            return NULL;
+        }
+    }
+
+    /* malloc check ok, max is 2 * 4 * 65**3 = 2197000 */
+    prepared = (INT16*) malloc(sizeof(INT16) * table_size);
+    if ( ! prepared) {
+        if (free_table_data)
+            free(table_data);
+        return (INT16*) PyErr_NoMemory();
+    }
+
+    for (i = 0; i < table_size; i++) {
+        switch (data_type) {
+            case TYPE_FLOAT16:
+                item = float16tofloat32(((FLOAT16*) table_data)[i]);
+                break;
+            case TYPE_FLOAT32:
+                item = ((FLOAT32*) table_data)[i];
+                break;
+            case TYPE_DOUBLE:
+                item = ((double*) table_data)[i];
+                break;
+        }
+        /* Max value for INT16 */
+        if (item >= (0x7fff - 0.5) / (255 << PRECISION_BITS)) {
+            prepared[i] = 0x7fff;
+            continue;
+        }
+        /* Min value for INT16 */
+        if (item <= (-0x8000 + 0.5) / (255 << PRECISION_BITS)) {
+            prepared[i] = -0x8000;
+            continue;
+        }
+        if (item < 0) {
+            prepared[i] = item * (255 << PRECISION_BITS) - 0.5;
+        } else {
+            prepared[i] = item * (255 << PRECISION_BITS) + 0.5;
+        }
+    }
+
+    #undef PRECISION_BITS
+    if (free_table_data) {
+        free(table_data);
+    }
+    return prepared;
+}
+
+
+static PyObject*
+_color_lut_3d(ImagingObject* self, PyObject* args)
+{
+    char* mode;
+    int filter;
+    int table_channels;
+    int size1D, size2D, size3D;
+    PyObject* table;
+
+    INT16* prepared_table;
+    Imaging imOut;
+
+    if ( ! PyArg_ParseTuple(args, "siiiiiO:color_lut_3d", &mode, &filter,
+                            &table_channels, &size1D, &size2D, &size3D,
+                            &table)) {
+        return NULL;
+    }
+
+    /* actually, it is trilinear */
+    if (filter != IMAGING_TRANSFORM_BILINEAR) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Only LINEAR filter is supported.");
+        return NULL;
+    }
+
+    if (1 > table_channels || table_channels > 4) {
+        PyErr_SetString(PyExc_ValueError,
+                        "table_channels should be from 1 to 4");
+        return NULL;
+    }
+
+    if (2 > size1D || size1D > 65 ||
+        2 > size2D || size2D > 65 ||
+        2 > size3D || size3D > 65
+    ) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Table size in any dimension should be from 2 to 65");
+        return NULL;
+    }
+
+    prepared_table = _prepare_lut_table(
+        table, table_channels * size1D * size2D * size3D);
+    if ( ! prepared_table) {
+        return NULL;
+    }
+
+    imOut = ImagingNewDirty(mode, self->image->xsize, self->image->ysize);
+    if ( ! imOut) {
+        free(prepared_table);
+        return NULL;
+    }
+
+    if ( ! ImagingColorLUT3D_linear(imOut, self->image,
+                                    table_channels, size1D, size2D, size3D,
+                                    prepared_table)) {
+        free(prepared_table);
+        ImagingDelete(imOut);
+        return NULL;
+    }
+
+    free(prepared_table);
+
+    return PyImagingNew(imOut);
+}
 
 static PyObject*
 _convert(ImagingObject* self, PyObject* args)
@@ -1167,17 +1353,17 @@ _point(ImagingObject* self, PyObject* args)
             im = ImagingPoint(self->image, mode, (void*) data);
         else if (mode && bands > 1) {
             for (i = 0; i < 256; i++) {
-                lut[i*4] = CLIP(data[i]);
-                lut[i*4+1] = CLIP(data[i+256]);
-                lut[i*4+2] = CLIP(data[i+512]);
+                lut[i*4] = CLIP8(data[i]);
+                lut[i*4+1] = CLIP8(data[i+256]);
+                lut[i*4+2] = CLIP8(data[i+512]);
                 if (n > 768)
-                    lut[i*4+3] = CLIP(data[i+768]);
+                    lut[i*4+3] = CLIP8(data[i+768]);
             }
             im = ImagingPoint(self->image, mode, (void*) lut);
         } else {
             /* map individual bands */
             for (i = 0; i < n; i++)
-                lut[i] = CLIP(data[i]);
+                lut[i] = CLIP8(data[i]);
             im = ImagingPoint(self->image, mode, (void*) lut);
         }
         free(data);
@@ -1241,7 +1427,7 @@ _putdata(ImagingObject* self, PyObject* args)
             else
                 /* Scaled and clipped string data */
                 for (i = x = y = 0; i < n; i++) {
-                    image->image8[y][x] = CLIP((int) (p[i] * scale + offset));
+                    image->image8[y][x] = CLIP8((int) (p[i] * scale + offset));
                     if (++x >= (int) image->xsize)
                         x = 0, y++;
                 }
@@ -1255,7 +1441,7 @@ _putdata(ImagingObject* self, PyObject* args)
                /* Clipped data */
                for (i = x = y = 0; i < n; i++) {
                    op = PySequence_Fast_GET_ITEM(seq, i);
-                   image->image8[y][x] = (UINT8) CLIP(PyInt_AsLong(op));
+                   image->image8[y][x] = (UINT8) CLIP8(PyInt_AsLong(op));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
                    }
@@ -1265,7 +1451,7 @@ _putdata(ImagingObject* self, PyObject* args)
                /* Scaled and clipped data */
                for (i = x = y = 0; i < n; i++) {
                    PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
-                   image->image8[y][x] = CLIP(
+                   image->image8[y][x] = CLIP8(
                        (int) (PyFloat_AsDouble(op) * scale + offset));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
@@ -2982,6 +3168,7 @@ static struct PyMethodDef methods[] = {
     {"pixel_access", (PyCFunction)pixel_access_new, 1},
 
     /* Standard processing methods (Image) */
+    {"color_lut_3d", (PyCFunction)_color_lut_3d, 1},
     {"convert", (PyCFunction)_convert, 1},
     {"convert2", (PyCFunction)_convert2, 1},
     {"convert_matrix", (PyCFunction)_convert_matrix, 1},
@@ -3478,6 +3665,7 @@ extern PyObject* PyImaging_JpegEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_Jpeg2KEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_PcxEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_RawEncoderNew(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_TgaRleEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_XbmEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_ZipEncoderNew(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args);
@@ -3545,6 +3733,7 @@ static PyMethodDef functions[] = {
     {"sgi_rle_decoder", (PyCFunction)PyImaging_SgiRleDecoderNew, 1},
     {"sun_rle_decoder", (PyCFunction)PyImaging_SunRleDecoderNew, 1},
     {"tga_rle_decoder", (PyCFunction)PyImaging_TgaRleDecoderNew, 1},
+    {"tga_rle_encoder", (PyCFunction)PyImaging_TgaRleEncoderNew, 1},
     {"xbm_decoder", (PyCFunction)PyImaging_XbmDecoderNew, 1},
     {"xbm_encoder", (PyCFunction)PyImaging_XbmEncoderNew, 1},
 #ifdef HAVE_LIBZ

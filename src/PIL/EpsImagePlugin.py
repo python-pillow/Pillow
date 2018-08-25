@@ -205,16 +205,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
         # Rewrap the open file pointer in something that will
         # convert line endings and decode to latin-1.
-        try:
-            if bytes is str:
-                # Python2, no encoding conversion necessary
-                fp = open(self.fp.name, "Ur")
-            else:
-                # Python3, can use bare open command.
-                fp = open(self.fp.name, "Ur", encoding='latin-1')
-        except:
-            # Expect this for bytesio/stringio
-            fp = PSFile(self.fp)
+        fp = PSFile(self.fp)
 
         # go to offset - start of "%!PS"
         fp.seek(offset)

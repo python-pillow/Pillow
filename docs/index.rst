@@ -23,7 +23,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :alt: AppVeyor CI build status (Windows)
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
+   :target: https://pypi.org/project/Pillow/
    :alt: Latest PyPI version
 
 .. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master

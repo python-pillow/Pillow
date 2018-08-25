@@ -41,13 +41,14 @@ class TestFileJpeg(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(Image.core.jpeglib_version, r"\d+\.\d+$")
+        self.assertRegex(Image.core.jpeglib_version, r"\d+\.\d+$")
 
         im = Image.open(TEST_FILE)
         im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "JPEG")
+        self.assertEqual(im.get_format_mimetype(), "image/jpeg")
 
     def test_app(self):
         # Test APP/COM reader (@PIL135)
@@ -363,7 +364,6 @@ class TestFileJpeg(PillowTestCase):
         with self.assertRaises(IOError):
             im.load()
 
-
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
         f = self.tempfile('temp.jpg')
@@ -439,17 +439,17 @@ class TestFileJpeg(PillowTestCase):
         self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables='a')
+        self.assertRaises(ValueError, self.roundtrip, im, qtables='a')
         # sequence wrong length
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
         # sequence wrong length
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
         # qtable entry not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[1])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
         # qtable entry has wrong number of items
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
@@ -599,7 +599,7 @@ class TestFileCloseW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, os.remove, tmpfile)
+        self.assertRaises(WindowsError, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
         # this should not fail, as load should have closed the file.

@@ -30,6 +30,8 @@
     (MULDIV255(in1, (255 - mask), tmp1) + in2)
 
 
+#define CLIP8(v) ((v) <= 0 ? 0 : (v) < 256 ? (v) : 255)
+
 /* This is to work around a bug in GCC prior 4.9 in 64 bit mode.
    GCC generates code with partial dependency which is 3 times slower.
    See: http://stackoverflow.com/a/26588074/253146 */
@@ -37,7 +39,7 @@
     ! defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
 static float __attribute__((always_inline)) inline _i2f(int v) {
     float x;
-    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=X"(x) : "r"(v) );
+    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=x"(x) : "r"(v) );
     return x;
 }
 #else

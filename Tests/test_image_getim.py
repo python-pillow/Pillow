@@ -1,4 +1,5 @@
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
+from PIL._util import py3
 
 
 class TestImageGetIm(PillowTestCase):

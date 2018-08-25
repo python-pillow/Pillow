@@ -33,6 +33,7 @@ MODES = {
     (1, 8):  "P",
     (3, 1):  "1",
     (3, 8):  "L",
+    (3, 16): "LA",
     (2, 16): "BGR;5",
     (2, 24): "BGR",
     (2, 32): "BGRA",
@@ -74,6 +75,8 @@ class TgaImageFile(ImageFile.ImageFile):
             self.mode = "L"
             if depth == 1:
                 self.mode = "1"  # ???
+            elif depth == 16:
+                self.mode = "LA"
         elif imagetype in (1, 9):
             self.mode = "P"
         elif imagetype in (2, 10):
@@ -134,6 +137,7 @@ class TgaImageFile(ImageFile.ImageFile):
 SAVE = {
     "1": ("1", 1, 0, 3),
     "L": ("L", 8, 0, 3),
+    "LA": ("LA", 16, 0, 3),
     "P": ("P", 8, 1, 1),
     "RGB": ("BGR", 24, 0, 2),
     "RGBA": ("BGRA", 32, 0, 2),
@@ -147,12 +151,17 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
 
+    rle = im.encoderinfo.get("rle", False)
+
+    if rle:
+        imagetype += 8
+
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
     else:
         colormapfirst, colormaplength, colormapentry = 0, 0, 0
 
-    if im.mode == "RGBA":
+    if im.mode in ("LA", "RGBA"):
         flags = 8
     else:
         flags = 0
@@ -177,8 +186,14 @@ def _save(im, fp, filename):
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))
 
-    ImageFile._save(
-        im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+    if rle:
+        ImageFile._save(
+            im,
+            fp,
+            [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))])
+    else:
+        ImageFile._save(
+            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
 
     # write targa version 2 footer
     fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")

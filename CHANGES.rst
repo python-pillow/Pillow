@@ -2,8 +2,158 @@
 Changelog (Pillow)
 ==================
 
-5.1.0 (unreleased)
+5.3.0 (unreleased)
 ------------------
+
+- Depends: Update libimagequant to 2.12.1 #3281
+  [radarhere]
+
+- Add three-color support to ImageOps.colorize #3242
+  [tsennott]
+
+- Tests: Add LA to TGA test modes #3222
+  [danpla]
+
+- Skip outline if the draw operation fills with the same colour #2922
+  [radarhere]
+
+- Flake8 fixes #3173
+  [radarhere]
+
+- Avoid deprecated 'U' mode when opening files #2187
+  [jdufresne]
+
+5.2.0 (2018-07-01)
+------------------
+
+- Fixed saving a multiframe image as a single frame PDF #3137
+  [radarhere]
+
+- If a Qt version is already imported, attempt to use it first #3143
+  [radarhere]
+
+- Fix transform fill color for alpha images #3147
+  [fozcode]
+
+- TGA: Add support for writing RLE data #3186
+  [danpla]
+
+- TGA: Read and write LA data #3178
+  [danpla]
+
+- QuantOctree.c: Remove erroneous attempt to average over an empty range #3196
+  [tkoeppe]
+
+- Changed ICNS format tests to pass on OS X 10.11 #3202
+  [radarhere]
+
+- Fixed bug in ImageDraw.multiline_textsize() #3114
+  [tianyu139]
+
+- Added getsize_multiline support for PIL.ImageFont #3113
+  [tianyu139]
+
+- Added ImageFile get_format_mimetype method #3190
+  [radarhere]
+
+- Changed mmap file pointer to use context manager #3216
+  [radarhere]
+
+- Changed ellipse point calculations to be more evenly distributed #3142
+  [radarhere]
+
+- Only extract first Exif segment #2946
+  [hugovk]
+
+- Tests: Test ImageDraw2, WalImageFile #3135, #2989
+  [hugovk]
+
+- Remove unnecessary '#if 0' code #3075
+  [hugovk]
+
+- Tests: Added GD tests #1817
+  [radarhere]
+
+- Fix collections ABCs DeprecationWarning in Python 3.7 #3123
+  [hugovk]
+
+- unpack_from is faster than unpack of slice #3201
+  [landfillbaby]
+
+- Docs: Add coordinate system links and file handling links in documentation #3204, #3214
+  [radarhere]
+
+- Tests: TestFilePng: Fix test_save_l_transparency() #3182
+  [danpla]
+
+- Docs: Correct argument name #3171
+  [radarhere]
+
+- Docs: Update CMake download URL #3166
+  [radarhere]
+
+- Docs: Improve Image.transform documentation #3164
+  [radarhere]
+
+- Fix transform fillcolor argument when image mode is RGBA or LA #3163
+  [radarhere]
+
+- Tests: More specific Exception testing #3158
+  [radarhere]
+
+- Add getrgb HSB/HSV color strings #3148
+  [radarhere]
+
+- Allow float values in getrgb HSL color string #3146
+  [radarhere]
+
+- AppVeyor: Upgrade to Python 2.7.15 and 3.4.4 #3140
+  [radarhere]
+
+- AppVeyor: Upgrade to PyPy 6.0.0 #3133
+  [hugovk]
+
+- Deprecate PILLOW_VERSION and VERSION #3090
+  [hugovk]
+
+- Support Python 3.7 #3076
+  [hugovk]
+
+- Depends: Update freetype to 2.9.1, libjpeg to 9c, libwebp to 1.0.0 #3121, #3136, #3108
+  [radarhere]
+
+- Build macOS wheels with Xcode 6.4, supporting older macOS versions #3068
+  [wiredfool]
+
+- Fix _i2f compilation on some GCC versions #3067
+  [homm]
+
+- Changed encoderinfo to have priority over info when saving GIF images #3086
+  [radarhere]
+
+- Rename PIL.version to PIL._version and remove it from module #3083
+  [homm]
+
+- Enable background colour parameter on rotate #3057
+  [storesource]
+
+- Remove unnecessary `#if 1` directive #3072
+  [jdufresne]
+
+- Remove unused Python class, Path #3070
+  [jdufresne]
+
+- Fix dereferencing type-punned pointer will break strict-aliasing #3069
+  [jdufresne]
+
+5.1.0 (2018-04-02)
+------------------
+
+- Close fp before return in ImagingSavePPM #3061
+  [kathryndavies]
+
+- Added documentation for ICNS append_images #3051
+  [radarhere]
 
 - Docs: Move intro text below its header #3021
   [hugovk]
@@ -13,12 +163,12 @@ Changelog (Pillow)
 
 - Fix TypeError for JPEG2000 parser feed #3042
   [hugovk]
-  
+
 - Certain corrupted jpegs can result in no data read #3023
   [kkopachev]
-  
+
 - Add support for BLP file format #3007
-  [jleclanche] 
+  [jleclanche]
 
 - Simplify version checks #2998
   [hugovk]
@@ -82,10 +232,6 @@ Changelog (Pillow)
 
 - Docs: Changed documentation references to 2.x to 2.7 #2921
   [radarhere]
-
-
-5.0.1 (unreleased)
-------------------
 
 - Fix memory leak when opening webp files #2974
   [wiredfool]
@@ -177,7 +323,7 @@ Changelog (Pillow)
 - Add eog support for Ubuntu Image Viewer #2864
   [NafisFaysal]
 
-- Test: Test on 3.7-dev on Travis.ci #2870
+- Test: Test on 3.7-dev on Travis CI #2870
   [hugovk]
 
 - Dependencies: Update libtiff to 4.0.9 #2871
@@ -306,7 +452,7 @@ Changelog (Pillow)
 - Fixed doc syntax in ImageDraw #2752
   [radarhere]
 
-- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2476
+- Fixed support for building on Windows/msys2. Added Appveyor CI coverage for python3 on msys2 #2746
   [wiredfool]
 
 - Fix ValueError in Exif/Tiff IFD #2719
@@ -378,7 +524,7 @@ Changelog (Pillow)
 - Use RGBX rawmode for RGB JPEG images where possible #1989
   [homm]
 
-- Remove palettes from non-palette modes in _new #2702
+- Remove palettes from non-palette modes in _new #2704
   [wiredfool]
 
 - Delete transparency info when convert'ing RGB/L to RGBA #2633
@@ -498,7 +644,7 @@ Changelog (Pillow)
 - Doc: Clarified Image.save:append_images documentation #2604
   [radarhere]
 
-- CI: Amazon Linux and Centos6 docker images added to TravisCI #2585
+- CI: Amazon Linux and Centos6 docker images added to Travis CI #2585
   [wiredfool]
 
 - Image.alpha_composite added #2595
@@ -567,7 +713,7 @@ Changelog (Pillow)
 - Update Feature Detection #2520
   [wiredfool]
 
-- CI: Update pypy on TravisCI #2573
+- CI: Update pypy on Travis CI #2573
   [hugovk]
 
 - ImageMorph: Fix wrong expected size of MRLs read from disk #2561
@@ -801,10 +947,10 @@ Changelog (Pillow)
 - Add center and translate option to Image.rotate. #2328
   [lambdafu]
 
-- Test: Relax WMF test condition, fixes #2323
+- Test: Relax WMF test condition, fixes #2323.  #2327
   [wiredfool]
 
-- Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.
+- Allow 0 size images, Fixes #2259, Reverts to pre-3.4 behavior.  #2262
   [wiredfool]
 
 - SGI: Save uncompressed SGI/BW/RGB/RGBA files #2325
@@ -1135,10 +1281,10 @@ Changelog (Pillow)
 3.3.2 (2016-10-03)
 ------------------
 
-- Fix negative image sizes in Storage.c #2105
+- Fix negative image sizes in Storage.c #2146
   [wiredfool]
 
-- Fix integer overflow in map.c #2105
+- Fix integer overflow in map.c #2146
   [wiredfool]
 
 3.3.1 (2016-08-18)
@@ -1276,7 +1422,7 @@ Changelog (Pillow)
 - Skip tests that require libtiff if it is not installed #1893 (fixes #1866)
   [wiredfool]
 
-- Skip test when icc profile is not available, fixes #1887
+- Skip test when icc profile is not available, fixes #1887.  #1892
   [doko42]
 
 - Make deprecated functions raise NotImplementedError instead of Exception. #1862, #1890
@@ -1881,7 +2027,7 @@ Changelog (Pillow)
 2.8.1 (2015-04-02)
 ------------------
 
-- Bug fix: Catch struct.error on invalid JPEG, fixes #1163
+- Bug fix: Catch struct.error on invalid JPEG, fixes #1163.  #1165
   [wiredfool, hugovk]
 
 2.8.0 (2015-04-01)
@@ -2016,7 +2162,7 @@ Changelog (Pillow)
 - Updated manifest #957
   [wiredfool]
 
-- Fix PyPy 2.4 regression #952
+- Fix PyPy 2.4 regression #958
   [wiredfool]
 
 - Webp Metadata Skip Test comments #954
@@ -2058,7 +2204,7 @@ Changelog (Pillow)
 - Use redistributable ICC profiles for testing, skip if not available #923
   [wiredfool]
 
-- Additional documentation for JPEG info and save options #890
+- Additional documentation for JPEG info and save options #922
   [wiredfool]
 
 - Fix JPEG Encoding memory leak when exif or qtables were specified #921

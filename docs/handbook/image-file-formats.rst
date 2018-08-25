@@ -84,7 +84,14 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     of the GIF, in milliseconds.
 
 **loop**
-    May not be present. The number of times the GIF should loop.
+    May not be present. The number of times the GIF should loop. 0 means that
+    it will loop forever.
+
+**comment**
+    May not be present. A comment about the image.
+
+**extension**
+    May not be present. Contains application specific information.
 
 Reading sequences
 ~~~~~~~~~~~~~~~~~
@@ -110,27 +117,17 @@ are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently only supported for GIF, PDF, TIFF, and WebP.
+    This is currently supported for GIF, PDF, TIFF, and WebP.
 
-**duration**
-    The display duration of each frame of the multiframe gif, in
-    milliseconds. Pass a single integer for a constant duration, or a
-    list or tuple to set the duration for each frame separately.
+    It is also supported for ICNS. If images are passed in of relevant sizes,
+    they will be used instead of scaling down the main image.
 
-**loop**
-    Integer number of times the GIF should loop.
+**include_color_table**
+    Whether or not to include local color table.
 
-**optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
-
-**palette**
-    Use the specified palette for the saved image. The palette should
-    be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
-    the palette can be passed in as an
-    :py:class:`PIL.ImagePalette.ImagePalette` object.
+**interlace**
+    Whether or not the image is interlaced. By default, it is, unless the image
+    is less than 16 pixels in width or height.
 
 **disposal**
     Indicates the way in which the graphic is to be treated after being displayed.
@@ -142,6 +139,38 @@ are available::
 
      Pass a single integer for a constant disposal, or a list or tuple
      to set the disposal for each frame separately.
+
+**palette**
+    Use the specified palette for the saved image. The palette should
+    be a bytes or bytearray object containing the palette entries in
+    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    the palette can be passed in as an
+    :py:class:`PIL.ImagePalette.ImagePalette` object.
+
+**optimize**
+    If present and true, attempt to compress the palette by
+    eliminating unused colors. This is only useful if the palette can
+    be compressed to the next smaller power of 2 elements.
+
+Note that if the image you are saving comes from an existing GIF, it may have
+the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
+For these options, if you do not pass them in, they will default to
+their :py:attr:`~PIL.Image.Image.info` values.
+
+**transparency**
+    Transparency color index.
+
+**duration**
+    The display duration of each frame of the multiframe gif, in
+    milliseconds. Pass a single integer for a constant duration, or a
+    list or tuple to set the duration for each frame separately.
+
+**loop**
+    Integer number of times the GIF should loop. 0 means that it will loop
+    forever. By default, the image will not loop.
+
+**comment**
+    A comment about the image.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
@@ -178,6 +207,15 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
     will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
     ask for ``(512, 512, 2)``, the final value of
     :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**append_images**
+    A list of images to replace the scaled down versions of the image.
+    The order of the images does not matter, as their use is determined by
+    the size of each image.
+
+    .. versionadded:: 5.1.0
 
 ICO
 ^^^
@@ -491,8 +529,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 .. note::
 
     To enable PNG support, you need to build and install the ZLIB compression
-    library before building the Python Imaging Library. See the installation
-    documentation for details.
+    library before building the Python Imaging Library. See the `installation
+    documentation <../installation.html>`_ for details.
 
 PPM
 ^^^
@@ -545,6 +583,13 @@ For more information about the SPIDER image processing package, see the
 
 .. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
 .. _Wadsworth Center: https://www.wadsworth.org/
+
+TGA
+^^^
+
+PIL reads and writes TGA images containing ``L``, ``LA``, ``P``,
+``RGB``, and ``RGBA`` data. PIL can read and write both uncompressed and
+run-length encoded TGAs.
 
 TIFF
 ^^^^
@@ -767,6 +812,13 @@ PIL reads and writes X bitmap files (mode ``1``).
 Read-only formats
 -----------------
 
+BLP
+^^^
+
+BLP is the Blizzard Mipmap Format, a texture format used in World of
+Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
+images, and all types of ``BLP2`` images.
+
 CUR
 ^^^
 
@@ -844,9 +896,8 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 GD
 ^^
 
-PIL reads uncompressed GD files. Note that this file format cannot be
-automatically identified, so you must use :py:func:`PIL.GdImageFile.open` to
-read such a file.
+PIL reads uncompressed GD2 files. Note that you must use
+:py:func:`PIL.GdImageFile.open` to read such a file.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -907,11 +958,6 @@ PSD
 
 PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-
-TGA
-^^^
-
-PIL reads 24- and 32-bit uncompressed and run-length encoded TGA files.
 
 WAL
 ^^^

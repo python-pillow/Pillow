@@ -259,6 +259,10 @@ subtract_color_buckets(ColorCube cube, ColorBucket buckets, long nBuckets) {
    Pixel p;
    for (i=0; i<nBuckets; i++) {
       subtrahend = &buckets[i];
+
+      // If the subtrahend contains no buckets, there is nothing to subtract.
+      if (subtrahend->count == 0) continue;
+
       avg_color_from_color_bucket(subtrahend, &p);
       minuend = color_bucket_from_cube(cube, &p);
       minuend->count -= subtrahend->count;

@@ -3,9 +3,10 @@ from io import BytesIO
 import struct
 import sys
 
-from helper import unittest, PillowTestCase, hopper, py3
+from helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin
+from PIL._util import py3
 from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
 
 logger = logging.getLogger(__name__)
@@ -62,8 +63,11 @@ class TestFileTiff(PillowTestCase):
         im.load()
 
     def test_set_legacy_api(self):
-        with self.assertRaises(Exception):
-            ImageFileDirectory_v2.legacy_api = None
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        with self.assertRaises(Exception) as e:
+            ifd.legacy_api = None
+        self.assertEqual(str(e.exception),
+                         "Not allowing setting of legacy api")
 
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
@@ -440,7 +444,8 @@ class TestFileTiff(PillowTestCase):
             for im in ims:
                 yield im
         mp = io.BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True,
+                append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
         reread = Image.open(mp)
@@ -501,7 +506,7 @@ class TestFileTiffW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, os.remove, tmpfile)
+        self.assertRaises(WindowsError, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
 

@@ -2,6 +2,7 @@ from unzip import unzip
 from untar import untar
 import os
 
+from fetch import fetch
 from config import compilers, compiler_from_env, libs
 
 
@@ -44,6 +45,8 @@ def extract(src, dest):
 def extract_libs():
     for name, lib in libs.items():
         filename = lib['filename']
+        if not os.path.exists(filename):
+            filename = fetch(lib['url'])
         if name == 'openjpeg':
             for compiler in compilers.values():
                 if not os.path.exists(os.path.join(

@@ -1,11 +1,7 @@
-from helper import unittest, PillowTestCase, hopper
-
-from PIL import Image
-from PIL import ImageColor
-from PIL import ImageDraw
 import os.path
 
-import sys
+from helper import PillowTestCase, hopper, unittest
+from PIL import Image, ImageColor, ImageDraw
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -172,6 +168,16 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(
             im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+
+    def test_ellipse_symmetric(self):
+        for bbox in [
+            (25, 25, 76, 76),
+            (25, 25, 75, 75)
+        ]:
+            im = Image.new("RGB", (101, 101))
+            draw = ImageDraw.Draw(im)
+            draw.ellipse(bbox, fill="green", outline="blue")
+            self.assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
 
     def helper_line(self, points):
         # Arrange
@@ -360,8 +366,6 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(im, (W, H), red)
         self.assert_image_equal(im, im_floodfill)
 
-    @unittest.skipIf(hasattr(sys, 'pypy_version_info'),
-                     "Causes fatal RPython error on PyPy")
     def test_floodfill_border(self):
         # floodfill() is experimental
 
@@ -571,6 +575,47 @@ class TestImageDraw(PillowTestCase):
         draw.textsize("")
         draw.textsize("\n")
         draw.textsize("test\n")
+
+    def test_same_color_outline(self):
+        # Prepare shape
+        x0, y0 = 5, 5
+        x1, y1 = 5, 50
+        x2, y2 = 95, 50
+        x3, y3 = 95, 5
+
+        s = ImageDraw.Outline()
+        s.move(x0, y0)
+        s.curve(x1, y1, x2, y2, x3, y3)
+        s.line(x0, y0)
+
+        # Begin
+        for mode in ["RGB", "L"]:
+            for fill, outline in [
+                ["red", None],
+                ["red", "red"],
+                ["red", "#f00"]
+            ]:
+                for operation, args in {
+                    'chord':[BBOX1, 0, 180],
+                    'ellipse':[BBOX1],
+                    'shape':[s],
+                    'pieslice':[BBOX1, -90, 45],
+                    'polygon':[[(18, 30), (85, 30), (60, 72)]],
+                    'rectangle':[BBOX1]
+                }.items():
+                    # Arrange
+                    im = Image.new(mode, (W, H))
+                    draw = ImageDraw.Draw(im)
+
+                    # Act
+                    draw_method = getattr(draw, operation)
+                    args += [fill, outline]
+                    draw_method(*args)
+
+                    # Assert
+                    expected = ("Tests/images/imagedraw_outline"
+                                "_{}_{}.png".format(operation, mode))
+                    self.assert_image_similar(im, Image.open(expected), 1)
 
 
 if __name__ == '__main__':

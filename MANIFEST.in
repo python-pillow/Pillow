@@ -24,7 +24,6 @@ exclude .editorconfig
 exclude .landscape.yaml
 exclude .travis
 exclude .travis/*
-exclude build_children.sh
 exclude tox.ini
 global-exclude .git*
 global-exclude *.pyc

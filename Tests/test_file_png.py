@@ -1,5 +1,6 @@
 from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
+from PIL._util import py3
 
 from io import BytesIO
 import zlib
@@ -68,8 +69,7 @@ class TestFilePng(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(
-            Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
+        self.assertRegex(Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
 
         test_file = self.tempfile("temp.png")
 
@@ -292,15 +292,29 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
     def test_save_l_transparency(self):
+        # There are 559 transparent pixels in l_trns.png.
+        num_transparent = 559
+
         in_file = "Tests/images/l_trns.png"
         im = Image.open(in_file)
+        self.assertEqual(im.mode, "L")
+        self.assertEqual(im.info["transparency"], 255)
+
+        im_rgba = im.convert('RGBA')
+        self.assertEqual(
+            im_rgba.getchannel("A").getcolors()[0][0], num_transparent)
 
         test_file = self.tempfile("temp.png")
         im.save(test_file)
 
-        # There are 559 transparent pixels.
-        im = im.convert('RGBA')
-        self.assertEqual(im.getchannel('A').getcolors()[0][0], 559)
+        test_im = Image.open(test_file)
+        self.assertEqual(test_im.mode, "L")
+        self.assertEqual(test_im.info["transparency"], 255)
+        self.assert_image_equal(im, test_im)
+
+        test_im_rgba = test_im.convert('RGBA')
+        self.assertEqual(
+            test_im_rgba.getchannel('A').getcolors()[0][0], num_transparent)
 
     def test_save_rgb_single_transparency(self):
         in_file = "Tests/images/caption_6_33_22.png"
@@ -341,7 +355,8 @@ class TestFilePng(PillowTestCase):
         broken_crc_chunk_data = chunk_data[:-1] + b'q'  # break CRC
 
         image_data = HEAD + broken_crc_chunk_data + TAIL
-        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile,
+                          BytesIO(image_data))
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
@@ -357,7 +372,8 @@ class TestFilePng(PillowTestCase):
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
-            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile,
+                              BytesIO(image_data))
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
@@ -420,7 +436,7 @@ class TestFilePng(PillowTestCase):
             im = roundtrip(im, pnginfo=info)
             self.assertEqual(im.info, {"Text": value})
 
-        if str is not bytes:
+        if py3:
             rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff))  # Latin1
             rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))       # Cyrillic
             rt_text(chr(0x4e00) + chr(0x66f0) +                 # CJK

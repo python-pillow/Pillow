@@ -126,14 +126,15 @@ class MspDecoder(ImageFile.PyDecoder):
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    raise IOError("Truncated MSP file, expected %d bytes on row %s",
-                                  (rowlen, x))
+                    raise IOError(
+                        "Truncated MSP file, expected %d bytes on row %s",
+                        (rowlen, x))
                 idx = 0
                 while idx < rowlen:
                     runtype = i8(row[idx])
                     idx += 1
                     if runtype == 0:
-                        (runcount, runval) = struct.unpack("Bc", row[idx:idx+2])
+                        (runcount, runval) = struct.unpack_from("Bc", row, idx)
                         img.write(runval * runcount)
                         idx += 2
                     else:

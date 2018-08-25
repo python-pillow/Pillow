@@ -8,6 +8,7 @@ import os
 import unittest
 
 from PIL import Image, ImageMath
+from PIL._util import py3
 
 import logging
 logger = logging.getLogger(__name__)
@@ -152,7 +153,8 @@ class PillowTestCase(unittest.TestCase):
                     pass
             raise e
 
-    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None, mode=None):
+    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None,
+                                    mode=None):
         with Image.open(filename) as img:
             if mode:
                 img = img.convert(mode)
@@ -189,6 +191,16 @@ class PillowTestCase(unittest.TestCase):
 
     def assert_not_all_same(self, items, msg=None):
         self.assertFalse(items.count(items[0]) == len(items), msg)
+
+    def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
+        """Tests if actuals has values within threshold from targets"""
+
+        value = True
+        for i, target in enumerate(targets):
+            value *= (target - threshold <= actuals[i] <= target + threshold)
+
+        self.assertTrue(value,
+                        msg + ': ' + repr(actuals) + ' != ' + repr(targets))
 
     def skipKnownBadTest(self, msg=None, platform=None,
                          travis=None, interpreter=None):
@@ -229,23 +241,24 @@ class PillowTestCase(unittest.TestCase):
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class PillowLeakTestCase(PillowTestCase):
-    # requires unix/osx
+    # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
 
     def _get_mem_usage(self):
         """
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
-        between OSX and Linux rss reporting
+        between macOS and Linux rss reporting
 
-        :returns; memory usage in kilobytes
+        :returns: memory usage in kilobytes
         """
 
         from resource import getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
             # man 2 getrusage:
-            #     ru_maxrss    the maximum resident set size utilized (in bytes).
+            #     ru_maxrss
+            # This is the maximum resident set size utilized (in bytes).
             return mem / 1024  # Kb
         else:
             # linux
@@ -265,7 +278,10 @@ class PillowLeakTestCase(PillowTestCase):
 
 # helpers
 
-py3 = sys.version_info.major >= 3
+if not py3:
+    # Remove DeprecationWarning in Python 3
+    PillowTestCase.assertRaisesRegex = PillowTestCase.assertRaisesRegexp
+    PillowTestCase.assertRegex = PillowTestCase.assertRegexpMatches
 
 
 def fromstring(data):

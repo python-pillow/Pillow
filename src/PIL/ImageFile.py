@@ -118,6 +118,11 @@ class ImageFile(Image.Image):
 
         pass
 
+    def get_format_mimetype(self):
+        if self.format is None:
+            return
+        return Image.MIME.get(self.format.upper())
+
     def verify(self):
         "Check file integrity"
 
@@ -161,8 +166,9 @@ class ImageFile(Image.Image):
         if use_mmap:
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
-            if decoder_name == "raw" and len(args) >= 3 and args[0] == self.mode \
-               and args[0] in Image._MAPMODES:
+            if decoder_name == "raw" and len(args) >= 3 and \
+               args[0] == self.mode and \
+               args[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
                         # use built-in mapper  WIN32 only
@@ -174,14 +180,15 @@ class ImageFile(Image.Image):
                     else:
                         # use mmap, if possible
                         import mmap
-                        fp = open(self.filename, "r")
-                        size = os.path.getsize(self.filename)
-                        self.map = mmap.mmap(fp.fileno(), size, access=mmap.ACCESS_READ)
+                        with open(self.filename, "r") as fp:
+                            self.map = mmap.mmap(fp.fileno(), 0,
+                                                 access=mmap.ACCESS_READ)
                         self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, extents, offset, args
-                            )
+                            self.map, self.size, decoder_name, extents,
+                            offset, args)
                     readonly = 1
-                    # After trashing self.im, we might need to reload the palette data.
+                    # After trashing self.im,
+                    # we might need to reload the palette data.
                     if self.palette:
                         self.palette.dirty = 1
                 except (AttributeError, EnvironmentError, ImportError):
@@ -213,7 +220,8 @@ class ImageFile(Image.Image):
                         while True:
                             try:
                                 s = read(self.decodermaxblock)
-                            except (IndexError, struct.error):  # truncated png/gif
+                            except (IndexError, struct.error):
+                                # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
@@ -225,7 +233,8 @@ class ImageFile(Image.Image):
                                 else:
                                     self.tile = []
                                     raise IOError("image file is truncated "
-                                                  "(%d bytes not processed)" % len(b))
+                                                  "(%d bytes not processed)" %
+                                                  len(b))
 
                             b = b + s
                             n, err_code = decoder.decode(b)
@@ -584,10 +593,12 @@ class PyDecoder(object):
         """
         Override to perform the decoding process.
 
-        :param buffer: A bytes object with the data to be decoded.  If `handles_eof`
-             is set, then `buffer` will be empty and `self.fd` will be set.
-        :returns: A tuple of (bytes consumed, errcode). If finished with decoding
-             return <0 for the bytes consumed. Err codes are from `ERRORS`
+        :param buffer: A bytes object with the data to be decoded.
+            If `handles_eof` is set, then `buffer` will be empty and `self.fd`
+            will be set.
+        :returns: A tuple of (bytes consumed, errcode).
+            If finished with decoding return <0 for the bytes consumed.
+            Err codes are from `ERRORS`
         """
         raise NotImplementedError()
 
@@ -646,8 +657,8 @@ class PyDecoder(object):
         Convenience method to set the internal image from a stream of raw data
 
         :param data: Bytes to be set
-        :param rawmode: The rawmode to be used for the decoder. If not specified,
-             it will default to the mode of the image
+        :param rawmode: The rawmode to be used for the decoder.
+            If not specified, it will default to the mode of the image
         :returns: None
         """
 

@@ -24,9 +24,9 @@ libs = {
         'dir': 'zlib-1.2.11',
     },
     'jpeg': {
-        'url': 'http://www.ijg.org/files/jpegsr9b.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'jpegsr9b.zip',
-        'dir': 'jpeg-9b',
+        'url': 'http://www.ijg.org/files/jpegsr9c.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'jpegsr9c.zip',
+        'dir': 'jpeg-9c',
     },
     'tiff': {
         'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.9.zip',
@@ -34,9 +34,9 @@ libs = {
         'dir': 'tiff-4.0.9',
     },
     'freetype': {
-        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.9.tar.gz',
-        'dir': 'freetype-2.9',
+        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'freetype-2.9.1.tar.gz',
+        'dir': 'freetype-2.9.1',
     },
     'lcms': {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
@@ -66,9 +66,9 @@ libs = {
         'version': '8.6.8',
     },
     'webp': {
-        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-0.6.1.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'libwebp-0.6.1.tar.gz',
-        'dir': 'libwebp-0.6.1',
+        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-1.0.0.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'libwebp-1.0.0.tar.gz',
+        'dir': 'libwebp-1.0.0',
     },
     'openjpeg': {
         'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.3.0/openjpeg-2.3.0.tar.gz',

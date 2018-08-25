@@ -1,3 +1,5 @@
+.. _file-handling:
+
 File Handling in Pillow
 =======================
 

@@ -38,6 +38,7 @@ import struct
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
+from ._util import py3
 
 __version__ = "0.9"
 
@@ -141,7 +142,8 @@ class ChunkStream(object):
     def crc(self, cid, data):
         "Read and verify checksum"
 
-        # Skip CRC checks for ancillary chunks if allowed to load truncated images
+        # Skip CRC checks for ancillary chunks if allowed to load truncated
+        # images
         # 5th byte of first char is 1 [specs, section 5.4]
         if ImageFile.LOAD_TRUNCATED_IMAGES and (i8(cid[0]) >> 5 & 1):
             self.crc_skip(cid, data)
@@ -300,8 +302,8 @@ class PngStream(ChunkStream):
     def check_text_memory(self, chunklen):
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
-            raise ValueError("Too much memory used in text chunks: %s>MAX_TEXT_MEMORY" %
-                             self.text_memory)
+            raise ValueError("Too much memory used in text chunks: "
+                             "%s>MAX_TEXT_MEMORY" % self.text_memory)
 
     def chunk_iCCP(self, pos, length):
 
@@ -437,7 +439,7 @@ class PngStream(ChunkStream):
             k = s
             v = b""
         if k:
-            if bytes is not str:
+            if py3:
                 k = k.decode('latin-1', 'strict')
                 v = v.decode('latin-1', 'replace')
 
@@ -473,7 +475,7 @@ class PngStream(ChunkStream):
             v = b""
 
         if k:
-            if bytes is not str:
+            if py3:
                 k = k.decode('latin-1', 'strict')
                 v = v.decode('latin-1', 'replace')
 
@@ -510,7 +512,7 @@ class PngStream(ChunkStream):
                     return s
             else:
                 return s
-        if bytes is not str:
+        if py3:
             try:
                 k = k.decode("latin-1", "strict")
                 lang = lang.decode("utf-8", "strict")
@@ -663,7 +665,7 @@ _OUTMODES = {
 
 
 def putchunk(fp, cid, *data):
-    "Write a PNG chunk (including CRC field)"
+    """Write a PNG chunk (including CRC field)"""
 
     data = b"".join(data)
 

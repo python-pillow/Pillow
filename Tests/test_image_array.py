@@ -15,9 +15,11 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("L"), (3, (100, 128), '|u1', 12800))
 
         # FIXME: wrong?
-        self.assertEqual(test("I"), (3, (100, 128), Image._ENDIAN + 'i4', 51200))
+        self.assertEqual(test("I"), (3, (100, 128),
+                         Image._ENDIAN + 'i4', 51200))
         # FIXME: wrong?
-        self.assertEqual(test("F"), (3, (100, 128), Image._ENDIAN + 'f4', 51200))
+        self.assertEqual(test("F"), (3, (100, 128),
+                         Image._ENDIAN + 'f4', 51200))
 
         self.assertEqual(test("LA"), (3, (100, 128, 2), '|u1', 25600))
         self.assertEqual(test("RGB"), (3, (100, 128, 3), '|u1', 38400))

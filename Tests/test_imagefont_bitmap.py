@@ -19,7 +19,8 @@ class TestImageFontBitmap(PillowTestCase):
             font='Tests/fonts/DejaVuSans-bitmap.ttf', size=24)
         size_outline = font_outline.getsize(text)
         size_bitmap = font_bitmap.getsize(text)
-        size_final = max(size_outline[0], size_bitmap[0]), max(size_outline[1], size_bitmap[1])
+        size_final = (max(size_outline[0], size_bitmap[0]),
+                      max(size_outline[1], size_bitmap[1]))
         im_bitmap = Image.new('RGB', size_final, (255, 255, 255))
         im_outline = im_bitmap.copy()
         draw_bitmap = ImageDraw.Draw(im_bitmap)

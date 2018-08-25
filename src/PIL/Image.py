@@ -24,7 +24,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import VERSION, PILLOW_VERSION, _plugins
+# VERSION is deprecated and will be removed in Pillow 6.0.0.
+# PILLOW_VERSION is deprecated and will be removed after that.
+# Use __version__ instead.
+from . import VERSION, PILLOW_VERSION, __version__, _plugins
+from ._util import py3
 
 import logging
 import warnings
@@ -58,13 +62,13 @@ try:
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
     from . import _imaging as core
-    if PILLOW_VERSION != getattr(core, 'PILLOW_VERSION', None):
+    if __version__ != getattr(core, 'PILLOW_VERSION', None):
         raise ImportError("The _imaging extension was built for another "
                           "version of Pillow or PIL:\n"
                           "Core version: %s\n"
                           "Pillow version: %s" %
                           (getattr(core, 'PILLOW_VERSION', None),
-                           PILLOW_VERSION))
+                           __version__))
 
 except ImportError as v:
     core = _imaging_not_installed()
@@ -117,8 +121,14 @@ import struct
 import atexit
 
 # type stuff
-import collections
 import numbers
+try:
+    # Python 3
+    from collections.abc import Callable
+except ImportError:
+    # Python 2.7
+    from collections import Callable
+
 
 # works everywhere, win for pypy, not cpython
 USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
@@ -358,7 +368,7 @@ _initialized = 0
 
 
 def preinit():
-    "Explicitly load standard file format drivers."
+    """Explicitly load standard file format drivers."""
 
     global _initialized
     if _initialized >= 1:
@@ -568,7 +578,8 @@ class Image(object):
 
         This function is only required to close images that have not
         had their file read and closed by the
-        :py:meth:`~PIL.Image.Image.load` method.
+        :py:meth:`~PIL.Image.Image.load` method. See
+        :ref:`file-handling` for more information.
         """
         try:
             self.fp.close()
@@ -798,8 +809,10 @@ class Image(object):
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
         Image class automatically loads an opened image when it is
-        accessed for the first time. This method will close the file
-        associated with the image.
+        accessed for the first time.
+
+        This method will close the file associated with the image. See
+        :ref:`file-handling` for more information.
 
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
@@ -1062,7 +1075,7 @@ class Image(object):
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
-        coordinate.
+        coordinate. See :ref:`coordinate-system`.
 
         Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
@@ -1138,7 +1151,7 @@ class Image(object):
 
         self.load()
 
-        if isinstance(filter, collections.Callable):
+        if isinstance(filter, Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
             raise TypeError("filter argument should be ImageFilter.Filter " +
@@ -1169,8 +1182,9 @@ class Image(object):
         image.
 
         :returns: The bounding box is returned as a 4-tuple defining the
-           left, upper, right, and lower pixel coordinate. If the image
-           is completely empty, this method returns None.
+           left, upper, right, and lower pixel coordinate. See
+           :ref:`coordinate-system`. If the image is completely empty, this
+           method returns None.
 
         """
 
@@ -1260,10 +1274,10 @@ class Image(object):
 
         self.load()
         try:
-            if bytes is str:
-                return [i8(c) for c in self.im.getpalette()]
-            else:
+            if py3:
                 return list(self.im.getpalette())
+            else:
+                return [i8(c) for c in self.im.getpalette()]
         except ValueError:
             return None  # no palette
 
@@ -1271,7 +1285,8 @@ class Image(object):
         """
         Returns the pixel value at a given position.
 
-        :param xy: The coordinate, given as (x, y).
+        :param xy: The coordinate, given as (x, y). See
+           :ref:`coordinate-system`.
         :returns: The pixel value.  If the image is a multi-layer image,
            this method returns a tuple.
         """
@@ -1331,8 +1346,8 @@ class Image(object):
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
         left, upper, right, and lower pixel coordinate, or None (same as
-        (0, 0)).  If a 4-tuple is given, the size of the pasted image
-        must match the size of the region.
+        (0, 0)). See :ref:`coordinate-system`. If a 4-tuple is given, the size
+        of the pasted image must match the size of the region.
 
         If the modes don't match, the pasted image is converted to the mode of
         this image (see the :py:meth:`~PIL.Image.Image.convert` method for
@@ -1586,10 +1601,10 @@ class Image(object):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
             if not isinstance(data, bytes):
-                if bytes is str:
-                    data = "".join(chr(x) for x in data)
-                else:
+                if py3:
                     data = bytes(data)
+                else:
+                    data = "".join(chr(x) for x in data)
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "P"
         self.palette = palette
@@ -1612,7 +1627,8 @@ class Image(object):
         * :py:meth:`~PIL.Image.Image.putdata`
         * :py:mod:`~PIL.ImageDraw`
 
-        :param xy: The pixel coordinate, given as (x, y).
+        :param xy: The pixel coordinate, given as (x, y). See
+           :ref:`coordinate-system`.
         :param value: The pixel value.
         """
 
@@ -1749,7 +1765,7 @@ class Image(object):
         return self._new(self.im.resize(size, resample, box))
 
     def rotate(self, angle, resample=NEAREST, expand=0, center=None,
-               translate=None):
+               translate=None, fillcolor=None):
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
@@ -1771,6 +1787,7 @@ class Image(object):
         :param center: Optional center of rotation (a 2-tuple).  Origin is
            the upper left corner.  Default is the center of the image.
         :param translate: An optional post-rotate translation (a 2-tuple).
+        :param fillcolor: An optional color for area outside the rotated image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1851,7 +1868,7 @@ class Image(object):
                                              matrix)
             w, h = nw, nh
 
-        return self.transform((w, h), AFFINE, matrix, resample)
+        return self.transform((w, h), AFFINE, matrix, resample, fillcolor=fillcolor)
 
     def save(self, fp, format=None, **params):
         """
@@ -1875,7 +1892,7 @@ class Image(object):
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param options: Extra parameters to the image writer.
+        :param params: Extra parameters to the image writer.
         :returns: None
         :exception KeyError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
@@ -1898,9 +1915,7 @@ class Image(object):
         # may mutate self!
         self.load()
 
-        save_all = False
-        if 'save_all' in params:
-            save_all = params.pop('save_all')
+        save_all = params.pop('save_all', False)
         self.encoderinfo = params
         self.encoderconfig = ()
 
@@ -2096,6 +2111,20 @@ class Image(object):
           :py:attr:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
           :py:attr:`PIL.Image.MESH` (map a number of source quadrilaterals
           in one operation).
+
+          It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
+          object::
+            class Example(Image.ImageTransformHandler):
+                def transform(size, method, data, resample, fill=1):
+                    # Return result
+
+          It may also be an object with a :py:meth:`~method.getdata` method
+          that returns a tuple supplying new **method** and **data** values::
+            class Example(object):
+                def getdata(self):
+                    method = Image.EXTENT
+                    data = (0, 0, 100, 100)
+                    return method, data
         :param data: Extra data to the transformation method.
         :param resample: Optional resampling filter.  It can be one of
            :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
@@ -2103,6 +2132,9 @@ class Image(object):
            environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+        :param fill: If **method** is an
+          :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
+          the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the transform
            in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -2110,11 +2142,11 @@ class Image(object):
 
         if self.mode == 'LA':
             return self.convert('La').transform(
-                size, method, data, resample, fill).convert('LA')
+                size, method, data, resample, fill, fillcolor).convert('LA')
 
         if self.mode == 'RGBA':
             return self.convert('RGBa').transform(
-                size, method, data, resample, fill).convert('RGBA')
+                size, method, data, resample, fill, fillcolor).convert('RGBA')
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
@@ -2245,7 +2277,7 @@ class ImageTransformHandler(object):
 # Debugging
 
 def _wedge():
-    "Create greyscale wedge (for debugging only)"
+    """Create greyscale wedge (for debugging only)"""
 
     return Image()._new(core.wedge("L"))
 
@@ -2408,8 +2440,19 @@ def fromarray(obj, mode=None):
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
 
-    If obj is not contiguous, then the tobytes method is called
+    If **obj** is not contiguous, then the tobytes method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
+
+    If you have an image in NumPy::
+
+      from PIL import Image
+      import numpy as np
+      im = Image.open('hopper.jpg')
+      a = numpy.asarray(im)
+
+    Then this can be used to convert it to a Pillow image::
+
+      im = Image.fromarray(a)
 
     :param obj: Object with array interface
     :param mode: Mode to use (will be determined from type if None)
@@ -2522,7 +2565,7 @@ def open(fp, mode="r"):
     the file remains open and the actual image data is not read from
     the file until you try to process the data (or call the
     :py:meth:`~PIL.Image.Image.load` method).  See
-    :py:func:`~PIL.Image.new`.
+    :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
     :param fp: A filename (string), pathlib.Path object or a file object.
        The file object must implement :py:meth:`~file.read`,

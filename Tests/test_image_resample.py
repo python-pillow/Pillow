@@ -245,8 +245,8 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             self.assertEqual(256, len(used_colors),
-                            'All colors should present in resized image. '
-                            'Only {} on {} line.'.format(len(used_colors), y))
+                             'All colors should present in resized image. '
+                             'Only {} on {} line.'.format(len(used_colors), y))
 
     @unittest.skip("current implementation isn't precise enough")
     def test_levels_rgba(self):
@@ -288,10 +288,14 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
     def test_dirty_pixels_rgba(self):
         case = self.make_dirty_case('RGBA', (255, 255, 0, 128), (0, 0, 255, 0))
         self.run_dirty_case(case.resize((20, 20), Image.BOX), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.HAMMING), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC), (255, 255, 0))
-        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BILINEAR),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.HAMMING),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.BICUBIC),
+                            (255, 255, 0))
+        self.run_dirty_case(case.resize((20, 20), Image.LANCZOS),
+                            (255, 255, 0))
 
     def test_dirty_pixels_la(self):
         case = self.make_dirty_case('LA', (255, 128), (0, 0))
@@ -367,40 +371,45 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         im = Image.new('RGBA', (1280, 1280), (0x20, 0x40, 0x60, 0xff))
         histogram = im.resize((256, 256), Image.BICUBIC).histogram()
 
-        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)  # first channel
-        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)  # second channel
-        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)  # third channel
-        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)  # fourth channel
+        # first channel
+        self.assertEqual(histogram[0x100 * 0 + 0x20], 0x10000)
+        # second channel
+        self.assertEqual(histogram[0x100 * 1 + 0x40], 0x10000)
+        # third channel
+        self.assertEqual(histogram[0x100 * 2 + 0x60], 0x10000)
+        # fourth channel
+        self.assertEqual(histogram[0x100 * 3 + 0xff], 0x10000)
 
 
 class CoreResampleBoxTest(PillowTestCase):
     def test_wrong_arguments(self):
         im = hopper()
-        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS):
+        for resample in (Image.NEAREST, Image.BOX, Image.BILINEAR,
+                         Image.HAMMING, Image.BICUBIC, Image.LANCZOS):
             im.resize((32, 32), resample, (0, 0, im.width, im.height))
             im.resize((32, 32), resample, (20, 20, im.width, im.height))
             im.resize((32, 32), resample, (20, 20, 20, 100))
             im.resize((32, 32), resample, (20, 20, 100, 20))
 
-            with self.assertRaisesRegexp(TypeError, "must be sequence of length 4"):
+            with self.assertRaisesRegex(TypeError,
+                                        "must be sequence of length 4"):
                 im.resize((32, 32), resample, (im.width, im.height))
 
-            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+            with self.assertRaisesRegex(ValueError, "can't be negative"):
                 im.resize((32, 32), resample, (-20, 20, 100, 100))
-            with self.assertRaisesRegexp(ValueError, "can't be negative"):
+            with self.assertRaisesRegex(ValueError, "can't be negative"):
                 im.resize((32, 32), resample, (20, -20, 100, 100))
 
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20.1, 20, 20, 100))
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20, 20.1, 100, 20))
-            with self.assertRaisesRegexp(ValueError, "can't be empty"):
+            with self.assertRaisesRegex(ValueError, "can't be empty"):
                 im.resize((32, 32), resample, (20.1, 20.1, 20, 20))
 
-            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+            with self.assertRaisesRegex(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width + 1, im.height))
-            with self.assertRaisesRegexp(ValueError, "can't exceed"):
+            with self.assertRaisesRegex(ValueError, "can't exceed"):
                 im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
 
     def resize_tiled(self, im, dst_size, xtiles, ytiles):
@@ -447,7 +456,7 @@ class CoreResampleBoxTest(PillowTestCase):
 
         # error with box should be much smaller than without
         self.assert_image_similar(reference, with_box, 6)
-        with self.assertRaisesRegexp(AssertionError, "difference 29\."):
+        with self.assertRaisesRegex(AssertionError, "difference 29\."):
             self.assert_image_similar(reference, without_box, 5)
 
     def test_formats(self):
@@ -490,7 +499,7 @@ class CoreResampleBoxTest(PillowTestCase):
             try:
                 res = im.resize(size, Image.LANCZOS, box)
                 self.assertEqual(res.size, size)
-                with self.assertRaisesRegexp(AssertionError, "difference \d"):
+                with self.assertRaisesRegex(AssertionError, "difference \d"):
                     # check that the difference at least that much
                     self.assert_image_similar(res, im.crop(box), 20)
             except AssertionError:

@@ -434,7 +434,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     for (i = 0; i < n; i++) {
-        /* This causes that the pixels of horizontal edges are drawn twice :(
+        /* This causes the pixels of horizontal edges to be drawn twice :(
          * but without it there are inconsistencies in ellipses */
         if (e[i].ymin == e[i].ymax) {
             (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
@@ -732,6 +732,29 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink,
 #define CHORD 1
 #define PIESLICE 2
 
+static void
+ellipsePoint(int cx, int cy, int w, int h,
+             float i, int *x, int *y)
+{
+    float i_cos, i_sin;
+    float x_f, y_f;
+    double modf_int;
+    i_cos = cos(i*M_PI/180);
+    i_sin = sin(i*M_PI/180);
+    x_f = (i_cos * w/2) + cx;
+    y_f = (i_sin * h/2) + cy;
+    if (modf(x_f, &modf_int) == 0.5) {
+        *x = i_cos > 0 ? FLOOR(x_f) : CEIL(x_f);
+    } else {
+        *x = FLOOR(x_f + 0.5);
+    }
+    if (modf(y_f, &modf_int) == 0.5) {
+        *y = i_sin > 0 ? FLOOR(y_f) : CEIL(y_f);
+    } else {
+        *y = FLOOR(y_f + 0.5);
+    }
+}
+
 static int
 ellipse(Imaging im, int x0, int y0, int x1, int y1,
         float start, float end, const void* ink_, int fill,
@@ -781,8 +804,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
             if (i > end) {
                 i = end;
             }
-            x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
-            y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
+            ellipsePoint(cx, cy, w, h, i, &x, &y);
             if (i != start)
                 add_edge(&e[n++], lx, ly, x, y);
             else
@@ -812,8 +834,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
             if (i > end) {
                 i = end;
             }
-            x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
-            y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
+            ellipsePoint(cx, cy, w, h, i, &x, &y);
             if (i != start)
                 draw->line(im, lx, ly, x, y, ink);
             else
@@ -871,8 +892,6 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
    portions of the arrow api on top of the Edge structure.  the
    semantics are ok, except that "curve" flattens the bezier curves by
    itself */
-
-#if 1 /* ARROW_GRAPHICS */
 
 struct ImagingOutlineInstance {
 
@@ -1102,5 +1121,3 @@ ImagingDrawOutline(Imaging im, ImagingOutline outline, const void* ink_,
 
     return 0;
 }
-
-#endif

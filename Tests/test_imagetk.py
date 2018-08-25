@@ -1,10 +1,14 @@
 from helper import unittest, PillowTestCase, hopper
 from PIL import Image
+from PIL._util import py3
 
 
 try:
     from PIL import ImageTk
-    import Tkinter as tk
+    if py3:
+        import tkinter as tk
+    else:
+        import Tkinter as tk
     dir(ImageTk)
     HAS_TK = True
 except (OSError, ImportError) as v:

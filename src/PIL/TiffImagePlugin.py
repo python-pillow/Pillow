@@ -43,8 +43,8 @@ from __future__ import division, print_function
 
 from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
+from ._util import py3
 
-import collections
 from fractions import Fraction
 from numbers import Number, Rational
 
@@ -56,6 +56,13 @@ import sys
 import warnings
 
 from .TiffTags import TYPES
+
+try:
+    # Python 3
+    from collections.abc import MutableMapping
+except ImportError:
+    # Python 2.7
+    from collections import MutableMapping
 
 
 __version__ = "1.3.5"
@@ -397,7 +404,7 @@ class IFDRational(Rational):
     __round__ = _delegate('__round__')
 
 
-class ImageFileDirectory_v2(collections.MutableMapping):
+class ImageFileDirectory_v2(MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
@@ -423,7 +430,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         * self.tagtype = {}
 
           * Key: numerical tiff tag number
-          * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
+          * Value: integer corresponding to the data type from
+                   ~PIL.TiffTags.TYPES`
 
     .. versionadded:: 3.0.0
     """
@@ -519,7 +527,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
-    if bytes is str:
+    if not py3:
         def has_key(self, tag):
             return tag in self
 
@@ -528,7 +536,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
-        if bytes is str:
+        if not py3:
             basetypes += unicode,
 
         info = TiffTags.lookup(tag)
@@ -549,14 +557,14 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = 12
                 else:
-                    if bytes is str:
-                        # Never treat data as binary by default on Python 2.
-                        self.tagtype[tag] = 2
-                    else:
+                    if py3:
                         if all(isinstance(v, str) for v in values):
                             self.tagtype[tag] = 2
+                    else:
+                        # Never treat data as binary by default on Python 2.
+                        self.tagtype[tag] = 2
 
-        if self.tagtype[tag] == 7 and bytes is not str:
+        if self.tagtype[tag] == 7 and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
 
@@ -569,8 +577,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if ((info.length == 1) or
-            (info.length is None and len(values) == 1 and not legacy_api)):
+        if (info.length == 1) or \
+           (info.length is None and len(values) == 1 and not legacy_api):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
                 values = values,
@@ -1237,7 +1245,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["resolution"] = xres, yres
 
         # build tile descriptors
-        x = y = l = 0
+        x = y = layer = 0
         self.tile = []
         self.use_load_libtiff = False
         if STRIPOFFSETS in self.tag_v2:
@@ -1297,7 +1305,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             else:
                 for i, offset in enumerate(offsets):
-                    a = self._decoder(rawmode, l, i)
+                    a = self._decoder(rawmode, layer, i)
                     self.tile.append(
                         (self._compression,
                             (0, min(y, ysize), w, min(y+h, ysize)),
@@ -1307,7 +1315,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     y = y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                     a = None
         elif TILEOFFSETS in self.tag_v2:
             # tiled image
@@ -1316,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
             a = None
             for o in self.tag_v2[TILEOFFSETS]:
                 if not a:
-                    a = self._decoder(rawmode, l)
+                    a = self._decoder(rawmode, layer)
                 # FIXME: this doesn't work if the image size
                 # is not a multiple of the tile size...
                 self.tile.append(
@@ -1328,7 +1336,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
+                        layer += 1
                         a = None
         else:
             if DEBUG:
@@ -1503,7 +1511,7 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, unicode if bytes is str else str):
+                if isinstance(value, str if py3 else unicode):
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)

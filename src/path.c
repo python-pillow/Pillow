@@ -571,7 +571,7 @@ path_subscript(PyPathObject* self, PyObject* item) {
     else {
         PyErr_Format(PyExc_TypeError,
                      "Path indices must be integers, not %.200s",
-                     Py_TYPE(&item)->tp_name);
+                     Py_TYPE(item)->tp_name);
         return NULL;
     }
 }

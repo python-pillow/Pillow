@@ -17,27 +17,35 @@
 #
 
 from . import Image
-from ._util import isPath
+from ._util import isPath, py3
 from io import BytesIO
+import sys
 
-qt_is_installed = True
-qt_version = None
-try:
-    from PyQt5.QtGui import QImage, qRgba, QPixmap
-    from PyQt5.QtCore import QBuffer, QIODevice
-    qt_version = '5'
-except (ImportError, RuntimeError):
+qt_versions = [
+    ['5', 'PyQt5'],
+    ['4', 'PyQt4'],
+    ['side', 'PySide']
+]
+# If a version has already been imported, attempt it first
+qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
+for qt_version, qt_module in qt_versions:
     try:
-        from PyQt4.QtGui import QImage, qRgba, QPixmap
-        from PyQt4.QtCore import QBuffer, QIODevice
-        qt_version = '4'
-    except (ImportError, RuntimeError):
-        try:
+        if qt_module == 'PyQt5':
+            from PyQt5.QtGui import QImage, qRgba, QPixmap
+            from PyQt5.QtCore import QBuffer, QIODevice
+        elif qt_module == 'PyQt4':
+            from PyQt4.QtGui import QImage, qRgba, QPixmap
+            from PyQt4.QtCore import QBuffer, QIODevice
+        elif qt_module == 'PySide':
             from PySide.QtGui import QImage, qRgba, QPixmap
             from PySide.QtCore import QBuffer, QIODevice
-            qt_version = 'side'
-        except ImportError:
-            qt_is_installed = False
+    except (ImportError, RuntimeError):
+        continue
+    qt_is_installed = True
+    break
+else:
+    qt_is_installed = False
+    qt_version = None
 
 
 def rgb(r, g, b, a=255):
@@ -111,7 +119,8 @@ def align8to32(bytes, width, mode):
 
     new_data = []
     for i in range(len(bytes) // bytes_per_line):
-        new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line] + b'\x00' * extra_padding)
+        new_data.append(bytes[i*bytes_per_line:(i+1)*bytes_per_line]
+                        + b'\x00' * extra_padding)
 
     return b''.join(new_data)
 
@@ -123,10 +132,10 @@ def _toqclass_helper(im):
     # handle filename, if given instead of image name
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
-        if str is bytes:
-            im = unicode(im.toUtf8(), "utf-8")
-        else:
+        if py3:
             im = str(im.toUtf8(), "utf-8")
+        else:
+            im = unicode(im.toUtf8(), "utf-8")
     if isPath(im):
         im = Image.open(im)
 

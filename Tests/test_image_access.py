@@ -294,8 +294,9 @@ int main(int argc, char* argv[])
         compiler = ccompiler.new_compiler()
         compiler.add_include_dir(sysconfig.get_python_inc())
 
-        libdir = sysconfig.get_config_var('LIBDIR') or sysconfig.get_python_inc().replace('include', 'libs')
-        print (libdir)
+        libdir = (sysconfig.get_config_var('LIBDIR') or
+                  sysconfig.get_python_inc().replace('include', 'libs'))
+        print(libdir)
         compiler.add_library_dir(libdir)
         objects = compiler.compile(['embed_pil.c'])
         compiler.link_executable(objects, 'embed_pil')
