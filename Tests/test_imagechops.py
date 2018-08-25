@@ -57,6 +57,28 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
         self.assertEqual(new.getpixel((50, 50)), ORANGE)
 
+    def test_add_scale_offset(self):
+        # Arrange
+        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+
+        # Act
+        new = ImageChops.add(im1, im2, scale=2.5, offset=100)
+
+        # Assert
+        self.assertEqual(new.getbbox(), (0, 0, 100, 100))
+        self.assertEqual(new.getpixel((50, 50)), (202, 151, 100))
+
+    def test_add_clip(self):
+        # Arrange
+        im = hopper()
+
+        # Act
+        new = ImageChops.add(im, im)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (255, 255, 254))
+
     def test_add_modulo(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
@@ -68,6 +90,16 @@ class TestImageChops(PillowTestCase):
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
         self.assertEqual(new.getpixel((50, 50)), ORANGE)
+
+    def test_add_modulo_no_clip(self):
+        # Arrange
+        im = hopper()
+
+        # Act
+        new = ImageChops.add_modulo(im, im)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (224, 76, 254))
 
     def test_blend(self):
         # Arrange
@@ -93,7 +125,7 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getpixel((0, 0)), GREY)
         self.assertEqual(new.getpixel((19, 9)), GREY)
 
-    def test_darker(self):
+    def test_darker_image(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
         im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
@@ -103,6 +135,17 @@ class TestImageChops(PillowTestCase):
 
         # Assert
         self.assert_image_equal(new, im2)
+
+    def test_darker_pixel(self):
+        # Arrange
+        im1 = hopper()
+        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+
+        # Act
+        new = ImageChops.darker(im1, im2)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (240, 166, 0))
 
     def test_difference(self):
         # Arrange
@@ -114,6 +157,17 @@ class TestImageChops(PillowTestCase):
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
+
+    def test_difference_pixel(self):
+        # Arrange
+        im1 = hopper()
+        im2 = Image.open("Tests/images/imagedraw_polygon_kite_RGB.png")
+
+        # Act
+        new = ImageChops.difference(im1, im2)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (240, 166, 128))
 
     def test_duplicate(self):
         # Arrange
@@ -137,16 +191,27 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getpixel((0, 0)), WHITE)
         self.assertEqual(new.getpixel((50, 50)), CYAN)
 
-    def test_lighter(self):
+    def test_lighter_image(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
         im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
 
         # Act
-        new = ImageChops.darker(im1, im2)
+        new = ImageChops.lighter(im1, im2)
 
         # Assert
-        self.assert_image_equal(new, im2)
+        self.assert_image_equal(new, im1)
+
+    def test_lighter_pixel(self):
+        # Arrange
+        im1 = hopper()
+        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+
+        # Act
+        new = ImageChops.lighter(im1, im2)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (255, 255, 127))
 
     def test_multiply_black(self):
         """If you multiply an image with a solid black image,
@@ -201,6 +266,10 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getpixel((50, 50)), BLACK)
         self.assertEqual(new.getpixel((50+xoffset, 50+yoffset)), DARK_GREEN)
 
+        # Test no yoffset
+        self.assertEqual(ImageChops.offset(im, xoffset),
+                         ImageChops.offset(im, xoffset, xoffset))
+
     def test_screen(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
@@ -226,6 +295,29 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getpixel((50, 50)), GREEN)
         self.assertEqual(new.getpixel((50, 51)), BLACK)
 
+    def test_subtract_scale_offset(self):
+        # Arrange
+        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+
+        # Act
+        new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
+
+        # Assert
+        self.assertEqual(new.getbbox(), (0, 0, 100, 100))
+        self.assertEqual(new.getpixel((50, 50)), (100, 202, 100))
+
+    def test_subtract_clip(self):
+        # Arrange
+        im1 = hopper()
+        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+
+        # Act
+        new = ImageChops.subtract(im1, im2)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (0, 0, 127))
+
     def test_subtract_modulo(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
@@ -238,6 +330,17 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getbbox(), (25, 50, 76, 76))
         self.assertEqual(new.getpixel((50, 50)), GREEN)
         self.assertEqual(new.getpixel((50, 51)), BLACK)
+
+    def test_subtract_modulo_no_clip(self):
+        # Arrange
+        im1 = hopper()
+        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+
+        # Act
+        new = ImageChops.subtract_modulo(im1, im2)
+
+        # Assert
+        self.assertEqual(new.getpixel((50, 50)), (241, 167, 127))
 
     def test_logical(self):
 
