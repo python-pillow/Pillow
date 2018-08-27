@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Remove unused draw.draw_line, draw.draw_point and font.getabc methods #3232
+  [hugovk]
+
 - Tests: Added ImageFilter tests #3295
   [radarhere]
 
