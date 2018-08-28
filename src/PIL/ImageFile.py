@@ -75,7 +75,7 @@ def _tilesort(t):
 class ImageFile(Image.Image):
     "Base class for image file format handlers."
 
-    def __init__(self, fp=None, filename=None):
+    def __init__(self, fp=None, filename=None, format_args=None):
         Image.Image.__init__(self)
 
         self._min_frame = 0
@@ -85,6 +85,10 @@ class ImageFile(Image.Image):
 
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
+
+        if format_args is None:
+            format_args = {}
+        self.formats_args = format_args
 
         if isPath(fp):
             # filename
