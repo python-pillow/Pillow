@@ -4,11 +4,12 @@ Pillow Wheel Builder
 This repository creates wheels for tagged versions of Pillow::
 
     git submodule init
-    git submodule update
+    git submodule update Pillow
     git add Pillow
     cd Pillow
     git checkout <VERSION>
     cd ..
+    git add Pillow
     git commit -a -m "<VERSION> wheels"
     git push
 
