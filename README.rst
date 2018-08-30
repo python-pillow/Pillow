@@ -9,8 +9,7 @@ This repository creates wheels for tagged versions of Pillow::
     cd Pillow
     git checkout <VERSION>
     cd ..
-    git add Pillow
-    git commit -a -m "<VERSION> wheels"
+    git commit -m "Pillow -> <VERSION>" Pillow
     git push
 
 .. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg
