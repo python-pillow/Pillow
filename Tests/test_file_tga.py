@@ -53,10 +53,10 @@ class TestFileTga(PillowTestCase):
                     # Generate a new test name every time so the
                     # test will not fail with permission error
                     # on Windows.
-                    test_file = self.tempfile("temp.tga")
+                    out = self.tempfile("temp.tga")
 
-                    original_im.save(test_file, rle=rle)
-                    saved_im = Image.open(test_file)
+                    original_im.save(out, rle=rle)
+                    saved_im = Image.open(out)
                     if rle:
                         self.assertEqual(
                             saved_im.info["compression"],
@@ -95,33 +95,85 @@ class TestFileTga(PillowTestCase):
         test_file = "Tests/images/tga_id_field.tga"
         im = Image.open(test_file)
 
-        test_file = self.tempfile("temp.tga")
+        out = self.tempfile("temp.tga")
 
         # Save
-        im.save(test_file)
-        test_im = Image.open(test_file)
+        im.save(out)
+        test_im = Image.open(out)
         self.assertEqual(test_im.size, (100, 100))
+        self.assertEqual(test_im.info["id_section"], im.info["id_section"])
 
         # RGBA save
-        im.convert("RGBA").save(test_file)
-        test_im = Image.open(test_file)
+        im.convert("RGBA").save(out)
+        test_im = Image.open(out)
         self.assertEqual(test_im.size, (100, 100))
+
+    def test_save_id_section(self):
+        test_file = "Tests/images/rgb32rle.tga"
+        im = Image.open(test_file)
+
+        out = self.tempfile("temp.tga")
+
+        # Check there is no id section
+        im.save(out)
+        test_im = Image.open(out)
+        self.assertNotIn("id_section", test_im.info)
+
+        # Save with custom id section
+        im.save(out, id_section=b"Test content")
+        test_im = Image.open(out)
+        self.assertEqual(test_im.info["id_section"], b"Test content")
+
+        test_file = "Tests/images/tga_id_field.tga"
+        im = Image.open(test_file)
+
+        # Save with no id section
+        im.save(out, id_section="")
+        test_im = Image.open(out)
+        self.assertNotIn("id_section", test_im.info)
+
+    def test_save_orientation(self):
+        test_file = "Tests/images/rgb32rle.tga"
+        im = Image.open(test_file)
+        self.assertEqual(im.info["orientation"], -1)
+
+        out = self.tempfile("temp.tga")
+
+        im.save(out, orientation=1)
+        test_im = Image.open(out)
+        self.assertEqual(test_im.info["orientation"], 1)
 
     def test_save_rle(self):
         test_file = "Tests/images/rgb32rle.tga"
         im = Image.open(test_file)
+        self.assertEqual(im.info["compression"], "tga_rle")
 
-        test_file = self.tempfile("temp.tga")
+        out = self.tempfile("temp.tga")
 
         # Save
-        im.save(test_file)
-        test_im = Image.open(test_file)
+        im.save(out)
+        test_im = Image.open(out)
         self.assertEqual(test_im.size, (199, 199))
+        self.assertEqual(test_im.info["compression"], "tga_rle")
+
+        # Save without compression
+        im.save(out, compression=None)
+        test_im = Image.open(out)
+        self.assertNotIn("compression", test_im.info)
 
         # RGBA save
-        im.convert("RGBA").save(test_file)
-        test_im = Image.open(test_file)
+        im.convert("RGBA").save(out)
+        test_im = Image.open(out)
         self.assertEqual(test_im.size, (199, 199))
+
+        test_file = "Tests/images/tga_id_field.tga"
+        im = Image.open(test_file)
+        self.assertNotIn("compression", im.info)
+
+        # Save with compression
+        im.save(out, compression="tga_rle")
+        test_im = Image.open(out)
+        self.assertEqual(test_im.info["compression"], "tga_rle")
 
     def test_save_l_transparency(self):
         # There are 559 transparent pixels in la.tga.
@@ -133,10 +185,10 @@ class TestFileTga(PillowTestCase):
         self.assertEqual(
             im.getchannel("A").getcolors()[0][0], num_transparent)
 
-        test_file = self.tempfile("temp.tga")
-        im.save(test_file)
+        out = self.tempfile("temp.tga")
+        im.save(out)
 
-        test_im = Image.open(test_file)
+        test_im = Image.open(out)
         self.assertEqual(test_im.mode, "LA")
         self.assertEqual(
             test_im.getchannel("A").getcolors()[0][0], num_transparent)

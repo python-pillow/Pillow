@@ -151,10 +151,18 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
 
-    rle = im.encoderinfo.get("rle", False)
-
+    if "rle" in im.encoderinfo:
+        rle = im.encoderinfo["rle"]
+    else:
+        compression = im.encoderinfo.get("compression",
+                                         im.info.get("compression"))
+        rle = compression == "tga_rle"
     if rle:
         imagetype += 8
+
+    id_section = im.encoderinfo.get("id_section",
+                                    im.info.get("id_section", ""))
+    idlen = len(id_section)
 
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
@@ -166,11 +174,12 @@ def _save(im, fp, filename):
     else:
         flags = 0
 
-    orientation = im.info.get("orientation", -1)
+    orientation = im.encoderinfo.get("orientation",
+                                     im.info.get("orientation", -1))
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(b"\000" +
+    fp.write(o8(idlen) +
              o8(colormaptype) +
              o8(imagetype) +
              o16(colormapfirst) +
@@ -182,6 +191,9 @@ def _save(im, fp, filename):
              o16(im.size[1]) +
              o8(bits) +
              o8(flags))
+
+    if id_section:
+        fp.write(id_section)
 
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))
