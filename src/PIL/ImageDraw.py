@@ -358,7 +358,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                 for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
                     try:
                         p = pixel[s, t]
-                    except IndexError:
+                    except (ValueError, IndexError):
                         pass
                     else:
                         if _color_diff(p, background) <= thresh:
@@ -372,7 +372,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                 for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
                     try:
                         p = pixel[s, t]
-                    except IndexError:
+                    except (ValueError, IndexError):
                         pass
                     else:
                         if p != value and p != border:
