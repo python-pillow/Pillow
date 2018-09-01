@@ -207,7 +207,7 @@ Methods
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
-    :param width: The outer line width, in pixels.
+    :param width: The line width, in pixels.
 
         .. versionadded:: 5.2.0
 
