@@ -12,7 +12,7 @@ class TestFileTar(PillowTestCase):
 
     def setUp(self):
         if "zip_decoder" not in codecs and "jpeg_decoder" not in codecs:
-            self.skipTest("neither jpeg nor zip support not available")
+            self.skipTest("neither jpeg nor zip support available")
 
     def test_sanity(self):
         if "zip_decoder" in codecs:

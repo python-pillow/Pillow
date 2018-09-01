@@ -366,6 +366,11 @@ class TestImageDraw(PillowTestCase):
         ImageDraw.floodfill(im, (W, H), red)
         self.assert_image_equal(im, im_floodfill)
 
+        # Test filling at the edge of an image
+        im = Image.new("RGB", (1, 1))
+        ImageDraw.floodfill(im, (0, 0), red)
+        self.assert_image_equal(im, Image.new("RGB", (1, 1), red))
+
     def test_floodfill_border(self):
         # floodfill() is experimental
 

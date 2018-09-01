@@ -353,42 +353,27 @@ def floodfill(image, xy, value, border=None, thresh=0):
         return  # seed point outside image
     edge = {(x, y)}
     full_edge = set()  # use a set to record each unique pixel processed
-    if border is None:
-        while edge:
-            new_edge = set()
-            for (x, y) in edge:  # 4 adjacent method
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    if (s, t) in full_edge:
-                        continue  # if already processed, skip
-                    try:
-                        p = pixel[s, t]
-                    except IndexError:
-                        pass
+    while edge:
+        new_edge = set()
+        for (x, y) in edge:  # 4 adjacent method
+            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                if (s, t) in full_edge:
+                    continue  # if already processed, skip
+                try:
+                    p = pixel[s, t]
+                except (ValueError, IndexError):
+                    pass
+                else:
+                    if border is None:
+                        fill = _color_diff(p, background) <= thresh
                     else:
-                        if _color_diff(p, background) <= thresh:
-                            pixel[s, t] = value
-                            new_edge.add((s, t))
-                            full_edge.add((s, t))
-            full_edge = edge  # do not record useless pixels to reduce memory consumption
-            edge = new_edge
-    else:
-        while edge:
-            new_edge = set()
-            for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    if (s, t) in full_edge:
-                        continue
-                    try:
-                        p = pixel[s, t]
-                    except IndexError:
-                        pass
-                    else:
-                        if p != value and p != border:
-                            pixel[s, t] = value
-                            new_edge.add((s, t))
-                            full_edge.add((s, t))
-            full_edge = edge
-            edge = new_edge
+                        fill = p != value and p != border
+                    if fill:
+                        pixel[s, t] = value
+                        new_edge.add((s, t))
+                        full_edge.add((s, t))
+        full_edge = edge  # do not record useless pixels to reduce memory consumption
+        edge = new_edge
 
 
 def _color_diff(rgb1, rgb2):

@@ -178,7 +178,7 @@ Many of Pillow's features require external libraries:
     shaping (using HarfBuzz), and proper script itemization. As a
     result, Raqm can support most writing systems covered by Unicode.
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
-    FriBiDi, make sure that you install them before install libraqm
+    FriBiDi, make sure that you install them before installing libraqm
     if not available as package in your system.
   * setting text direction or font features is not supported without
     libraqm.

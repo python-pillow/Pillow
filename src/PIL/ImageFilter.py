@@ -33,7 +33,14 @@ class MultibandFilter(Filter):
     pass
 
 
-class Kernel(MultibandFilter):
+class BuiltinFilter(MultibandFilter):
+    def filter(self, image):
+        if image.mode == "P":
+            raise ValueError("cannot filter palette images")
+        return image.filter(*self.filterargs)
+
+
+class Kernel(BuiltinFilter):
     """
     Create a convolution kernel.  The current version only
     supports 3x3 and 5x5 integer and floating point kernels.
@@ -59,16 +66,6 @@ class Kernel(MultibandFilter):
         if size[0] * size[1] != len(kernel):
             raise ValueError("not enough coefficients in kernel")
         self.filterargs = size, scale, offset, kernel
-
-    def filter(self, image):
-        if image.mode == "P":
-            raise ValueError("cannot filter palette images")
-        return image.filter(*self.filterargs)
-
-
-class BuiltinFilter(Kernel):
-    def __init__(self):
-        pass
 
 
 class RankFilter(Filter):

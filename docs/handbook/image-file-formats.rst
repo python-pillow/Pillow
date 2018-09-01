@@ -529,8 +529,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 .. note::
 
     To enable PNG support, you need to build and install the ZLIB compression
-    library before building the Python Imaging Library. See the installation
-    documentation for details.
+    library before building the Python Imaging Library. See the `installation
+    documentation <../installation.html>`_ for details.
 
 PPM
 ^^^

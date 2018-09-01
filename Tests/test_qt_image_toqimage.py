@@ -25,7 +25,6 @@ if ImageQt.qt_is_installed:
 class TestToQImage(PillowQtTestCase, PillowTestCase):
 
     def test_sanity(self):
-        PillowQtTestCase.setUp(self)
         for mode in ('RGB', 'RGBA', 'L', 'P', '1'):
             src = hopper(mode)
             data = ImageQt.toqimage(src)
@@ -61,8 +60,6 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             self.assert_image_equal(reloaded, src)
 
     def test_segfault(self):
-        PillowQtTestCase.setUp(self)
-
         app = QApplication([])
         ex = Example()
         assert(app)  # Silence warning

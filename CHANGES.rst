@@ -5,6 +5,27 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Changed ImageFilter.Kernel to subclass ImageFilter.BuiltinFilter, instead of the other way around #3273
+  [radarhere]
+
+- Remove unused draw.draw_line, draw.draw_point and font.getabc methods #3232
+  [hugovk]
+
+- Tests: Added ImageFilter tests #3295
+  [radarhere]
+
+- Tests: Added ImageChops tests #3230
+  [hugovk, radarhere]
+
+- AppVeyor: Download lib if not present in pillow-depends #3316
+  [radarhere]
+
+- Travis CI: Add Python 3.7 and Xenial #3234
+  [hugovk]
+
+- Docs: Added documentation for NumPy conversion #3301
+  [radarhere]
+
 - Depends: Update libimagequant to 2.12.1 #3281
   [radarhere]
 

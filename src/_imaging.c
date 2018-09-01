@@ -2698,22 +2698,6 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
 }
 
 static PyObject*
-_draw_line(ImagingDrawObject* self, PyObject* args)
-{
-    int x0, y0, x1, y1;
-    int ink;
-    if (!PyArg_ParseTuple(args, "(ii)(ii)i", &x0, &y0, &x1, &y1, &ink))
-        return NULL;
-
-    if (ImagingDrawLine(self->image->image, x0, y0, x1, y1,
-                        &ink, self->blend) < 0)
-        return NULL;
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject*
 _draw_lines(ImagingDrawObject* self, PyObject* args)
 {
     double *xy;
@@ -2761,21 +2745,6 @@ _draw_lines(ImagingDrawObject* self, PyObject* args)
     }
 
     free(xy);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject*
-_draw_point(ImagingDrawObject* self, PyObject* args)
-{
-    int x, y;
-    int ink;
-    if (!PyArg_ParseTuple(args, "(ii)i", &x, &y, &ink))
-        return NULL;
-
-    if (ImagingDrawPoint(self->image->image, x, y, &ink, self->blend) < 0)
-        return NULL;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2961,14 +2930,12 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
 static struct PyMethodDef _draw_methods[] = {
 #ifdef WITH_IMAGEDRAW
     /* Graphics (ImageDraw) */
-    {"draw_line", (PyCFunction)_draw_line, 1},
     {"draw_lines", (PyCFunction)_draw_lines, 1},
 #ifdef WITH_ARROW
     {"draw_outline", (PyCFunction)_draw_outline, 1},
 #endif
     {"draw_polygon", (PyCFunction)_draw_polygon, 1},
     {"draw_rectangle", (PyCFunction)_draw_rectangle, 1},
-    {"draw_point", (PyCFunction)_draw_point, 1},
     {"draw_points", (PyCFunction)_draw_points, 1},
     {"draw_arc", (PyCFunction)_draw_arc, 1},
     {"draw_bitmap", (PyCFunction)_draw_bitmap, 1},

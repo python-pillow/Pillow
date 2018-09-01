@@ -89,12 +89,12 @@ Released as needed privately to individual vendors for critical security-related
     $ git clone https://github.com/python-pillow/pillow-wheels
     $ cd pillow-wheels
     $ git submodule init
-    $ git submodule update
+    $ git submodule update Pillow
     $ cd Pillow
     $ git fetch --all
     $ git checkout [[release tag]]
     $ cd ..
-    $ git commit -m "Pillow -> 2.9.0" Pillow
+    $ git commit -m "Pillow -> 5.2.0" Pillow
     $ git push
 ```
 * [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).

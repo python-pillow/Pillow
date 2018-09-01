@@ -2440,8 +2440,19 @@ def fromarray(obj, mode=None):
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
 
-    If obj is not contiguous, then the tobytes method is called
+    If **obj** is not contiguous, then the tobytes method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
+
+    If you have an image in NumPy::
+
+      from PIL import Image
+      import numpy as np
+      im = Image.open('hopper.jpg')
+      a = numpy.asarray(im)
+
+    Then this can be used to convert it to a Pillow image::
+
+      im = Image.fromarray(a)
 
     :param obj: Object with array interface
     :param mode: Mode to use (will be determined from type if None)
