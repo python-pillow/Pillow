@@ -351,34 +351,23 @@ def floodfill(image, xy, value, border=None, thresh=0):
     except (ValueError, IndexError):
         return  # seed point outside image
     edge = [(x, y)]
-    if border is None:
-        while edge:
-            newedge = []
-            for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    try:
-                        p = pixel[s, t]
-                    except (ValueError, IndexError):
-                        pass
+    while edge:
+        newedge = []
+        for (x, y) in edge:
+            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                try:
+                    p = pixel[s, t]
+                except (ValueError, IndexError):
+                    pass
+                else:
+                    if border is None:
+                        fill = _color_diff(p, background) <= thresh
                     else:
-                        if _color_diff(p, background) <= thresh:
-                            pixel[s, t] = value
-                            newedge.append((s, t))
-            edge = newedge
-    else:
-        while edge:
-            newedge = []
-            for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    try:
-                        p = pixel[s, t]
-                    except (ValueError, IndexError):
-                        pass
-                    else:
-                        if p != value and p != border:
-                            pixel[s, t] = value
-                            newedge.append((s, t))
-            edge = newedge
+                        fill = p != value and p != border
+                    if fill:
+                        pixel[s, t] = value
+                        newedge.append((s, t))
+        edge = newedge
 
 
 def _color_diff(rgb1, rgb2):
