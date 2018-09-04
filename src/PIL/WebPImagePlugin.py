@@ -246,7 +246,7 @@ def _save_all(im, fp, filename):
                 if ims.mode not in _VALID_WEBP_MODES:
                     alpha = 'A' in ims.mode or 'a' in ims.mode \
                             or (ims.mode == 'P' and 'A' in ims.im.getpalettemode())
-                    rawmode = 'RGBA' if alpha else 'RGBX'
+                    rawmode = 'RGBA' if alpha else 'RGB'
                     frame = ims.convert(rawmode)
 
                 if rawmode == 'RGB':
