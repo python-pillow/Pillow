@@ -352,7 +352,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
     except (ValueError, IndexError):
         return  # seed point outside image
     edge = {(x, y)}
-    full_edge = set()  # use a set to record each unique pixel processed
+    full_edge = set()  # use a set to keep record of current and previous edge pixels to reduce memory consumption
     while edge:
         new_edge = set()
         for (x, y) in edge:  # 4 adjacent method
@@ -364,6 +364,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                 except (ValueError, IndexError):
                     pass
                 else:
+                    full_edge.add((s, t))
                     if border is None:
                         fill = _color_diff(p, background) <= thresh
                     else:
@@ -371,8 +372,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                     if fill:
                         pixel[s, t] = value
                         new_edge.add((s, t))
-                        full_edge.add((s, t))
-        full_edge = edge  # do not record useless pixels to reduce memory consumption
+        full_edge = edge  # discard pixels proceeded
         edge = new_edge
 
 
