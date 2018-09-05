@@ -215,12 +215,16 @@ class TestPyDecoder(PillowTestCase):
         buf = BytesIO(b'\x00'*255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)]
+        im.tile = [
+            ("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)
+        ]
         d = self.get_decoder()
 
         self.assertRaises(ValueError, im.load)
 
-        im.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)]
+        im.tile = [
+            ("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)
+        ]
         self.assertRaises(ValueError, im.load)
 
     def test_no_format(self):

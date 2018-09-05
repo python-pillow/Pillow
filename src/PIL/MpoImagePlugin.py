@@ -85,7 +85,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         return self.__frame
 
 
-# -------------------------------------------------------------------q-
+# ---------------------------------------------------------------------
 # Registry stuff
 
 # Note that since MPO shares a factory with JPEG, we do not need to do a

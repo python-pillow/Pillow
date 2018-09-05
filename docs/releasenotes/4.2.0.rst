@@ -6,9 +6,10 @@ Added Complex Text Rendering
 
 Pillow now supports complex text rendering for scripts requiring glyph
 composition and bidirectional flow. This optional feature adds three
-dependencies: harfbuzz, fribidi, and raqm. See the install
-documentation for further details. This feature is tested and works on
-Unix and Mac, but has not yet been built on Windows platforms.
+dependencies: harfbuzz, fribidi, and raqm. See the `install
+documentation <../installation.html>`_  for further details. This feature is
+tested and works on Unix and Mac, but has not yet been built on Windows
+platforms.
 
 New Optional Parameters
 =======================

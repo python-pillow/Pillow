@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageOps
+from PIL import Image
 
 
 class TestImageOps(PillowTestCase):
@@ -93,6 +94,107 @@ class TestImageOps(PillowTestCase):
 
         newimg = ImageOps.scale(i, 0.5)
         self.assertEqual(newimg.size, (25, 25))
+
+    def test_colorize_2color(self):
+        # Test the colorizing function with 2-color functionality
+
+        # Open test image (256px by 10px, black to white)
+        im = Image.open("Tests/images/bw_gradient.png")
+        im = im.convert("L")
+
+        # Create image with original 2-color functionality
+        im_test = ImageOps.colorize(im, 'red', 'green')
+
+        # Test output image (2-color)
+        left = (0, 1)
+        middle = (127, 1)
+        right = (255, 1)
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (127, 63, 0),
+                                       threshold=1,
+                                       msg='mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
+
+    def test_colorize_2color_offset(self):
+        # Test the colorizing function with 2-color functionality and offset
+
+        # Open test image (256px by 10px, black to white)
+        im = Image.open("Tests/images/bw_gradient.png")
+        im = im.convert("L")
+
+        # Create image with original 2-color functionality with offsets
+        im_test = ImageOps.colorize(im,
+                                    black='red',
+                                    white='green',
+                                    blackpoint=50,
+                                    whitepoint=100)
+
+        # Test output image (2-color) with offsets
+        left = (25, 1)
+        middle = (75, 1)
+        right = (125, 1)
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (127, 63, 0),
+                                       threshold=1,
+                                       msg='mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
+
+    def test_colorize_3color_offset(self):
+        # Test the colorizing function with 3-color functionality and offset
+
+        # Open test image (256px by 10px, black to white)
+        im = Image.open("Tests/images/bw_gradient.png")
+        im = im.convert("L")
+
+        # Create image with new three color functionality with offsets
+        im_test = ImageOps.colorize(im,
+                                    black='red',
+                                    white='green',
+                                    mid='blue',
+                                    blackpoint=50,
+                                    whitepoint=200,
+                                    midpoint=100)
+
+        # Test output image (3-color) with offsets
+        left = (25, 1)
+        left_middle = (75, 1)
+        middle = (100, 1)
+        right_middle = (150, 1)
+        right = (225, 1)
+        self.assert_tuple_approx_equal(im_test.getpixel(left),
+                                       (255, 0, 0),
+                                       threshold=1,
+                                       msg='black test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(left_middle),
+                                       (127, 0, 127),
+                                       threshold=1,
+                                       msg='low-mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(middle),
+                                       (0, 0, 255),
+                                       threshold=1,
+                                       msg='mid incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right_middle),
+                                       (0, 63, 127),
+                                       threshold=1,
+                                       msg='high-mid test pixel incorrect')
+        self.assert_tuple_approx_equal(im_test.getpixel(right),
+                                       (0, 127, 0),
+                                       threshold=1,
+                                       msg='white test pixel incorrect')
 
 
 if __name__ == '__main__':

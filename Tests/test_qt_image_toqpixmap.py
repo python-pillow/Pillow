@@ -1,5 +1,5 @@
 from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQtTestCase, PillowQPixmapTestCase
+from test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
 
@@ -10,8 +10,6 @@ if ImageQt.qt_is_installed:
 class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def test_sanity(self):
-        PillowQtTestCase.setUp(self)
-
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             data = ImageQt.toqpixmap(hopper(mode))
 

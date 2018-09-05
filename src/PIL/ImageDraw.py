@@ -138,7 +138,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_chord(xy, start, end, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_chord(xy, start, end, ink, 0)
 
     def ellipse(self, xy, fill=None, outline=None):
@@ -146,7 +146,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_ellipse(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_ellipse(xy, ink, 0)
 
     def line(self, xy, fill=None, width=0):
@@ -161,7 +161,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_outline(shape, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
     def pieslice(self, xy, start, end, fill=None, outline=None):
@@ -169,7 +169,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_pieslice(xy, start, end, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_pieslice(xy, start, end, ink, 0)
 
     def point(self, xy, fill=None):
@@ -183,7 +183,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_polygon(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
     def rectangle(self, xy, fill=None, outline=None):
@@ -191,7 +191,7 @@ class ImageDraw(object):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
-        if ink is not None:
+        if ink is not None and ink != fill:
             self.draw.draw_rectangle(xy, ink, 0)
 
     def _multiline_check(self, text):
@@ -217,7 +217,8 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
+                mask, offset = font.getmask2(text, self.fontmode,
+                                             *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
@@ -350,38 +351,27 @@ def floodfill(image, xy, value, border=None, thresh=0):
     except (ValueError, IndexError):
         return  # seed point outside image
     edge = [(x, y)]
-    if border is None:
-        while edge:
-            newedge = []
-            for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    try:
-                        p = pixel[s, t]
-                    except IndexError:
-                        pass
+    while edge:
+        newedge = []
+        for (x, y) in edge:
+            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                try:
+                    p = pixel[s, t]
+                except (ValueError, IndexError):
+                    pass
+                else:
+                    if border is None:
+                        fill = _color_diff(p, background) <= thresh
                     else:
-                        if _color_diff(p, background) <= thresh:
-                            pixel[s, t] = value
-                            newedge.append((s, t))
-            edge = newedge
-    else:
-        while edge:
-            newedge = []
-            for (x, y) in edge:
-                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
-                    try:
-                        p = pixel[s, t]
-                    except IndexError:
-                        pass
-                    else:
-                        if p != value and p != border:
-                            pixel[s, t] = value
-                            newedge.append((s, t))
-            edge = newedge
+                        fill = p != value and p != border
+                    if fill:
+                        pixel[s, t] = value
+                        newedge.append((s, t))
+        edge = newedge
 
 
 def _color_diff(rgb1, rgb2):
     """
     Uses 1-norm distance to calculate difference between two rgb values.
     """
-    return abs(rgb1[0]-rgb2[0]) +  abs(rgb1[1]-rgb2[1]) +  abs(rgb1[2]-rgb2[2])
+    return abs(rgb1[0]-rgb2[0]) + abs(rgb1[1]-rgb2[1]) + abs(rgb1[2]-rgb2[2])

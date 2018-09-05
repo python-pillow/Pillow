@@ -13,15 +13,21 @@ Warnings
 Notes
 -----
 
-.. note:: Pillow < 2.0.0 supports Python versions 2.4, 2.5, 2.6, 2.7.
+.. note:: Pillow is supported on the following Python versions
 
-.. note:: Pillow >= 2.0.0 < 4.0.0 supports Python versions 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
-
-.. note:: Pillow >= 4.0.0 < 5.0.0 supports Python versions 2.7, 3.3, 3.4, 3.5, 3.6
-
-.. note:: Pillow >= 5.0.0 < 5.2.0 supports Python versions 2.7, 3.4, 3.5, 3.6
-
-.. note:: Pillow >= 5.2.0 supports Python versions 2.7, 3.4, 3.5, 3.6, 3.7
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|**Python**          |**2.4**|**2.5**|**2.6**|**2.7**|**3.2**|**3.3**|**3.4**|**3.5**|**3.6**|**3.7**|
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow < 2.0.0      |  Yes  |  Yes  |  Yes  |  Yes  |       |       |       |       |       |       |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow 2.x - 3.x    |       |       |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |       |       |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow 4.x          |       |       |       |  Yes  |       |  Yes  |  Yes  |  Yes  |  Yes  |       |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow 5.0.x - 5.1.x|       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |       |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow >= 5.2.0     |       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
 
 Basic Installation
 ------------------
@@ -122,8 +128,8 @@ Many of Pillow's features require external libraries:
 
 * **libjpeg** provides JPEG functionality.
 
-  * Pillow has been tested with libjpeg versions **6b**, **8**, **9**, **9a**,
-    and **9b** and libjpeg-turbo version **8**.
+  * Pillow has been tested with libjpeg versions **6b**, **8**, **9-9c** and
+    libjpeg-turbo version **8**.
   * Starting with Pillow 3.0.0, libjpeg is required by default, but
     may be disabled with the ``--disable-jpeg`` flag.
 
@@ -159,7 +165,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.11**
+  * Pillow has been tested with libimagequant **2.6-2.12.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -172,7 +178,7 @@ Many of Pillow's features require external libraries:
     shaping (using HarfBuzz), and proper script itemization. As a
     result, Raqm can support most writing systems covered by Unicode.
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
-    FriBiDi, make sure that you install them before install libraqm
+    FriBiDi, make sure that you install them before installing libraqm
     if not available as package in your system.
   * setting text direction or font features is not supported without
     libraqm.
@@ -209,17 +215,15 @@ Build Options
   parallel building.
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-tcl``,
-  ``--disable-tk``, ``--disable-lcms``, ``--disable-webp``,
-  ``--disable-webpmux``, ``--disable-jpeg2000``,
+  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
+  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
   ``--disable-imagequant``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-tcl``,
-  ``--enable-tk``, ``--enable-lcms``, ``--enable-webp``,
-  ``--enable-webpmux``, ``--enable-jpeg2000``,
+  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
+  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
   ``--enable-imagequant``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
@@ -390,7 +394,7 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Fedora 26                        | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Mac OS X 10.10 Yosemite*         | 2.7, 3.4, 3.5, 3.6            |x86-64                 |
+| Mac OS X 10.10 Yosemite*         | 2.7, 3.4, 3.5, 3.6, 3.7       |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+

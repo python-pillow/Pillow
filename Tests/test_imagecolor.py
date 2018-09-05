@@ -31,7 +31,8 @@ class TestImageColor(PillowTestCase):
 
         # case insensitivity
         self.assertEqual(ImageColor.getrgb("#DEF"), ImageColor.getrgb("#def"))
-        self.assertEqual(ImageColor.getrgb("#CDEF"), ImageColor.getrgb("#cdef"))
+        self.assertEqual(ImageColor.getrgb("#CDEF"),
+                         ImageColor.getrgb("#cdef"))
         self.assertEqual(ImageColor.getrgb("#DEFDEF"),
                          ImageColor.getrgb("#defdef"))
         self.assertEqual(ImageColor.getrgb("#CDEFCDEF"),
@@ -80,18 +81,23 @@ class TestImageColor(PillowTestCase):
 
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(0,100%,100%)"))
         self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(360,100%,100%)"))
-        self.assertEqual((0, 255, 255), ImageColor.getrgb("hsv(180,100%,100%)"))
+        self.assertEqual((0, 255, 255),
+                         ImageColor.getrgb("hsv(180,100%,100%)"))
 
         # alternate format
         self.assertEqual(ImageColor.getrgb("hsb(0,100%,50%)"),
                          ImageColor.getrgb("hsv(0,100%,50%)"))
 
         # floats
-        self.assertEqual((254, 3, 3), ImageColor.getrgb("hsl(0.1,99.2%,50.3%)"))
-        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsl(360.,100.0%,50%)"))
+        self.assertEqual((254, 3, 3),
+                         ImageColor.getrgb("hsl(0.1,99.2%,50.3%)"))
+        self.assertEqual((255, 0, 0),
+                         ImageColor.getrgb("hsl(360.,100.0%,50%)"))
 
-        self.assertEqual((253, 2, 2), ImageColor.getrgb("hsv(0.1,99.2%,99.3%)"))
-        self.assertEqual((255, 0, 0), ImageColor.getrgb("hsv(360.,100.0%,100%)"))
+        self.assertEqual((253, 2, 2),
+                         ImageColor.getrgb("hsv(0.1,99.2%,99.3%)"))
+        self.assertEqual((255, 0, 0),
+                         ImageColor.getrgb("hsv(360.,100.0%,100%)"))
 
         # case insensitivity
         self.assertEqual(ImageColor.getrgb("RGB(255,0,0)"),

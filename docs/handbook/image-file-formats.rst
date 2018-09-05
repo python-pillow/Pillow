@@ -84,7 +84,14 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     of the GIF, in milliseconds.
 
 **loop**
-    May not be present. The number of times the GIF should loop.
+    May not be present. The number of times the GIF should loop. 0 means that
+    it will loop forever.
+
+**comment**
+    May not be present. A comment about the image.
+
+**extension**
+    May not be present. Contains application specific information.
 
 Reading sequences
 ~~~~~~~~~~~~~~~~~
@@ -115,25 +122,12 @@ are available::
     It is also supported for ICNS. If images are passed in of relevant sizes,
     they will be used instead of scaling down the main image.
 
-**duration**
-    The display duration of each frame of the multiframe gif, in
-    milliseconds. Pass a single integer for a constant duration, or a
-    list or tuple to set the duration for each frame separately.
+**include_color_table**
+    Whether or not to include local color table.
 
-**loop**
-    Integer number of times the GIF should loop.
-
-**optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
-
-**palette**
-    Use the specified palette for the saved image. The palette should
-    be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
-    the palette can be passed in as an
-    :py:class:`PIL.ImagePalette.ImagePalette` object.
+**interlace**
+    Whether or not the image is interlaced. By default, it is, unless the image
+    is less than 16 pixels in width or height.
 
 **disposal**
     Indicates the way in which the graphic is to be treated after being displayed.
@@ -145,6 +139,38 @@ are available::
 
      Pass a single integer for a constant disposal, or a list or tuple
      to set the disposal for each frame separately.
+
+**palette**
+    Use the specified palette for the saved image. The palette should
+    be a bytes or bytearray object containing the palette entries in
+    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    the palette can be passed in as an
+    :py:class:`PIL.ImagePalette.ImagePalette` object.
+
+**optimize**
+    If present and true, attempt to compress the palette by
+    eliminating unused colors. This is only useful if the palette can
+    be compressed to the next smaller power of 2 elements.
+
+Note that if the image you are saving comes from an existing GIF, it may have
+the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
+For these options, if you do not pass them in, they will default to
+their :py:attr:`~PIL.Image.Image.info` values.
+
+**transparency**
+    Transparency color index.
+
+**duration**
+    The display duration of each frame of the multiframe gif, in
+    milliseconds. Pass a single integer for a constant duration, or a
+    list or tuple to set the duration for each frame separately.
+
+**loop**
+    Integer number of times the GIF should loop. 0 means that it will loop
+    forever. By default, the image will not loop.
+
+**comment**
+    A comment about the image.
 
 Reading local images
 ~~~~~~~~~~~~~~~~~~~~
@@ -503,8 +529,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 .. note::
 
     To enable PNG support, you need to build and install the ZLIB compression
-    library before building the Python Imaging Library. See the installation
-    documentation for details.
+    library before building the Python Imaging Library. See the `installation
+    documentation <../installation.html>`_ for details.
 
 PPM
 ^^^

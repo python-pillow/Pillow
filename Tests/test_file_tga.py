@@ -13,7 +13,7 @@ _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
 
 class TestFileTga(PillowTestCase):
 
-    _MODES = ("L", "P", "RGB", "RGBA")
+    _MODES = ("L", "LA", "P", "RGB", "RGBA")
     _ORIGINS = ("tl", "bl")
 
     _ORIGIN_TO_ORIENTATION = {
