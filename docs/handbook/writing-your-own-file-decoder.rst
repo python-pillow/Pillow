@@ -171,7 +171,6 @@ The fields are used as follows:
     stride defaults to 0.
 
 **orientation**
-
     Whether the first line in the image is the top line on the screen (1), or
     the bottom line (-1). If omitted, the orientation defaults to 1.
 
@@ -204,7 +203,7 @@ table describes some commonly used **raw modes**:
 +-----------+-----------------------------------------------------------------+
 | ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad).          |
 +-----------+-----------------------------------------------------------------+
-| ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, the |
+| ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
 |           | all green pixels, finally all blue pixels).                     |
 +-----------+-----------------------------------------------------------------+
 
