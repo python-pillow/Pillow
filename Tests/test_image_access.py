@@ -1,14 +1,19 @@
 from helper import unittest, PillowTestCase, hopper, on_appveyor
 
-try:
-    from PIL import PyAccess
-except ImportError:
-    # Skip in setUp()
-    pass
-
 from PIL import Image
 import sys
 import os
+
+# CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
+# https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
+if os.environ.get("PYTHONOPTIMIZE") == "2":
+    cffi = None
+else:
+    try:
+        from PIL import PyAccess
+        import cffi
+    except ImportError:
+        cffi = None
 
 
 class AccessTest(PillowTestCase):
@@ -113,37 +118,19 @@ class TestImageGetPixel(AccessTest):
             self.check(mode, 2**16-1)
 
 
+@unittest.skipIf(cffi is None, "No cffi")
 class TestCffiPutPixel(TestImagePutPixel):
     _need_cffi_access = True
 
-    def setUp(self):
-        try:
-            import cffi
-            assert cffi  # silence warning
-        except ImportError:
-            self.skipTest("No cffi")
 
-
+@unittest.skipIf(cffi is None, "No cffi")
 class TestCffiGetPixel(TestImageGetPixel):
     _need_cffi_access = True
 
-    def setUp(self):
-        try:
-            import cffi
-            assert cffi  # silence warning
-        except ImportError:
-            self.skipTest("No cffi")
 
-
+@unittest.skipIf(cffi is None, "No cffi")
 class TestCffi(AccessTest):
     _need_cffi_access = True
-
-    def setUp(self):
-        try:
-            import cffi
-            assert cffi  # silence warning
-        except ImportError:
-            self.skipTest("No cffi")
 
     def _test_get_access(self, im):
         """Do we get the same thing as the old pixel access

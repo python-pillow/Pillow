@@ -215,7 +215,7 @@ class TestImageFont(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(
-            AssertionError,
+            ValueError,
             draw.multiline_text, (0, 0), TEST_TEXT, font=ttf, align="unknown")
 
     def test_draw_align(self):
