@@ -372,7 +372,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                     if fill:
                         pixel[s, t] = value
                         new_edge.add((s, t))
-        full_edge = edge  # discard pixels proceeded
+        full_edge = edge  # discard pixels processed
         edge = new_edge
 
 
