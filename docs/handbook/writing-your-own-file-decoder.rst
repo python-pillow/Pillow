@@ -171,7 +171,6 @@ The fields are used as follows:
     stride defaults to 0.
 
 **orientation**
-
     Whether the first line in the image is the top line on the screen (1), or
     the bottom line (-1). If omitted, the orientation defaults to 1.
 
