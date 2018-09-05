@@ -204,7 +204,7 @@ table describes some commonly used **raw modes**:
 +-----------+-----------------------------------------------------------------+
 | ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad).          |
 +-----------+-----------------------------------------------------------------+
-| ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, the |
+| ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
 |           | all green pixels, finally all blue pixels).                     |
 +-----------+-----------------------------------------------------------------+
 
