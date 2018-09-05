@@ -82,7 +82,6 @@ def Ghostscript(tile, size, fp, scale=1):
     # resolution is dependent on bbox and size
     res = (float((72.0 * size[0]) / (bbox[2]-bbox[0])),
            float((72.0 * size[1]) / (bbox[3]-bbox[1])))
-    # print("Ghostscript", scale, size, orig_size, bbox, orig_bbox, res)
 
     import subprocess
     import tempfile

@@ -34,7 +34,6 @@ class TestNumpy(PillowTestCase):
                 i = Image.fromarray(a)
                 if list(i.getchannel(0).getdata()) != list(range(100)):
                     print("data mismatch for", dtype)
-            # print(dtype, list(i.getdata()))
             return i
 
         # Check supported 1-bit integer formats
