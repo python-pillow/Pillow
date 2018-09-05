@@ -273,6 +273,10 @@ class TestLibUnpack(PillowTestCase):
             (1, 1, 1, 3), (5, 5, 5, 7), (9, 9, 9, 11))
         self.assert_unpack("RGBA", "RGBA", 4,
             (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
+        self.assert_unpack("RGBA", "RGBAX", 5,
+            (1, 2, 3, 4), (6, 7, 8, 9), (11, 12, 13, 14))
+        self.assert_unpack("RGBA", "RGBAXX", 6,
+            (1, 2, 3, 4), (7, 8, 9, 10), (13, 14, 15, 16))
         self.assert_unpack("RGBA", "RGBa", 4,
             (63, 127, 191, 4), (159, 191, 223, 8), (191, 212, 233, 12))
         self.assert_unpack("RGBA", "RGBa",
