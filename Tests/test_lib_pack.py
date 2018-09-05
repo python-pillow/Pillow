@@ -280,8 +280,14 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack("RGBA", "RGBa", 4,
             (63, 127, 191, 4), (159, 191, 223, 8), (191, 212, 233, 12))
         self.assert_unpack("RGBA", "RGBa",
-            b'\x01\x02\x03\x00\x10\x20\x30\xff',
-            (0, 0, 0, 0), (16, 32, 48, 255))
+            b'\x01\x02\x03\x00\x10\x20\x30\x7f\x10\x20\x30\xff',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack("RGBA", "RGBaX",
+            b'\x01\x02\x03\x00-\x10\x20\x30\x7f-\x10\x20\x30\xff-',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack("RGBA", "RGBaXX",
+            b'\x01\x02\x03\x00==\x10\x20\x30\x7f!!\x10\x20\x30\xff??',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
         self.assert_unpack("RGBA", "RGBa;16L", 8,
             (63, 127, 191, 8), (159, 191, 223, 16), (191, 212, 233, 24))
         self.assert_unpack("RGBA", "RGBa;16L",
