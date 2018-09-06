@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Fix code for PYTHONOPTIMIZE #3233
+  [hugovk]
+
 - Changed ImageFilter.Kernel to subclass ImageFilter.BuiltinFilter, instead of the other way around #3273
   [radarhere]
 
