@@ -567,6 +567,9 @@ class ImageFileDirectory_v2(MutableMapping):
         if self.tagtype[tag] == 7 and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
+        elif self.tagtype[tag] == 5:
+            values = [float(v) if isinstance(v, int) else v
+                      for v in values]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
