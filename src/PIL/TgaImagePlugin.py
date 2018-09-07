@@ -20,6 +20,8 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
+import warnings
+
 __version__ = "0.3"
 
 
@@ -163,6 +165,10 @@ def _save(im, fp, filename):
     id_section = im.encoderinfo.get("id_section",
                                     im.info.get("id_section", ""))
     idlen = len(id_section)
+    if idlen > 255:
+        idlen = 255
+        id_section = id_section[:255]
+        warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24

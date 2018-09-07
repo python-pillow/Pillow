@@ -124,6 +124,13 @@ class TestFileTga(PillowTestCase):
         test_im = Image.open(out)
         self.assertEqual(test_im.info["id_section"], b"Test content")
 
+        # Save with custom id section greater than 255 characters
+        id_section = b"Test content" * 25
+        self.assert_warning(UserWarning,
+                            lambda: im.save(out, id_section=id_section))
+        test_im = Image.open(out)
+        self.assertEqual(test_im.info["id_section"], id_section[:255])
+
         test_file = "Tests/images/tga_id_field.tga"
         im = Image.open(test_file)
 
