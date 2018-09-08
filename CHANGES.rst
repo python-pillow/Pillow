@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Close existing WebP fp before setting new fp #3341
+  [radarhere]
+
 - Add orientation, compression and id_section as TGA save keyword arguments #3327
   [radarhere]
 
