@@ -153,6 +153,8 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.__loaded = self.__logical_frame
 
                 # Set tile
+                if self.fp:
+                    self.fp.close()
                 self.fp = BytesIO(data)
                 self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
 

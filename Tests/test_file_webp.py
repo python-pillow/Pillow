@@ -135,6 +135,13 @@ class TestFileWebp(PillowTestCase):
             self.assertRaises(TypeError, _webp.WebPAnimDecoder)
         self.assertRaises(TypeError, _webp.WebPDecode)
 
+    def test_no_resource_warning(self):
+        file_path = "Tests/images/hopper.webp"
+        image = Image.open(file_path)
+
+        temp_file = self.tempfile("temp.webp")
+        self.assert_warning(None, image.save, temp_file)
+
 
 if __name__ == '__main__':
     unittest.main()
