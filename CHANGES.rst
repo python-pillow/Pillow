@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Convert int values of RATIONAL TIFF tags to floats #3338
+  [radarhere, wiredfool]
+
 - Fix code for PYTHONOPTIMIZE #3233
   [hugovk]
 
