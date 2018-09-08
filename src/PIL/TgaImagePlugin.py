@@ -55,7 +55,7 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        idlen = i8(s[0])
+        id_len = i8(s[0])
 
         colormaptype = i8(s[1])
         imagetype = i8(s[2])
@@ -102,8 +102,8 @@ class TgaImageFile(ImageFile.ImageFile):
         if imagetype & 8:
             self.info["compression"] = "tga_rle"
 
-        if idlen:
-            self.info["id_section"] = self.fp.read(idlen)
+        if id_len:
+            self.info["id_section"] = self.fp.read(id_len)
 
         if colormaptype:
             # read palette
@@ -164,9 +164,9 @@ def _save(im, fp, filename):
 
     id_section = im.encoderinfo.get("id_section",
                                     im.info.get("id_section", ""))
-    idlen = len(id_section)
-    if idlen > 255:
-        idlen = 255
+    id_len = len(id_section)
+    if id_len > 255:
+        id_len = 255
         id_section = id_section[:255]
         warnings.warn("id_section has been trimmed to 255 characters")
 
@@ -185,7 +185,7 @@ def _save(im, fp, filename):
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(o8(idlen) +
+    fp.write(o8(id_len) +
              o8(colormaptype) +
              o8(imagetype) +
              o16(colormapfirst) +
