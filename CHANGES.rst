@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Add orientation, compression and id_section as TGA save keyword arguments #3327
+  [radarhere]
+
 - Convert int values of RATIONAL TIFF tags to floats #3338
   [radarhere, wiredfool]
 
