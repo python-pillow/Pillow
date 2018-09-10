@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Fix builds with --parallel #3272
+  [hsoft]
+
 - Add more raw Tiff modes (RGBaX, RGBaXX, RGBAX, RGBAXX) #3335
   [homm]
 
