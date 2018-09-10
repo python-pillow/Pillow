@@ -205,6 +205,12 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
+        if sys.version_info >= (3, 5) and not self.parallel:
+            # For Python < 3.5, we monkeypatch distutils to have parallel
+            # builds. If --parallel (or -j) wasn't specified, we want to
+            # reproduce the same behavior as before, that is, auto-detect the
+            # number of jobs.
+            self.parallel = mp_compile.MAX_PROCS
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
