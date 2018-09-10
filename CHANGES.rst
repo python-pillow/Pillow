@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Add more raw Tiff modes (RGBaX, RGBaXX, RGBAX, RGBAXX) #3335
+  [homm]
+
 - Close existing WebP fp before setting new fp #3341
   [radarhere]
 
