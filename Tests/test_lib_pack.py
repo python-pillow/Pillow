@@ -310,12 +310,24 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBA", "RGBA", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_unpack(
+            "RGBA", "RGBAX", 5, (1, 2, 3, 4), (6, 7, 8, 9), (11, 12, 13, 14))
+        self.assert_unpack(
+            "RGBA", "RGBAXX", 6, (1, 2, 3, 4), (7, 8, 9, 10), (13, 14, 15, 16))
+        self.assert_unpack(
             "RGBA", "RGBa", 4,
             (63, 127, 191, 4), (159, 191, 223, 8), (191, 212, 233, 12))
         self.assert_unpack(
             "RGBA", "RGBa",
-            b'\x01\x02\x03\x00\x10\x20\x30\xff',
-            (0, 0, 0, 0), (16, 32, 48, 255))
+            b'\x01\x02\x03\x00\x10\x20\x30\x7f\x10\x20\x30\xff',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack(
+            "RGBA", "RGBaX",
+            b'\x01\x02\x03\x00-\x10\x20\x30\x7f-\x10\x20\x30\xff-',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack(
+            "RGBA", "RGBaXX",
+            b'\x01\x02\x03\x00==\x10\x20\x30\x7f!!\x10\x20\x30\xff??',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
         self.assert_unpack(
             "RGBA", "RGBa;16L", 8,
             (63, 127, 191, 8), (159, 191, 223, 16), (191, 212, 233, 24))
