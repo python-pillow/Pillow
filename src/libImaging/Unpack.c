@@ -1428,9 +1428,6 @@ static struct {
     /* video (YCbCr) */
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},
     {"YCbCr",   "YCbCr;L",      24,     unpackRGBL},
-    {"YCbCr",   "YCbCrX",       32,     copy4},
-    {"YCbCr",   "YCbCrXX",      40,     copy4skip1},
-    {"YCbCr",   "YCbCrXXX",     48,     copy4skip2},
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */

@@ -608,7 +608,6 @@ static struct {
     /* video (YCbCr) */
     {"YCbCr",   "YCbCr",        24,     ImagingPackRGB},
     {"YCbCr",   "YCbCr;L",      24,     packRGBL},
-    {"YCbCr",   "YCbCrX",       32,     copy4},
     {"YCbCr",   "YCbCrK",       32,     copy4},
     {"YCbCr",   "Y",            8,      band0},
     {"YCbCr",   "Cb",           8,      band1},
