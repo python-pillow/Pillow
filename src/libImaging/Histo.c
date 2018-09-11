@@ -41,7 +41,9 @@ ImagingHistogramNew(Imaging im)
 
     /* Create histogram descriptor */
     h = calloc(1, sizeof(struct ImagingHistogramInstance));
-    strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH);
+    strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH-1);
+    h->mode[IMAGING_MODE_LENGTH-1] = 0;
+
     h->bands = im->bands;
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
 
