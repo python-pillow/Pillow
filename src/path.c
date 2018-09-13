@@ -82,12 +82,16 @@ path_new(Py_ssize_t count, double* xy, int duplicate)
         xy = p;
     }
 
-    if (PyType_Ready(&PyPathType) < 0)
+    if (PyType_Ready(&PyPathType) < 0) {
+        free(xy);
         return NULL;
+    }
 
     path = PyObject_New(PyPathObject, &PyPathType);
-    if (path == NULL)
+    if (path == NULL) {
+        free(xy);
         return NULL;
+    }
 
     path->count = count;
     path->xy = xy;
