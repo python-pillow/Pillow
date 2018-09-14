@@ -524,10 +524,7 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, 'tiff.h'):
                 if _find_library_file(self, "tiff"):
                     feature.tiff = "tiff"
-                if (sys.platform == "win32" and
-                        _find_library_file(self, "libtiff")):
-                    feature.tiff = "libtiff"
-                if (sys.platform == "darwin" and
+                if (sys.platform in ["win32", "darwin"] and
                         _find_library_file(self, "libtiff")):
                     feature.tiff = "libtiff"
 
