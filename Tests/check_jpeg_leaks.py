@@ -9,8 +9,7 @@ iterations = 5000
 When run on a system without the jpeg leak fixes,
 the valgrind runs look like this.
 
-NOSE_PROCESSES=0 NOSE_TIMEOUT=600 valgrind --tool=massif \
-    python test-installed.py -s -v Tests/check_jpeg_leaks.py
+valgrind --tool=massif python test-installed.py -s -v Tests/check_jpeg_leaks.py
 
 """
 
