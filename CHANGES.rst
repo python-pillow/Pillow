@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- ImageDraw: Add line joints #3250
+  [radarhere]
+
 - Improved performance of ImageDraw floodfill method #3294
   [yo1995]
 
