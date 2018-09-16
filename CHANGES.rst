@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Improved performance of ImageDraw floodfill method #3294
+  [yo1995]
+
 - Fix builds with --parallel #3272
   [hsoft]
 
