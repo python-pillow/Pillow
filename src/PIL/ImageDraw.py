@@ -341,6 +341,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
         homogeneous, but similar, colors.
     """
     # based on an implementation by Eric S. Raymond
+    # amended by yo1995 @20180806
     pixel = image.load()
     x, y = xy
     try:
@@ -350,24 +351,29 @@ def floodfill(image, xy, value, border=None, thresh=0):
         pixel[x, y] = value
     except (ValueError, IndexError):
         return  # seed point outside image
-    edge = [(x, y)]
+    edge = {(x, y)}
+    full_edge = set()  # use a set to keep record of current and previous edge pixels to reduce memory consumption
     while edge:
-        newedge = []
-        for (x, y) in edge:
+        new_edge = set()
+        for (x, y) in edge:  # 4 adjacent method
             for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                if (s, t) in full_edge:
+                    continue  # if already processed, skip
                 try:
                     p = pixel[s, t]
                 except (ValueError, IndexError):
                     pass
                 else:
+                    full_edge.add((s, t))
                     if border is None:
                         fill = _color_diff(p, background) <= thresh
                     else:
                         fill = p != value and p != border
                     if fill:
                         pixel[s, t] = value
-                        newedge.append((s, t))
-        edge = newedge
+                        new_edge.add((s, t))
+        full_edge = edge  # discard pixels processed
+        edge = new_edge
 
 
 def _color_diff(rgb1, rgb2):
