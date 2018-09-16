@@ -140,7 +140,7 @@ Methods
     :param fill: Color to use for the arc.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 5.2.0
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.bitmap(xy, bitmap, fill=None)
 
@@ -165,7 +165,7 @@ Methods
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 5.2.0
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=0)
 
@@ -178,7 +178,7 @@ Methods
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 5.2.0
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0)
 
@@ -209,7 +209,7 @@ Methods
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 5.2.0
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.point(xy, fill=None)
 
@@ -243,7 +243,7 @@ Methods
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 5.2.0
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
 
