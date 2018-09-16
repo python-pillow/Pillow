@@ -186,6 +186,8 @@ Methods
     :param joint: Joint type between a sequence of lines. It can be "curve",
                   for rounded edges, or None.
 
+        .. versionadded:: 5.3.0
+
 .. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
 
     Same as arc, but also draws straight lines between the end points and the
