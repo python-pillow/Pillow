@@ -568,6 +568,20 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    def test_line_joint(self):
+        im = Image.new("RGB", (500, 325))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_line_joint_curve.png"
+
+        # Act
+        xy = [(400, 280), (380, 280), (450, 280), (440, 120), (350, 200),
+              (310, 280), (300, 280), (250, 280), (250, 200), (150, 200),
+              (150, 260), (50, 200), (150, 50), (250, 100)]
+        draw.line(xy, GRAY, 50, "curve")
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 3)
+
     def test_textsize_empty_string(self):
         # https://github.com/python-pillow/Pillow/issues/2783
         # Arrange
