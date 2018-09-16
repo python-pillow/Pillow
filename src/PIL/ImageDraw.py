@@ -30,6 +30,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import math
 import numbers
 
 from . import Image, ImageColor
@@ -149,11 +150,64 @@ class ImageDraw(object):
         if ink is not None and ink != fill:
             self.draw.draw_ellipse(xy, ink, 0)
 
-    def line(self, xy, fill=None, width=0):
+    def line(self, xy, fill=None, width=0, joint=None):
         """Draw a line, or a connected sequence of line segments."""
-        ink, fill = self._getink(fill)
+        ink = self._getink(fill)[0]
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
+            if joint == "curve" and width > 4:
+                for i in range(1, len(xy)-1):
+                    point = xy[i]
+                    angles = [
+                        math.degrees(math.atan2(
+                            end[0] - start[0], start[1] - end[1]
+                        )) % 360
+                        for start, end in ((xy[i-1], point), (point, xy[i+1]))
+                    ]
+                    if angles[0] == angles[1]:
+                        # This is a straight line, so no joint is required
+                        continue
+
+                    def coord_at_angle(coord, angle):
+                        x, y = coord
+                        angle -= 90
+                        distance = width/2 - 1
+                        return tuple([
+                            p +
+                            (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                            for p, p_d in
+                            ((x, distance * math.cos(math.radians(angle))),
+                             (y, distance * math.sin(math.radians(angle))))
+                        ])
+                    flipped = ((angles[1] > angles[0] and
+                                angles[1] - 180 > angles[0]) or
+                               (angles[1] < angles[0] and
+                                angles[1] + 180 > angles[0]))
+                    coords = [
+                        (point[0] - width/2 + 1, point[1] - width/2 + 1),
+                        (point[0] + width/2 - 1, point[1] + width/2 - 1)
+                    ]
+                    if flipped:
+                        start, end = (angles[1] + 90, angles[0] + 90)
+                    else:
+                        start, end = (angles[0] - 90, angles[1] - 90)
+                    self.pieslice(coords, start - 90, end - 90, fill)
+
+                    if width > 8:
+                        # Cover potential gaps between the line and the joint
+                        if flipped:
+                            gapCoords = [
+                                coord_at_angle(point, angles[0]+90),
+                                point,
+                                coord_at_angle(point, angles[1]+90)
+                            ]
+                        else:
+                            gapCoords = [
+                                coord_at_angle(point, angles[0]-90),
+                                point,
+                                coord_at_angle(point, angles[1]-90)
+                            ]
+                        self.line(gapCoords, fill, width=3)
 
     def shape(self, shape, fill=None, outline=None):
         """(Experimental) Draw a shape."""

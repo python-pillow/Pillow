@@ -171,19 +171,20 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the **xy** list.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the line.
-    :param width: The line width, in pixels. Note that line
-        joins are not handled well, so wide polylines will not look good.
+    :param width: The line width, in pixels.
 
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
+    :param joint: Joint type between a sequence of lines. It can be "curve",
+                  for rounded edges, or None.
 
 .. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
 
