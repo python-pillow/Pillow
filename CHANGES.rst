@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Read/Save RGB webp as RGB (instead of RGBX) #3298
+  [kkopachev]
+
 - ImageDraw: Add line joints #3250
   [radarhere]
 
