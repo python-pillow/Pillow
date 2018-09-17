@@ -16,8 +16,7 @@ class TestFileWebp(PillowTestCase):
             self.skipTest('WebP support not installed')
             return
 
-        # WebPAnimDecoder only returns RGBA or RGBX, never RGB
-        self.rgb_mode = "RGBX" if _webp.HAVE_WEBPANIM else "RGB"
+        self.rgb_mode = "RGB"
 
     def test_version(self):
         _webp.WebPDecoderVersion()
@@ -29,8 +28,7 @@ class TestFileWebp(PillowTestCase):
         Does it have the bits we expect?
         """
 
-        file_path = "Tests/images/hopper.webp"
-        image = Image.open(file_path)
+        image = Image.open("Tests/images/hopper.webp")
 
         self.assertEqual(image.mode, self.rgb_mode)
         self.assertEqual(image.size, (128, 128))
@@ -40,9 +38,7 @@ class TestFileWebp(PillowTestCase):
 
         # generated with:
         # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-        target = Image.open('Tests/images/hopper_webp_bits.ppm')
-        target = target.convert(self.rgb_mode)
-        self.assert_image_similar(image, target, 20.0)
+        self.assert_image_similar_tofile(image, 'Tests/images/hopper_webp_bits.ppm', 1.0)
 
     def test_write_rgb(self):
         """
@@ -61,13 +57,8 @@ class TestFileWebp(PillowTestCase):
         image.load()
         image.getdata()
 
-        # If we're using the exact same version of WebP, this test should pass.
-        # but it doesn't if the WebP is generated on Ubuntu and tested on
-        # Fedora.
-
         # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
-        # target = Image.open('Tests/images/hopper_webp_write.ppm')
-        # self.assert_image_equal(image, target)
+        self.assert_image_similar_tofile(image, 'Tests/images/hopper_webp_write.ppm', 12.0)
 
         # This test asserts that the images are similar. If the average pixel
         # difference between the two images is less than the epsilon value,

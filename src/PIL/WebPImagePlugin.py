@@ -5,6 +5,7 @@ from io import BytesIO
 _VALID_WEBP_MODES = {
     "RGBX": True,
     "RGBA": True,
+    "RGB": True,
     }
 
 _VALID_WEBP_LEGACY_MODES = {
@@ -63,7 +64,8 @@ class WebPImageFile(ImageFile.ImageFile):
             bgcolor & 0xFF
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self._n_frames = frame_count
-        self.mode = mode
+        self.mode = 'RGB' if mode == 'RGBX' else mode
+        self.rawmode = mode
         self.tile = []
 
         # Attempt to read ICC / EXIF / XMP chunks from file
@@ -156,7 +158,7 @@ class WebPImageFile(ImageFile.ImageFile):
                 if self.fp:
                     self.fp.close()
                 self.fp = BytesIO(data)
-                self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
+                self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super(WebPImageFile, self).load()
 
@@ -242,16 +244,23 @@ def _save_all(im, fp, filename):
 
                 # Make sure image mode is supported
                 frame = ims
+                rawmode = ims.mode
                 if ims.mode not in _VALID_WEBP_MODES:
-                    alpha = ims.mode == 'P' and 'A' in ims.im.getpalettemode()
-                    frame = ims.convert('RGBA' if alpha else 'RGBX')
+                    alpha = 'A' in ims.mode or 'a' in ims.mode \
+                            or (ims.mode == 'P' and 'A' in ims.im.getpalettemode())
+                    rawmode = 'RGBA' if alpha else 'RGB'
+                    frame = ims.convert(rawmode)
+
+                if rawmode == 'RGB':
+                    # For faster conversion, use RGBX
+                    rawmode = 'RGBX'
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes(),
+                    frame.tobytes('raw', rawmode),
                     timestamp,
                     frame.size[0], frame.size[1],
-                    frame.mode,
+                    rawmode,
                     lossless,
                     quality,
                     method
@@ -290,7 +299,8 @@ def _save(im, fp, filename):
     xmp = im.encoderinfo.get("xmp", "")
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        alpha = im.mode == 'P' and 'A' in im.im.getpalettemode()
+        alpha = 'A' in im.mode or 'a' in im.mode \
+                or (im.mode == 'P' and 'A' in im.im.getpalettemode())
         im = im.convert('RGBA' if alpha else 'RGB')
 
     data = _webp.WebPEncode(
