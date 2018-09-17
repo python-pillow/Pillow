@@ -352,10 +352,8 @@ class CoreResamplePassesTest(PillowTestCase):
 class CoreResampleCoefficientsTest(PillowTestCase):
     def test_reduce(self):
         test_color = 254
-        # print()
 
         for size in range(400000, 400010, 2):
-            # print(size)
             i = Image.new('L', (size, 1), 0)
             draw = ImageDraw.Draw(i)
             draw.rectangle((0, 0, i.size[0] // 2 - 1, 0), test_color)
@@ -363,7 +361,6 @@ class CoreResampleCoefficientsTest(PillowTestCase):
             px = i.resize((5, i.size[1]), Image.BICUBIC).load()
             if px[2, 0] != test_color // 2:
                 self.assertEqual(test_color // 2, px[2, 0])
-                # print('>', size, test_color // 2, px[2, 0])
 
     def test_nonzero_coefficients(self):
         # regression test for the wrong coefficients calculation

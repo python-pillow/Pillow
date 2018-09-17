@@ -1265,9 +1265,6 @@ class TiffImageFile(ImageFile.ImageFile):
             h = self.tag_v2.get(ROWSPERSTRIP, ysize)
             w = self.size[0]
             if READ_LIBTIFF or self._compression != 'raw':
-                # if DEBUG:
-                #     print("Activating g4 compression for whole file")
-
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
                 # so large g4 images will fail if we use that
@@ -1540,7 +1537,6 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
-        # print(im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0, 0)+im.size)
         while True:

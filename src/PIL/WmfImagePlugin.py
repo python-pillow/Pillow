@@ -109,8 +109,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             self.info["dpi"] = 72
 
-            # print(self.mode, self.size, self.info)
-
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
                 raise SyntaxError("Unsupported WMF file format")
