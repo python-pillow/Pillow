@@ -1998,6 +1998,7 @@ _getextrema(ImagingObject* self, PyObject* args)
         UINT8 u[2];
         INT32 i[2];
         FLOAT32 f[2];
+        UINT16 s[2];
     } extrema;
     int status;
 
@@ -2013,6 +2014,10 @@ _getextrema(ImagingObject* self, PyObject* args)
             return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
         case IMAGING_TYPE_FLOAT32:
             return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
+        case IMAGING_TYPE_SPECIAL:
+            if (strcmp(self->image->mode, "I;16") == 0) {
+                return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
+            }
         }
 
     Py_INCREF(Py_None);
