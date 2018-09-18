@@ -4,7 +4,7 @@
 
 ### What actually happened?
 
-### What versions of OS, Python and Pillow are you using?
+### What are your OS, Python and Pillow versions?
 
 * OS: 
 * Python: 
