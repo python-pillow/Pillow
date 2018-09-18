@@ -253,9 +253,8 @@ Methods
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -283,9 +282,8 @@ Methods
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -312,9 +310,8 @@ Methods
     :param spacing: If the text is passed on to multiline_textsize(),
                     the number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -339,9 +336,8 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
