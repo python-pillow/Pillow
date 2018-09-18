@@ -1,5 +1,6 @@
 #!/bin/sh
 
+mkdir /var/cache/pacman/pkg
 pacman -S --noconfirm mingw32/mingw-w64-i686-python3-pip \
 	   mingw32/mingw-w64-i686-python3-setuptools \
 	   mingw32/mingw-w64-i686-python2-pip \
