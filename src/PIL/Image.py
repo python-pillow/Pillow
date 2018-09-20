@@ -2446,7 +2446,7 @@ def fromarray(obj, mode=None):
       from PIL import Image
       import numpy as np
       im = Image.open('hopper.jpg')
-      a = numpy.asarray(im)
+      a = np.asarray(im)
 
     Then this can be used to convert it to a Pillow image::
 
