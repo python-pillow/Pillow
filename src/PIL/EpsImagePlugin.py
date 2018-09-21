@@ -135,6 +135,8 @@ def Ghostscript(tile, size, fp, scale=1):
         if not gs_windows_binary:
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
+        # Hide the progress dialog
+        command.append("-dNoCancel")
 
     # push data through ghostscript
     try:
