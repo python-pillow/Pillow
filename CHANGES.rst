@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- CI: Install CFFI and pycparser without any PYTHONOPTIMIZE #3374
+  [hugovk]
+
 - Read/Save RGB webp as RGB (instead of RGBX) #3298
   [kkopachev]
 
