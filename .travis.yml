@@ -27,13 +27,13 @@ matrix:
     - python: '3.6'
     - python: '3.6'
       dist: trusty
-    - python: '3.5'
-    - python: '3.5'
-      dist: trusty
       env: PYTHONOPTIMIZE=1
-    - python: '3.4'
+    - python: '3.5'
+    - python: '3.5'
       dist: trusty
       env: PYTHONOPTIMIZE=2
+    - python: '3.4'
+      dist: trusty
     - env: DOCKER="alpine" DOCKER_TAG="pytest"
     - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="pytest"
