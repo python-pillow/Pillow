@@ -122,7 +122,7 @@ TAGS_V2 = {
     316: ("HostComputer", ASCII, 1),
     317: ("Predictor", SHORT, 1, {"none": 1, "Horizontal Differencing": 2}),
     318: ("WhitePoint", RATIONAL, 2),
-    319: ("PrimaryChromaticities", SHORT, 6),
+    319: ("PrimaryChromaticities", RATIONAL, 6),
 
     320: ("ColorMap", SHORT, 0),
     321: ("HalftoneHints", SHORT, 2),
@@ -159,7 +159,7 @@ TAGS_V2 = {
     529: ("YCbCrCoefficients", RATIONAL, 3),
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
-    532: ("ReferenceBlackWhite", LONG, 0),
+    532: ("ReferenceBlackWhite", RATIONAL, 6),
 
     700: ('XMP', BYTE, 1),
 
