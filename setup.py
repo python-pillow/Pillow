@@ -550,7 +550,6 @@ class pil_build_ext(build_ext):
                         break
                 if freetype_version:
                     feature.freetype = "freetype"
-                    feature.freetype_version = freetype_version
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
