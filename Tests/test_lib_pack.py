@@ -152,6 +152,10 @@ class TestLibPack(PillowTestCase):
         self.assert_pack("YCbCr", "YCbCr;L", 3,
                          (1, 4, 7), (2, 5, 8), (3, 6, 9))
         self.assert_pack(
+            "YCbCr", "YCbCrX",
+            b'\x01\x02\x03\xff\x05\x06\x07\xff\t\n\x0b\xff',
+            (1, 2, 3), (5, 6, 7), (9, 10, 11))
+        self.assert_pack(
             "YCbCr", "YCbCrK",
             b'\x01\x02\x03\xff\x05\x06\x07\xff\t\n\x0b\xff',
             (1, 2, 3), (5, 6, 7), (9, 10, 11))
@@ -467,6 +471,8 @@ class TestLibUnpack(PillowTestCase):
             "YCbCr", "YCbCr;L", 3, (1, 4, 7), (2, 5, 8), (3, 6, 9))
         self.assert_unpack(
             "YCbCr", "YCbCrK", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
+        self.assert_unpack(
+            "YCbCr", "YCbCrX", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
 
     def test_LAB(self):
         self.assert_unpack(
