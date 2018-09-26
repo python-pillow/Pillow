@@ -169,10 +169,8 @@ class TestFileTiffMetadata(PillowTestCase):
         f = io.BytesIO(b'II*\x00\x08\x00\x00\x00')
         head = f.read(8)
         info = TiffImagePlugin.ImageFileDirectory(head)
-        try:
-            self.assert_warning(UserWarning, info.load, f)
-        except struct.error:
-            self.fail("Should not be struct errors there.")
+        # Should not raise struct.error.
+        self.assert_warning(UserWarning, info.load, f)
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
@@ -223,10 +221,8 @@ class TestFileTiffMetadata(PillowTestCase):
         head = data.read(8)
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(data)
-        try:
-            info = dict(info)
-        except ValueError:
-            self.fail("Should not be struct value error there.")
+        # Should not raise ValueError.
+        info = dict(info)
         self.assertIn(33432, info)
 
     def test_PhotoshopInfo(self):
@@ -245,10 +241,8 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd._tagdata[277] = struct.pack('hh', 4, 4)
         ifd.tagtype[277] = TiffTags.SHORT
 
-        try:
-            self.assert_warning(UserWarning, lambda: ifd[277])
-        except ValueError:
-            self.fail("Invalid Metadata count should not cause a Value Error.")
+        # Should not raise ValueError.
+        self.assert_warning(UserWarning, lambda: ifd[277])
 
 
 if __name__ == '__main__':
