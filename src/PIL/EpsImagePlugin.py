@@ -61,7 +61,7 @@ def has_ghostscript():
             with open(os.devnull, 'wb') as devnull:
                 subprocess.check_call(['gs', '--version'], stdout=devnull)
             return True
-        except OSError:
+        except (OSError, subprocess.CalledProcessError):
             # no ghostscript
             pass
     return False
