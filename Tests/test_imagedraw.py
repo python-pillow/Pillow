@@ -344,19 +344,26 @@ class TestImageDraw(PillowTestCase):
         self.assert_image_similar(im, Image.open(expected), 1)
 
     def test_floodfill(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw.Draw(im)
-        draw.rectangle(BBOX2, outline="yellow", fill="green")
-        centre_point = (int(W/2), int(H/2))
         red = ImageColor.getrgb("red")
-        im_floodfill = Image.open("Tests/images/imagedraw_floodfill.png")
 
-        # Act
-        ImageDraw.floodfill(im, centre_point, red)
+        for mode, value in [
+            ("L", 1),
+            ("RGBA", (255, 0, 0, 0)),
+            ("RGB", red)
+        ]:
+            # Arrange
+            im = Image.new(mode, (W, H))
+            draw = ImageDraw.Draw(im)
+            draw.rectangle(BBOX2, outline="yellow", fill="green")
+            centre_point = (int(W/2), int(H/2))
 
-        # Assert
-        self.assert_image_equal(im, im_floodfill)
+            # Act
+            ImageDraw.floodfill(im, centre_point, value)
+
+            # Assert
+            expected = "Tests/images/imagedraw_floodfill_"+mode+".png"
+            im_floodfill = Image.open(expected)
+            self.assert_image_equal(im, im_floodfill)
 
         # Test that using the same colour does not change the image
         ImageDraw.floodfill(im, centre_point, red)
