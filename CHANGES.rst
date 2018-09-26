@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Give correct extrema for I;16 format images #3359
+  [bz2]
+
+- Added PySide2 #3279
+  [radarhere]
+
 - Corrected TIFF tags #3369
   [radarhere]
 
