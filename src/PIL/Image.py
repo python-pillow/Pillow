@@ -1117,12 +1117,9 @@ class Image(object):
 
         x0, y0, x1, y1 = map(int, map(round, box))
 
-        if x1 < x0:
-            x1 = x0
-        if y1 < y0:
-            y1 = y0
+        absolute_values = (abs(x1 - x0), abs(y1 - y0))
 
-        _decompression_bomb_check((x1, y1))
+        _decompression_bomb_check(absolute_values)
 
         return im.crop((x0, y0, x1, y1))
 
