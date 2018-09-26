@@ -1256,11 +1256,8 @@ class TiffImageFile(ImageFile.ImageFile):
             # bits, so stripes of the image are reversed.  See
             # https://github.com/python-pillow/Pillow/issues/279
             if fillorder == 2:
-                key = (
-                    self.tag_v2.prefix, photo, sampleFormat, 1,
-                    self.tag_v2.get(BITSPERSAMPLE, (1,)),
-                    self.tag_v2.get(EXTRASAMPLES, ())
-                )
+                # Replace fillorder with fillorder=1
+                key = key[:3] + (1,) + key[4:]
                 if DEBUG:
                     print("format key:", key)
                 # this should always work, since all the
@@ -1315,7 +1312,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.tile.append(
                     (self._compression,
                      (x, y, min(x+w, xsize), min(y+h, ysize)),
-                        offset, a))
+                     offset, a))
                 x = x + w
                 if x >= self.size[0]:
                     x, y = 0, y + h

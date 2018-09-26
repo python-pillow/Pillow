@@ -236,14 +236,14 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 
     TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
 
-	if (TIFFIsTiled(tiff)) {
-	    uint32 x, y, tile_y;
+    if (TIFFIsTiled(tiff)) {
+        uint32 x, y, tile_y;
         uint32 tileWidth, tileLength;
         UINT8 *new_data;
 
-	    state->bytes = TIFFTileSize(tiff);
+        state->bytes = TIFFTileSize(tiff);
 
-	    /* overflow check for malloc */
+        /* overflow check for malloc */
         if (state->bytes > INT_MAX - 1) {
             state->errcode = IMAGING_CODEC_MEMORY;
             TIFFClose(tiff);
@@ -285,8 +285,8 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
                     // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
                     state->shuffle((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
-					   state->buffer + tile_y * (state->bytes / tileLength),
-					   min(tileWidth, state->xsize - x)
+                       state->buffer + tile_y * (state->bytes / tileLength),
+                       min(tileWidth, state->xsize - x)
                     );
                 }
             }
