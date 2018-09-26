@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Fixed decompression bomb check in _crop #3313
+  [dinkolubina, hugovk]
+
 - Added support to ImageDraw.floodfill for non-RGB colors #3377
   [radarhere]
 
