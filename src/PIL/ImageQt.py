@@ -23,6 +23,7 @@ import sys
 
 qt_versions = [
     ['5', 'PyQt5'],
+    ['side2', 'PySide2'],
     ['4', 'PyQt4'],
     ['side', 'PySide']
 ]
@@ -33,6 +34,9 @@ for qt_version, qt_module in qt_versions:
         if qt_module == 'PyQt5':
             from PyQt5.QtGui import QImage, qRgba, QPixmap
             from PyQt5.QtCore import QBuffer, QIODevice
+        elif qt_module == 'PySide2':
+            from PySide2.QtGui import QImage, qRgba, QPixmap
+            from PySide2.QtCore import QBuffer, QIODevice
         elif qt_module == 'PyQt4':
             from PyQt4.QtGui import QImage, qRgba, QPixmap
             from PyQt4.QtCore import QBuffer, QIODevice
