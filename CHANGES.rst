@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Added ImageOps pad method #3364
+  [radarhere]
+
 - Give correct extrema for I;16 format images #3359
   [bz2]
 
