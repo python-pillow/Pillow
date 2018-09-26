@@ -41,7 +41,7 @@ if sys.platform.startswith('win'):
     if hasattr(shutil, 'which'):
         which = shutil.which
     else:
-        # Python < 3.3
+        # Python 2
         import distutils.spawn
         which = distutils.spawn.find_executable
     for binary in ('gswin32c', 'gswin64c', 'gs'):
@@ -62,7 +62,7 @@ def has_ghostscript():
                 subprocess.check_call(['gs', '--version'], stdout=devnull)
             return True
         except OSError:
-            # no ghostscript
+            # No Ghostscript
             pass
     return False
 
@@ -97,9 +97,9 @@ def Ghostscript(tile, size, fp, scale=1):
         os.close(in_fd)
         infile = infile_temp
 
-        # ignore length and offset!
-        # ghostscript can read it
-        # copy whole file to read in ghostscript
+        # Ignore length and offset!
+        # Ghostscript can read it
+        # Copy whole file to read in Ghostscript
         with open(infile_temp, 'wb') as f:
             # fetch length of fp
             fp.seek(0, 2)
@@ -115,13 +115,13 @@ def Ghostscript(tile, size, fp, scale=1):
                 lengthfile -= len(s)
                 f.write(s)
 
-    # Build ghostscript command
+    # Build Ghostscript command
     command = ["gs",
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
                "-dBATCH",                    # exit after processing
-               "-dNOPAUSE",                  # don't pause between pages,
+               "-dNOPAUSE",                  # don't pause between pages
                "-dSAFER",                    # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
                "-sOutputFile=%s" % outfile,  # output file
@@ -136,7 +136,7 @@ def Ghostscript(tile, size, fp, scale=1):
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
 
-    # push data through ghostscript
+    # push data through Ghostscript
     try:
         with open(os.devnull, 'w+b') as devnull:
             startupinfo = None
@@ -232,7 +232,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 try:
                     m = split.match(s)
-                except re.error as v:
+                except re.error:
                     raise SyntaxError("not an EPS file")
 
                 if m:
@@ -247,7 +247,7 @@ class EpsImageFile(ImageFile.ImageFile):
                             self.size = box[2] - box[0], box[3] - box[1]
                             self.tile = [("eps", (0, 0) + self.size, offset,
                                           (length, box))]
-                        except:
+                        except Exception:
                             pass
 
                 else:
