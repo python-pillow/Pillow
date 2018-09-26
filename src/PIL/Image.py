@@ -898,12 +898,28 @@ class Image(object):
         if not mode or (mode == self.mode and not matrix):
             return self.copy()
 
+        has_transparency = self.info.get('transparency') is not None
         if matrix:
             # matrix conversion
             if mode not in ("L", "RGB"):
                 raise ValueError("illegal conversion")
             im = self.im.convert_matrix(mode, matrix)
-            return self._new(im)
+            new = self._new(im)
+            if has_transparency and self.im.bands == 3:
+                transparency = new.info['transparency']
+
+                def convert_transparency(m, v):
+                    v = m[0]*v[0] + m[1]*v[1] + m[2]*v[2] + m[3]*0.5
+                    return max(0, min(255, int(v)))
+                if mode == "L":
+                    transparency = convert_transparency(matrix, transparency)
+                elif len(mode) == 3:
+                    transparency = tuple([
+                        convert_transparency(matrix[i*4:i*4+4], transparency)
+                        for i in range(0, len(transparency))
+                    ])
+                new.info['transparency'] = transparency
+            return new
 
         if mode == "P" and self.mode == "RGBA":
             return self.quantize(colors)
@@ -911,8 +927,7 @@ class Image(object):
         trns = None
         delete_trns = False
         # transparency handling
-        if "transparency" in self.info and \
-                self.info['transparency'] is not None:
+        if has_transparency:
             if self.mode in ('L', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
