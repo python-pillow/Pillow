@@ -48,7 +48,7 @@ class TestImageChops(PillowTestCase):
     def test_add(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.add(im1, im2)
@@ -60,7 +60,7 @@ class TestImageChops(PillowTestCase):
     def test_add_scale_offset(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.add(im1, im2, scale=2.5, offset=100)
@@ -82,7 +82,7 @@ class TestImageChops(PillowTestCase):
     def test_add_modulo(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.add_modulo(im1, im2)
@@ -104,7 +104,7 @@ class TestImageChops(PillowTestCase):
     def test_blend(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.blend(im1, im2, 0.5)
@@ -181,7 +181,7 @@ class TestImageChops(PillowTestCase):
 
     def test_invert(self):
         # Arrange
-        im = Image.open("Tests/images/imagedraw_floodfill.png")
+        im = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.invert(im)
@@ -228,7 +228,7 @@ class TestImageChops(PillowTestCase):
 
     def test_multiply_green(self):
         # Arrange
-        im = Image.open("Tests/images/imagedraw_floodfill.png")
+        im = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
         green = Image.new("RGB", im.size, "green")
 
         # Act
@@ -273,7 +273,7 @@ class TestImageChops(PillowTestCase):
     def test_screen(self):
         # Arrange
         im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill.png")
+        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
 
         # Act
         new = ImageChops.screen(im1, im2)

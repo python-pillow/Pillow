@@ -430,8 +430,11 @@ def floodfill(image, xy, value, border=None, thresh=0):
         edge = new_edge
 
 
-def _color_diff(rgb1, rgb2):
+def _color_diff(color1, color2):
     """
-    Uses 1-norm distance to calculate difference between two rgb values.
+    Uses 1-norm distance to calculate difference between two values.
     """
-    return abs(rgb1[0]-rgb2[0]) + abs(rgb1[1]-rgb2[1]) + abs(rgb1[2]-rgb2[2])
+    if isinstance(color2, tuple):
+        return sum([abs(color1[i]-color2[i]) for i in range(0, len(color2))])
+    else:
+        return abs(color1-color2)
