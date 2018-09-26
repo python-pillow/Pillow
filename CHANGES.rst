@@ -5,6 +5,18 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Added support to ImageDraw.floodfill for non-RGB colors #3377
+  [radarhere]
+
+- Tests: Avoid catching unexpected exceptions in tests #2203
+  [jdufresne]
+
+- Use TextIOWrapper.detach() instead of NoCloseStream #2214
+  [jdufresne]
+
+- Added transparency to matrix conversion #3205
+  [radarhere]
+
 - Added ImageOps pad method #3364
   [radarhere]
 
