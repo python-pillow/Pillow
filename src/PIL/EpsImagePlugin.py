@@ -356,54 +356,49 @@ def _save(im, fp, filename, eps=1):
     else:
         raise ValueError("image mode is not supported")
 
-    class NoCloseStream(object):
-        def __init__(self, fp):
-            self.fp = fp
-
-        def __getattr__(self, name):
-            return getattr(self.fp, name)
-
-        def close(self):
-            pass
-
     base_fp = fp
+    wrapped_fp = False
     if fp != sys.stdout:
-        fp = NoCloseStream(fp)
         if sys.version_info.major > 2:
             fp = io.TextIOWrapper(fp, encoding='latin-1')
+            wrapped_fp = True
 
-    if eps:
+    try:
+        if eps:
+            #
+            # write EPS header
+            fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
+            fp.write("%%Creator: PIL 0.1 EpsEncode\n")
+            # fp.write("%%CreationDate: %s"...)
+            fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
+            fp.write("%%Pages: 1\n")
+            fp.write("%%EndComments\n")
+            fp.write("%%Page: 1 1\n")
+            fp.write("%%ImageData: %d %d " % im.size)
+            fp.write("%d %d 0 1 1 \"%s\"\n" % operator)
+
         #
-        # write EPS header
-        fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
-        fp.write("%%Creator: PIL 0.1 EpsEncode\n")
-        # fp.write("%%CreationDate: %s"...)
-        fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
-        fp.write("%%Pages: 1\n")
-        fp.write("%%EndComments\n")
-        fp.write("%%Page: 1 1\n")
-        fp.write("%%ImageData: %d %d " % im.size)
-        fp.write("%d %d 0 1 1 \"%s\"\n" % operator)
+        # image header
+        fp.write("gsave\n")
+        fp.write("10 dict begin\n")
+        fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
+        fp.write("%d %d scale\n" % im.size)
+        fp.write("%d %d 8\n" % im.size)  # <= bits
+        fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+        fp.write("{ currentfile buf readhexstring pop } bind\n")
+        fp.write(operator[2] + "\n")
+        if hasattr(fp, "flush"):
+            fp.flush()
 
-    #
-    # image header
-    fp.write("gsave\n")
-    fp.write("10 dict begin\n")
-    fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
-    fp.write("%d %d scale\n" % im.size)
-    fp.write("%d %d 8\n" % im.size)  # <= bits
-    fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
-    fp.write("{ currentfile buf readhexstring pop } bind\n")
-    fp.write(operator[2] + "\n")
-    if hasattr(fp, "flush"):
-        fp.flush()
+        ImageFile._save(im, base_fp, [("eps", (0, 0)+im.size, 0, None)])
 
-    ImageFile._save(im, base_fp, [("eps", (0, 0)+im.size, 0, None)])
-
-    fp.write("\n%%%%EndBinary\n")
-    fp.write("grestore end\n")
-    if hasattr(fp, "flush"):
-        fp.flush()
+        fp.write("\n%%%%EndBinary\n")
+        fp.write("grestore end\n")
+        if hasattr(fp, "flush"):
+            fp.flush()
+    finally:
+        if wrapped_fp:
+            fp.detach()
 
 #
 # --------------------------------------------------------------------
