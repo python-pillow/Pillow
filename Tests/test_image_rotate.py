@@ -124,5 +124,6 @@ class TestImageRotate(PillowTestCase):
         corner = im.getpixel((0,0))
         self.assertEqual(corner, (255, 0, 0, 255))
 
+
 if __name__ == '__main__':
     unittest.main()
