@@ -1,6 +1,5 @@
 import logging
 from io import BytesIO
-import struct
 import sys
 
 from helper import unittest, PillowTestCase, hopper

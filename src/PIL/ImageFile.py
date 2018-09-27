@@ -30,7 +30,6 @@
 from . import Image
 from ._util import isPath
 import io
-import os
 import sys
 import struct
 
