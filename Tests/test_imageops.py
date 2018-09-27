@@ -93,7 +93,6 @@ class TestImageOps(PillowTestCase):
                     "Tests/images/imageops_pad_"+label+"_"+str(i)+".jpg")
                 self.assert_image_similar(new_im, target, 6)
 
-
     def test_pil163(self):
         # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
