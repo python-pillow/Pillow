@@ -56,7 +56,8 @@ class TestFileTiffMetadata(PillowTestCase):
         loaded = Image.open(f)
 
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (len(bindata),))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts],
+                         (len(bindata),))
 
         self.assertEqual(loaded.tag[ImageJMetaData], bindata)
         self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
@@ -75,8 +76,10 @@ class TestFileTiffMetadata(PillowTestCase):
         img.save(f, tiffinfo=info)
         loaded = Image.open(f)
 
-        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
+        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts],
+                         (8, len(bindata) - 8))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts],
+                         (8, len(bindata) - 8))
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
@@ -133,8 +136,8 @@ class TestFileTiffMetadata(PillowTestCase):
             if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
             if isinstance(v, tuple) and isinstance(v[0], IFDRational):
-                original[k] = tuple([IFDRational(
-                                     *_limit_rational(elt, 2**31)) for elt in v])
+                original[k] = tuple([IFDRational(*_limit_rational(elt, 2**31))
+                                     for elt in v])
 
         ignored = ['StripByteCounts', 'RowsPerStrip',
                    'PageNumber', 'StripOffsets']
@@ -184,7 +187,8 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_iccprofile_binary(self):
         # https://github.com/python-pillow/Pillow/issues/1526
-        # We should be able to load this, but probably won't be able to save it.
+        # We should be able to load this,
+        # but probably won't be able to save it.
 
         im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
         self.assertEqual(im.tag_v2.tagtype[34675], 1)

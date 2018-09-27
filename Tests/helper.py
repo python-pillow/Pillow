@@ -272,8 +272,8 @@ class PillowLeakTestCase(PillowTestCase):
         for cycle in range(self.iterations):
             core()
             mem = (self._get_mem_usage() - start_mem)
-            self.assertLess(mem, self.mem_limit,
-                            msg='memory usage limit exceeded in iteration %d' % cycle)
+            msg = 'memory usage limit exceeded in iteration %d' % cycle
+            self.assertLess(mem, self.mem_limit, msg)
 
 
 # helpers

@@ -204,7 +204,8 @@ class TestImageConvert(PillowTestCase):
             target = Image.open('Tests/images/hopper-XYZ.png')
             if converted_im.mode == 'RGB':
                 self.assert_image_similar(converted_im, target, 3)
-                self.assertEqual(converted_im.info['transparency'], (105, 54, 4))
+                self.assertEqual(converted_im.info['transparency'],
+                                 (105, 54, 4))
             else:
                 self.assert_image_similar(converted_im,
                                           target.getchannel(0), 1)

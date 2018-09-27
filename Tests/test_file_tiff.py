@@ -58,7 +58,8 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (52, 53))
-        self.assertEqual(im.tile, [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
+        self.assertEqual(im.tile,
+                         [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
         im.load()
 
     def test_set_legacy_api(self):

@@ -28,7 +28,8 @@ qt_versions = [
     ['side', 'PySide']
 ]
 # If a version has already been imported, attempt it first
-qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
+qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules,
+                 reverse=True)
 for qt_version, qt_module in qt_versions:
     try:
         if qt_module == 'PyQt5':

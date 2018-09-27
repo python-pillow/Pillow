@@ -162,7 +162,8 @@ class FreeTypeFont(object):
         size, offset = self.font.getsize(text, direction, features)
         return (size[0] + offset[0], size[1] + offset[1])
 
-    def getsize_multiline(self, text, direction=None, spacing=4, features=None):
+    def getsize_multiline(self, text, direction=None,
+                          spacing=4, features=None):
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.getsize('A')[1] + spacing
