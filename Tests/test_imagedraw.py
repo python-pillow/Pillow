@@ -622,12 +622,12 @@ class TestImageDraw(PillowTestCase):
                 ["red", "#f00"]
             ]:
                 for operation, args in {
-                    'chord':[BBOX1, 0, 180],
-                    'ellipse':[BBOX1],
-                    'shape':[s],
-                    'pieslice':[BBOX1, -90, 45],
-                    'polygon':[[(18, 30), (85, 30), (60, 72)]],
-                    'rectangle':[BBOX1]
+                    'chord': [BBOX1, 0, 180],
+                    'ellipse': [BBOX1],
+                    'shape': [s],
+                    'pieslice': [BBOX1, -90, 45],
+                    'polygon': [[(18, 30), (85, 30), (60, 72)]],
+                    'rectangle': [BBOX1]
                 }.items():
                     # Arrange
                     im = Image.new(mode, (W, H))

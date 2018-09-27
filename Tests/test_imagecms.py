@@ -175,11 +175,11 @@ class TestImageCms(PillowTestCase):
 
     def test_unsupported_color_space(self):
         self.assertRaises(ImageCms.PyCMSError,
-            ImageCms.createProfile, "unsupported")
+                          ImageCms.createProfile, "unsupported")
 
     def test_invalid_color_temperature(self):
         self.assertRaises(ImageCms.PyCMSError,
-            ImageCms.createProfile, "LAB", "invalid")
+                          ImageCms.createProfile, "LAB", "invalid")
 
     def test_simple_lab(self):
         i = Image.new('RGB', (10, 10), (128, 128, 128))
@@ -446,20 +446,20 @@ class TestImageCms(PillowTestCase):
         self.assert_image_equal(source_image_aux, result_image_aux)
 
     def test_preserve_auxiliary_channels_rgba(self):
-        self.assert_aux_channel_preserved(mode='RGBA',
-            transform_in_place=False, preserved_channel='A')
+        self.assert_aux_channel_preserved(
+            mode='RGBA', transform_in_place=False, preserved_channel='A')
 
     def test_preserve_auxiliary_channels_rgba_in_place(self):
-        self.assert_aux_channel_preserved(mode='RGBA',
-            transform_in_place=True, preserved_channel='A')
+        self.assert_aux_channel_preserved(
+            mode='RGBA', transform_in_place=True, preserved_channel='A')
 
     def test_preserve_auxiliary_channels_rgbx(self):
-        self.assert_aux_channel_preserved(mode='RGBX',
-            transform_in_place=False, preserved_channel='X')
+        self.assert_aux_channel_preserved(
+            mode='RGBX', transform_in_place=False, preserved_channel='X')
 
     def test_preserve_auxiliary_channels_rgbx_in_place(self):
-        self.assert_aux_channel_preserved(mode='RGBX',
-            transform_in_place=True, preserved_channel='X')
+        self.assert_aux_channel_preserved(
+            mode='RGBX', transform_in_place=True, preserved_channel='X')
 
     def test_auxiliary_channels_isolated(self):
         # test data in aux channels does not affect non-aux channels

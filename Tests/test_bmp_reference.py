@@ -42,7 +42,8 @@ class TestBmpReference(PillowTestCase):
                 im = Image.open(f)
                 im.load()
                 if os.path.basename(f) not in supported:
-                    print("Please add %s to the partially supported bmp specs." % f)
+                    print("Please add %s to the partially supported"
+                          " bmp specs." % f)
             except Exception:  # as msg:
                 if os.path.basename(f) in supported:
                     raise

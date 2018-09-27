@@ -38,7 +38,8 @@ class TestFileWebp(PillowTestCase):
 
         # generated with:
         # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-        self.assert_image_similar_tofile(image, 'Tests/images/hopper_webp_bits.ppm', 1.0)
+        self.assert_image_similar_tofile(
+            image, 'Tests/images/hopper_webp_bits.ppm', 1.0)
 
     def test_write_rgb(self):
         """
@@ -58,7 +59,8 @@ class TestFileWebp(PillowTestCase):
         image.getdata()
 
         # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
-        self.assert_image_similar_tofile(image, 'Tests/images/hopper_webp_write.ppm', 12.0)
+        self.assert_image_similar_tofile(
+            image, 'Tests/images/hopper_webp_write.ppm', 12.0)
 
         # This test asserts that the images are similar. If the average pixel
         # difference between the two images is less than the epsilon value,

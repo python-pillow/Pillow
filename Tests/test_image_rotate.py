@@ -114,15 +114,16 @@ class TestImageRotate(PillowTestCase):
         # Alpha images are handled differently internally
         im = Image.new('RGBA', (10, 10), 'green')
         im = im.rotate(45, expand=1)
-        corner = im.getpixel((0,0))
+        corner = im.getpixel((0, 0))
         self.assertEqual(corner, (0, 0, 0, 0))
 
     def test_alpha_rotate_with_fill(self):
         # Alpha images are handled differently internally
         im = Image.new('RGBA', (10, 10), 'green')
         im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))
-        corner = im.getpixel((0,0))
+        corner = im.getpixel((0, 0))
         self.assertEqual(corner, (255, 0, 0, 255))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -84,7 +84,7 @@ class TestImageOps(PillowTestCase):
             ("h", None, (im.width * 4, im.height * 2)),
             ("v", "#f00", (im.width * 2, im.height * 4))
         ]:
-            for i, centering in enumerate([(0,0), (0.5, 0.5), (1, 1)]):
+            for i, centering in enumerate([(0, 0), (0.5, 0.5), (1, 1)]):
                 new_im = ImageOps.pad(im, new_size,
                                       color=color, centering=centering)
                 self.assertEqual(new_im.size, new_size)
@@ -92,7 +92,6 @@ class TestImageOps(PillowTestCase):
                 target = Image.open(
                     "Tests/images/imageops_pad_"+label+"_"+str(i)+".jpg")
                 self.assert_image_similar(new_im, target, 6)
-
 
     def test_pil163(self):
         # Division by zero in equalize if < 255 pixels in image (@PIL163)
