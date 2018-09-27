@@ -95,7 +95,7 @@ Changelog (Pillow)
 - Skip outline if the draw operation fills with the same colour #2922
   [radarhere]
 
-- Flake8 fixes #3173
+- Flake8 fixes #3173, #3380
   [radarhere]
 
 - Avoid deprecated 'U' mode when opening files #2187
