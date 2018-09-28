@@ -25,7 +25,7 @@ class TestImageTk(PillowTestCase):
             self.skipTest("Tk not installed")
         try:
             # setup tk
-            app = tk.Frame()
+            tk.Frame()
             # root = tk.Tk()
         except (tk.TclError) as v:
             self.skipTest("TCL Error: %s" % v)

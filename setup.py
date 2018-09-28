@@ -205,6 +205,12 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
+        if sys.version_info >= (3, 5) and not self.parallel:
+            # For Python < 3.5, we monkeypatch distutils to have parallel
+            # builds. If --parallel (or -j) wasn't specified, we want to
+            # reproduce the same behavior as before, that is, auto-detect the
+            # number of jobs.
+            self.parallel = mp_compile.MAX_PROCS
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
@@ -518,10 +524,7 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, 'tiff.h'):
                 if _find_library_file(self, "tiff"):
                     feature.tiff = "tiff"
-                if (sys.platform == "win32" and
-                        _find_library_file(self, "libtiff")):
-                    feature.tiff = "libtiff"
-                if (sys.platform == "darwin" and
+                if (sys.platform in ["win32", "darwin"] and
                         _find_library_file(self, "libtiff")):
                     feature.tiff = "libtiff"
 
@@ -547,7 +550,6 @@ class pil_build_ext(build_ext):
                         break
                 if freetype_version:
                     feature.freetype = "freetype"
-                    feature.freetype_version = freetype_version
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 

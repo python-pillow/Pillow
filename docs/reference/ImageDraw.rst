@@ -171,19 +171,22 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the **xy** list.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the line.
-    :param width: The line width, in pixels. Note that line
-        joins are not handled well, so wide polylines will not look good.
+    :param width: The line width, in pixels.
 
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
+    :param joint: Joint type between a sequence of lines. It can be "curve",
+                  for rounded edges, or None.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
 
@@ -250,9 +253,8 @@ Methods
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -280,9 +282,8 @@ Methods
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -309,9 +310,8 @@ Methods
     :param spacing: If the text is passed on to multiline_textsize(),
                     the number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -336,9 +336,8 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 

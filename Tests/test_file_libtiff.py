@@ -231,6 +231,16 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.WRITE_LIBTIFF = False
 
+    def test_int_dpi(self):
+        # issue #1765
+        im = hopper('RGB')
+        out = self.tempfile('temp.tif')
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out, dpi=(72, 72))
+        TiffImagePlugin.WRITE_LIBTIFF = False
+        reloaded = Image.open(out)
+        self.assertEqual(reloaded.info['dpi'], (72.0, 72.0))
+
     def test_g3_compression(self):
         i = Image.open('Tests/images/hopper_g4_500.tif')
         out = self.tempfile("temp.tif")
@@ -529,10 +539,8 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(tmpfile)
         im.n_frames
         im.close()
-        try:
-            os.remove(tmpfile)  # Windows PermissionError here!
-        except:
-            self.fail("Should not get permission error here")
+        # Should not raise PermissionError.
+        os.remove(tmpfile)
 
     def test_read_icc(self):
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:

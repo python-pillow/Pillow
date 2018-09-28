@@ -207,8 +207,16 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (1, 0)): ("RGBA", "RGBaX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (1, 0)): ("RGBA", "RGBaX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (1, 0, 0)): ("RGBA", "RGBaXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (1, 0, 0)): ("RGBA", "RGBaXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (2, 0)): ("RGBA", "RGBAX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (2, 0)): ("RGBA", "RGBAX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (2, 0, 0)): ("RGBA", "RGBAXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (2, 0, 0)): ("RGBA", "RGBAXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
 
@@ -253,8 +261,8 @@ OPEN_INFO = {
     (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("YCbCr", "YCbCrX"),
     (MM, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("YCbCr", "YCbCrX"),
-    (II, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXXX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXXX"),
+    (II, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXX"),
+    (MM, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXX"),
     (II, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("YCbCr", "YCbCrXXX"),
     (MM, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("YCbCr", "YCbCrXXX"),
 
@@ -567,6 +575,9 @@ class ImageFileDirectory_v2(MutableMapping):
         if self.tagtype[tag] == 7 and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
+        elif self.tagtype[tag] == 5:
+            values = [float(v) if isinstance(v, int) else v
+                      for v in values]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
@@ -1254,9 +1265,6 @@ class TiffImageFile(ImageFile.ImageFile):
             h = self.tag_v2.get(ROWSPERSTRIP, ysize)
             w = self.size[0]
             if READ_LIBTIFF or self._compression != 'raw':
-                # if DEBUG:
-                #     print("Activating g4 compression for whole file")
-
                 # Decoder expects entire file as one tile.
                 # There's a buffer size limit in load (64k)
                 # so large g4 images will fail if we use that
@@ -1529,7 +1537,6 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
-        # print(im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0, 0)+im.size)
         while True:

@@ -1,6 +1,5 @@
 import logging
 from io import BytesIO
-import struct
 import sys
 
 from helper import unittest, PillowTestCase, hopper
@@ -59,7 +58,8 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (52, 53))
-        self.assertEqual(im.tile, [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
+        self.assertEqual(im.tile,
+                         [('raw', (0, 0, 52, 53), 160, ('RGBA', 0, 1))])
         im.load()
 
     def test_set_legacy_api(self):
@@ -133,11 +133,8 @@ class TestFileTiff(PillowTestCase):
 
     def test_bad_exif(self):
         i = Image.open('Tests/images/hopper_bad_exif.jpg')
-        try:
-            self.assert_warning(UserWarning, i._getexif)
-        except struct.error:
-            self.fail(
-                "Bad EXIF data passed incorrect values to _binary unpack")
+        # Should not raise struct.error.
+        self.assert_warning(UserWarning, i._getexif)
 
     def test_save_rgba(self):
         im = hopper("RGBA")

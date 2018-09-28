@@ -221,7 +221,8 @@ class TestLibUnpack(PillowTestCase):
             data_len = data * len(pixels)
             data = bytes(bytearray(range(1, data_len + 1)))
 
-        im = Image.frombytes(mode, (len(pixels), 1), data, "raw", rawmode, 0, 1)
+        im = Image.frombytes(mode, (len(pixels), 1), data,
+                             "raw", rawmode, 0, 1)
 
         for x, pixel in enumerate(pixels):
             self.assertEqual(pixel, im.getpixel((x, 0)))
@@ -265,9 +266,11 @@ class TestLibUnpack(PillowTestCase):
     def test_P(self):
         self.assert_unpack("P", "P;1", b'\xe4', 1, 1, 1, 0, 0, 1, 0, 0)
         self.assert_unpack("P", "P;2", b'\xe4', 3, 2, 1, 0)
-        # self.assert_unpack("P", "P;2L", b'\xe4', 1, 1, 1, 0)  # erroneous?
+        # erroneous?
+        # self.assert_unpack("P", "P;2L", b'\xe4', 1, 1, 1, 0)
         self.assert_unpack("P", "P;4", b'\x02\xef', 0, 2, 14, 15)
-        # self.assert_unpack("P", "P;4L", b'\x02\xef', 2, 10, 10, 0)  # erroneous?
+        # erroneous?
+        # self.assert_unpack("P", "P;4L", b'\x02\xef', 2, 10, 10, 0)
         self.assert_unpack("P", "P", 1, 1, 2, 3, 4)
         self.assert_unpack("P", "P;R", 1, 128, 64, 192, 32)
 
@@ -310,12 +313,24 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBA", "RGBA", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_unpack(
+            "RGBA", "RGBAX", 5, (1, 2, 3, 4), (6, 7, 8, 9), (11, 12, 13, 14))
+        self.assert_unpack(
+            "RGBA", "RGBAXX", 6, (1, 2, 3, 4), (7, 8, 9, 10), (13, 14, 15, 16))
+        self.assert_unpack(
             "RGBA", "RGBa", 4,
             (63, 127, 191, 4), (159, 191, 223, 8), (191, 212, 233, 12))
         self.assert_unpack(
             "RGBA", "RGBa",
-            b'\x01\x02\x03\x00\x10\x20\x30\xff',
-            (0, 0, 0, 0), (16, 32, 48, 255))
+            b'\x01\x02\x03\x00\x10\x20\x30\x7f\x10\x20\x30\xff',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack(
+            "RGBA", "RGBaX",
+            b'\x01\x02\x03\x00-\x10\x20\x30\x7f-\x10\x20\x30\xff-',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
+        self.assert_unpack(
+            "RGBA", "RGBaXX",
+            b'\x01\x02\x03\x00==\x10\x20\x30\x7f!!\x10\x20\x30\xff??',
+            (0, 0, 0, 0), (32, 64, 96, 127), (16, 32, 48, 255))
         self.assert_unpack(
             "RGBA", "RGBa;16L", 8,
             (63, 127, 191, 8), (159, 191, 223, 16), (191, 212, 233, 24))
@@ -361,7 +376,8 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBA", "YCCA;P",
             b']bE\x04\xdd\xbej\xed57T\xce\xac\xce:\x11',  # random data
-            (0, 161, 0, 4), (255, 255, 255, 237), (27, 158, 0, 206), (0, 118, 0, 17))
+            (0, 161, 0, 4), (255, 255, 255, 237),
+            (27, 158, 0, 206), (0, 118, 0, 17))
         self.assert_unpack(
             "RGBA", "R", 1, (1, 0, 0, 0), (2, 0, 0, 0), (3, 0, 0, 0))
         self.assert_unpack(
@@ -413,7 +429,8 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBX", "YCC;P",
             b'D]\x9c\x82\x1a\x91\xfaOC\xe7J\x12',  # random data
-            (127, 102, 0, X), (192, 227, 0, X), (213, 255, 170, X), (98, 255, 133, X))
+            (127, 102, 0, X), (192, 227, 0, X),
+            (213, 255, 170, X), (98, 255, 133, X))
         self.assert_unpack("RGBX", "R", 1,
                            (1, 0, 0, 0), (2, 0, 0, 0), (3, 0, 0, 0))
         self.assert_unpack("RGBX", "G", 1,

@@ -5,6 +5,84 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Fixed decompression bomb check in _crop #3313
+  [dinkolubina, hugovk]
+
+- Added support to ImageDraw.floodfill for non-RGB colors #3377
+  [radarhere]
+
+- Tests: Avoid catching unexpected exceptions in tests #2203
+  [jdufresne]
+
+- Use TextIOWrapper.detach() instead of NoCloseStream #2214
+  [jdufresne]
+
+- Added transparency to matrix conversion #3205
+  [radarhere]
+
+- Added ImageOps pad method #3364
+  [radarhere]
+
+- Give correct extrema for I;16 format images #3359
+  [bz2]
+
+- Added PySide2 #3279
+  [radarhere]
+
+- Corrected TIFF tags #3369
+  [radarhere]
+
+- CI: Install CFFI and pycparser without any PYTHONOPTIMIZE #3374
+  [hugovk]
+
+- Read/Save RGB webp as RGB (instead of RGBX) #3298
+  [kkopachev]
+
+- ImageDraw: Add line joints #3250
+  [radarhere]
+
+- Improved performance of ImageDraw floodfill method #3294
+  [yo1995]
+
+- Fix builds with --parallel #3272
+  [hsoft]
+
+- Add more raw Tiff modes (RGBaX, RGBaXX, RGBAX, RGBAXX) #3335
+  [homm]
+
+- Close existing WebP fp before setting new fp #3341
+  [radarhere]
+
+- Add orientation, compression and id_section as TGA save keyword arguments #3327
+  [radarhere]
+
+- Convert int values of RATIONAL TIFF tags to floats #3338
+  [radarhere, wiredfool]
+
+- Fix code for PYTHONOPTIMIZE #3233
+  [hugovk]
+
+- Changed ImageFilter.Kernel to subclass ImageFilter.BuiltinFilter, instead of the other way around #3273
+  [radarhere]
+
+- Remove unused draw.draw_line, draw.draw_point and font.getabc methods #3232
+  [hugovk]
+
+- Tests: Added ImageFilter tests #3295
+  [radarhere]
+
+- Tests: Added ImageChops tests #3230
+  [hugovk, radarhere]
+
+- AppVeyor: Download lib if not present in pillow-depends #3316
+  [radarhere]
+
+- Travis CI: Add Python 3.7 and Xenial #3234
+  [hugovk]
+
+- Docs: Added documentation for NumPy conversion #3301
+  [radarhere]
+
 - Depends: Update libimagequant to 2.12.1 #3281
   [radarhere]
 
@@ -17,7 +95,7 @@ Changelog (Pillow)
 - Skip outline if the draw operation fills with the same colour #2922
   [radarhere]
 
-- Flake8 fixes #3173
+- Flake8 fixes #3173, #3380
   [radarhere]
 
 - Avoid deprecated 'U' mode when opening files #2187

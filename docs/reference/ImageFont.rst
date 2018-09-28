@@ -67,9 +67,8 @@ Methods
                  .. versionadded:: 1.1.5
 
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 

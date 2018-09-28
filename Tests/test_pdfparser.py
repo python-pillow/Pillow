@@ -26,7 +26,9 @@ class TestPdfParser(PillowTestCase):
     def test_parsing(self):
         self.assertEqual(PdfParser.interpret_name(b"Name#23Hash"),
                          b"Name#Hash")
-        self.assertEqual(PdfParser.interpret_name(b"Name#23Hash", as_text=True), "Name#Hash")
+        self.assertEqual(PdfParser.interpret_name(
+                             b"Name#23Hash", as_text=True
+                         ), "Name#Hash")
         self.assertEqual(PdfParser.get_value(b"1 2 R ", 0),
                          (IndirectReference(1, 2), 5))
         self.assertEqual(PdfParser.get_value(b"true[", 0), (True, 4))
@@ -72,7 +74,9 @@ class TestPdfParser(PillowTestCase):
         self.assertIsInstance(a, list)
         self.assertEqual(len(a), 4)
         self.assertEqual(a[0], PdfName("Name"))
-        s = PdfParser.get_value(b"<</Name (value) /Length 5>>\nstream\nabcde\nendstream<<...", 0)[0]
+        s = PdfParser.get_value(
+            b"<</Name (value) /Length 5>>\nstream\nabcde\nendstream<<...", 0
+        )[0]
         self.assertIsInstance(s, PdfStream)
         self.assertEqual(s.dictionary.Name, "value")
         self.assertEqual(s.decode(), b"abcde")

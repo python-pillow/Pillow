@@ -450,12 +450,12 @@ class PdfParser:
         self.pages_ref = self.next_object_id(0)
         self.rewrite_pages()
         self.write_obj(self.root_ref,
-            Type=PdfName(b"Catalog"),
-            Pages=self.pages_ref)
+                       Type=PdfName(b"Catalog"),
+                       Pages=self.pages_ref)
         self.write_obj(self.pages_ref,
-            Type=PdfName(b"Pages"),
-            Count=len(self.pages),
-            Kids=self.pages)
+                       Type=PdfName(b"Pages"),
+                       Count=len(self.pages),
+                       Kids=self.pages)
         return self.root_ref
 
     def rewrite_pages(self):

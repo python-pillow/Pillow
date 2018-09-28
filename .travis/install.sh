@@ -7,7 +7,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
 			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick\
              libharfbuzz-dev libfribidi-dev
 
-pip install cffi
+PYTHONOPTIMIZE=0 pip install cffi
 pip install check-manifest
 pip install coverage
 pip install olefile

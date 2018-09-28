@@ -151,11 +151,6 @@ class LutBuilder(object):
 
             patterns += self._pattern_permute(pattern, options, result)
 
-#        # Debugging
-#        for p, r in patterns:
-#            print(p, r)
-#        print('--')
-
         # compile the patterns into regular expressions for speed
         for i, pattern in enumerate(patterns):
             p = pattern[0].replace('.', 'X').replace('X', '[01]')

@@ -443,7 +443,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-        # print(decoder, mode, args + extra)
         return decoder(mode, *args + extra)
     except AttributeError:
         raise IOError("decoder %s not available" % decoder_name)
@@ -465,7 +464,6 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-        # print(encoder, mode, args + extra)
         return encoder(mode, *args + extra)
     except AttributeError:
         raise IOError("encoder %s not available" % encoder_name)
@@ -900,12 +898,28 @@ class Image(object):
         if not mode or (mode == self.mode and not matrix):
             return self.copy()
 
+        has_transparency = self.info.get('transparency') is not None
         if matrix:
             # matrix conversion
             if mode not in ("L", "RGB"):
                 raise ValueError("illegal conversion")
             im = self.im.convert_matrix(mode, matrix)
-            return self._new(im)
+            new = self._new(im)
+            if has_transparency and self.im.bands == 3:
+                transparency = new.info['transparency']
+
+                def convert_transparency(m, v):
+                    v = m[0]*v[0] + m[1]*v[1] + m[2]*v[2] + m[3]*0.5
+                    return max(0, min(255, int(v)))
+                if mode == "L":
+                    transparency = convert_transparency(matrix, transparency)
+                elif len(mode) == 3:
+                    transparency = tuple([
+                        convert_transparency(matrix[i*4:i*4+4], transparency)
+                        for i in range(0, len(transparency))
+                    ])
+                new.info['transparency'] = transparency
+            return new
 
         if mode == "P" and self.mode == "RGBA":
             return self.quantize(colors)
@@ -913,8 +927,7 @@ class Image(object):
         trns = None
         delete_trns = False
         # transparency handling
-        if "transparency" in self.info and \
-                self.info['transparency'] is not None:
+        if has_transparency:
             if self.mode in ('L', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
@@ -1104,12 +1117,9 @@ class Image(object):
 
         x0, y0, x1, y1 = map(int, map(round, box))
 
-        if x1 < x0:
-            x1 = x0
-        if y1 < y0:
-            y1 = y0
+        absolute_values = (abs(x1 - x0), abs(y1 - y0))
 
-        _decompression_bomb_check((x1, y1))
+        _decompression_bomb_check(absolute_values)
 
         return im.crop((x0, y0, x1, y1))
 
@@ -1894,7 +1904,7 @@ class Image(object):
            parameter should always be used.
         :param params: Extra parameters to the image writer.
         :returns: None
-        :exception KeyError: If the output format could not be determined
+        :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
         :exception IOError: If the file could not be written.  The file
            may have been created, and may contain partial data.
@@ -2448,7 +2458,7 @@ def fromarray(obj, mode=None):
       from PIL import Image
       import numpy as np
       im = Image.open('hopper.jpg')
-      a = numpy.asarray(im)
+      a = np.asarray(im)
 
     Then this can be used to convert it to a Pillow image::
 
@@ -2470,7 +2480,6 @@ def fromarray(obj, mode=None):
             typekey = (1, 1) + shape[2:], arr['typestr']
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
-            # print(typekey)
             raise TypeError("Cannot handle this data type")
     else:
         rawmode = mode

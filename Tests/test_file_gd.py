@@ -2,8 +2,6 @@ from helper import unittest, PillowTestCase
 
 from PIL import GdImageFile
 
-import io
-
 TEST_GD_FILE = "Tests/images/hopper.gd"
 
 

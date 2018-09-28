@@ -4,7 +4,11 @@
 
 ### What actually happened?
 
-### What versions of Pillow and Python are you using?
+### What are your OS, Python and Pillow versions?
+
+* OS: 
+* Python: 
+* Pillow: 
 
 Please include **code** that reproduces the issue and whenever possible, an **image** that demonstrates the issue. Please upload images to GitHub, not to third-party file hosting sites. If necessary, add the image to a zip or tar archive.
 

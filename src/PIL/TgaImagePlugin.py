@@ -20,6 +20,8 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
+import warnings
+
 __version__ = "0.3"
 
 
@@ -53,7 +55,7 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        idlen = i8(s[0])
+        id_len = i8(s[0])
 
         colormaptype = i8(s[1])
         imagetype = i8(s[2])
@@ -100,8 +102,8 @@ class TgaImageFile(ImageFile.ImageFile):
         if imagetype & 8:
             self.info["compression"] = "tga_rle"
 
-        if idlen:
-            self.info["id_section"] = self.fp.read(idlen)
+        if id_len:
+            self.info["id_section"] = self.fp.read(id_len)
 
         if colormaptype:
             # read palette
@@ -151,10 +153,22 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
 
-    rle = im.encoderinfo.get("rle", False)
-
+    if "rle" in im.encoderinfo:
+        rle = im.encoderinfo["rle"]
+    else:
+        compression = im.encoderinfo.get("compression",
+                                         im.info.get("compression"))
+        rle = compression == "tga_rle"
     if rle:
         imagetype += 8
+
+    id_section = im.encoderinfo.get("id_section",
+                                    im.info.get("id_section", ""))
+    id_len = len(id_section)
+    if id_len > 255:
+        id_len = 255
+        id_section = id_section[:255]
+        warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
@@ -166,11 +180,12 @@ def _save(im, fp, filename):
     else:
         flags = 0
 
-    orientation = im.info.get("orientation", -1)
+    orientation = im.encoderinfo.get("orientation",
+                                     im.info.get("orientation", -1))
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(b"\000" +
+    fp.write(o8(id_len) +
              o8(colormaptype) +
              o8(imagetype) +
              o16(colormapfirst) +
@@ -182,6 +197,9 @@ def _save(im, fp, filename):
              o16(im.size[1]) +
              o8(bits) +
              o8(flags))
+
+    if id_section:
+        fp.write(id_section)
 
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))

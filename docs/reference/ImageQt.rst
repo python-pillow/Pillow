@@ -4,8 +4,8 @@
 :py:mod:`ImageQt` Module
 ========================
 
-The :py:mod:`ImageQt` module contains support for creating PyQt4, PyQt5 or
-PySide QImage objects from PIL images.
+The :py:mod:`ImageQt` module contains support for creating PyQt4, PyQt5, PySide or
+PySide2 QImage objects from PIL images.
 
 .. versionadded:: 1.1.6
 

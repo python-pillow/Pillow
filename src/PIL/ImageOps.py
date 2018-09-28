@@ -221,6 +221,50 @@ def colorize(image, black, white, mid=None, blackpoint=0,
     return _lut(image, red + green + blue)
 
 
+def pad(image, size, method=Image.NEAREST, color=None, centering=(0.5, 0.5)):
+    """
+    Returns a sized and padded version of the image, expanded to fill the
+    requested aspect ratio and size.
+
+    :param image: The image to size and crop.
+    :param size: The requested output size in pixels, given as a
+                 (width, height) tuple.
+    :param method: What resampling method to use. Default is
+                   :py:attr:`PIL.Image.NEAREST`.
+    :param color: The background color of the padded image.
+    :param centering: Control the position of the original image within the
+                      padded version.
+                          (0.5, 0.5) will keep the image centered
+                          (0, 0) will keep the image aligned to the top left
+                          (1, 1) will keep the image aligned to the bottom
+                          right
+    :return: An image.
+    """
+
+    im_ratio = image.width / image.height
+    dest_ratio = float(size[0]) / size[1]
+
+    if im_ratio == dest_ratio:
+        out = image.resize(size, resample=method)
+    else:
+        out = Image.new(image.mode, size, color)
+        if im_ratio > dest_ratio:
+            new_height = int(image.height / image.width * size[0])
+            if new_height != size[1]:
+                image = image.resize((size[0], new_height), resample=method)
+
+            y = int((size[1] - new_height) * max(0, min(centering[1], 1)))
+            out.paste(image, (0, y))
+        else:
+            new_width = int(image.width / image.height * size[1])
+            if new_width != size[0]:
+                image = image.resize((new_width, size[1]), resample=method)
+
+            x = int((size[0] - new_width) * max(0, min(centering[0], 1)))
+            out.paste(image, (x, 0))
+    return out
+
+
 def crop(image, border=0):
     """
     Remove border from image.  The same amount of pixels are removed

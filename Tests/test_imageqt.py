@@ -33,6 +33,8 @@ class PillowQPixmapTestCase(PillowQtTestCase):
                 from PyQt4.QtGui import QGuiApplication
             elif ImageQt.qt_version == 'side':
                 from PySide.QtGui import QGuiApplication
+            elif ImageQt.qt_version == 'side2':
+                from PySide2.QtGui import QGuiApplication
         except ImportError:
             self.skipTest('QGuiApplication not installed')
 
@@ -56,6 +58,8 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
             from PyQt4.QtGui import qRgb
         elif ImageQt.qt_version == 'side':
             from PySide.QtGui import qRgb
+        elif ImageQt.qt_version == 'side2':
+            from PySide2.QtGui import qRgb
 
         self.assertEqual(qRgb(0, 0, 0), qRgba(0, 0, 0, 255))
 

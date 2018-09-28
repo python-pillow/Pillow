@@ -1,4 +1,4 @@
-"""Pillow {} (Fork of the Python Imaging Library)
+"""Pillow (Fork of the Python Imaging Library)
 
 Pillow is the friendly PIL fork by Alex Clark and Contributors.
     https://github.com/python-pillow/Pillow/
@@ -23,8 +23,6 @@ VERSION = '1.1.7'  # PIL Version
 PILLOW_VERSION = __version__ = _version.__version__
 
 del _version
-
-__doc__ = __doc__.format(__version__)  # include version in docstring
 
 
 _plugins = ['BlpImagePlugin',
