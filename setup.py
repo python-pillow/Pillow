@@ -147,15 +147,20 @@ LCMS_ROOT = None
 
 def _pkg_config(name):
     try:
-        command = [
+        command_libs = [
             'pkg-config',
             '--libs-only-L', name,
+        ]
+        command_cflags = [
+            'pkg-config',
             '--cflags-only-I', name,
         ]
         if not DEBUG:
-            command.append('--silence-errors')
-        libs = subprocess.check_output(command).decode('utf8').split(' ')
-        return libs[1][2:].strip(), libs[0][2:].strip()
+            command_libs.append('--silence-errors')
+            command_cflags.append('--silence-errors')
+        libs = subprocess.check_output(command_libs).decode('utf8').strip().replace('-L', '')
+        cflags = subprocess.check_output(command_cflags).decode('utf8').strip().replace('-I', '')
+        return (libs, cflags)
     except Exception:
         pass
 
