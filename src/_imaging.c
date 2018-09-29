@@ -552,7 +552,7 @@ getink(PyObject* color, Imaging im, char* ink)
                     return NULL;
                 }
             }
-            ink[0] = CLIP8(r);
+            ink[0] = (char) CLIP8(r);
             ink[1] = ink[2] = ink[3] = 0;
         } else {
             a = 255;
@@ -572,10 +572,10 @@ getink(PyObject* color, Imaging im, char* ink)
                         return NULL;
                 }
             }
-            ink[0] = CLIP8(r);
-            ink[1] = CLIP8(g);
-            ink[2] = CLIP8(b);
-            ink[3] = CLIP8(a);
+            ink[0] = (char) CLIP8(r);
+            ink[1] = (char) CLIP8(g);
+            ink[2] = (char) CLIP8(b);
+            ink[3] = (char) CLIP8(a);
         }
         return ink;
     case IMAGING_TYPE_INT32:
