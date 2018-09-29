@@ -149,10 +149,17 @@ count_used_color_buckets(const ColorCube cube) {
 static void
 avg_color_from_color_bucket(const ColorBucket bucket, Pixel *dst) {
    float count = bucket->count;
-   dst->c.r = (int)(bucket->r / count);
-   dst->c.g = (int)(bucket->g / count);
-   dst->c.b = (int)(bucket->b / count);
-   dst->c.a = (int)(bucket->a / count);
+   if (count != 0) {
+       dst->c.r = (int)(bucket->r / count);
+       dst->c.g = (int)(bucket->g / count);
+       dst->c.b = (int)(bucket->b / count);
+       dst->c.a = (int)(bucket->a / count);
+   } else {
+       dst->c.r = 0;
+       dst->c.g = 0;
+       dst->c.b = 0;
+       dst->c.a = 0;
+   }
 }
 
 static int
