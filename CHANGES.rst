@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Improved PDF document info #3274
+  [radarhere]
+
 - Add line width parameter to rectangle and ellipse-based shapes #3094
   [hugovk, radarhere]
 
