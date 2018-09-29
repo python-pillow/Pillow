@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Add line width parameter to rectangle and ellipse-based shapes #3094
+  [hugovk, radarhere]
+
 - Fixed decompression bomb check in _crop #3313
   [dinkolubina, hugovk]
 
