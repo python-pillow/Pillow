@@ -3,6 +3,7 @@ from helper import unittest, PillowTestCase
 from PIL.PdfParser import IndirectObjectDef, IndirectReference, PdfBinary, \
                           PdfDict, PdfFormatError, PdfName, PdfParser, \
                           PdfStream, decode_text, encode_text, pdf_repr
+import time
 
 
 class TestPdfParser(PillowTestCase):
@@ -80,6 +81,19 @@ class TestPdfParser(PillowTestCase):
         self.assertIsInstance(s, PdfStream)
         self.assertEqual(s.dictionary.Name, "value")
         self.assertEqual(s.decode(), b"abcde")
+        for name in ["CreationDate", "ModDate"]:
+            for date, value in {
+                b"20180729214124": "20180729214124",
+                b"D:20180729214124": "20180729214124",
+                b"D:2018072921": "20180729210000",
+                b"D:20180729214124Z": "20180729214124",
+                b"D:20180729214124+08'00'": "20180729134124",
+                b"D:20180729214124-05'00'": "20180730024124"
+            }.items():
+                d = PdfParser.get_value(
+                    b"<</"+name.encode()+b" ("+date+b")>>", 0)[0]
+                self.assertEqual(
+                    time.strftime("%Y%m%d%H%M%S", getattr(d, name)), value)
 
     def test_pdf_repr(self):
         self.assertEqual(bytes(IndirectReference(1, 2)), b"1 2 R")

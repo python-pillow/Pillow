@@ -1029,7 +1029,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     saved in the PDF.
 
 **title**
-    The document’s title.
+    The document’s title. If not appending to an existing PDF file, this will
+    default to the filename.
 
     .. versionadded:: 5.1.0
 
@@ -1060,6 +1061,18 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     conforming product that converted it to PDF.
 
     .. versionadded:: 5.1.0
+
+**creationDate**
+    The creation date of the document. If not appending to an existing PDF
+    file, this will default to the current time.
+
+    .. versionadded:: 5.3.0
+
+**modDate**
+    The modification date of the document. If not appending to an existing PDF
+    file, this will default to the current time.
+
+    .. versionadded:: 5.3.0
 
 XV Thumbnails
 ^^^^^^^^^^^^^
