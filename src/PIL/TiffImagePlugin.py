@@ -1404,8 +1404,9 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
-    compression = im.encoderinfo.get('compression',
-                                     im.info.get('compression', 'raw'))
+    compression = im.encoderinfo.get('compression', im.info.get('compression'))
+    if compression is None:
+        compression = 'raw'
 
     libtiff = WRITE_LIBTIFF or compression != 'raw'
 

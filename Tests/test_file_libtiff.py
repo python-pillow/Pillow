@@ -496,7 +496,7 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim_load = Image.open(buffer_io)
             self.assert_image_similar(pilim, pilim_load, 0)
 
-        # save_bytesio()
+        save_bytesio()
         save_bytesio('raw')
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
