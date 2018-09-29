@@ -134,13 +134,15 @@ class TestFileGif(PillowTestCase):
         # Multiframe image
         im = Image.open("Tests/images/dispose_bgnd.gif")
 
+        info = im.info.copy()
+
         out = self.tempfile('temp.gif')
         im.save(out, save_all=True)
         reread = Image.open(out)
 
         for header in important_headers:
             self.assertEqual(
-                im.info[header],
+                info[header],
                 reread.info[header]
             )
 
@@ -206,6 +208,15 @@ class TestFileGif(PillowTestCase):
                 img.seek(img.tell() + 1)
         except EOFError:
             self.assertEqual(framecount, 5)
+
+    def test_seek_info(self):
+        im = Image.open("Tests/images/iss634.gif")
+        info = im.info.copy()
+
+        im.seek(1)
+        im.seek(0)
+
+        self.assertEqual(im.info, info)
 
     def test_n_frames(self):
         for path, n_frames in [

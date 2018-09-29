@@ -166,6 +166,7 @@ class GifImageFile(ImageFile.ImageFile):
         from copy import copy
         self.palette = copy(self.global_palette)
 
+        info = {}
         while True:
 
             s = self.fp.read(1)
@@ -184,8 +185,8 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     flags = i8(block[0])
                     if flags & 1:
-                        self.info["transparency"] = i8(block[3])
-                    self.info["duration"] = i16(block[1:3]) * 10
+                        info["transparency"] = i8(block[3])
+                    info["duration"] = i16(block[1:3]) * 10
 
                     # disposal method - find the value of bits 4 - 6
                     dispose_bits = 0b00011100 & flags
@@ -200,16 +201,16 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
-                    self.info["comment"] = block
+                    info["comment"] = block
                 elif i8(s) == 255:
                     #
                     # application extension
                     #
-                    self.info["extension"] = block, self.fp.tell()
+                    info["extension"] = block, self.fp.tell()
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
                         if len(block) >= 3 and i8(block[0]) == 1:
-                            self.info["loop"] = i16(block[1:3])
+                            info["loop"] = i16(block[1:3])
                 while self.data():
                     pass
 
@@ -267,6 +268,12 @@ class GifImageFile(ImageFile.ImageFile):
         if not self.tile:
             # self.__fp = None
             raise EOFError
+
+        for k in ["transparency", "duration", "comment", "extension", "loop"]:
+            if k in info:
+                self.info[k] = info[k]
+            elif k in self.info:
+                del self.info[k]
 
         self.mode = "L"
         if self.palette:
