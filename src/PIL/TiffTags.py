@@ -438,7 +438,7 @@ LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
 
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
-LIBTIFF_CORE.remove(322)  # We don't have support for tiled images in libtiff
+LIBTIFF_CORE.remove(322)  # We don't have support for writing tiled images with libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
 LIBTIFF_CORE.remove(333)  # Ink Names either
 

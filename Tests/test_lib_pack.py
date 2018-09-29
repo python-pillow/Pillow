@@ -478,10 +478,6 @@ class TestLibUnpack(PillowTestCase):
             "YCbCr", "YCbCrK", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
         self.assert_unpack(
             "YCbCr", "YCbCrX", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
-        self.assert_unpack(
-            "YCbCr", "YCbCrXX", 5, (1, 2, 3), (6, 7, 8), (11, 12, 13))
-        self.assert_unpack(
-            "YCbCr", "YCbCrXXX", 6, (1, 2, 3), (7, 8, 9), (13, 14, 15))
 
     def test_LAB(self):
         self.assert_unpack(

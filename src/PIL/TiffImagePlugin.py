@@ -257,14 +257,10 @@ OPEN_INFO = {
     (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
-    (II, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("YCbCr", "YCbCrX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8), (0,)): ("YCbCr", "YCbCrX"),
-    (II, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("YCbCr", "YCbCrXX"),
-    (II, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("YCbCr", "YCbCrXXX"),
-    (MM, 6, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("YCbCr", "YCbCrXXX"),
+    # JPEG compressed images handled by LibTiff and auto-converted to RGB
+    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
 
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
@@ -1053,20 +1049,6 @@ class TiffImageFile(ImageFile.ImageFile):
         "Return the current frame number"
         return self.__frame
 
-    def _decoder(self, rawmode, layer, tile=None):
-        "Setup decoder contexts"
-
-        args = None
-        if rawmode == "RGB" and self._planar_configuration == 2:
-            rawmode = rawmode[layer]
-        compression = self._compression
-        if compression == "raw":
-            args = (rawmode, 0, 1)
-        elif compression == "packbits":
-            args = rawmode
-
-        return args
-
     def load(self):
         if self.use_load_libtiff:
             return self._load_libtiff()
@@ -1187,6 +1169,7 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- photometric_interpretation:", photo)
             print("- planar_configuration:", self._planar_configuration)
             print("- fill_order:", fillorder)
+            print("- YCbCr subsampling:", self.tag.get(530))
 
         # size
         xsize = self.tag_v2.get(IMAGEWIDTH)
@@ -1258,94 +1241,84 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = layer = 0
         self.tile = []
-        self.use_load_libtiff = False
-        if STRIPOFFSETS in self.tag_v2:
+        self.use_load_libtiff = READ_LIBTIFF or self._compression != 'raw'
+        if self.use_load_libtiff:
+            # Decoder expects entire file as one tile.
+            # There's a buffer size limit in load (64k)
+            # so large g4 images will fail if we use that
+            # function.
+            #
+            # Setup the one tile for the whole image, then
+            # use the _load_libtiff function.
+
+            # libtiff handles the fillmode for us, so 1;IR should
+            # actually be 1;I. Including the R double reverses the
+            # bits, so stripes of the image are reversed.  See
+            # https://github.com/python-pillow/Pillow/issues/279
+            if fillorder == 2:
+                # Replace fillorder with fillorder=1
+                key = key[:3] + (1,) + key[4:]
+                if DEBUG:
+                    print("format key:", key)
+                # this should always work, since all the
+                # fillorder==2 modes have a corresponding
+                # fillorder=1 mode
+                self.mode, rawmode = OPEN_INFO[key]
+            # libtiff always returns the bytes in native order.
+            # we're expecting image byte order. So, if the rawmode
+            # contains I;16, we need to convert from native to image
+            # byte order.
+            if rawmode == 'I;16':
+                rawmode = 'I;16N'
+            if ';16B' in rawmode:
+                rawmode = rawmode.replace(';16B', ';16N')
+            if ';16L' in rawmode:
+                rawmode = rawmode.replace(';16L', ';16N')
+
+            # Offset in the tile tuple is 0, we go from 0,0 to
+            # w,h, and we only do this once -- eds
+            a = (rawmode, self._compression, False)
+            self.tile.append(
+                (self._compression,
+                 (0, 0, xsize, ysize),
+                 0, a))
+
+        elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
-            offsets = self.tag_v2[STRIPOFFSETS]
-            h = self.tag_v2.get(ROWSPERSTRIP, ysize)
-            w = self.size[0]
-            if READ_LIBTIFF or self._compression != 'raw':
-                # Decoder expects entire file as one tile.
-                # There's a buffer size limit in load (64k)
-                # so large g4 images will fail if we use that
-                # function.
-                #
-                # Setup the one tile for the whole image, then
-                # use the _load_libtiff function.
-
-                self.use_load_libtiff = True
-
-                # libtiff handles the fillmode for us, so 1;IR should
-                # actually be 1;I. Including the R double reverses the
-                # bits, so stripes of the image are reversed.  See
-                # https://github.com/python-pillow/Pillow/issues/279
-                if fillorder == 2:
-                    key = (
-                        self.tag_v2.prefix, photo, sampleFormat, 1,
-                        self.tag_v2.get(BITSPERSAMPLE, (1,)),
-                        self.tag_v2.get(EXTRASAMPLES, ())
-                        )
-                    if DEBUG:
-                        print("format key:", key)
-                    # this should always work, since all the
-                    # fillorder==2 modes have a corresponding
-                    # fillorder=1 mode
-                    self.mode, rawmode = OPEN_INFO[key]
-                # libtiff always returns the bytes in native order.
-                # we're expecting image byte order. So, if the rawmode
-                # contains I;16, we need to convert from native to image
-                # byte order.
-                if rawmode == 'I;16':
-                    rawmode = 'I;16N'
-                if ';16B' in rawmode:
-                    rawmode = rawmode.replace(';16B', ';16N')
-                if ';16L' in rawmode:
-                    rawmode = rawmode.replace(';16L', ';16N')
-
-                # Offset in the tile tuple is 0, we go from 0,0 to
-                # w,h, and we only do this once -- eds
-                a = (rawmode, self._compression, False)
-                self.tile.append(
-                    (self._compression,
-                     (0, 0, w, ysize),
-                     0, a))
-                a = None
-
+            if STRIPOFFSETS in self.tag_v2:
+                offsets = self.tag_v2[STRIPOFFSETS]
+                h = self.tag_v2.get(ROWSPERSTRIP, ysize)
+                w = self.size[0]
             else:
-                for i, offset in enumerate(offsets):
-                    a = self._decoder(rawmode, layer, i)
-                    self.tile.append(
-                        (self._compression,
-                            (0, min(y, ysize), w, min(y+h, ysize)),
-                            offset, a))
-                    if DEBUG:
-                        print("tiles: ", self.tile)
-                    y = y + h
-                    if y >= self.size[1]:
-                        x = y = 0
-                        layer += 1
-                    a = None
-        elif TILEOFFSETS in self.tag_v2:
-            # tiled image
-            w = self.tag_v2.get(322)
-            h = self.tag_v2.get(323)
-            a = None
-            for o in self.tag_v2[TILEOFFSETS]:
-                if not a:
-                    a = self._decoder(rawmode, layer)
-                # FIXME: this doesn't work if the image size
-                # is not a multiple of the tile size...
+                # tiled image
+                offsets = self.tag_v2[TILEOFFSETS]
+                w = self.tag_v2.get(322)
+                h = self.tag_v2.get(323)
+
+            for offset in offsets:
+                if x + w > xsize:
+                    stride = w * sum(bps_tuple) / 8  # bytes per line
+                else:
+                    stride = 0
+
+                tile_rawmode = rawmode
+                if self._planar_configuration == 2:
+                    # each band on it's own layer
+                    tile_rawmode = rawmode[layer]
+                    # adjust stride width accordingly
+                    stride /= bps_count
+
+                a = (tile_rawmode, int(stride), 1)
                 self.tile.append(
                     (self._compression,
-                        (x, y, x+w, y+h),
-                        o, a))
+                     (x, y, min(x+w, xsize), min(y+h, ysize)),
+                     offset, a))
                 x = x + w
                 if x >= self.size[0]:
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
                         layer += 1
-                        a = None
         else:
             if DEBUG:
                 print("- unsupported data organization")
