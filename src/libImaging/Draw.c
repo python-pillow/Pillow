@@ -854,7 +854,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
             if (i != start) {
                 if (mode == PIESLICE) {
-                    if (x != cx || y != cy) {
+                    if (j == 0 && (x != cx || y != cy)) {
                         if (width == 1) {
                             draw->line(im, x, y, cx, cy, ink);
                             draw->line(im, cx, cy, sx, sy, ink);
