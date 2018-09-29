@@ -4,6 +4,12 @@
 API Additions
 =============
 
+Add line width parameter to rectangle and ellipse-based shapes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A line ``width`` parameter has been added to ``ImageDraw.Draw.arc``,
+``chord``, ``ellipse``, ``pieslice`` and ``rectangle``.
+
 Curved joints for line sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
