@@ -7,7 +7,7 @@ API Additions
 Add line width parameter to rectangle and ellipse-based shapes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A line ``width`` parameter has been added to ``ImageDraw.Draw.arc``,
+An optional line ``width`` parameter has been added to ``ImageDraw.Draw.arc``,
 ``chord``, ``ellipse``, ``pieslice`` and ``rectangle``.
 
 Curved joints for line sequences
@@ -28,7 +28,6 @@ Now it supports three-color mapping with the optional ``mid`` parameter, and
 the positions for all three color arguments can each be optionally specified
 (``blackpoint``, ``whitepoint`` and ``midpoint``).
 For example, with all optional arguments::
-
     ImageOps.colorize(im, black=(32, 37, 79), white='white', mid=(59, 101, 175),
                           blackpoint=15, whitepoint=240, midpoint=100)
 
