@@ -25,6 +25,13 @@ these lines looked unsightly. There is now an additional optional argument,
 ``joint``, defaulting to ``None``. When it is set to ``curved``, the joints
 between the lines will become rounded.
 
+ImageOps.pad
+^^^^^^^^^^^^
+
+While ``ImageOps.fit`` allows users to crop images to a requested aspect ratio
+and size, new method ``ImageOps.pad`` pads images to fill a requested aspect
+ratio and size, filling new space with a provided ``color`` and positioning the
+image within the new area through a ``centering`` argument.
 
 Other Changes
 =============
