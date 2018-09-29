@@ -873,12 +873,17 @@ class Image(object):
         use other thresholds, use the :py:meth:`~PIL.Image.Image.point`
         method.
 
+        When converting from "RGBA" to "P" without a **matrix** argument,
+        this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
+        and **dither** and **palette** are ignored.
+
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are NONE or FLOYDSTEINBERG (default).
+           Note that this is not used when **matrix** is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are WEB or ADAPTIVE.
         :param colors: Number of colors to use for the ADAPTIVE palette.
