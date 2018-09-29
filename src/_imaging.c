@@ -2567,9 +2567,10 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink;
+    int width = 0;
     float start, end;
     int op = 0;
-    if (!PyArg_ParseTuple(args, "Offi|i", &data, &start, &end, &ink))
+    if (!PyArg_ParseTuple(args, "Offi|ii", &data, &start, &end, &ink, &width))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2583,7 +2584,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawArc(self->image->image,
                        (int) xy[0], (int) xy[1],
                        (int) xy[2], (int) xy[3],
-                       start, end, &ink, op
+                       start, end, &ink, width, op
                        );
 
     free(xy);
@@ -2639,9 +2640,10 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink, fill;
+    int width = 0;
     float start, end;
-    if (!PyArg_ParseTuple(args, "Offii",
-                          &data, &start, &end, &ink, &fill))
+    if (!PyArg_ParseTuple(args, "Offii|i",
+                          &data, &start, &end, &ink, &fill, &width))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2655,7 +2657,7 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawChord(self->image->image,
                          (int) xy[0], (int) xy[1],
                          (int) xy[2], (int) xy[3],
-                         start, end, &ink, fill, self->blend
+                         start, end, &ink, fill, width, self->blend
                          );
 
     free(xy);
@@ -2676,7 +2678,8 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
     PyObject* data;
     int ink;
     int fill = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &fill))
+    int width = 0;
+    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2690,7 +2693,7 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawEllipse(self->image->image,
                            (int) xy[0], (int) xy[1],
                            (int) xy[2], (int) xy[3],
-                           &ink, fill, self->blend
+                           &ink, fill, width, self->blend
                            );
 
     free(xy);
@@ -2720,7 +2723,7 @@ _draw_lines(ImagingDrawObject* self, PyObject* args)
 
     if (width <= 1) {
         double *p = NULL;
-    for (i = 0; i < n-1; i++) {
+        for (i = 0; i < n-1; i++) {
             p = &xy[i+i];
             if (ImagingDrawLine(
                     self->image->image,
@@ -2825,8 +2828,9 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
 
     PyObject* data;
     int ink, fill;
+    int width = 0;
     float start, end;
-    if (!PyArg_ParseTuple(args, "Offii", &data, &start, &end, &ink, &fill))
+    if (!PyArg_ParseTuple(args, "Offii|i", &data, &start, &end, &ink, &fill, &width))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2840,7 +2844,7 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawPieslice(self->image->image,
                             (int) xy[0], (int) xy[1],
                             (int) xy[2], (int) xy[3],
-                            start, end, &ink, fill, self->blend
+                            start, end, &ink, fill, width, self->blend
                             );
 
     free(xy);
@@ -2906,7 +2910,8 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
     PyObject* data;
     int ink;
     int fill = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &fill))
+    int width = 0;
+    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width))
         return NULL;
 
     n = PyPath_Flatten(data, &xy);
@@ -2920,7 +2925,7 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawRectangle(self->image->image,
                              (int) xy[0], (int) xy[1],
                              (int) xy[2], (int) xy[3],
-                             &ink, fill, self->blend
+                             &ink, fill, width, self->blend
                              );
 
     free(xy);

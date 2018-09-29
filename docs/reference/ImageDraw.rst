@@ -126,7 +126,7 @@ Methods
 
     :returns: An image font.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None, width=0)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
@@ -138,6 +138,9 @@ Methods
             3 o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the arc.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.bitmap(xy, bitmap, fill=None)
 
@@ -150,7 +153,7 @@ Methods
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None, width=0)
 
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
@@ -160,8 +163,11 @@ Methods
              where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None)
+        .. versionadded:: 5.3.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=0)
 
     Draws an ellipse inside the given bounding box.
 
@@ -170,6 +176,9 @@ Methods
              where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0, joint=None)
 
@@ -188,7 +197,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=0)
 
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
@@ -201,6 +210,9 @@ Methods
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.point(xy, fill=None)
 
@@ -223,7 +235,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=0)
 
     Draws a rectangle.
 
@@ -232,6 +244,9 @@ Methods
             is just outside the drawn rectangle.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
 
