@@ -2615,14 +2615,14 @@ def open(fp, mode="r"):
 
     preinit()
 
-    acceptWarnings = []
+    accept_warnings = []
     def _open_core(fp, filename, prefix):
         for i in ID:
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
                 if type(result) in [str, bytes]:
-                    acceptWarnings.append(result)
+                    accept_warnings.append(result)
                 elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
@@ -2647,7 +2647,7 @@ def open(fp, mode="r"):
 
     if exclusive_fp:
         fp.close()
-    for message in acceptWarnings:
+    for message in accept_warnings:
         warnings.warn(message)
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
