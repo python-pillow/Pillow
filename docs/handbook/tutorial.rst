@@ -41,10 +41,10 @@ example, let’s display the image we just loaded::
 .. note::
 
     The standard version of :py:meth:`~PIL.Image.Image.show` is not very
-    efficient, since it saves the image to a temporary file and calls the
-    :command:`xv` utility to display the image. If you don’t have :command:`xv`
-    installed, it won’t even work. When it does work though, it is very handy
-    for debugging and tests.
+    efficient, since it saves the image to a temporary file and calls a utility
+    to display the image. If you don’t have an appropriate utility installed,
+    it won’t even work. When it does work though, it is very handy for
+    debugging and tests.
 
 The following sections provide an overview of the different functions provided in this library.
 
