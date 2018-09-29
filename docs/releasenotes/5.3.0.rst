@@ -36,3 +36,4 @@ image within the new area through a ``centering`` argument.
 Other Changes
 =============
 
+RGB WebP images are now read as RGB mode, rather than RGBX.
