@@ -42,4 +42,7 @@ image within the new area through a ``centering`` argument.
 Other Changes
 =============
 
+Added support for reading tiled TIFF images through LibTIFF. Compressed TIFF
+images are now read through LibTIFF.
+
 RGB WebP images are now read as RGB mode, rather than RGBX.
