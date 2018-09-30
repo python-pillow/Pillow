@@ -2615,11 +2615,15 @@ def open(fp, mode="r"):
 
     preinit()
 
+    acceptWarnings = []
     def _open_core(fp, filename, prefix):
         for i in ID:
             try:
                 factory, accept = OPEN[i]
-                if not accept or accept(prefix):
+                result = not accept or accept(prefix)
+                if type(result) in [str, bytes]:
+                    acceptWarnings.append(result)
+                elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
@@ -2643,6 +2647,8 @@ def open(fp, mode="r"):
 
     if exclusive_fp:
         fp.close()
+    for message in acceptWarnings:
+        warnings.warn(message)
     raise IOError("cannot identify image file %r"
                   % (filename if filename else fp))
 
