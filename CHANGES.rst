@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Changed Image size property to be read-only by default #3203
+  [radarhere]
+
+- Add warnings if image file identification fails due to lack of WebP support #3169
+  [radarhere, hugovk]
+
 - Hide the Ghostscript progress dialog popup on Windows #3378
   [hugovk]
 
