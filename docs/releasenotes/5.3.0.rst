@@ -49,11 +49,9 @@ explicit error to prevent later consequences. The ``resize`` method is the
 correct way to change an image's size.
 
 The exceptions to this are:
-* The ICO and ICNS image formats, which use ``im.size = (100, 100)`` to select
-a subimage.
-* The TIFF image format, which now has a ``DeprecationWarning`` for this
-action, as direct image size setting was previously necessary to work around an
-issue with tile extents.
+
+* The ICO and ICNS image formats, which use ``im.size = (100, 100)`` to select a subimage.
+* The TIFF image format, which now has a ``DeprecationWarning`` for this action, as direct image size setting was previously necessary to work around an issue with tile extents.
 
 Other Changes
 =============
