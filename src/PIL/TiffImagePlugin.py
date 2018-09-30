@@ -1056,8 +1056,8 @@ class TiffImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         warnings.warn(
-            'Setting the size of a TIFF image direcly is deprecated, and will '
-            'be removed in a future version. Use the resize method instead.',
+            'Setting the size of a TIFF image directly is deprecated, and will'
+            ' be removed in a future version. Use the resize method instead.',
             DeprecationWarning
         )
         self._size = value
