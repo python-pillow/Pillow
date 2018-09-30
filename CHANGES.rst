@@ -5,6 +5,18 @@ Changelog (Pillow)
 5.3.0 (unreleased)
 ------------------
 
+- Hide the Ghostscript progress dialog popup on Windows #3378
+  [hugovk]
+
+- Adding support to reading tiled and YcbCr jpeg tiffs through libtiff #3227
+  [kkopachev]
+
+- Fixed None as TIFF compression argument #3310
+  [radarhere]
+
+- Changed GIF seek to remove previous info items #3324
+  [radarhere]
+
 - Improved PDF document info #3274
   [radarhere]
 
