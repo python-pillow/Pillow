@@ -1049,6 +1049,19 @@ class TiffImageFile(ImageFile.ImageFile):
         "Return the current frame number"
         return self.__frame
 
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        warnings.warn(
+            'Setting the size of a TIFF image direcly is deprecated, and will '
+            'be removed in a future version. Use the resize method instead.',
+            DeprecationWarning
+        )
+        self._size = value
+
     def load(self):
         if self.use_load_libtiff:
             return self._load_libtiff()
