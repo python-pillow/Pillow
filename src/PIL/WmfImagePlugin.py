@@ -143,7 +143,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             raise SyntaxError("Unsupported file format")
 
         self.mode = "RGB"
-        self.size = size
+        self._size = size
 
         loader = self._load()
         if loader:

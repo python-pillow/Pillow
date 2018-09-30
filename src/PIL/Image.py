@@ -531,7 +531,7 @@ class Image(object):
         # FIXME: turn mode and size into delegating properties?
         self.im = None
         self.mode = ""
-        self.size = (0, 0)
+        self._size = (0, 0)
         self.palette = None
         self.info = {}
         self.category = NORMAL
@@ -546,11 +546,15 @@ class Image(object):
     def height(self):
         return self.size[1]
 
+    @property
+    def size(self):
+        return self._size
+
     def _new(self, im):
         new = Image()
         new.im = im
         new.mode = im.mode
-        new.size = im.size
+        new._size = im.size
         if im.mode in ('P', 'PA'):
             if self.palette:
                 new.palette = self.palette.copy()
@@ -698,7 +702,7 @@ class Image(object):
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode
-        self.size = size
+        self._size = size
         self.im = core.new(mode, size)
         if mode in ("L", "P") and palette:
             self.putpalette(palette)
@@ -2104,7 +2108,7 @@ class Image(object):
 
         self.im = im.im
         self.mode = im.mode
-        self.size = size
+        self._size = size
 
         self.readonly = 0
         self.pyaccess = None

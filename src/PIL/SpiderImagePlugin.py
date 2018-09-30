@@ -120,7 +120,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         if iform != 1:
             raise SyntaxError("not a Spider 2D image")
 
-        self.size = int(h[12]), int(h[2])  # size in pixels (width, height)
+        self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 

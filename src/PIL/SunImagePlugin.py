@@ -59,7 +59,7 @@ class SunImageFile(ImageFile.ImageFile):
 
         offset = 32
 
-        self.size = i32(s[4:8]), i32(s[8:12])
+        self._size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
         # data_length = i32(s[16:20])   # unreliable, ignore.

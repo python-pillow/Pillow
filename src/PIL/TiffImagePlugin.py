@@ -1174,7 +1174,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # size
         xsize = self.tag_v2.get(IMAGEWIDTH)
         ysize = self.tag_v2.get(IMAGELENGTH)
-        self.size = xsize, ysize
+        self._size = xsize, ysize
 
         if DEBUG:
             print("- size:", self.size)

@@ -114,7 +114,7 @@ class DdsImageFile(ImageFile.ImageFile):
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
-        self.size = (width, height)
+        self._size = (width, height)
         self.mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))

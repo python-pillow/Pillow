@@ -63,7 +63,7 @@ class MspImageFile(ImageFile.ImageFile):
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
-        self.size = i16(s[4:]), i16(s[6:])
+        self._size = i16(s[4:]), i16(s[6:])
 
         if s[:4] == b"DanM":
             self.tile = [("raw", (0, 0)+self.size, 32, ("1", 0, 1))]

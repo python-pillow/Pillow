@@ -49,7 +49,7 @@ class GdImageFile(ImageFile.ImageFile):
             raise SyntaxError("Not a valid GD 2.x .gd file")
 
         self.mode = "L"  # FIXME: "P"
-        self.size = i16(s[2:4]), i16(s[4:6])
+        self._size = i16(s[2:4]), i16(s[4:6])
 
         trueColor = i8(s[6])
         trueColorOffset = 2 if trueColor else 0

@@ -72,7 +72,7 @@ class MpegImageFile(ImageFile.ImageFile):
             raise SyntaxError("not an MPEG file")
 
         self.mode = "RGB"
-        self.size = s.read(12), s.read(12)
+        self._size = s.read(12), s.read(12)
 
 
 # --------------------------------------------------------------------

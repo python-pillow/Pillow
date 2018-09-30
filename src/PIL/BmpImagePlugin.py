@@ -143,7 +143,7 @@ class BmpImageFile(ImageFile.ImageFile):
                           file_info['header_size'])
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
-        self.size = file_info['width'], file_info['height']
+        self._size = file_info['width'], file_info['height']
         # -------- If color count was not found in the header, compute from bits
         file_info['colors'] = file_info['colors'] if file_info.get('colors', 0) else (1 << file_info['bits'])
         # -------------------------------- Check abnormal values for DOS attacks

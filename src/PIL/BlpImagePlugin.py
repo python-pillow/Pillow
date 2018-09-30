@@ -270,7 +270,7 @@ class BlpImageFile(ImageFile.ImageFile):
         self._blp_alpha_encoding, = struct.unpack("<b", self.fp.read(1))
         self._blp_mips, = struct.unpack("<b", self.fp.read(1))
 
-        self.size = struct.unpack("<II", self.fp.read(8))
+        self._size = struct.unpack("<II", self.fp.read(8))
 
         if self.magic == b"BLP1":
             # Only present for BLP1

@@ -217,7 +217,7 @@ class EpsImageFile(ImageFile.ImageFile):
         box = None
 
         self.mode = "RGB"
-        self.size = 1, 1  # FIXME: huh?
+        self._size = 1, 1  # FIXME: huh?
 
         #
         # Load EPS header
@@ -244,7 +244,7 @@ class EpsImageFile(ImageFile.ImageFile):
                             # fields should be integers, but some drivers
                             # put floating point values there anyway.
                             box = [int(float(i)) for i in v.split()]
-                            self.size = box[2] - box[0], box[3] - box[1]
+                            self._size = box[2] - box[0], box[3] - box[1]
                             self.tile = [("eps", (0, 0) + self.size, offset,
                                           (length, box))]
                         except Exception:
@@ -293,7 +293,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 except ValueError:
                     break
 
-                self.size = int(x), int(y)
+                self._size = int(x), int(y)
                 return
 
             s = fp.readline().strip('\r\n')
@@ -331,7 +331,7 @@ class EpsImageFile(ImageFile.ImageFile):
             return
         self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
-        self.size = self.im.size
+        self._size = self.im.size
         self.tile = []
 
     def load_seek(self, *args, **kwargs):

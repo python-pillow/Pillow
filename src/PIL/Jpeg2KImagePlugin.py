@@ -159,13 +159,13 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         sig = self.fp.read(4)
         if sig == b'\xff\x4f\xff\x51':
             self.codec = "j2k"
-            self.size, self.mode = _parse_codestream(self.fp)
+            self._size, self.mode = _parse_codestream(self.fp)
         else:
             sig = sig + self.fp.read(8)
 
             if sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
                 self.codec = "jp2"
-                self.size, self.mode = _parse_jp2_header(self.fp)
+                self._size, self.mode = _parse_jp2_header(self.fp)
             else:
                 raise SyntaxError('not a JPEG 2000 file')
 
@@ -198,8 +198,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if self.reduce:
             power = 1 << self.reduce
             adjust = power >> 1
-            self.size = (int((self.size[0] + adjust) / power),
-                         int((self.size[1] + adjust) / power))
+            self._size = (int((self.size[0] + adjust) / power),
+                          int((self.size[1] + adjust) / power))
 
         if self.tile:
             # Update the reduce and layers settings
