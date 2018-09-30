@@ -64,6 +64,10 @@ class TestFileIcns(PillowTestCase):
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
 
+        # Check that we cannot load an incorrect size
+        with self.assertRaises(ValueError):
+            im.size = (1, 1)
+
     def test_older_icon(self):
         # This icon was made with Icon Composer rather than iconutil; it still
         # uses PNG rather than JP2, however (since it was made on 10.9).

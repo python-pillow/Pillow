@@ -64,7 +64,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         flags = i8(s[17])
 
-        self.size = i16(s[12:]), i16(s[14:])
+        self._size = i16(s[12:]), i16(s[14:])
 
         # validate header fields
         if colormaptype not in (0, 1) or\

@@ -50,7 +50,7 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.info["icc_profile"] = icc_profile
             if exif:
                 self.info["exif"] = exif
-            self.size = width, height
+            self._size = width, height
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
             self._n_frames = 1
@@ -63,7 +63,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Get info from decoder
         width, height, loop_count, bgcolor, frame_count, mode = \
             self._decoder.get_info()
-        self.size = width, height
+        self._size = width, height
         self.info["loop"] = loop_count
         bg_a, bg_r, bg_g, bg_b = \
             (bgcolor >> 24) & 0xFF, \

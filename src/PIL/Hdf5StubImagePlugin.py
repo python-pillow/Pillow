@@ -47,7 +47,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self.mode = "F"
-        self.size = 1, 1
+        self._size = 1, 1
 
         loader = self._load()
         if loader:

@@ -47,6 +47,11 @@ class TestFileIco(PillowTestCase):
         self.assert_image_equal(reloaded,
                                 hopper().resize((32, 32), Image.LANCZOS))
 
+    def test_incorrect_size(self):
+        im = Image.open(TEST_ICO_FILE)
+        with self.assertRaises(ValueError):
+            im.size = (1, 1)
+
     def test_save_256x256(self):
         """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
         # Arrange

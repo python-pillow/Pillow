@@ -169,7 +169,7 @@ class IcoFile(object):
             im = BmpImagePlugin.DibImageFile(self.buf)
 
             # change tile dimension to only encompass XOR image
-            im.size = (im.size[0], int(im.size[1] / 2))
+            im._size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
             im.tile[0] = d, (0, 0) + im.size, o, a
 
@@ -262,6 +262,17 @@ class IcoImageFile(ImageFile.ImageFile):
         self.info['sizes'] = self.ico.sizes()
         self.size = self.ico.entry[0]['dim']
         self.load()
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        if value not in self.info['sizes']:
+            raise ValueError(
+                "This is not one of the allowed sizes of this image")
+        self._size = value
 
     def load(self):
         im = self.ico.getimage(self.size)

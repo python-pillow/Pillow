@@ -196,7 +196,7 @@ class ImImageFile(ImageFile.ImageFile):
             raise SyntaxError("Not an IM file")
 
         # Basic attributes
-        self.size = self.info[SIZE]
+        self._size = self.info[SIZE]
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data

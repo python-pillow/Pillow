@@ -577,7 +577,7 @@ class PngImageFile(ImageFile.ImageFile):
         # (believe me, I've tried ;-)
 
         self.mode = self.png.im_mode
-        self.size = self.png.im_size
+        self._size = self.png.im_size
         self.info = self.png.im_info
         self.text = self.png.im_text  # experimental
         self.tile = self.png.im_tile

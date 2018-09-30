@@ -71,7 +71,7 @@ class PsdImageFile(ImageFile.ImageFile):
             raise IOError("not enough channels")
 
         self.mode = mode
-        self.size = i32(s[18:]), i32(s[14:])
+        self._size = i32(s[18:]), i32(s[14:])
 
         #
         # color mode data

@@ -61,7 +61,7 @@ class FtexImageFile(ImageFile.ImageFile):
     def _open(self):
         magic = struct.unpack("<I", self.fp.read(4))
         version = struct.unpack("<i", self.fp.read(4))
-        self.size = struct.unpack("<2i", self.fp.read(8))
+        self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
         self.mode = "RGB"

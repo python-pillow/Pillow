@@ -154,7 +154,7 @@ class MockImageFile(ImageFile.ImageFile):
     def _open(self):
         self.rawmode = 'RGBA'
         self.mode = 'RGBA'
-        self.size = (200, 200)
+        self._size = (200, 200)
         self.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize), 32, None)]
 
 

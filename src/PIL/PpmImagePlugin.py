@@ -107,7 +107,7 @@ class PpmImageFile(ImageFile.ImageFile):
                         self.mode = 'I'
                         rawmode = 'I;32B'
 
-        self.size = xsize, ysize
+        self._size = xsize, ysize
         self.tile = [("raw",
                      (0, 0, xsize, ysize),
                      self.fp.tell(),

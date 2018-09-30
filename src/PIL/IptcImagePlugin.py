@@ -118,7 +118,7 @@ class IptcImageFile(ImageFile.ImageFile):
             self.mode = "CMYK"[id]
 
         # size
-        self.size = self.getint((3, 20)), self.getint((3, 30))
+        self._size = self.getint((3, 20)), self.getint((3, 30))
 
         # compression
         try:

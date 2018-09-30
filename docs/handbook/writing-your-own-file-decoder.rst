@@ -69,7 +69,7 @@ true color.
             header = string.split(header)
 
             # size in pixels (width, height)
-            self.size = int(header[1]), int(header[2])
+            self._size = int(header[1]), int(header[2])
 
             # mode setting
             bits = int(header[3])

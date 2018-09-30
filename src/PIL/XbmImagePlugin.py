@@ -63,7 +63,7 @@ class XbmImageFile(ImageFile.ImageFile):
                     )
 
             self.mode = "1"
-            self.size = xsize, ysize
+            self._size = xsize, ysize
 
             self.tile = [("xbm", (0, 0)+self.size, m.end(), None)]
 

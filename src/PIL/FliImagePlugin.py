@@ -54,7 +54,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         # image characteristics
         self.mode = "P"
-        self.size = i16(s[8:10]), i16(s[10:12])
+        self._size = i16(s[8:10]), i16(s[10:12])
 
         # animation speed
         duration = i32(s[16:20])

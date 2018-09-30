@@ -65,7 +65,7 @@ class GifImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
-        self.size = i16(s[6:]), i16(s[8:])
+        self._size = i16(s[6:]), i16(s[8:])
         self.tile = []
         flags = i8(s[10])
         bits = (flags & 7) + 1

@@ -81,7 +81,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         # size (highest resolution)
 
-        self.size = prop[0x1000002], prop[0x1000003]
+        self._size = prop[0x1000002], prop[0x1000003]
 
         size = max(self.size)
         i = 1
