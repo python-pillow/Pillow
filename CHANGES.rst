@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-5.3.0 (unreleased)
+5.3.0 (2018-10-01)
 ------------------
 
 - Changed Image size property to be read-only by default #3203
