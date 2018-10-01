@@ -11,7 +11,7 @@ try:
         import Tkinter as tk
     dir(ImageTk)
     HAS_TK = True
-except (OSError, ImportError) as v:
+except (OSError, ImportError):
     # Skipped via setUp()
     HAS_TK = False
 

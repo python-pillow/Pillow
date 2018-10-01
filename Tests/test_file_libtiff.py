@@ -415,7 +415,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open('Tests/images/multipage.tiff')
         frames = im.n_frames
         self.assertEqual(frames, 3)
-        for idx in range(frames):
+        for _ in range(frames):
             im.seek(0)
             # Should not raise ValueError: I/O operation on closed file
             im.load()

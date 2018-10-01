@@ -56,7 +56,7 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.width, 1)
         self.assertEqual(im.height, 2)
 
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(AttributeError):
             im.size = (3, 4)
 
     def test_invalid_image(self):

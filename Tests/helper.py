@@ -110,7 +110,7 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except Exception as msg:
+                except Exception:
                     pass
 
             self.fail(msg or "got different content")
