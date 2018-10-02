@@ -294,6 +294,8 @@ class TestColorLut3DFilter(PillowTestCase):
 
         lut = ImageFilter.Color3DLUT((2, 2, 2), [(0, 1, 2, 3)] * 8,
                                      channels=4)
+        self.assertEqual(tuple(lut.size), (2, 2, 2))
+        self.assertEqual(lut.table, list(range(4)) * 8)
 
     @unittest.skipIf(numpy is None, "Numpy is not installed")
     def test_numpy_sources(self):
