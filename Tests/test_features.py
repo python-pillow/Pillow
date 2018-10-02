@@ -5,7 +5,7 @@ from PIL import features
 try:
     from PIL import _webp
     HAVE_WEBP = True
-except:
+except ImportError:
     HAVE_WEBP = False
 
 
