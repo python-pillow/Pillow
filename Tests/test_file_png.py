@@ -82,19 +82,19 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.format, "PNG")
 
         hopper("1").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("L").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("P").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("RGB").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("I").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"

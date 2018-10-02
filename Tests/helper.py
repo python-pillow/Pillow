@@ -163,7 +163,6 @@ class PillowTestCase(unittest.TestCase):
     def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
 
-        result = None
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")

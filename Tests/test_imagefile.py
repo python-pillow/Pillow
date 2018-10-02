@@ -204,7 +204,7 @@ class TestPyDecoder(PillowTestCase):
 
         im = MockImageFile(buf)
         im.tile = [("MOCK", (xoff, yoff, -10, yoff+ysize), 32, None)]
-        d = self.get_decoder()
+        self.get_decoder()
 
         self.assertRaises(ValueError, im.load)
 
@@ -218,7 +218,7 @@ class TestPyDecoder(PillowTestCase):
         im.tile = [
             ("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)
         ]
-        d = self.get_decoder()
+        self.get_decoder()
 
         self.assertRaises(ValueError, im.load)
 

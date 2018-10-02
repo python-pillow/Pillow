@@ -86,7 +86,7 @@ if ImageQt.qt_is_installed:
 
             pixmap1 = QtGui.QPixmap.fromImage(qimage)
 
-            hbox = QHBoxLayout(self)
+            QHBoxLayout(self)
 
             lbl = QLabel(self)
             # Segfault in the problem
