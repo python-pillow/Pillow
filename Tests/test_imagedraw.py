@@ -46,7 +46,7 @@ class TestImageDraw(PillowTestCase):
         im = Image.open("Tests/images/chi.gif")
 
         draw = ImageDraw.Draw(im)
-        draw.line(((0, 0)), fill=(0, 0, 0))
+        draw.line((0, 0), fill=(0, 0, 0))
 
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()
@@ -543,7 +543,7 @@ class TestImageDraw(PillowTestCase):
             for y in range(0, size[1]):
                 if (x + y) % 2 == 0:
                     img.putpixel((x, y), background2)
-        return (img, ImageDraw.Draw(img))
+        return img, ImageDraw.Draw(img)
 
     def test_square(self):
         expected = Image.open(os.path.join(IMAGES_PATH, 'square.png'))

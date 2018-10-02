@@ -26,7 +26,7 @@ class TestImageTk(PillowTestCase):
             # setup tk
             tk.Frame()
             # root = tk.Tk()
-        except (tk.TclError) as v:
+        except tk.TclError as v:
             self.skipTest("TCL Error: %s" % v)
 
     def test_kw(self):

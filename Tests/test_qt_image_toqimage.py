@@ -70,8 +70,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
     def test_segfault(self):
         app = QApplication([])
         ex = Example()
-        assert(app)  # Silence warning
-        assert(ex)   # Silence warning
+        assert app  # Silence warning
+        assert ex  # Silence warning
 
 
 if ImageQt.qt_is_installed:

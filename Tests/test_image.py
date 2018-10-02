@@ -286,9 +286,9 @@ class TestImage(PillowTestCase):
                           source.alpha_composite, over, (0, 0),
                           "invalid destination")
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0))
+                          source.alpha_composite, over, 0)
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0, 0), (0))
+                          source.alpha_composite, over, (0, 0), 0)
         self.assertRaises(ValueError,
                           source.alpha_composite, over, (0, -1))
         self.assertRaises(ValueError,

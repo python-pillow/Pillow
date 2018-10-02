@@ -21,7 +21,7 @@ class LargeMemoryTest(PillowTestCase):
 
     def _write_png(self, xdim, ydim):
         f = self.tempfile('temp.png')
-        im = Image.new('L', (xdim, ydim), (0))
+        im = Image.new('L', (xdim, ydim), 0)
         im.save(f)
 
     def test_large(self):

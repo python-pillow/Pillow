@@ -144,7 +144,7 @@ class TestImageFile(PillowTestCase):
 class MockPyDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
         # eof
-        return (-1, 0)
+        return -1, 0
 
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
