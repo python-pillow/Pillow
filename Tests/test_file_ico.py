@@ -28,7 +28,7 @@ class TestFileIco(PillowTestCase):
         # the default image
         output.seek(0)
         reloaded = Image.open(output)
-        self.assertEqual(reloaded.info['sizes'], set([(32, 32), (64, 64)]))
+        self.assertEqual(reloaded.info['sizes'], {(32, 32), (64, 64)})
 
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
@@ -81,7 +81,7 @@ class TestFileIco(PillowTestCase):
         # Assert
         self.assertEqual(
             im_saved.info['sizes'],
-            set([(16, 16), (24, 24), (32, 32), (48, 48)]))
+            {(16, 16), (24, 24), (32, 32), (48, 48)})
 
 
 if __name__ == '__main__':
