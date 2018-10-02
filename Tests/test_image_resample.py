@@ -453,7 +453,7 @@ class CoreResampleBoxTest(PillowTestCase):
 
         # error with box should be much smaller than without
         self.assert_image_similar(reference, with_box, 6)
-        with self.assertRaisesRegex(AssertionError, "difference 29\."):
+        with self.assertRaisesRegex(AssertionError, r"difference 29\."):
             self.assert_image_similar(reference, without_box, 5)
 
     def test_formats(self):
@@ -496,7 +496,7 @@ class CoreResampleBoxTest(PillowTestCase):
             try:
                 res = im.resize(size, Image.LANCZOS, box)
                 self.assertEqual(res.size, size)
-                with self.assertRaisesRegex(AssertionError, "difference \d"):
+                with self.assertRaisesRegex(AssertionError, r"difference \d"):
                     # check that the difference at least that much
                     self.assert_image_similar(res, im.crop(box), 20)
             except AssertionError:
