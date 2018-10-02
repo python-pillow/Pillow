@@ -136,8 +136,8 @@ class TestFileTiffMetadata(PillowTestCase):
             if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
             if isinstance(v, tuple) and isinstance(v[0], IFDRational):
-                original[k] = tuple([IFDRational(*_limit_rational(elt, 2**31))
-                                     for elt in v])
+                original[k] = tuple(IFDRational(*_limit_rational(elt, 2**31))
+                                    for elt in v)
 
         ignored = ['StripByteCounts', 'RowsPerStrip',
                    'PageNumber', 'StripOffsets']
