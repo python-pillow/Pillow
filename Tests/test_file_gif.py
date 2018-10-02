@@ -4,6 +4,12 @@ from PIL import Image, ImagePalette, GifImagePlugin
 
 from io import BytesIO
 
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
+
 codecs = dir(Image.core)
 
 # sample gif stream
@@ -410,6 +416,11 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.info['background'], im.info['background'])
+
+        if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+            im = Image.open("Tests/images/hopper.webp")
+            self.assertIsInstance(im.info['background'], tuple)
+            im.save(out)
 
     def test_comment(self):
         im = Image.open(TEST_GIF)
