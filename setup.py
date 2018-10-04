@@ -245,6 +245,11 @@ class pil_build_ext(build_ext):
                                         IMAGEQUANT_ROOT="libimagequant"
                                         ).items():
             root = globals()[root_name]
+
+            if root is None and root_name in os.environ:
+                prefix = os.environ[root_name]
+                root = (os.path.join(prefix, 'lib'), os.path.join(prefix, 'include'))
+
             if root is None and pkg_config:
                 if isinstance(lib_name, tuple):
                     for lib_name2 in lib_name:
