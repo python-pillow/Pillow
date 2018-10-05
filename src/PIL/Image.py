@@ -873,9 +873,9 @@ class Image(object):
         The default method of converting a greyscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is NONE, all non-zero values are set to 255 (white). To
-        use other thresholds, use the :py:meth:`~PIL.Image.Image.point`
-        method.
+        dither is NONE, all values larger than 128 are set to 255 (white),
+        all other values to 0 (black). To use other thresholds, use the
+        :py:meth:`~PIL.Image.Image.point` method.
 
         When converting from "RGBA" to "P" without a **matrix** argument,
         this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
