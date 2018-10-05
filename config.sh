@@ -70,9 +70,9 @@ function run_tests {
     return $ret
 }
 
-# Custom functions to temporarily pin wheel to 0.31.1
 if [ -n "$IS_OSX" ]; then
 	function before_install {
+		# Custom before_install to temporarily pin wheel to 0.31.1
 		brew cask uninstall oclint || true
 		export CC=clang
 		export CXX=clang++
@@ -81,21 +81,4 @@ if [ -n "$IS_OSX" ]; then
 		pip install --upgrade pip
 		pip install wheel==0.31.1
 	}
-else
-	function build_wheel_cmd {
-		local cmd=${1:-pip_wheel_cmd}
-		local repo_dir=${2:-$REPO_DIR}
-		[ -z "$repo_dir" ] && echo "repo_dir not defined" && exit 1
-		local wheelhouse=$(abspath ${WHEEL_SDIR:-wheelhouse})
-		start_spinner
-		if [ -n "$(is_function "pre_build")" ]; then pre_build; fi
-		stop_spinner
-		if [ -n "$BUILD_DEPENDS" ]; then
-			pip install $(pip_opts) $BUILD_DEPENDS
-		fi
-		/opt/python/cp36-cp36m/bin/pip3 install wheel==0.31.1
-		(cd $repo_dir && $cmd $wheelhouse)
-		pip show wheel
-		repair_wheelhouse $wheelhouse
-	}	
 fi
