@@ -3,12 +3,13 @@ import os
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
-pythons = {  # '26': 7,
-           '27': 7,
-           'pypy2': 7,
-           # '32': 7,
-           '33': 7.1,
-           '34': 7.1}
+pythons = {'27': {'compiler':7, 'vc':2008},
+           'pypy2': {'compiler':7, 'vc':2008},
+           '33': {'compiler':7.1, 'vc':2010},
+           '34': {'compiler':7.1, 'vc':2010},
+           '35': {'compiler':7.1, 'vc':2015},
+           '36': {'compiler':7.1, 'vc':2015},
+           '37': {'compiler':7.1, 'vc':2015}}
 
 VIRT_BASE = "c:/vp/"
 X64_EXT = os.environ.get('X64_EXT', "x64")
@@ -78,38 +79,64 @@ libs = {
 }
 
 compilers = {
-    (7, 64): {
-        'env_version': 'v7.0',
-        'vc_version': '2008',
-        'env_flags': '/x64 /xp',
-        'inc_dir': 'msvcr90-x64',
-        'platform': 'x64',
-        'webp_platform': 'x64',
+    7: {
+        2008: {
+            64: {
+                'env_version': 'v7.0',
+                'vc_version': '2008',
+                'env_flags': '/x64 /xp',
+                'inc_dir': 'msvcr90-x64',
+                'platform': 'x64',
+                'webp_platform': 'x64',
+            },
+            32: {
+                'env_version': 'v7.0',
+                'vc_version': '2008',
+                'env_flags': '/x86 /xp',
+                'inc_dir': 'msvcr90-x32',
+                'platform': 'Win32',
+                'webp_platform': 'x86',
+            }
+        }
     },
-    (7, 32): {
-        'env_version': 'v7.0',
-        'vc_version': '2008',
-        'env_flags': '/x86 /xp',
-        'inc_dir': 'msvcr90-x32',
-        'platform': 'Win32',
-        'webp_platform': 'x86',
-    },
-    (7.1, 64): {
-        'env_version': 'v7.1',
-        'vc_version': '2010',
-        'env_flags': '/x64 /vista',
-        'inc_dir': 'msvcr10-x64',
-        'platform': 'x64',
-        'webp_platform': 'x64',
-    },
-    (7.1, 32): {
-        'env_version': 'v7.1',
-        'vc_version': '2010',
-        'env_flags': '/x86 /vista',
-        'inc_dir': 'msvcr10-x32',
-        'platform': 'Win32',
-        'webp_platform': 'x86',
-    },
+    7.1: {
+        2010: {
+            64: {
+                'env_version': 'v7.1',
+                'vc_version': '2010',
+                'env_flags': '/x64 /vista',
+                'inc_dir': 'msvcr10-x64',
+                'platform': 'x64',
+                'webp_platform': 'x64',
+            },
+            32: {
+                'env_version': 'v7.1',
+                'vc_version': '2010',
+                'env_flags': '/x86 /vista',
+                'inc_dir': 'msvcr10-x32',
+                'platform': 'Win32',
+                'webp_platform': 'x86',
+            }
+        },
+        2015: {
+            64: {
+                'env_version': 'v7.1',
+                'vc_version': '2015',
+                'env_flags': '/x64 /vista',
+                'inc_dir': 'msvcr10-x64',
+                'platform': 'x64',
+                'webp_platform': 'x64',
+            },
+            32: {
+                'env_version': 'v7.1',
+                'vc_version': '2015',
+                'env_flags': '/x86 /vista',
+                'inc_dir': 'msvcr10-x32',
+                'platform': 'Win32',
+                'webp_platform': 'x86',
+            }
+        }
+    }
 }
 
 
@@ -133,11 +160,20 @@ def compiler_from_env():
 
     for k, v in pythons.items():
         if k in py:
-            compiler_version = v
+            py_info = v
             break
 
-    bit = 32
-    if '64' in py:
-        bit = 64
+    bit = bit_from_env()
+    return compilers[py_info['compiler']][py_info['vc']][bit]
 
-    return compilers[(compiler_version, bit)]
+def bit_from_env():
+    py = os.environ['PYTHON']
+
+    return 64 if '64' in py else 32
+
+def all_compilers():
+    all = []
+    for vc_compilers in compilers.values():
+        for bit_compilers in vc_compilers.values():
+            all += bit_compilers.values()
+    return all

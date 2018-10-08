@@ -18,8 +18,14 @@ environment:
     PIP_DIR: bin
     VENV: YES
   - PYTHON: C:/Python27-x64
-  - PYTHON: C:/Python34
+  - PYTHON: C:/Python37
   - PYTHON: C:/Python27
+  - PYTHON: C:/Python37-x64
+  - PYTHON: C:/Python36
+  - PYTHON: C:/Python36-x64
+  - PYTHON: C:/Python35
+  - PYTHON: C:/Python35-x64
+  - PYTHON: C:/Python34
   - PYTHON: C:/Python34-x64
   - PYTHON: C:/msys64/mingw32
     EXECUTABLE: bin/python3
