@@ -7,7 +7,7 @@ import getopt
 import os
 
 from config import (compilers, compiler_from_env, pythons, pyversion_from_env,
-                    VIRT_BASE, X64_EXT)
+                    bit_from_env, VIRT_BASE, X64_EXT)
 
 
 def setup_vms():
@@ -64,7 +64,15 @@ exit
 """
 
 
-def build_one(py_ver, compiler):
+def vc_setup(compiler, bit):
+    script = ""
+    if compiler['vc_version'] == '2015':
+        arch = "x86" if bit == 32 else "x86_amd64"
+        script = r"""
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s""" % arch
+    return script
+
+def build_one(py_ver, compiler, bit):
     # UNDONE virtual envs if we're not running on appveyor
     args = {}
     args.update(compiler)
@@ -78,12 +86,17 @@ def build_one(py_ver, compiler):
         args['executable'] = "%EXECUTABLE%"
 
     args['py_ver'] = py_ver
-    if '34' in py_ver:
-        args['tcl_ver'] = '86'
-    else:
+    if '27' in py_ver:
         args['tcl_ver'] = '85'
+    else:
+        args['tcl_ver'] = '86'
 
-    return r"""
+    if compiler['vc_version'] == '2015':
+        args['imaging_libs'] = ' build_ext --add-imaging-libs=msvcrt'
+    else:
+        args['imaging_libs'] = ''
+
+    script = r"""
 setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
 set DISTUTILS_USE_SDK=1
@@ -91,12 +104,13 @@ set LIB=%%LIB%%;%%INCLIB%%\%(inc_dir)s
 set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl%(tcl_ver)s\include
 
 setlocal
-set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl
-call %(python_path)s\%(executable)s setup.py %%BLDOPT%%
+set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl""" + vc_setup(compiler, bit) + r"""
+call %(python_path)s\%(executable)s setup.py %(imaging_libs)s %%BLDOPT%%
 endlocal
 
 endlocal
-""" % args
+"""
+    return script % args
 
 
 def clean():
@@ -111,19 +125,18 @@ def clean():
 def main(op):
     scripts = []
 
-    for py_version, compiler_version in pythons.items():
+    for py_version, py_info in pythons.items():
+        py_compilers = compilers[py_info['compiler']][py_info['vc']]
         scripts.append((py_version,
                         "\n".join([header(op),
                                    build_one(py_version,
-                                             compilers[(compiler_version,
-                                                        32)]),
+                                             py_compilers[32], 32),
                                    footer()])))
 
         scripts.append(("%s%s" % (py_version, X64_EXT),
                         "\n".join([header(op),
                                    build_one("%sx64" % py_version,
-                                             compilers[(compiler_version,
-                                                        64)]),
+                                             py_compilers[64], 64),
                                    footer()])))
 
     results = map(run_script, scripts)
@@ -136,10 +149,11 @@ def run_one(op):
 
     compiler = compiler_from_env()
     py_version = pyversion_from_env()
+    bit = bit_from_env()
 
     run_script((py_version,
                 "\n".join([header(op),
-                           build_one(py_version, compiler),
+                           build_one(py_version, compiler, bit),
                            footer()])
                 ))
 

@@ -191,10 +191,11 @@ class pil_build_ext(build_ext):
         ('disable-platform-guessing', None,
          'Disable platform guessing on Linux'),
         ('debug', None, 'Debug logging')
-    ]
+    ] + [('add-imaging-libs=', None, 'Add libs to _imaging build')]
 
     def initialize_options(self):
         self.disable_platform_guessing = None
+        self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, 'disable_%s' % x, None)
@@ -598,7 +599,7 @@ class pil_build_ext(build_ext):
         for src_file in _LIB_IMAGING:
             files.append(os.path.join("src/libImaging", src_file + ".c"))
 
-        libs = []
+        libs = self.add_imaging_libs.split()
         defs = []
         if feature.jpeg:
             libs.append(feature.jpeg)
