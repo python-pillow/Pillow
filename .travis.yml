@@ -6,6 +6,7 @@ env:
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
       - TEST_DEPENDS="pytest pytest-cov numpy scipy"
+      - MACOSX_DEPLOYMENT_TARGET=10.10
       - WHEELHOUSE_UPLOADER_USERNAME=travis-worker
       # Following generated with
       # travis encrypt -r python-pillow/pillow-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
@@ -17,7 +18,7 @@ python: 3.5
 sudo: required
 dist: trusty
 services: docker
-osx_image: xcode6.4
+osx_image: xcode9.4
 
 matrix:
   exclude:
