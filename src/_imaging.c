@@ -471,7 +471,12 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
       INT32 i;
       FLOAT32 f;
     } pixel;
-
+    if (x < 0){
+        x = im->xsize + x;
+    }
+    if (y < 0){
+        y = im->ysize + y;
+    }
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);
         return NULL;
