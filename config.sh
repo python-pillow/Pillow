@@ -69,16 +69,3 @@ function run_tests {
     fi
     return $ret
 }
-
-if [ -n "$IS_OSX" ]; then
-	function before_install {
-		# Custom before_install to temporarily pin wheel to 0.31.1
-		brew cask uninstall oclint || true
-		export CC=clang
-		export CXX=clang++
-		get_macpython_environment $MB_PYTHON_VERSION venv
-		source venv/bin/activate
-		pip install --upgrade pip
-		pip install wheel==0.31.1
-	}
-fi
