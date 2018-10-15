@@ -471,12 +471,14 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
       INT32 i;
       FLOAT32 f;
     } pixel;
-    if (x < 0){
+
+    if (x < 0) {
         x = im->xsize + x;
     }
-    if (y < 0){
+    if (y < 0) {
         y = im->ysize + y;
     }
+
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);
         return NULL;
@@ -1653,6 +1655,13 @@ _putpixel(ImagingObject* self, PyObject* args)
         return NULL;
 
     im = self->image;
+
+    if (x < 0) {
+        x = im->xsize + x;
+    }
+    if (y < 0) {
+        y = im->ysize + y;
+    }
 
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);
@@ -3018,6 +3027,13 @@ pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color)
 
     if (_getxy(xy, &x, &y))
         return -1;
+
+    if (x < 0) {
+        x = im->xsize + x;
+    }
+    if (y < 0) {
+        y = im->ysize + y;
+    }
 
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);

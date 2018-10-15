@@ -74,7 +74,12 @@ class PyAccess(object):
         """
         if self.readonly:
             raise ValueError('Attempt to putpixel a read only image')
-        (x, y) = self.check_xy(xy)
+        (x, y) = xy
+        if x < 0:
+            x = self.xsize + x
+        if y < 0:
+            y = self.ysize + y
+        (x, y) = self.check_xy((x, y))
         return self.set_pixel(x, y, color)
 
     def __getitem__(self, xy):
@@ -89,9 +94,9 @@ class PyAccess(object):
           pixel values for multiband images.
         """
         (x, y) = xy
-        if (x < 0):
+        if x < 0:
             x = self.xsize + x
-        if (y < 0):
+        if y < 0:
             y = self.ysize + y
         (x, y) = self.check_xy((x, y))
         return self.get_pixel(x, y)
