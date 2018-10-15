@@ -68,10 +68,10 @@ class TestImagePutPixel(AccessTest):
         im1 = hopper()
         im2 = Image.new(im1.mode, im1.size, 0)
 
-        width, heigth = im1.size
-        self.assertEqual(im1.getpixel((0, 0)), im1.getpixel((-width, -heigth)))
+        width, height = im1.size
+        self.assertEqual(im1.getpixel((0, 0)), im1.getpixel((-width, -height)))
         self.assertEqual(im1.getpixel((-1, -1)),
-                         im1.getpixel((width-1, heigth-1)))
+                         im1.getpixel((width-1, height-1)))
 
         for y in range(-1, -im1.size[1]-1, -1):
             for x in range(-1, -im1.size[0]-1, -1):
