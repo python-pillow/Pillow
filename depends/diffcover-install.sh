@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Fetch the remote master branch before running diff-cover on Travis CI.
 # https://github.com/Bachmann1234/diff-cover#troubleshooting
 git fetch origin master:refs/remotes/origin/master
