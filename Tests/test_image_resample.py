@@ -71,12 +71,13 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                 s_px[size[0] - x - 1, y] = 255 - val
         return sample
 
-    def check_case(self, case, sample):
+    def check_case(self, case, sample, strict=True):
         s_px = sample.load()
         c_px = case.load()
         for y in range(case.size[1]):
             for x in range(case.size[0]):
-                if c_px[x, y] != s_px[x, y]:
+                diff = abs(c_px[x, y] - s_px[x, y])
+                if (strict and diff) or diff > 1:
                     message = '\nHave: \n{}\n\nExpected: \n{}'.format(
                         self.serialize_image(case),
                         self.serialize_image(sample),
@@ -190,7 +191,9 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
                     'f5 f4 ee ff ff c4'
                     'b8 b7 b4 bf c4 a0')
             for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (12, 12)))
+                self.check_case(channel,
+                    self.make_sample(data, (12, 12)), strict=False)
+
 
 
 class CoreResampleConsistencyTest(PillowTestCase):
