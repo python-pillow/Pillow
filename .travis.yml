@@ -14,25 +14,37 @@ matrix:
   fast_finish: true
   include:
     - python: "pypy"
+      name: "PyPy Trusty"
       dist: trusty
     - python: "pypy3"
+      name: "PyPy3 Trusty"
       dist: trusty
     - python: '3.7'
+      name: "3.7 Xenial"
     - python: '2.7'
+      name: "2.7 Xenial"
     - python: '2.7'
+      name: "2.7 Trusty"
       dist: trusty
     - python:  "2.7_with_system_site_packages" # For PyQt4
+      name: "2.7_with_system_site_packages Xenial"
     - python:  "2.7_with_system_site_packages" # For PyQt4
+      name: "2.7_with_system_site_packages Trusty"
       dist: trusty
     - python: '3.6'
+      name: "3.6 Xenial"
     - python: '3.6'
+      name: "3.6 Trusty PYTHONOPTIMIZE=1"
       dist: trusty
       env: PYTHONOPTIMIZE=1
     - python: '3.5'
+      name: "3.5 Xenial"
     - python: '3.5'
+      name: "3.5 Trusty PYTHONOPTIMIZE=2"
       dist: trusty
       env: PYTHONOPTIMIZE=2
     - python: '3.4'
+      name: "3.4 Trusty"
       dist: trusty
     - env: DOCKER="alpine" DOCKER_TAG="pytest"
     - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
