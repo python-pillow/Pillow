@@ -15,6 +15,7 @@ graft depends
 graft winbuild
 graft docs
 prune docs/_static
+prune Tests
 
 # build/src control detritus
 exclude .appveyor.yml
