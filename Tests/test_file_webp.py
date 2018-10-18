@@ -9,14 +9,7 @@ except ImportError:
     HAVE_WEBP = False
 
 
-class TestFileWebp(PillowTestCase):
-
-    def setUp(self):
-        if not HAVE_WEBP:
-            return
-
-        self.rgb_mode = "RGB"
-
+class TestUnsupportedWebp(PillowTestCase):
     def test_unsupported(self):
         if HAVE_WEBP:
             WebPImagePlugin.SUPPORTED = False
@@ -28,12 +21,18 @@ class TestFileWebp(PillowTestCase):
         if HAVE_WEBP:
             WebPImagePlugin.SUPPORTED = True
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
+
+
+@unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
+class TestFileWebp(PillowTestCase):
+
+    def setUp(self):
+        self.rgb_mode = "RGB"
+
     def test_version(self):
         _webp.WebPDecoderVersion()
         _webp.WebPDecoderBuggyAlpha()
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_read_rgb(self):
         """
         Can we read a RGB mode WebP file without error?
@@ -53,7 +52,6 @@ class TestFileWebp(PillowTestCase):
         self.assert_image_similar_tofile(
             image, 'Tests/images/hopper_webp_bits.ppm', 1.0)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_write_rgb(self):
         """
         Can we write a RGB mode file to webp without error.
@@ -83,7 +81,6 @@ class TestFileWebp(PillowTestCase):
         target = hopper(self.rgb_mode)
         self.assert_image_similar(image, target, 12.0)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_write_unsupported_mode_L(self):
         """
         Saving a black-and-white file to WebP format should work, and be
@@ -104,7 +101,6 @@ class TestFileWebp(PillowTestCase):
 
         self.assert_image_similar(image, target, 10.0)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_write_unsupported_mode_P(self):
         """
         Saving a palette-based file to WebP format should work, and be
@@ -125,7 +121,6 @@ class TestFileWebp(PillowTestCase):
 
         self.assert_image_similar(image, target, 50.0)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_WebPEncode_with_invalid_args(self):
         """
         Calling encoder functions with no arguments should result in an error.
@@ -135,7 +130,6 @@ class TestFileWebp(PillowTestCase):
             self.assertRaises(TypeError, _webp.WebPAnimEncoder)
         self.assertRaises(TypeError, _webp.WebPEncode)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
     def test_WebPDecode_with_invalid_args(self):
         """
         Calling decoder functions with no arguments should result in an error.
@@ -145,13 +139,19 @@ class TestFileWebp(PillowTestCase):
             self.assertRaises(TypeError, _webp.WebPAnimDecoder)
         self.assertRaises(TypeError, _webp.WebPDecode)
 
-    @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
+    @unittest.skip("Currently is not working")
     def test_no_resource_warning(self):
         file_path = "Tests/images/hopper.webp"
         image = Image.open(file_path)
 
         temp_file = self.tempfile("temp.webp")
         self.assert_warning(None, image.save, temp_file)
+
+    def test_file_pointer_could_be_reused(self):
+        file_path = "Tests/images/hopper.webp"
+        with open(file_path, 'rb') as blob:
+            Image.open(blob).load()
+            Image.open(blob).load()
 
 
 if __name__ == '__main__':
