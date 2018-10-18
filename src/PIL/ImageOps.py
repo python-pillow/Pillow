@@ -380,9 +380,10 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
                  (width, height) tuple.
     :param method: What resampling method to use. Default is
                    :py:attr:`PIL.Image.NEAREST`.
-    :param bleed: Remove a border around the outside of the image (from all
+    :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).
+                  Cannot be greater than or equal to 0.5.
     :param centering: Control the cropping position.  Use (0.5, 0.5) for
                       center cropping (e.g. if cropping the width, take 50% off
                       of the left side, and therefore 50% off the right side).
@@ -400,66 +401,50 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # kevin@cazabon.com
     # http://www.cazabon.com
 
-    # ensure inputs are valid
-    if not isinstance(centering, list):
-        centering = [centering[0], centering[1]]
+    # ensure centering is mutable
+    centering = list(centering)
 
-    if centering[0] > 1.0 or centering[0] < 0.0:
-        centering[0] = 0.50
-    if centering[1] > 1.0 or centering[1] < 0.0:
-        centering[1] = 0.50
+    if not 0.0 <= centering[0] <= 1.0:
+        centering[0] = 0.5
+    if not 0.0 <= centering[1] <= 1.0:
+        centering[1] = 0.5
 
-    if bleed > 0.49999 or bleed < 0.0:
+    if not 0.0 <= bleed < 0.5:
         bleed = 0.0
 
     # calculate the area to use for resizing and cropping, subtracting
     # the 'bleed' around the edges
 
     # number of pixels to trim off on Top and Bottom, Left and Right
-    bleedPixels = (
-        int((float(bleed) * float(image.size[0])) + 0.5),
-        int((float(bleed) * float(image.size[1])) + 0.5)
-        )
+    bleed_pixels = (bleed * image.size[0], bleed * image.size[1])
 
-    liveArea = (0, 0, image.size[0], image.size[1])
-    if bleed > 0.0:
-        liveArea = (
-            bleedPixels[0], bleedPixels[1], image.size[0] - bleedPixels[0] - 1,
-            image.size[1] - bleedPixels[1] - 1
-            )
+    live_size = (image.size[0] - bleed_pixels[0] * 2,
+                 image.size[1] - bleed_pixels[1] * 2)
 
-    liveSize = (liveArea[2] - liveArea[0], liveArea[3] - liveArea[1])
-
-    # calculate the aspect ratio of the liveArea
-    liveAreaAspectRatio = float(liveSize[0])/float(liveSize[1])
+    # calculate the aspect ratio of the live_size
+    live_size_ratio = float(live_size[0]) / live_size[1]
 
     # calculate the aspect ratio of the output image
-    aspectRatio = float(size[0]) / float(size[1])
+    output_ratio = float(size[0]) / size[1]
 
     # figure out if the sides or top/bottom will be cropped off
-    if liveAreaAspectRatio >= aspectRatio:
-        # liveArea is wider than what's needed, crop the sides
-        cropWidth = int((aspectRatio * float(liveSize[1])) + 0.5)
-        cropHeight = liveSize[1]
+    if live_size_ratio >= output_ratio:
+        # live_size is wider than what's needed, crop the sides
+        crop_width = output_ratio * live_size[1]
+        crop_height = live_size[1]
     else:
-        # liveArea is taller than what's needed, crop the top and bottom
-        cropWidth = liveSize[0]
-        cropHeight = int((float(liveSize[0])/aspectRatio) + 0.5)
+        # live_size is taller than what's needed, crop the top and bottom
+        crop_width = live_size[0]
+        crop_height = live_size[0] / output_ratio
 
     # make the crop
-    leftSide = int(liveArea[0] + (float(liveSize[0]-cropWidth) * centering[0]))
-    if leftSide < 0:
-        leftSide = 0
-    topSide = int(liveArea[1] + (float(liveSize[1]-cropHeight) * centering[1]))
-    if topSide < 0:
-        topSide = 0
+    crop_left = bleed_pixels[0] + (live_size[0]-crop_width) * centering[0]
+    crop_top = bleed_pixels[1] + (live_size[1]-crop_height) * centering[1]
 
-    out = image.crop(
-        (leftSide, topSide, leftSide + cropWidth, topSide + cropHeight)
-        )
+    crop = (crop_left, crop_top, crop_left + crop_width, crop_top + crop_height)
 
     # resize the image and return it
-    return out.resize(size, method)
+    return image.resize(size, method, box=crop)
 
 
 def flip(image):

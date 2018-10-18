@@ -1,0 +1,14 @@
+5.4.0 (unreleased)
+-----
+
+
+Other Changes
+=============
+
+ImageOps.fit
+^^^^^^^^^^^^
+
+Now uses one resize operation with ``box`` parameter internally
+instead of a crop and scale operations sequence.
+This improves the performance and accuracy of cropping since
+the ``box`` parameter accepts float values.
