@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+5.4.0 (unreleased)
+------------------
+
+- Optimise ImageOps.fit by combining resize and crop #3409
+  [homm]
+
 5.3.0 (2018-10-01)
 ------------------
 
