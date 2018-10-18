@@ -92,7 +92,7 @@ class PsdImageFile(ImageFile.ImageFile):
             # load resources
             end = self.fp.tell() + size
             while self.fp.tell() < end:
-                signature = read(4)
+                read(4)  # signature
                 id = i16(read(2))
                 name = read(i8(read(1)))
                 if not (len(name) & 1):
@@ -207,17 +207,13 @@ def _layerinfo(file):
             mode = None  # unknown
 
         # skip over blend flags and extra information
-        filler = read(12)
+        read(12)  # filler
         name = ""
         size = i32(read(4))
         combined = 0
         if size:
             length = i32(read(4))
             if length:
-                mask_y = i32(read(4))
-                mask_x = i32(read(4))
-                mask_h = i32(read(4)) - mask_y
-                mask_w = i32(read(4)) - mask_x
                 file.seek(length - 16, 1)
             combined += length + 4
 

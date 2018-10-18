@@ -32,7 +32,7 @@ class TestFileTar(PillowTestCase):
         tar.close()
 
     def test_contextmanager(self):
-        with TarIO.TarIO(TEST_TAR_FILE, 'hopper.jpg') as tar:
+        with TarIO.TarIO(TEST_TAR_FILE, 'hopper.jpg'):
             pass
 
 

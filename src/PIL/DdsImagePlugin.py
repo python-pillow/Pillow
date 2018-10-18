@@ -118,7 +118,7 @@ class DdsImageFile(ImageFile.ImageFile):
         self.mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
-        reserved = struct.unpack("<11I", header.read(44))
+        struct.unpack("<11I", header.read(44))  # reserved
 
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))

@@ -10,7 +10,7 @@ try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
     ImageCms.core.profile_open
-except ImportError as v:
+except ImportError:
     # Skipped via setUp()
     pass
 

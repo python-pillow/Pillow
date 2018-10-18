@@ -153,7 +153,7 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error as v:
+            except re.error:
                 raise SyntaxError("not an IM file")
 
             if m:
