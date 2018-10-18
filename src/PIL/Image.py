@@ -28,11 +28,14 @@
 # PILLOW_VERSION is deprecated and will be removed after that.
 # Use __version__ instead.
 from . import VERSION, PILLOW_VERSION, __version__, _plugins
+assert VERSION
+assert PILLOW_VERSION
 from ._util import py3
 
 import logging
 import warnings
 import math
+
 
 logger = logging.getLogger(__name__)
 
@@ -134,9 +137,8 @@ except ImportError:
 USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
 try:
     import cffi
-    HAS_CFFI = True
 except ImportError:
-    HAS_CFFI = False
+    cffi = None
 
 try:
     from pathlib import Path
@@ -376,26 +378,32 @@ def preinit():
 
     try:
         from . import BmpImagePlugin
+        assert BmpImagePlugin
     except ImportError:
         pass
     try:
         from . import GifImagePlugin
+        assert GifImagePlugin
     except ImportError:
         pass
     try:
         from . import JpegImagePlugin
+        assert JpegImagePlugin
     except ImportError:
         pass
     try:
         from . import PpmImagePlugin
+        assert PpmImagePlugin
     except ImportError:
         pass
     try:
         from . import PngImagePlugin
+        assert PngImagePlugin
     except ImportError:
         pass
 #   try:
 #       import TiffImagePlugin
+#       assert TiffImagePlugin
 #   except ImportError:
 #       pass
 
@@ -833,7 +841,7 @@ class Image(object):
                 self.palette.mode = "RGBA"
 
         if self.im:
-            if HAS_CFFI and USE_CFFI_ACCESS:
+            if cffi and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
                 from . import PyAccess
