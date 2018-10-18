@@ -419,7 +419,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     bleed_pixels = (bleed * image.size[0], bleed * image.size[1])
 
     live_size = (image.size[0] - bleed_pixels[0] * 2,
-                image.size[1] - bleed_pixels[1] * 2)
+                 image.size[1] - bleed_pixels[1] * 2)
 
     # calculate the aspect ratio of the live_size
     live_size_ratio = float(live_size[0]) / live_size[1]
