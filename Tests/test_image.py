@@ -139,7 +139,6 @@ class TestImage(PillowTestCase):
         # Act/Assert
         # Shouldn't cause AttributeError (#774)
         self.assertFalse(item is None)
-        self.assertFalse(item == None)
         self.assertFalse(item == num)
 
     def test_expand_x(self):
