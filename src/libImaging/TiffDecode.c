@@ -169,10 +169,11 @@ int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset) {
 }
 
 int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int bytes) {
-	TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
-	char *filename = "tempfile.tif";
-	char *mode = "r";
-	TIFF *tiff;
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    char *filename = "tempfile.tif";
+    char *mode = "r";
+    TIFF *tiff;
+    uint16 photometric = 0, compression;
 
 
 	/* buffer is the encoded file, bytes is the length of the encoded file */
@@ -234,7 +235,12 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int
 		}
 	}
 
-    TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
+    TIFFGetFieldDefaulted(tiff, TIFFTAG_COMPRESSION, &compression);
+    TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
+    if (compression == COMPRESSION_JPEG && photometric == PHOTOMETRIC_YCBCR) {
+        /* Set pseudo-tag to force automatic YCbCr->RGB conversion */
+        TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
+    }
 
     if (TIFFIsTiled(tiff)) {
         uint32 x, y, tile_y;
