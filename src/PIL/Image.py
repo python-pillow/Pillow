@@ -28,14 +28,41 @@
 # PILLOW_VERSION is deprecated and will be removed after that.
 # Use __version__ instead.
 from . import VERSION, PILLOW_VERSION, __version__, _plugins
-assert VERSION
-assert PILLOW_VERSION
 from ._util import py3
 
 import logging
 import warnings
 import math
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
+from . import ImageMode
+from ._binary import i8
+from ._util import isPath, isStringType, deferred_error
+
+import os
+import sys
+import io
+import struct
+import atexit
+
+# type stuff
+import numbers
+try:
+    # Python 3
+    from collections.abc import Callable
+except ImportError:
+    # Python 2.7
+    from collections import Callable
+
+
+# Silence warnings
+assert VERSION
+assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -106,31 +133,6 @@ except ImportError as v:
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
     # see docs/porting.rst
     raise
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-    builtins = __builtin__
-
-from . import ImageMode
-from ._binary import i8
-from ._util import isPath, isStringType, deferred_error
-
-import os
-import sys
-import io
-import struct
-import atexit
-
-# type stuff
-import numbers
-try:
-    # Python 3
-    from collections.abc import Callable
-except ImportError:
-    # Python 2.7
-    from collections import Callable
 
 
 # works everywhere, win for pypy, not cpython

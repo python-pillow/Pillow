@@ -17,6 +17,10 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
+import sphinx_rtd_theme
+
+import PIL
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -52,7 +56,6 @@ author = u'Fredrik Lundh, Alex Clark and Contributors'
 # built documents.
 #
 # The short X.Y version.
-import PIL
 version = PIL.__version__
 # The full version, including alpha/beta/rc tags.
 release = PIL.__version__
@@ -107,7 +110,6 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
