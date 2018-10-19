@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Only ask for YCbCr->RGB libtiff conversion for jpeg-compressed tiffs #3417
+  [kkopachev]
+
 - Optimise ImageOps.fit by combining resize and crop #3409
   [homm]
 
