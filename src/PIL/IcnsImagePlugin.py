@@ -284,7 +284,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         if info_size not in self.info['sizes'] and len(info_size) == 3 and \
            info_size[2] == 1:
             simple_sizes = [(size[0] * size[2], size[1] * size[2])
-                           for size in self.info['sizes']]
+                            for size in self.info['sizes']]
             if value in simple_sizes:
                 info_size = self.info['sizes'][simple_sizes.index(value)]
         if info_size not in self.info['sizes']:
