@@ -3,12 +3,12 @@ import os
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
-pythons = {'27': {'compiler':7, 'vc':2008},
-           'pypy2': {'compiler':7, 'vc':2008},
-           '34': {'compiler':7.1, 'vc':2010},
-           '35': {'compiler':7.1, 'vc':2015},
-           '36': {'compiler':7.1, 'vc':2015},
-           '37': {'compiler':7.1, 'vc':2015}}
+pythons = {'27': {'compiler': 7, 'vc': 2008},
+           'pypy2': {'compiler': 7, 'vc': 2008},
+           '34': {'compiler': 7.1, 'vc': 2010},
+           '35': {'compiler': 7.1, 'vc': 2015},
+           '36': {'compiler': 7.1, 'vc': 2015},
+           '37': {'compiler': 7.1, 'vc': 2015}}
 
 VIRT_BASE = "c:/vp/"
 X64_EXT = os.environ.get('X64_EXT', "x64")
