@@ -17,7 +17,7 @@ class TestFormatHSV(PillowTestCase):
 
     def tuple_to_ints(self, tp):
         x, y, z = tp
-        return (int(x*255.0), int(y*255.0), int(z*255.0))
+        return int(x*255.0), int(y*255.0), int(z*255.0)
 
     def test_sanity(self):
         Image.new('HSV', (100, 100))
