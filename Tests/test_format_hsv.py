@@ -13,15 +13,11 @@ class TestFormatHSV(PillowTestCase):
         return float(i)/255.0
 
     def str_to_float(self, i):
-
         return float(ord(i))/255.0
-
-    def to_int(self, f):
-        return int(f*255.0)
 
     def tuple_to_ints(self, tp):
         x, y, z = tp
-        return (int(x*255.0), int(y*255.0), int(z*255.0))
+        return int(x*255.0), int(y*255.0), int(z*255.0)
 
     def test_sanity(self):
         Image.new('HSV', (100, 100))

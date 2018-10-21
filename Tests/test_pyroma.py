@@ -5,19 +5,12 @@ from PIL import __version__
 try:
     import pyroma
 except ImportError:
-    # Skip via setUp()
-    pass
+    pyroma = None
 
 
 class TestPyroma(PillowTestCase):
 
-    def setUp(self):
-        try:
-            import pyroma
-            assert pyroma  # Ignore warning
-        except ImportError:
-            self.skipTest("ImportError")
-
+    @unittest.skipUnless(pyroma, "Pyroma is not installed")
     def test_pyroma(self):
         # Arrange
         data = pyroma.projectdata.get_data(".")
