@@ -72,6 +72,7 @@ def vc_setup(compiler, bit):
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s""" % arch
     return script
 
+
 def build_one(py_ver, compiler, bit):
     # UNDONE virtual envs if we're not running on appveyor
     args = {}

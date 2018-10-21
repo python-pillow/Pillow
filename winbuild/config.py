@@ -165,10 +165,12 @@ def compiler_from_env():
     bit = bit_from_env()
     return compilers[py_info['compiler']][py_info['vc']][bit]
 
+
 def bit_from_env():
     py = os.environ['PYTHON']
 
     return 64 if '64' in py else 32
+
 
 def all_compilers():
     all = []
