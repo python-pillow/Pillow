@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Flake8 fixes #3422
+  [radarhere]
+
 - Only ask for YCbCr->RGB libtiff conversion for jpeg-compressed tiffs #3417
   [kkopachev]
 
