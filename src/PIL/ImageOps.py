@@ -441,7 +441,10 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     crop_left = bleed_pixels[0] + (live_size[0]-crop_width) * centering[0]
     crop_top = bleed_pixels[1] + (live_size[1]-crop_height) * centering[1]
 
-    crop = (crop_left, crop_top, crop_left + crop_width, crop_top + crop_height)
+    crop = (
+        crop_left, crop_top,
+        crop_left + crop_width, crop_top + crop_height
+    )
 
     # resize the image and return it
     return image.resize(size, method, box=crop)

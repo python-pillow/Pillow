@@ -406,7 +406,9 @@ def floodfill(image, xy, value, border=None, thresh=0):
     except (ValueError, IndexError):
         return  # seed point outside image
     edge = {(x, y)}
-    full_edge = set()  # use a set to keep record of current and previous edge pixels to reduce memory consumption
+    # use a set to keep record of current and previous edge pixels
+    # to reduce memory consumption
+    full_edge = set()
     while edge:
         new_edge = set()
         for (x, y) in edge:  # 4 adjacent method

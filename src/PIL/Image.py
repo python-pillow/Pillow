@@ -1047,7 +1047,8 @@ class Image(object):
                        2 = fast octree
                        3 = libimagequant
         :param kmeans: Integer
-        :param palette: Quantize to the palette of given :py:class:`PIL.Image.Image`.
+        :param palette: Quantize to the palette of given
+                        :py:class:`PIL.Image.Image`.
         :returns: A new image
 
         """
@@ -1773,11 +1774,10 @@ class Image(object):
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        if self.mode == 'LA':
-            return self.convert('La').resize(size, resample, box).convert('LA')
-
-        if self.mode == 'RGBA':
-            return self.convert('RGBa').resize(size, resample, box).convert('RGBA')
+        if self.mode in ['LA', 'RGBA']:
+            im = self.convert(self.mode[:-1]+'a')
+            im = im.resize(size, resample, box)
+            return im.convert(self.mode)
 
         self.load()
 
@@ -1849,7 +1849,8 @@ class Image(object):
         else:
             post_trans = translate
         if center is None:
-            rotn_center = (w / 2.0, h / 2.0)  # FIXME These should be rounded to ints?
+            # FIXME These should be rounded to ints?
+            rotn_center = (w / 2.0, h / 2.0)
         else:
             rotn_center = center
 
@@ -1864,7 +1865,8 @@ class Image(object):
             return a*x + b*y + c, d*x + e*y + f
 
         matrix[2], matrix[5] = transform(-rotn_center[0] - post_trans[0],
-                                         -rotn_center[1] - post_trans[1], matrix)
+                                         -rotn_center[1] - post_trans[1],
+                                         matrix)
         matrix[2] += rotn_center[0]
         matrix[5] += rotn_center[1]
 
@@ -1887,7 +1889,8 @@ class Image(object):
                                              matrix)
             w, h = nw, nh
 
-        return self.transform((w, h), AFFINE, matrix, resample, fillcolor=fillcolor)
+        return self.transform((w, h), AFFINE, matrix, resample,
+                              fillcolor=fillcolor)
 
     def save(self, fp, format=None, **params):
         """
@@ -2154,8 +2157,8 @@ class Image(object):
         :param fill: If **method** is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
-        :param fillcolor: Optional fill color for the area outside the transform
-           in the output image.
+        :param fillcolor: Optional fill color for the area outside the
+           transform in the output image.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
