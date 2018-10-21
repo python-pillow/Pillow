@@ -333,6 +333,7 @@ def _save(im, fp, filename):
     provided_images = {im.width: im
                        for im in im.encoderinfo.get("append_images", [])}
     last_w = None
+    second_path = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)
 
