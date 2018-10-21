@@ -20,7 +20,14 @@ has the following structure:
 {format_directory}
 {data}
 Where:
-{header} = { u32:magic, u32:version, u32:width, u32:height, u32:mipmap_count, u32:format_count }
+{header} = {
+    u32:magic,
+    u32:version,
+    u32:width,
+    u32:height,
+    u32:mipmap_count,
+    u32:format_count
+}
 
 * The "magic" number is "FTEX".
 * "width" and "height" are the dimensions of the texture.

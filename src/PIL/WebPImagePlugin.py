@@ -32,7 +32,8 @@ def _accept(prefix):
 
     if is_riff_file_format and is_webp_file and is_valid_vp8_mode:
         if not SUPPORTED:
-            return "image file could not be identified because WEBP support not installed"
+            return "image file could not be identified " \
+                   "because WEBP support not installed"
         return True
 
 
@@ -253,7 +254,8 @@ def _save_all(im, fp, filename):
                 rawmode = ims.mode
                 if ims.mode not in _VALID_WEBP_MODES:
                     alpha = 'A' in ims.mode or 'a' in ims.mode \
-                            or (ims.mode == 'P' and 'A' in ims.im.getpalettemode())
+                            or (ims.mode == 'P' and
+                                'A' in ims.im.getpalettemode())
                     rawmode = 'RGBA' if alpha else 'RGB'
                     frame = ims.convert(rawmode)
 

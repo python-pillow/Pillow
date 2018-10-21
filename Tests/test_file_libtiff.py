@@ -670,6 +670,5 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
 
-
 if __name__ == '__main__':
     unittest.main()

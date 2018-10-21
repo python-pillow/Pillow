@@ -467,7 +467,7 @@ class Color3DLUT(MultibandFilter):
     def __repr__(self):
         r = [
             "{} from {}".format(self.__class__.__name__,
-                                  self.table.__class__.__name__),
+                                self.table.__class__.__name__),
             "size={:d}x{:d}x{:d}".format(*self.size),
             "channels={:d}".format(self.channels),
         ]

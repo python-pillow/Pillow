@@ -647,7 +647,7 @@ def createProfile(colorSpace, colorTemp=-1):
     if colorSpace == "LAB":
         try:
             colorTemp = float(colorTemp)
-        except:
+        except (TypeError, ValueError):
             raise PyCMSError(
                 "Color temperature must be numeric, \"%s\" not valid"
                 % colorTemp)

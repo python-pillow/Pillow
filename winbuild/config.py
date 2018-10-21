@@ -3,12 +3,12 @@ import os
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
-pythons = {'27': {'compiler':7, 'vc':2008},
-           'pypy2': {'compiler':7, 'vc':2008},
-           '34': {'compiler':7.1, 'vc':2010},
-           '35': {'compiler':7.1, 'vc':2015},
-           '36': {'compiler':7.1, 'vc':2015},
-           '37': {'compiler':7.1, 'vc':2015}}
+pythons = {'27': {'compiler': 7, 'vc': 2008},
+           'pypy2': {'compiler': 7, 'vc': 2008},
+           '34': {'compiler': 7.1, 'vc': 2010},
+           '35': {'compiler': 7.1, 'vc': 2015},
+           '36': {'compiler': 7.1, 'vc': 2015},
+           '37': {'compiler': 7.1, 'vc': 2015}}
 
 VIRT_BASE = "c:/vp/"
 X64_EXT = os.environ.get('X64_EXT', "x64")
@@ -165,10 +165,12 @@ def compiler_from_env():
     bit = bit_from_env()
     return compilers[py_info['compiler']][py_info['vc']][bit]
 
+
 def bit_from_env():
     py = os.environ['PYTHON']
 
     return 64 if '64' in py else 32
+
 
 def all_compilers():
     all = []

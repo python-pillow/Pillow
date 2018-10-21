@@ -284,7 +284,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         if info_size not in self.info['sizes'] and len(info_size) == 3 and \
            info_size[2] == 1:
             simple_sizes = [(size[0] * size[2], size[1] * size[2])
-                           for size in self.info['sizes']]
+                            for size in self.info['sizes']]
             if value in simple_sizes:
                 info_size = self.info['sizes'][simple_sizes.index(value)]
         if info_size not in self.info['sizes']:
@@ -333,6 +333,7 @@ def _save(im, fp, filename):
     provided_images = {im.width: im
                        for im in im.encoderinfo.get("append_images", [])}
     last_w = None
+    second_path = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)
 
