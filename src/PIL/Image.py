@@ -2620,6 +2620,7 @@ def open(fp, mode="r"):
     preinit()
 
     accept_warnings = []
+
     def _open_core(fp, filename, prefix):
         for i in ID:
             try:
