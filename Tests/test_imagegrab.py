@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, on_appveyor
+from helper import unittest, PillowTestCase
 
 import sys
 
@@ -7,7 +7,6 @@ try:
 
     class TestImageGrab(PillowTestCase):
 
-        @unittest.skipIf(on_appveyor(), "Test fails on appveyor")
         def test_grab(self):
             im = ImageGrab.grab()
             self.assert_image(im, im.mode, im.size)
