@@ -386,7 +386,8 @@ def pdf_repr(x):
 
 
 class PdfParser:
-    """Based on https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
+    """Based on
+    https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
     Supports PDF up to 1.4
     """
 
@@ -863,7 +864,8 @@ class PdfParser:
         raise PdfFormatError(
             "unrecognized object: " + repr(data[offset:offset+32]))
 
-    re_lit_str_token = re.compile(br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")
+    re_lit_str_token = re.compile(
+        br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")
     escaped_chars = {
         b"n": b"\n",
         b"r": b"\r",

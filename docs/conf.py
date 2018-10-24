@@ -270,7 +270,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'PillowPILFork', u'Pillow (PIL Fork) Documentation',
-   author, 'PillowPILFork', 'Pillow is the friendly PIL fork by Alex Clark and Contributors.',
+   author, 'PillowPILFork',
+   'Pillow is the friendly PIL fork by Alex Clark and Contributors.',
    'Miscellaneous'),
 ]
 
