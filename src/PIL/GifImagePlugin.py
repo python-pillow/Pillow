@@ -258,9 +258,10 @@ class GifImageFile(ImageFile.ImageFile):
                 # do not dispose or none specified
                 self.dispose = None
             elif self.disposal_method == 2:
-                # replace with background colour
-                self.dispose = Image.core.fill("P", self.size,
-                                               self.info["background"])
+                # replace with transparency if there is one, otherwise
+                # background colour
+                bg = info.get("transparency", self.info["background"])
+                self.dispose = Image.core.fill("P", self.size, bg)
             else:
                 # replace with previous contents
                 if self.im:
