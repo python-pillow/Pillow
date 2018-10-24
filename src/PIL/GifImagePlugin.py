@@ -145,7 +145,6 @@ class GifImageFile(ImageFile.ImageFile):
             self.dispose_extent = [0, 0, 0, 0]  # x0, y0, x1, y1
             self.__frame = -1
             self.__fp.seek(self.__rewind)
-            self._prev_im = None
             self.disposal_method = 0
         else:
             # ensure that the previous frame was loaded
@@ -250,9 +249,10 @@ class GifImageFile(ImageFile.ImageFile):
                 # image data
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
-                self.tile = [
-                    ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace, -1))
-                ]
+                self.tile = [("gif",
+                             (x0, y0, x1, y1),
+                             self.__offset,
+                             (bits, interlace, info.get("transparency", -1)))]
                 break
 
             else:
@@ -294,20 +294,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
-
-    def load_end(self):
-        ImageFile.ImageFile.load_end(self)
-
-        # if the disposal method is 'do not dispose', transparent
-        # pixels should show the content of the previous frame
-        if self._prev_im and self._prev_disposal_method == 1:
-            # we do this by pasting the updated area onto the previous
-            # frame which we then use as the current image content
-            updated = self._crop(self.im, self.dispose_extent)
-            self._prev_im.paste(updated, self.dispose_extent, updated.convert("RGBA"))
-            self.im = self._prev_im
-        self._prev_im = self.im.copy()
-        self._prev_disposal_method = self.disposal_method
 
     def _close__fp(self):
         try:
