@@ -247,7 +247,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.tile = [("gif",
                              (x0, y0, x1, y1),
                              self.__offset,
-                             (bits, interlace))]
+                             (bits, interlace, -1))]
                 break
 
             else:
