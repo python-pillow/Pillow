@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Change tuple background to global color table index when saving as GIF #3385
+  [radarhere]
+
 - Flake8 fixes #3422
   [radarhere]
 
