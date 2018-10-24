@@ -711,10 +711,17 @@ def _get_global_header(im, info):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
+    background = 0
+    if "background" in info:
+        background = info["background"]
+        if isinstance(background, tuple):
+            # WebPImagePlugin stores an RGBA value in info["background"]
+            # So it must be converted to the same format as GifImagePlugin's
+            # info["background"] - a global color table index
+            background = im.palette.getcolor(background)
+
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
-
-    background = info["background"] if "background" in info else 0
 
     return [
         b"GIF"+version +               # signature + version
