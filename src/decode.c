@@ -430,7 +430,8 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
     char *mode;
     int bits = 8;
     int interlace = 0;
-    if (!PyArg_ParseTuple(args, "s|ii", &mode, &bits, &interlace)) {
+    int transparency = -1;
+    if (!PyArg_ParseTuple(args, "s|iii", &mode, &bits, &interlace, &transparency)) {
         return NULL;
     }
 
@@ -448,6 +449,7 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
 
     ((GIFDECODERSTATE *)decoder->state.context)->bits = bits;
     ((GIFDECODERSTATE *)decoder->state.context)->interlace = interlace;
+    ((GIFDECODERSTATE *)decoder->state.context)->transparency = transparency;
 
     return (PyObject *)decoder;
 }

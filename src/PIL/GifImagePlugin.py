@@ -251,7 +251,7 @@ class GifImageFile(ImageFile.ImageFile):
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 self.tile = [
-                    ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace))
+                    ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace, -1))
                 ]
                 break
 
