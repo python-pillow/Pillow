@@ -273,6 +273,26 @@ class TestFileGif(PillowTestCase):
         except EOFError:
             pass
 
+    def test_n_frames_invariant(self):
+        # Regression test: make sure that reading n_frames doesn't cause the
+        # current image to change.
+        img = Image.open("Tests/images/transparent_dispose.gif")
+        before = img.tobytes()
+
+        self.assertEqual(img.n_frames, 3)
+        self.assertEqual(before, img.tobytes())
+
+    def test_transparent_dispose(self):
+        img = Image.open("Tests/images/transparent_dispose.gif")
+
+        expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
+        for frame in range(3):
+            img.seek(frame)
+            for x in range(3):
+                color = img.getpixel((x,0))
+                self.assertEqual(color, expected_colors[frame][x],
+                    'frame %i, x %i' % (frame, x))
+
     def test_dispose_previous(self):
         img = Image.open("Tests/images/dispose_prev.gif")
         try:
