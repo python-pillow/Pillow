@@ -15,8 +15,10 @@ class TestUnsupportedWebp(PillowTestCase):
             WebPImagePlugin.SUPPORTED = False
 
         file_path = "Tests/images/hopper.webp"
-        self.assert_warning(UserWarning,
-            lambda: self.assertRaises(IOError, Image.open, file_path))
+        self.assert_warning(
+            UserWarning,
+            lambda: self.assertRaises(IOError, Image.open, file_path)
+        )
 
         if HAVE_WEBP:
             WebPImagePlugin.SUPPORTED = True

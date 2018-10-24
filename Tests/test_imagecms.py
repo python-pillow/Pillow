@@ -402,7 +402,7 @@ class TestImageCms(PillowTestCase):
         def create_test_image():
             # set up test image with something interesting in the tested aux
             # channel.
-            nine_grid_deltas = [
+            nine_grid_deltas = [  # noqa: E128
                 (-1, -1), (-1, 0), (-1, 1),
                  (0, -1),  (0, 0),  (0, 1),
                  (1, -1),  (1, 0),  (1, 1),
