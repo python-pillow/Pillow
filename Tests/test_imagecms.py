@@ -404,8 +404,8 @@ class TestImageCms(PillowTestCase):
             # channel.
             nine_grid_deltas = [
                 (-1, -1), (-1, 0), (-1, 1),
-                ( 0, -1), ( 0, 0), ( 0, 1),
-                ( 1, -1), ( 1, 0), ( 1, 1),
+                 (0, -1),  (0, 0),  (0, 1),
+                 (1, -1),  (1, 0),  (1, 1),
             ]
             chans = []
             bands = ImageMode.getmode(mode).bands
