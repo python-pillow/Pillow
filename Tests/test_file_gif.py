@@ -337,6 +337,17 @@ def test_dispose_background():
             pass
 
 
+def test_transparent_dispose():
+    img = Image.open("Tests/images/transparent_dispose.gif")
+
+    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
+    for frame in range(3):
+        img.seek(frame)
+        for x in range(3):
+            color = img.getpixel((x, 0))
+            assert color == expected_colors[frame][x]
+
+
 def test_dispose_previous():
     with Image.open("Tests/images/dispose_prev.gif") as img:
         try:
