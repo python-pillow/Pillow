@@ -8,6 +8,7 @@ import io
 import logging
 import itertools
 import os
+import distutils.version
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
@@ -236,7 +237,15 @@ class TestFileLibTiff(LibTiffTestCase):
             37000: 4,
             37001: 4.2
         }
-        for libtiff in [False, True]:
+
+        libtiff_version = TiffImagePlugin._libtiff_version()
+
+        libtiffs = [False]
+        if distutils.version.StrictVersion(libtiff_version) >= \
+           distutils.version.StrictVersion("4.0"):
+            libtiffs.append(True)
+
+        for libtiff in libtiffs:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
             im = hopper()

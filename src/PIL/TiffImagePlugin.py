@@ -54,6 +54,7 @@ import os
 import struct
 import sys
 import warnings
+import distutils.version
 
 from .TiffTags import TYPES
 
@@ -282,6 +283,10 @@ def _limit_rational(val, max_val):
     inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
+
+
+def _libtiff_version():
+    return Image.core.libtiff_version.split("\n")[0].split("Version ")[1]
 
 
 ##
@@ -1501,9 +1506,11 @@ def _save(im, fp, filename):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary. Support has only been been added
             # for int and float values
-            if tag not in TiffTags.LIBTIFF_CORE and not \
-               (isinstance(value, int) or isinstance(value, float)):
-                continue
+            if tag not in TiffTags.LIBTIFF_CORE:
+                if (distutils.version.StrictVersion(_libtiff_version()) <
+                    distutils.version.StrictVersion("4.0")) \
+                   or not (isinstance(value, int) or isinstance(value, float)):
+                    continue
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str if py3 else unicode):
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
