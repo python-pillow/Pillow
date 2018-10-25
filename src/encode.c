@@ -855,7 +855,8 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         value = PyList_GetItem(values, pos);
         status = 0;
         is_core_tag = 0;
-        for (i=0; i<32; i++) {
+        int number_of_tags = sizeof(tags) / sizeof(int);
+        for (i=0; i<number_of_tags; i++) {
             if (tags[i] == key_int) {
                 is_core_tag = 1;
                 break;
