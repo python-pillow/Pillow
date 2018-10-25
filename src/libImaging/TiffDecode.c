@@ -402,6 +402,19 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 
 }
 
+int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_type, int key){
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    char field_name[10];
+    uint32 n;
+
+    const TIFFFieldInfo info[] = {
+        { key, 0, 1, field_type, FIELD_CUSTOM, 1, 0, field_name }
+    };
+    n = sizeof(info) / sizeof(info[0]);
+
+    return TIFFMergeFieldInfo(clientstate->tiff, info, n);
+}
+
 int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...){
     // after tif_dir.c->TIFFSetField.
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;

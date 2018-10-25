@@ -231,6 +231,24 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.WRITE_LIBTIFF = False
 
+    def test_custom_metadata(self):
+        custom = {
+            37000: 4,
+            37001: 4.2
+        }
+        for libtiff in [False, True]:
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+            im = hopper()
+
+            out = self.tempfile("temp.tif")
+            im.save(out, tiffinfo=custom)
+            TiffImagePlugin.WRITE_LIBTIFF = False
+
+            reloaded = Image.open(out)
+            for tag, value in custom.items():
+                self.assertEqual(reloaded.tag_v2[tag], value)
+
     def test_int_dpi(self):
         # issue #1765
         im = hopper('RGB')
