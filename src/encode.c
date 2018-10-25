@@ -804,7 +804,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     PyObject *dir;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-    int key_int, status, is_core_tag, i;
+    int key_int, status, is_core_tag, number_of_tags, i;
     // This list also exists in TiffTags.py
     const int tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
@@ -849,13 +849,13 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
         return NULL;
     }
 
+    number_of_tags = sizeof(tags) / sizeof(int);
     for (pos = 0; pos < d_size; pos++) {
         key = PyList_GetItem(keys, pos);
         key_int = (int)PyInt_AsLong(key);
         value = PyList_GetItem(values, pos);
         status = 0;
         is_core_tag = 0;
-        int number_of_tags = sizeof(tags) / sizeof(int);
         for (i=0; i<number_of_tags; i++) {
             if (tags[i] == key_int) {
                 is_core_tag = 1;
