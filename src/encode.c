@@ -806,7 +806,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t pos = 0;
     int key_int, status, is_core_tag, i;
     // This list also exists in TiffTags.py
-    const int tags[32] = {
+    const int tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
         341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
         339, 32997, 330, 531, 530
