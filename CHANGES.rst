@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Added negative index to PixelAccess #3406
+  [Nazime]
+
 - Change tuple background to global color table index when saving as GIF #3385
   [radarhere]
 
