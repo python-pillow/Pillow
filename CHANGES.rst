@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Docs: Re-add the downloads badge #3443
+  [hugovk]
+
 - Added negative index to PixelAccess #3406
   [Nazime]
 
