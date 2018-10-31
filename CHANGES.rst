@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Only close existing fp in WebP if fp is exclusive #3418
+  [radarhere]
+
 - Docs: Re-add the downloads badge #3443
   [hugovk]
 
