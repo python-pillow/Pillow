@@ -3898,7 +3898,7 @@ Pre-fork
     (1.1.3 final released)
 
     + Made setup.py look for old versions of zlib.  For some back-
-      ground, see: http://www.gzip.org/zlib/advisory-2002-03-11.txt
+      ground, see: https://zlib.net/advisory-2002-03-11.txt
 
     (1.1.3c2 released)
 
