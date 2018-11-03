@@ -148,12 +148,9 @@ else:
         format = "PNG"
         options = {'compress_level': 1}
 
-        def show_file(self, file, **options):
-            command, executable = self.get_command_ex(file, **options)
-            command = "(%s %s; rm -f %s)&" % (command, quote(file),
-                                              quote(file))
-            os.system(command)
-            return 1
+        def get_command(self, file, **options):
+            command = self.get_command_ex(file, **options)[0]
+            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
 
     # implementations
 
