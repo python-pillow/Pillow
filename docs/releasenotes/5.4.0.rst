@@ -1,6 +1,19 @@
 5.4.0 (unreleased)
 -----
 
+API Changes
+===========
+
+Negative indexes in pixel access
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When accessing individual image pixels, negative indexes are now also accepted.
+For example, to get or set the farthest pixel in the lower right of an image::
+
+    px = im.load()
+    print(px[-1, -1])
+    px[-1, -1] = (0, 0, 0)
+
 
 Other Changes
 =============
