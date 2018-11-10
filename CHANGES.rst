@@ -5,6 +5,12 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Test: Do not play sound when running screencapture command #3454
+  [radarhere]
+
+- Close exclusive fp on open exception #3456
+  [radarhere]
+
 - Only close existing fp in WebP if fp is exclusive #3418
   [radarhere]
 
