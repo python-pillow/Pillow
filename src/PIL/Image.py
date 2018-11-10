@@ -2641,6 +2641,10 @@ def open(fp, mode="r"):
                 # opening failures that are entirely expected.
                 # logger.debug("", exc_info=True)
                 continue
+            except Exception:
+                if exclusive_fp:
+                    fp.close()
+                raise
         return None
 
     im = _open_core(fp, filename, prefix)

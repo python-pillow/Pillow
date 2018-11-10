@@ -17,11 +17,15 @@ class TestBmpReference(PillowTestCase):
         """ These shouldn't crash/dos, but they shouldn't return anything
         either """
         for f in self.get_files('b'):
-            try:
-                im = Image.open(f)
-                im.load()
-            except Exception:  # as msg:
-                pass
+            def open(f):
+                try:
+                    im = Image.open(f)
+                    im.load()
+                except Exception:  # as msg:
+                    pass
+
+            # Assert that there is no unclosed file warning
+            self.assert_warning(None, open, f)
 
     def test_questionable(self):
         """ These shouldn't crash/dos, but it's not well defined that these
