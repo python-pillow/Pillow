@@ -14,7 +14,7 @@ try:
 
         def test_grabclipboard(self):
             if sys.platform == "darwin":
-                subprocess.call(['screencapture', '-c'])
+                subprocess.call(['screencapture', '-cx'])
             else:
                 p = subprocess.Popen(['powershell', '-command', '-'],
                                      stdin=subprocess.PIPE)
