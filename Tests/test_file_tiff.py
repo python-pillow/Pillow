@@ -26,19 +26,19 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.format, "TIFF")
 
         hopper("1").save(filename)
-        im = Image.open(filename)
+        Image.open(filename)
 
         hopper("L").save(filename)
-        im = Image.open(filename)
+        Image.open(filename)
 
         hopper("P").save(filename)
-        im = Image.open(filename)
+        Image.open(filename)
 
         hopper("RGB").save(filename)
-        im = Image.open(filename)
+        Image.open(filename)
 
         hopper("I").save(filename)
-        im = Image.open(filename)
+        Image.open(filename)
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]

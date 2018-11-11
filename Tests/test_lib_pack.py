@@ -17,7 +17,7 @@ class TestLibPack(PillowTestCase):
         for x, pixel in enumerate(pixels):
             im.putpixel((x, 0), pixel)
 
-        if isinstance(data, (int)):
+        if isinstance(data, int):
             data_len = data * len(pixels)
             data = bytes(bytearray(range(1, data_len + 1)))
 
@@ -217,7 +217,7 @@ class TestLibUnpack(PillowTestCase):
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
-        if isinstance(data, (int)):
+        if isinstance(data, int):
             data_len = data * len(pixels)
             data = bytes(bytearray(range(1, data_len + 1)))
 

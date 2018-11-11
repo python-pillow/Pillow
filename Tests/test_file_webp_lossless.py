@@ -16,7 +16,7 @@ class TestFileWebpLossless(PillowTestCase):
             self.skipTest('WebP support not installed')
             return
 
-        if (_webp.WebPDecoderVersion() < 0x0200):
+        if _webp.WebPDecoderVersion() < 0x0200:
             self.skipTest('lossless not included')
 
         self.rgb_mode = "RGB"

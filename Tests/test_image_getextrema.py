@@ -19,7 +19,7 @@ class TestImageGetExtrema(PillowTestCase):
         self.assertEqual(
             extrema("RGBA"), ((0, 255), (0, 255), (0, 255), (255, 255)))
         self.assertEqual(
-            extrema("CMYK"), (((0, 255), (0, 255), (0, 255), (0, 0))))
+            extrema("CMYK"), ((0, 255), (0, 255), (0, 255), (0, 0)))
         self.assertEqual(extrema("I;16"), (0, 255))
 
     def test_true_16(self):

@@ -228,12 +228,10 @@ class TestFileEps(PillowTestCase):
                  "Tests/images/illuCS6_no_preview.eps",
                  "Tests/images/illuCS6_preview.eps"]
 
-        # Act
+        # Act / Assert
         for filename in FILES:
             img = Image.open(filename)
-
-        # Assert
-        self.assertEqual(img.mode, "RGB")
+            self.assertEqual(img.mode, "RGB")
 
     def test_emptyline(self):
         # Test file includes an empty line in the header data

@@ -110,7 +110,7 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except Exception as msg:
+                except Exception:
                     pass
 
             self.fail(msg or "got different content")
@@ -163,7 +163,6 @@ class PillowTestCase(unittest.TestCase):
     def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
 
-        result = None
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
@@ -175,7 +174,7 @@ class PillowTestCase(unittest.TestCase):
             if warn_class is None:
                 self.assertEqual(len(w), 0,
                                  "Expected no warnings, got %s" %
-                                 list(v.category for v in w))
+                                 [v.category for v in w])
             else:
                 self.assertGreaterEqual(len(w), 1)
                 found = False
@@ -187,10 +186,10 @@ class PillowTestCase(unittest.TestCase):
         return result
 
     def assert_all_same(self, items, msg=None):
-        self.assertTrue(items.count(items[0]) == len(items), msg)
+        self.assertEqual(items.count(items[0]), len(items), msg)
 
     def assert_not_all_same(self, items, msg=None):
-        self.assertFalse(items.count(items[0]) == len(items), msg)
+        self.assertNotEqual(items.count(items[0]), len(items), msg)
 
     def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
         """Tests if actuals has values within threshold from targets"""

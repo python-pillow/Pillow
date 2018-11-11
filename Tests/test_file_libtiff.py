@@ -415,7 +415,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open('Tests/images/multipage.tiff')
         frames = im.n_frames
         self.assertEqual(frames, 3)
-        for idx in range(frames):
+        for _ in range(frames):
             im.seek(0)
             # Should not raise ValueError: I/O operation on closed file
             im.load()
@@ -545,11 +545,11 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_read_icc(self):
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc = img.info.get('icc_profile')
-            self.assertNotEqual(icc, None)
+            self.assertIsNotNone(icc)
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc_libtiff = img.info.get('icc_profile')
-            self.assertNotEqual(icc_libtiff, None)
+            self.assertIsNotNone(icc_libtiff)
         TiffImagePlugin.READ_LIBTIFF = False
         self.assertEqual(icc, icc_libtiff)
 
