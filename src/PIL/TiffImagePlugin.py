@@ -594,7 +594,8 @@ class ImageFileDirectory_v2(MutableMapping):
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: %s, expected 1" % (
+                    "Metadata Warning, tag %s had too many entries: "
+                    "%s, expected 1" % (
                         tag, len(values)))
                 dest[tag] = values[0]
 

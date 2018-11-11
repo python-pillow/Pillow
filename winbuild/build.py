@@ -112,7 +112,7 @@ call %(python_path)s\%(executable)s setup.py %(imaging_libs)s %%BLDOPT%%
 endlocal
 
 endlocal
-"""
+"""  # noqa: E501
     return script % args
 
 

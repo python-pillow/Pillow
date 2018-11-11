@@ -34,7 +34,7 @@ libs = {
         'dir': 'tiff-4.0.10',
     },
     'freetype': {
-        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz',
+        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz',  # noqa: E501
         'filename': PILLOW_DEPENDS_DIR + 'freetype-2.9.1.tar.gz',
         'dir': 'freetype-2.9.1',
     },
