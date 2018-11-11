@@ -56,7 +56,7 @@ class TarIO(ContainerIO.ContainerIO):
         # Open region
         ContainerIO.ContainerIO.__init__(self, self.fh, self.fh.tell(), size)
 
-    # Context Manager Support
+    # Context manager support
     def __enter__(self):
         return self
 
