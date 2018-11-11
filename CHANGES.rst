@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Add context manager, __del__ and close methods to TarIO #3455
+  [radarhere]
+
 - Test: Do not play sound when running screencapture command #3454
   [radarhere]
 
