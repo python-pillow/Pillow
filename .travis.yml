@@ -6,33 +6,50 @@ cache: pip
 notifications:
   irc: "chat.freenode.net#pil"
 
-# Run slow PyPy* first, to give them a headstart and reduce waiting time.
+# Run fast lint first to get fast feedback.
+# Run slow PyPy* next, to give them a headstart and reduce waiting time.
 # Run latest 3.x and 2.x next, to get quick compatibility results.
 # Then run the remainder, with fastest Docker jobs last.
 
 matrix:
   fast_finish: true
   include:
+    - python: "3.6"
+      name: "Lint"
+      env: LINT="true"
+      sudo: false
     - python: "pypy"
+      name: "PyPy Trusty"
       dist: trusty
     - python: "pypy3"
+      name: "PyPy3 Trusty"
       dist: trusty
     - python: '3.7'
+      name: "3.7 Xenial"
     - python: '2.7'
+      name: "2.7 Xenial"
     - python: '2.7'
+      name: "2.7 Trusty"
       dist: trusty
     - python:  "2.7_with_system_site_packages" # For PyQt4
+      name: "2.7_with_system_site_packages Xenial"
     - python:  "2.7_with_system_site_packages" # For PyQt4
+      name: "2.7_with_system_site_packages Trusty"
       dist: trusty
     - python: '3.6'
+      name: "3.6 Xenial"
     - python: '3.6'
+      name: "3.6 Trusty PYTHONOPTIMIZE=1"
       dist: trusty
       env: PYTHONOPTIMIZE=1
     - python: '3.5'
+      name: "3.5 Xenial"
     - python: '3.5'
+      name: "3.5 Trusty PYTHONOPTIMIZE=2"
       dist: trusty
       env: PYTHONOPTIMIZE=2
     - python: '3.4'
+      name: "3.4 Trusty"
       dist: trusty
     - env: DOCKER="alpine" DOCKER_TAG="pytest"
     - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
@@ -50,7 +67,12 @@ services:
   - docker
 
 install:
-  - if [ "$DOCKER" == "" ]; then .travis/install.sh; fi
+  - |
+    if [ "$LINT" == "true" ]; then
+      pip install -U flake8
+    elif [ "$DOCKER" == "" ]; then
+      .travis/install.sh;
+    fi
 
 before_install:
   - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
@@ -61,14 +83,19 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
 
 script:
-  - |
-       if [ "$DOCKER" == "" ]; then
-          .travis/script.sh
-       else
-          # the Pillow user in the docker container is UID 1000
-          sudo chown -R 1000 $TRAVIS_BUILD_DIR
-          docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER:$DOCKER_TAG
-       fi
+- |
+  if [ "$DOCKER" == "" ] && [ "$LINT" == "" ]; then
+    .travis/script.sh
+  elif [ "$DOCKER" ]; then
+    # the Pillow user in the docker container is UID 1000
+    sudo chown -R 1000 $TRAVIS_BUILD_DIR
+    docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER:$DOCKER_TAG
+  fi
 
 after_success:
-  - .travis/after_success.sh
+- |
+  if [ "$LINT" == "true" ]; then
+    flake8 --statistics --count
+  else
+    .travis/after_success.sh
+  fi
