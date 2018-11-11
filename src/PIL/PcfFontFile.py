@@ -230,7 +230,7 @@ class PcfFontFile(FontFile.FontFile):
         firstCol, lastCol = i16(fp.read(2)), i16(fp.read(2))
         firstRow, lastRow = i16(fp.read(2)), i16(fp.read(2))
 
-        default = i16(fp.read(2))
+        i16(fp.read(2))  # default
 
         nencoding = (lastCol - firstCol + 1) * (lastRow - firstRow + 1)
 

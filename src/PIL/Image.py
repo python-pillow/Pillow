@@ -34,6 +34,36 @@ import logging
 import warnings
 import math
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__
+    builtins = __builtin__
+
+from . import ImageMode
+from ._binary import i8
+from ._util import isPath, isStringType, deferred_error
+
+import os
+import sys
+import io
+import struct
+import atexit
+
+# type stuff
+import numbers
+try:
+    # Python 3
+    from collections.abc import Callable
+except ImportError:
+    # Python 2.7
+    from collections import Callable
+
+
+# Silence warnings
+assert VERSION
+assert PILLOW_VERSION
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,39 +134,13 @@ except ImportError as v:
     # see docs/porting.rst
     raise
 
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-    builtins = __builtin__
-
-from . import ImageMode
-from ._binary import i8
-from ._util import isPath, isStringType, deferred_error
-
-import os
-import sys
-import io
-import struct
-import atexit
-
-# type stuff
-import numbers
-try:
-    # Python 3
-    from collections.abc import Callable
-except ImportError:
-    # Python 2.7
-    from collections import Callable
-
 
 # works everywhere, win for pypy, not cpython
 USE_CFFI_ACCESS = hasattr(sys, 'pypy_version_info')
 try:
     import cffi
-    HAS_CFFI = True
 except ImportError:
-    HAS_CFFI = False
+    cffi = None
 
 try:
     from pathlib import Path
@@ -376,26 +380,32 @@ def preinit():
 
     try:
         from . import BmpImagePlugin
+        assert BmpImagePlugin
     except ImportError:
         pass
     try:
         from . import GifImagePlugin
+        assert GifImagePlugin
     except ImportError:
         pass
     try:
         from . import JpegImagePlugin
+        assert JpegImagePlugin
     except ImportError:
         pass
     try:
         from . import PpmImagePlugin
+        assert PpmImagePlugin
     except ImportError:
         pass
     try:
         from . import PngImagePlugin
+        assert PngImagePlugin
     except ImportError:
         pass
 #   try:
 #       import TiffImagePlugin
+#       assert TiffImagePlugin
 #   except ImportError:
 #       pass
 
@@ -833,7 +843,7 @@ class Image(object):
                 self.palette.mode = "RGBA"
 
         if self.im:
-            if HAS_CFFI and USE_CFFI_ACCESS:
+            if cffi and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
                 from . import PyAccess

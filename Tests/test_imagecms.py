@@ -10,7 +10,7 @@ try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
     ImageCms.core.profile_open
-except ImportError as v:
+except ImportError:
     # Skipped via setUp()
     pass
 
@@ -294,7 +294,14 @@ class TestImageCms(PillowTestCase):
             p.blue_primary,
             ((0.14306641366715667, 0.06060790921083026, 0.7140960805782015),
              (0.15588475410450106, 0.06603820408959558, 0.06060790921083026)))
-        assert_truncated_tuple_equal(p.chromatic_adaptation, (((1.04791259765625, 0.0229339599609375, -0.050201416015625), (0.02960205078125, 0.9904632568359375, -0.0170745849609375), (-0.009246826171875, 0.0150604248046875, 0.7517852783203125)), ((1.0267159024652783, 0.022470062342089134, 0.0229339599609375), (0.02951378324103937, 0.9875098886387147, 0.9904632568359375), (-0.012205438066465256, 0.01987915407854985, 0.0150604248046875))))
+        assert_truncated_tuple_equal(
+            p.chromatic_adaptation,
+            (((1.04791259765625, 0.0229339599609375, -0.050201416015625),
+              (0.02960205078125, 0.9904632568359375, -0.0170745849609375),
+              (-0.009246826171875, 0.0150604248046875, 0.7517852783203125)),
+             ((1.0267159024652783, 0.022470062342089134, 0.0229339599609375),
+              (0.02951378324103937, 0.9875098886387147, 0.9904632568359375),
+              (-0.012205438066465256, 0.01987915407854985, 0.0150604248046875))))
         self.assertIsNone(p.chromaticity)
         self.assertEqual(p.clut, {
             0: (False, False, True),
@@ -402,10 +409,10 @@ class TestImageCms(PillowTestCase):
         def create_test_image():
             # set up test image with something interesting in the tested aux
             # channel.
-            nine_grid_deltas = [
+            nine_grid_deltas = [  # noqa: E128
                 (-1, -1), (-1, 0), (-1, 1),
-                ( 0, -1), ( 0, 0), ( 0, 1),
-                ( 1, -1), ( 1, 0), ( 1, 1),
+                 (0, -1),  (0, 0),  (0, 1),
+                 (1, -1),  (1, 0),  (1, 1),
             ]
             chans = []
             bands = ImageMode.getmode(mode).bands
@@ -421,7 +428,11 @@ class TestImageCms(PillowTestCase):
                 )
                 channel_data = Image.new(channel_type, channel_pattern.size)
                 for delta in nine_grid_deltas:
-                    channel_data.paste(channel_pattern, tuple(paste_offset[c] + delta[c]*channel_pattern.size[c] for c in range(2)))
+                    channel_data.paste(
+                        channel_pattern,
+                        tuple(paste_offset[c] + delta[c] * channel_pattern.size[c]
+                              for c in range(2)),
+                    )
                 chans.append(channel_data)
             return Image.merge(mode, chans)
 

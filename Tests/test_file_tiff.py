@@ -429,7 +429,8 @@ class TestFileTiff(PillowTestCase):
                                        "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw(self):
-        # gdal_translate -of GTiff -co INTERLEAVE=BAND tiff_strip_raw.tif tiff_strip_planar_raw.tiff
+        # gdal_translate -of GTiff -co INTERLEAVE=BAND \
+        # tiff_strip_raw.tif tiff_strip_planar_raw.tiff
         infile = "Tests/images/tiff_strip_planar_raw.tif"
         im = Image.open(infile)
 
@@ -445,7 +446,8 @@ class TestFileTiff(PillowTestCase):
                                        "Tests/images/tiff_adobe_deflate.png")
 
     def test_tiled_planar_raw(self):
-        # gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND \
+        # gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 \
+        # -co BLOCKYSIZE=32 -co INTERLEAVE=BAND \
         # tiff_tiled_raw.tif tiff_tiled_planar_raw.tiff
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
         im = Image.open(infile)

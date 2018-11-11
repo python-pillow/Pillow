@@ -727,7 +727,7 @@ def getProfileInfo(profile):
         # add an extra newline to preserve pyCMS compatibility
         # Python, not C. the white point bits weren't working well,
         # so skipping.
-        #    // info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
+        # info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
         description = profile.profile.product_description
         cpright = profile.profile.product_copyright
         arr = []

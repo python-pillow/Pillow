@@ -102,6 +102,7 @@ class TestImagePutPixel(AccessTest):
 
         self.assert_image_equal(im1, im2)
 
+
 class TestImageGetPixel(AccessTest):
     @staticmethod
     def color(mode):

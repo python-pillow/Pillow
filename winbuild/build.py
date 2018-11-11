@@ -74,7 +74,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s""
 
 
 def build_one(py_ver, compiler, bit):
-    # UNDONE virtual envs if we're not running on appveyor
+    # UNDONE virtual envs if we're not running on AppVeyor
     args = {}
     args.update(compiler)
     if 'PYTHON' in os.environ:
@@ -97,6 +97,8 @@ def build_one(py_ver, compiler, bit):
     else:
         args['imaging_libs'] = ''
 
+    args['vc_setup'] = vc_setup(compiler, bit)
+
     script = r"""
 setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
@@ -105,7 +107,7 @@ set LIB=%%LIB%%;%%INCLIB%%\%(inc_dir)s
 set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl%(tcl_ver)s\include
 
 setlocal
-set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl""" + vc_setup(compiler, bit) + r"""
+set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl%(vc_setup)s
 call %(python_path)s\%(executable)s setup.py %(imaging_libs)s %%BLDOPT%%
 endlocal
 

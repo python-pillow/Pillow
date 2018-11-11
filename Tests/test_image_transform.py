@@ -152,7 +152,7 @@ class TestImageTransform(PillowTestCase):
         ]
 
         # Yeah. Watch some JIT optimize this out.
-        pattern = None
+        pattern = None  # noqa: F841
 
         self.test_mesh()
 

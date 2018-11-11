@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 import os
 
-from PIL import Image, ImageDraw, ImageFilter, ImageMath
+from PIL import Image
 from PIL import features
 
 try:
@@ -26,6 +26,7 @@ def testimage():
     """
     PIL lets you create in-memory images with various pixel types:
 
+    >>> from PIL import Image, ImageDraw, ImageFilter, ImageMath
     >>> im = Image.new("1", (128, 128)) # monochrome
     >>> _info(im)
     (None, '1', (128, 128))
