@@ -564,7 +564,7 @@ class Image(object):
         new.info = self.info.copy()
         return new
 
-    # Context Manager Support
+    # Context manager support
     def __enter__(self):
         return self
 
