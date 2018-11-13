@@ -327,7 +327,9 @@ class TestFilePng(PillowTestCase):
         # Check open/load/verify exception (@PIL150)
 
         im = Image.open(TEST_PNG_FILE)
-        im.verify()
+
+        # Assert that there is no unclosed file warning
+        self.assert_warning(None, im.verify)
 
         im = Image.open(TEST_PNG_FILE)
         im.load()
