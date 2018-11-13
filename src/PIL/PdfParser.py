@@ -373,7 +373,7 @@ def pdf_repr(x):
     elif isinstance(x, list):
         return bytes(PdfArray(x))
     elif ((py3 and isinstance(x, str)) or
-          (not py3 and isinstance(x, unicode))):
+          (not py3 and isinstance(x, unicode))):  # noqa: F821
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage

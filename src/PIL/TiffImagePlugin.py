@@ -541,7 +541,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
         if not py3:
-            basetypes += unicode,
+            basetypes += unicode,  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -623,13 +623,13 @@ class ImageFileDirectory_v2(MutableMapping):
             from .TiffTags import TYPES
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
-            _load_dispatch[idx] = size, func
+            _load_dispatch[idx] = size, func  # noqa: F821
             return func
         return decorator
 
     def _register_writer(idx):
         def decorator(func):
-            _write_dispatch[idx] = func
+            _write_dispatch[idx] = func  # noqa: F821
             return func
         return decorator
 
@@ -638,9 +638,9 @@ class ImageFileDirectory_v2(MutableMapping):
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (
+        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (  # noqa: F821
             self._unpack("{}{}".format(len(data) // size, fmt), data))
-        _write_dispatch[idx] = lambda self, *values: (
+        _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
@@ -1507,7 +1507,7 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, str if py3 else unicode):
+                if isinstance(value, str if py3 else unicode):  # noqa: F821
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
