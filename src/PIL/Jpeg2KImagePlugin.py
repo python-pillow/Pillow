@@ -232,6 +232,13 @@ def _save(im, fp, filename):
     tile_size = info.get('tile_size', None)
     quality_mode = info.get('quality_mode', 'rates')
     quality_layers = info.get('quality_layers', None)
+    if quality_layers is not None and not (
+        isinstance(quality_layers, (list, tuple)) and
+        all([isinstance(quality_layer, (int, float))
+             for quality_layer in quality_layers])
+    ):
+        raise ValueError('quality_layers must be a sequence of numbers')
+
     num_resolutions = info.get('num_resolutions', 0)
     cblk_size = info.get('codeblock_size', None)
     precinct_size = info.get('precinct_size', None)
