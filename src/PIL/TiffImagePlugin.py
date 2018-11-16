@@ -1413,7 +1413,7 @@ def _save(im, fp, filename):
         ifd[key] = info.get(key)
         try:
             ifd.tagtype[key] = info.tagtype[key]
-        except:
+        except Exception:
             pass  # might not be an IFD, Might not have populated type
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu

@@ -181,14 +181,14 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         try:
             fd = self.fp.fileno()
             length = os.fstat(fd).st_size
-        except:
+        except Exception:
             fd = -1
             try:
                 pos = self.fp.tell()
                 self.fp.seek(0, 2)
                 length = self.fp.tell()
                 self.fp.seek(pos, 0)
-            except:
+            except Exception:
                 length = -1
 
         self.tile = [('jpeg2k', (0, 0) + self.size, 0,
@@ -250,7 +250,7 @@ def _save(im, fp, filename):
     if hasattr(fp, "fileno"):
         try:
             fd = fp.fileno()
-        except:
+        except Exception:
             fd = -1
 
     im.encoderconfig = (

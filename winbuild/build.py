@@ -119,7 +119,7 @@ endlocal
 def clean():
     try:
         shutil.rmtree('../build')
-    except:
+    except Exception:
         # could already be removed
         pass
     run_script(('virtualenvs', setup_vms()))
