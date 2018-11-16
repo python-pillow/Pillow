@@ -105,6 +105,22 @@ class TestFileJpeg2k(PillowTestCase):
         im.load()
         self.assertEqual(im.size, (160, 120))
 
+    def test_layers_type(self):
+        outfile = self.tempfile('temp_layers.jp2')
+        for quality_layers in [
+            [100, 50, 10],
+            (100, 50, 10),
+            None
+        ]:
+            test_card.save(outfile, quality_layers=quality_layers)
+
+        for quality_layers in [
+            'quality_layers',
+            ('100', '50', '10')
+        ]:
+            self.assertRaises(ValueError, test_card.save, outfile,
+                              quality_layers=quality_layers)
+
     def test_layers(self):
         out = BytesIO()
         test_card.save(out, 'JPEG2000', quality_layers=[100, 50, 10],
