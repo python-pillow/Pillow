@@ -55,15 +55,15 @@ libs = {
         'version': '8.5.19',
     },
     'tcl-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.8/tcl868-src.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tcl868-src.zip',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.9/tcl869-src.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tcl869-src.zip',
         'dir': '',
     },
     'tk-8.6': {
-        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.8/tk868-src.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tk868-src.zip',
+        'url': SF_MIRROR+'/project/tcl/Tcl/8.6.9/tk869-src.zip',
+        'filename': PILLOW_DEPENDS_DIR + 'tk869-src.zip',
         'dir': '',
-        'version': '8.6.8',
+        'version': '8.6.9',
     },
     'webp': {
         'url': 'http://downloads.webmproject.org/releases/webp/libwebp-1.0.0.tar.gz',
