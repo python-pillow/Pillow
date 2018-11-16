@@ -2,7 +2,6 @@
 from __future__ import print_function
 import base64
 import os
-import sys
 
 if __name__ == "__main__":
     # create font data chunk for embedding
