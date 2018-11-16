@@ -36,7 +36,7 @@ class TestPngDos(PillowTestCase):
 
     def test_dos_total_memory(self):
         im = Image.new('L', (1, 1))
-        compressed_data = zlib.compress('a'*1024*1023)
+        compressed_data = zlib.compress(b'a'*1024*1023)
 
         info = PngImagePlugin.PngInfo()
 
