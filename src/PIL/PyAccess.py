@@ -214,7 +214,7 @@ class _PyAccessI16_L(PyAccess):
         except TypeError:
             color = min(color[0], 65535)
 
-        pixel.l = color & 0xFF
+        pixel.l = color & 0xFF  # noqa: E741
         pixel.r = color >> 8
 
 
@@ -234,7 +234,7 @@ class _PyAccessI16_B(PyAccess):
         except Exception:
             color = min(color[0], 65535)
 
-        pixel.l = color >> 8
+        pixel.l = color >> 8  # noqa: E741
         pixel.r = color & 0xFF
 
 
