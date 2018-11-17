@@ -596,6 +596,8 @@ class Image(object):
         try:
             self.fp.close()
             self.fp = None
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
 
@@ -613,6 +615,8 @@ class Image(object):
                and self.fp and self._exclusive_fp):
                 self.fp.close()
             self.fp = None
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
 
     def _copy(self):
         self.load()

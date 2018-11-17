@@ -40,6 +40,12 @@ class TestFileTiff(PillowTestCase):
         hopper("I").save(filename)
         Image.open(filename)
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open("Tests/images/multipage.tiff")
+            im.load()
+        self.assert_warning(None, open)
+
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
 

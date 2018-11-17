@@ -81,6 +81,14 @@ class DcxImageFile(PcxImageFile):
     def tell(self):
         return self.frame
 
+    def _close__fp(self):
+        try:
+            self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 
 Image.register_open(DcxImageFile.format, DcxImageFile, _accept)
 

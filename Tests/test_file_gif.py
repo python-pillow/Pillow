@@ -33,6 +33,12 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.format, "GIF")
         self.assertEqual(im.info["version"], b"GIF89a")
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_GIF)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 

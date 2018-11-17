@@ -31,6 +31,12 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(im.size, (640, 480))
             self.assertEqual(im.format, "MPO")
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(test_files[0])
+            im.load()
+        self.assert_warning(None, open)
+
     def test_app(self):
         for test_file in test_files:
             # Test APP/COM reader (@PIL135)

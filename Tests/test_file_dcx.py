@@ -20,6 +20,12 @@ class TestFileDcx(PillowTestCase):
         orig = hopper()
         self.assert_image_equal(im, orig)
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_FILE)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
             self.assertRaises(SyntaxError,

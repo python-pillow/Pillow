@@ -18,6 +18,12 @@ class TestImageSpider(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "SPIDER")
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_FILE)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_save(self):
         # Arrange
         temp = self.tempfile('temp.spider')

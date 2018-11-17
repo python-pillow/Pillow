@@ -27,6 +27,12 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.info["duration"], 71)
         self.assertTrue(im.is_animated)
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(static_test_file)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_tell(self):
         # Arrange
         im = Image.open(static_test_file)

@@ -15,6 +15,12 @@ class TestFileIm(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "IM")
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_IM)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_tell(self):
         # Arrange
         im = Image.open(TEST_IM)
