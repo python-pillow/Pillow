@@ -121,24 +121,6 @@ rem build openjpeg
 setlocal
 @echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -G "NMake Makefiles" .
-nmake -f Makefile clean
-nmake -f Makefile
-copy /Y /B bin\* %%INCLIB%%
-mkdir %%INCLIB%%\openjpeg-%(op_ver)s
-copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
-endlocal
-""" % atts
-
-
-def msbuild_openjpeg(compiler):
-    atts = {'op_ver': '2.1'}
-    atts.update(compiler)
-    return r"""
-rem build openjpeg
-setlocal
-@echo on
-cd /D %%OPENJPEG%%%(inc_dir)s
 
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -G "NMake Makefiles" .
 nmake -f Makefile clean
