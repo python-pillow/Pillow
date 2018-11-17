@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Check quality_layers type #3464
+  [radarhere]
+
 - Add context manager, __del__ and close methods to TarIO #3455
   [radarhere]
 
@@ -26,8 +29,11 @@ Changelog (Pillow)
 - Change tuple background to global color table index when saving as GIF #3385
   [radarhere]
 
-- Flake8 fixes #3422
+- Test: Improved ImageGrab tests #3424
   [radarhere]
+
+- Flake8 fixes #3422, #3440
+  [radarhere, hugovk]
 
 - Only ask for YCbCr->RGB libtiff conversion for jpeg-compressed tiffs #3417
   [kkopachev]
