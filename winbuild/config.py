@@ -29,8 +29,8 @@ libs = {
         'dir': 'jpeg-9c',
     },
     'tiff': {
-        'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.10.zip',
-        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.10.zip',
+        'url': 'ftp://download.osgeo.org/libtiff/tiff-4.0.10.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'tiff-4.0.10.tar.gz',
         'dir': 'tiff-4.0.10',
     },
     'freetype': {
