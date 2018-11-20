@@ -14,7 +14,6 @@ env:
 language: python
 # Default Python version is usually 2.7
 python: 3.5
-sudo: required
 dist: trusty
 services: docker
 osx_image: xcode6.4
