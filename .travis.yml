@@ -17,7 +17,6 @@ matrix:
     - python: "3.6"
       name: "Lint"
       env: LINT="true"
-      sudo: false
     - python: "pypy"
       name: "PyPy Trusty"
       dist: trusty
