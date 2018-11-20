@@ -153,6 +153,26 @@ class TestFileWebp(PillowTestCase):
             Image.open(blob).load()
             Image.open(blob).load()
 
+    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
+                         "WebP save all not available")
+    def test_background_from_gif(self):
+        im = Image.open("Tests/images/chi.gif")
+        original_value = im.convert("RGB").getpixel((1, 1))
+
+        # Save as WEBP
+        out_webp = self.tempfile("temp.webp")
+        im.save(out_webp, save_all=True)
+
+        # Save as GIF
+        out_gif = self.tempfile("temp.gif")
+        Image.open(out_webp).save(out_gif)
+
+        reread = Image.open(out_gif)
+        reread_value = reread.convert("RGB").getpixel((1, 1))
+        difference = sum([abs(original_value[i] - reread_value[i])
+                          for i in range(0, 3)])
+        self.assertLess(difference, 5)
+
 
 if __name__ == '__main__':
     unittest.main()

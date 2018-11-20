@@ -196,6 +196,14 @@ def _save_all(im, fp, filename):
         background = encoderinfo["background"]
     elif "background" in im.info:
         background = im.info["background"]
+        if isinstance(background, int):
+            # GifImagePlugin stores a global color table index in
+            # info["background"]. So it must be converted to an RGBA value
+            palette = im.getpalette()
+            if palette:
+                r, g, b = palette[background*3:(background+1)*3]
+                background = (r, g, b, 0)
+
     duration = im.encoderinfo.get("duration", 0)
     loop = im.encoderinfo.get("loop", 0)
     minimize_size = im.encoderinfo.get("minimize_size", False)
