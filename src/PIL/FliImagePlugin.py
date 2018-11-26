@@ -131,6 +131,9 @@ class FliImageFile(ImageFile.ImageFile):
             self.__frame = -1
             self.__fp.seek(self.__rewind)
             self.__offset = 128
+        else:
+            # ensure that the previous frame was loaded
+            self.load()
 
         if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
