@@ -202,6 +202,8 @@ class GifImageFile(ImageFile.ImageFile):
                     # comment extension
                     #
                     info["comment"] = block
+                    if not block:
+                        continue
                 elif i8(s) == 255:
                     #
                     # application extension
