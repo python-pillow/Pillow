@@ -201,9 +201,13 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
-                    info["comment"] = block
-                    if not block:
-                        continue
+                    while block:
+                        if "comment" in info:
+                            info["comment"] += block
+                        else:
+                            info["comment"] = block
+                        block = self.data()
+                    continue
                 elif i8(s) == 255:
                     #
                     # application extension
@@ -538,12 +542,14 @@ def _write_local_header(fp, im, offset, flags):
                  o8(0))
 
     if "comment" in im.encoderinfo and \
-       1 <= len(im.encoderinfo["comment"]) <= 255:
+       1 <= len(im.encoderinfo["comment"]):
         fp.write(b"!" +
-                 o8(254) +                # extension intro
-                 o8(len(im.encoderinfo["comment"])) +
-                 im.encoderinfo["comment"] +
-                 o8(0))
+                 o8(254))                 # extension intro
+        for i in range(0, len(im.encoderinfo["comment"]), 255):
+            subblock = im.encoderinfo["comment"][i:i+255]
+            fp.write(o8(len(subblock)) +
+                     subblock)
+        fp.write(o8(0))
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(b"!" +
