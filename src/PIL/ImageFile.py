@@ -221,13 +221,13 @@ class ImageFile(Image.Image):
                                 s = read(self.decodermaxblock)
                             except (IndexError, struct.error):
                                 # truncated png/gif
-                                if LOAD_TRUNCATED_IMAGES:
+                                if ImageFile.LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
                                     raise IOError("image file is truncated")
 
                             if not s:  # truncated jpeg
-                                if LOAD_TRUNCATED_IMAGES:
+                                if ImageFile.LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
                                     self.tile = []
