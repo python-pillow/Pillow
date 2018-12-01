@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Depends: Update libimagequant to 2.12.2 #3442, libtiff to 4.0.10 #3458, libwebp to 1.0.1 #3468, Tk Tcl to 8.6.9 #3465
+  [radarhere]
+
 - Check quality_layers type #3464
   [radarhere]
 
