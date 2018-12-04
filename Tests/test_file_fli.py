@@ -85,6 +85,13 @@ class TestFileFli(PillowTestCase):
         layer_number = im.tell()
         self.assertEqual(layer_number, 1)
 
+    def test_seek(self):
+        im = Image.open(animated_test_file)
+        im.seek(50)
+
+        expected = Image.open("Tests/images/a_fli.png")
+        self.assert_image_equal(im, expected)
+
 
 if __name__ == '__main__':
     unittest.main()
