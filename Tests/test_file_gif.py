@@ -435,6 +435,23 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['comment'], im.info['comment'])
 
+    def test_comment_over_255(self):
+        out = self.tempfile('temp.gif')
+        im = Image.new('L', (100, 100), '#000')
+        comment = b"Test comment text"
+        while len(comment) < 256:
+            comment += comment
+        im.info['comment'] = comment
+        im.save(out)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['comment'], comment)
+
+    def test_zero_comment_subblocks(self):
+        im = Image.open('Tests/images/hopper_zero_comment_subblocks.gif')
+        expected = Image.open(TEST_GIF)
+        self.assert_image_equal(im, expected)
+
     def test_version(self):
         out = self.tempfile('temp.gif')
 
