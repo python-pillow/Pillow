@@ -5,6 +5,18 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Change color table index background to tuple when saving as WebP #3471
+  [radarhere]
+
+- Allow arbitrary number of comment extension subblocks #3479
+  [radarhere]
+
+- Ensure previous FLI frame is loaded before seeking to the next #3478
+  [radarhere]
+
+- ImageShow improvements #3450
+  [radarhere]
+
 - Depends: Update libimagequant to 2.12.2 #3442, libtiff to 4.0.10 #3458, libwebp to 1.0.1 #3468, Tk Tcl to 8.6.9 #3465
   [radarhere]
 
