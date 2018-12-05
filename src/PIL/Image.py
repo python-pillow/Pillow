@@ -168,7 +168,7 @@ def isImageType(t):
 
 
 #
-# Constants (also defined in _imagingmodule.c!)
+# Constants
 
 NONE = 0
 
@@ -181,14 +181,14 @@ ROTATE_270 = 4
 TRANSPOSE = 5
 TRANSVERSE = 6
 
-# transforms
+# transforms (also defined in Imaging.h)
 AFFINE = 0
 EXTENT = 1
 PERSPECTIVE = 2
 QUAD = 3
 MESH = 4
 
-# resampling filters
+# resampling filters (also defined in Imaging.h)
 NEAREST = NONE = 0
 BOX = 4
 BILINEAR = LINEAR = 2
