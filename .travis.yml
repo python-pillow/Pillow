@@ -16,10 +16,10 @@ matrix:
     - python: "3.6"
       name: "Lint"
       env: LINT="true"
-    - python: "pypy"
-      name: "PyPy Trusty"
+    - python: "pypy2.7-6.0"
+      name: "PyPy2 Trusty"
       dist: trusty
-    - python: "pypy3"
+    - python: "pypy3.5-6.0"
       name: "PyPy3 Trusty"
       dist: trusty
     - python: '3.7'
