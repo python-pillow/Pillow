@@ -18,7 +18,9 @@ Setting the size of TIFF images
 .. deprecated:: 5.3.0
 
 Setting the image size of a TIFF image (eg. ``im.size = (256, 256)``) issues
-a ``DeprecationWarning``::
+a ``DeprecationWarning``:
+
+.. code-block:: none
 
     Setting the size of a TIFF image directly is deprecated, and will
     be removed in a future version. Use the resize method instead.
@@ -58,7 +60,9 @@ PIL.OleFileIO
 
 The vendored version of olefile has been removed. Attempting to import
 ``PIL.OleFileIO`` issues a ``DeprecationWarning`` (from 4.0.0) or raises
-``ImportError`` (from 5.0.0)::
+``ImportError`` (from 5.0.0):
+
+.. code-block:: none
 
     PIL.OleFileIO is deprecated. Use the olefile Python package
     instead. This module will be removed in a future version.
