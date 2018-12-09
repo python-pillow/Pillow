@@ -669,6 +669,12 @@ class TestFileLibTiff(LibTiffTestCase):
 
         self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
+    def test_old_style_jpeg(self):
+        infile = "Tests/images/old-style-jpeg-compression.tif"
+        im = Image.open(infile)
+
+        self.assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
 
 if __name__ == '__main__':
     unittest.main()
