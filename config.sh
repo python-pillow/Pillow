@@ -34,7 +34,19 @@ function pre_build {
         install_name_tool -id $BUILD_PREFIX/lib/libopenjp2.7.dylib $BUILD_PREFIX/lib/libopenjp2.2.1.0.dylib
     fi
     build_lcms2
+
+    if [ -n "$IS_OSX" ]; then
+        # Custom flags to allow building on OS X 10.10 and 10.11
+        build_giflib
+        
+        ORIGINAL_CPPFLAGS=$CPPFLAGS
+        CPPFLAGS=""
+    fi
     build_libwebp
+    if [ -n "$IS_OSX" ]; then
+        CPPFLAGS=$ORIGINAL_CPPFLAGS
+    fi
+
     if [ -n "$IS_OSX" ]; then
         # Custom freetype build
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
