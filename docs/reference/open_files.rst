@@ -71,7 +71,7 @@ Image Lifecycle
          ...  # image operations here.
 
 
-The lifecycle of a single frame image is relatively simple. The file
+The lifecycle of a single-frame image is relatively simple. The file
 must remain open until the ``load()`` or ``close()`` function is
 called.
 
