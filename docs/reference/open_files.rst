@@ -30,7 +30,7 @@ and may fail::
         im5 = Image.open(f)
     im5.load() # FAILS, closed file
 
-If a filename or a path-like object are passed to Pillow, then the resulting
+If a filename or a path-like object is passed to Pillow, then the resulting
 file object opened by Pillow may also be closed by Pillow after the
 ``Image.Image.load()`` method is called, provided the associated image does not
 have multiple frames.
@@ -56,9 +56,9 @@ Image Lifecycle
   memory. The image can now be used independently of the underlying
   image file.
 
-  If a filename or a path-like object were passed to ``Image.open()``, then
+  If a filename or a path-like object was passed to ``Image.open()``, then
   the file object was opened by Pillow and is considered to be used exclusively
-  by Pillow. So if the image is a single frame image, the file will
+  by Pillow. So if the image is a single-frame image, the file will
   be closed in this method after the frame is read. If the image is a
   multi-frame image, (e.g. multipage TIFF and animated GIF) the image file is
   left open so that ``Image.Image.seek()`` can load the appropriate frame.
