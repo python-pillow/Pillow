@@ -3836,6 +3836,12 @@ setup_module(PyObject* m) {
   }
 #endif
 
+#ifdef LIBJPEG_TURBO_VERSION
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
+#endif
+
 #ifdef HAVE_LIBZ
   /* zip encoding strategies */
   PyModule_AddIntConstant(m, "DEFAULT_STRATEGY", Z_DEFAULT_STRATEGY);
