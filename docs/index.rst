@@ -14,7 +14,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://travis-ci.org/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=latest
+.. image:: https://travis-ci.org/python-pillow/pillow-wheels.svg?branch=master
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (macOS)
 
