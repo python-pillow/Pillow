@@ -827,8 +827,10 @@ class Image(object):
         Image class automatically loads an opened image when it is
         accessed for the first time.
 
-        This method will close the file associated with the image. See
-        :ref:`file-handling` for more information.
+        If the file associated with the image was opened by Pillow, then this
+        method will close it. The exception to this is if the image has
+        multiple frames, in which case the file will be left open for seek
+        operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
