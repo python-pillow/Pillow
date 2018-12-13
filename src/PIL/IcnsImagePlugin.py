@@ -311,6 +311,8 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
+        if self._exclusive_fp:
+            self.fp.close()
         self.fp = None
         self.icns = None
         self.tile = ()
