@@ -84,7 +84,7 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(
                 all(x == y for x, y in zip(a, b)),
                 msg or "got %s, expected %s" % (a, b))
-        except:
+        except Exception:
             self.assertEqual(a, b, msg)
 
     def assert_image(self, im, mode, size, msg=None):
@@ -149,7 +149,7 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except:
+                except Exception:
                     pass
             raise e
 

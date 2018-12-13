@@ -112,14 +112,14 @@ call %(python_path)s\%(executable)s setup.py %(imaging_libs)s %%BLDOPT%%
 endlocal
 
 endlocal
-"""
+"""  # noqa: E501
     return script % args
 
 
 def clean():
     try:
         shutil.rmtree('../build')
-    except:
+    except Exception:
         # could already be removed
         pass
     run_script(('virtualenvs', setup_vms()))

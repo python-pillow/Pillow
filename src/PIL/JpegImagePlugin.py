@@ -75,7 +75,7 @@ def APP(self, marker):
         try:
             jfif_unit = i8(s[7])
             jfif_density = i16(s, 8), i16(s, 10)
-        except:
+        except Exception:
             pass
         else:
             if jfif_unit == 1:
@@ -107,7 +107,7 @@ def APP(self, marker):
         # extract Adobe custom properties
         try:
             adobe_transform = i8(s[1])
-        except:
+        except Exception:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
@@ -441,7 +441,7 @@ def _fixup_dict(src_dict):
         try:
             if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
-        except:
+        except Exception:
             pass
         return value
 
@@ -512,7 +512,7 @@ def _getmp(self):
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(file_contents)
         mp = dict(info)
-    except:
+    except Exception:
         raise SyntaxError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:

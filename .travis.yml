@@ -82,7 +82,9 @@ before_script:
 
 script:
 - |
-  if [ "$DOCKER" == "" ] && [ "$LINT" == "" ]; then
+  if [ "$LINT" == "true" ]; then
+    flake8 --statistics --count
+  elif [ "$DOCKER" == "" ]; then
     .travis/script.sh
   elif [ "$DOCKER" ]; then
     # the Pillow user in the docker container is UID 1000
@@ -92,8 +94,6 @@ script:
 
 after_success:
 - |
-  if [ "$LINT" == "true" ]; then
-    flake8 --statistics --count
-  else
+  if [ "$LINT" == "" ]; then
     .travis/after_success.sh
   fi

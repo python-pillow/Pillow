@@ -340,7 +340,7 @@ class PngStream(ChunkStream):
         self.im_size = i32(s), i32(s[4:])
         try:
             self.im_mode, self.im_rawmode = _MODES[(i8(s[8]), i8(s[9]))]
-        except:
+        except Exception:
             pass
         if i8(s[12]):
             self.im_info["interlace"] = 1

@@ -43,7 +43,7 @@ def _mp_compile(self, sources, output_dir=None, macros=None,
     pool = Pool(MAX_PROCS)
     try:
         print("Building using %d processes" % pool._processes)
-    except:
+    except Exception:
         pass
     arr = [(self, obj, build, cc_args, extra_postargs, pp_opts)
            for obj in objects]

@@ -218,7 +218,7 @@ def loadImageSeries(filelist=None):
             continue
         try:
             im = Image.open(img).convert2byte()
-        except:
+        except Exception:
             if not isSpiderImage(img):
                 print(img + " is not a Spider image file")
             continue

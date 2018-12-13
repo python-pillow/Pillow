@@ -975,7 +975,7 @@ class Image(object):
                         if isinstance(t, tuple):
                             try:
                                 t = trns_im.palette.getcolor(t)
-                            except:
+                            except Exception:
                                 raise ValueError("Couldn't allocate a palette "
                                                  "color for transparency")
                     trns_im.putpixel((0, 0), t)
@@ -1012,7 +1012,7 @@ class Image(object):
             if trns is not None:
                 try:
                     new.info['transparency'] = new.palette.getcolor(trns)
-                except:
+                except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
                     del(new.info['transparency'])
@@ -1042,7 +1042,7 @@ class Image(object):
             if new_im.mode == 'P':
                 try:
                     new_im.info['transparency'] = new_im.palette.getcolor(trns)
-                except:
+                except Exception:
                     del(new_im.info['transparency'])
                     warnings.warn("Couldn't allocate palette entry " +
                                   "for transparency")

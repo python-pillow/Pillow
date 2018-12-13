@@ -104,7 +104,7 @@ def setup_compiler(compiler):
     return r"""setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
 set INCLIB=%%INCLIB%%\%(inc_dir)s
-""" % compiler
+""" % compiler  # noqa: E501
 
 
 def end_compiler():
@@ -202,7 +202,7 @@ rd /S /Q %%FREETYPE%%\objs
 xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\vc%(vc_version)s\%(platform)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
-""" % compiler
+""" % compiler  # noqa: E501
 
 
 def msbuild_freetype_70(compiler):
@@ -217,7 +217,7 @@ xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
 xcopy /Y /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
 copy /Y /B %%FREETYPE%%\objs\win32\vc%(vc_version)s\*.lib %%INCLIB%%\freetype.lib
 endlocal
-""" % compiler
+""" % compiler  # noqa: E501
 
 
 def build_lcms2(compiler):
@@ -237,12 +237,12 @@ rem Build lcms2
 setlocal
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=Win32 /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
 copy /Y /B %%LCMS%%\Projects\VC%(vc_version)s\Release\*.lib %%INCLIB%%
 endlocal
-""" % compiler
+""" % compiler  # noqa: E501
 
 
 def build_lcms_71(compiler):
@@ -251,12 +251,12 @@ rem Build lcms2
 setlocal
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln  /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
 copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
-""" % compiler
+""" % compiler  # noqa: E501
 
 
 def add_compiler(compiler, bit):
