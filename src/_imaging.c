@@ -73,6 +73,10 @@
 
 #include "Python.h"
 
+#ifdef HAVE_LIBJPEG
+#include "jconfig.h"
+#endif
+
 #ifdef HAVE_LIBZ
 #include "zlib.h"
 #endif
@@ -3834,6 +3838,12 @@ setup_module(PyObject* m) {
     extern const char *ImagingJpeg2KVersion(void);
     PyDict_SetItemString(d, "jp2klib_version", PyUnicode_FromString(ImagingJpeg2KVersion()));
   }
+#endif
+
+#ifdef LIBJPEG_TURBO_VERSION
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
 #endif
 
 #ifdef HAVE_LIBZ

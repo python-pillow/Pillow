@@ -51,7 +51,8 @@ features = {
     "webp_anim": ("PIL._webp", 'HAVE_WEBPANIM'),
     "webp_mux": ("PIL._webp", 'HAVE_WEBPMUX'),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
-    "raqm": ("PIL._imagingft", "HAVE_RAQM")
+    "raqm": ("PIL._imagingft", "HAVE_RAQM"),
+    "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO"),
 }
 
 
