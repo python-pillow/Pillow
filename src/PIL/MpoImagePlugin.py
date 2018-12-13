@@ -84,6 +84,14 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def tell(self):
         return self.__frame
 
+    def _close__fp(self):
+        try:
+            self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 
 # ---------------------------------------------------------------------
 # Registry stuff
