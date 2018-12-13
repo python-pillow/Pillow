@@ -5,6 +5,24 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Travis CI: Upgrade PyPy from 5.8.0 to 6.0 #3488
+  [hugovk]
+
+- Travis CI: Allow lint job to fail #3467
+  [hugovk]
+
+- Resolve __fp when closing and deleting #3261
+  [radarhere]
+
+- Close exclusive fp before discarding #3461
+  [radarhere]
+
+- Updated open files documentation #3490
+  [radarhere]
+
+- Added libjpeg_turbo to check_feature #3493
+  [radarhere]
+
 - Change color table index background to tuple when saving as WebP #3471
   [radarhere]
 
