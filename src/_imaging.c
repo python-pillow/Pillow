@@ -73,6 +73,10 @@
 
 #include "Python.h"
 
+#ifdef HAVE_LIBJPEG
+#include "jconfig.h"
+#endif
+
 #ifdef HAVE_LIBZ
 #include "zlib.h"
 #endif
