@@ -2102,7 +2102,7 @@ class Image(object):
         apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
         image.
 
-        :param size: Requested size.
+        :param size: Requested size. (2-tuple: (height,width) or int : (size,size))
         :param resample: Optional resampling filter.  This can be one
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
@@ -2112,6 +2112,12 @@ class Image(object):
         """
 
         # preserve aspect ratio
+        
+        if isinstance(size,int):
+            size = (size,size)
+
+        if size == self.size:
+            return
         x, y = self.size
         if x > size[0]:
             y = int(max(y * size[0] / x, 1))
@@ -2120,9 +2126,6 @@ class Image(object):
             x = int(max(x * size[1] / y, 1))
             y = int(size[1])
         size = x, y
-
-        if size == self.size:
-            return
 
         self.draft(None, size)
 
@@ -2916,11 +2919,14 @@ def effect_mandelbrot(size, extent, quality):
     Generate a Mandelbrot set covering the given extent.
 
     :param size: The requested size in pixels, as a 2-tuple:
-       (width, height).
+       (width, height). or an int : (size,size)
     :param extent: The extent to cover, as a 4-tuple:
        (x0, y0, x1, y2).
     :param quality: Quality.
     """
+    if isinstance(size,int):
+        size = (size,size)
+
     return Image()._new(core.effect_mandelbrot(size, extent, quality))
 
 
@@ -2929,9 +2935,11 @@ def effect_noise(size, sigma):
     Generate Gaussian noise centered around 128.
 
     :param size: The requested size in pixels, as a 2-tuple:
-       (width, height).
+       (width, height). or an int: (size,size)
     :param sigma: Standard deviation of noise.
     """
+    if isinstance(size,int):
+        size = (size,size)
     return Image()._new(core.effect_noise(size, sigma))
 
 
