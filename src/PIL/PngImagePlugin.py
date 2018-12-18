@@ -868,6 +868,6 @@ def getchunks(im, **params):
 Image.register_open(PngImageFile.format, PngImageFile, _accept)
 Image.register_save(PngImageFile.format, _save)
 
-Image.register_extension(PngImageFile.format, ".png")
+Image.register_extensions(PngImageFile.format, [".png", ".apng"])
 
 Image.register_mime(PngImageFile.format, "image/png")
