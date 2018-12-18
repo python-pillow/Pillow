@@ -1779,7 +1779,7 @@ class Image(object):
 
         if isinstance(size,int):
             size = (size,size)
-    
+
         size = tuple(size)
 
         if box is None:
