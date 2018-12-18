@@ -1755,9 +1755,9 @@ class Image(object):
     def resize(self, size, resample=NEAREST, box=None):
         """
         Returns a resized copy of this image.
-
+        
         :param size: The requested size in pixels, as a 2-tuple:
-           (width, height).
+           (width, height) or an int :(size,size)
         :param resample: An optional resampling filter.  This can be
            one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
            :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
@@ -1777,6 +1777,9 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
+        if isinstance(size,int):
+            size = (size,size)
+    
         size = tuple(size)
 
         if box is None:
