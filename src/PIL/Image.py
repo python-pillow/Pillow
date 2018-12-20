@@ -1755,7 +1755,6 @@ class Image(object):
     def resize(self, size, resample=NEAREST, box=None):
         """
         Returns a resized copy of this image.
-        
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height) or an int :(size,size)
         :param resample: An optional resampling filter.  This can be
@@ -1777,8 +1776,8 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        if isinstance(size,int):
-            size = (size,size)
+        if isinstance(size, int):
+            size = (size, size)
 
         size = tuple(size)
 
@@ -2113,8 +2112,8 @@ class Image(object):
 
         # preserve aspect ratio
         
-        if isinstance(size,int):
-            size = (size,size)
+        if isinstance(size, int):
+            size = (size, size)
 
         if size == self.size:
             return
@@ -2924,8 +2923,8 @@ def effect_mandelbrot(size, extent, quality):
        (x0, y0, x1, y2).
     :param quality: Quality.
     """
-    if isinstance(size,int):
-        size = (size,size)
+    if isinstance(size, int):
+        size = (size, size)
 
     return Image()._new(core.effect_mandelbrot(size, extent, quality))
 
@@ -2938,8 +2937,8 @@ def effect_noise(size, sigma):
        (width, height). or an int: (size,size)
     :param sigma: Standard deviation of noise.
     """
-    if isinstance(size,int):
-        size = (size,size)
+    if isinstance(size, int):
+        size = (size, size)
     return Image()._new(core.effect_noise(size, sigma))
 
 
