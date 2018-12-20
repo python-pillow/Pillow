@@ -29,7 +29,7 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
             cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value):
-        return self.enum.get(value, value)
+        return self.enum.get(value, value) if self.enum else value
 
 
 def lookup(tag):
