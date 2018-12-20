@@ -2111,7 +2111,6 @@ class Image(object):
         """
 
         # preserve aspect ratio
-        
         if isinstance(size, int):
             size = (size, size)
 
