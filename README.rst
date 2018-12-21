@@ -12,7 +12,7 @@ This repository creates wheels for tagged versions of Pillow::
     git commit -m "Pillow -> <VERSION>" Pillow
     git push
 
-.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg
+.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (wheels)
 
