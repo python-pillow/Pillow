@@ -579,7 +579,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
-        self.text = self.png.im_text  # experimental
+        self._text = None
         self.tile = self.png.im_tile
 
         if self.png.im_palette:
@@ -587,6 +587,15 @@ class PngImageFile(ImageFile.ImageFile):
             self.palette = ImagePalette.raw(rawmode, data)
 
         self.__idat = length  # used by load_read()
+
+    @property
+    def text(self):
+        # experimental
+        if self._text is None:
+            # iTxt, tEXt and zTXt chunks may appear at the end of the file
+            # So load the file to ensure that they are read
+            self.load()
+        return self._text
 
     def verify(self):
         "Verify PNG file"
@@ -640,7 +649,22 @@ class PngImageFile(ImageFile.ImageFile):
 
     def load_end(self):
         "internal: finished reading image data"
+        while True:
+            self.fp.read(4)  # CRC
 
+            try:
+                cid, pos, length = self.png.read()
+            except (struct.error, SyntaxError):
+                break
+
+            if cid == b"IEND":
+                break
+
+            try:
+                self.png.call(cid, pos, length)
+            except UnicodeDecodeError:
+                break
+        self._text = self.png.im_text
         self.png.close()
         self.png = None
 
