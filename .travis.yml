@@ -58,8 +58,8 @@ matrix:
     - env: DOCKER="centos-7-amd64" DOCKER_TAG="pytest"
     - env: DOCKER="amazon-1-amd64" DOCKER_TAG="pytest"
     - env: DOCKER="amazon-2-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="fedora-26-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="fedora-27-amd64" DOCKER_TAG="pytest"
+    - env: DOCKER="fedora-28-amd64" DOCKER_TAG="master"
+    - env: DOCKER="fedora-29-amd64" DOCKER_TAG="master"
 
 services:
   - docker
