@@ -526,6 +526,19 @@ class PngStream(ChunkStream):
 
         return s
 
+    # APNG chunks
+    def chunk_acTL(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
+    def chunk_fcTL(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
+    def chunk_fdAT(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
 
 # --------------------------------------------------------------------
 # PNG reader
