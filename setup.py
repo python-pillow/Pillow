@@ -91,8 +91,8 @@ def _find_library_dirs_ldconfig():
             }
         abi_type = mach_map.get(machine, 'libc6')
 
-        # XXX assuming GLIBC's ldconfig (with option -p)
-        # XXX Alpine Linux uses musl that can't print cache
+        # Assuming GLIBC's ldconfig (with option -p)
+        # Alpine Linux uses musl that can't print cache
         args = ['/sbin/ldconfig', '-p']
         expr = r'.*\(%s.*\) => (.*)' % abi_type
         env = dict(os.environ)
