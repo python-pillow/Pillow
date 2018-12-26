@@ -3870,6 +3870,13 @@ setup_module(PyObject* m) {
   }
 #endif
 
+#ifdef HAVE_LIBTIFF
+  {
+    extern const char * ImagingTiffVersion(void);
+    PyDict_SetItemString(d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
+  }
+#endif
+
     PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
 
     return 0;

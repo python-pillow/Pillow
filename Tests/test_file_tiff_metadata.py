@@ -135,7 +135,7 @@ class TestFileTiffMetadata(PillowTestCase):
         for k, v in original.items():
             if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
-            if isinstance(v, tuple) and isinstance(v[0], IFDRational):
+            elif isinstance(v, tuple) and isinstance(v[0], IFDRational):
                 original[k] = tuple(IFDRational(*_limit_rational(elt, 2**31))
                                     for elt in v)
 
