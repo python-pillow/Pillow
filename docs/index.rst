@@ -43,6 +43,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    porting.rst
    about.rst
    releasenotes/index.rst
+   deprecations.rst
 
 Indices and tables
 ==================
