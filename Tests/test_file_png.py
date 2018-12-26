@@ -557,6 +557,28 @@ class TestFilePng(PillowTestCase):
         chunks = PngImagePlugin.getchunks(im)
         self.assertEqual(len(chunks), 3)
 
+    def test_textual_chunks_after_idat(self):
+        im = Image.open("Tests/images/hopper.png")
+        self.assertIn('comment', im.text.keys())
+        for k, v in {
+            'date:create': '2014-09-04T09:37:08+03:00',
+            'date:modify': '2014-09-04T09:37:08+03:00',
+        }.items():
+            self.assertEqual(im.text[k], v)
+
+        # Raises a SyntaxError in load_end
+        im = Image.open("Tests/images/broken_data_stream.png")
+        with self.assertRaises(IOError):
+            self.assertIsInstance(im.text, dict)
+
+        # Raises a UnicodeDecodeError in load_end
+        im = Image.open("Tests/images/truncated_image.png")
+        # The file is truncated
+        self.assertRaises(IOError, lambda: im.text)
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        self.assertIsInstance(im.text, dict)
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
