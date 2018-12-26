@@ -584,11 +584,15 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
         dictionary = NULL;
 
     encoder = PyImaging_EncoderNew(sizeof(ZIPSTATE));
-    if (encoder == NULL)
+    if (encoder == NULL) {
+        free(dictionary);
         return NULL;
+    }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
+        free(dictionary);
         return NULL;
+    }
 
     encoder->encode = ImagingZipEncode;
     encoder->cleanup = ImagingZipEncodeCleanup;
@@ -749,8 +753,10 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     if (rawExif && rawExifLen > 0) {
         /* malloc check ok, length is from python parsearg */
         char* pp = malloc(rawExifLen); // Freed in JpegEncode, Case 5
-        if (!pp)
+        if (!pp) {
+            if (extra) free(extra);
             return PyErr_NoMemory();
+        }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
     } else

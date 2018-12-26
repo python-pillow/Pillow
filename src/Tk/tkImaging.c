@@ -425,6 +425,7 @@ int load_tkinter_funcs(void)
     /* Try loading from the main program namespace first */
     main_program = dlopen(NULL, RTLD_LAZY);
     if (_func_loader(main_program) == 0) {
+        dlclose(main_program);
         return 0;
     }
     /* Clear exception triggered when we didn't find symbols above */
@@ -453,6 +454,7 @@ int load_tkinter_funcs(void)
     /* dlclose probably safe because tkinter has been imported. */
     dlclose(tkinter_lib);
 exit:
+    dlclose(main_program);
     Py_XDECREF(pModule);
     Py_XDECREF(pString);
     return ret;
