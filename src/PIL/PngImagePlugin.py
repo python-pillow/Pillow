@@ -884,3 +884,4 @@ Image.register_save(PngImageFile.format, _save)
 Image.register_extensions(PngImageFile.format, [".png", ".apng"])
 
 Image.register_mime(PngImageFile.format, "image/png")
+Image.register_mime(PngImageFile.format, "image/apng")
