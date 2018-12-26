@@ -158,8 +158,18 @@ def _pkg_config(name):
         if not DEBUG:
             command_libs.append('--silence-errors')
             command_cflags.append('--silence-errors')
-        libs = subprocess.check_output(command_libs).decode('utf8').strip().replace('-L', '')
-        cflags = subprocess.check_output(command_cflags).decode('utf8').strip().replace('-I', '')
+        libs = (
+            subprocess.check_output(command_libs)
+            .decode("utf8")
+            .strip()
+            .replace("-L", "")
+        )
+        cflags = (
+            subprocess.check_output(command_cflags)
+            .decode("utf8")
+            .strip()
+            .replace("-I", "")
+        )
         return (libs, cflags)
     except Exception:
         pass
