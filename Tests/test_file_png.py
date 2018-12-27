@@ -6,6 +6,12 @@ from io import BytesIO
 import zlib
 import sys
 
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
+
 codecs = dir(Image.core)
 
 
@@ -335,18 +341,6 @@ class TestFilePng(PillowTestCase):
         im.load()
         self.assertRaises(RuntimeError, im.verify)
 
-    def test_apng_load_verify(self):
-        # Check open/load/verify exception (@PIL150)
-        TEST_APNG_FILE =  "Tests/images/iss634.apng"
-        im = Image.open(TEST_APNG_FILE)
-
-        # Assert that there is no unclosed file warning
-        self.assert_warning(None, im.verify)
-
-        im = Image.open(TEST_APNG_FILE)
-        im.load()
-        self.assertRaises(RuntimeError, im.verify)
-
     def test_verify_struct_error(self):
         # Check open/load/verify exception (#1755)
 
@@ -568,6 +562,13 @@ class TestFilePng(PillowTestCase):
 
         chunks = PngImagePlugin.getchunks(im)
         self.assertEqual(len(chunks), 3)
+
+    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
+                         "WebP support not installed with animation")
+    def test_apng(self):
+        im = Image.open("Tests/images/iss634.apng")
+        expected = Image.open("Tests/images/iss634.webp")
+        self.assert_image_similar(im, expected, 0.23)
 
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")

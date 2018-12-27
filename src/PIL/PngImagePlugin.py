@@ -526,6 +526,19 @@ class PngStream(ChunkStream):
 
         return s
 
+    # APNG chunks
+    def chunk_acTL(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
+    def chunk_fcTL(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
+    def chunk_fdAT(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        return s
+
 
 # --------------------------------------------------------------------
 # PNG reader
@@ -871,3 +884,4 @@ Image.register_save(PngImageFile.format, _save)
 Image.register_extensions(PngImageFile.format, [".png", ".apng"])
 
 Image.register_mime(PngImageFile.format, "image/png")
+Image.register_mime(PngImageFile.format, "image/apng")
