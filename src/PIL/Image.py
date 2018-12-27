@@ -881,7 +881,7 @@ class Image(object):
         "L", "RGB" and "CMYK." The **matrix** argument only supports "L"
         and "RGB".
 
-        When translating a color image to black and white (mode "L"),
+        When translating a color image to greyscale (mode "L"),
         the library uses the ITU-R 601-2 luma transform::
 
             L = R * 299/1000 + G * 587/1000 + B * 114/1000
