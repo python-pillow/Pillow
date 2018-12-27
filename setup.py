@@ -10,7 +10,6 @@
 from __future__ import print_function
 
 import os
-import platform as plat
 import re
 import struct
 import subprocess
@@ -395,9 +394,9 @@ class pil_build_ext(build_ext):
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
-                _add_directory(library_dirs,
-                                os.path.join(os.environ['ANDROID_ROOT'],
-                                            'lib'))
+                _add_directory(
+                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                )
 
         elif sys.platform.startswith("netbsd"):
             _add_directory(library_dirs, "/usr/pkg/lib")
