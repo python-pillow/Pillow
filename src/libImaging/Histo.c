@@ -41,7 +41,9 @@ ImagingHistogramNew(Imaging im)
 
     /* Create histogram descriptor */
     h = calloc(1, sizeof(struct ImagingHistogramInstance));
-    strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH);
+    strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH-1);
+    h->mode[IMAGING_MODE_LENGTH-1] = 0;
+
     h->bands = im->bands;
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
 
@@ -80,8 +82,10 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
 			h->histogram[im->image8[y][x]]++;
             ImagingSectionLeave(&cookie);
 	} else { /* yes, we need the braces. C isn't Python! */
-            if (im->type != IMAGING_TYPE_UINT8)
+            if (im->type != IMAGING_TYPE_UINT8) {
+                ImagingHistogramDelete(h);
                 return ImagingError_ModeError();
+            }
             ImagingSectionEnter(&cookie);
 	    for (y = 0; y < im->ysize; y++) {
 		UINT8* in = (UINT8*) im->image32[y];
@@ -120,8 +124,10 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                 ImagingSectionLeave(&cookie);
                 break;
             case IMAGING_TYPE_INT32:
-                if (!minmax)
+                if (!minmax) {
+                    ImagingHistogramDelete(h);
                     return ImagingError_ValueError("min/max not given");
+                }
                 if (!im->xsize || !im->ysize)
                     break;
                 imin = ((INT32*) minmax)[0];
@@ -141,8 +147,10 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                 ImagingSectionLeave(&cookie);
                 break;
             case IMAGING_TYPE_FLOAT32:
-                if (!minmax)
+                if (!minmax) {
+                    ImagingHistogramDelete(h);
                     return ImagingError_ValueError("min/max not given");
+                }
                 if (!im->xsize || !im->ysize)
                     break;
                 fmin = ((FLOAT32*) minmax)[0];

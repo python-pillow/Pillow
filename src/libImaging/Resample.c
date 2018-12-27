@@ -621,6 +621,8 @@ ImagingResampleInner(Imaging imIn, int xsize, int ysize,
     if ( ! ksize_vert) {
         free(bounds_horiz);
         free(kk_horiz);
+        free(bounds_vert);
+        free(kk_vert);
         return NULL;
     }
 

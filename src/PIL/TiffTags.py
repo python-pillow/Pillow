@@ -29,7 +29,10 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
             cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value):
-        return self.enum.get(value, value)
+        # Using get will call hash(value), which can be expensive
+        # for some types (e.g. Fraction). Since self.enum is rarely
+        # used, it's usually better to test it first.
+        return self.enum.get(value, value) if self.enum else value
 
 
 def lookup(tag):
@@ -425,6 +428,7 @@ TYPES = {}
 
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
 
+# This list also exists in encode.c
 LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
                 278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
                 296, 297, 321, 320, 338, 32995, 322, 323, 32998,

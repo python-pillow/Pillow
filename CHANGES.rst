@@ -5,6 +5,27 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Improve setup.py configuration #3395
+  [diorcety]
+
+- Read textual chunks located after IDAT chunks for PNG #3506
+  [radarhere]
+
+- Performance: Don't try to hash value if enum is empty #3503
+  [Glandos]
+
+- Added custom int and float TIFF tags #3350
+  [radarhere]
+
+- Fixes for issues reported by static code analysis #3393
+  [frenzymadness]
+
+- GIF: Wait until mode is normalized to copy im.info into encoderinfo #3187
+  [radarhere]
+
+- Docs: Add page of deprecations and removals #3486
+  [hugovk]
+
 - Travis CI: Upgrade PyPy from 5.8.0 to 6.0 #3488
   [hugovk]
 
