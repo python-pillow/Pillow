@@ -49,15 +49,15 @@ matrix:
     - python: '3.4'
       name: "3.4 Trusty"
       dist: trusty
-    - env: DOCKER="alpine" DOCKER_TAG="pytest"
-    - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
-    - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="pytest"
-    - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="debian-stretch-x86" DOCKER_TAG="pytest"
-    - env: DOCKER="centos-6-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="centos-7-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="pytest"
+    - env: DOCKER="alpine" DOCKER_TAG="master"
+    - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
+    - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="master"
+    - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="master"
+    - env: DOCKER="debian-stretch-x86" DOCKER_TAG="master"
+    - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
+    - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
+    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
+    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="master"
     - env: DOCKER="fedora-28-amd64" DOCKER_TAG="master"
     - env: DOCKER="fedora-29-amd64" DOCKER_TAG="master"
 
