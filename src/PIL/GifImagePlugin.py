@@ -293,9 +293,10 @@ class GifImageFile(ImageFile.ImageFile):
         if self.__frame == 0:
             # On the first frame, clear the buffer.  Use the transparency index
             # if we have one, otherwise use the background index.
-            default_color = self.info.get("transparency",
-                            self.info.get("background", 0))
-            self.im.paste(default_color, (0,0, self.size[0], self.size[1]))
+            default_color = self.info.get(
+                "transparency", self.info.get("background", 0)
+            )
+            self.im.paste(default_color, (0, 0, self.size[0], self.size[1]))
 
     def tell(self):
         return self.__frame
