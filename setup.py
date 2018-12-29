@@ -10,7 +10,6 @@
 from __future__ import print_function
 
 import os
-import platform as plat
 import re
 import struct
 import subprocess
@@ -72,6 +71,57 @@ def _dbg(s, tp=None):
             print(s % tp)
             return
         print(s)
+
+
+def _find_library_dirs_ldconfig():
+    # Based on ctypes.util from Python 2
+
+    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+        if struct.calcsize('l') == 4:
+            machine = os.uname()[4] + '-32'
+        else:
+            machine = os.uname()[4] + '-64'
+        mach_map = {
+            'x86_64-64': 'libc6,x86-64',
+            'ppc64-64': 'libc6,64bit',
+            'sparc64-64': 'libc6,64bit',
+            's390x-64': 'libc6,64bit',
+            'ia64-64': 'libc6,IA-64',
+            }
+        abi_type = mach_map.get(machine, 'libc6')
+
+        # Assuming GLIBC's ldconfig (with option -p)
+        # Alpine Linux uses musl that can't print cache
+        args = ['/sbin/ldconfig', '-p']
+        expr = r'.*\(%s.*\) => (.*)' % abi_type
+        env = dict(os.environ)
+        env['LC_ALL'] = 'C'
+        env['LANG'] = 'C'
+
+    elif sys.platform.startswith("freebsd"):
+        args = ['/sbin/ldconfig', '-r']
+        expr = r'.* => (.*)'
+        env = {}
+
+    null = open(os.devnull, 'wb')
+    try:
+        with null:
+            p = subprocess.Popen(args,
+                                 stderr=null,
+                                 stdout=subprocess.PIPE,
+                                 env=env)
+    except OSError:  # E.g. command not found
+        return None
+    [data, _] = p.communicate()
+    if isinstance(data, bytes):
+        data = data.decode()
+
+    dirs = []
+    for dll in re.findall(expr, data):
+        dir = os.path.dirname(dll)
+        if dir not in dirs:
+            dirs.append(dir)
+    return dirs
 
 
 def _add_directory(path, subdir, where=None):
@@ -360,68 +410,20 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-        elif sys.platform.startswith("linux"):
-            arch_tp = (plat.processor(), plat.architecture()[0])
-            # This should be correct on debian derivatives.
-            if os.path.exists('/etc/debian_version'):
-                # If this doesn't work, don't just silently patch
-                # downstream because it's going to break when people
-                # try to build pillow from source instead of
-                # installing from the system packages.
-                self.add_multiarch_paths()
-
-            elif arch_tp == ("x86_64", "32bit"):
-                # Special Case: 32-bit build on 64-bit machine.
-                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
-            else:
-                libdirs = {
-                    'x86_64':  ["/lib64", "/usr/lib64",
-                                "/usr/lib/x86_64-linux-gnu"],
-                    '64bit':   ["/lib64", "/usr/lib64",
-                                "/usr/lib/x86_64-linux-gnu"],
-                    'i386':    ["/usr/lib/i386-linux-gnu"],
-                    'i686':    ["/usr/lib/i386-linux-gnu"],
-                    '32bit':   ["/usr/lib/i386-linux-gnu"],
-                    'aarch64': ["/usr/lib64", "/usr/lib/aarch64-linux-gnu"],
-                    'arm':     ["/usr/lib/arm-linux-gnueabi"],
-                    'armv71':  ["/usr/lib/arm-linux-gnueabi"],
-                    'armv7l':  ["/usr/lib"],
-                    'ppc64':   ["/usr/lib64", "/usr/lib/ppc64-linux-gnu",
-                                "/usr/lib/powerpc64-linux-gnu"],
-                    'ppc64le':   ["/usr/lib64"],
-                    'ppc':     ["/usr/lib/ppc-linux-gnu",
-                                "/usr/lib/powerpc-linux-gnu"],
-                    's390x':   ["/usr/lib64", "/usr/lib/s390x-linux-gnu"],
-                    's390':    ["/usr/lib/s390-linux-gnu"],
-                    }
-
-                for platform_ in arch_tp:
-                    dirs = libdirs.get(platform_, None)
-                    if not dirs:
-                        continue
-                    for path in dirs:
-                        _add_directory(library_dirs, path)
-                    break
-
-                else:
-                    raise ValueError(
-                        "Unable to identify Linux platform: `%s`" % platform_)
-
+        elif sys.platform.startswith("linux") or \
+                sys.platform.startswith("gnu") or \
+                sys.platform.startswith("freebsd"):
+            for dirname in _find_library_dirs_ldconfig():
+                _add_directory(library_dirs, dirname)
+            if sys.platform.startswith("linux") and \
+                    os.environ.get('ANDROID_ROOT', None):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
-                if os.environ.get('ANDROID_ROOT', None):
-                    _add_directory(library_dirs,
-                                   os.path.join(os.environ['ANDROID_ROOT'],
-                                                'lib'))
-
-        elif sys.platform.startswith("gnu"):
-            self.add_multiarch_paths()
-
-        elif sys.platform.startswith("freebsd"):
-            _add_directory(library_dirs, "/usr/local/lib")
-            _add_directory(include_dirs, "/usr/local/include")
+                _add_directory(
+                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                )
 
         elif sys.platform.startswith("netbsd"):
             _add_directory(library_dirs, "/usr/pkg/lib")
@@ -750,31 +752,6 @@ class pil_build_ext(build_ext):
 
         print("To check the build, run the selftest.py script.")
         print("")
-
-    # https://hg.python.org/users/barry/rev/7e8deab93d5a
-    def add_multiarch_paths(self):
-        # Debian/Ubuntu multiarch support.
-        # https://wiki.ubuntu.com/MultiarchSpec
-        # self.build_temp
-        tmpfile = os.path.join(self.build_temp, 'multiarch')
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        with open(tmpfile, 'wb') as fp:
-            try:
-                ret = subprocess.call(['dpkg-architecture',
-                                       '-qDEB_HOST_MULTIARCH'], stdout=fp)
-            except Exception:
-                return
-        try:
-            if ret >> 8 == 0:
-                with open(tmpfile, 'r') as fp:
-                    multiarch_path_component = fp.readline().strip()
-                _add_directory(self.compiler.library_dirs,
-                               '/usr/lib/' + multiarch_path_component)
-                _add_directory(self.compiler.include_dirs,
-                               '/usr/include/' + multiarch_path_component)
-        finally:
-            os.unlink(tmpfile)
 
 
 def debug_build():
