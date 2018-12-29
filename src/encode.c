@@ -885,9 +885,11 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         } else if (PyBytes_Check(value)) {
             TRACE(("Setting from Bytes: %d, %s \n", key_int, PyBytes_AsString(value)));
-            status = ImagingLibTiffSetField(&encoder->state,
-                                            (ttag_t) PyInt_AsLong(key),
-                                            PyBytes_AsString(value));
+            if (is_core_tag || !ImagingLibTiffMergeFieldInfo(&encoder->state, TIFF_ASCII, key_int)) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                                                (ttag_t) PyInt_AsLong(key),
+                                                PyBytes_AsString(value));
+            }
         } else if (PyTuple_Check(value)) {
             Py_ssize_t len,i;
             float *floatav;
