@@ -5,6 +5,15 @@ Changelog (Pillow)
 5.4.0 (unreleased)
 ------------------
 
+- Add APNG extension to PNG plugin #3501
+  [pirate486743186, radarhere]
+
+- Lookup ld.so.cache instead of hardcoding search paths #3245
+  [pslacerda]
+
+- Added custom string TIFF tags #3513
+  [radarhere]
+
 - Improve setup.py configuration #3395
   [diorcety]
 
