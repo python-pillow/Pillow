@@ -557,26 +557,26 @@ class ImageFileDirectory_v2(MutableMapping):
             else:
                 self.tagtype[tag] = 7
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = 5
+                    self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
-                        self.tagtype[tag] = 3
+                        self.tagtype[tag] = TiffTags.SHORT
                     else:
-                        self.tagtype[tag] = 4
+                        self.tagtype[tag] = TiffTags.LONG
                 elif all(isinstance(v, float) for v in values):
-                    self.tagtype[tag] = 12
+                    self.tagtype[tag] = TiffTags.DOUBLE
                 else:
                     if py3:
                         if all(isinstance(v, str) for v in values):
-                            self.tagtype[tag] = 2
+                            self.tagtype[tag] = TiffTags.ASCII
                     else:
                         # Never treat data as binary by default on Python 2.
-                        self.tagtype[tag] = 2
+                        self.tagtype[tag] = TiffTags.ASCII
 
-        if self.tagtype[tag] == 7 and py3:
+        if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
-        elif self.tagtype[tag] == 5:
+        elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v
                       for v in values]
 
@@ -592,7 +592,10 @@ class ImageFileDirectory_v2(MutableMapping):
         if (info.length == 1) or \
            (info.length is None and len(values) == 1 and not legacy_api):
             # Don't mess with the legacy api, since it's frozen.
-            if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
+            if legacy_api and self.tagtype[tag] in [
+                TiffTags.RATIONAL,
+                TiffTags.SIGNED_RATIONAL
+            ]:  # rationals
                 values = values,
             try:
                 dest[tag], = values
@@ -649,13 +652,13 @@ class ImageFileDirectory_v2(MutableMapping):
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
-             [(3, "H", "short"),
-              (4, "L", "long"),
-              (6, "b", "signed byte"),
-              (8, "h", "signed short"),
-              (9, "l", "signed long"),
-              (11, "f", "float"),
-              (12, "d", "double")]))
+             [(TiffTags.SHORT, "H", "short"),
+              (TiffTags.LONG, "L", "long"),
+              (TiffTags.SIGNED_BYTE, "b", "signed byte"),
+              (TiffTags.SIGNED_SHORT, "h", "signed short"),
+              (TiffTags.SIGNED_LONG, "l", "signed long"),
+              (TiffTags.FLOAT, "f", "float"),
+              (TiffTags.DOUBLE, "d", "double")]))
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
@@ -811,7 +814,10 @@ class ImageFileDirectory_v2(MutableMapping):
                     print("- value:", values)
 
             # count is sum of lengths for string and arbitrary data
-            count = len(data) if typ in [2, 7] else len(values)
+            if typ in [TiffTags.ASCII, TiffTags.UNDEFINED]:
+                count = len(data)
+            else:
+                count = len(values)
             # figure out if data fits into the entry
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
@@ -1799,7 +1805,7 @@ class AppendingTiffWriter:
                 # local (not referenced with another offset)
                 self.rewriteLastShortToLong(offset)
                 self.f.seek(-10, os.SEEK_CUR)
-                self.writeShort(4)  # rewrite the type to LONG
+                self.writeShort(TiffTags.LONG)  # rewrite the type to LONG
                 self.f.seek(8, os.SEEK_CUR)
             elif isShort:
                 self.rewriteLastShort(offset)
