@@ -6,6 +6,12 @@ from io import BytesIO
 import zlib
 import sys
 
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
+
 codecs = dir(Image.core)
 
 
@@ -578,6 +584,13 @@ class TestFilePng(PillowTestCase):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         self.assertIsInstance(im.text, dict)
         ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
+                         "WebP support not installed with animation")
+    def test_apng(self):
+        im = Image.open("Tests/images/iss634.apng")
+        expected = Image.open("Tests/images/iss634.webp")
+        self.assert_image_similar(im, expected, 0.23)
 
 
 @unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
