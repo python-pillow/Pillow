@@ -235,7 +235,10 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_custom_metadata(self):
         custom = {
             37000: 4,
-            37001: 4.2
+            37001: 4.2,
+            37002: 'custom tag value',
+            37003: u'custom tag value',
+            37004: b'custom tag value'
         }
 
         libtiff_version = TiffImagePlugin._libtiff_version()
@@ -256,6 +259,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
             reloaded = Image.open(out)
             for tag, value in custom.items():
+                if libtiff and isinstance(value, bytes):
+                    value = value.decode()
                 self.assertEqual(reloaded.tag_v2[tag], value)
 
     def test_int_dpi(self):

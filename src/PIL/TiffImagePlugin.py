@@ -1519,12 +1519,16 @@ def _save(im, fp, filename):
                                           getattr(im, 'tag_v2', {}).items(),
                                           legacy_ifd.items()):
             # Libtiff can only process certain core items without adding
-            # them to the custom dictionary. Support has only been been added
-            # for int and float values
+            # them to the custom dictionary.
+            # Support for custom items has only been been added
+            # for int, float, unicode, string and byte values
             if tag not in TiffTags.LIBTIFF_CORE:
+                if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
+                    continue
                 if (distutils.version.StrictVersion(_libtiff_version()) <
                     distutils.version.StrictVersion("4.0")) \
-                   or not (isinstance(value, int) or isinstance(value, float)):
+                   or not (isinstance(value, (int, float, str, bytes)) or
+                           (not py3 and isinstance(value, unicode))):  # noqa: F821
                     continue
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str if py3 else unicode):  # noqa: F821
