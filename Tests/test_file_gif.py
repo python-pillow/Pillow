@@ -289,9 +289,10 @@ class TestFileGif(PillowTestCase):
         for frame in range(3):
             img.seek(frame)
             for x in range(3):
-                color = img.getpixel((x,0))
-                self.assertEqual(color, expected_colors[frame][x],
-                    'frame %i, x %i' % (frame, x))
+                color = img.getpixel((x, 0))
+                self.assertEqual(
+                    color, expected_colors[frame][x], "frame %i, x %i" % (frame, x)
+                )
 
     def test_rewind(self):
         img = Image.open("Tests/images/rewind.gif")
@@ -304,14 +305,13 @@ class TestFileGif(PillowTestCase):
         img.seek(1)
 
         # Read data.  This should decode frame 0 and then frame 1.
-        img.getpixel((0,1))
+        img.getpixel((0, 1))
 
         expected_colors = [(2, 3), (3, 1)]
         for x in range(2):
             for y in range(2):
-                color = img.getpixel((x,y))
-                self.assertEqual(color, expected_colors[x][y],
-                    '%ix%i' % (x, y))
+                color = img.getpixel((x, y))
+                self.assertEqual(color, expected_colors[x][y], "%ix%i" % (x, y))
 
     def test_dispose_previous(self):
         img = Image.open("Tests/images/dispose_prev.gif")
