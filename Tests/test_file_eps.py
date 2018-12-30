@@ -3,6 +3,8 @@ from helper import unittest, PillowTestCase, hopper
 from PIL import Image, EpsImagePlugin
 import io
 
+HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
+
 # Our two EPS test files (they are identical except for their bounding boxes)
 file1 = "Tests/images/zero_bb.eps"
 file2 = "Tests/images/non_zero_bb.eps"
@@ -20,10 +22,7 @@ file3 = "Tests/images/binary_preview_map.eps"
 
 class TestFileEps(PillowTestCase):
 
-    def setUp(self):
-        if not EpsImagePlugin.has_ghostscript():
-            self.skipTest("Ghostscript not available")
-
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_sanity(self):
         # Regular scale
         image1 = Image.open(file1)
@@ -57,6 +56,7 @@ class TestFileEps(PillowTestCase):
         self.assertRaises(SyntaxError,
                           EpsImagePlugin.EpsImageFile, invalid_file)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
         cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
 
@@ -71,6 +71,7 @@ class TestFileEps(PillowTestCase):
             target = Image.open('Tests/images/pil_sample_rgb.jpg')
             self.assert_image_similar(cmyk_image, target, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_showpage(self):
         # See https://github.com/python-pillow/Pillow/issues/2615
         plot_image = Image.open("Tests/images/reqd_showpage.eps")
@@ -81,18 +82,21 @@ class TestFileEps(PillowTestCase):
         #  fonts could be slightly different
         self.assert_image_similar(plot_image, target, 6)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
         with open(self.tempfile('temp_file.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_iobase_object(self):
         # issue 479
         image1 = Image.open(file1)
         with io.open(self.tempfile('temp_iobase.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_bytesio_object(self):
         with open(file1, 'rb') as f:
             img_bytes = io.BytesIO(f.read())
@@ -109,6 +113,7 @@ class TestFileEps(PillowTestCase):
         tmpfile = self.tempfile('temp.eps')
         self.assertRaises(ValueError, im.save, tmpfile)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale1(self):
         # We need png support for these render test
         codecs = dir(Image.core)
@@ -129,6 +134,7 @@ class TestFileEps(PillowTestCase):
         image2_scale1_compare.load()
         self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale2(self):
         # We need png support for these render test
         codecs = dir(Image.core)
@@ -149,6 +155,7 @@ class TestFileEps(PillowTestCase):
         image2_scale2_compare.load()
         self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_resize(self):
         # Arrange
         image1 = Image.open(file1)
@@ -166,6 +173,7 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image2.size, new_size)
         self.assertEqual(image3.size, new_size)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_thumbnail(self):
         # Issue #619
         # Arrange
@@ -233,6 +241,7 @@ class TestFileEps(PillowTestCase):
             img = Image.open(filename)
             self.assertEqual(img.mode, "RGB")
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_emptyline(self):
         # Test file includes an empty line in the header data
         emptyline_file = "Tests/images/zero_bb_emptyline.eps"
