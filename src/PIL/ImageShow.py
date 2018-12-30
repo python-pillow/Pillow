@@ -132,9 +132,9 @@ elif sys.platform == "darwin":
 
         def show_file(self, file, **options):
             """Display given file"""
-            f, path = tempfile.mkstemp()
-            f.write(file)
-            f.close()
+            fd, path = tempfile.mkstemp()
+            with os.fdopen(fd, 'w') as f:
+                f.write(file)
             with open(path, "r") as f:
                 subprocess.Popen([
                     'im=$(cat);'
@@ -171,9 +171,9 @@ else:
 
         def show_file(self, file, **options):
             """Display given file"""
-            f, path = tempfile.mkstemp()
-            f.write(file)
-            f.close()
+            fd, path = tempfile.mkstemp()
+            with os.fdopen(fd, 'w') as f:
+                f.write(file)
             with open(path, "r") as f:
                 command = self.get_command_ex(file, **options)[0]
                 subprocess.Popen([
