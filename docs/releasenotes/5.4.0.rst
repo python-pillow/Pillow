@@ -38,7 +38,7 @@ For example, to get or set the farthest pixel in the lower right of an image::
 New custom TIFF tags
 ^^^^^^^^^^^^^^^^^^^^
 
-TIFF images can now be saved with custom integer, float and sting TIFF tags::
+TIFF images can now be saved with custom integer, float and string TIFF tags::
 
     im = Image.new("RGB", (200, 100))
     custom = {
