@@ -224,4 +224,6 @@ def _save(im, fp, filename):
 Image.register_open(TgaImageFile.format, TgaImageFile)
 Image.register_save(TgaImageFile.format, _save)
 
-Image.register_extension(TgaImageFile.format, ".tga")
+Image.register_extensions(TgaImageFile.format, [".tga", ".icb", ".vda", ".vst"])
+
+Image.register_mime(TgaImageFile.format, "image/x-tga")

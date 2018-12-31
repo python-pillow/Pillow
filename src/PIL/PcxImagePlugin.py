@@ -177,3 +177,5 @@ Image.register_open(PcxImageFile.format, PcxImageFile, _accept)
 Image.register_save(PcxImageFile.format, _save)
 
 Image.register_extension(PcxImageFile.format, ".pcx")
+
+Image.register_mime(PcxImageFile.format, "image/x-pcx")
