@@ -84,8 +84,8 @@ class PyAccess(object):
         (x, y) = self.check_xy((x, y))
 
         if self._im.mode == "P" and \
-           isinstance(color, (list, tuple)) and len(color) == 3:
-            # RGB value for a P image
+           isinstance(color, (list, tuple)) and len(color) in [3, 4]:
+            # RGB or RGBA value for a P image
             color = self._palette.getcolor(color)
 
         return self.set_pixel(x, y, color)
