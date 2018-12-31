@@ -175,6 +175,11 @@ class TestImageGetPixel(AccessTest):
             self.check(mode, 2**15+1)
             self.check(mode, 2**16-1)
 
+    def test_p_putpixel_rgb(self):
+        im = Image.new("P", (1, 1), 0)
+        im.putpixel((0, 0), (255, 0, 0))
+        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+
 
 @unittest.skipIf(cffi is None, "No cffi")
 class TestCffiPutPixel(TestImagePutPixel):
@@ -293,6 +298,12 @@ class TestCffi(AccessTest):
             for i in range(size):
                 # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
+
+    def test_p_putpixel_rgb(self):
+        im = Image.new("P", (1, 1), 0)
+        access = PyAccess.new(im, False)
+        access.putpixel((0, 0), (255, 0, 0))
+        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
 
 
 class TestEmbeddable(unittest.TestCase):
