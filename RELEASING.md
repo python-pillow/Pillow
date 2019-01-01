@@ -107,3 +107,19 @@ Released as needed privately to individual vendors for critical security-related
 ## Documentation
 
 * [ ] Make sure the default version for Read the Docs is the latest release version, i.e. ``5.2.0`` rather than ``latest`` e.g. https://pillow.readthedocs.io/en/5.2.x/
+
+## Docker images
+
+* [ ] Update Pillow for the [docker images](https://github.com/python-pillow/docker-images)
+```
+    $ git clone https://github.com/python-pillow/docker-images
+    $ cd docker-images
+    $ git submodule init
+    $ git submodule update Pillow
+    $ cd Pillow
+    $ git fetch --all
+    $ git checkout [[release tag]]
+    $ cd ..
+    $ git commit -m "Pillow -> 5.2.0" Pillow
+    $ git push
+```
