@@ -22,6 +22,7 @@ exclude .coveragerc
 exclude .codecov.yml
 exclude .editorconfig
 exclude .landscape.yaml
+exclude .readthedocs.yml
 exclude .travis
 exclude .travis/*
 exclude tox.ini
