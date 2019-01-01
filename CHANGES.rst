@@ -2,8 +2,14 @@
 Changelog (Pillow)
 ==================
 
-5.4.0 (unreleased)
+5.4.0 (2019-01-01)
 ------------------
+
+- Docs: Improved ImageChops documentation #3522
+  [radarhere]
+
+- Allow RGB and RGBA values for P image putpixel #3519
+  [radarhere]
 
 - Add APNG extension to PNG plugin #3501
   [pirate486743186, radarhere]
