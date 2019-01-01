@@ -54,7 +54,7 @@ def invert(image):
 def lighter(image1, image2):
     """
     Compares the two images, pixel by pixel, and returns a new image containing
-    the lighter values. Note that at least one of the images must have mode "1".
+    the lighter values. At least one of the images must have mode "1".
 
     .. code-block:: python
 
@@ -71,7 +71,7 @@ def lighter(image1, image2):
 def darker(image1, image2):
     """
     Compares the two images, pixel by pixel, and returns a new image containing
-    the darker values. Note that at least one of the images must have mode "1".
+    the darker values. At least one of the images must have mode "1".
 
     .. code-block:: python
 
@@ -88,7 +88,7 @@ def darker(image1, image2):
 def difference(image1, image2):
     """
     Returns the absolute value of the pixel-by-pixel difference between the two
-    images. At least one of the images must be "1" mode.
+    images. At least one of the images must have mode "1".
 
     .. code-block:: python
 
@@ -125,7 +125,7 @@ def multiply(image1, image2):
 def screen(image1, image2):
     """
     Superimposes two inverted images on top of each other. At least one of the
-    images must be "1" mode.
+    images must have mode "1".
 
     .. code-block:: python
 
@@ -143,7 +143,7 @@ def add(image1, image2, scale=1.0, offset=0):
     """
     Adds two images, dividing the result by scale and adding the
     offset. If omitted, scale defaults to 1.0, and offset to 0.0.
-    At least one of the images must be "1" mode.
+    At least one of the images must have mode "1".
 
     .. code-block:: python
 
@@ -161,7 +161,7 @@ def subtract(image1, image2, scale=1.0, offset=0):
     """
     Subtracts two images, dividing the result by scale and adding the offset.
     If omitted, scale defaults to 1.0, and offset to 0.0. At least one of the
-    images must be "1" mode.
+    images must have mode "1".
 
     .. code-block:: python
 
@@ -177,7 +177,7 @@ def subtract(image1, image2, scale=1.0, offset=0):
 
 def add_modulo(image1, image2):
     """Add two images, without clipping the result. At least one of the images
-    must be "1" mode.
+    must have mode "1".
 
     .. code-block:: python
 
@@ -193,7 +193,7 @@ def add_modulo(image1, image2):
 
 def subtract_modulo(image1, image2):
     """Subtract two images, without clipping the result. At least one of the
-    images must be "1" mode.
+    images must have mode "1".
 
     .. code-block:: python
 
@@ -208,8 +208,8 @@ def subtract_modulo(image1, image2):
 
 
 def logical_and(image1, image2):
-    """Logical AND between two images. At least one of the images must be "1"
-    mode.
+    """Logical AND between two images. At least one of the images must have
+    mode "1".
 
     .. code-block:: python
 
@@ -224,8 +224,8 @@ def logical_and(image1, image2):
 
 
 def logical_or(image1, image2):
-    """Logical OR between two images. At least one of the images must be "1"
-    mode.
+    """Logical OR between two images. At least one of the images must have
+    mode "1".
 
     .. code-block:: python
 
@@ -240,8 +240,8 @@ def logical_or(image1, image2):
 
 
 def logical_xor(image1, image2):
-    """Logical XOR between two images. At least one of the images must be "1"
-    mode.
+    """Logical XOR between two images. At least one of the images must have
+    mode "1".
 
     .. code-block:: python
 
