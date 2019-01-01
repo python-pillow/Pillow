@@ -110,7 +110,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Docker images
 
-* [ ] Update Pillow for the [docker images](https://github.com/python-pillow/docker-images)
+* [ ] Update Pillow for the [Docker images](https://github.com/python-pillow/docker-images):
 ```
     $ git clone https://github.com/python-pillow/docker-images
     $ cd docker-images
