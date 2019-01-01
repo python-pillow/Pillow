@@ -34,6 +34,7 @@ operations in this module).
 .. autofunction:: PIL.ImageChops.lighter
 .. autofunction:: PIL.ImageChops.logical_and
 .. autofunction:: PIL.ImageChops.logical_or
+.. autofunction:: PIL.ImageChops.logical_xor
 .. autofunction:: PIL.ImageChops.multiply
 .. py:method:: PIL.ImageChops.offset(image, xoffset, yoffset=None)
 
