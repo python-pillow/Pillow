@@ -108,7 +108,7 @@ def multiply(image1, image2):
 
     If you multiply an image with a solid black image, the result is black. If
     you multiply with a solid white image, the image is unaffected. At least
-    one of the images must be "1" mode.
+    one of the images must have mode "1".
 
     .. code-block:: python
 
