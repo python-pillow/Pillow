@@ -111,7 +111,7 @@ def _find_library_dirs_ldconfig():
                                  stdout=subprocess.PIPE,
                                  env=env)
     except OSError:  # E.g. command not found
-        return None
+        return []
     [data, _] = p.communicate()
     if isinstance(data, bytes):
         data = data.decode()
