@@ -86,6 +86,7 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PNG")
+        self.assertEqual(im.get_format_mimetype(), 'image/png')
 
         hopper("1").save(test_file)
         Image.open(test_file)
@@ -589,6 +590,8 @@ class TestFilePng(PillowTestCase):
                          "WebP support not installed with animation")
     def test_apng(self):
         im = Image.open("Tests/images/iss634.apng")
+        self.assertEqual(im.get_format_mimetype(), 'image/apng')
+
         expected = Image.open("Tests/images/iss634.webp")
         self.assert_image_similar(im, expected, 0.23)
 
