@@ -1361,6 +1361,7 @@ class Image(object):
         bi-level image (mode "1") or a greyscale image ("L").
 
         :param mask: An optional mask.
+        :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
         self.load()
@@ -1372,6 +1373,36 @@ class Image(object):
                 extrema = self.getextrema()
             return self.im.histogram(extrema)
         return self.im.histogram()
+
+    def entropy(self, mask=None, extrema=None):
+        """
+        Returns the histogram entropy. The histogram is returned as
+        a list of pixel counts, one for each pixel value in the source
+        image. If the image has more than one band, the histograms for
+        all bands are concatenated (for example, the histogram for an
+        "RGB" image contains 768 values).
+
+        A bilevel image (mode "1") is treated as a greyscale ("L") image
+        by this method.
+
+        If a mask is provided, the method returns a histogram for those
+        parts of the image where the mask image is non-zero. The mask
+        image must have the same size as the image, and be either a
+        bi-level image (mode "1") or a greyscale image ("L").
+
+        :param mask: An optional mask.
+        :param extrema: An optional tuple of manually-specified extrema.
+        :returns: A float value measuring the image entropy.
+        """
+        self.load()
+        if mask:
+            mask.load()
+            return self.im.entropy((0, 0), mask.im)
+        if self.mode in ("I", "F"):
+            if extrema is None:
+                extrema = self.getextrema()
+            return self.im.entropy(extrema)
+        return self.im.entropy()
 
     def offset(self, xoffset, yoffset=None):
         raise NotImplementedError("offset() has been removed. "

@@ -1175,59 +1175,62 @@ _getpixel(ImagingObject* self, PyObject* args)
     return getpixel(self->image, self->access, x, y);
 }
 
+#define HISTOGRAM_METHOD_PROLOGUE(HISTO)                                            \
+    ImagingHistogram HISTO;                                                         \
+    union {                                                                         \
+        UINT8 u[2];                                                                 \
+        INT32 i[2];                                                                 \
+        FLOAT32 f[2];                                                               \
+    } extrema;                                                                      \
+    void* ep;                                                                       \
+    int i0, i1;                                                                     \
+    double f0, f1;                                                                  \
+                                                                                    \
+    PyObject* extremap = NULL;                                                      \
+    ImagingObject* maskp = NULL;                                                    \
+    if (!PyArg_ParseTuple(args, "|OO!", &extremap, &Imaging_Type, &maskp))          \
+    return NULL;                                                                    \
+                                                                                    \
+    if (extremap) {                                                                 \
+        ep = &extrema;                                                              \
+        switch (self->image->type) {                                                \
+        case IMAGING_TYPE_UINT8:                                                    \
+            if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1))                        \
+                return NULL;                                                        \
+            /* FIXME: clip */                                                       \
+            extrema.u[0] = i0;                                                      \
+            extrema.u[1] = i1;                                                      \
+            break;                                                                  \
+        case IMAGING_TYPE_INT32:                                                    \
+            if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1))                        \
+                return NULL;                                                        \
+            extrema.i[0] = i0;                                                      \
+            extrema.i[1] = i1;                                                      \
+            break;                                                                  \
+        case IMAGING_TYPE_FLOAT32:                                                  \
+            if (!PyArg_ParseTuple(extremap, "dd", &f0, &f1))                        \
+                return NULL;                                                        \
+            extrema.f[0] = (FLOAT32) f0;                                            \
+            extrema.f[1] = (FLOAT32) f1;                                            \
+            break;                                                                  \
+        default:                                                                    \
+            ep = NULL;                                                              \
+            break;                                                                  \
+        }                                                                           \
+    } else                                                                          \
+        ep = NULL;                                                                  \
+                                                                                    \
+    HISTO = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);    \
+                                                                                    \
+    if (!HISTO)                                                                     \
+    return NULL;
+
 static PyObject*
 _histogram(ImagingObject* self, PyObject* args)
 {
-    ImagingHistogram h;
     PyObject* list;
     int i;
-    union {
-        UINT8 u[2];
-        INT32 i[2];
-        FLOAT32 f[2];
-    } extrema;
-    void* ep;
-    int i0, i1;
-    double f0, f1;
-
-    PyObject* extremap = NULL;
-    ImagingObject* maskp = NULL;
-    if (!PyArg_ParseTuple(args, "|OO!", &extremap, &Imaging_Type, &maskp))
-    return NULL;
-
-    if (extremap) {
-        ep = &extrema;
-        switch (self->image->type) {
-        case IMAGING_TYPE_UINT8:
-            if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1))
-                return NULL;
-            /* FIXME: clip */
-            extrema.u[0] = i0;
-            extrema.u[1] = i1;
-            break;
-        case IMAGING_TYPE_INT32:
-            if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1))
-                return NULL;
-            extrema.i[0] = i0;
-            extrema.i[1] = i1;
-            break;
-        case IMAGING_TYPE_FLOAT32:
-            if (!PyArg_ParseTuple(extremap, "dd", &f0, &f1))
-                return NULL;
-            extrema.f[0] = (FLOAT32) f0;
-            extrema.f[1] = (FLOAT32) f1;
-            break;
-        default:
-            ep = NULL;
-            break;
-        }
-    } else
-        ep = NULL;
-
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
-
-    if (!h)
-    return NULL;
+    HISTOGRAM_METHOD_PROLOGUE(h);
 
     /* Build an integer list containing the histogram */
     list = PyList_New(h->bands * 256);
@@ -1242,10 +1245,48 @@ _histogram(ImagingObject* self, PyObject* args)
         PyList_SetItem(list, i, item);
     }
 
+    /* Destroy the histogram structure */
     ImagingHistogramDelete(h);
 
     return list;
 }
+
+static PyObject*
+_entropy(ImagingObject* self, PyObject* args)
+{
+    PyObject* entropy;
+    int idx, length;
+    long sum;
+    double fentropy, fsum, p;
+    HISTOGRAM_METHOD_PROLOGUE(h);
+
+    /* Calculate the histogram entropy */
+    /* First, sum the histogram data */
+    length = h->bands * 256;
+    sum = 0;
+    for (idx = 0; idx < length; idx++) {
+        sum += h->histogram[idx];
+    }
+
+    /* Next, normalize the histogram data, */
+    /* using the histogram sum value */
+    fsum = (double)sum;
+    fentropy = 0.0;
+    for (idx = 0; idx < length; idx++) {
+        p = (double)h->histogram[idx] / fsum;
+        fentropy += p != 0.0 ? (p * log2(p)) : 0.0;
+    }
+
+    /* Finally, allocate a PyObject* for return */
+    entropy = PyFloat_FromDouble(-fentropy);
+
+    /* Destroy the histogram structure */
+    ImagingHistogramDelete(h);
+
+    return entropy;
+}
+
+#undef HISTOGRAM_METHOD_PROLOGUE
 
 #ifdef WITH_MODEFILTER
 static PyObject*
@@ -3191,6 +3232,7 @@ static struct PyMethodDef methods[] = {
     {"expand", (PyCFunction)_expand_image, 1},
     {"filter", (PyCFunction)_filter, 1},
     {"histogram", (PyCFunction)_histogram, 1},
+    {"entropy", (PyCFunction)_entropy, 1},
 #ifdef WITH_MODEFILTER
     {"modefilter", (PyCFunction)_modefilter, 1},
 #endif
