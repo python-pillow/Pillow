@@ -23,7 +23,7 @@ Released quarterly on the first day of January, April, July, October.
     $ make sdist
 ```
 * [ ] Create [binary distributions](#binary-distributions)
-* [ ] Upload all binaries and source distributions e.g. ``twine upload dist/Pillow-5.2.0-*``
+* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.0*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), append `.dev0` to version identifier in `src/PIL/_version.py`
 
