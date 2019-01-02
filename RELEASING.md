@@ -25,7 +25,7 @@ Released quarterly on the first day of January, April, July, October.
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.0*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), append `.dev0` to version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
 
 ## Point Release
 
