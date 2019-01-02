@@ -98,6 +98,8 @@ class SgiImageFile(ImageFile.ImageFile):
 
         self._size = xsize, ysize
         self.mode = rawmode.split(";")[0]
+        if self.mode == 'RGB':
+            self.custom_mimetype = 'image/rgb'
 
         # orientation -1 : scanlines begins at the bottom-left corner
         orientation = -1
@@ -220,7 +222,6 @@ Image.register_decoder("SGI16", SGI16Decoder)
 Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 Image.register_save(SgiImageFile.format, _save)
 Image.register_mime(SgiImageFile.format, "image/sgi")
-Image.register_mime(SgiImageFile.format, "image/rgb")
 
 Image.register_extensions(SgiImageFile.format,
                           [".bw", ".rgb", ".rgba", ".sgi"])
