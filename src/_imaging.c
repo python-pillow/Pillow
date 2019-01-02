@@ -85,6 +85,9 @@
 
 #include "py3.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 /* Configuration stuff. Feel free to undef things you don't need. */
 #define WITH_IMAGECHOPS /* ImageChops support */
 #define WITH_IMAGEDRAW /* ImageDraw support */
@@ -1274,7 +1277,7 @@ _entropy(ImagingObject* self, PyObject* args)
     fentropy = 0.0;
     for (idx = 0; idx < length; idx++) {
         p = (double)h->histogram[idx] / fsum;
-        fentropy += p != 0.0 ? (p * log2(p)) : 0.0;
+        fentropy += p != 0.0 ? (p * log(p) * M_LOG2E) : 0.0;
     }
 
     /* Finally, allocate a PyObject* for return */
