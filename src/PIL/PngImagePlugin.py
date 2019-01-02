@@ -677,6 +677,11 @@ class PngImageFile(ImageFile.ImageFile):
                 self.png.call(cid, pos, length)
             except UnicodeDecodeError:
                 break
+            except EOFError:
+                # call dispatches out to chunk_* methods which
+                # mutate the internal state and then raise EOFError
+                # for a chunk that must be last.
+                break
         self._text = self.png.im_text
         self.png.close()
         self.png = None
