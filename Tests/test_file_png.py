@@ -585,6 +585,10 @@ class TestFilePng(PillowTestCase):
         self.assertIsInstance(im.text, dict)
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+        # Raises an EOFError in load_end
+        im = Image.open("Tests/images/hopper_idat_after_image_end.png")
+        self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
+
     @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
                          "WebP support not installed with animation")
     def test_apng(self):

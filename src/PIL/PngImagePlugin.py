@@ -677,6 +677,8 @@ class PngImageFile(ImageFile.ImageFile):
                 self.png.call(cid, pos, length)
             except UnicodeDecodeError:
                 break
+            except EOFError:
+                ImageFile._safe_read(self.fp, length)
         self._text = self.png.im_text
         self.png.close()
         self.png = None
