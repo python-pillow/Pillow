@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Pillow (PIL Fork)'
-copyright = u'1995-2011 Fredrik Lundh, 2010-2018 Alex Clark and Contributors'
+copyright = u'1995-2011 Fredrik Lundh, 2010-2019 Alex Clark and Contributors'
 author = u'Fredrik Lundh, Alex Clark and Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
