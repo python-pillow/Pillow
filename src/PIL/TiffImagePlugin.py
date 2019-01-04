@@ -1361,7 +1361,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def _close__fp(self):
         try:
-            self.__fp.close()
+            if self.__fp != self.fp:
+                self.__fp.close()
         except AttributeError:
             pass
         finally:

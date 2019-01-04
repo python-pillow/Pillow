@@ -220,6 +220,10 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(
             im.getextrema(), (-3.140936851501465, 3.140684127807617))
 
+    def test_unknown_pixel_mode(self):
+        self.assertRaises(
+            IOError, Image.open, 'Tests/images/hopper_unknown_pixel_mode.tif')
+
     def test_n_frames(self):
         for path, n_frames in [
             ['Tests/images/multipage-lastframe.tif', 1],
