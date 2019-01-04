@@ -106,7 +106,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Documentation
 
-* [ ] Make sure the default version for Read the Docs is the latest release version, i.e. ``5.2.0`` rather than ``latest`` e.g. https://pillow.readthedocs.io/en/5.2.x/
+* [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. ``d2d43879`` (5.4.0)
 
 ## Docker images
 
