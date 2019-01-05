@@ -14,9 +14,9 @@ PNG: Handle IDAT chunks after image end
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some PNG images have multiple IDAT chunks. In some cases, Pillow will stop
-reading the image after one chunk. A regression caused an ``EOFError``
-exception when previously there was none. This is now fixed, and file reading
-continues in case there are subsequent text chunks.
+reading image data before the IDAT chunks finish. A regression caused an
+``EOFError`` exception when previously there was none. This is now fixed, and
+file reading continues in case there are subsequent text chunks.
 
 PNG: MIME type
 ^^^^^^^^^^^^^^
