@@ -581,6 +581,11 @@ class TestFileJpeg(PillowTestCase):
         # OSError for unidentified image.
         self.assertEqual(im.info.get("dpi"), (72, 72))
 
+    def test_partial_mcu_draft(self):
+        im = Image.open("Tests/images/flower2.jpg")
+        im.draft(im.mode, (100, 100))
+        self.assertEqual(im.size, (146, 109))
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):

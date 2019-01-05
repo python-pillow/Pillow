@@ -385,6 +385,7 @@ class JpegImageFile(ImageFile.ImageFile):
             a = mode, ""
 
         if size:
+            original_size = self.size
             scale = min(self.size[0] // size[0], self.size[1] // size[1])
             for s in [8, 4, 2, 1]:
                 if scale >= s:
@@ -395,6 +396,21 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
+
+        if scale > 1:
+            sampling = get_sampling(self)
+            if sampling != -1:
+                mcu = [(8, 8), (16, 8), (16, 16)][sampling]
+                new_size = list(self.size)
+                for i in range(0, 2):
+                    # If an original image dimension is not a whole number of
+                    # MCUs, then the additional data may not be correct.
+                    if original_size[i] % mcu[i] != 0:
+                        new_size[i] -= mcu[i] / scale
+                if new_size != list(self.size):
+                    self.load()
+                    self._size = tuple(new_size)
+                    self.im = self._crop(self.im, (0, 0) + self._size)
 
         return self
 
