@@ -314,7 +314,7 @@ void hashtable_free(HashTable *h) {
    uint32_t i;
 
    if (h->table) {
-      if (h->keyDestroyFunc || h->keyDestroyFunc) {
+      if (h->keyDestroyFunc || h->valDestroyFunc) {
          hashtable_foreach(h,_hashtable_destroy,NULL);
       }
       for (i=0;i<h->length;i++) {
