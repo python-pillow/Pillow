@@ -22,10 +22,10 @@ Released quarterly on the first day of January, April, July, October.
 ```
     $ make sdist
 ```
-* [ ] Create [binary distributions](#binary-distributions)
-* [ ] Upload all binaries and source distributions e.g. ``twine upload dist/Pillow-5.2.0-*``
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.0*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), append `.dev0` to version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
 
 ## Point Release
 
@@ -50,7 +50,7 @@ Released as needed for security, installation or critical bug fixes.
 ```
     $ make sdist
 ```
-* [ ] Create [binary distributions](#binary-distributions)
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 
 ## Embargoed Release
@@ -74,7 +74,7 @@ Released as needed privately to individual vendors for critical security-related
 ```
     $ make sdist
 ```
-* [ ] Create [binary distributions](#binary-distributions)
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 
 ## Binary Distributions
@@ -108,18 +108,3 @@ Released as needed privately to individual vendors for critical security-related
 
 * [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. ``d2d43879`` (5.4.0)
 
-## Docker images
-
-* [ ] Update Pillow for the [Docker images](https://github.com/python-pillow/docker-images):
-```
-    $ git clone https://github.com/python-pillow/docker-images
-    $ cd docker-images
-    $ git submodule init
-    $ git submodule update Pillow
-    $ cd Pillow
-    $ git fetch --all
-    $ git checkout [[release tag]]
-    $ cd ..
-    $ git commit -m "Pillow -> 5.2.0" Pillow
-    $ git push
-```
