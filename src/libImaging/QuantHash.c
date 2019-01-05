@@ -182,34 +182,6 @@ static int _hashtable_insert(HashTable *h,HashKey_t key,HashVal_t val,int resize
    }
 }
 
-static int _hashtable_lookup_or_insert(HashTable *h,HashKey_t key,HashVal_t *retVal,HashVal_t newVal,int resize) {
-   HashNode **n,*nv;
-   HashNode *t;
-   int i;
-   uint32_t hash=h->hashFunc(h,key)%h->length;
-
-   for (n=&(h->table[hash]);*n;n=&((*n)->next)) {
-      nv=*n;
-      i=h->cmpFunc(h,nv->key,key);
-      if (!i) {
-         *retVal=nv->value;
-         return 1;
-      } else if (i>0) {
-         break;
-      }
-   }
-   t=malloc(sizeof(HashNode));
-   if (!t) return 0;
-   t->next=*n;
-   *n=t;
-   t->key=key;
-   t->value=newVal;
-   *retVal=newVal;
-   h->count++;
-   if (resize) _hashtable_resize(h);
-   return 1;
-}
-
 int hashtable_insert_or_update_computed(HashTable *h,
                                         HashKey_t key,
                                         ComputeFunc newFunc,
@@ -247,10 +219,6 @@ int hashtable_insert_or_update_computed(HashTable *h,
    h->count++;
    _hashtable_resize(h);
    return 1;
-}
-
-int hashtable_update(HashTable *h,HashKey_t key,HashVal_t val) {
-   return _hashtable_insert(h,key,val,1,0);
 }
 
 int hashtable_insert(HashTable *h,HashKey_t key,HashVal_t val) {
@@ -299,68 +267,8 @@ void hashtable_free(HashTable *h) {
    free(h);
 }
 
-static int _hashtable_remove(HashTable *h,
-                             const HashKey_t key,
-                             HashKey_t *keyRet,
-                             HashVal_t *valRet,
-                             int resize) {
-   uint32_t hash=h->hashFunc(h,key)%h->length;
-   HashNode *n,*p;
-   int i;
-
-   for (p=NULL,n=h->table[hash];n;p=n,n=n->next) {
-      i=h->cmpFunc(h,n->key,key);
-      if (!i) {
-         if (p) p=n->next; else h->table[hash]=n->next;
-         *keyRet=n->key;
-         *valRet=n->value;
-         free(n);
-         h->count++;
-         return 1;
-      } else if (i>0) {
-         break;
-      }
-   }
-   return 0;
-}
-
-static int _hashtable_delete(HashTable *h,const HashKey_t key,int resize) {
-   uint32_t hash=h->hashFunc(h,key)%h->length;
-   HashNode *n,*p;
-   int i;
-
-   for (p=NULL,n=h->table[hash];n;p=n,n=n->next) {
-      i=h->cmpFunc(h,n->key,key);
-      if (!i) {
-         if (p) p=n->next; else h->table[hash]=n->next;
-         free(n);
-         h->count++;
-         return 1;
-      } else if (i>0) {
-         break;
-      }
-   }
-   return 0;
-}
-
-int hashtable_remove(HashTable *h,const HashKey_t key,HashKey_t *keyRet,HashVal_t *valRet) {
-   return _hashtable_remove(h,key,keyRet,valRet,1);
-}
-
-int hashtable_delete(HashTable *h,const HashKey_t key) {
-   return _hashtable_delete(h,key,1);
-}
-
 void hashtable_rehash_compute(HashTable *h,CollisionFunc cf) {
    _hashtable_rehash(h,cf,h->length);
-}
-
-void hashtable_rehash(HashTable *h) {
-   _hashtable_rehash(h,NULL,h->length);
-}
-
-int hashtable_lookup_or_insert(HashTable *h,HashKey_t key,HashVal_t *valp,HashVal_t val) {
-   return _hashtable_lookup_or_insert(h,key,valp,val,1);
 }
 
 int hashtable_lookup(const HashTable *h,const HashKey_t key,HashVal_t *valp) {
