@@ -2,6 +2,24 @@
 Changelog (Pillow)
 ==================
 
+5.5.0 (unreleased)
+------------------
+
+- Detect MIME types #3525
+  [radarhere]
+
+5.4.1 (unreleased)
+------------------
+
+- Fix build for Termux #3529
+  [pslacerda]
+
+- PNG: Detect MIME types #3525
+  [radarhere]
+
+- PNG: Handle IDAT chunks after image end #3532
+  [radarhere]
+
 5.4.0 (2019-01-01)
 ------------------
 
