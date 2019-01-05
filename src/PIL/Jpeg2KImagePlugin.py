@@ -57,10 +57,11 @@ def _parse_codestream(fp):
 
 def _parse_jp2_header(fp):
     """Parse the JP2 header box to extract size, component count and
-    color space information, returning a PIL (size, mode) tuple."""
+    color space information, returning a (size, mode, mimetype) tuple."""
 
     # Find the JP2 header box
     header = None
+    mimetype = None
     while True:
         lbox, tbox = struct.unpack('>I4s', fp.read(8))
         if lbox == 1:
@@ -75,6 +76,10 @@ def _parse_jp2_header(fp):
         if tbox == b'jp2h':
             header = fp.read(lbox - hlen)
             break
+        elif tbox == b'ftyp':
+            if fp.read(4) == b'jpx ':
+                mimetype = 'image/jpx'
+            fp.seek(lbox - hlen - 4, os.SEEK_CUR)
         else:
             fp.seek(lbox - hlen, os.SEEK_CUR)
 
@@ -145,7 +150,7 @@ def _parse_jp2_header(fp):
     if size is None or mode is None:
         raise SyntaxError("Malformed jp2 header")
 
-    return (size, mode)
+    return (size, mode, mimetype)
 
 ##
 # Image plugin for JPEG2000 images.
@@ -165,7 +170,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             if sig == b'\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a':
                 self.codec = "jp2"
-                self._size, self.mode = _parse_jp2_header(self.fp)
+                header = _parse_jp2_header(self.fp)
+                self._size, self.mode, self.custom_mimetype = header
             else:
                 raise SyntaxError('not a JPEG 2000 file')
 
@@ -281,4 +287,3 @@ Image.register_extensions(Jpeg2KImageFile.format,
                           [".jp2", ".j2k", ".jpc", ".jpf", ".jpx", ".j2c"])
 
 Image.register_mime(Jpeg2KImageFile.format, 'image/jp2')
-Image.register_mime(Jpeg2KImageFile.format, 'image/jpx')

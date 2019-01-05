@@ -12,6 +12,7 @@ class TestFileSgi(PillowTestCase):
 
         im = Image.open(test_file)
         self.assert_image_equal(im, hopper())
+        self.assertEqual(im.get_format_mimetype(), 'image/rgb')
 
     def test_rgb16(self):
         test_file = "Tests/images/hopper16.rgb"
@@ -26,6 +27,7 @@ class TestFileSgi(PillowTestCase):
 
         im = Image.open(test_file)
         self.assert_image_similar(im, hopper('L'), 2)
+        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
 
     def test_rgba(self):
         # Created with ImageMagick:
@@ -35,6 +37,7 @@ class TestFileSgi(PillowTestCase):
         im = Image.open(test_file)
         target = Image.open('Tests/images/transparent.png')
         self.assert_image_equal(im, target)
+        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
 
     def test_rle(self):
         # Created with ImageMagick:

@@ -39,6 +39,12 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jp2')
+
+    def test_jpf(self):
+        im = Image.open('Tests/images/balloon.jpf')
+        self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jpx')
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
