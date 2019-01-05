@@ -35,8 +35,6 @@ struct _HashTable {
    uint32_t count;
    HashFunc hashFunc;
    HashCmpFunc cmpFunc;
-   KeyDestroyFunc keyDestroyFunc;
-   ValDestroyFunc valDestroyFunc;
    void *userData;
 };
 
@@ -51,8 +49,6 @@ HashTable *hashtable_new(HashFunc hf,HashCmpFunc cf) {
    if (!h) { return NULL; }
    h->hashFunc=hf;
    h->cmpFunc=cf;
-   h->keyDestroyFunc=NULL;
-   h->valDestroyFunc=NULL;
    h->length=MIN_LENGTH;
    h->count=0;
    h->userData=NULL;
@@ -60,15 +56,6 @@ HashTable *hashtable_new(HashFunc hf,HashCmpFunc cf) {
    if (!h->table) { free(h); return NULL; }
    memset (h->table,0,sizeof(HashNode *)*h->length);
    return h;
-}
-
-static void _hashtable_destroy(const HashTable *h,const HashKey_t key,const HashVal_t val,void *u) {
-   if (h->keyDestroyFunc) {
-      h->keyDestroyFunc(h,key);
-   }
-   if (h->valDestroyFunc) {
-      h->valDestroyFunc(h,val);
-   }
 }
 
 static uint32_t _findPrime(uint32_t start,int dir) {
@@ -144,12 +131,6 @@ static int _hashtable_insert_node(HashTable *h,HashNode *node,int resize,int upd
             free(node);
             return 1;
          } else {
-            if (h->valDestroyFunc) {
-               h->valDestroyFunc(h,nv->value);
-            }
-            if (h->keyDestroyFunc) {
-               h->keyDestroyFunc(h,nv->key);
-            }
             nv->key=node->key;
             nv->value=node->value;
             free(node);
@@ -180,7 +161,6 @@ static int _hashtable_insert(HashTable *h,HashKey_t key,HashVal_t val,int resize
       nv=*n;
       i=h->cmpFunc(h,nv->key,key);
       if (!i) {
-         if (h->valDestroyFunc) { h->valDestroyFunc(h,nv->value); }
          nv->value=val;
          return 1;
       } else if (i>0) {
@@ -243,14 +223,8 @@ int hashtable_insert_or_update_computed(HashTable *h,
       nv=*n;
       i=h->cmpFunc(h,nv->key,key);
       if (!i) {
-         HashVal_t old=nv->value;
          if (existsFunc) {
             existsFunc(h,nv->key,&(nv->value));
-            if (nv->value!=old) {
-               if (h->valDestroyFunc) {
-                  h->valDestroyFunc(h,old);
-               }
-            }
          } else {
             return 0;
          }
@@ -314,9 +288,6 @@ void hashtable_free(HashTable *h) {
    uint32_t i;
 
    if (h->table) {
-      if (h->keyDestroyFunc || h->keyDestroyFunc) {
-         hashtable_foreach(h,_hashtable_destroy,NULL);
-      }
       for (i=0;i<h->length;i++) {
          for (n=h->table[i];n;n=nn) {
             nn=n->next;
@@ -326,18 +297,6 @@ void hashtable_free(HashTable *h) {
       free(h->table);
    }
    free(h);
-}
-
-ValDestroyFunc hashtable_set_value_destroy_func(HashTable *h,ValDestroyFunc d) {
-   ValDestroyFunc r=h->valDestroyFunc;
-   h->valDestroyFunc=d;
-   return r;
-}
-
-KeyDestroyFunc hashtable_set_key_destroy_func(HashTable *h,KeyDestroyFunc d) {
-   KeyDestroyFunc r=h->keyDestroyFunc;
-   h->keyDestroyFunc=d;
-   return r;
 }
 
 static int _hashtable_remove(HashTable *h,
@@ -374,8 +333,6 @@ static int _hashtable_delete(HashTable *h,const HashKey_t key,int resize) {
       i=h->cmpFunc(h,n->key,key);
       if (!i) {
          if (p) p=n->next; else h->table[hash]=n->next;
-         if (h->valDestroyFunc) { h->valDestroyFunc(h,n->value); }
-         if (h->keyDestroyFunc) { h->keyDestroyFunc(h,n->key); }
          free(n);
          h->count++;
          return 1;

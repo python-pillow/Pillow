@@ -22,8 +22,6 @@ typedef uint32_t (*HashFunc)(const HashTable *,const HashKey_t);
 typedef int (*HashCmpFunc)(const HashTable *,const HashKey_t,const HashKey_t);
 typedef void (*IteratorFunc)(const HashTable *,const HashKey_t,const HashVal_t,void *);
 typedef void (*IteratorUpdateFunc)(const HashTable *,const HashKey_t,HashVal_t *,void *);
-typedef void (*KeyDestroyFunc)(const HashTable *,HashKey_t);
-typedef void (*ValDestroyFunc)(const HashTable *,HashVal_t);
 typedef void (*ComputeFunc)(const HashTable *,const HashKey_t,HashVal_t *);
 typedef void (*CollisionFunc)(const HashTable *,HashKey_t *,HashVal_t *,HashKey_t,HashVal_t);
 
@@ -40,8 +38,6 @@ int hashtable_delete(HashTable *h,const HashKey_t key);
 int hashtable_remove(HashTable *h,const HashKey_t key,HashKey_t *keyRet,HashVal_t *valRet);
 void *hashtable_set_user_data(HashTable *h,void *data);
 void *hashtable_get_user_data(const HashTable *h);
-KeyDestroyFunc hashtable_set_key_destroy_func(HashTable *,KeyDestroyFunc d);
-ValDestroyFunc hashtable_set_value_destroy_func(HashTable *,ValDestroyFunc d);
 uint32_t hashtable_get_count(const HashTable *h);
 void hashtable_rehash(HashTable *h);
 void hashtable_rehash_compute(HashTable *h,CollisionFunc cf);
