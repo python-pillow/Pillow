@@ -26,11 +26,11 @@ type for PNG files, causing "image/apng" to be returned as the MIME type of
 both APNG and PNG files. This has been fixed so the MIME type of PNG files is
 "image/png".
 
-File Closing
+File closing
 ^^^^^^^^^^^^
 
 A regression caused an unsupported image file to report a
 ``ValueError: seek of closed file`` exception instead of an ``OSError``. This
-has been fixed by ensuring that image plugins only close their internal `__fp`
-if they are not the same as ImageFile's `fp`, allowing each to manage their own
+has been fixed by ensuring that image plugins only close their internal ``__fp``
+if they are not the same as ``ImageFile``'s ``fp``, allowing each to manage their own
 file pointers.
