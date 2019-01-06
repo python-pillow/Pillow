@@ -2,12 +2,6 @@
 Changelog (Pillow)
 ==================
 
-5.5.0 (unreleased)
-------------------
-
-- Detect MIME types #3525
-  [radarhere]
-
 5.4.1 (2019-01-06)
 ------------------
 
