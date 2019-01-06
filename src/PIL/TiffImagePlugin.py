@@ -54,7 +54,6 @@ import os
 import struct
 import sys
 import warnings
-import distutils.version
 
 from .TiffTags import TYPES
 
@@ -1526,8 +1525,7 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
                     continue
-                if (distutils.version.StrictVersion(_libtiff_version()) <
-                    distutils.version.StrictVersion("4.0")) \
+                if int(_libtiff_version().split(".")[0]) < 4 \
                    or not (isinstance(value, (int, float, str, bytes)) or
                            (not py3 and isinstance(value, unicode))):  # noqa: F821
                     continue
