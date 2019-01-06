@@ -5,8 +5,8 @@
 Released quarterly on the first day of January, April, July, October.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
-* [ ] Develop and prepare release in ``master`` branch.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in ``master`` branch.
+* [ ] Develop and prepare release in `master` branch.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `master` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
@@ -31,14 +31,14 @@ Released quarterly on the first day of January, April, July, October.
 
 Released as needed for security, installation or critical bug fixes.
 
-* [ ] Make necessary changes in ``master`` branch.
+* [ ] Make necessary changes in `master` branch.
 * [ ] Update `CHANGES.rst`.
 * [ ] Check out release branch e.g.:
   ```bash
   git checkout -t remotes/origin/5.2.x
   ```
-* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``5.2.x``.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``5.2.x``.
+* [ ] Cherry pick individual commits from `master` branch to release branch e.g. `5.2.x`.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
@@ -81,7 +81,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ### Windows
 * [ ] Contact `@cgohlke` for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
-* [ ] Download and extract tarball from `@cgohlke` and ``twine upload *``.
+* [ ] Download and extract tarball from `@cgohlke` and `twine upload *`.
 
 ### Mac and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
@@ -109,4 +109,4 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Documentation
 
-* [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. ``d2d43879`` (5.4.0)
+* [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. `d2d43879` (5.4.0)
