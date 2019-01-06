@@ -80,8 +80,8 @@ Released as needed privately to individual vendors for critical security-related
 ## Binary Distributions
 
 ### Windows
-* [ ] Contact @cgohlke for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
-* [ ] Download and extract tarball from @cgohlke and ``twine upload *``.
+* [ ] Contact `@cgohlke` for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
+* [ ] Download and extract tarball from `@cgohlke` and ``twine upload *``.
 
 ### Mac and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
