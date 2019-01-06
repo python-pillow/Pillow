@@ -67,7 +67,7 @@ services:
 install:
   - |
     if [ "$LINT" == "true" ]; then
-      pip install -U flake8
+      pip install -U check-manifest flake8
     elif [ "$DOCKER" == "" ]; then
       .travis/install.sh;
     fi
@@ -84,6 +84,7 @@ script:
 - |
   if [ "$LINT" == "true" ]; then
     flake8 --statistics --count
+    check-manifest
   elif [ "$DOCKER" == "" ]; then
     .travis/script.sh
   elif [ "$DOCKER" ]; then
