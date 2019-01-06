@@ -33,12 +33,12 @@ Released as needed for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in ``master`` branch.
 * [ ] Update `CHANGES.rst`.
-* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``5.2.x``.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``5.2.x``.
 * [ ] Check out release branch e.g.:
 ```
     git checkout -t remotes/origin/5.2.x
 ```
+* [ ] Cherry pick individual commits from ``master`` branch to release branch e.g. ``5.2.x``.
+* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. ``5.2.x``.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
