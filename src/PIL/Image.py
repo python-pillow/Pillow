@@ -594,10 +594,10 @@ class Image(object):
         :ref:`file-handling` for more information.
         """
         try:
-            self.fp.close()
-            self.fp = None
             if hasattr(self, "_close__fp"):
                 self._close__fp()
+            self.fp.close()
+            self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
 
@@ -611,12 +611,12 @@ class Image(object):
 
     if sys.version_info.major >= 3:
         def __del__(self):
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
             if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
                and self.fp and self._exclusive_fp):
                 self.fp.close()
             self.fp = None
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
 
     def _copy(self):
         self.load()
