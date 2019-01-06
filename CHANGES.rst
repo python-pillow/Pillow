@@ -8,8 +8,11 @@ Changelog (Pillow)
 - Detect MIME types #3525
   [radarhere]
 
-5.4.1 (unreleased)
+5.4.1 (2019-01-06)
 ------------------
+
+- File closing: Only close __fp if not fp #3540
+  [radarhere]
 
 - Fix build for Termux #3529
   [pslacerda]
