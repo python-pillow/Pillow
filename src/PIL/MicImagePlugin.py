@@ -88,7 +88,9 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         except IndexError:
             raise EOFError("no such frame")
 
+        prev_fp = self.fp
         self.fp = self.ole.openstream(filename)
+        prev_fp.close()
 
         TiffImagePlugin.TiffImageFile._open(self)
 

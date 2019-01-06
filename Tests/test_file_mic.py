@@ -54,6 +54,9 @@ class TestFileMic(PillowTestCase):
         self.assertRaises(EOFError, im.seek, 99)
         self.assertEqual(im.tell(), 0)
 
+    def test_unclosed_file(self):
+        self.assert_warning(None, Image.open, TEST_FILE)
+
     def test_invalid_file(self):
         # Test an invalid OLE file
         invalid_file = "Tests/images/flower.jpg"
