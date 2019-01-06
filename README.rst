@@ -3,14 +3,7 @@ Pillow Wheel Builder
 
 This repository creates wheels for tagged versions of Pillow::
 
-    git submodule init
-    git submodule update Pillow
-    git add Pillow
-    cd Pillow
-    git checkout <VERSION>
-    cd ..
-    git commit -m "Pillow -> <VERSION>" Pillow
-    git push
+    ./update-pillow-tag.sh <VERSION>
 
 .. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg
    :target: https://travis-ci.org/python-pillow/pillow-wheels
