@@ -133,6 +133,9 @@ COMPRESSION_INFO = {
     32946: "tiff_deflate",
     34676: "tiff_sgilog",
     34677: "tiff_sgilog24",
+    34925: "lzma",
+    50000: "zstd",
+    50001: "webp",
 }
 
 COMPRESSION_INFO_REV = {v: k for k, v in COMPRESSION_INFO.items()}
