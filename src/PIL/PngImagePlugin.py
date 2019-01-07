@@ -533,14 +533,6 @@ class PngStream(ChunkStream):
         self.im_custom_mimetype = 'image/apng'
         return s
 
-    def chunk_fcTL(self, pos, length):
-        s = ImageFile._safe_read(self.fp, length)
-        return s
-
-    def chunk_fdAT(self, pos, length):
-        s = ImageFile._safe_read(self.fp, length)
-        return s
-
 
 # --------------------------------------------------------------------
 # PNG reader
@@ -681,6 +673,9 @@ class PngImageFile(ImageFile.ImageFile):
             except UnicodeDecodeError:
                 break
             except EOFError:
+                ImageFile._safe_read(self.fp, length)
+            except AttributeError:
+                logger.debug("%r %s %s (unknown)", cid, pos, length)
                 ImageFile._safe_read(self.fp, length)
         self._text = self.png.im_text
         self.png.close()
