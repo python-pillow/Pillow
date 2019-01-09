@@ -396,6 +396,20 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
+        if scale > 1:
+            sampling = get_sampling(self)
+            if sampling != -1:
+                mcu = [(8, 8), (16, 8), (16, 16)][sampling]
+                for i in range(0, 2):
+                    # If an original image dimension is not a whole number of
+                    # MCUs, then the additional data may not be correct.
+                    if self.size[i] % mcu[i] != 0:
+                        im = self.resize(size)
+
+                        self.im = im.im
+                        self._size = size
+                        break
+
         return self
 
     def load_djpeg(self):
