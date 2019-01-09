@@ -586,6 +586,10 @@ class TestFileJpeg(PillowTestCase):
         im.draft(im.mode, (100, 100))
         self.assertEqual(im.size, (100, 100))
 
+        im = Image.open("Tests/images/flower2.jpg")
+        im.thumbnail((100, 75))
+        self.assertEqual(im.size, (100, 75))
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
