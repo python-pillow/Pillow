@@ -53,9 +53,9 @@ if sys.platform.startswith('win'):
 
 
 def has_ghostscript():
-    if gs_windows_binary:
-        return True
-    if not sys.platform.startswith('win'):
+    if gs_windows_binary is not None:
+        return gs_windows_binary is not False
+    else:
         import subprocess
         try:
             with open(os.devnull, 'wb') as devnull:
@@ -63,8 +63,7 @@ def has_ghostscript():
             return True
         except OSError:
             # No Ghostscript
-            pass
-    return False
+            return False
 
 
 def Ghostscript(tile, size, fp, scale=1):
