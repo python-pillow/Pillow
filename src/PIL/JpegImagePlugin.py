@@ -463,6 +463,7 @@ def _getexif(self):
     head = file.read(8)
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory_v1(head)
+    file.seek(info.next)
     info.load(file)
     exif = dict(_fixup_dict(info))
     # get exif extension
@@ -510,6 +511,7 @@ def _getmp(self):
     # process dictionary
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        file_contents.seek(info.next)
         info.load(file_contents)
         mp = dict(info)
     except Exception:
