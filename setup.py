@@ -178,12 +178,6 @@ def get_version():
     return locals()['__version__']
 
 
-try:
-    import _tkinter
-except (ImportError, OSError):
-    # pypy emits an oserror
-    _tkinter = None
-
 NAME = 'Pillow'
 PILLOW_VERSION = get_version()
 JPEG_ROOT = None
