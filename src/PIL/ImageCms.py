@@ -274,13 +274,13 @@ class PyCMSError(Exception):
 
 def profileToProfile(
         im, inputProfile, outputProfile, renderingIntent=INTENT_PERCEPTUAL,
-        outputMode=None, inPlace=0, flags=0):
+        outputMode=None, inPlace=False, flags=0):
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
     inputProfile to outputProfile.
 
     If the input or output profiles specified are not valid filenames, a
-    PyCMSError will be raised.  If inPlace == TRUE and outputMode != im.mode,
+    PyCMSError will be raised.  If inPlace is True and outputMode != im.mode,
     a PyCMSError will be raised.  If an error occurs during application of
     the profiles, a PyCMSError will be raised.  If outputMode is not a mode
     supported by the outputProfile (or by pyCMS), a PyCMSError will be
@@ -317,9 +317,9 @@ def profileToProfile(
         MUST be the same mode as the input, or omitted completely.  If
         omitted, the outputMode will be the same as the mode of the input
         image (im.mode)
-    :param inPlace: Boolean (1 = True, None or 0 = False).  If True, the
-        original image is modified in-place, and None is returned.  If False
-        (default), a new Image object is returned with the transform applied.
+    :param inPlace: Boolean.  If True, the original image is modified in-place,
+        and None is returned.  If False (default), a new Image object is
+        returned with the transform applied.
     :param flags: Integer (0-...) specifying additional flags
     :returns: Either None or a new PIL image object, depending on value of
         inPlace
@@ -559,13 +559,13 @@ buildTransformFromOpenProfiles = buildTransform
 buildProofTransformFromOpenProfiles = buildProofTransform
 
 
-def applyTransform(im, transform, inPlace=0):
+def applyTransform(im, transform, inPlace=False):
     """
     (pyCMS) Applies a transform to a given image.
 
     If im.mode != transform.inMode, a PyCMSError is raised.
 
-    If inPlace == TRUE and transform.inMode != transform.outMode, a
+    If inPlace is True and transform.inMode != transform.outMode, a
     PyCMSError is raised.
 
     If im.mode, transfer.inMode, or transfer.outMode is not supported by
@@ -581,7 +581,7 @@ def applyTransform(im, transform, inPlace=0):
     considerable calculation time if doing the same conversion multiple times.
 
     If you want to modify im in-place instead of receiving a new image as
-    the return value, set inPlace to TRUE.  This can only be done if
+    the return value, set inPlace to True.  This can only be done if
     transform.inMode and transform.outMode are the same, because we can't
     change the mode in-place (the buffer sizes for some modes are
     different).  The  default behavior is to return a new Image object of
@@ -590,10 +590,9 @@ def applyTransform(im, transform, inPlace=0):
     :param im: A PIL Image object, and im.mode must be the same as the inMode
         supported by the transform.
     :param transform: A valid CmsTransform class object
-    :param inPlace: Bool (1 == True, 0 or None == False).  If True, im is
-        modified in place and None is returned, if False, a new Image object
-        with the transform applied is returned (and im is not changed). The
-        default is False.
+    :param inPlace: Bool.  If True, im is modified in place and None is
+        returned, if False, a new Image object with the transform applied is
+        returned (and im is not changed). The default is False.
     :returns: Either None, or a new PIL Image object, depending on the value of
         inPlace. The profile will be returned in the image's
         info['icc_profile'].
