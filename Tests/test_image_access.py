@@ -310,10 +310,8 @@ class TestCffi(AccessTest):
 
 class TestEmbeddable(unittest.TestCase):
     @unittest.skipIf(not sys.platform.startswith('win32') or
-                     sys.version_info[:2] == (3, 4) or
-                     on_appveyor(),   # failing on appveyor when run from
-                                      # subprocess, not from shell
-                     "requires Python 2.7 or >=3.5 for Windows")
+                     on_appveyor(),
+                     "Failing on AppVeyor when run from subprocess, not from shell")
     def test_embeddable(self):
         import subprocess
         import ctypes

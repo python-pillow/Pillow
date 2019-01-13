@@ -47,9 +47,6 @@ matrix:
       name: "3.5 Trusty PYTHONOPTIMIZE=2"
       dist: trusty
       env: PYTHONOPTIMIZE=2
-    - python: '3.4'
-      name: "3.4 Trusty"
-      dist: trusty
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="master"

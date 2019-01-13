@@ -5,7 +5,6 @@ PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
 pythons = {'27': {'compiler': 7, 'vc': 2008},
            'pypy2': {'compiler': 7, 'vc': 2008},
-           '34': {'compiler': 7.1, 'vc': 2010},
            '35': {'compiler': 7.1, 'vc': 2015},
            '36': {'compiler': 7.1, 'vc': 2015},
            '37': {'compiler': 7.1, 'vc': 2015}}
@@ -104,24 +103,6 @@ compilers = {
         }
     },
     7.1: {
-        2010: {
-            64: {
-                'env_version': 'v7.1',
-                'vc_version': '2010',
-                'env_flags': '/x64 /vista',
-                'inc_dir': 'msvcr10-x64',
-                'platform': 'x64',
-                'webp_platform': 'x64',
-            },
-            32: {
-                'env_version': 'v7.1',
-                'vc_version': '2010',
-                'env_flags': '/x86 /vista',
-                'inc_dir': 'msvcr10-x32',
-                'platform': 'Win32',
-                'webp_platform': 'x86',
-            }
-        },
         2015: {
             64: {
                 'env_version': 'v7.1',
