@@ -18,7 +18,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, JpegImagePlugin
+from . import Image, ImageFile, JpegImagePlugin
+from ._binary import i16be as i16
 
 __version__ = "0.1"
 
@@ -76,6 +77,14 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             return
         self.fp = self.__fp
         self.offset = self.__mpoffsets[frame]
+
+        self.fp.seek(self.offset + 2)  # skip SOI marker
+        if i16(self.fp.read(2)) == 0xFFE1:  # APP1
+            n = i16(self.fp.read(2))-2
+            self.info["exif"] = ImageFile._safe_read(self.fp, n)
+        else:
+            del self.info["exif"]
+
         self.tile = [
             ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
         ]
