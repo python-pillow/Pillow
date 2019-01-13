@@ -38,8 +38,8 @@ import array
 import struct
 import io
 import warnings
-from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, o8, i16be as i16
+from . import Image, ImageFile, TiffImagePlugin, TiffTags
+from ._binary import i8, o8, i16be as i16, i32le
 from .JpegPresets import presets
 from ._util import isStringType
 
@@ -489,6 +489,75 @@ def _getexif(self):
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
         exif[0x8825] = _fixup_dict(info)
+
+    if 0x927c in exif and exif[0x927c][:8] == b"FUJIFILM":
+        # FujiFilm MakerNote
+        exif_data = exif[0x927c]
+        ifd_offset = i32le(exif_data[8:12])
+        ifd_data = exif_data[ifd_offset:]
+
+        makernote = {}
+        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+            tag, typ, count, data = struct.unpack("<HHL4s",
+                                                  ifd_data[i*12 + 2:(i+1)*12 + 2])
+            try:
+                unit_size, handler =\
+                    TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[typ]
+            except KeyError:
+                continue
+            size = count * unit_size
+            if size > 4:
+                offset, = struct.unpack("<L", data)
+                data = ifd_data[offset-12:offset+size-12]
+            else:
+                data = data[:size]
+
+            if len(data) != size:
+                warnings.warn("Possibly corrupt EXIF MakerNote data.  "
+                              "Expecting to read %d bytes but only got %d."
+                              " Skipping tag %s" % (size, len(data), tag))
+                continue
+
+            if not data:
+                continue
+
+            makernote[tag] =\
+                handler(TiffImagePlugin.ImageFileDirectory_v2(), data, False)
+        exif["makernote"] = dict(_fixup_dict(makernote))
+    elif 0x927c in exif and exif[0x010f] == "Nintendo":
+        # Nintendo MakerNote
+        ifd_data = exif[0x927c]
+
+        makernote = {}
+        x = struct.unpack(">H", ifd_data[:2])[0]
+        for i in range(0, x):
+            tag, typ, count, data = struct.unpack(">HHL4s",
+                                                  ifd_data[i*12 + 2:(i+1)*12 + 2])
+            if tag == 0x1101:
+                # CameraInfo
+                offset, = struct.unpack(">L", data)
+                file.seek(offset)
+
+                makernote['ModelID'] = file.read(4)
+
+                file.read(4)
+                # Seconds since 2000
+                makernote['TimeStamp'] = i32le(file.read(12))
+
+                file.read(4)
+                makernote['InternalSerialNumber'] = file.read(4)
+
+                file.read(12)
+                parallax = file.read(4)
+                handler = TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
+                    TiffTags.FLOAT
+                ][1]
+                makernote['Parallax'] =\
+                    handler(TiffImagePlugin.ImageFileDirectory_v2(), parallax, False)
+
+                file.read(4)
+                makernote['Category'] = file.read(2)
+        exif["makernote"] = dict(_fixup_dict(makernote))
 
     return exif
 

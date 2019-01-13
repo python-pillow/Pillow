@@ -55,6 +55,16 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(info[296], 2)
             self.assertEqual(info[34665], 188)
 
+    def test_parallax(self):
+        # Nintendo
+        im = Image.open("Tests/images/sugarshack.mpo")
+        self.assertEqual(im._getexif()["makernote"]["Parallax"], -44.798187255859375)
+
+        # Fujifilm
+        im = Image.open("Tests/images/fujifilm.mpo")
+        im.seek(1)
+        self.assertEqual(im._getexif()["makernote"][0xb211], -3.125)
+
     def test_mp(self):
         for test_file in test_files:
             im = Image.open(test_file)
