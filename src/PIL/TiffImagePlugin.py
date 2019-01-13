@@ -1678,7 +1678,7 @@ class AppendingTiffWriter:
     def tell(self):
         return self.f.tell() - self.offsetOfNewPage
 
-    def seek(self, offset, whence):
+    def seek(self, offset, whence=io.SEEK_SET):
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 

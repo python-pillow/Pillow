@@ -18,6 +18,7 @@
 
 __version__ = "0.4"
 
+import io
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32
 
@@ -214,12 +215,12 @@ def _layerinfo(file):
         if size:
             length = i32(read(4))
             if length:
-                file.seek(length - 16, 1)
+                file.seek(length - 16, io.SEEK_CUR)
             combined += length + 4
 
             length = i32(read(4))
             if length:
-                file.seek(length, 1)
+                file.seek(length, io.SEEK_CUR)
             combined += length + 4
 
             length = i8(read(1))
@@ -229,7 +230,7 @@ def _layerinfo(file):
                 name = read(length).decode('latin-1', 'replace')
             combined += length + 1
 
-        file.seek(size - combined, 1)
+        file.seek(size - combined, io.SEEK_CUR)
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles

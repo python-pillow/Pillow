@@ -102,7 +102,7 @@ def Ghostscript(tile, size, fp, scale=1):
         # Copy whole file to read in Ghostscript
         with open(infile_temp, 'wb') as f:
             # fetch length of fp
-            fp.seek(0, 2)
+            fp.seek(0, io.SEEK_END)
             fsize = fp.tell()
             # ensure start position
             # go back
@@ -167,7 +167,7 @@ class PSFile(object):
         self.fp = fp
         self.char = None
 
-    def seek(self, offset, whence=0):
+    def seek(self, offset, whence=io.SEEK_SET):
         self.char = None
         self.fp.seek(offset, whence)
 
@@ -310,7 +310,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
         if s[:4] == b"%!PS":
             # for HEAD without binary preview
-            fp.seek(0, 2)
+            fp.seek(0, io.SEEK_END)
             length = fp.tell()
             offset = 0
         elif i32(s[0:4]) == 0xC6D3D0C5:

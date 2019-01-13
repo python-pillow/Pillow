@@ -191,9 +191,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             fd = -1
             try:
                 pos = self.fp.tell()
-                self.fp.seek(0, 2)
+                self.fp.seek(0, io.SEEK_END)
                 length = self.fp.tell()
-                self.fp.seek(pos, 0)
+                self.fp.seek(pos)
             except Exception:
                 length = -1
 
