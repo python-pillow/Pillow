@@ -958,7 +958,7 @@ class Image(object):
                 # color to an alpha channel.
                 new_im = self._new(self.im.convert_transparent(
                     mode, self.info['transparency']))
-                del(new_im.info['transparency'])
+                del new_im.info['transparency']
                 return new_im
             elif self.mode in ('L', 'RGB', 'P') and mode in ('L', 'RGB', 'P'):
                 t = self.info['transparency']
@@ -1010,14 +1010,14 @@ class Image(object):
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
-                del(new.info['transparency'])
+                del new.info['transparency']
             if trns is not None:
                 try:
                     new.info['transparency'] = new.palette.getcolor(trns)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
-                    del(new.info['transparency'])
+                    del new.info['transparency']
                     warnings.warn("Couldn't allocate palette entry " +
                                   "for transparency")
             return new
@@ -1039,13 +1039,13 @@ class Image(object):
         new_im = self._new(im)
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
-            del(new_im.info['transparency'])
+            del new_im.info['transparency']
         if trns is not None:
             if new_im.mode == 'P':
                 try:
                     new_im.info['transparency'] = new_im.palette.getcolor(trns)
                 except Exception:
-                    del(new_im.info['transparency'])
+                    del new_im.info['transparency']
                     warnings.warn("Couldn't allocate palette entry " +
                                   "for transparency")
             else:
