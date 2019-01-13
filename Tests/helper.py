@@ -140,14 +140,14 @@ class PillowTestCase(unittest.TestCase):
                 (msg or '') +
                 " average pixel value difference %.4f > epsilon %.4f" % (
                     ave_diff, epsilon))
-        except Exception as e:
+        except Exception:
             if HAS_UPLOADER:
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
                 except Exception:
                     pass
-            raise e
+            raise
 
     def assert_image_similar_tofile(self, a, filename, epsilon, msg=None,
                                     mode=None):
