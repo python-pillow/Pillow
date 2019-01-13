@@ -1,5 +1,5 @@
 from __future__ import print_function
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 from PIL import features
 from PIL._util import py3
 

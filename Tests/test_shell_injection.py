@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase
-from helper import djpeg_available, cjpeg_available, netpbm_available
+from .helper import unittest, PillowTestCase
+from .helper import djpeg_available, cjpeg_available, netpbm_available
 
 import sys
 import shutil

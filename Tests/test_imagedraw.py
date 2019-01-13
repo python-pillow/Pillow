@@ -1,6 +1,6 @@
 import os.path
 
-from helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, unittest
 from PIL import Image, ImageColor, ImageDraw
 
 BLACK = (0, 0, 0)

@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
-from helper import djpeg_available, cjpeg_available
+from .helper import unittest, PillowTestCase, hopper
+from .helper import djpeg_available, cjpeg_available
 
 from io import BytesIO
 import os

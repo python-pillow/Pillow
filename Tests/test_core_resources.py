@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 import sys
 
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image
 
 

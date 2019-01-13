@@ -1,5 +1,5 @@
 from __future__ import division
-from helper import unittest, PillowLeakTestCase
+from .helper import unittest, PillowLeakTestCase
 import sys
 from PIL import Image, features, ImageDraw, ImageFont
 

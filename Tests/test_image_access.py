@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, on_appveyor
+from .helper import unittest, PillowTestCase, hopper, on_appveyor
 
 from PIL import Image
 import sys

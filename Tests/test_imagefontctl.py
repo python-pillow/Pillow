@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image, ImageDraw, ImageFont, features
 
 

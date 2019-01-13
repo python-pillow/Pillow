@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, fromstring, tostring
+from .helper import unittest, PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 

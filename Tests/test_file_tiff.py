@@ -2,7 +2,7 @@ import logging
 from io import BytesIO
 import sys
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin
 from PIL._util import py3

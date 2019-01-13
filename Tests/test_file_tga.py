@@ -2,7 +2,7 @@ import os
 from glob import glob
 from itertools import product
 
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image
 

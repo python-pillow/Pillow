@@ -1,4 +1,4 @@
-from helper import hopper, unittest, PillowTestCase
+from .helper import hopper, unittest, PillowTestCase
 
 from PIL import Image, PixarImagePlugin
 

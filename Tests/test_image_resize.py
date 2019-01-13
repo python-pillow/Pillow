@@ -3,7 +3,7 @@ Tests for resize functionality.
 """
 from itertools import permutations
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 

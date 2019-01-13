@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, imagemagick_available
+from .helper import unittest, PillowTestCase, hopper, imagemagick_available
 
 import os.path
 

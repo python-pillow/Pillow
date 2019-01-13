@@ -1,5 +1,5 @@
 # Test the ImageMorphology functionality
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, ImageMorph, _imagingmorph
 
