@@ -65,6 +65,9 @@ matrix:
 services:
   - docker
 
+before_install:
+  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
+
 install:
   - |
     if [ "$LINT" == "true" ]; then
@@ -72,9 +75,6 @@ install:
     elif [ "$DOCKER" == "" ]; then
       .travis/install.sh;
     fi
-
-before_install:
-  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
