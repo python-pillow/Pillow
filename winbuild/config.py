@@ -43,6 +43,11 @@ libs = {
         'filename': PILLOW_DEPENDS_DIR + 'lcms2-2.7.zip',
         'dir': 'lcms2-2.7',
     },
+    'ghostscript': {
+        'url': 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs926/ghostscript-9.26.tar.gz',  # noqa: E501
+        'filename': PILLOW_DEPENDS_DIR + 'ghostscript-9.26.tar.gz',
+        'dir': 'ghostscript-9.26',
+    },
     'tcl-8.5': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tcl8519-src.zip',
         'filename': PILLOW_DEPENDS_DIR + 'tcl8519-src.zip',
