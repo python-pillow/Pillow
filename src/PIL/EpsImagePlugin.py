@@ -144,7 +144,7 @@ def Ghostscript(tile, size, fp, scale=1):
             if sys.platform.startswith('win'):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.check_call(command, stdin=devnull, stdout=devnull,
+            subprocess.check_call(command, stdout=devnull,
                                   startupinfo=startupinfo)
         im = Image.open(outfile)
         im.load()
