@@ -55,6 +55,15 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(info[296], 2)
             self.assertEqual(info[34665], 188)
 
+    def test_frame_size(self):
+        # This image has been hexedited to contain a different size
+        # in the EXIF data of the second frame
+        im = Image.open("Tests/images/sugarshack_frame_size.mpo")
+        self.assertEqual(im.size, (640, 480))
+
+        im.seek(1)
+        self.assertEqual(im.size, (680, 480))
+
     def test_mp(self):
         for test_file in test_files:
             im = Image.open(test_file)
