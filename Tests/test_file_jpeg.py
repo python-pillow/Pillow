@@ -255,6 +255,21 @@ class TestFileJpeg(PillowTestCase):
         # Should not raise a TypeError
         im._getexif()
 
+    def test_interop(self):
+        # Arrange
+        im = Image.open('Tests/images/flower.jpg')
+
+        # Act
+        exif = im._getexif()
+
+        # Assert
+        self.assertEqual(exif["interop"], {
+            1: 'R98',
+            2: b'0100',
+            4097: 2272,
+            4098: 1704
+        })
+
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
         self.assertFalse(im1.info.get("progressive"))

@@ -489,6 +489,18 @@ def _getexif(self):
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
         info.load(file)
         exif[0x8825] = _fixup_dict(info)
+    # get interop
+    try:
+        # exif field 0xa005 is an offset pointer to the location
+        # of the nested embedded interop exif ifd.
+        # It should be a long, but may be corrupted.
+        file.seek(exif[0xa005])
+    except (KeyError, TypeError):
+        pass
+    else:
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
+        info.load(file)
+        exif["interop"] = _fixup_dict(info)
 
     return exif
 
