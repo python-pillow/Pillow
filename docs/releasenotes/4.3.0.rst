@@ -9,7 +9,7 @@ Deprecations
 
 Several undocumented functions in ImageOps have been deprecated:
 ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
-``box_blur``. Use the equivalent operations in ImageFilter
+``box_blur``. Use the equivalent operations in ``ImageFilter``
 instead. These functions will be removed in a future release.
 
 TIFF Metadata Changes

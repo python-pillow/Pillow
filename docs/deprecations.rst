@@ -34,17 +34,22 @@ Two version constants – ``VERSION`` (the old PIL version, always 1.1.7) and
 ``PILLOW_VERSION`` – have been deprecated and will be removed in the next
 major release. Use ``__version__`` instead.
 
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. deprecated:: 4.3.0
+*Removed in version 6.0.0.*
 
-Several undocumented functions in ``ImageOps`` have been deprecated. They issue
-a ``DeprecationWarning`` informing which equivalent to use from ``ImageFilter``
-instead:
+Several undocumented functions in ``ImageOps`` have been removed. Use the equivalents
+in ``ImageFilter`` instead:
 
 ==========================  ============================
-Deprecated                  Use instead
+Removed                     Use instead
 ==========================  ============================
 ``ImageOps.box_blur``       ``ImageFilter.BoxBlur``
 ``ImageOps.gaussian_blur``  ``ImageFilter.GaussianBlur``
@@ -56,27 +61,9 @@ Deprecated                  Use instead
 PIL.OleFileIO
 ~~~~~~~~~~~~~
 
-.. deprecated:: 4.0.0
+*Removed in version 6.0.0.*
 
-The vendored version of olefile has been removed. Attempting to import
-``PIL.OleFileIO`` issues a ``DeprecationWarning`` (from 4.0.0) or raises
-``ImportError`` (from 5.0.0):
-
-.. code-block:: none
-
-    PIL.OleFileIO is deprecated. Use the olefile Python package
-    instead. This module will be removed in a future version.
-
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
-
-Vendored olefile
-~~~~~~~~~~~~~~~~
-
-*Removed in version 4.0.0.*
-
-The vendored version of the olefile Python package was removed in favour of the
-upstream package. Install if needed (eg. ``pip install olefile``).
+PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
+(2018-01). The deprecated file has now been removed from Pillow. If needed, install from
+PyPI (eg. ``pip install olefile``).
