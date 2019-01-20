@@ -17,7 +17,7 @@ ImagingResampleHorizontalConvolution8u4x(
     {
         __m256i sss0, sss1;
         __m256i zero = _mm256_setzero_si256();
-        __m256i initial = _mm256_set1_epi32(1 << (coefs_precision -1));
+        __m256i initial = _mm256_set1_epi32(1 << (coefs_precision-1));
         sss0 = initial;
         sss1 = initial;
 
@@ -106,7 +106,7 @@ ImagingResampleHorizontalConvolution8u4x(
 #else
     {
         __m128i sss0, sss1, sss2, sss3;
-        __m128i initial = _mm_set1_epi32(1 << (coefs_precision -1));
+        __m128i initial = _mm_set1_epi32(1 << (coefs_precision-1));
         sss0 = initial;
         sss1 = initial;
         sss2 = initial;
@@ -231,10 +231,11 @@ ImagingResampleHorizontalConvolution8u(UINT32 *lineOut, UINT32 *lineIn,
 #if defined(__AVX2__)
 
     if (xmax < 8) {
-        sss = _mm_set1_epi32((1 << (coefs_precision -1)) + xmax / 2);
+        sss = _mm_set1_epi32(1 << (coefs_precision-1));
     } else {
 
-        __m256i sss256 = _mm256_set1_epi32((1 << (coefs_precision -2)) + xmax / 4);
+        // Lower part will be added to higher, use only half of the error
+        __m256i sss256 = _mm256_set1_epi32(1 << (coefs_precision-2));
 
         for (; x < xmax - 7; x += 8) {
             __m256i pix, mmk, source;
@@ -289,7 +290,7 @@ ImagingResampleHorizontalConvolution8u(UINT32 *lineOut, UINT32 *lineIn,
 
 #else
 
-        sss = _mm_set1_epi32((1 << (coefs_precision -1)) + xmax / 2);
+        sss = _mm_set1_epi32(1 << (coefs_precision-1));
 
         for (; x < xmax - 7; x += 8) {
             __m128i pix, mmk, source;
