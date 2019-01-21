@@ -22,7 +22,7 @@ deprecated file has now been removed from Pillow. If needed, install from PyPI (
 Removed deprecated ImageOps functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Several undocumented functions ``ImageOps`` were deprecated in Pillow 4.3.0 (2017-10)
+Several undocumented functions in ``ImageOps`` were deprecated in Pillow 4.3.0 (2017-10)
 and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
 ``box_blur``. Use the equivalent operations in ``ImageFilter`` instead.
 
