@@ -5,6 +5,9 @@ Changelog (Pillow)
 5.5.0 (unreleased)
 ------------------
 
+- Updated libwebp to 1.0.2 #3602
+  [radarhere]
+
 - Detect MIME types #3525
   [radarhere]
 
