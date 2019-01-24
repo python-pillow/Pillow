@@ -172,7 +172,7 @@ Many of Pillow's features require external libraries:
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
   * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
-    so it is unlikely to work with any Python prior to 3.5 on Windows.
+    so it is unlikely to work with Python 2.7 on Windows.
 
 * **libraqm** provides complex text layout support.
 
