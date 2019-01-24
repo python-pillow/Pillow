@@ -5,7 +5,7 @@ jQuery(document).ready(function ($) {
             $section.children('.section, .function, .method').each(function () {
                 if ($(this).hasClass('section')) {
                     sectionID = $(this).attr('id');
-                    search($(this), $sidebarItem.parent().find('[href=#'+sectionID+']'));
+                    search($(this), $sidebarItem.parent().find('[href="#'+sectionID+'"]'));
                 } else {
                     var $dt = $(this).children('dt');
                     var id = $dt.attr('id');
@@ -48,7 +48,7 @@ jQuery(document).ready(function ($) {
                 }
             });
         };
-        search($('[itemprop=articleBody] > .section'), $('.wy-nav-side a[href=#]'));
+        search($('[itemprop=articleBody] > .section'), $('.wy-nav-side a[href="#"]'));
     }, 0);
     $(window).on('hashchange', function () {
         $('ul[data-sectionID]').each(function () {
