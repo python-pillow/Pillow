@@ -1420,7 +1420,7 @@ _putdata(ImagingObject* self, PyObject* args)
     image = self->image;
 
     n = PyObject_Length(data);
-    if (n > (Py_ssize_t) (image->xsize * image->ysize)) {
+    if (n > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
         PyErr_SetString(PyExc_TypeError, "too many data entries");
         return NULL;
     }
