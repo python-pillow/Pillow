@@ -265,7 +265,6 @@ setlocal
 """ + vc_setup(compiler, bit) + r"""
 set MSVC_VERSION=""" + {
     "2008": "9",
-    "2010": "10",
     "2015": "14"
 }[compiler['vc_version']] + r"""
 set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
@@ -308,7 +307,6 @@ else:
     # for compiler in all_compilers():
         # add_compiler(compiler)
     add_compiler(compilers[7.0][2008][32], 32)
-    # add_compiler(compilers[7.1][2010][64])
 
 with open('build_deps.cmd', 'w') as f:
     f.write("\n".join(script))

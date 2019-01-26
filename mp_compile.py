@@ -1,6 +1,6 @@
 # A monkey patch of the base distutils.ccompiler to use parallel builds
 # Tested on 2.7, looks to be identical to 3.3.
-# Only applied on Python < 3.5 because otherwise, it conflicts with Python's
+# Only applied on Python 2.7 because otherwise, it conflicts with Python's
 # own newly-added support for parallel builds.
 
 from __future__ import print_function
@@ -79,6 +79,6 @@ def install():
               "%s processes" % MAX_PROCS)
 
 
-# We monkeypatch only versions earlier than 3.5
-if sys.version_info < (3, 5):
+# We monkeypatch Python 2.7
+if sys.version_info.major < 3:
     install()
