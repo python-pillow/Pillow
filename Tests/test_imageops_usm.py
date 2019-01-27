@@ -1,7 +1,6 @@
 from helper import unittest, PillowTestCase
 
 from PIL import Image
-from PIL import ImageOps
 from PIL import ImageFilter
 
 im = Image.open("Tests/images/hopper.ppm")
@@ -9,31 +8,6 @@ snakes = Image.open("Tests/images/color_snakes.png")
 
 
 class TestImageOpsUsm(PillowTestCase):
-
-    def test_ops_api(self):
-
-        i = self.assert_warning(DeprecationWarning,
-                                ImageOps.gaussian_blur, im, 2.0)
-        self.assertEqual(i.mode, "RGB")
-        self.assertEqual(i.size, (128, 128))
-
-        i = self.assert_warning(DeprecationWarning, ImageOps.box_blur, im, 1)
-        self.assertEqual(i.mode, "RGB")
-        self.assertEqual(i.size, (128, 128))
-
-        i = self.assert_warning(DeprecationWarning, ImageOps.gblur, im, 2.0)
-        self.assertEqual(i.mode, "RGB")
-        self.assertEqual(i.size, (128, 128))
-
-        i = self.assert_warning(DeprecationWarning,
-                                ImageOps.unsharp_mask, im, 2.0, 125, 8)
-        self.assertEqual(i.mode, "RGB")
-        self.assertEqual(i.size, (128, 128))
-
-        i = self.assert_warning(DeprecationWarning,
-                                ImageOps.usm, im, 2.0, 125, 8)
-        self.assertEqual(i.mode, "RGB")
-        self.assertEqual(i.size, (128, 128))
 
     def test_filter_api(self):
 
