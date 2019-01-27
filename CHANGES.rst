@@ -5,7 +5,16 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
-- Updated libwebp to 1.0.2 #3602
+- Drop support for Python 3.4 #3596
+  [hugovk]
+
+- Remove deprecated PIL.OleFileIO #3598
+  [hugovk]
+
+- Remove deprecated ImageOps undocumented functions #3599
+  [hugovk]
+
+- Depends: Update libwebp to 1.0.2 #3602
   [radarhere]
 
 - Detect MIME types #3525
