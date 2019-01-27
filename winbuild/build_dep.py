@@ -258,15 +258,16 @@ copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
 """ % compiler  # noqa: E501
 
+
 def build_ghostscript(compiler, bit):
     script = r"""
 rem Build gs
 setlocal
 """ + vc_setup(compiler, bit) + r"""
 set MSVC_VERSION=""" + {
-    "2008": "9",
-    "2015": "14"
-}[compiler['vc_version']] + r"""
+        "2008": "9",
+        "2015": "14"
+    }[compiler['vc_version']] + r"""
 set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
 cd /D %%GHOSTSCRIPT%%
 """
@@ -280,6 +281,7 @@ copy /Y /B bin\ C:\Python27\
 endlocal
 """
     return script % compiler  # noqa: E501
+
 
 def add_compiler(compiler, bit):
     script.append(setup_compiler(compiler))
