@@ -376,7 +376,12 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(p.product_desc, 'sRGB IEC61966-2-1 black scaled')
         self.assertEqual(p.product_description,
                          'sRGB IEC61966-2-1 black scaled')
-        self.assertEqual(p.product_manufacturer, '')
+
+        # p.product_manufacturer
+        result = self.assert_warning(
+            DeprecationWarning, getattr, p, "product_manufacturer"
+        )
+        self.assertEqual(result, "")
 
         # p.product_model
         result = self.assert_warning(DeprecationWarning, getattr, p, "product_model")

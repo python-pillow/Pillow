@@ -687,7 +687,7 @@ def getProfileName(profile):
         #    // but if the Model and Manufacturer were the same or the model
         #    // was long, Just the model,  in 1.x
         model = profile.profile.model
-        manufacturer = profile.profile.product_manufacturer
+        manufacturer = profile.profile.manufacturer
 
         if not (model or manufacturer):
             return profile.profile.product_description + "\n"
@@ -790,7 +790,7 @@ def getProfileManufacturer(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_manufacturer + "\n"
+        return (profile.profile.manufacturer or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
