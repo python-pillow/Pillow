@@ -377,8 +377,11 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(p.product_description,
                          'sRGB IEC61966-2-1 black scaled')
         self.assertEqual(p.product_manufacturer, '')
-        self.assertEqual(
-            p.product_model, 'IEC 61966-2-1 Default RGB Colour Space - sRGB')
+
+        # p.product_model
+        result = self.assert_warning(DeprecationWarning, getattr, p, "product_model")
+        self.assertEqual(result, "IEC 61966-2-1 Default RGB Colour Space - sRGB")
+
         self.assertEqual(
             p.profile_description, 'sRGB IEC61966-2-1 black scaled')
         self.assertEqual(

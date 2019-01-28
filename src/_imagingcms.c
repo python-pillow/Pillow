@@ -981,6 +981,8 @@ cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_model is deprecated. Use Unicode model instead.", 1);
     return _profile_getattr(self, cmsInfoModel);
 }
 
