@@ -391,39 +391,34 @@ class TestImageCms(PillowTestCase):
         o = ImageCms.getOpenProfile(SRGB)
         p = o.profile
 
+        def helper_deprecated(attr, expected):
+            result = self.assert_warning(DeprecationWarning, getattr, p, attr)
+            self.assertEqual(result, expected)
+
         # p.color_space
-        result = self.assert_warning(DeprecationWarning, getattr, p, "color_space")
-        self.assertEqual(result, "RGB")
+        helper_deprecated("color_space", "RGB")
 
         # p.pcs
-        result = self.assert_warning(DeprecationWarning, getattr, p, "pcs")
-        self.assertEqual(result, "XYZ")
+        helper_deprecated("pcs", "XYZ")
 
         # p.product_copyright
-        result = self.assert_warning(
-            DeprecationWarning, getattr, p, "product_copyright"
+        helper_deprecated(
+            "product_copyright", "Copyright International Color Consortium, 2009"
         )
-        self.assertEqual(result, "Copyright International Color Consortium, 2009")
 
         # p.product_desc
-        result = self.assert_warning(DeprecationWarning, getattr, p, "product_desc")
-        self.assertEqual(result, "sRGB IEC61966-2-1 black scaled")
+        helper_deprecated("product_desc", "sRGB IEC61966-2-1 black scaled")
 
         # p.product_description
-        result = self.assert_warning(
-            DeprecationWarning, getattr, p, "product_description"
-        )
-        self.assertEqual(result, "sRGB IEC61966-2-1 black scaled")
+        helper_deprecated("product_description", "sRGB IEC61966-2-1 black scaled")
 
         # p.product_manufacturer
-        result = self.assert_warning(
-            DeprecationWarning, getattr, p, "product_manufacturer"
-        )
-        self.assertEqual(result, "")
+        helper_deprecated("product_manufacturer", "")
 
         # p.product_model
-        result = self.assert_warning(DeprecationWarning, getattr, p, "product_model")
-        self.assertEqual(result, "IEC 61966-2-1 Default RGB Colour Space - sRGB")
+        helper_deprecated(
+            "product_model", "IEC 61966-2-1 Default RGB Colour Space - sRGB"
+        )
 
     def test_profile_typesafety(self):
         """ Profile init type safety
