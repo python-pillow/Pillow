@@ -310,10 +310,6 @@ class TestImageCms(PillowTestCase):
             3: (False, False, True)
         })
 
-        # p.color_space
-        result = self.assert_warning(DeprecationWarning, getattr, p, "color_space")
-        self.assertEqual(result, 'RGB')
-
         self.assertIsNone(p.colorant_table)
         self.assertIsNone(p.colorant_table_out)
         self.assertIsNone(p.colorimetric_intent)
@@ -366,11 +362,42 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(p.model,
                          'IEC 61966-2-1 Default RGB Colour Space - sRGB')
 
+        self.assertIsNone(p.perceptual_rendering_intent_gamut)
+
+        self.assertEqual(
+            p.profile_description, 'sRGB IEC61966-2-1 black scaled')
+        self.assertEqual(
+            p.profile_id, b')\xf8=\xde\xaf\xf2U\xaexB\xfa\xe4\xca\x839\r')
+        assert_truncated_tuple_equal(
+            p.red_colorant,
+            ((0.436065673828125, 0.2224884033203125, 0.013916015625),
+             (0.6484536316398539, 0.3308524880306778, 0.2224884033203125)))
+        assert_truncated_tuple_equal(
+            p.red_primary,
+            ((0.43606566581047446, 0.22248840582960838, 0.013916015621759925),
+             (0.6484536250319214, 0.3308524944738204, 0.22248840582960838)))
+        self.assertEqual(p.rendering_intent, 0)
+        self.assertIsNone(p.saturation_rendering_intent_gamut)
+        self.assertIsNone(p.screening_description)
+        self.assertIsNone(p.target)
+        self.assertEqual(p.technology, 'CRT ')
+        self.assertEqual(p.version, 2.0)
+        self.assertEqual(p.viewing_condition,
+                         'Reference Viewing Condition in IEC 61966-2-1')
+        self.assertEqual(p.xcolor_space, 'RGB ')
+
+    def test_deprecations(self):
+        self.skip_missing()
+        o = ImageCms.getOpenProfile(SRGB)
+        p = o.profile
+
+        # p.color_space
+        result = self.assert_warning(DeprecationWarning, getattr, p, "color_space")
+        self.assertEqual(result, "RGB")
+
         # p.pcs
         result = self.assert_warning(DeprecationWarning, getattr, p, "pcs")
-        self.assertEqual(result, 'XYZ')
-
-        self.assertIsNone(p.perceptual_rendering_intent_gamut)
+        self.assertEqual(result, "XYZ")
 
         # p.product_copyright
         result = self.assert_warning(
@@ -397,28 +424,6 @@ class TestImageCms(PillowTestCase):
         # p.product_model
         result = self.assert_warning(DeprecationWarning, getattr, p, "product_model")
         self.assertEqual(result, "IEC 61966-2-1 Default RGB Colour Space - sRGB")
-
-        self.assertEqual(
-            p.profile_description, 'sRGB IEC61966-2-1 black scaled')
-        self.assertEqual(
-            p.profile_id, b')\xf8=\xde\xaf\xf2U\xaexB\xfa\xe4\xca\x839\r')
-        assert_truncated_tuple_equal(
-            p.red_colorant,
-            ((0.436065673828125, 0.2224884033203125, 0.013916015625),
-             (0.6484536316398539, 0.3308524880306778, 0.2224884033203125)))
-        assert_truncated_tuple_equal(
-            p.red_primary,
-            ((0.43606566581047446, 0.22248840582960838, 0.013916015621759925),
-             (0.6484536250319214, 0.3308524944738204, 0.22248840582960838)))
-        self.assertEqual(p.rendering_intent, 0)
-        self.assertIsNone(p.saturation_rendering_intent_gamut)
-        self.assertIsNone(p.screening_description)
-        self.assertIsNone(p.target)
-        self.assertEqual(p.technology, 'CRT ')
-        self.assertEqual(p.version, 2.0)
-        self.assertEqual(p.viewing_condition,
-                         'Reference Viewing Condition in IEC 61966-2-1')
-        self.assertEqual(p.xcolor_space, 'RGB ')
 
     def test_profile_typesafety(self):
         """ Profile init type safety
