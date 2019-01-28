@@ -29,10 +29,23 @@ and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm
 API Changes
 ===========
 
-TODO
-^^^^
+Deprecations
+^^^^^^^^^^^^
 
-TODO
+Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
+6.0.0, they issue a ``DeprecationWarning``:
+
+========================  ===============================
+Deprecated                Use instead
+========================  ===============================
+``color_space``           Padded ``xcolor_space``
+``pcs``                   Padded ``connection_space``
+``product_copyright``     Unicode ``copyright``
+``product_desc``          Unicode ``profile_description``
+``product_description``   Unicode ``profile_description``
+``product_manufacturer``  Unicode ``manufacturer``
+``product_model``         Unicode ``model``
+========================  ===============================
 
 API Additions
 =============
