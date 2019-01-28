@@ -966,6 +966,8 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_desc is deprecated. Use Unicode profile_description instead.", 1);
     // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
     return _profile_getattr(self, cmsInfoDescription);
 }
@@ -975,6 +977,8 @@ cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_description is deprecated. Use Unicode profile_description instead.", 1);
     return _profile_getattr(self, cmsInfoDescription);
 }
 

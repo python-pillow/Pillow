@@ -378,9 +378,15 @@ class TestImageCms(PillowTestCase):
         )
         self.assertEqual(result, "Copyright International Color Consortium, 2009")
 
-        self.assertEqual(p.product_desc, 'sRGB IEC61966-2-1 black scaled')
-        self.assertEqual(p.product_description,
-                         'sRGB IEC61966-2-1 black scaled')
+        # p.product_desc
+        result = self.assert_warning(DeprecationWarning, getattr, p, "product_desc")
+        self.assertEqual(result, "sRGB IEC61966-2-1 black scaled")
+
+        # p.product_description
+        result = self.assert_warning(
+            DeprecationWarning, getattr, p, "product_description"
+        )
+        self.assertEqual(result, "sRGB IEC61966-2-1 black scaled")
 
         # p.product_manufacturer
         result = self.assert_warning(

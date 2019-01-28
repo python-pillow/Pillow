@@ -690,7 +690,7 @@ def getProfileName(profile):
         manufacturer = profile.profile.manufacturer
 
         if not (model or manufacturer):
-            return profile.profile.product_description + "\n"
+            return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
         return "%s - %s\n" % (model, manufacturer)
@@ -727,7 +727,7 @@ def getProfileInfo(profile):
         # Python, not C. the white point bits weren't working well,
         # so skipping.
         # info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
-        description = profile.profile.product_description
+        description = profile.profile.profile_description
         cpright = profile.profile.copyright
         arr = []
         for elt in (description, cpright):
@@ -848,7 +848,7 @@ def getProfileDescription(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_description + "\n"
+        return (profile.profile.profile_description or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
