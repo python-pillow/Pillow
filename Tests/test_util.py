@@ -1,6 +1,10 @@
+import sys
+
 from helper import unittest, PillowTestCase
 
 from PIL import _util
+
+py36 = sys.version_info.major >= 3 and sys.version_info.minor >= 6
 
 
 class TestUtil(PillowTestCase):
@@ -31,6 +35,18 @@ class TestUtil(PillowTestCase):
 
         # Act
         it_is = _util.isStringType(fp)
+
+        # Assert
+        self.assertTrue(it_is)
+
+    @unittest.skipIf(not py36, 'os.path support for Paths added in 3.6')
+    def test_path_obj_is_path(self):
+        # Arrange
+        from pathlib import Path
+        fp = Path('filename.ext')
+
+        # Act
+        it_is = _util.isPath(fp)
 
         # Assert
         self.assertTrue(it_is)
