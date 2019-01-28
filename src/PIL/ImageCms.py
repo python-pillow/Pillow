@@ -728,7 +728,7 @@ def getProfileInfo(profile):
         # so skipping.
         # info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
         description = profile.profile.product_description
-        cpright = profile.profile.product_copyright
+        cpright = profile.profile.copyright
         arr = []
         for elt in (description, cpright):
             if elt:
@@ -762,7 +762,7 @@ def getProfileCopyright(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_copyright + "\n"
+        return (profile.profile.copyright or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 

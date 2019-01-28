@@ -371,8 +371,13 @@ class TestImageCms(PillowTestCase):
         self.assertEqual(result, 'XYZ')
 
         self.assertIsNone(p.perceptual_rendering_intent_gamut)
-        self.assertEqual(p.product_copyright,
-                         'Copyright International Color Consortium, 2009')
+
+        # p.product_copyright
+        result = self.assert_warning(
+            DeprecationWarning, getattr, p, "product_copyright"
+        )
+        self.assertEqual(result, "Copyright International Color Consortium, 2009")
+
         self.assertEqual(p.product_desc, 'sRGB IEC61966-2-1 black scaled')
         self.assertEqual(p.product_description,
                          'sRGB IEC61966-2-1 black scaled')
