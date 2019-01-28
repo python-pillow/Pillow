@@ -1005,12 +1005,16 @@ cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "cms is deprecated. Use padded connection_space instead.", 1);
     return PyUnicode_DecodeFSDefault(findICmode(cmsGetPCS(self->profile)));
 }
 
 static PyObject*
 cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "color_space is deprecated. Use padded xcolor_space instead.", 1);
     return PyUnicode_DecodeFSDefault(findICmode(cmsGetColorSpace(self->profile)));
 }
 

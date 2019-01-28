@@ -309,7 +309,11 @@ class TestImageCms(PillowTestCase):
             2: (False, False, True),
             3: (False, False, True)
         })
-        self.assertEqual(p.color_space, 'RGB')
+
+        # p.color_space
+        result = self.assert_warning(DeprecationWarning, getattr, p, "color_space")
+        self.assertEqual(result, 'RGB')
+
         self.assertIsNone(p.colorant_table)
         self.assertIsNone(p.colorant_table_out)
         self.assertIsNone(p.colorimetric_intent)
@@ -361,7 +365,11 @@ class TestImageCms(PillowTestCase):
             (5000.722328847392,))
         self.assertEqual(p.model,
                          'IEC 61966-2-1 Default RGB Colour Space - sRGB')
-        self.assertEqual(p.pcs, 'XYZ')
+
+        # p.pcs
+        result = self.assert_warning(DeprecationWarning, getattr, p, "pcs")
+        self.assertEqual(result, 'XYZ')
+
         self.assertIsNone(p.perceptual_rendering_intent_gamut)
         self.assertEqual(p.product_copyright,
                          'Copyright International Color Consortium, 2009')
