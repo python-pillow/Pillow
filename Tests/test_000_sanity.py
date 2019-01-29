@@ -11,8 +11,6 @@ class TestSanity(PillowTestCase):
         # Make sure we have the binary extension
         PIL.Image.core.new("L", (100, 100))
 
-        self.assertEqual(PIL.Image.VERSION[:3], '1.1')
-
         # Create an image and do stuff with it.
         im = PIL.Image.new("1", (100, 100))
         self.assertEqual((im.mode, im.size), ('1', (100, 100)))
