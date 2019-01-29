@@ -1,5 +1,3 @@
-import sys
-
 from helper import unittest, PillowTestCase
 
 from PIL import _util
