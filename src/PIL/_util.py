@@ -2,7 +2,7 @@ import os
 import sys
 
 py3 = sys.version_info.major >= 3
-py36 = py3 and sys.version_info.minor >= 6
+py36 = sys.version_info[0:2] >= (3, 6)
 
 if py3:
     def isStringType(t):
