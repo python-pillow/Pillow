@@ -205,7 +205,7 @@ class TestFileLibTiff(LibTiffTestCase):
         #     4: "long",
         #     5: "rational",
         #     12: "double",
-        # type: dummy value
+        # Type: dummy value
         values = {2: 'test',
                   3: 1,
                   4: 2**20,

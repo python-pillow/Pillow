@@ -307,7 +307,7 @@ if 'PYTHON' in os.environ:
     add_compiler(compiler_from_env(), bit_from_env())
 else:
     # for compiler in all_compilers():
-        # add_compiler(compiler)
+    #     add_compiler(compiler)
     add_compiler(compilers[7.0][2008][32], 32)
 
 with open('build_deps.cmd', 'w') as f:

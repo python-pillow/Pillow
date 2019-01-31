@@ -393,8 +393,6 @@ class PdfParser:
 
     def __init__(self, filename=None, f=None,
                  buf=None, start_offset=0, mode="rb"):
-        # type: (PdfParser, str, file, Union[bytes, bytearray], int, str)
-        #       -> None
         if buf and f:
             raise RuntimeError(
                 "specify buf or f or filename, but not both buf and f")
