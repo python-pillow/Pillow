@@ -133,7 +133,7 @@ def APP(self, marker):
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
         except (KeyError, SyntaxError, ZeroDivisionError):
-            # SyntaxError for invalid/unreadable exif
+            # SyntaxError for invalid/unreadable Exif
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
@@ -465,10 +465,10 @@ def _getexif(self):
     info = TiffImagePlugin.ImageFileDirectory_v1(head)
     info.load(file)
     exif = dict(_fixup_dict(info))
-    # get exif extension
+    # get Exif extension
     try:
-        # exif field 0x8769 is an offset pointer to the location
-        # of the nested embedded exif ifd.
+        # Exif field 0x8769 is an offset pointer to the location
+        # of the nested embedded Exif IFD.
         # It should be a long, but may be corrupted.
         file.seek(exif[0x8769])
     except (KeyError, TypeError):
@@ -479,8 +479,8 @@ def _getexif(self):
         exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
-        # exif field 0x8825 is an offset pointer to the location
-        # of the nested embedded gps exif ifd.
+        # Exif field 0x8825 is an offset pointer to the location
+        # of the nested embedded gps Exif IFD.
         # It should be a long, but may be corrupted.
         file.seek(exif[0x8825])
     except (KeyError, TypeError):
@@ -765,7 +765,7 @@ def _save(im, fp, filename):
         else:
             bufsize = im.size[0] * im.size[1]
 
-    # The exif info needs to be written as one block, + APP1, + one spare byte.
+    # The Exif info needs to be written as one block, + APP1, + one spare byte.
     # Ensure that our buffer is big enough. Same with the icc_profile block.
     bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif", b"")) + 5,
                   len(extra) + 1)
