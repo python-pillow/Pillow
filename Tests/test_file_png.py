@@ -596,6 +596,7 @@ class TestFilePng(PillowTestCase):
         im = Image.open("Tests/images/iss634.apng")
         self.assertEqual(im.get_format_mimetype(), 'image/apng')
 
+        # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
         expected = Image.open("Tests/images/iss634.webp")
         self.assert_image_similar(im, expected, 0.23)
 
