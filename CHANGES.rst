@@ -5,6 +5,24 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Docs: Add note about ImageDraw operations that exceed image bounds #3620
+  [radarhere]
+
+- Allow for unknown PNG chunks after image data #3558
+  [radarhere]
+
+- Changed EPS subprocess stdin from devnull to None #3611
+  [radarhere]
+
+- Fix possible integer overflow #3609
+  [cgohlke]
+
+- Catch BaseException for resource cleanup handlers #3574
+  [jdufresne]
+
+- Improve pytest configuration to allow specific tests as CLI args #3579
+  [jdufresne]
+
 - Drop support for Python 3.4 #3596
   [hugovk]
 
