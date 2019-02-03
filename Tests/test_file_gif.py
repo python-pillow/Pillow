@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, netpbm_available
+from .helper import unittest, PillowTestCase, hopper, netpbm_available
 
 from PIL import Image, ImagePalette, GifImagePlugin
 

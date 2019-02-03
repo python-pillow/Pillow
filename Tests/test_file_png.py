@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
+from .helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 

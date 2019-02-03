@@ -1,5 +1,5 @@
 from PIL import Image
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 
 class TestImageGetExtrema(PillowTestCase):

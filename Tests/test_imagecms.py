@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 import datetime
 
 from PIL import Image, ImageMode

@@ -1,4 +1,4 @@
-from helper import unittest, PillowLeakTestCase
+from .helper import unittest, PillowLeakTestCase
 from PIL import Image, features
 from io import BytesIO
 

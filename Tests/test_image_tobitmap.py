@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, fromstring
+from .helper import unittest, PillowTestCase, hopper, fromstring
 
 
 class TestImageToBitmap(PillowTestCase):

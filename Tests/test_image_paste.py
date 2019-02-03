@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, cached_property
+from .helper import unittest, PillowTestCase, cached_property
 
 from PIL import Image
 

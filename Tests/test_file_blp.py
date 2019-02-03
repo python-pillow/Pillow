@@ -1,6 +1,6 @@
 from PIL import Image
 
-from helper import PillowTestCase, unittest
+from .helper import PillowTestCase, unittest
 
 
 class TestFileBlp(PillowTestCase):

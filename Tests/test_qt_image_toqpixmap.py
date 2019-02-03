@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQPixmapTestCase
+from .helper import unittest, PillowTestCase, hopper
+from .test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
 

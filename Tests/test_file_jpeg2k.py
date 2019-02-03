@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO

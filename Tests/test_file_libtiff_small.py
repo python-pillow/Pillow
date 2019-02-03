@@ -1,8 +1,8 @@
-from helper import unittest
+from .helper import unittest
 
 from PIL import Image
 
-from test_file_libtiff import LibTiffTestCase
+from .test_file_libtiff import LibTiffTestCase
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):

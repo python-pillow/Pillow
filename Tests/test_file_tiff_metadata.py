@@ -1,7 +1,7 @@
 import io
 import struct
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
