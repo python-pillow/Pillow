@@ -963,7 +963,7 @@ class TiffImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-        "Open the first image in a TIFF file"
+        """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
@@ -1020,7 +1020,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return self._is_animated
 
     def seek(self, frame):
-        "Select a given frame as current image"
+        """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
         self._seek(frame)
@@ -1058,7 +1058,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self._setup()
 
     def tell(self):
-        "Return the current frame number"
+        """Return the current frame number"""
         return self.__frame
 
     @property
@@ -1173,7 +1173,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
     def _setup(self):
-        "Setup this image object based on current tags"
+        """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")

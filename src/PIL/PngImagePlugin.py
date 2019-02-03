@@ -102,7 +102,7 @@ class ChunkStream(object):
         self.queue = []
 
     def read(self):
-        "Fetch a new chunk. Returns header information."
+        """Fetch a new chunk. Returns header information."""
         cid = None
 
         if self.queue:
@@ -134,13 +134,13 @@ class ChunkStream(object):
         self.queue.append((cid, pos, length))
 
     def call(self, cid, pos, length):
-        "Call the appropriate chunk handler"
+        """Call the appropriate chunk handler"""
 
         logger.debug("STREAM %r %s %s", cid, pos, length)
         return getattr(self, "chunk_" + cid.decode('ascii'))(pos, length)
 
     def crc(self, cid, data):
-        "Read and verify checksum"
+        """Read and verify checksum"""
 
         # Skip CRC checks for ancillary chunks if allowed to load truncated
         # images
@@ -160,7 +160,7 @@ class ChunkStream(object):
                               % cid)
 
     def crc_skip(self, cid, data):
-        "Read checksum.  Used if the C module is not present"
+        """Read checksum.  Used if the C module is not present"""
 
         self.fp.read(4)
 
@@ -614,7 +614,7 @@ class PngImageFile(ImageFile.ImageFile):
         return self._text
 
     def verify(self):
-        "Verify PNG file"
+        """Verify PNG file"""
 
         if self.fp is None:
             raise RuntimeError("verify must be called directly after open")
@@ -630,7 +630,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.fp = None
 
     def load_prepare(self):
-        "internal: prepare to read PNG file"
+        """internal: prepare to read PNG file"""
 
         if self.info.get("interlace"):
             self.decoderconfig = self.decoderconfig + (1,)
@@ -638,7 +638,7 @@ class PngImageFile(ImageFile.ImageFile):
         ImageFile.ImageFile.load_prepare(self)
 
     def load_read(self, read_bytes):
-        "internal: read more image data"
+        """internal: read more image data"""
 
         while self.__idat == 0:
             # end of chunk, skip forward to next one
@@ -664,7 +664,7 @@ class PngImageFile(ImageFile.ImageFile):
         return self.fp.read(read_bytes)
 
     def load_end(self):
-        "internal: finished reading image data"
+        """internal: finished reading image data"""
         while True:
             self.fp.read(4)  # CRC
 
