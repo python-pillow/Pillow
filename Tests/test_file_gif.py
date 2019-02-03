@@ -654,7 +654,3 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
-
-
-if __name__ == '__main__':
-    unittest.main()

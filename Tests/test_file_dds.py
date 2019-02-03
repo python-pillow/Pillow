@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 from PIL import Image, DdsImagePlugin
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
@@ -110,7 +110,3 @@ class TestFileDds(PillowTestCase):
             im.load()
 
         self.assertRaises(IOError, short_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

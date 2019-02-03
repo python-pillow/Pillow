@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 from io import BytesIO
 from PIL import Image
 
@@ -142,7 +142,3 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(im.tell(), 1)
             jpg1 = self.frame_roundtrip(im)
             self.assert_image_similar(im, jpg1, 30)
-
-
-if __name__ == '__main__':
-    unittest.main()

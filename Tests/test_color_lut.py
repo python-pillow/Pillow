@@ -519,7 +519,3 @@ class TestTransformColorLut3D(PillowTestCase):
         self.assertEqual(lut.table[0:16], [
             0.0, 0.0, 0.0, 0.5,  0.25, 0.0, 0.0, 0.5,
             0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5])
-
-
-if __name__ == '__main__':
-    unittest.main()

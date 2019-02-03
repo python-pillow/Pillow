@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from .test_imageqt import PillowQtTestCase
 
 from PIL import ImageQt, Image
@@ -91,7 +91,3 @@ if ImageQt.qt_is_installed:
             lbl = QLabel(self)
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
-
-
-if __name__ == '__main__':
-    unittest.main()

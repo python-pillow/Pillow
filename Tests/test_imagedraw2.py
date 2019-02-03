@@ -223,7 +223,3 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_equal(im, im2)
-
-
-if __name__ == "__main__":
-    unittest.main()

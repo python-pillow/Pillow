@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -40,7 +40,3 @@ class TestImageCopy(PillowTestCase):
         out = im.copy()
         self.assertEqual(out.mode, im.mode)
         self.assertEqual(out.size, im.size)
-
-
-if __name__ == '__main__':
-    unittest.main()

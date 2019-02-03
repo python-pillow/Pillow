@@ -32,7 +32,3 @@ class TestLocale(PillowTestCase):
         except locale.Error:
             unittest.skip('Polish locale not available')
         Image.open(path)
-
-
-if __name__ == '__main__':
-    unittest.main()

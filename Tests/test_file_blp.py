@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 
 class TestFileBlp(PillowTestCase):
@@ -18,7 +18,3 @@ class TestFileBlp(PillowTestCase):
         im = Image.open("Tests/images/blp/blp2_dxt1a.blp")
         target = Image.open("Tests/images/blp/blp2_dxt1a.png")
         self.assert_image_equal(im, target)
-
-
-if __name__ == "__main__":
-    unittest.main()

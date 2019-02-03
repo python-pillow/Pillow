@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageFilter
 
@@ -136,7 +136,3 @@ class TestImageFilter(PillowTestCase):
                 Image.merge(mode, source[:len(mode)]).filter(kernel),
                 Image.merge(mode, reference[:len(mode)]),
             )
-
-
-if __name__ == '__main__':
-    unittest.main()

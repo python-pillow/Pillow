@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, ImageFilter
 
@@ -215,7 +215,3 @@ class TestBoxBlur(PillowTestCase):
             passes=3,
             delta=1,
         )
-
-
-if __name__ == '__main__':
-    unittest.main()

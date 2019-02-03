@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageFile, PcxImagePlugin
 
@@ -128,7 +128,3 @@ class TestFilePcx(PillowTestCase):
         for x in range(5):
             px[x, 3] = 0
         self._test_buffer_overflow(im)
-
-
-if __name__ == '__main__':
-    unittest.main()

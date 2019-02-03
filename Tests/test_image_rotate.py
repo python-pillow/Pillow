@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import Image
 
 
@@ -123,7 +123,3 @@ class TestImageRotate(PillowTestCase):
         im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))
         corner = im.getpixel((0, 0))
         self.assertEqual(corner, (255, 0, 0, 255))
-
-
-if __name__ == '__main__':
-    unittest.main()

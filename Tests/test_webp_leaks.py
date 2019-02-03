@@ -20,7 +20,3 @@ class TestWebPLeaks(PillowLeakTestCase):
                 im.load()
 
         self._test_leak(core)
-
-
-if __name__ == '__main__':
-    unittest.main()

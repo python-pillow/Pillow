@@ -28,7 +28,3 @@ class TestPyroma(PillowTestCase):
         else:
             # Should have a perfect score
             self.assertEqual(rating, (10, []))
-
-
-if __name__ == '__main__':
-    unittest.main()

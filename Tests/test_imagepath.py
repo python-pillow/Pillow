@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import ImagePath, Image
 from PIL._util import py3
@@ -94,7 +94,3 @@ class evil:
 
     def __setitem__(self, i, x):
         self.corrupt[i] = struct.unpack("dd", x)
-
-
-if __name__ == '__main__':
-    unittest.main()

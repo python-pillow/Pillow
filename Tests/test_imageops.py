@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import ImageOps
 from PIL import Image
@@ -218,7 +218,3 @@ class TestImageOps(PillowTestCase):
                                        (0, 127, 0),
                                        threshold=1,
                                        msg='white test pixel incorrect')
-
-
-if __name__ == '__main__':
-    unittest.main()

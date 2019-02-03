@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ContainerIO
@@ -123,7 +123,3 @@ class TestFileContainer(PillowTestCase):
             # Assert
 
             self.assertEqual(data, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

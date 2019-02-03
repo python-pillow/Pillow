@@ -565,7 +565,3 @@ class TestFileTiffW32(PillowTestCase):
         # this should not fail, as load should have closed the file pointer,
         # and close should have closed the mmap
         os.remove(tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

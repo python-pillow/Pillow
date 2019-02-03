@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import GimpGradientFile
 
@@ -119,7 +119,3 @@ class TestImage(PillowTestCase):
         # load returns raw palette information
         self.assertEqual(len(palette[0]), 1024)
         self.assertEqual(palette[1], "RGBA")
-
-
-if __name__ == '__main__':
-    unittest.main()

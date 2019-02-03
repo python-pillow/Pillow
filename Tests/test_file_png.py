@@ -626,7 +626,3 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             self._test_leak(core)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
-
-
-if __name__ == '__main__':
-    unittest.main()

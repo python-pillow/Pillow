@@ -23,7 +23,3 @@ class TestMap(PillowTestCase):
             im.load()
 
         Image.MAX_IMAGE_PIXELS = max_pixels
-
-
-if __name__ == '__main__':
-    unittest.main()

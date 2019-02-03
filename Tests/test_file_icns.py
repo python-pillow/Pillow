@@ -121,7 +121,3 @@ class TestFileIcns(PillowTestCase):
         with io.BytesIO(b'invalid\n') as fp:
             self.assertRaises(SyntaxError,
                               IcnsImagePlugin.IcnsFile, fp)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -55,7 +55,3 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("RGB"), ("RGB", (128, 100), True))
         self.assertEqual(test("RGBA"), ("RGBA", (128, 100), True))
         self.assertEqual(test("RGBX"), ("RGBA", (128, 100), True))
-
-
-if __name__ == '__main__':
-    unittest.main()

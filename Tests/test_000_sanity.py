@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 import PIL
 import PIL.Image
@@ -24,7 +24,3 @@ class TestSanity(PillowTestCase):
         PIL.Image.new("RGB", (100, 100))
         PIL.Image.new("I", (100, 100))
         PIL.Image.new("F", (100, 100))
-
-
-if __name__ == '__main__':
-    unittest.main()

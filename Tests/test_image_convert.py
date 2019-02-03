@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -230,7 +230,3 @@ class TestImageConvert(PillowTestCase):
         # Assert
         # No change
         self.assert_image_equal(converted_im, im)
-
-
-if __name__ == '__main__':
-    unittest.main()

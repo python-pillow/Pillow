@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import WalImageFile
 
@@ -17,7 +17,3 @@ class TestFileWal(PillowTestCase):
         self.assertEqual(im.format_description, "Quake2 Texture")
         self.assertEqual(im.mode, "P")
         self.assertEqual(im.size, (128, 128))
-
-
-if __name__ == '__main__':
-    unittest.main()

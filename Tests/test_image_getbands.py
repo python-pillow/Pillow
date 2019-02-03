@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -18,7 +18,3 @@ class TestImageGetBands(PillowTestCase):
             Image.new("CMYK", (1, 1)).getbands(), ("C", "M", "Y", "K"))
         self.assertEqual(
             Image.new("YCbCr", (1, 1)).getbands(), ("Y", "Cb", "Cr"))
-
-
-if __name__ == '__main__':
-    unittest.main()

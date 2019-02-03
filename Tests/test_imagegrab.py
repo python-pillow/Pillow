@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 import sys
 import subprocess
@@ -53,7 +53,3 @@ class TestImageGrabImport(PillowTestCase):
             self.assertIsInstance(exception, ImportError)
             self.assertEqual(str(exception),
                              "ImageGrab is macOS and Windows only")
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 
 class TestImageThumbnail(PillowTestCase):
@@ -35,7 +35,3 @@ class TestImageThumbnail(PillowTestCase):
         im = hopper().resize((128, 128))
         im.thumbnail((100, 100))
         self.assert_image(im, im.mode, (100, 100))
-
-
-if __name__ == '__main__':
-    unittest.main()

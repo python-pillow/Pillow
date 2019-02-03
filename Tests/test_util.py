@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import _util
 
@@ -74,7 +74,3 @@ class TestUtil(PillowTestCase):
 
         # Assert
         self.assertRaises(ValueError, lambda: thing.some_attr)
-
-
-if __name__ == '__main__':
-    unittest.main()

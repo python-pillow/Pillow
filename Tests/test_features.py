@@ -63,7 +63,3 @@ class TestFeatures(PillowTestCase):
         module = "unsupported_module"
         # Act / Assert
         self.assertRaises(ValueError, features.check_module, module)
-
-
-if __name__ == '__main__':
-    unittest.main()
