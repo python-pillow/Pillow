@@ -707,7 +707,7 @@ class Exif(MutableMapping):
 
     def _get_ifd_dict(self, fp, head, tag):
         try:
-            # an offset pointer to the location of the nested embedded ifd.
+            # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
             fp.seek(self._data[tag])
         except (KeyError, TypeError):
