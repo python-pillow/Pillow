@@ -30,7 +30,7 @@ class Test_IFDRational(PillowTestCase):
         self._test_equal(1, 2, IFDRational(1, 2))
 
     def test_nonetype(self):
-        " Fails if the _delegate function doesn't return a valid function"
+        # Fails if the _delegate function doesn't return a valid function
 
         xres = IFDRational(72)
         yres = IFDRational(72)
