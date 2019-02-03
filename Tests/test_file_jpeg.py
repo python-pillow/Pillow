@@ -267,7 +267,7 @@ class TestFileJpeg(PillowTestCase):
             1: 'R98',
             2: b'0100',
             4097: 2272,
-            4098: 1704
+            4098: 1704,
         })
 
     def test_progressive_compat(self):

@@ -491,8 +491,8 @@ def _getexif(self):
         exif[0x8825] = _fixup_dict(info)
     # get interop
     try:
-        # exif field 0xa005 is an offset pointer to the location
-        # of the nested embedded interop exif ifd.
+        # Exif field 0xa005 is an offset pointer to the location
+        # of the nested embedded interop Exif IFD.
         # It should be a long, but may be corrupted.
         file.seek(exif[0xa005])
     except (KeyError, TypeError):
