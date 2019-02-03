@@ -28,6 +28,8 @@ from ._binary import i16le as i16, o16le as o16, i8
 import struct
 import io
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 

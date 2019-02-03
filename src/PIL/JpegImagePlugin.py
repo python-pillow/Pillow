@@ -43,6 +43,8 @@ from ._binary import i8, o8, i16be as i16
 from .JpegPresets import presets
 from ._util import isStringType
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 

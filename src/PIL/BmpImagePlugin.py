@@ -29,6 +29,8 @@ from ._binary import i8, i16le as i16, i32le as i32, \
                      o8, o16le as o16, o32le as o32
 import math
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.7"
 
 #

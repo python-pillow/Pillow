@@ -10,6 +10,8 @@
 from . import Image, ImageFile
 from ._binary import o8, o16be as o16b
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "1.0"
 
 _Palm8BitColormapValues = (  # noqa: E131

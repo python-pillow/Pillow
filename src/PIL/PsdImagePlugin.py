@@ -16,6 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.4"
 
 from . import Image, ImageFile, ImagePalette
