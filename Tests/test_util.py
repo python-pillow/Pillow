@@ -39,10 +39,10 @@ class TestUtil(PillowTestCase):
     def test_path_obj_is_path(self):
         # Arrange
         from pathlib import Path
-        fp = Path('filename.ext')
+        test_path = Path('filename.ext')
 
         # Act
-        it_is = _util.isPath(fp)
+        it_is = _util.isPath(test_path)
 
         # Assert
         self.assertTrue(it_is)
