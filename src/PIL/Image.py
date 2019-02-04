@@ -2129,11 +2129,12 @@ class Image(object):
 
         self.draft(None, size)
 
-        im = self.resize(size, resample)
+        if self.size != size:
+            im = self.resize(size, resample)
 
-        self.im = im.im
-        self.mode = im.mode
-        self._size = size
+            self.im = im.im
+            self._size = size
+            self.mode = self.im.mode
 
         self.readonly = 0
         self.pyaccess = None
