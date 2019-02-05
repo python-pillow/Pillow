@@ -459,36 +459,36 @@ def _getexif(self):
         data = self.info["exif"]
     except KeyError:
         return None
-    file = io.BytesIO(data[6:])
-    head = file.read(8)
+    fp = io.BytesIO(data[6:])
+    head = fp.read(8)
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    file.seek(info.next)
-    info.load(file)
+    fp.seek(info.next)
+    info.load(fp)
     exif = dict(_fixup_dict(info))
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
         # of the nested embedded exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8769])
+        fp.seek(exif[0x8769])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
         # of the nested embedded gps exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8825])
+        fp.seek(exif[0x8825])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif[0x8825] = _fixup_dict(info)
 
     return exif
