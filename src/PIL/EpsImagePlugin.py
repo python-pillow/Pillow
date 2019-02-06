@@ -139,13 +139,11 @@ def Ghostscript(tile, size, fp, scale=1):
 
     # push data through Ghostscript
     try:
-        with open(os.devnull, 'w+b') as devnull:
-            startupinfo = None
-            if sys.platform.startswith('win'):
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.check_call(command, stdout=devnull,
-                                  startupinfo=startupinfo)
+        startupinfo = None
+        if sys.platform.startswith('win'):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        subprocess.check_call(command, startupinfo=startupinfo)
         im = Image.open(outfile)
         im.load()
     finally:
