@@ -30,8 +30,8 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://pypi.org/project/Pillow/
    :alt: Number of PyPI downloads
 
-.. image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master&service=github
-   :target: https://coveralls.io/github/python-pillow/Pillow?branch=master
+.. |coverage| image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
 
 .. toctree::

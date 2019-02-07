@@ -36,8 +36,8 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
 
-.. |coverage| image:: https://coveralls.io/repos/python-pillow/Pillow/badge.svg?branch=master&service=github
-   :target: https://coveralls.io/github/python-pillow/Pillow?branch=master
+.. |coverage| image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
 
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg

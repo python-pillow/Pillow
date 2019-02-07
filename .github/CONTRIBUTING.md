@@ -9,7 +9,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Fork the Pillow repository.
 - Create a branch from master.
 - Develop bug fixes, features, tests, etc.
-- Run the test suite on Python 2.7 and 3.x. You can enable [Travis CI](https://travis-ci.org/profile/) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Coveralls](https://coveralls.io/repos/new) to see if the changed code is covered by tests.
+- Run the test suite on Python 2.7 and 3.x. You can enable [Travis CI](https://travis-ci.org/profile/) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
 - Create a pull request to pull the changes from your branch to the Pillow master.
 
 ### Guidelines
