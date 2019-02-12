@@ -1,9 +1,13 @@
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, distro, hopper, unittest
 from .test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
 
 
+@unittest.skipIf(
+    ImageQt.qt_version == "5" and distro() == "arch",
+    "TestFromQPixmap fails on Arch + QT5",
+)
 class TestFromQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def roundtrip(self, expected):
