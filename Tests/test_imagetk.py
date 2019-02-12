@@ -87,7 +87,3 @@ class TestImageTk(PillowTestCase):
 
         # reloaded = ImageTk.getimage(im_tk)
         # self.assert_image_equal(reloaded, im)
-
-
-if __name__ == '__main__':
-    unittest.main()

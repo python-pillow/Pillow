@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 
 class TestImageGetPalette(PillowTestCase):
@@ -18,7 +18,3 @@ class TestImageGetPalette(PillowTestCase):
         self.assertIsNone(palette("RGBA"))
         self.assertIsNone(palette("CMYK"))
         self.assertIsNone(palette("YCbCr"))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -105,7 +105,3 @@ class TestModeI16(PillowTestCase):
         self.verify(im.convert("I;16B"))
         self.verify(im.convert("I;16B").convert("L"))
         self.verify(im.convert("I;16B").convert("I"))
-
-
-if __name__ == '__main__':
-    unittest.main()

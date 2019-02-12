@@ -130,9 +130,3 @@ class TestImagecomplextext(PillowTestCase):
         target_img = Image.open(target)
 
         self.assert_image_similar(im, target_img, .5)
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-# End of file

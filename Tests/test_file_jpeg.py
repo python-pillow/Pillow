@@ -611,7 +611,3 @@ class TestFileCloseW32(PillowTestCase):
         self.assertTrue(fp.closed)
         # this should not fail, as load should have closed the file.
         os.remove(tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

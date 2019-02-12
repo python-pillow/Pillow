@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -30,7 +30,3 @@ class TestImageGetProjection(PillowTestCase):
         im.paste(255, (2, 4, 8, 6))
         self.assertEqual(im.getprojection()[0], [0, 0, 1, 1, 1, 1, 1, 1, 0, 0])
         self.assertEqual(im.getprojection()[1], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0])
-
-
-if __name__ == '__main__':
-    unittest.main()

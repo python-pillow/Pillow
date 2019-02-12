@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 
 class TestImageGetData(PillowTestCase):
@@ -27,7 +27,3 @@ class TestImageGetData(PillowTestCase):
         self.assertEqual(getdata("RGBA"), ((11, 13, 52, 255), 960, 960))
         self.assertEqual(getdata("CMYK"), ((244, 242, 203, 0), 960, 960))
         self.assertEqual(getdata("YCbCr"), ((16, 147, 123), 960, 960))
-
-
-if __name__ == '__main__':
-    unittest.main()

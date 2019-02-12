@@ -366,7 +366,3 @@ int main(int argc, char* argv[])
         process = subprocess.Popen(['embed_pil.exe'], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

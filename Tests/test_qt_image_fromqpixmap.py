@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from .test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
@@ -25,7 +25,3 @@ class TestFromQPixmap(PillowQPixmapTestCase, PillowTestCase):
 
     def test_sanity_p(self):
         self.roundtrip(hopper('P'))
-
-
-if __name__ == '__main__':
-    unittest.main()

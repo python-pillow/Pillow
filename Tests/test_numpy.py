@@ -208,7 +208,3 @@ class TestNumpy(PillowTestCase):
 
         # Act/Assert
         self.assert_warning(None, lambda: array(im))
-
-
-if __name__ == '__main__':
-    unittest.main()

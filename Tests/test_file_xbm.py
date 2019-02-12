@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -60,7 +60,3 @@ class TestFileXbm(PillowTestCase):
         # Assert
         self.assertEqual(im.mode, '1')
         self.assertEqual(im.size, (128, 128))
-
-
-if __name__ == '__main__':
-    unittest.main()

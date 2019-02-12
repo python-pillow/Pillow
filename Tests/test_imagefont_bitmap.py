@@ -34,7 +34,3 @@ class TestImageFontBitmap(PillowTestCase):
         draw_outline.text((0, size_final[1] - size_outline[1]),
                           text, fill=(0, 0, 0), font=font_outline)
         self.assert_image_similar(im_bitmap, im_outline, 20)
-
-
-if __name__ == '__main__':
-    unittest.main()

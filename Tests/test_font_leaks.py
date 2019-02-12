@@ -31,7 +31,3 @@ class TestDefaultFontLeak(TestTTypeFontLeak):
     def test_leak(self):
         default_font = ImageFont.load_default()
         self._test_font(default_font)
-
-
-if __name__ == '__main__':
-    unittest.main()

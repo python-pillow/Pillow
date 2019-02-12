@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper, fromstring
+from .helper import PillowTestCase, hopper, fromstring
 
 
 class TestImageToBitmap(PillowTestCase):
@@ -13,7 +13,3 @@ class TestImageToBitmap(PillowTestCase):
 
         self.assertIsInstance(bitmap, bytes)
         self.assert_image_equal(im1, fromstring(bitmap))
-
-
-if __name__ == '__main__':
-    unittest.main()

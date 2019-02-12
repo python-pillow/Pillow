@@ -560,7 +560,3 @@ class TestRegistry(PillowTestCase):
                                                       'DoesNotExist',
                                                       ('args',),
                                                       extra=('extra',))
-
-
-if __name__ == '__main__':
-    unittest.main()

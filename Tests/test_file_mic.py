@@ -64,7 +64,3 @@ class TestFileMic(PillowTestCase):
         ole_file = "Tests/images/test-ole-file.doc"
         self.assertRaises(SyntaxError,
                           MicImagePlugin.MicImageFile, ole_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

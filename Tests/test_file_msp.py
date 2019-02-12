@@ -78,7 +78,3 @@ class TestFileMsp(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(IOError, im.save, filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -151,7 +151,3 @@ class TestFileWebpAnimation(PillowTestCase):
             self.assertEqual(im.info["duration"], dur)
             self.assertEqual(im.info["timestamp"], ts)
             ts -= dur
-
-
-if __name__ == '__main__':
-    unittest.main()

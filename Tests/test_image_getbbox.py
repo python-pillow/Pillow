@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -37,7 +37,3 @@ class TestImageGetBbox(PillowTestCase):
 
         im.paste(255, (-10, -10, 110, 110))
         self.assertEqual(im.getbbox(), (0, 0, 100, 100))
-
-
-if __name__ == '__main__':
-    unittest.main()

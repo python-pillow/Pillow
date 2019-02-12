@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper, fromstring, tostring
+from .helper import PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 
@@ -233,7 +233,3 @@ class TestPyDecoder(PillowTestCase):
         im = MockImageFile(buf)
         self.assertIsNone(im.format)
         self.assertIsNone(im.get_format_mimetype())
-
-
-if __name__ == '__main__':
-    unittest.main()

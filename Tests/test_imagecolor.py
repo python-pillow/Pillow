@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 from PIL import ImageColor
@@ -192,7 +192,3 @@ class TestImageColor(PillowTestCase):
         self.assertEqual(
             (162, 33), ImageColor.getcolor("rgba(0, 255, 115, 33)", "LA"))
         Image.new("LA", (1, 1), "white")
-
-
-if __name__ == '__main__':
-    unittest.main()

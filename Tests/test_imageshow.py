@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageShow
@@ -44,7 +44,3 @@ class TestImageShow(PillowTestCase):
     def test_viewers(self):
         for viewer in ImageShow._viewers:
             viewer.get_command('test.jpg')
-
-
-if __name__ == '__main__':
-    unittest.main()

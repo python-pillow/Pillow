@@ -529,7 +529,3 @@ class TestImageFont(PillowTestCase):
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
-
-
-if __name__ == '__main__':
-    unittest.main()

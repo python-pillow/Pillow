@@ -251,7 +251,3 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image.mode, "RGB")
         self.assertEqual(image.size, (460, 352))
         self.assertEqual(image.format, "EPS")
-
-
-if __name__ == '__main__':
-    unittest.main()

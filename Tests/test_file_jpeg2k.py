@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
@@ -210,7 +210,3 @@ class TestFileJpeg2k(PillowTestCase):
 
         # Assert
         self.assertEqual(p.image.size, (640, 480))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import WmfImagePlugin
@@ -51,7 +51,3 @@ class TestFileWmf(PillowTestCase):
         for ext in [".wmf", ".emf"]:
             tmpfile = self.tempfile("temp"+ext)
             self.assertRaises(IOError, im.save, tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 from PIL import Image
 
 
@@ -14,7 +14,3 @@ class TestFileFtex(PillowTestCase):
         im = Image.open('Tests/images/ftex_dxt1.ftc')
         target = Image.open('Tests/images/ftex_dxt1.png')
         self.assert_image_similar(im, target.convert('RGBA'), 15)
-
-
-if __name__ == '__main__':
-    unittest.main()

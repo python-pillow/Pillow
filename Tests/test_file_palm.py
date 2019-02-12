@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper, imagemagick_available
+from .helper import PillowTestCase, hopper, imagemagick_available
 
 import os.path
 
@@ -52,7 +52,3 @@ class TestFilePalm(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(IOError, self.helper_save_as_palm, mode)
-
-
-if __name__ == '__main__':
-    unittest.main()

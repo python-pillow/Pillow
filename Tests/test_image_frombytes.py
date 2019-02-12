@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -13,7 +13,3 @@ class TestImageFromBytes(PillowTestCase):
 
     def test_not_implemented(self):
         self.assertRaises(NotImplementedError, Image.fromstring)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, PSDraw
 import os
@@ -61,7 +61,3 @@ class TestPsDraw(PillowTestCase):
         sys.stdout = old_stdout
 
         self.assertNotEqual(mystdout.getvalue(), "")
-
-
-if __name__ == '__main__':
-    unittest.main()

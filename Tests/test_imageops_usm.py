@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 from PIL import ImageFilter
@@ -73,7 +73,3 @@ class TestImageOpsUsm(PillowTestCase):
         self.assertTrue(236 <= gp(8, 5)[2] <= 239)
         self.assertTrue(236 <= gp(8, 6)[2] <= 239)
         self.assertTrue(236 <= gp(8, 7)[1] <= 239)
-
-
-if __name__ == '__main__':
-    unittest.main()

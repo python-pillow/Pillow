@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -59,7 +59,3 @@ class TestImageSplit(PillowTestCase):
         self.assertEqual(split_open("RGB"), 3)
         if 'zip_encoder' in codecs:
             self.assertEqual(split_open("RGBA"), 4)
-
-
-if __name__ == '__main__':
-    unittest.main()

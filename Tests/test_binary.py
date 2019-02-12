@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import _binary
 
@@ -22,7 +22,3 @@ class TestBinary(PillowTestCase):
 
         self.assertEqual(_binary.o16be(65535), b'\xff\xff')
         self.assertEqual(_binary.o32be(65535), b'\x00\x00\xff\xff')
-
-
-if __name__ == '__main__':
-    unittest.main()

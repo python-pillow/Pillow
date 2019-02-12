@@ -179,7 +179,3 @@ class TestEnvVars(PillowTestCase):
         self.assert_warning(
             UserWarning, Image._apply_env_variables,
             {'PILLOW_BLOCKS_MAX': 'wat'})
-
-
-if __name__ == '__main__':
-    unittest.main()

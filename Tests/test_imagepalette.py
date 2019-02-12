@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import ImagePalette, Image
 
@@ -134,7 +134,3 @@ class TestImagePalette(PillowTestCase):
     def test_invalid_palette(self):
         self.assertRaises(IOError,
                           ImagePalette.load, "Tests/images/hopper.jpg")
-
-
-if __name__ == '__main__':
-    unittest.main()

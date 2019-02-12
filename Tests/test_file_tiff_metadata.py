@@ -1,7 +1,7 @@
 import io
 import struct
 
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
@@ -247,7 +247,3 @@ class TestFileTiffMetadata(PillowTestCase):
 
         # Should not raise ValueError.
         self.assert_warning(UserWarning, lambda: ifd[277])
-
-
-if __name__ == '__main__':
-    unittest.main()

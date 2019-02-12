@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -44,7 +44,3 @@ class TestImagePutAlpha(PillowTestCase):
         self.assertFalse(im.readonly)
         self.assertEqual(im.mode, 'RGBA')
         self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))
-
-
-if __name__ == '__main__':
-    unittest.main()

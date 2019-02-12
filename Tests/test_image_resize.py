@@ -3,7 +3,7 @@ Tests for resize functionality.
 """
 from itertools import permutations
 
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -115,7 +115,3 @@ class TestImageResize(PillowTestCase):
         # Test unknown resampling filter
         im = hopper()
         self.assertRaises(ValueError, im.resize, (10, 10), "unknown")
-
-
-if __name__ == '__main__':
-    unittest.main()

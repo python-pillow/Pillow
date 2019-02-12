@@ -1,4 +1,4 @@
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, XpmImagePlugin
 
@@ -33,7 +33,3 @@ class TestFileXpm(PillowTestCase):
 
         # Assert
         self.assertEqual(len(data), 16384)
-
-
-if __name__ == '__main__':
-    unittest.main()

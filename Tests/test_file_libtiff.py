@@ -1,5 +1,5 @@
 from __future__ import print_function
-from .helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import features
 from PIL._util import py3
 
@@ -700,7 +700,3 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(infile)
 
         self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
-
-
-if __name__ == '__main__':
-    unittest.main()
