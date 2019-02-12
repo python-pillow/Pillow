@@ -5,6 +5,12 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Remove unnecessary unittest.main() boilerplate from test files #3631
+  [jdufresne]
+
+- Exif: Seek to IFD offset #3584
+  [radarhere]
+
 - Deprecate PIL.*ImagePlugin.__version__ attributes #3628
   [jdufresne]
 
