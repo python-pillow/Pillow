@@ -40,6 +40,8 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
 from ._util import py3
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.9"
 
 logger = logging.getLogger(__name__)
