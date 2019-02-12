@@ -581,6 +581,15 @@ class TestFileJpeg(PillowTestCase):
         # OSError for unidentified image.
         self.assertEqual(im.info.get("dpi"), (72, 72))
 
+    def test_ifd_offset_exif(self):
+        # Arrange
+        # This image has been manually hexedited to have an IFD offset of 10,
+        # in contrast to normal 8
+        im = Image.open("Tests/images/exif-ifd-offset.jpg")
+
+        # Act / Assert
+        self.assertEqual(im._getexif()[306], '2017:03:13 23:03:09')
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
