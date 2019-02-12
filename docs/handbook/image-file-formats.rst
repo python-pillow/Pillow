@@ -751,7 +751,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **method**
     Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
 
-**icc_procfile**
+**icc_profile**
     The ICC Profile to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
