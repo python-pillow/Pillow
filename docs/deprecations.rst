@@ -17,7 +17,7 @@ PIL.*ImagePlugin.__version__ attributes
 
 .. deprecated:: 6.0.0
 
-The version constants of individuals plugins have been deprecated and will be removed in
+The version constants of individual plugins have been deprecated and will be removed in
 a future version. Use ``PIL.__version__`` instead.
 
 ===============================  =================================  ==================================
