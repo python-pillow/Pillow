@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, DcxImagePlugin
 
@@ -64,7 +64,3 @@ class TestFileDcx(PillowTestCase):
 
         # Act / Assert
         self.assertRaises(EOFError, im.seek, frame)
-
-
-if __name__ == '__main__':
-    unittest.main()

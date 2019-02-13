@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import ImagePalette
 
@@ -28,7 +28,3 @@ class TestImagePutPalette(PillowTestCase):
         im.putpalette(ImagePalette.random())
         im.putpalette(ImagePalette.sepia())
         im.putpalette(ImagePalette.wedge())
-
-
-if __name__ == '__main__':
-    unittest.main()

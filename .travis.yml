@@ -47,6 +47,8 @@ matrix:
       name: "3.5 Trusty PYTHONOPTIMIZE=2"
       dist: trusty
       env: PYTHONOPTIMIZE=2
+    - python: "3.8-dev"
+      name: "3.8-dev Xenial"
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
     - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="master"
@@ -62,6 +64,9 @@ matrix:
 services:
   - docker
 
+before_install:
+  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
+
 install:
   - |
     if [ "$LINT" == "true" ]; then
@@ -69,9 +74,6 @@ install:
     elif [ "$DOCKER" == "" ]; then
       .travis/install.sh;
     fi
-
-before_install:
-  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install

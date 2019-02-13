@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 try:
     from PIL import FpxImagePlugin
@@ -21,7 +21,3 @@ class TestFileFpx(PillowTestCase):
         ole_file = "Tests/images/test-ole-file.doc"
         self.assertRaises(SyntaxError,
                           FpxImagePlugin.FpxImageFile, ole_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

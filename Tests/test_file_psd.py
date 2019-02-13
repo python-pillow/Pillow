@@ -1,4 +1,4 @@
-from helper import hopper, unittest, PillowTestCase
+from .helper import hopper, PillowTestCase
 
 from PIL import Image, PsdImagePlugin
 
@@ -76,7 +76,3 @@ class TestImagePsd(PillowTestCase):
         im = Image.open("Tests/images/hopper_merged.psd")
 
         self.assertNotIn("icc_profile", im.info)
-
-
-if __name__ == '__main__':
-    unittest.main()

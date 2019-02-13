@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageSequence
@@ -119,7 +119,3 @@ class TestImageSpider(PillowTestCase):
         for i, frame in enumerate(ImageSequence.Iterator(im)):
             if i > 1:
                 self.fail("Non-stack DOS file test failed")
-
-
-if __name__ == '__main__':
-    unittest.main()

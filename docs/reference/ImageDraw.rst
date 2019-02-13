@@ -37,7 +37,8 @@ Coordinates
 ^^^^^^^^^^^
 
 The graphics interface uses the same coordinate system as PIL itself, with (0,
-0) in the upper left corner.
+0) in the upper left corner. Any pixels drawn outside of the image bounds will
+be discarded.
 
 Colors
 ^^^^^^

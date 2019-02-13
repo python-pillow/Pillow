@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
+from .helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 
@@ -596,6 +596,7 @@ class TestFilePng(PillowTestCase):
         im = Image.open("Tests/images/iss634.apng")
         self.assertEqual(im.get_format_mimetype(), 'image/apng')
 
+        # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
         expected = Image.open("Tests/images/iss634.webp")
         self.assert_image_similar(im, expected, 0.23)
 
@@ -625,7 +626,3 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             self._test_leak(core)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
-
-
-if __name__ == '__main__':
-    unittest.main()

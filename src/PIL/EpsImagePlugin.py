@@ -27,6 +27,8 @@ import sys
 from . import Image, ImageFile
 from ._binary import i32le as i32
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.5"
 
 #
@@ -144,7 +146,7 @@ def Ghostscript(tile, size, fp, scale=1):
             if sys.platform.startswith('win'):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.check_call(command, stdin=devnull, stdout=devnull,
+            subprocess.check_call(command, stdout=devnull,
                                   startupinfo=startupinfo)
         im = Image.open(outfile)
         im.load()

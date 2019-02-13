@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, SgiImagePlugin
 
@@ -89,7 +89,3 @@ class TestFileSgi(PillowTestCase):
         out = self.tempfile('temp.sgi')
 
         self.assertRaises(ValueError, im.save, out, format='sgi')
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -46,7 +46,3 @@ class TestImageQuantize(PillowTestCase):
         converted = image.quantize()
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 1)
-
-
-if __name__ == '__main__':
-    unittest.main()

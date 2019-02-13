@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, FliImagePlugin
 
@@ -97,7 +97,3 @@ class TestFileFli(PillowTestCase):
 
         expected = Image.open("Tests/images/a_fli.png")
         self.assert_image_equal(im, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

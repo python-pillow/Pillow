@@ -115,7 +115,7 @@ class ImageFile(Image.Image):
             raise SyntaxError("not identified by this driver")
 
     def draft(self, mode, size):
-        "Set draft mode"
+        """Set draft mode"""
 
         pass
 
@@ -125,7 +125,7 @@ class ImageFile(Image.Image):
         return self.custom_mimetype or Image.MIME.get(self.format.upper())
 
     def verify(self):
-        "Check file integrity"
+        """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
@@ -134,7 +134,7 @@ class ImageFile(Image.Image):
         self.fp = None
 
     def load(self):
-        "Load image data based on tile list"
+        """Load image data based on tile list"""
 
         pixel = Image.Image.load(self)
 
@@ -317,7 +317,7 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
 
     def _load(self):
-        "(Hook) Find actual image loader."
+        """(Hook) Find actual image loader."""
         raise NotImplementedError(
             "StubImageFile subclass must implement _load"
             )

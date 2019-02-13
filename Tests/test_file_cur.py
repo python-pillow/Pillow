@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, CurImagePlugin
 
@@ -29,7 +29,3 @@ class TestFileCur(PillowTestCase):
         cur.fp.close()
         with open(no_cursors_file, "rb") as cur.fp:
             self.assertRaises(TypeError, cur._open)
-
-
-if __name__ == '__main__':
-    unittest.main()

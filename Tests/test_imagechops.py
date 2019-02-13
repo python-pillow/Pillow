@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageChops
@@ -373,7 +373,3 @@ class TestImageChops(PillowTestCase):
             table(ImageChops.logical_or, 0, 255), (0, 255, 255, 255))
         self.assertEqual(
             table(ImageChops.logical_xor, 0, 255), (0, 255, 255, 0))
-
-
-if __name__ == '__main__':
-    unittest.main()

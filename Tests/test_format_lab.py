@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -40,7 +40,3 @@ class TestFormatLab(PillowTestCase):
 
         k = i.getpixel((0, 0))
         self.assertEqual(k, (128, 228, 128))
-
-
-if __name__ == '__main__':
-    unittest.main()

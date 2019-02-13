@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, BmpImagePlugin
 import io
@@ -75,7 +75,3 @@ class TestFileBmp(PillowTestCase):
         im = BmpImagePlugin.DibImageFile('Tests/images/clipboard.dib')
         target = Image.open('Tests/images/clipboard_target.png')
         self.assert_image_equal(im, target)
-
-
-if __name__ == '__main__':
-    unittest.main()

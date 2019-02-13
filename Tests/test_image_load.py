@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -28,7 +28,3 @@ class TestImageLoad(PillowTestCase):
             os.fstat(fn)
 
         self.assertRaises(OSError, os.fstat, fn)
-
-
-if __name__ == '__main__':
-    unittest.main()

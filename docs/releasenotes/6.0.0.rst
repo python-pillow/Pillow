@@ -32,6 +32,52 @@ API Changes
 Deprecations
 ^^^^^^^^^^^^
 
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These version constants have been deprecated and will be removed in a future version.
+
+* ``BmpImagePlugin.__version__``
+* ``CurImagePlugin.__version__``
+* ``DcxImagePlugin.__version__``
+* ``EpsImagePlugin.__version__``
+* ``FliImagePlugin.__version__``
+* ``FpxImagePlugin.__version__``
+* ``GdImageFile.__version__``
+* ``GifImagePlugin.__version__``
+* ``IcoImagePlugin.__version__``
+* ``ImImagePlugin.__version__``
+* ``ImtImagePlugin.__version__``
+* ``IptcImagePlugin.__version__``
+* ``Jpeg2KImagePlugin.__version__``
+* ``JpegImagePlugin.__version__``
+* ``McIdasImagePlugin.__version__``
+* ``MicImagePlugin.__version__``
+* ``MpegImagePlugin.__version__``
+* ``MpoImagePlugin.__version__``
+* ``MspImagePlugin.__version__``
+* ``PalmImagePlugin.__version__``
+* ``PcdImagePlugin.__version__``
+* ``PcxImagePlugin.__version__``
+* ``PdfImagePlugin.__version__``
+* ``PixarImagePlugin.__version__``
+* ``PngImagePlugin.__version__``
+* ``PpmImagePlugin.__version__``
+* ``PsdImagePlugin.__version__``
+* ``SgiImagePlugin.__version__``
+* ``SunImagePlugin.__version__``
+* ``TgaImagePlugin.__version__``
+* ``TiffImagePlugin.__version__``
+* ``WmfImagePlugin.__version__``
+* ``XbmImagePlugin.__version__``
+* ``XpmImagePlugin.__version__``
+* ``XVThumbImagePlugin.__version__``
+
+Use ``PIL.__version__`` instead.
+
+ImageCms.CmsProfile attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
 6.0.0, they issue a ``DeprecationWarning``:
 

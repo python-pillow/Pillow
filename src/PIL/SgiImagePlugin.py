@@ -29,6 +29,8 @@ import struct
 import os
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 

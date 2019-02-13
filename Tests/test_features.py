@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import features
 
@@ -63,7 +63,3 @@ class TestFeatures(PillowTestCase):
         module = "unsupported_module"
         # Act / Assert
         self.assertRaises(ValueError, features.check_module, module)
-
-
-if __name__ == '__main__':
-    unittest.main()

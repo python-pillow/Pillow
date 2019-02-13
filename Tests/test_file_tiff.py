@@ -2,7 +2,7 @@ import logging
 from io import BytesIO
 import sys
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin
 from PIL._util import py3
@@ -565,7 +565,3 @@ class TestFileTiffW32(PillowTestCase):
         # this should not fail, as load should have closed the file pointer,
         # and close should have closed the mmap
         os.remove(tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()
