@@ -1,4 +1,4 @@
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, hopper, unittest
 
 from PIL import ImageQt
 
@@ -6,26 +6,22 @@ from PIL import ImageQt
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
 
-    def skip_if_qt_is_not_installed(_):
-        pass
-else:
-    def skip_if_qt_is_not_installed(test_case):
-        test_case.skipTest('Qt bindings are not installed')
-
 
 class PillowQtTestCase(object):
-
-    def setUp(self):
-        skip_if_qt_is_not_installed(self)
+    @classmethod
+    def setUpClass(cls):
+        if not ImageQt.qt_is_installed:
+            raise unittest.SkipTest('Qt bindings are not installed')
 
     def tearDown(self):
         pass
 
 
 class PillowQPixmapTestCase(PillowQtTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(PillowQPixmapTestCase, cls).setUpClass()
 
-    def setUp(self):
-        PillowQtTestCase.setUp(self)
         try:
             if ImageQt.qt_version == '5':
                 from PyQt5.QtGui import QGuiApplication
@@ -36,9 +32,9 @@ class PillowQPixmapTestCase(PillowQtTestCase):
             elif ImageQt.qt_version == 'side2':
                 from PySide2.QtGui import QGuiApplication
         except ImportError:
-            self.skipTest('QGuiApplication not installed')
+            raise unittest.SkipTest('QGuiApplication not installed')
 
-        self.app = QGuiApplication([])
+        cls.app = QGuiApplication([])
 
     def tearDown(self):
         PillowQtTestCase.tearDown(self)
