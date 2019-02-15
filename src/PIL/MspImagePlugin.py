@@ -28,6 +28,8 @@ from ._binary import i16le as i16, o16le as o16, i8
 import struct
 import io
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -63,7 +65,7 @@ class MspImageFile(ImageFile.ImageFile):
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
-        self.size = i16(s[4:]), i16(s[6:])
+        self._size = i16(s[4:]), i16(s[6:])
 
         if s[:4] == b"DanM":
             self.tile = [("raw", (0, 0)+self.size, 32, ("1", 0, 1))]

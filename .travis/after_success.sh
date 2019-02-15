@@ -15,15 +15,6 @@ pip install coveralls-merge
 coveralls-merge coverage.c.json
 codecov
 
-if [ "$DOCKER" == "" ]; then
-    pip install pyflakes pycodestyle
-    pyflakes *.py | tee >(wc -l)
-    pyflakes src/PIL/*.py | tee >(wc -l)
-    pyflakes Tests/*.py | tee >(wc -l)
-    pycodestyle --statistics --count src/PIL/*.py
-    pycodestyle --statistics --count Tests/*.py
-fi
-
 if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ] && [ "$DOCKER" == "" ]; then
     # Coverage and quality reports on just the latest diff.
     # (Installation is very slow on Py3, so just do it for Py2.)

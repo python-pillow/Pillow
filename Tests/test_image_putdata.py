@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from array import array
 
 import sys
@@ -83,7 +83,3 @@ class TestImagePutData(PillowTestCase):
         im.putdata(arr)
 
         self.assertEqual(len(im.getdata()), len(arr))
-
-
-if __name__ == '__main__':
-    unittest.main()

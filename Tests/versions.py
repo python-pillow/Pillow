@@ -10,6 +10,7 @@ def version(module, version):
 
 version(Image, "jpeglib")
 version(Image, "zlib")
+version(Image, "libtiff")
 
 try:
     from PIL import ImageFont

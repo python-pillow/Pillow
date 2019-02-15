@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL._util import py3
@@ -13,15 +13,11 @@ class TestFormatHSV(PillowTestCase):
         return float(i)/255.0
 
     def str_to_float(self, i):
-
         return float(ord(i))/255.0
-
-    def to_int(self, f):
-        return int(f*255.0)
 
     def tuple_to_ints(self, tp):
         x, y, z = tp
-        return (int(x*255.0), int(y*255.0), int(z*255.0))
+        return int(x*255.0), int(y*255.0), int(z*255.0)
 
     def test_sanity(self):
         Image.new('HSV', (100, 100))
@@ -133,7 +129,3 @@ class TestFormatHSV(PillowTestCase):
         self.assert_image_similar(converted.getchannel(2),
                                   comparable.getchannel(2),
                                   3, "B conversion is wrong")
-
-
-if __name__ == '__main__':
-    unittest.main()

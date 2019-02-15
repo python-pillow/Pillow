@@ -17,6 +17,8 @@
 
 from . import Image, ImageFile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 #
@@ -107,7 +109,7 @@ class PpmImageFile(ImageFile.ImageFile):
                         self.mode = 'I'
                         rawmode = 'I;32B'
 
-        self.size = xsize, ysize
+        self._size = xsize, ysize
         self.tile = [("raw",
                      (0, 0, xsize, ysize),
                      self.fp.tell(),

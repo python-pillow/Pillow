@@ -31,6 +31,8 @@ from ._binary import i8, i16le as i16, o8, o16le as o16
 
 logger = logging.getLogger(__name__)
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 
@@ -100,7 +102,7 @@ class PcxImageFile(ImageFile.ImageFile):
             raise IOError("unknown PCX mode")
 
         self.mode = mode
-        self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
+        self._size = bbox[2]-bbox[0], bbox[3]-bbox[1]
 
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)

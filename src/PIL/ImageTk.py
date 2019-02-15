@@ -26,14 +26,14 @@
 #
 
 import sys
+from io import BytesIO
+
+from . import Image
 
 if sys.version_info.major > 2:
     import tkinter
 else:
     import Tkinter as tkinter
-
-from . import Image
-from io import BytesIO
 
 
 # --------------------------------------------------------------------
@@ -124,7 +124,7 @@ class PhotoImage(object):
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
-        except:
+        except Exception:
             pass  # ignore internal errors
 
     def __str__(self):
@@ -244,7 +244,7 @@ class BitmapImage(object):
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
-        except:
+        except Exception:
             pass  # ignore internal errors
 
     def width(self):

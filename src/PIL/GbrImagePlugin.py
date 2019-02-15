@@ -74,7 +74,7 @@ class GbrImageFile(ImageFile.ImageFile):
         else:
             self.mode = 'RGBA'
 
-        self.size = width, height
+        self._size = width, height
 
         self.info["comment"] = comment
 

@@ -27,6 +27,8 @@ import sys
 from . import Image, ImageFile
 from ._binary import i32le as i32
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.5"
 
 #
@@ -41,7 +43,7 @@ if sys.platform.startswith('win'):
     if hasattr(shutil, 'which'):
         which = shutil.which
     else:
-        # Python < 3.3
+        # Python 2
         import distutils.spawn
         which = distutils.spawn.find_executable
     for binary in ('gswin32c', 'gswin64c', 'gs'):
@@ -62,7 +64,7 @@ def has_ghostscript():
                 subprocess.check_call(['gs', '--version'], stdout=devnull)
             return True
         except OSError:
-            # no ghostscript
+            # No Ghostscript
             pass
     return False
 
@@ -97,9 +99,9 @@ def Ghostscript(tile, size, fp, scale=1):
         os.close(in_fd)
         infile = infile_temp
 
-        # ignore length and offset!
-        # ghostscript can read it
-        # copy whole file to read in ghostscript
+        # Ignore length and offset!
+        # Ghostscript can read it
+        # Copy whole file to read in Ghostscript
         with open(infile_temp, 'wb') as f:
             # fetch length of fp
             fp.seek(0, 2)
@@ -115,20 +117,21 @@ def Ghostscript(tile, size, fp, scale=1):
                 lengthfile -= len(s)
                 f.write(s)
 
-    # Build ghostscript command
+    # Build Ghostscript command
     command = ["gs",
                "-q",                         # quiet mode
                "-g%dx%d" % size,             # set output geometry (pixels)
                "-r%fx%f" % res,              # set input DPI (dots per inch)
                "-dBATCH",                    # exit after processing
-               "-dNOPAUSE",                  # don't pause between pages,
+               "-dNOPAUSE",                  # don't pause between pages
                "-dSAFER",                    # safe mode
                "-sDEVICE=ppmraw",            # ppm driver
                "-sOutputFile=%s" % outfile,  # output file
+               # adjust for image origin
                "-c", "%d %d translate" % (-bbox[0], -bbox[1]),
-                                             # adjust for image origin
                "-f", infile,                 # input file
-               "-c", "showpage",             # showpage (see: https://bugs.ghostscript.com/show_bug.cgi?id=698272)
+               # showpage (see https://bugs.ghostscript.com/show_bug.cgi?id=698272)
+               "-c", "showpage",
                ]
 
     if gs_windows_binary is not None:
@@ -136,10 +139,15 @@ def Ghostscript(tile, size, fp, scale=1):
             raise WindowsError('Unable to locate Ghostscript on paths')
         command[0] = gs_windows_binary
 
-    # push data through ghostscript
+    # push data through Ghostscript
     try:
         with open(os.devnull, 'w+b') as devnull:
-            subprocess.check_call(command, stdin=devnull, stdout=devnull)
+            startupinfo = None
+            if sys.platform.startswith('win'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.check_call(command, stdout=devnull,
+                                  startupinfo=startupinfo)
         im = Image.open(outfile)
         im.load()
     finally:
@@ -212,7 +220,7 @@ class EpsImageFile(ImageFile.ImageFile):
         box = None
 
         self.mode = "RGB"
-        self.size = 1, 1  # FIXME: huh?
+        self._size = 1, 1  # FIXME: huh?
 
         #
         # Load EPS header
@@ -227,7 +235,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 try:
                     m = split.match(s)
-                except re.error as v:
+                except re.error:
                     raise SyntaxError("not an EPS file")
 
                 if m:
@@ -239,10 +247,10 @@ class EpsImageFile(ImageFile.ImageFile):
                             # fields should be integers, but some drivers
                             # put floating point values there anyway.
                             box = [int(float(i)) for i in v.split()]
-                            self.size = box[2] - box[0], box[3] - box[1]
+                            self._size = box[2] - box[0], box[3] - box[1]
                             self.tile = [("eps", (0, 0) + self.size, offset,
                                           (length, box))]
-                        except:
+                        except Exception:
                             pass
 
                 else:
@@ -288,7 +296,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 except ValueError:
                     break
 
-                self.size = int(x), int(y)
+                self._size = int(x), int(y)
                 return
 
             s = fp.readline().strip('\r\n')
@@ -326,7 +334,7 @@ class EpsImageFile(ImageFile.ImageFile):
             return
         self.im = Ghostscript(self.tile, self.size, self.fp, scale)
         self.mode = self.im.mode
-        self.size = self.im.size
+        self._size = self.im.size
         self.tile = []
 
     def load_seek(self, *args, **kwargs):

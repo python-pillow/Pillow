@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -133,7 +133,3 @@ class TestFileWebpMetadata(PillowTestCase):
         self.assertEqual(iccp_data, image.info.get('icc_profile', None))
         self.assertEqual(exif_data, image.info.get('exif', None))
         self.assertEqual(xmp_data, image.info.get('xmp', None))
-
-
-if __name__ == '__main__':
-    unittest.main()

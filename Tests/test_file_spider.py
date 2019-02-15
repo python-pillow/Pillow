@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageSequence
@@ -17,6 +17,12 @@ class TestImageSpider(PillowTestCase):
         self.assertEqual(im.mode, "F")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "SPIDER")
+
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_FILE)
+            im.load()
+        self.assert_warning(None, open)
 
     def test_save(self):
         # Arrange
@@ -113,7 +119,3 @@ class TestImageSpider(PillowTestCase):
         for i, frame in enumerate(ImageSequence.Iterator(im)):
             if i > 1:
                 self.fail("Non-stack DOS file test failed")
-
-
-if __name__ == '__main__':
-    unittest.main()

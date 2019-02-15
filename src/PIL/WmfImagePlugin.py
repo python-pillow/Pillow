@@ -27,6 +27,8 @@ from ._binary import i16le as word, si16le as short, \
 from ._util import py3
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 _handler = None
@@ -143,7 +145,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             raise SyntaxError("Unsupported file format")
 
         self.mode = "RGB"
-        self.size = size
+        self._size = size
 
         loader = self._load()
         if loader:

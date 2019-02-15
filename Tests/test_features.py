@@ -1,11 +1,11 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import features
 
 try:
     from PIL import _webp
     HAVE_WEBP = True
-except:
+except ImportError:
     HAVE_WEBP = False
 
 
@@ -23,20 +23,20 @@ class TestFeatures(PillowTestCase):
             self.assertEqual(features.check_feature(feature),
                              features.check(feature))
 
-    @unittest.skipUnless(HAVE_WEBP, True)
-    def check_webp_transparency(self):
+    @unittest.skipUnless(HAVE_WEBP, "WebP not available")
+    def test_webp_transparency(self):
         self.assertEqual(features.check('transp_webp'),
                          not _webp.WebPDecoderBuggyAlpha())
         self.assertEqual(features.check('transp_webp'),
                          _webp.HAVE_TRANSPARENCY)
 
-    @unittest.skipUnless(HAVE_WEBP, True)
-    def check_webp_mux(self):
+    @unittest.skipUnless(HAVE_WEBP, "WebP not available")
+    def test_webp_mux(self):
         self.assertEqual(features.check('webp_mux'),
                          _webp.HAVE_WEBPMUX)
 
-    @unittest.skipUnless(HAVE_WEBP, True)
-    def check_webp_anim(self):
+    @unittest.skipUnless(HAVE_WEBP, "WebP not available")
+    def test_webp_anim(self):
         self.assertEqual(features.check('webp_anim'),
                          _webp.HAVE_WEBPANIM)
 
@@ -63,7 +63,3 @@ class TestFeatures(PillowTestCase):
         module = "unsupported_module"
         # Act / Assert
         self.assertRaises(ValueError, features.check_module, module)
-
-
-if __name__ == '__main__':
-    unittest.main()

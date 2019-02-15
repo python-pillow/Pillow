@@ -1,5 +1,5 @@
-import helper
-from helper import unittest, PillowTestCase
+from . import helper
+from .helper import PillowTestCase
 
 from PIL.Image import (FLIP_LEFT_RIGHT, FLIP_TOP_BOTTOM, ROTATE_90, ROTATE_180,
                        ROTATE_270, TRANSPOSE, TRANSVERSE)
@@ -146,7 +146,3 @@ class TestImageTranspose(PillowTestCase):
             im.transpose(TRANSVERSE), transpose(ROTATE_270, FLIP_TOP_BOTTOM))
         self.assert_image_equal(
             im.transpose(TRANSVERSE), transpose(ROTATE_180, TRANSPOSE))
-
-
-if __name__ == '__main__':
-    unittest.main()

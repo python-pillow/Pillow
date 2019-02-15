@@ -482,7 +482,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
     This key is omitted if the image is not a transparent palette image.
 
-``Open`` also sets ``Image.text`` to a list of the values of the
+``Open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
 ``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
@@ -751,7 +751,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **method**
     Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
 
-**icc_procfile**
+**icc_profile**
     The ICC Profile to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
@@ -1029,7 +1029,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     saved in the PDF.
 
 **title**
-    The document’s title.
+    The document’s title. If not appending to an existing PDF file, this will
+    default to the filename.
 
     .. versionadded:: 5.1.0
 
@@ -1060,6 +1061,18 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     conforming product that converted it to PDF.
 
     .. versionadded:: 5.1.0
+
+**creationDate**
+    The creation date of the document. If not appending to an existing PDF
+    file, this will default to the current time.
+
+    .. versionadded:: 5.3.0
+
+**modDate**
+    The modification date of the document. If not appending to an existing PDF
+    file, this will default to the current time.
+
+    .. versionadded:: 5.3.0
 
 XV Thumbnails
 ^^^^^^^^^^^^^

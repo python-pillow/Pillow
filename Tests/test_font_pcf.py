@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, FontFile, PcfFontFile
 from PIL import ImageFont, ImageDraw
@@ -79,7 +79,3 @@ class TestFontPcf(PillowTestCase):
         # accept bytes instances in Py3.
         if py3:
             self._test_high_characters(message.encode('latin1'))
-
-
-if __name__ == '__main__':
-    unittest.main()

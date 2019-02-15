@@ -46,7 +46,7 @@ class FontFile(object):
         return self.glyph[ix]
 
     def compile(self):
-        "Create metrics and bitmap"
+        """Create metrics and bitmap"""
 
         if self.bitmap:
             return
@@ -93,7 +93,7 @@ class FontFile(object):
                 self.metrics[i] = d, dst, s
 
     def save(self, filename):
-        "Save font"
+        """Save font"""
 
         self.compile()
 

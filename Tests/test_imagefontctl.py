@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image, ImageDraw, ImageFont, features
 
 
@@ -130,9 +130,3 @@ class TestImagecomplextext(PillowTestCase):
         target_img = Image.open(target)
 
         self.assert_image_similar(im, target_img, .5)
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-# End of file

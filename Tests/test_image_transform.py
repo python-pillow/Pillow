@@ -1,6 +1,6 @@
 import math
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -152,7 +152,7 @@ class TestImageTransform(PillowTestCase):
         ]
 
         # Yeah. Watch some JIT optimize this out.
-        pattern = None
+        pattern = None  # noqa: F841
 
         self.test_mesh()
 
@@ -271,7 +271,3 @@ class TestImageTransformAffine(PillowTestCase):
 class TestImageTransformPerspective(TestImageTransformAffine):
     # Repeat all tests for AFFINE transformations with PERSPECTIVE
     transform = Image.PERSPECTIVE
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,0 +1,67 @@
+5.4.0
+-----
+
+API Changes
+===========
+
+APNG extension to PNG plugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Animated Portable Network Graphics (APNG) images are not fully supported but
+can be opened via the PNG plugin to get some basic info::
+
+    im = Image.open("image.apng")
+    print(im.mode)  # "RGBA"
+    print(im.size)  # (245, 245)
+    im.show()  # Shows a single frame
+
+Check for libjpeg-turbo
+^^^^^^^^^^^^^^^^^^^^^^^
+
+You can check if Pillow has been built against the libjpeg-turbo version of the
+libjpeg library::
+
+    from PIL import features
+    features.check_feature("libjpeg_turbo")  # True or False
+
+Negative indexes in pixel access
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When accessing individual image pixels, negative indexes are now also accepted.
+For example, to get or set the farthest pixel in the lower right of an image::
+
+    px = im.load()
+    print(px[-1, -1])
+    px[-1, -1] = (0, 0, 0)
+
+
+New custom TIFF tags
+^^^^^^^^^^^^^^^^^^^^
+
+TIFF images can now be saved with custom integer, float and string TIFF tags::
+
+    im = Image.new("RGB", (200, 100))
+    custom = {
+        37000: 4,
+        37001: 4.2,
+        37002: "custom tag value",
+        37003: u"custom tag value",
+        37004: b"custom tag value",
+    }
+    im.save("output.tif", tiffinfo=custom)
+
+    im2 = Image.open("output.tif")
+    print(im2.tag_v2[37000])  # 4
+    print(im2.tag_v2[37002])  # "custom tag value"
+    print(im2.tag_v2[37004])  # b"custom tag value"
+
+Other Changes
+=============
+
+ImageOps.fit
+^^^^^^^^^^^^
+
+Now uses one resize operation with ``box`` parameter internally
+instead of a crop and scale operations sequence.
+This improves the performance and accuracy of cropping since
+the ``box`` parameter accepts float values.

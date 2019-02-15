@@ -26,7 +26,9 @@ Notes
 +--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
 |Pillow 5.0.x - 5.1.x|       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |       |
 +--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow >= 5.2.0     |       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
+|Pillow 5.2.x - 5.4.x|       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
++--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
+|Pillow >= 6.0.0     |       |       |       |  Yes  |       |       |       |  Yes  |  Yes  |  Yes  |
 +--------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
 
 Basic Installation
@@ -165,12 +167,12 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.12.1**
+  * Pillow has been tested with libimagequant **2.6-2.12.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
   * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
-    so it is unlikely to work with any Python prior to 3.5 on Windows.
+    so it is unlikely to work with Python 2.7 on Windows.
 
 * **libraqm** provides complex text layout support.
 
@@ -390,22 +392,22 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Debian Stretch                   | 2.7                           |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
-| Fedora 25                        | 2.7                           |x86-64                 |
+| Fedora 28                        | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Fedora 26                        | 2.7                           |x86-64                 |
+| Fedora 29                        | 2.7                           |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Mac OS X 10.10 Yosemite*         | 2.7, 3.4, 3.5, 3.6, 3.7       |x86-64                 |
+| Mac OS X 10.10 Yosemite*         | 2.7, 3.5, 3.6, 3.7            |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Ubuntu Linux 16.04 LTS           | 2.7                           |x86-64                 |
+| Ubuntu Linux 16.04 LTS           | 2.7, 3.5, 3.6, 3.7,           |x86-64                 |
+|                                  | PyPy, PyPy3                   |                       |
 +----------------------------------+-------------------------------+-----------------------+
-| Ubuntu Linux 14.04 LTS           | 2.7, 3.4, 3.5, 3.6, 3.7,      |x86-64                 |
-|                                  | pypy, pypy3                   |                       |
+| Ubuntu Linux 14.04 LTS           | 2.7, 3.5, 3.6                 |x86-64                 |
 |                                  +-------------------------------+-----------------------+
 |                                  | 2.7                           |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
-| Windows Server 2012 R2           | 2.7, 3.4                      |x86, x86-64            |
+| Windows Server 2012 R2           | 2.7, 3.5, 3.6, 3.7            |x86, x86-64            |
 |                                  +-------------------------------+-----------------------+
-|                                  | pypy, 3.5/mingw               |x86                    |
+|                                  | PyPy, 3.7/MinGW               |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 
 \* Mac OS X CI is not run for every commit, but is run for every release.
@@ -423,11 +425,15 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
+| macOS 10.14 Mojave               | 2.7, 3.4, 3.5, 3.6, 3.7      | 5.4.1                          |x86-64                 |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6           | 4.2.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.12 Sierra               | 2.7, 3.4, 3.5, 3.6           | 4.1.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
-| Mac OS X 10.11 El Capitan        | 2.7, 3.3, 3.4, 3.5           | 4.1.0                          |x86-64                 |
+| Mac OS X 10.11 El Capitan        | 2.7, 3.4, 3.5, 3.6, 3.7      | 5.4.1                          |x86-64                 |
+|                                  +------------------------------+--------------------------------+                       +
+|                                  | 3.3                          | 4.1.0                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.9 Mavericks          | 2.7, 3.2, 3.3, 3.4           | 3.0.0                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
@@ -474,8 +480,6 @@ These platforms have been reported to work at the versions mentioned.
 Old Versions
 ------------
 
-You can download old distributions from `PyPI
-<https://pypi.org/project/Pillow/>`_. Only the latest major
-releases for Python 2.x and 3.x are visible, but all releases are
-available by direct URL access
-e.g. https://pypi.org/project/Pillow/1.0/.
+You can download old distributions from the `release history at PyPI
+<https://pypi.org/project/Pillow/#history>`_ and by direct URL access
+eg. https://pypi.org/project/Pillow/1.0/.

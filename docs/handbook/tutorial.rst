@@ -41,10 +41,10 @@ example, let’s display the image we just loaded::
 .. note::
 
     The standard version of :py:meth:`~PIL.Image.Image.show` is not very
-    efficient, since it saves the image to a temporary file and calls the
-    :command:`xv` utility to display the image. If you don’t have :command:`xv`
-    installed, it won’t even work. When it does work though, it is very handy
-    for debugging and tests.
+    efficient, since it saves the image to a temporary file and calls a utility
+    to display the image. If you don’t have an appropriate utility installed,
+    it won’t even work. When it does work though, it is very handy for
+    debugging and tests.
 
 The following sections provide an overview of the different functions provided in this library.
 
@@ -183,19 +183,10 @@ Rolling an image
 
         part1 = image.crop((0, 0, delta, ysize))
         part2 = image.crop((delta, 0, xsize, ysize))
-        part1.load()
-        part2.load()
-        image.paste(part2, (0, 0, xsize-delta, ysize))
         image.paste(part1, (xsize-delta, 0, xsize, ysize))
+        image.paste(part2, (0, 0, xsize-delta, ysize))
 
         return image
-
-Note that when pasting it back from the :py:meth:`~PIL.Image.Image.crop`
-operation, :py:meth:`~PIL.Image.Image.load` is called first. This is because
-cropping is a lazy operation. If :py:meth:`~PIL.Image.Image.load` was not
-called, then the crop operation would not be performed until the images were
-used in the paste commands. This would mean that ``part1`` would be cropped from
-the version of ``image`` already modified by the first paste.
 
 For more advanced tricks, the paste method can also take a transparency mask as
 an optional argument. In this mask, the value 255 indicates that the pasted

@@ -1,6 +1,6 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
-from PIL import Image
+from PIL import Image, WebPImagePlugin
 
 try:
     from PIL import _webp
@@ -9,13 +9,25 @@ except ImportError:
     HAVE_WEBP = False
 
 
+class TestUnsupportedWebp(PillowTestCase):
+    def test_unsupported(self):
+        if HAVE_WEBP:
+            WebPImagePlugin.SUPPORTED = False
+
+        file_path = "Tests/images/hopper.webp"
+        self.assert_warning(
+            UserWarning,
+            lambda: self.assertRaises(IOError, Image.open, file_path)
+        )
+
+        if HAVE_WEBP:
+            WebPImagePlugin.SUPPORTED = True
+
+
+@unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
 class TestFileWebp(PillowTestCase):
 
     def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest('WebP support not installed')
-            return
-
         self.rgb_mode = "RGB"
 
     def test_version(self):
@@ -135,6 +147,28 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
         self.assert_warning(None, image.save, temp_file)
 
+    def test_file_pointer_could_be_reused(self):
+        file_path = "Tests/images/hopper.webp"
+        with open(file_path, 'rb') as blob:
+            Image.open(blob).load()
+            Image.open(blob).load()
 
-if __name__ == '__main__':
-    unittest.main()
+    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
+                         "WebP save all not available")
+    def test_background_from_gif(self):
+        im = Image.open("Tests/images/chi.gif")
+        original_value = im.convert("RGB").getpixel((1, 1))
+
+        # Save as WEBP
+        out_webp = self.tempfile("temp.webp")
+        im.save(out_webp, save_all=True)
+
+        # Save as GIF
+        out_gif = self.tempfile("temp.gif")
+        Image.open(out_webp).save(out_gif)
+
+        reread = Image.open(out_gif)
+        reread_value = reread.convert("RGB").getpixel((1, 1))
+        difference = sum([abs(original_value[i] - reread_value[i])
+                          for i in range(0, 3)])
+        self.assertLess(difference, 5)

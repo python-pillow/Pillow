@@ -1,5 +1,5 @@
 from __future__ import print_function
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import features
 from PIL._util import py3
 
@@ -8,6 +8,7 @@ import io
 import logging
 import itertools
 import os
+import distutils.version
 
 from PIL import Image, TiffImagePlugin, TiffTags
 
@@ -194,7 +195,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open('Tests/images/hopper_g4.tif')
         for tag in im.tag_v2:
             try:
-                del(core_items[tag])
+                del core_items[tag]
             except KeyError:
                 pass
 
@@ -204,7 +205,7 @@ class TestFileLibTiff(LibTiffTestCase):
         #     4: "long",
         #     5: "rational",
         #     12: "double",
-        # type: dummy value
+        # Type: dummy value
         values = {2: 'test',
                   3: 1,
                   4: 2**20,
@@ -222,7 +223,7 @@ class TestFileLibTiff(LibTiffTestCase):
                                      for _ in range(info.length))
 
         # Extra samples really doesn't make sense in this application.
-        del(new_ifd[338])
+        del new_ifd[338]
 
         out = self.tempfile("temp.tif")
         TiffImagePlugin.WRITE_LIBTIFF = True
@@ -230,6 +231,37 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, tiffinfo=new_ifd)
 
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_custom_metadata(self):
+        custom = {
+            37000: 4,
+            37001: 4.2,
+            37002: 'custom tag value',
+            37003: u'custom tag value',
+            37004: b'custom tag value'
+        }
+
+        libtiff_version = TiffImagePlugin._libtiff_version()
+
+        libtiffs = [False]
+        if distutils.version.StrictVersion(libtiff_version) >= \
+           distutils.version.StrictVersion("4.0"):
+            libtiffs.append(True)
+
+        for libtiff in libtiffs:
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+            im = hopper()
+
+            out = self.tempfile("temp.tif")
+            im.save(out, tiffinfo=custom)
+            TiffImagePlugin.WRITE_LIBTIFF = False
+
+            reloaded = Image.open(out)
+            for tag, value in custom.items():
+                if libtiff and isinstance(value, bytes):
+                    value = value.decode()
+                self.assertEqual(reloaded.tag_v2[tag], value)
 
     def test_int_dpi(self):
         # issue #1765
@@ -415,7 +447,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open('Tests/images/multipage.tiff')
         frames = im.n_frames
         self.assertEqual(frames, 3)
-        for idx in range(frames):
+        for _ in range(frames):
             im.seek(0)
             # Should not raise ValueError: I/O operation on closed file
             im.load()
@@ -496,7 +528,7 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim_load = Image.open(buffer_io)
             self.assert_image_similar(pilim, pilim_load, 0)
 
-        # save_bytesio()
+        save_bytesio()
         save_bytesio('raw')
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
@@ -545,11 +577,11 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_read_icc(self):
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc = img.info.get('icc_profile')
-            self.assertNotEqual(icc, None)
+            self.assertIsNotNone(icc)
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc_libtiff = img.info.get('icc_profile')
-            self.assertNotEqual(icc_libtiff, None)
+            self.assertIsNotNone(icc_libtiff)
         TiffImagePlugin.READ_LIBTIFF = False
         self.assertEqual(icc, icc_libtiff)
 
@@ -633,6 +665,38 @@ class TestFileLibTiff(LibTiffTestCase):
         im2 = hopper()
         self.assert_image_similar(im, im2, 5)
 
+    def test_strip_cmyk_jpeg(self):
+        infile = "Tests/images/tiff_strip_cmyk_jpeg.tif"
+        im = Image.open(infile)
 
-if __name__ == '__main__':
-    unittest.main()
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+
+    def test_strip_ycbcr_jpeg_2x2_sampling(self):
+        infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
+        im = Image.open(infile)
+
+        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+
+    def test_strip_ycbcr_jpeg_1x1_sampling(self):
+        infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
+        im = Image.open(infile)
+
+        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+
+    def test_tiled_cmyk_jpeg(self):
+        infile = "Tests/images/tiff_tiled_cmyk_jpeg.tif"
+        im = Image.open(infile)
+
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+
+    def test_tiled_ycbcr_jpeg_1x1_sampling(self):
+        infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
+        im = Image.open(infile)
+
+        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+
+    def test_tiled_ycbcr_jpeg_2x2_sampling(self):
+        infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
+        im = Image.open(infile)
+
+        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)

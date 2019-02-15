@@ -1,8 +1,10 @@
+import calendar
 import codecs
 import collections
 import mmap
 import os
 import re
+import time
 import zlib
 from ._util import py3
 
@@ -280,9 +282,26 @@ class PdfDict(UserDict):
             except KeyError:
                 raise AttributeError(key)
         if isinstance(value, bytes):
-            return decode_text(value)
-        else:
-            return value
+            value = decode_text(value)
+        if key.endswith("Date"):
+            if value.startswith("D:"):
+                value = value[2:]
+
+            relationship = 'Z'
+            if len(value) > 17:
+                relationship = value[14]
+                offset = int(value[15:17]) * 60
+                if len(value) > 20:
+                    offset += int(value[18:20])
+
+            format = '%Y%m%d%H%M%S'[:len(value) - 2]
+            value = time.strptime(value[:len(format)+2], format)
+            if relationship in ['+', '-']:
+                offset *= 60
+                if relationship == '+':
+                    offset *= -1
+                value = time.gmtime(calendar.timegm(value) + offset)
+        return value
 
     def __bytes__(self):
         out = bytearray(b"<<")
@@ -347,12 +366,14 @@ def pdf_repr(x):
         return bytes(x)
     elif isinstance(x, int):
         return str(x).encode("us-ascii")
+    elif isinstance(x, time.struct_time):
+        return b'(D:'+time.strftime('%Y%m%d%H%M%SZ', x).encode("us-ascii")+b')'
     elif isinstance(x, dict):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
     elif ((py3 and isinstance(x, str)) or
-          (not py3 and isinstance(x, unicode))):
+          (not py3 and isinstance(x, unicode))):  # noqa: F821
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
@@ -365,14 +386,13 @@ def pdf_repr(x):
 
 
 class PdfParser:
-    """Based on https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
+    """Based on
+    https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
     Supports PDF up to 1.4
     """
 
     def __init__(self, filename=None, f=None,
                  buf=None, start_offset=0, mode="rb"):
-        # type: (PdfParser, str, file, Union[bytes, bytearray], int, str)
-        #       -> None
         if buf and f:
             raise RuntimeError(
                 "specify buf or f or filename, but not both buf and f")
@@ -842,7 +862,8 @@ class PdfParser:
         raise PdfFormatError(
             "unrecognized object: " + repr(data[offset:offset+32]))
 
-    re_lit_str_token = re.compile(br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")
+    re_lit_str_token = re.compile(
+        br"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))")
     escaped_chars = {
         b"n": b"\n",
         b"r": b"\r",

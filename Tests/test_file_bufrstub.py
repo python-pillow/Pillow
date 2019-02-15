@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import BufrStubImagePlugin, Image
 
@@ -40,7 +40,3 @@ class TestFileBufrStub(PillowTestCase):
 
         # Act / Assert: stub cannot save without an implemented handler
         self.assertRaises(IOError, im.save, tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

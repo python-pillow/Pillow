@@ -1,6 +1,6 @@
 import sys
 
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 # This test is not run automatically.
 #

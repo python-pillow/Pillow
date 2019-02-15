@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -88,7 +88,7 @@ class TestImageConvert(PillowTestCase):
         # Assert
         self.assertNotIn('transparency', im_rgba.info)
         # https://github.com/python-pillow/Pillow/issues/2702
-        self.assertEqual(im_rgba.palette, None)
+        self.assertIsNone(im_rgba.palette)
 
     def test_trns_l(self):
         im = hopper('L')
@@ -230,7 +230,3 @@ class TestImageConvert(PillowTestCase):
         # Assert
         # No change
         self.assert_image_equal(converted_im, im)
-
-
-if __name__ == '__main__':
-    unittest.main()

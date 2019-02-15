@@ -22,6 +22,8 @@ from ._binary import i8, i16le as i16, o8, o16le as o16
 
 import warnings
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 
@@ -64,7 +66,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         flags = i8(s[17])
 
-        self.size = i16(s[12:]), i16(s[14:])
+        self._size = i16(s[12:]), i16(s[14:])
 
         # validate header fields
         if colormaptype not in (0, 1) or\

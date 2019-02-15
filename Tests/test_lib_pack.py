@@ -1,6 +1,6 @@
 import sys
 
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -17,7 +17,7 @@ class TestLibPack(PillowTestCase):
         for x, pixel in enumerate(pixels):
             im.putpixel((x, 0), pixel)
 
-        if isinstance(data, (int)):
+        if isinstance(data, int):
             data_len = data * len(pixels)
             data = bytes(bytearray(range(1, data_len + 1)))
 
@@ -217,7 +217,7 @@ class TestLibUnpack(PillowTestCase):
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
-        if isinstance(data, (int)):
+        if isinstance(data, int):
             data_len = data * len(pixels)
             data = bytes(bytearray(range(1, data_len + 1)))
 
@@ -478,10 +478,6 @@ class TestLibUnpack(PillowTestCase):
             "YCbCr", "YCbCrK", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
         self.assert_unpack(
             "YCbCr", "YCbCrX", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
-        self.assert_unpack(
-            "YCbCr", "YCbCrXX", 5, (1, 2, 3), (6, 7, 8), (11, 12, 13))
-        self.assert_unpack(
-            "YCbCr", "YCbCrXXX", 6, (1, 2, 3), (7, 8, 9), (13, 14, 15))
 
     def test_LAB(self):
         self.assert_unpack(
@@ -624,7 +620,3 @@ class TestLibUnpack(PillowTestCase):
         self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
         self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)
         self.assertRaises(ValueError, self.assert_unpack, "CMYK", "CMYK", 2, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

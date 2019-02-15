@@ -62,6 +62,9 @@ pip-delete-this-directory.txt
 *.log
 *.pot
 
+# viewdoc output
+.long-description.html
+
 # Vim cruft
 .*.swp
 

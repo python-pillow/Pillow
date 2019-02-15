@@ -22,6 +22,8 @@ from ._binary import i8, i16be as i16, i32be as i32, o8
 import os
 import tempfile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 COMPRESSION = {
@@ -118,7 +120,7 @@ class IptcImageFile(ImageFile.ImageFile):
             self.mode = "CMYK"[id]
 
         # size
-        self.size = self.getint((3, 20)), self.getint((3, 30))
+        self._size = self.getint((3, 20)), self.getint((3, 30))
 
         # compression
         try:

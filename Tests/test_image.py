@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL._util import py3
@@ -56,9 +56,8 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.width, 1)
         self.assertEqual(im.height, 2)
 
-        im.size = (3, 4)
-        self.assertEqual(im.width, 3)
-        self.assertEqual(im.height, 4)
+        with self.assertRaises(AttributeError):
+            im.size = (3, 4)
 
     def test_invalid_image(self):
         if py3:
@@ -140,7 +139,6 @@ class TestImage(PillowTestCase):
         # Act/Assert
         # Shouldn't cause AttributeError (#774)
         self.assertFalse(item is None)
-        self.assertFalse(item == None)
         self.assertFalse(item == num)
 
     def test_expand_x(self):
@@ -287,9 +285,9 @@ class TestImage(PillowTestCase):
                           source.alpha_composite, over, (0, 0),
                           "invalid destination")
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0))
+                          source.alpha_composite, over, 0)
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0, 0), (0))
+                          source.alpha_composite, over, (0, 0), 0)
         self.assertRaises(ValueError,
                           source.alpha_composite, over, (0, -1))
         self.assertRaises(ValueError,
@@ -517,7 +515,7 @@ class TestImage(PillowTestCase):
                 self.assertEqual(new_im.palette.tobytes(),
                                  palette_result.tobytes())
             else:
-                self.assertEqual(new_im.palette, None)
+                self.assertIsNone(new_im.palette)
 
         _make_new(im, im_p, im_p.palette)
         _make_new(im_p, im, None)
@@ -562,7 +560,3 @@ class TestRegistry(PillowTestCase):
                                                       'DoesNotExist',
                                                       ('args',),
                                                       extra=('extra',))
-
-
-if __name__ == '__main__':
-    unittest.main()

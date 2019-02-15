@@ -22,6 +22,8 @@
 import re
 from . import Image, ImageFile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 # XBM header
@@ -63,7 +65,7 @@ class XbmImageFile(ImageFile.ImageFile):
                     )
 
             self.mode = "1"
-            self.size = xsize, ysize
+            self._size = xsize, ysize
 
             self.tile = [("xbm", (0, 0)+self.size, m.end(), None)]
 

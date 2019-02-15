@@ -20,7 +20,14 @@ has the following structure:
 {format_directory}
 {data}
 Where:
-{header} = { u32:magic, u32:version, u32:width, u32:height, u32:mipmap_count, u32:format_count }
+{header} = {
+    u32:magic,
+    u32:version,
+    u32:width,
+    u32:height,
+    u32:mipmap_count,
+    u32:format_count
+}
 
 * The "magic" number is "FTEX".
 * "width" and "height" are the dimensions of the texture.
@@ -59,9 +66,9 @@ class FtexImageFile(ImageFile.ImageFile):
     format_description = "Texture File Format (IW2:EOC)"
 
     def _open(self):
-        magic = struct.unpack("<I", self.fp.read(4))
-        version = struct.unpack("<i", self.fp.read(4))
-        self.size = struct.unpack("<2i", self.fp.read(8))
+        struct.unpack("<I", self.fp.read(4))  # magic
+        struct.unpack("<i", self.fp.read(4))  # version
+        self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
         self.mode = "RGB"

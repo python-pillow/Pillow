@@ -265,12 +265,32 @@ class IcnsImageFile(ImageFile.ImageFile):
     def _open(self):
         self.icns = IcnsFile(self.fp)
         self.mode = 'RGBA'
+        self.info['sizes'] = self.icns.itersizes()
         self.best_size = self.icns.bestsize()
         self.size = (self.best_size[0] * self.best_size[2],
                      self.best_size[1] * self.best_size[2])
-        self.info['sizes'] = self.icns.itersizes()
         # Just use this to see if it's loaded or not yet.
         self.tile = ('',)
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        info_size = value
+        if info_size not in self.info['sizes'] and len(info_size) == 2:
+            info_size = (info_size[0], info_size[1], 1)
+        if info_size not in self.info['sizes'] and len(info_size) == 3 and \
+           info_size[2] == 1:
+            simple_sizes = [(size[0] * size[2], size[1] * size[2])
+                            for size in self.info['sizes']]
+            if value in simple_sizes:
+                info_size = self.info['sizes'][simple_sizes.index(value)]
+        if info_size not in self.info['sizes']:
+            raise ValueError(
+                "This is not one of the allowed sizes of this image")
+        self._size = value
 
     def load(self):
         if len(self.size) == 3:
@@ -291,6 +311,8 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
+        if self._exclusive_fp:
+            self.fp.close()
         self.fp = None
         self.icns = None
         self.tile = ()
@@ -313,6 +335,7 @@ def _save(im, fp, filename):
     provided_images = {im.width: im
                        for im in im.encoderinfo.get("append_images", [])}
     last_w = None
+    second_path = None
     for w in [16, 32, 128, 256, 512]:
         prefix = 'icon_{}x{}'.format(w, w)
 

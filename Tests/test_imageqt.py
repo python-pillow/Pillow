@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import ImageQt
 
@@ -78,7 +78,3 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
     def test_image(self):
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             ImageQt.ImageQt(hopper(mode))
-
-
-if __name__ == '__main__':
-    unittest.main()

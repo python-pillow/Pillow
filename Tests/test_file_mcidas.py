@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, McIdasImagePlugin
 
@@ -28,7 +28,3 @@ class TestFileMcIdas(PillowTestCase):
         self.assertEqual(im.size, (1800, 400))
         im2 = Image.open(saved_file)
         self.assert_image_equal(im, im2)
-
-
-if __name__ == '__main__':
-    unittest.main()

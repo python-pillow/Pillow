@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
@@ -39,6 +39,12 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jp2')
+
+    def test_jpf(self):
+        im = Image.open('Tests/images/balloon.jpf')
+        self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jpx')
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -104,6 +110,22 @@ class TestFileJpeg2k(PillowTestCase):
         im.reduce = 2
         im.load()
         self.assertEqual(im.size, (160, 120))
+
+    def test_layers_type(self):
+        outfile = self.tempfile('temp_layers.jp2')
+        for quality_layers in [
+            [100, 50, 10],
+            (100, 50, 10),
+            None
+        ]:
+            test_card.save(outfile, quality_layers=quality_layers)
+
+        for quality_layers in [
+            'quality_layers',
+            ('100', '50', '10')
+        ]:
+            self.assertRaises(ValueError, test_card.save, outfile,
+                              quality_layers=quality_layers)
 
     def test_layers(self):
         out = BytesIO()
@@ -188,7 +210,3 @@ class TestFileJpeg2k(PillowTestCase):
 
         # Assert
         self.assertEqual(p.image.size, (640, 480))
-
-
-if __name__ == '__main__':
-    unittest.main()

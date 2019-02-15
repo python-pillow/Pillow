@@ -197,7 +197,7 @@ class UnsharpMask(MultibandFilter):
 
     .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
 
-    """
+    """  # noqa: E501
     name = "UnsharpMask"
 
     def __init__(self, radius=2, percent=150, threshold=3):
@@ -467,7 +467,7 @@ class Color3DLUT(MultibandFilter):
     def __repr__(self):
         r = [
             "{} from {}".format(self.__class__.__name__,
-                                  self.table.__class__.__name__),
+                                self.table.__class__.__name__),
             "size={:d}x{:d}x{:d}".format(*self.size),
             "channels={:d}".format(self.channels),
         ]

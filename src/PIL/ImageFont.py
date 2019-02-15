@@ -72,7 +72,7 @@ class ImageFont(object):
                 try:
                     fullname = os.path.splitext(filename)[0] + ext
                     image = Image.open(fullname)
-                except:
+                except Exception:
                     pass
                 else:
                     if image and image.mode in ("1", "L"):
@@ -203,7 +203,7 @@ class FreeTypeFont(object):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=self.layout_engine if layout_engine is None else layout_engine
+            layout_engine=layout_engine or self.layout_engine
         )
 
 

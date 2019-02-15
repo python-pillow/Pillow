@@ -20,6 +20,8 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 
@@ -59,7 +61,7 @@ class SunImageFile(ImageFile.ImageFile):
 
         offset = 32
 
-        self.size = i32(s[4:8]), i32(s[8:12])
+        self._size = i32(s[4:8]), i32(s[8:12])
 
         depth = i32(s[12:16])
         # data_length = i32(s[16:20])   # unreliable, ignore.

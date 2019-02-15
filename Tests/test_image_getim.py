@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL._util import py3
 
 
@@ -12,7 +12,3 @@ class TestImageGetIm(PillowTestCase):
             self.assertIn("PyCapsule", type_repr)
 
         self.assertIsInstance(im.im.id, int)
-
-
-if __name__ == '__main__':
-    unittest.main()

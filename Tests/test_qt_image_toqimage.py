@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQtTestCase
+from .helper import PillowTestCase, hopper
+from .test_imageqt import PillowQtTestCase
 
 from PIL import ImageQt, Image
 
@@ -70,8 +70,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
     def test_segfault(self):
         app = QApplication([])
         ex = Example()
-        assert(app)  # Silence warning
-        assert(ex)   # Silence warning
+        assert app  # Silence warning
+        assert ex  # Silence warning
 
 
 if ImageQt.qt_is_installed:
@@ -86,12 +86,8 @@ if ImageQt.qt_is_installed:
 
             pixmap1 = QtGui.QPixmap.fromImage(qimage)
 
-            hbox = QHBoxLayout(self)
+            QHBoxLayout(self)  # hbox
 
             lbl = QLabel(self)
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
-
-
-if __name__ == '__main__':
-    unittest.main()

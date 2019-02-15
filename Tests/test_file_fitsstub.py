@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import FitsStubImagePlugin, Image
 
@@ -44,7 +44,3 @@ class TestFileFitsStub(PillowTestCase):
         self.assertRaises(
             IOError,
             FitsStubImagePlugin._save, im, dummy_fp, dummy_filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -119,11 +119,11 @@ class ImageDraw(object):
                 fill = self.draw.draw_ink(fill, self.mode)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None):
+    def arc(self, xy, start, end, fill=None, width=0):
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
-            self.draw.draw_arc(xy, start, end, ink)
+            self.draw.draw_arc(xy, start, end, ink, width)
 
     def bitmap(self, xy, bitmap, fill=None):
         """Draw a bitmap."""
@@ -134,21 +134,21 @@ class ImageDraw(object):
         if ink is not None:
             self.draw.draw_bitmap(xy, bitmap.im, ink)
 
-    def chord(self, xy, start, end, fill=None, outline=None):
+    def chord(self, xy, start, end, fill=None, outline=None, width=0):
         """Draw a chord."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_chord(xy, start, end, fill, 1)
         if ink is not None and ink != fill:
-            self.draw.draw_chord(xy, start, end, ink, 0)
+            self.draw.draw_chord(xy, start, end, ink, 0, width)
 
-    def ellipse(self, xy, fill=None, outline=None):
+    def ellipse(self, xy, fill=None, outline=None, width=0):
         """Draw an ellipse."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_ellipse(xy, fill, 1)
         if ink is not None and ink != fill:
-            self.draw.draw_ellipse(xy, ink, 0)
+            self.draw.draw_ellipse(xy, ink, 0, width)
 
     def line(self, xy, fill=None, width=0, joint=None):
         """Draw a line, or a connected sequence of line segments."""
@@ -218,13 +218,13 @@ class ImageDraw(object):
         if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
-    def pieslice(self, xy, start, end, fill=None, outline=None):
+    def pieslice(self, xy, start, end, fill=None, outline=None, width=0):
         """Draw a pieslice."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_pieslice(xy, start, end, fill, 1)
         if ink is not None and ink != fill:
-            self.draw.draw_pieslice(xy, start, end, ink, 0)
+            self.draw.draw_pieslice(xy, start, end, ink, 0, width)
 
     def point(self, xy, fill=None):
         """Draw one or more individual pixels."""
@@ -240,13 +240,13 @@ class ImageDraw(object):
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
-    def rectangle(self, xy, fill=None, outline=None):
+    def rectangle(self, xy, fill=None, outline=None, width=0):
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
         if ink is not None and ink != fill:
-            self.draw.draw_rectangle(xy, ink, 0)
+            self.draw.draw_rectangle(xy, ink, 0, width)
 
     def _multiline_check(self, text):
         """Draw text."""
@@ -391,8 +391,8 @@ def floodfill(image, xy, value, border=None, thresh=0):
         pixel.
     :param thresh: Optional threshold value which specifies a maximum
         tolerable difference of a pixel value from the 'background' in
-        order for it to be replaced. Useful for filling regions of non-
-        homogeneous, but similar, colors.
+        order for it to be replaced. Useful for filling regions of
+        non-homogeneous, but similar, colors.
     """
     # based on an implementation by Eric S. Raymond
     # amended by yo1995 @20180806
@@ -406,7 +406,9 @@ def floodfill(image, xy, value, border=None, thresh=0):
     except (ValueError, IndexError):
         return  # seed point outside image
     edge = {(x, y)}
-    full_edge = set()  # use a set to keep record of current and previous edge pixels to reduce memory consumption
+    # use a set to keep record of current and previous edge pixels
+    # to reduce memory consumption
+    full_edge = set()
     while edge:
         new_edge = set()
         for (x, y) in edge:  # 4 adjacent method

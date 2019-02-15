@@ -20,6 +20,8 @@
 
 from . import Image, JpegImagePlugin
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -83,6 +85,15 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     def tell(self):
         return self.__frame
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 # ---------------------------------------------------------------------

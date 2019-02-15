@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -16,7 +16,7 @@ class TestFileWebpLossless(PillowTestCase):
             self.skipTest('WebP support not installed')
             return
 
-        if (_webp.WebPDecoderVersion() < 0x0200):
+        if _webp.WebPDecoderVersion() < 0x0200:
             self.skipTest('lossless not included')
 
         self.rgb_mode = "RGB"
@@ -36,7 +36,3 @@ class TestFileWebpLossless(PillowTestCase):
         image.getdata()
 
         self.assert_image_equal(image, hopper(self.rgb_mode))
-
-
-if __name__ == '__main__':
-    unittest.main()

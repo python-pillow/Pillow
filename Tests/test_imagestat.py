@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageStat
@@ -55,7 +55,3 @@ class TestImageStat(PillowTestCase):
         self.assertEqual(st.rms[0], 128)
         self.assertEqual(st.var[0], 0)
         self.assertEqual(st.stddev[0], 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

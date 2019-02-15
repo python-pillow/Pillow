@@ -11,10 +11,10 @@ if py3:
         return isinstance(f, (bytes, str))
 else:
     def isStringType(t):
-        return isinstance(t, basestring)
+        return isinstance(t, basestring)  # noqa: F821
 
     def isPath(f):
-        return isinstance(f, basestring)
+        return isinstance(f, basestring)  # noqa: F821
 
 
 # Checks if an object is a string, and that it points to a directory.

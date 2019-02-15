@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, MspImagePlugin
 
@@ -78,7 +78,3 @@ class TestFileMsp(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(IOError, im.save, filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

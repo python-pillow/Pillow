@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, fromstring, tostring
+from .helper import PillowTestCase, fromstring, tostring
 
 from PIL import Image
 
@@ -69,7 +69,3 @@ class TestImageDraft(PillowTestCase):
         im = self.draft_roundtrip('L', (128, 128), None, (64, 64))
         im.draft(None, (64, 64))
         im.load()
-
-
-if __name__ == '__main__':
-    unittest.main()

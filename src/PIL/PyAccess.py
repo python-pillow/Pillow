@@ -53,6 +53,8 @@ class PyAccess(object):
 
         # Keep pointer to im object to prevent dereferencing.
         self._im = img.im
+        if self._im.mode == "P":
+            self._palette = img.palette
 
         # Debugging is polluting test traces, only useful here
         # when hacking on PyAccess
@@ -74,7 +76,18 @@ class PyAccess(object):
         """
         if self.readonly:
             raise ValueError('Attempt to putpixel a read only image')
-        (x, y) = self.check_xy(xy)
+        (x, y) = xy
+        if x < 0:
+            x = self.xsize + x
+        if y < 0:
+            y = self.ysize + y
+        (x, y) = self.check_xy((x, y))
+
+        if self._im.mode == "P" and \
+           isinstance(color, (list, tuple)) and len(color) in [3, 4]:
+            # RGB or RGBA value for a P image
+            color = self._palette.getcolor(color)
+
         return self.set_pixel(x, y, color)
 
     def __getitem__(self, xy):
@@ -88,8 +101,12 @@ class PyAccess(object):
         :returns: a pixel value for single band images, a tuple of
           pixel values for multiband images.
         """
-
-        (x, y) = self.check_xy(xy)
+        (x, y) = xy
+        if x < 0:
+            x = self.xsize + x
+        if y < 0:
+            y = self.ysize + y
+        (x, y) = self.check_xy((x, y))
         return self.get_pixel(x, y)
 
     putpixel = __setitem__
@@ -205,7 +222,7 @@ class _PyAccessI16_L(PyAccess):
         except TypeError:
             color = min(color[0], 65535)
 
-        pixel.l = color & 0xFF
+        pixel.l = color & 0xFF  # noqa: E741
         pixel.r = color >> 8
 
 
@@ -222,10 +239,10 @@ class _PyAccessI16_B(PyAccess):
         pixel = self.pixels[y][x]
         try:
             color = min(color, 65535)
-        except:
+        except Exception:
             color = min(color[0], 65535)
 
-        pixel.l = color >> 8
+        pixel.l = color >> 8  # noqa: E741
         pixel.r = color & 0xFF
 
 

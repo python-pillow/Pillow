@@ -1,4 +1,4 @@
-import helper
+from . import helper
 import timeit
 
 import sys
