@@ -89,8 +89,8 @@ class ImageFile(Image.Image):
 
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
-        self.fp = None # type: Optional[file]
-        
+        self.fp = None  # type: Optional[file]
+
         if isPath(fp):
             # filename
             self.fp = open(fp, "rb")
@@ -121,8 +121,8 @@ class ImageFile(Image.Image):
     if sys.version_info >= (3, 4, 0):
         def __del__(self):
             # type: () -> None
-            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
-                and self.fp and self._exclusive_fp):
+            if hasattr(self, 'fp') and hasattr(self, '_exclusive_fp') and \
+               self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = None
 
@@ -142,12 +142,12 @@ class ImageFile(Image.Image):
             self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
-        
+
         if getattr(self, 'map', None):
             self.map = None
 
         Image.Image.close(self)
-        
+
     def draft(self, mode, size):
         """Set draft mode"""
 

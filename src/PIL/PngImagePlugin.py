@@ -164,7 +164,7 @@ class ChunkStream(object):
         """Read checksum.  Used if the C module is not present"""
 
         self.fp.read(4)
-        
+
     def verify(self, endchunk=b"IEND"):
 
         # Simple approach; just calculate checksum for all remaining

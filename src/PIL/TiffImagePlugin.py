@@ -855,8 +855,8 @@ class ImageFileDirectory_v2(MutableMapping):
         return offset
 
 
-ImageFileDirectory_v2._load_dispatch = _load_dispatch # type: ignore
-ImageFileDirectory_v2._write_dispatch = _write_dispatch # type: ignore
+ImageFileDirectory_v2._load_dispatch = _load_dispatch  # type: ignore
+ImageFileDirectory_v2._write_dispatch = _write_dispatch  # type: ignore
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
     setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])

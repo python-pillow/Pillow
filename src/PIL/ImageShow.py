@@ -81,8 +81,8 @@ class Viewer(object):
 
     # hook methods
 
-    format = None # type: str
-    options = {} # type: Dict[Any, Any]
+    format = None  # type: str
+    options = {}  # type: Dict[Any, Any]
 
     def get_format(self, image):
         """Return format name, or None to save as PGM/PPM"""

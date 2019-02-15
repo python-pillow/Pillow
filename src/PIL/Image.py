@@ -34,7 +34,7 @@ if False:
     from . import ImagePalette
     from .ImageFilter import Filter
     from .ImageFile import PyDecoder
-    PyEncoder = Any  ## FIXME TYPING: PyEncoder is not defined anywhere? Needs stub/class?
+    PyEncoder = Any  # FIXME TYPING: PyEncoder is not defined anywhere? Needs stub/class?
     from ._imaging import ImagingCore
     from . import PyAccess, ImageFile
 
@@ -118,7 +118,7 @@ try:
                            __version__))
 
 except ImportError as v:
-    core = _imaging_not_installed() # type: ignore
+    core = _imaging_not_installed()  # type: ignore
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -567,22 +567,22 @@ class Image(object):
     * :py:func:`~PIL.Image.new`
     * :py:func:`~PIL.Image.frombytes`
     """
-    format = None             # type: Optional[Text]
-    format_description = None # type: Optional[Text]
+    format = None              # type: Optional[Text]
+    format_description = None  # type: Optional[Text]
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):
         # type: () -> None
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None       # type: Optional[ImagingCore]
-        self.mode = ""       # type: Mode
-        self._size = (0, 0)  # type: Size
-        self.palette = None  # type: Optional[ImagePalette.ImagePalette]
-        self.info = {}       # type: Dict[Text, Any]
+        self.im = None         # type: Optional[ImagingCore]
+        self.mode = ""         # type: Mode
+        self._size = (0, 0)    # type: Size
+        self.palette = None    # type: Optional[ImagePalette.ImagePalette]
+        self.info = {}         # type: Dict[Text, Any]
         self.category = NORMAL
-        self.readonly = 0    # type: int
-        self.pyaccess = None # type: Optional[PyAccess.PyAccess]
+        self.readonly = 0      # type: int
+        self.pyaccess = None   # type: Optional[PyAccess.PyAccess]
 
     @property
     def width(self):
@@ -638,7 +638,7 @@ class Image(object):
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = deferred_error(ValueError("Operation on closed image")) # type: ignore
+        self.im = deferred_error(ValueError("Operation on closed image"))  # type: ignore
 
     def _copy(self):
         # type: () -> None
@@ -657,7 +657,7 @@ class Image(object):
         # type: (Optional[Text], Optional[Text], **Any) -> Text
         import tempfile
 
-        suffix = '' # type: Text
+        suffix = ''  # type: Text
         if format:
             suffix = '.'+format
 
@@ -718,7 +718,7 @@ class Image(object):
     def __array_interface__(self):
         # type: () -> ArrayInterfaceStruct
         # numpy array interface support
-        new = {} # type: ArrayInterfaceStruct
+        new = {}  # type: ArrayInterfaceStruct
         shape, typestr = _conv_type_shape(self)
         new['shape'] = shape
         new['typestr'] = typestr
@@ -772,7 +772,7 @@ class Image(object):
                       or individual arguments
         :rtype: A bytes object.
         """
-        encoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
+        encoder_args = args  # type: Union[str, Tuple[Any,...], List[Any]]
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -836,7 +836,7 @@ class Image(object):
         but loads data into this image instead of creating a new image object.
         """
 
-        decoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
+        decoder_args = args  # type: Union[str, Tuple[Any,...], List[Any]]
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
             decoder_args = args[0]
@@ -1239,7 +1239,7 @@ class Image(object):
         self.load()
 
         if callable(kernel):
-            image_filter = kernel() # type: Filter
+            image_filter = kernel()  # type: Filter
         else:
             image_filter = kernel
         if not hasattr(image_filter, "filter"):
@@ -1296,7 +1296,7 @@ class Image(object):
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = [] # type: List[Tuple[int, Color]]
+            out = []  # type: List[Tuple[int, Color]]
             for i in range(256):
                 if h[i]:
                     out.append((h[i], i))
@@ -1344,7 +1344,7 @@ class Image(object):
         if self.im.bands > 1:
             extrema = []
             for i in range(self.im.bands):
-                ex = self.im.getband(i).getextrema() # type: MultiChannelExtrema
+                ex = self.im.getband(i).getextrema()  # type: MultiChannelExtrema
                 extrema.append(ex)
             return tuple(extrema)
         return self.im.getextrema()
@@ -1372,7 +1372,7 @@ class Image(object):
         self.load()
         try:
             if py3:
-                return list(self.im.getpalette()) # type: ignore
+                return list(self.im.getpalette())  # type: ignore
             else:
                 return [i8(c) for c in self.im.getpalette()]
         except ValueError:
@@ -1485,16 +1485,16 @@ class Image(object):
         :param mask: An optional mask image.
         """
 
-        mask_img = None # type: Optional[Image]
-        box_lurd = None # type: Optional[LURD]
-        box_coord = None # type: Optional[Coord]
-        paste_color = None # type: Optional[Color]
-        paste_imcore = None # type: Optional[ImagingCore]
-        paste_im = None # type: Optional[Image]
+        mask_img = None  # type: Optional[Image]
+        box_lurd = None  # type: Optional[LURD]
+        box_coord = None  # type: Optional[Coord]
+        paste_color = None  # type: Optional[Color]
+        paste_imcore = None  # type: Optional[ImagingCore]
+        paste_im = None  # type: Optional[Image]
 
         if isImageType(box) and mask is None:
             # abbreviated paste(im, mask) syntax
-            mask_img = box # type: ignore
+            mask_img = box  # type: ignore
             box = None
 
         if box is None:
@@ -1520,10 +1520,10 @@ class Image(object):
             raise ValueError("Incorrect Paste specification")
 
         if len(box) == 4:
-            box_lurd = box # type: ignore
+            box_lurd = box  # type: ignore
         elif len(box) == 2:
             # upper left corner given; get size from image or mask
-            box_coord = box # type: ignore
+            box_coord = box  # type: ignore
             if paste_im:
                 size = paste_im.size
             elif mask_img:
@@ -1533,7 +1533,7 @@ class Image(object):
                 raise ValueError(
                     "cannot determine region size; use 4-item box"
                     )
-            box_lurd = box_coord + (box_coord[0]+size[0], box_coord[1]+size[1]) # type: ignore
+            box_lurd = box_coord + (box_coord[0]+size[0], box_coord[1]+size[1])  # type: ignore
         else:
             raise ValueError("Incorrect Box specification")
 
@@ -1573,22 +1573,22 @@ class Image(object):
         if min(dest) < 0:
             raise ValueError("Destination must be non-negative")
 
-        source_lurd = None # type: LURD
+        source_lurd = None  # type: LURD
 
         if len(source) == 2:
-            source_lurd = source + im.size # type: ignore
+            source_lurd = source + im.size  # type: ignore
         else:
-            source_lurd = source # type: ignore
+            source_lurd = source  # type: ignore
 
         # over image, crop if it's not the whole thing.
-        if source_lurd == (0,0) + im.size:
+        if source_lurd == (0, 0) + im.size:
             overlay = im
         else:
             overlay = im.crop(source_lurd)
 
         # target for the paste
-        box = None # type: LURD
-        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height) # type: ignore
+        box = None  # type: LURD
+        box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)  # type: ignore
 
         # destination image. don't copy if we're using the whole image.
         if box == (0, 0) + self.size:
@@ -1675,10 +1675,10 @@ class Image(object):
         else:
             band = 3
 
-        alpha_img = None # type: Image
+        alpha_img = None  # type: Image
         if isImageType(alpha):
             # alpha layer
-            alpha_img = alpha # type: ignore
+            alpha_img = alpha  # type: ignore
             if alpha_img.mode not in ("1", "L"):
                 raise ValueError("illegal image mode")
             alpha_img.load()
@@ -1687,8 +1687,8 @@ class Image(object):
         else:
             # constant alpha
             try:
-                alpha_int = None # type: int
-                alpha_int = alpha # type: ignore
+                alpha_int = None  # type: int
+                alpha_int = alpha  # type: ignore
                 self.im.fillband(band, alpha_int)
             except (AttributeError, ValueError):
                 # do things the hard way
@@ -1741,7 +1741,7 @@ class Image(object):
                 if py3:
                     data = bytes(data)
                 else:
-                    data = "".join(chr(x) for x in data) # type: ignore
+                    data = "".join(chr(x) for x in data)  # type: ignore
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "P"
         self.palette = palette
@@ -1888,15 +1888,15 @@ class Image(object):
         ):
             raise ValueError("unknown resampling filter")
 
-        size = tuple(size) # type: ignore
+        size = tuple(size)  # type: ignore
         # Typing note -- historically we've allowed Iterables of
         # len==2 as sizes, but technically they're supposed to be
         # 2-tuples.
 
         if box is None:
-            box = (0, 0) + self.size # type: ignore
+            box = (0, 0) + self.size  # type: ignore
         else:
-            box = tuple(box) # type: ignore
+            box = tuple(box)  # type: ignore
 
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
@@ -2057,16 +2057,16 @@ class Image(object):
 
         filename = ""
         open_fp = False
-        _fp = None # type: BinaryIO
+        _fp = None  # type: BinaryIO
         if isPath(fp) or (HAS_PATHLIB and isinstance(fp, Path)):
             filename = str(fp)
             open_fp = True
         else:
-            _fp = fp # type: ignore
+            _fp = fp  # type: ignore
 
         if not filename and hasattr(_fp, "name") and isPath(_fp.name):
-                # only set the name for metadata purposes
-                filename = _fp.name
+            # only set the name for metadata purposes
+            filename = _fp.name
 
         # may mutate self!
         self.load()
@@ -2199,7 +2199,7 @@ class Image(object):
                 raise ValueError(
                     'The image has no channel "{}"'.format(channel))
         else:
-            channel_int = channel # type: ignore
+            channel_int = channel  # type: ignore
 
         return self._new(self.im.getband(channel_int))
 
@@ -2321,7 +2321,7 @@ class Image(object):
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects
             # ignoring for typing, this is old compatibility
-            method, data = method.getdata() # type: ignore
+            method, data = method.getdata()  # type: ignore
 
         if data is None:
             raise ValueError("missing method data")
@@ -2329,14 +2329,14 @@ class Image(object):
         im = new(self.mode, size, fillcolor)
         if method == MESH:
             # list of quads
-            data_mesh = None # type: List[Tuple[LURD,LURD]]
-            data_mesh = data # type: ignore
+            data_mesh = None  # type: List[Tuple[LURD,LURD]]
+            data_mesh = data  # type: ignore
             for box, quad in data_mesh:
                 im.__transformer(box, self, QUAD, quad, resample,
                                  fillcolor is None)
         else:
-            box_lurd = None # type: LURD
-            box_lurd = (0, 0)+size # type: ignore
+            box_lurd = None  # type: LURD
+            box_lurd = (0, 0)+size  # type: ignore
             im.__transformer(box_lurd, self, method, data,
                              resample, fillcolor is None)
 
@@ -2344,7 +2344,8 @@ class Image(object):
 
     def __transformer(self, box, image, method, data,
                       resample=NEAREST, fill=1):
-        # type: (LURD, Image, int, Any, int, Any) -> None  # FIXME TYPING: What are Any here?
+        # type: (LURD, Image, int, Any, int, Any) -> None
+        # FIXME TYPING: What are Any here?
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -2443,6 +2444,7 @@ class ImagePointHandler(object):
         # type (T) -> T
         return s
 
+
 class ImageTransformHandler(object):
     # used as a mixin by geometry transforms (for use with im.transform)
     pass
@@ -2539,7 +2541,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     _check_size(size)
 
-    decoder_args = args # type: Union[str, Tuple[Any,...], List[Any]]
+    decoder_args = args  # type: Union[str, Tuple[Any,...], List[Any]]
     # may pass tuple instead of argument list
     if len(args) == 1 and isinstance(args[0], tuple):
         decoder_args = args[0]
@@ -2615,7 +2617,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             # typing -- Getting this to cleanly realize that args is a
             # correctly formatted tuple is harder than it's worth
             im = im._new(
-                core.map_buffer(data, size, decoder_name, None, 0, args)) # type: ignore
+                core.map_buffer(data, size, decoder_name, None, 0, args))  # type: ignore
             im.readonly = 1
             return im
 
@@ -2672,7 +2674,7 @@ def fromarray(obj, mode=None):
 
     size = shape[1], shape[0]
 
-    obj_bytes = None # type: bytes
+    obj_bytes = None  # type: bytes
     if strides is not None:
         if hasattr(obj, 'tobytes'):
             obj_bytes = obj.tobytes()
@@ -2683,7 +2685,7 @@ def fromarray(obj, mode=None):
     # and obj_bytes, if it exists, is a bytes exporting a buffer interface.
     # Unfortunately at this point, there's no protocol for the buffer interface
     # and due to it's c-level implementation, I don't see how to make one.
-    return frombuffer(mode, size, obj_bytes or obj, "raw", rawmode, 0, 1) # type: ignore
+    return frombuffer(mode, size, obj_bytes or obj, "raw", rawmode, 0, 1)  # type: ignore
 
 
 def fromqimage(im):
@@ -2779,7 +2781,7 @@ def open(fp, mode="r"):
 
     exclusive_fp = False
     filename = ""
-    _fp = None # type: BinaryIO
+    _fp = None  # type: BinaryIO
     if isPath(fp):
         filename = str(fp)
     elif HAS_PATHLIB and isinstance(fp, Path):
@@ -2789,7 +2791,7 @@ def open(fp, mode="r"):
         _fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:
-        _fp = fp # type: ignore
+        _fp = fp  # type: ignore
 
     try:
         _fp.seek(0)
