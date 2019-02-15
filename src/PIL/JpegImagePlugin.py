@@ -786,7 +786,8 @@ def jpeg_factory(fp=None, filename=None):
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
-            im = MpoImageFile(fp, filename)
+            # Don't reload everything, just convert it.
+            im = MpoImageFile.adopt(im, mpheader)
     except (TypeError, IndexError):
         # It is really a JPEG
         pass
