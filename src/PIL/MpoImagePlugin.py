@@ -46,7 +46,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def _open(self):
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
-        self.mpinfo = self._getmp()
+        self._after_jpeg_open(self._getmp())
+
+    def _after_jpeg_open(self, mpheader):
+        self.mpinfo = mpheader
         self.__framecount = self.mpinfo[0xB001]
         self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset']
                             for mpent in self.mpinfo[0xB002]]
