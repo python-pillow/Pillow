@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, TarIO
 
@@ -34,7 +34,3 @@ class TestFileTar(PillowTestCase):
     def test_contextmanager(self):
         with TarIO.TarIO(TEST_TAR_FILE, 'hopper.jpg'):
             pass
-
-
-if __name__ == '__main__':
-    unittest.main()

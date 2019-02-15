@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 from PIL._util import py3
@@ -560,7 +560,3 @@ class TestRegistry(PillowTestCase):
                                                       'DoesNotExist',
                                                       ('args',),
                                                       extra=('extra',))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Pillow (PIL Fork)'
-copyright = u'1995-2011 Fredrik Lundh, 2010-2018 Alex Clark and Contributors'
+copyright = u'1995-2011 Fredrik Lundh, 2010-2019 Alex Clark and Contributors'
 author = u'Fredrik Lundh, Alex Clark and Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -140,7 +140,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['_static', 'resources']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -286,3 +286,7 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+
+def setup(app):
+    app.add_javascript('js/script.js')

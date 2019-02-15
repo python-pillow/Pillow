@@ -1,4 +1,4 @@
-from helper import PillowTestCase, unittest
+from .helper import PillowTestCase, unittest
 import sys
 
 from PIL import Image
@@ -23,7 +23,3 @@ class TestMap(PillowTestCase):
             im.load()
 
         Image.MAX_IMAGE_PIXELS = max_pixels
-
-
-if __name__ == '__main__':
-    unittest.main()

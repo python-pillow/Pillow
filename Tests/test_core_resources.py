@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 import sys
 
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image
 
 
@@ -179,7 +179,3 @@ class TestEnvVars(PillowTestCase):
         self.assert_warning(
             UserWarning, Image._apply_env_variables,
             {'PILLOW_BLOCKS_MAX': 'wat'})
-
-
-if __name__ == '__main__':
-    unittest.main()

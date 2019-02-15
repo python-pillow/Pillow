@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL._util import py3
@@ -129,7 +129,3 @@ class TestFormatHSV(PillowTestCase):
         self.assert_image_similar(converted.getchannel(2),
                                   comparable.getchannel(2),
                                   3, "B conversion is wrong")
-
-
-if __name__ == '__main__':
-    unittest.main()

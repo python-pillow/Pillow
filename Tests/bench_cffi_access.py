@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 # Not running this test by default. No DOS against Travis CI.
 

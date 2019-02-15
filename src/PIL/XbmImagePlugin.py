@@ -22,6 +22,8 @@
 import re
 from . import Image, ImageFile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 # XBM header

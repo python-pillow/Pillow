@@ -5,7 +5,6 @@ PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
 pythons = {'27': {'compiler': 7, 'vc': 2008},
            'pypy2': {'compiler': 7, 'vc': 2008},
-           '34': {'compiler': 7.1, 'vc': 2010},
            '35': {'compiler': 7.1, 'vc': 2015},
            '36': {'compiler': 7.1, 'vc': 2015},
            '37': {'compiler': 7.1, 'vc': 2015}}
@@ -34,7 +33,7 @@ libs = {
         'dir': 'tiff-4.0.10',
     },
     'freetype': {
-        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz',
+        'url': 'https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz',  # noqa: E501
         'filename': PILLOW_DEPENDS_DIR + 'freetype-2.9.1.tar.gz',
         'dir': 'freetype-2.9.1',
     },
@@ -42,6 +41,11 @@ libs = {
         'url': SF_MIRROR+'/project/lcms/lcms/2.7/lcms2-2.7.zip',
         'filename': PILLOW_DEPENDS_DIR + 'lcms2-2.7.zip',
         'dir': 'lcms2-2.7',
+    },
+    'ghostscript': {
+        'url': 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs926/ghostscript-9.26.tar.gz',  # noqa: E501
+        'filename': PILLOW_DEPENDS_DIR + 'ghostscript-9.26.tar.gz',
+        'dir': 'ghostscript-9.26',
     },
     'tcl-8.5': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tcl8519-src.zip',
@@ -66,9 +70,9 @@ libs = {
         'version': '8.6.9',
     },
     'webp': {
-        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-1.0.1.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'libwebp-1.0.1.tar.gz',
-        'dir': 'libwebp-1.0.1',
+        'url': 'http://downloads.webmproject.org/releases/webp/libwebp-1.0.2.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'libwebp-1.0.2.tar.gz',
+        'dir': 'libwebp-1.0.2',
     },
     'openjpeg': {
         'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.3.0/openjpeg-2.3.0.tar.gz',
@@ -99,24 +103,6 @@ compilers = {
         }
     },
     7.1: {
-        2010: {
-            64: {
-                'env_version': 'v7.1',
-                'vc_version': '2010',
-                'env_flags': '/x64 /vista',
-                'inc_dir': 'msvcr10-x64',
-                'platform': 'x64',
-                'webp_platform': 'x64',
-            },
-            32: {
-                'env_version': 'v7.1',
-                'vc_version': '2010',
-                'env_flags': '/x86 /vista',
-                'inc_dir': 'msvcr10-x32',
-                'platform': 'Win32',
-                'webp_platform': 'x86',
-            }
-        },
         2015: {
             64: {
                 'env_version': 'v7.1',

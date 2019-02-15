@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageShow
@@ -14,6 +14,9 @@ class TestImageShow(PillowTestCase):
         # Test registering a viewer that is not a class
         ImageShow.register("not a class")
 
+        # Restore original state
+        ImageShow._viewers.pop()
+
     def test_show(self):
         class TestViewer:
             methodCalled = False
@@ -28,6 +31,9 @@ class TestImageShow(PillowTestCase):
         self.assertTrue(ImageShow.show(im))
         self.assertTrue(viewer.methodCalled)
 
+        # Restore original state
+        ImageShow._viewers.pop(0)
+
     def test_viewer(self):
         viewer = ImageShow.Viewer()
 
@@ -35,6 +41,6 @@ class TestImageShow(PillowTestCase):
 
         self.assertRaises(NotImplementedError, viewer.get_command, None)
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_viewers(self):
+        for viewer in ImageShow._viewers:
+            viewer.get_command('test.jpg')

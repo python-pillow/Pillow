@@ -1,6 +1,6 @@
 import os.path
 
-from helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 from PIL import Image, ImageColor, ImageDraw
 
 BLACK = (0, 0, 0)
@@ -762,7 +762,3 @@ class TestImageDraw(PillowTestCase):
                     expected = ("Tests/images/imagedraw_outline"
                                 "_{}_{}.png".format(operation, mode))
                     self.assert_image_similar(im, Image.open(expected), 1)
-
-
-if __name__ == '__main__':
-    unittest.main()

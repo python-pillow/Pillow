@@ -73,6 +73,10 @@
 
 #include "Python.h"
 
+#ifdef HAVE_LIBJPEG
+#include "jconfig.h"
+#endif
+
 #ifdef HAVE_LIBZ
 #include "zlib.h"
 #endif
@@ -1049,8 +1053,10 @@ _gaussian_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingGaussianBlur(imOut, imIn, radius, passes))
+    if (!ImagingGaussianBlur(imOut, imIn, radius, passes)) {
+        ImagingDelete(imOut);
         return NULL;
+    }
 
     return PyImagingNew(imOut);
 }
@@ -1414,7 +1420,7 @@ _putdata(ImagingObject* self, PyObject* args)
     image = self->image;
 
     n = PyObject_Length(data);
-    if (n > (Py_ssize_t) (image->xsize * image->ysize)) {
+    if (n > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
         PyErr_SetString(PyExc_TypeError, "too many data entries");
         return NULL;
     }
@@ -1945,8 +1951,10 @@ _box_blur(ImagingObject* self, PyObject* args)
     if (!imOut)
         return NULL;
 
-    if (!ImagingBoxBlur(imOut, imIn, radius, n))
+    if (!ImagingBoxBlur(imOut, imIn, radius, n)) {
+        ImagingDelete(imOut);
         return NULL;
+    }
 
     return PyImagingNew(imOut);
 }
@@ -2592,6 +2600,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
         return NULL;
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
         return NULL;
     }
 
@@ -2629,6 +2638,7 @@ _draw_bitmap(ImagingDrawObject* self, PyObject* args)
         PyErr_SetString(PyExc_TypeError,
                         "coordinate list must contain exactly 1 coordinate"
                         );
+        free(xy);
         return NULL;
     }
 
@@ -2665,6 +2675,7 @@ _draw_chord(ImagingDrawObject* self, PyObject* args)
         return NULL;
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
         return NULL;
     }
 
@@ -2701,6 +2712,7 @@ _draw_ellipse(ImagingDrawObject* self, PyObject* args)
         return NULL;
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
         return NULL;
     }
 
@@ -2852,6 +2864,7 @@ _draw_pieslice(ImagingDrawObject* self, PyObject* args)
         return NULL;
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
         return NULL;
     }
 
@@ -2890,6 +2903,7 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
         PyErr_SetString(PyExc_TypeError,
                         "coordinate list must contain at least 2 coordinates"
                         );
+        free(xy);
         return NULL;
     }
 
@@ -2933,6 +2947,7 @@ _draw_rectangle(ImagingDrawObject* self, PyObject* args)
         return NULL;
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
         return NULL;
     }
 
@@ -3836,6 +3851,12 @@ setup_module(PyObject* m) {
   }
 #endif
 
+#ifdef LIBJPEG_TURBO_VERSION
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
+#endif
+
 #ifdef HAVE_LIBZ
   /* zip encoding strategies */
   PyModule_AddIntConstant(m, "DEFAULT_STRATEGY", Z_DEFAULT_STRATEGY);
@@ -3846,6 +3867,13 @@ setup_module(PyObject* m) {
   {
     extern const char* ImagingZipVersion(void);
     PyDict_SetItemString(d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
+  }
+#endif
+
+#ifdef HAVE_LIBTIFF
+  {
+    extern const char * ImagingTiffVersion(void);
+    PyDict_SetItemString(d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
   }
 #endif
 

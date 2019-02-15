@@ -481,6 +481,7 @@ error:
    free(qp);
    free_color_cube(lookupCube);
    free_color_cube(coarseLookupCube);
+   free(paletteBuckets);
    free(paletteBucketsCoarse);
    free(paletteBucketsFine);
    free_color_cube(coarseCube);

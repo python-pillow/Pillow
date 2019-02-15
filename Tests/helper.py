@@ -53,10 +53,6 @@ class PillowTestCase(unittest.TestCase):
         # holds last result object passed to run method:
         self.currentResult = None
 
-    # Nicer output for --verbose
-    def __str__(self):
-        return self.__class__.__name__ + "." + self._testMethodName
-
     def run(self, result=None):
         self.currentResult = result  # remember result for use later
         unittest.TestCase.run(self, result)  # call superclass run method
@@ -84,7 +80,7 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(
                 all(x == y for x, y in zip(a, b)),
                 msg or "got %s, expected %s" % (a, b))
-        except:
+        except Exception:
             self.assertEqual(a, b, msg)
 
     def assert_image(self, im, mode, size, msg=None):
@@ -149,7 +145,7 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except:
+                except Exception:
                     pass
             raise e
 

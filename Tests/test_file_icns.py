@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image, IcnsImagePlugin
 
@@ -17,7 +17,10 @@ class TestFileIcns(PillowTestCase):
         # Loading this icon by default should result in the largest size
         # (512x512@2x) being loaded
         im = Image.open(TEST_FILE)
-        im.load()
+
+        # Assert that there is no unclosed file warning
+        self.assert_warning(None, im.load)
+
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (1024, 1024))
         self.assertEqual(im.format, "ICNS")
@@ -118,7 +121,3 @@ class TestFileIcns(PillowTestCase):
         with io.BytesIO(b'invalid\n') as fp:
             self.assertRaises(SyntaxError,
                               IcnsImagePlugin.IcnsFile, fp)
-
-
-if __name__ == '__main__':
-    unittest.main()

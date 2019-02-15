@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, FliImagePlugin
 
@@ -26,6 +26,12 @@ class TestFileFli(PillowTestCase):
         self.assertEqual(im.format, "FLI")
         self.assertEqual(im.info["duration"], 71)
         self.assertTrue(im.is_animated)
+
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(static_test_file)
+            im.load()
+        self.assert_warning(None, open)
 
     def test_tell(self):
         # Arrange
@@ -85,6 +91,9 @@ class TestFileFli(PillowTestCase):
         layer_number = im.tell()
         self.assertEqual(layer_number, 1)
 
+    def test_seek(self):
+        im = Image.open(animated_test_file)
+        im.seek(50)
 
-if __name__ == '__main__':
-    unittest.main()
+        expected = Image.open("Tests/images/a_fli.png")
+        self.assert_image_equal(im, expected)

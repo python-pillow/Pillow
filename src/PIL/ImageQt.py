@@ -140,7 +140,7 @@ def _toqclass_helper(im):
         if py3:
             im = str(im.toUtf8(), "utf-8")
         else:
-            im = unicode(im.toUtf8(), "utf-8")
+            im = unicode(im.toUtf8(), "utf-8")  # noqa: F821
     if isPath(im):
         im = Image.open(im)
 

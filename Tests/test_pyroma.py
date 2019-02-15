@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import __version__
 
@@ -28,7 +28,3 @@ class TestPyroma(PillowTestCase):
         else:
             # Should have a perfect score
             self.assertEqual(rating, (10, []))
-
-
-if __name__ == '__main__':
-    unittest.main()

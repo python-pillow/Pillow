@@ -19,6 +19,8 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, i32le as i32, o8
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 
@@ -131,6 +133,9 @@ class FliImageFile(ImageFile.ImageFile):
             self.__frame = -1
             self.__fp.seek(self.__rewind)
             self.__offset = 128
+        else:
+            # ensure that the previous frame was loaded
+            self.load()
 
         if frame != self.__frame + 1:
             raise ValueError("cannot seek to frame %d" % frame)
@@ -153,6 +158,15 @@ class FliImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 #

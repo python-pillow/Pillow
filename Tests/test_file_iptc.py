@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, IptcImagePlugin
 
@@ -69,7 +69,3 @@ class TestFileIptc(PillowTestCase):
 
         # Assert
         self.assertEqual(mystdout.getvalue(), "61 62 63 \n")
-
-
-if __name__ == '__main__':
-    unittest.main()

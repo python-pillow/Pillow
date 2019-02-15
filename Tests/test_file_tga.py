@@ -2,7 +2,7 @@ import os
 from glob import glob
 from itertools import product
 
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -201,7 +201,3 @@ class TestFileTga(PillowTestCase):
             test_im.getchannel("A").getcolors()[0][0], num_transparent)
 
         self.assert_image_equal(im, test_im)
-
-
-if __name__ == '__main__':
-    unittest.main()

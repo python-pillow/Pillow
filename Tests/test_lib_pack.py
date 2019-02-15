@@ -1,6 +1,6 @@
 import sys
 
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -620,7 +620,3 @@ class TestLibUnpack(PillowTestCase):
         self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
         self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)
         self.assertRaises(ValueError, self.assert_unpack, "CMYK", "CMYK", 2, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

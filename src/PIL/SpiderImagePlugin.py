@@ -193,6 +193,15 @@ class SpiderImageFile(ImageFile.ImageFile):
         from PIL import ImageTk
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 
 # --------------------------------------------------------------------
 # Image series
@@ -210,7 +219,7 @@ def loadImageSeries(filelist=None):
             continue
         try:
             im = Image.open(img).convert2byte()
-        except:
+        except Exception:
             if not isSpiderImage(img):
                 print(img + " is not a Spider image file")
             continue

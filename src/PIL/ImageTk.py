@@ -124,7 +124,7 @@ class PhotoImage(object):
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
-        except:
+        except Exception:
             pass  # ignore internal errors
 
     def __str__(self):
@@ -244,7 +244,7 @@ class BitmapImage(object):
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
-        except:
+        except Exception:
             pass  # ignore internal errors
 
     def width(self):

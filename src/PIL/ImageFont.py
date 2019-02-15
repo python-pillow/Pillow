@@ -72,7 +72,7 @@ class ImageFont(object):
                 try:
                     fullname = os.path.splitext(filename)[0] + ext
                     image = Image.open(fullname)
-                except:
+                except Exception:
                     pass
                 else:
                     if image and image.mode in ("1", "L"):

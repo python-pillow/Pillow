@@ -54,6 +54,7 @@ import os
 import struct
 import sys
 import warnings
+import distutils.version
 
 from .TiffTags import TYPES
 
@@ -65,6 +66,8 @@ except ImportError:
     from collections import MutableMapping
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
 
@@ -282,6 +285,10 @@ def _limit_rational(val, max_val):
     inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
+
+
+def _libtiff_version():
+    return Image.core.libtiff_version.split("\n")[0].split("Version ")[1]
 
 
 ##
@@ -541,7 +548,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
         if not py3:
-            basetypes += unicode,
+            basetypes += unicode,  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -552,26 +559,26 @@ class ImageFileDirectory_v2(MutableMapping):
             else:
                 self.tagtype[tag] = 7
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = 5
+                    self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
-                        self.tagtype[tag] = 3
+                        self.tagtype[tag] = TiffTags.SHORT
                     else:
-                        self.tagtype[tag] = 4
+                        self.tagtype[tag] = TiffTags.LONG
                 elif all(isinstance(v, float) for v in values):
-                    self.tagtype[tag] = 12
+                    self.tagtype[tag] = TiffTags.DOUBLE
                 else:
                     if py3:
                         if all(isinstance(v, str) for v in values):
-                            self.tagtype[tag] = 2
+                            self.tagtype[tag] = TiffTags.ASCII
                     else:
                         # Never treat data as binary by default on Python 2.
-                        self.tagtype[tag] = 2
+                        self.tagtype[tag] = TiffTags.ASCII
 
-        if self.tagtype[tag] == 7 and py3:
+        if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
-        elif self.tagtype[tag] == 5:
+        elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v
                       for v in values]
 
@@ -587,14 +594,18 @@ class ImageFileDirectory_v2(MutableMapping):
         if (info.length == 1) or \
            (info.length is None and len(values) == 1 and not legacy_api):
             # Don't mess with the legacy api, since it's frozen.
-            if legacy_api and self.tagtype[tag] in [5, 10]:  # rationals
+            if legacy_api and self.tagtype[tag] in [
+                TiffTags.RATIONAL,
+                TiffTags.SIGNED_RATIONAL
+            ]:  # rationals
                 values = values,
             try:
                 dest[tag], = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: %s, expected 1" % (
+                    "Metadata Warning, tag %s had too many entries: "
+                    "%s, expected 1" % (
                         tag, len(values)))
                 dest[tag] = values[0]
 
@@ -622,13 +633,13 @@ class ImageFileDirectory_v2(MutableMapping):
             from .TiffTags import TYPES
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
-            _load_dispatch[idx] = size, func
+            _load_dispatch[idx] = size, func  # noqa: F821
             return func
         return decorator
 
     def _register_writer(idx):
         def decorator(func):
-            _write_dispatch[idx] = func
+            _write_dispatch[idx] = func  # noqa: F821
             return func
         return decorator
 
@@ -637,19 +648,19 @@ class ImageFileDirectory_v2(MutableMapping):
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (
+        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (  # noqa: F821
             self._unpack("{}{}".format(len(data) // size, fmt), data))
-        _write_dispatch[idx] = lambda self, *values: (
+        _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
-             [(3, "H", "short"),
-              (4, "L", "long"),
-              (6, "b", "signed byte"),
-              (8, "h", "signed short"),
-              (9, "l", "signed long"),
-              (11, "f", "float"),
-              (12, "d", "double")]))
+             [(TiffTags.SHORT, "H", "short"),
+              (TiffTags.LONG, "L", "long"),
+              (TiffTags.SIGNED_BYTE, "b", "signed byte"),
+              (TiffTags.SIGNED_SHORT, "h", "signed short"),
+              (TiffTags.SIGNED_LONG, "l", "signed long"),
+              (TiffTags.FLOAT, "f", "float"),
+              (TiffTags.DOUBLE, "d", "double")]))
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
@@ -805,7 +816,10 @@ class ImageFileDirectory_v2(MutableMapping):
                     print("- value:", values)
 
             # count is sum of lengths for string and arbitrary data
-            count = len(data) if typ in [2, 7] else len(values)
+            if typ in [TiffTags.ASCII, TiffTags.UNDEFINED]:
+                count = len(data)
+            else:
+                count = len(values)
             # figure out if data fits into the entry
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
@@ -951,7 +965,7 @@ class TiffImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-        "Open the first image in a TIFF file"
+        """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
@@ -1008,7 +1022,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return self._is_animated
 
     def seek(self, frame):
-        "Select a given frame as current image"
+        """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
         self._seek(frame)
@@ -1046,7 +1060,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self._setup()
 
     def tell(self):
-        "Return the current frame number"
+        """Return the current frame number"""
         return self.__frame
 
     @property
@@ -1161,7 +1175,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
     def _setup(self):
-        "Setup this image object based on current tags"
+        """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")
@@ -1351,6 +1365,15 @@ class TiffImageFile(ImageFile.ImageFile):
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 
 #
 # --------------------------------------------------------------------
@@ -1416,7 +1439,7 @@ def _save(im, fp, filename):
         ifd[key] = info.get(key)
         try:
             ifd.tagtype[key] = info.tagtype[key]
-        except:
+        except Exception:
             pass  # might not be an IFD, Might not have populated type
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
@@ -1503,14 +1526,19 @@ def _save(im, fp, filename):
                                           getattr(im, 'tag_v2', {}).items(),
                                           legacy_ifd.items()):
             # Libtiff can only process certain core items without adding
-            # them to the custom dictionary. It will segfault if it attempts
-            # to add a custom tag without the dictionary entry
-            #
-            # UNDONE --  add code for the custom dictionary
+            # them to the custom dictionary.
+            # Support for custom items has only been been added
+            # for int, float, unicode, string and byte values
             if tag not in TiffTags.LIBTIFF_CORE:
-                continue
+                if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
+                    continue
+                if (distutils.version.StrictVersion(_libtiff_version()) <
+                    distutils.version.StrictVersion("4.0")) \
+                   or not (isinstance(value, (int, float, str, bytes)) or
+                           (not py3 and isinstance(value, unicode))):  # noqa: F821
+                    continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, str if py3 else unicode):
+                if isinstance(value, str if py3 else unicode):  # noqa: F821
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
@@ -1788,7 +1816,7 @@ class AppendingTiffWriter:
                 # local (not referenced with another offset)
                 self.rewriteLastShortToLong(offset)
                 self.f.seek(-10, os.SEEK_CUR)
-                self.writeShort(4)  # rewrite the type to LONG
+                self.writeShort(TiffTags.LONG)  # rewrite the type to LONG
                 self.f.seek(8, os.SEEK_CUR)
             elif isShort:
                 self.rewriteLastShort(offset)

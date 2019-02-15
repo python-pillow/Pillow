@@ -373,7 +373,7 @@ def pdf_repr(x):
     elif isinstance(x, list):
         return bytes(PdfArray(x))
     elif ((py3 and isinstance(x, str)) or
-          (not py3 and isinstance(x, unicode))):
+          (not py3 and isinstance(x, unicode))):  # noqa: F821
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
@@ -393,8 +393,6 @@ class PdfParser:
 
     def __init__(self, filename=None, f=None,
                  buf=None, start_offset=0, mode="rb"):
-        # type: (PdfParser, str, file, Union[bytes, bytearray], int, str)
-        #       -> None
         if buf and f:
             raise RuntimeError(
                 "specify buf or f or filename, but not both buf and f")

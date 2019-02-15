@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 import io
 from PIL import Image, IcoImagePlugin
@@ -82,7 +82,3 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(
             im_saved.info['sizes'],
             {(16, 16), (24, 24), (32, 32), (48, 48)})
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -568,6 +568,8 @@ split(BoxNode *node)
    left=malloc(sizeof(BoxNode));
    right=malloc(sizeof(BoxNode));
    if (!left||!right) {
+      free(left);
+      free(right);
       return 0;
    }
    for(i=0;i<3;i++) {

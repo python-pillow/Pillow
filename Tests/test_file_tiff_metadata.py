@@ -1,7 +1,7 @@
 import io
 import struct
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
@@ -135,7 +135,7 @@ class TestFileTiffMetadata(PillowTestCase):
         for k, v in original.items():
             if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
-            if isinstance(v, tuple) and isinstance(v[0], IFDRational):
+            elif isinstance(v, tuple) and isinstance(v[0], IFDRational):
                 original[k] = tuple(IFDRational(*_limit_rational(elt, 2**31))
                                     for elt in v)
 
@@ -247,7 +247,3 @@ class TestFileTiffMetadata(PillowTestCase):
 
         # Should not raise ValueError.
         self.assert_warning(UserWarning, lambda: ifd[277])
-
-
-if __name__ == '__main__':
-    unittest.main()

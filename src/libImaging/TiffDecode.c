@@ -517,6 +517,26 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 
 }
 
+int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_type, int key){
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    char field_name[10];
+    uint32 n;
+    int status = 0;
+
+    const TIFFFieldInfo info[] = {
+        { key, 0, 1, field_type, FIELD_CUSTOM, 1, 0, field_name }
+    };
+    n = sizeof(info) / sizeof(info[0]);
+
+    // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
+#if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && TIFFLIB_VERSION != 20120922
+    status = TIFFMergeFieldInfo(clientstate->tiff, info, n);
+#else
+    TIFFMergeFieldInfo(clientstate->tiff, info, n);
+#endif
+    return status;
+}
+
 int ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...){
     // after tif_dir.c->TIFFSetField.
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
@@ -616,4 +636,11 @@ int ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8* buffer, int
     state->errcode = IMAGING_CODEC_END;
     return 0;
 }
+
+const char*
+ImagingTiffVersion(void)
+{
+    return TIFFGetVersion();
+}
+
 #endif

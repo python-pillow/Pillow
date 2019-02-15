@@ -43,6 +43,8 @@ from ._binary import i8, o8, i16be as i16
 from .JpegPresets import presets
 from ._util import isStringType
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 
@@ -75,7 +77,7 @@ def APP(self, marker):
         try:
             jfif_unit = i8(s[7])
             jfif_density = i16(s, 8), i16(s, 10)
-        except:
+        except Exception:
             pass
         else:
             if jfif_unit == 1:
@@ -107,7 +109,7 @@ def APP(self, marker):
         # extract Adobe custom properties
         try:
             adobe_transform = i8(s[1])
-        except:
+        except Exception:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
@@ -441,7 +443,7 @@ def _fixup_dict(src_dict):
         try:
             if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
-        except:
+        except Exception:
             pass
         return value
 
@@ -459,35 +461,36 @@ def _getexif(self):
         data = self.info["exif"]
     except KeyError:
         return None
-    file = io.BytesIO(data[6:])
-    head = file.read(8)
+    fp = io.BytesIO(data[6:])
+    head = fp.read(8)
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    info.load(file)
+    fp.seek(info.next)
+    info.load(fp)
     exif = dict(_fixup_dict(info))
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
         # of the nested embedded exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8769])
+        fp.seek(exif[0x8769])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
         # of the nested embedded gps exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8825])
+        fp.seek(exif[0x8825])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif[0x8825] = _fixup_dict(info)
 
     return exif
@@ -510,9 +513,10 @@ def _getmp(self):
     # process dictionary
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        file_contents.seek(info.next)
         info.load(file_contents)
         mp = dict(info)
-    except:
+    except Exception:
         raise SyntaxError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:

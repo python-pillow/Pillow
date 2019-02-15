@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -49,7 +49,3 @@ class TestFilePpm(PillowTestCase):
 
         with self.assertRaises(IOError):
             Image.open('Tests/images/negative_size.ppm')
-
-
-if __name__ == '__main__':
-    unittest.main()

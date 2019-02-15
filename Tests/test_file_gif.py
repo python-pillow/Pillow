@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, netpbm_available
+from .helper import unittest, PillowTestCase, hopper, netpbm_available
 
 from PIL import Image, ImagePalette, GifImagePlugin
 
@@ -32,6 +32,12 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "GIF")
         self.assertEqual(im.info["version"], b"GIF89a")
+
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_GIF)
+            im.load()
+        self.assert_warning(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -435,6 +441,23 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['comment'], im.info['comment'])
 
+    def test_comment_over_255(self):
+        out = self.tempfile('temp.gif')
+        im = Image.new('L', (100, 100), '#000')
+        comment = b"Test comment text"
+        while len(comment) < 256:
+            comment += comment
+        im.info['comment'] = comment
+        im.save(out)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['comment'], comment)
+
+    def test_zero_comment_subblocks(self):
+        im = Image.open('Tests/images/hopper_zero_comment_subblocks.gif')
+        expected = Image.open(TEST_GIF)
+        self.assert_image_equal(im, expected)
+
     def test_version(self):
         out = self.tempfile('temp.gif')
 
@@ -512,6 +535,27 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assertEqual(reloaded.info['transparency'], 253)
+
+    def test_rgb_transparency(self):
+        out = self.tempfile('temp.gif')
+
+        # Single frame
+        im = Image.new('RGB', (1, 1))
+        im.info['transparency'] = (255, 0, 0)
+        self.assert_warning(UserWarning, im.save, out)
+
+        reloaded = Image.open(out)
+        self.assertNotIn('transparency', reloaded.info)
+
+        # Multiple frames
+        im = Image.new('RGB', (1, 1))
+        im.info['transparency'] = b""
+        ims = [Image.new('RGB', (1, 1))]
+        self.assert_warning(UserWarning,
+                            im.save, out, save_all=True, append_images=ims)
+
+        reloaded = Image.open(out)
+        self.assertNotIn('transparency', reloaded.info)
 
     def test_bbox(self):
         out = self.tempfile('temp.gif')
@@ -610,7 +654,3 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
-
-
-if __name__ == '__main__':
-    unittest.main()

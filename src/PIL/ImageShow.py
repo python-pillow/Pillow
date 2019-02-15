@@ -17,6 +17,8 @@ from __future__ import print_function
 from PIL import Image
 import os
 import sys
+import subprocess
+import tempfile
 
 if sys.version_info.major >= 3:
     from shlex import quote
@@ -128,6 +130,21 @@ elif sys.platform == "darwin":
                                                         quote(file))
             return command
 
+        def show_file(self, file, **options):
+            """Display given file"""
+            fd, path = tempfile.mkstemp()
+            with os.fdopen(fd, 'w') as f:
+                f.write(file)
+            with open(path, "r") as f:
+                subprocess.Popen([
+                    'im=$(cat);'
+                    'open -a /Applications/Preview.app $im;'
+                    'sleep 20;'
+                    'rm -f $im'
+                ], shell=True, stdin=f)
+            os.remove(path)
+            return 1
+
     register(MacViewer)
 
 else:
@@ -148,11 +165,23 @@ else:
         format = "PNG"
         options = {'compress_level': 1}
 
+        def get_command(self, file, **options):
+            command = self.get_command_ex(file, **options)[0]
+            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+
         def show_file(self, file, **options):
-            command, executable = self.get_command_ex(file, **options)
-            command = "(%s %s; rm -f %s)&" % (command, quote(file),
-                                              quote(file))
-            os.system(command)
+            """Display given file"""
+            fd, path = tempfile.mkstemp()
+            with os.fdopen(fd, 'w') as f:
+                f.write(file)
+            with open(path, "r") as f:
+                command = self.get_command_ex(file, **options)[0]
+                subprocess.Popen([
+                    'im=$(cat);' +
+                    command+' $im;'
+                    'rm -f $im'
+                ], shell=True, stdin=f)
+            os.remove(path)
             return 1
 
     # implementations

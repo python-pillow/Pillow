@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import TiffImagePlugin, Image
 from PIL.TiffImagePlugin import IFDRational
@@ -30,7 +30,7 @@ class Test_IFDRational(PillowTestCase):
         self._test_equal(1, 2, IFDRational(1, 2))
 
     def test_nonetype(self):
-        " Fails if the _delegate function doesn't return a valid function"
+        # Fails if the _delegate function doesn't return a valid function
 
         xres = IFDRational(72)
         yres = IFDRational(72)
@@ -58,7 +58,3 @@ class Test_IFDRational(PillowTestCase):
             reloaded = Image.open(out)
             self.assertEqual(float(IFDRational(301, 1)),
                              float(reloaded.tag_v2[282]))
-
-
-if __name__ == '__main__':
-    unittest.main()

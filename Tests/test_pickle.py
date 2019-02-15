@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -91,7 +91,3 @@ class TestPickle(PillowTestCase):
         for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
             self.helper_pickle_string(cPickle, protocol, mode="L")
             self.helper_pickle_file(cPickle, protocol, mode="L")
-
-
-if __name__ == '__main__':
-    unittest.main()

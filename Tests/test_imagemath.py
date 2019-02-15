@@ -1,5 +1,5 @@
 from __future__ import print_function
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 from PIL import ImageMath
@@ -18,7 +18,7 @@ A = Image.new("L", (1, 1), 1)
 B = Image.new("L", (1, 1), 2)
 Z = Image.new("L", (1, 1), 0)  # Z for zero
 F = Image.new("F", (1, 1), 3)
-I = Image.new("I", (1, 1), 4)
+I = Image.new("I", (1, 1), 4)  # noqa: E741
 
 A2 = A.resize((2, 2))
 B2 = B.resize((2, 2))
@@ -182,7 +182,3 @@ class TestImageMath(PillowTestCase):
             pixel(ImageMath.eval("notequal(B, A)", A=A, B=B)), "I 1")
         self.assertEqual(
             pixel(ImageMath.eval("notequal(A, Z)", A=A, Z=Z)), "I 1")
-
-
-if __name__ == '__main__':
-    unittest.main()

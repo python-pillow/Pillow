@@ -16,12 +16,12 @@ matrix:
     - python: "3.6"
       name: "Lint"
       env: LINT="true"
-    - python: "pypy"
-      name: "PyPy Trusty"
-      dist: trusty
-    - python: "pypy3"
-      name: "PyPy3 Trusty"
-      dist: trusty
+    - python: "pypy2.7-6.0"
+      name: "PyPy2 Xenial"
+      dist: xenial
+    - python: "pypy3.5-6.0"
+      name: "PyPy3 Xenial"
+      dist: xenial
     - python: '3.7'
       name: "3.7 Xenial"
     - python: '2.7'
@@ -31,6 +31,7 @@ matrix:
       dist: trusty
     - python:  "2.7_with_system_site_packages" # For PyQt4
       name: "2.7_with_system_site_packages Xenial"
+      services: xvfb
     - python:  "2.7_with_system_site_packages" # For PyQt4
       name: "2.7_with_system_site_packages Trusty"
       dist: trusty
@@ -46,43 +47,47 @@ matrix:
       name: "3.5 Trusty PYTHONOPTIMIZE=2"
       dist: trusty
       env: PYTHONOPTIMIZE=2
-    - python: '3.4'
-      name: "3.4 Trusty"
-      dist: trusty
-    - env: DOCKER="alpine" DOCKER_TAG="pytest"
-    - env: DOCKER="arch" DOCKER_TAG="pytest" # contains PyQt5
-    - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="pytest"
-    - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="debian-stretch-x86" DOCKER_TAG="pytest"
-    - env: DOCKER="centos-6-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="centos-7-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="fedora-26-amd64" DOCKER_TAG="pytest"
-    - env: DOCKER="fedora-27-amd64" DOCKER_TAG="pytest"
+    - python: "3.8-dev"
+      name: "3.8-dev Xenial"
+    - env: DOCKER="alpine" DOCKER_TAG="master"
+    - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
+    - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="master"
+    - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="master"
+    - env: DOCKER="debian-stretch-x86" DOCKER_TAG="master"
+    - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
+    - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
+    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
+    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="master"
+    - env: DOCKER="fedora-28-amd64" DOCKER_TAG="master"
+    - env: DOCKER="fedora-29-amd64" DOCKER_TAG="master"
 
 services:
   - docker
 
+before_install:
+  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
+
 install:
   - |
     if [ "$LINT" == "true" ]; then
-      pip install -U flake8
+      pip install tox
     elif [ "$DOCKER" == "" ]; then
       .travis/install.sh;
     fi
 
-before_install:
-  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
-
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+- |
+  if [ "$TRAVIS_JOB_NAME" == "2.7_with_system_site_packages Trusty" ]; then
+    export DISPLAY=:99.0
+    sh -e /etc/init.d/xvfb start
+  fi
 
 script:
 - |
-  if [ "$DOCKER" == "" ] && [ "$LINT" == "" ]; then
+  if [ "$LINT" == "true" ]; then
+    tox -e lint
+  elif [ "$DOCKER" == "" ]; then
     .travis/script.sh
   elif [ "$DOCKER" ]; then
     # the Pillow user in the docker container is UID 1000
@@ -92,8 +97,6 @@ script:
 
 after_success:
 - |
-  if [ "$LINT" == "true" ]; then
-    flake8 --statistics --count
-  else
+  if [ "$LINT" == "" ]; then
     .travis/after_success.sh
   fi

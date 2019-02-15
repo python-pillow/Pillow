@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, on_appveyor
+from .helper import unittest, PillowTestCase, hopper, on_appveyor
 
 from PIL import Image
 import sys
@@ -175,6 +175,12 @@ class TestImageGetPixel(AccessTest):
             self.check(mode, 2**15+1)
             self.check(mode, 2**16-1)
 
+    def test_p_putpixel_rgb_rgba(self):
+        for color in [(255, 0, 0), (255, 0, 0, 255)]:
+            im = Image.new("P", (1, 1), 0)
+            im.putpixel((0, 0), color)
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+
 
 @unittest.skipIf(cffi is None, "No cffi")
 class TestCffiPutPixel(TestImagePutPixel):
@@ -294,13 +300,18 @@ class TestCffi(AccessTest):
                 # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
 
+    def test_p_putpixel_rgb_rgba(self):
+        for color in [(255, 0, 0), (255, 0, 0, 255)]:
+            im = Image.new("P", (1, 1), 0)
+            access = PyAccess.new(im, False)
+            access.putpixel((0, 0), color)
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+
 
 class TestEmbeddable(unittest.TestCase):
     @unittest.skipIf(not sys.platform.startswith('win32') or
-                     sys.version_info[:2] == (3, 4) or
-                     on_appveyor(),   # failing on appveyor when run from
-                                      # subprocess, not from shell
-                     "requires Python 2.7 or >=3.5 for Windows")
+                     on_appveyor(),
+                     "Failing on AppVeyor when run from subprocess, not from shell")
     def test_embeddable(self):
         import subprocess
         import ctypes
@@ -355,7 +366,3 @@ int main(int argc, char* argv[])
         process = subprocess.Popen(['embed_pil.exe'], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()
