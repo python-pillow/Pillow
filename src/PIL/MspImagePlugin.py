@@ -28,6 +28,8 @@ from ._binary import i16le as i16, o16le as o16, i8
 import struct
 import io
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -63,7 +65,7 @@ class MspImageFile(ImageFile.ImageFile):
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
-        self.size = i16(s[4:]), i16(s[6:])
+        self._size = i16(s[4:]), i16(s[6:])
 
         if s[:4] == b"DanM":
             self.tile = [("raw", (0, 0)+self.size, 32, ("1", 0, 1))]
@@ -126,14 +128,15 @@ class MspDecoder(ImageFile.PyDecoder):
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    raise IOError("Truncated MSP file, expected %d bytes on row %s",
-                                  (rowlen, x))
+                    raise IOError(
+                        "Truncated MSP file, expected %d bytes on row %s",
+                        (rowlen, x))
                 idx = 0
                 while idx < rowlen:
                     runtype = i8(row[idx])
                     idx += 1
                     if runtype == 0:
-                        (runcount, runval) = struct.unpack("Bc", row[idx:idx+2])
+                        (runcount, runval) = struct.unpack_from("Bc", row, idx)
                         img.write(runval * runcount)
                         idx += 2
                     else:

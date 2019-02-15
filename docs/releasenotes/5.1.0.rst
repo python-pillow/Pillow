@@ -1,0 +1,36 @@
+5.1.0
+-----
+
+New File Format
+===============
+
+BLP File Format
+^^^^^^^^^^^^^^^
+
+Pillow now supports reading the BLP "Blizzard Mipmap" file format used
+for tiles in Blizzard's engine.
+
+API Changes
+===========
+
+Optional channels for TIFF files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow can now open TIFF files with base modes of ``RGB``, ``YCbCr``,
+and ``CMYK`` with up to 6 8-bit channels, discarding any extra
+channels if the content is tagged as UNSPECIFIED.  Pillow still does
+not store more than 4 8-bit channels of image data.
+
+Append to PDF Files
+^^^^^^^^^^^^^^^^^^^
+
+Images can now be appended to PDF files in place by passing in
+``append=True`` when saving the image.
+
+Other Changes
+=============
+
+WebP memory leak
+^^^^^^^^^^^^^^^^
+
+A memory leak when opening ``WebP`` files has been fixed.

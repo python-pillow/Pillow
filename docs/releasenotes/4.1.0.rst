@@ -12,7 +12,7 @@ Several deprecated items have been removed.
 
 * The methods :py:meth:`PIL.ImageDraw.ImageDraw.setink`,
   :py:meth:`PIL.ImageDraw.ImageDraw.setfill`, and
-  :py:meth:`PIL.ImageDraw.ImageDraw.setfont` have been removed. 
+  :py:meth:`PIL.ImageDraw.ImageDraw.setfont` have been removed.
 
 
 Closing Files When Opening Images
@@ -27,7 +27,7 @@ is specified:
   responsibility of the calling code to close the file.
 
 * For images where Pillow opens the file and the file is known to have
-  only one frame, the file is closed after loading. 
+  only one frame, the file is closed after loading.
 
 * If the file has more than one frame, or if it can't be determined,
   then the file is left open to permit seeking to subsequent
@@ -36,7 +36,7 @@ is specified:
 
 * If the image is memory mapped, then we can't close the mapping to
   the underlying file until we are done with the image. The mapping
-  will be closed in the ``close`` or ``__del__`` method. 
+  will be closed in the ``close`` or ``__del__`` method.
 
 
 Changes to GIF Handling When Saving
@@ -50,7 +50,7 @@ saving images. There are two external changes that arise from this:
 
 * The image to be saved is no longer modified in place by any of the
   operations of the save function. Previously it was modified when
-  optimizing the image palette. 
+  optimizing the image palette.
 
 This refactor fixed some bugs with palette handling when saving
 multiple frame GIFs.
@@ -60,7 +60,7 @@ New Method: Image.remap_palette
 
 The method :py:meth:`PIL.Image.Image.remap_palette()` has been
 added. This method was hoisted from the GifImagePlugin code used to
-optimize the palette. 
+optimize the palette.
 
 Added Decoder Registry and Support for Python Based Decoders
 ============================================================
@@ -76,7 +76,7 @@ Tests
 =====
 
 Many tests have been added, including correctness tests for image
-formats that have been previously untested. 
+formats that have been previously untested.
 
 We are now running automated tests in Docker containers against more
 Linux versions than are provided on Travis CI, which is currently

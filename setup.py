@@ -10,7 +10,6 @@
 from __future__ import print_function
 
 import os
-import platform as plat
 import re
 import struct
 import subprocess
@@ -26,7 +25,7 @@ from setuptools import Extension, setup
 import mp_compile
 
 
-if sys.platform == "win32" and sys.version_info >= (3, 7):
+if sys.platform == "win32" and sys.version_info >= (3, 8):
     warnings.warn(
         "Pillow does not yet support Python {}.{} and does not yet provide "
         "prebuilt Windows binaries. We do not recommend building from "
@@ -39,17 +38,17 @@ _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
     "Access", "AlphaComposite", "Resample", "Bands", "BcnDecode", "BitDecode",
-    "Blend", "Chops", "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop",
+    "Blend", "Chops", "ColorLUT", "Convert", "ConvertYCbCr", "Copy", "Crop",
     "Dib", "Draw", "Effects", "EpsEncode", "File", "Fill", "Filter",
     "FliDecode", "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
     "Histo", "JpegDecode", "JpegEncode", "Matrix", "ModeFilter",
     "Negative", "Offset", "Pack", "PackDecode", "Palette", "Paste", "Quant",
     "QuantOctree", "QuantHash", "QuantHeap", "PcdDecode", "PcxDecode",
     "PcxEncode", "Point", "RankFilter", "RawDecode", "RawEncode", "Storage",
-    "SgiRleDecode", "SunRleDecode", "TgaRleDecode", "Unpack", "UnpackYCC",
-    "UnsharpMask", "XbmDecode", "XbmEncode", "ZipDecode", "ZipEncode",
-    "TiffDecode", "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur", "QuantPngQuant",
-    "codec_fd")
+    "SgiRleDecode", "SunRleDecode", "TgaRleDecode", "TgaRleEncode", "Unpack",
+    "UnpackYCC", "UnsharpMask", "XbmDecode", "XbmEncode", "ZipDecode",
+    "ZipEncode", "TiffDecode", "Jpeg2KDecode", "Jpeg2KEncode", "BoxBlur",
+    "QuantPngQuant", "codec_fd")
 
 DEBUG = False
 
@@ -72,6 +71,57 @@ def _dbg(s, tp=None):
             print(s % tp)
             return
         print(s)
+
+
+def _find_library_dirs_ldconfig():
+    # Based on ctypes.util from Python 2
+
+    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+        if struct.calcsize('l') == 4:
+            machine = os.uname()[4] + '-32'
+        else:
+            machine = os.uname()[4] + '-64'
+        mach_map = {
+            'x86_64-64': 'libc6,x86-64',
+            'ppc64-64': 'libc6,64bit',
+            'sparc64-64': 'libc6,64bit',
+            's390x-64': 'libc6,64bit',
+            'ia64-64': 'libc6,IA-64',
+            }
+        abi_type = mach_map.get(machine, 'libc6')
+
+        # Assuming GLIBC's ldconfig (with option -p)
+        # Alpine Linux uses musl that can't print cache
+        args = ['/sbin/ldconfig', '-p']
+        expr = r'.*\(%s.*\) => (.*)' % abi_type
+        env = dict(os.environ)
+        env['LC_ALL'] = 'C'
+        env['LANG'] = 'C'
+
+    elif sys.platform.startswith("freebsd"):
+        args = ['/sbin/ldconfig', '-r']
+        expr = r'.* => (.*)'
+        env = {}
+
+    null = open(os.devnull, 'wb')
+    try:
+        with null:
+            p = subprocess.Popen(args,
+                                 stderr=null,
+                                 stdout=subprocess.PIPE,
+                                 env=env)
+    except OSError:  # E.g. command not found
+        return []
+    [data, _] = p.communicate()
+    if isinstance(data, bytes):
+        data = data.decode()
+
+    dirs = []
+    for dll in re.findall(expr, data):
+        dir = os.path.dirname(dll)
+        if dir not in dirs:
+            dirs.append(dir)
+    return dirs
 
 
 def _add_directory(path, subdir, where=None):
@@ -122,17 +172,11 @@ def _read(file):
 
 
 def get_version():
-    version_file = 'src/PIL/version.py'
+    version_file = 'src/PIL/_version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
-
-try:
-    import _tkinter
-except (ImportError, OSError):
-    # pypy emits an oserror
-    _tkinter = None
 
 NAME = 'Pillow'
 PILLOW_VERSION = get_version()
@@ -147,15 +191,30 @@ LCMS_ROOT = None
 
 def _pkg_config(name):
     try:
-        command = [
+        command_libs = [
             'pkg-config',
             '--libs-only-L', name,
+        ]
+        command_cflags = [
+            'pkg-config',
             '--cflags-only-I', name,
         ]
         if not DEBUG:
-            command.append('--silence-errors')
-        libs = subprocess.check_output(command).decode('utf8').split(' ')
-        return libs[1][2:].strip(), libs[0][2:].strip()
+            command_libs.append('--silence-errors')
+            command_cflags.append('--silence-errors')
+        libs = (
+            subprocess.check_output(command_libs)
+            .decode("utf8")
+            .strip()
+            .replace("-L", "")
+        )
+        cflags = (
+            subprocess.check_output(command_cflags)
+            .decode("utf8")
+            .strip()
+            .replace("-I", "")
+        )
+        return (libs, cflags)
     except Exception:
         pass
 
@@ -191,10 +250,11 @@ class pil_build_ext(build_ext):
         ('disable-platform-guessing', None,
          'Disable platform guessing on Linux'),
         ('debug', None, 'Debug logging')
-    ]
+    ] + [('add-imaging-libs=', None, 'Add libs to _imaging build')]
 
     def initialize_options(self):
         self.disable_platform_guessing = None
+        self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, 'disable_%s' % x, None)
@@ -205,6 +265,12 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
+        if sys.version_info.major >= 3 and not self.parallel:
+            # For Python 2.7, we monkeypatch distutils to have parallel
+            # builds. If --parallel (or -j) wasn't specified, we want to
+            # reproduce the same behavior as before, that is, auto-detect the
+            # number of jobs.
+            self.parallel = mp_compile.MAX_PROCS
         for x in self.feature:
             if getattr(self, 'disable_%s' % x):
                 setattr(self.feature, x, False)
@@ -240,6 +306,11 @@ class pil_build_ext(build_ext):
                                         IMAGEQUANT_ROOT="libimagequant"
                                         ).items():
             root = globals()[root_name]
+
+            if root is None and root_name in os.environ:
+                prefix = os.environ[root_name]
+                root = (os.path.join(prefix, 'lib'), os.path.join(prefix, 'include'))
+
             if root is None and pkg_config:
                 if isinstance(lib_name, tuple):
                     for lib_name2 in lib_name:
@@ -333,66 +404,20 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-        elif sys.platform.startswith("linux"):
-            arch_tp = (plat.processor(), plat.architecture()[0])
-            # This should be correct on debian derivatives.
-            if os.path.exists('/etc/debian_version'):
-                # If this doesn't work, don't just silently patch
-                # downstream because it's going to break when people
-                # try to build pillow from source instead of
-                # installing from the system packages.
-                self.add_multiarch_paths()
-
-            elif arch_tp == ("x86_64", "32bit"):
-                # Special Case: 32-bit build on 64-bit machine.
-                _add_directory(library_dirs, "/usr/lib/i386-linux-gnu")
-            else:
-                libdirs = {
-                    'x86_64':  ["/lib64", "/usr/lib64",
-                                "/usr/lib/x86_64-linux-gnu"],
-                    '64bit':   ["/lib64", "/usr/lib64",
-                                "/usr/lib/x86_64-linux-gnu"],
-                    'i386':    ["/usr/lib/i386-linux-gnu"],
-                    'i686':    ["/usr/lib/i386-linux-gnu"],
-                    '32bit':   ["/usr/lib/i386-linux-gnu"],
-                    'aarch64': ["/usr/lib64", "/usr/lib/aarch64-linux-gnu"],
-                    'arm':     ["/usr/lib/arm-linux-gnueabi"],
-                    'armv71':  ["/usr/lib/arm-linux-gnueabi"],
-                    'ppc64':   ["/usr/lib64", "/usr/lib/ppc64-linux-gnu",
-                                "/usr/lib/powerpc64-linux-gnu"],
-                    'ppc':     ["/usr/lib/ppc-linux-gnu",
-                                "/usr/lib/powerpc-linux-gnu"],
-                    's390x':   ["/usr/lib64", "/usr/lib/s390x-linux-gnu"],
-                    's390':    ["/usr/lib/s390-linux-gnu"],
-                    }
-
-                for platform_ in arch_tp:
-                    dirs = libdirs.get(platform_, None)
-                    if not platform_:
-                        continue
-                    for path in dirs:
-                        _add_directory(library_dirs, path)
-                    break
-
-                else:
-                    raise ValueError(
-                        "Unable to identify Linux platform: `%s`" % platform_)
-
+        elif sys.platform.startswith("linux") or \
+                sys.platform.startswith("gnu") or \
+                sys.platform.startswith("freebsd"):
+            for dirname in _find_library_dirs_ldconfig():
+                _add_directory(library_dirs, dirname)
+            if sys.platform.startswith("linux") and \
+                    os.environ.get('ANDROID_ROOT', None):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
-                if os.environ.get('ANDROID_ROOT', None):
-                    _add_directory(library_dirs,
-                                   os.path.join(os.environ['ANDROID_ROOT'],
-                                                'lib'))
-
-        elif sys.platform.startswith("gnu"):
-            self.add_multiarch_paths()
-
-        elif sys.platform.startswith("freebsd"):
-            _add_directory(library_dirs, "/usr/local/lib")
-            _add_directory(include_dirs, "/usr/local/include")
+                _add_directory(
+                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                )
 
         elif sys.platform.startswith("netbsd"):
             _add_directory(library_dirs, "/usr/pkg/lib")
@@ -422,7 +447,8 @@ class pil_build_ext(build_ext):
             best_path = None
             for name in os.listdir(program_files):
                 if name.startswith('OpenJPEG '):
-                    version = tuple(int(x) for x in name[9:].strip().split('.'))
+                    version = tuple(int(x) for x in
+                                    name[9:].strip().split('.'))
                     if version > best_version:
                         best_version = version
                         best_path = os.path.join(program_files, name)
@@ -499,7 +525,8 @@ class pil_build_ext(build_ext):
                 # possible.
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = 'openjp2'
-                feature.openjpeg_version = '.'.join(str(x) for x in best_version)
+                feature.openjpeg_version = '.'.join(str(x) for x in
+                                                    best_version)
 
         if feature.want('imagequant'):
             _dbg('Looking for imagequant')
@@ -514,9 +541,7 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, 'tiff.h'):
                 if _find_library_file(self, "tiff"):
                     feature.tiff = "tiff"
-                if sys.platform == "win32" and _find_library_file(self, "libtiff"):
-                    feature.tiff = "libtiff"
-                if (sys.platform == "darwin" and
+                if (sys.platform in ["win32", "darwin"] and
                         _find_library_file(self, "libtiff")):
                     feature.tiff = "libtiff"
 
@@ -526,21 +551,22 @@ class pil_build_ext(build_ext):
                 # look for freetype2 include files
                 freetype_version = 0
                 for subdir in self.compiler.include_dirs:
-                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    _dbg('Checking for include file %s in %s',
+                         ("ft2build.h", subdir))
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21
                         subdir = os.path.join(subdir, "freetype2")
                         break
                     subdir = os.path.join(subdir, "freetype2")
-                    _dbg('Checking for include file %s in %s', ("ft2build.h", subdir))
+                    _dbg('Checking for include file %s in %s',
+                         ("ft2build.h", subdir))
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
                         _dbg('Found %s in %s', ("ft2build.h", subdir))
                         freetype_version = 21
                         break
                 if freetype_version:
                     feature.freetype = "freetype"
-                    feature.freetype_version = freetype_version
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
@@ -589,7 +615,7 @@ class pil_build_ext(build_ext):
         for src_file in _LIB_IMAGING:
             files.append(os.path.join("src/libImaging", src_file + ".c"))
 
-        libs = []
+        libs = self.add_imaging_libs.split()
         defs = []
         if feature.jpeg:
             libs.append(feature.jpeg)
@@ -657,8 +683,8 @@ class pil_build_ext(build_ext):
 
         tk_libs = ['psapi'] if sys.platform == 'win32' else []
         exts.append(Extension("PIL._imagingtk",
-                              ["src/_imagingtk.c", "Tk/tkImaging.c"],
-                              include_dirs=['Tk'],
+                              ["src/_imagingtk.c", "src/Tk/tkImaging.c"],
+                              include_dirs=['src/Tk'],
                               libraries=tk_libs))
 
         exts.append(Extension("PIL._imagingmath", ["src/_imagingmath.c"]))
@@ -721,31 +747,6 @@ class pil_build_ext(build_ext):
         print("To check the build, run the selftest.py script.")
         print("")
 
-    # https://hg.python.org/users/barry/rev/7e8deab93d5a
-    def add_multiarch_paths(self):
-        # Debian/Ubuntu multiarch support.
-        # https://wiki.ubuntu.com/MultiarchSpec
-        # self.build_temp
-        tmpfile = os.path.join(self.build_temp, 'multiarch')
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        with open(tmpfile, 'wb') as fp:
-            try:
-                ret = subprocess.call(['dpkg-architecture',
-                                       '-qDEB_HOST_MULTIARCH'], stdout=fp)
-            except Exception:
-                return
-        try:
-            if ret >> 8 == 0:
-                with open(tmpfile, 'r') as fp:
-                    multiarch_path_component = fp.readline().strip()
-                _add_directory(self.compiler.library_dirs,
-                               '/usr/lib/' + multiarch_path_component)
-                _add_directory(self.compiler.include_dirs,
-                               '/usr/include/' + multiarch_path_component)
-        finally:
-            os.unlink(tmpfile)
-
 
 def debug_build():
     return hasattr(sys, 'gettotalrefcount')
@@ -761,7 +762,7 @@ try:
           long_description=_read('README.rst').decode('utf-8'),
           author='Alex Clark (Fork Author)',
           author_email='aclark@aclark.net',
-          url='https://python-pillow.org',
+          url='http://python-pillow.org',
           classifiers=[
               "Development Status :: 6 - Mature",
               "Topic :: Multimedia :: Graphics",
@@ -773,20 +774,20 @@ try:
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
-              "Programming Language :: Python :: 3.4",
               "Programming Language :: Python :: 3.5",
               "Programming Language :: Python :: 3.6",
+              "Programming Language :: Python :: 3.7",
               "Programming Language :: Python :: Implementation :: CPython",
               "Programming Language :: Python :: Implementation :: PyPy",
           ],
-          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
           cmdclass={"build_ext": pil_build_ext},
           ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
           include_package_data=True,
           setup_requires=pytest_runner,
           tests_require=['pytest'],
           packages=["PIL"],
-          package_dir={'':'src'},
+          package_dir={'': 'src'},
           keywords=["Imaging", ],
           license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )

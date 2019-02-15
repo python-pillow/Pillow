@@ -1,8 +1,6 @@
-from helper import unittest
-
 from PIL import Image
 
-from test_file_libtiff import LibTiffTestCase
+from .test_file_libtiff import LibTiffTestCase
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):
@@ -46,7 +44,3 @@ class TestFileLibTiffSmall(LibTiffTestCase):
 
         self.assertEqual(im.size, (128, 128))
         self._assert_noerr(im)
-
-
-if __name__ == '__main__':
-    unittest.main()

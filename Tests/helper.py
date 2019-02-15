@@ -8,6 +8,7 @@ import os
 import unittest
 
 from PIL import Image, ImageMath
+from PIL._util import py3
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,8 +17,9 @@ logger = logging.getLogger(__name__)
 HAS_UPLOADER = False
 
 if os.environ.get('SHOW_ERRORS', None):
-    # local img.show for errors. 
-    HAS_UPLOADER=True
+    # local img.show for errors.
+    HAS_UPLOADER = True
+
     class test_image_results:
         @classmethod
         def upload(self, a, b):
@@ -29,7 +31,6 @@ else:
         HAS_UPLOADER = True
     except ImportError:
         pass
-
 
 
 def convert_to_comparable(a, b):
@@ -51,10 +52,6 @@ class PillowTestCase(unittest.TestCase):
         unittest.TestCase.__init__(self, *args, **kwargs)
         # holds last result object passed to run method:
         self.currentResult = None
-
-    # Nicer output for --verbose
-    def __str__(self):
-        return self.__class__.__name__ + "." + self._testMethodName
 
     def run(self, result=None):
         self.currentResult = result  # remember result for use later
@@ -83,7 +80,7 @@ class PillowTestCase(unittest.TestCase):
             self.assertTrue(
                 all(x == y for x, y in zip(a, b)),
                 msg or "got %s, expected %s" % (a, b))
-        except:
+        except Exception:
             self.assertEqual(a, b, msg)
 
     def assert_image(self, im, mode, size, msg=None):
@@ -109,7 +106,7 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except Exception as msg:
+                except Exception:
                     pass
 
             self.fail(msg or "got different content")
@@ -119,7 +116,7 @@ class PillowTestCase(unittest.TestCase):
             if mode:
                 img = img.convert(mode)
             self.assert_image_equal(a, img, msg)
-            
+
     def assert_image_similar(self, a, b, epsilon, msg=None):
         epsilon = float(epsilon)
         self.assertEqual(
@@ -148,11 +145,12 @@ class PillowTestCase(unittest.TestCase):
                 try:
                     url = test_image_results.upload(a, b)
                     logger.error("Url for test images: %s" % url)
-                except:
+                except Exception:
                     pass
             raise e
 
-    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None, mode=None):
+    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None,
+                                    mode=None):
         with Image.open(filename) as img:
             if mode:
                 img = img.convert(mode)
@@ -161,7 +159,6 @@ class PillowTestCase(unittest.TestCase):
     def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
 
-        result = None
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
@@ -173,7 +170,7 @@ class PillowTestCase(unittest.TestCase):
             if warn_class is None:
                 self.assertEqual(len(w), 0,
                                  "Expected no warnings, got %s" %
-                                 list(v.category for v in w))
+                                 [v.category for v in w])
             else:
                 self.assertGreaterEqual(len(w), 1)
                 found = False
@@ -185,10 +182,20 @@ class PillowTestCase(unittest.TestCase):
         return result
 
     def assert_all_same(self, items, msg=None):
-        self.assertTrue(items.count(items[0]) == len(items), msg)
+        self.assertEqual(items.count(items[0]), len(items), msg)
 
     def assert_not_all_same(self, items, msg=None):
-        self.assertFalse(items.count(items[0]) == len(items), msg)
+        self.assertNotEqual(items.count(items[0]), len(items), msg)
+
+    def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
+        """Tests if actuals has values within threshold from targets"""
+
+        value = True
+        for i, target in enumerate(targets):
+            value *= (target - threshold <= actuals[i] <= target + threshold)
+
+        self.assertTrue(value,
+                        msg + ': ' + repr(actuals) + ' != ' + repr(targets))
 
     def skipKnownBadTest(self, msg=None, platform=None,
                          travis=None, interpreter=None):
@@ -227,26 +234,27 @@ class PillowTestCase(unittest.TestCase):
         raise IOError()
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class PillowLeakTestCase(PillowTestCase):
-    # requires unix/osx
+    # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
 
     def _get_mem_usage(self):
         """
         Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
-        between OSX and Linux rss reporting
+        between macOS and Linux rss reporting
 
-        :returns; memory usage in kilobytes
+        :returns: memory usage in kilobytes
         """
 
         from resource import getrusage, RUSAGE_SELF
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
             # man 2 getrusage:
-            #     ru_maxrss    the maximum resident set size utilized (in bytes).
-            return mem / 1024 # Kb
+            #     ru_maxrss
+            # This is the maximum resident set size utilized (in bytes).
+            return mem / 1024  # Kb
         else:
             # linux
             # man 2 getrusage
@@ -259,13 +267,16 @@ class PillowLeakTestCase(PillowTestCase):
         for cycle in range(self.iterations):
             core()
             mem = (self._get_mem_usage() - start_mem)
-            self.assertLess(mem, self.mem_limit,
-                            msg='memory usage limit exceeded in iteration %d' % cycle)
+            msg = 'memory usage limit exceeded in iteration %d' % cycle
+            self.assertLess(mem, self.mem_limit, msg)
 
 
 # helpers
 
-py3 = (sys.version_info >= (3, 0))
+if not py3:
+    # Remove DeprecationWarning in Python 3
+    PillowTestCase.assertRaisesRegex = PillowTestCase.assertRaisesRegexp
+    PillowTestCase.assertRegex = PillowTestCase.assertRegexpMatches
 
 
 def fromstring(data):

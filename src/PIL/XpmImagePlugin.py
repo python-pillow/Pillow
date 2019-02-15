@@ -19,6 +19,8 @@ import re
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, o8
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 # XPM header
@@ -51,7 +53,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if m:
                 break
 
-        self.size = int(m.group(1)), int(m.group(2))
+        self._size = int(m.group(1)), int(m.group(2))
 
         pal = int(m.group(3))
         bpp = int(m.group(4))
@@ -120,6 +122,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
 #
 # Registry
+
 
 Image.register_open(XpmImageFile.format, XpmImageFile, _accept)
 

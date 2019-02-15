@@ -1,6 +1,6 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageFilter
 
 
 sample = Image.new("L", (7, 5))
@@ -16,7 +16,7 @@ sample.putdata(sum([
 class TestBoxBlurApi(PillowTestCase):
 
     def test_imageops_box_blur(self):
-        i = ImageOps.box_blur(sample, 1)
+        i = sample.filter(ImageFilter.BoxBlur(1))
         self.assertEqual(i.mode, sample.mode)
         self.assertEqual(i.size, sample.size)
         self.assertIsInstance(i, Image.Image)
@@ -215,7 +215,3 @@ class TestBoxBlur(PillowTestCase):
             passes=3,
             delta=1,
         )
-
-
-if __name__ == '__main__':
-    unittest.main()

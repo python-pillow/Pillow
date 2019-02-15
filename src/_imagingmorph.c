@@ -64,12 +64,12 @@ apply(PyObject *self, PyObject* args)
     width = imgin->xsize;
     height = imgin->ysize;
 
-    if (imgin->type != IMAGING_TYPE_UINT8 &&
+    if (imgin->type != IMAGING_TYPE_UINT8 ||
         imgin->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
     }
-    if (imgout->type != IMAGING_TYPE_UINT8 &&
+    if (imgout->type != IMAGING_TYPE_UINT8 ||
         imgout->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
@@ -126,7 +126,7 @@ apply(PyObject *self, PyObject* args)
 }
 
 /* Match a morphologic LUT to a binary image and return a list
-   of the coordinates of all all matching pixels.
+   of the coordinates of all matching pixels.
 
    Expected parameters:
 
@@ -167,7 +167,7 @@ match(PyObject *self, PyObject* args)
     lut = PyBytes_AsString(py_lut);
     imgin = (Imaging) i0;
 
-    if (imgin->type != IMAGING_TYPE_UINT8 &&
+    if (imgin->type != IMAGING_TYPE_UINT8 ||
         imgin->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
@@ -219,7 +219,7 @@ match(PyObject *self, PyObject* args)
 }
 
 /* Return a list of the coordinates of all turned on pixels in an image.
-   May be used to extract features after a sequence of MorphOp's were applied.
+   May be used to extract features after a sequence of MorphOps were applied.
    This is faster than match as only 1x1 lookup is made.
 */
 static PyObject*

@@ -48,10 +48,9 @@ def isInt(f):
             return 1
         else:
             return 0
-    except ValueError:
+    except (ValueError, OverflowError):
         return 0
-    except OverflowError:
-        return 0
+
 
 iforms = [1, 3, -11, -12, -21, -22]
 
@@ -75,7 +74,6 @@ def isSpiderHeader(t):
     labrec = int(h[13])   # no. records in file header
     labbyt = int(h[22])   # total no. of bytes in header
     lenbyt = int(h[23])   # record length in bytes
-    # print("labrec = %d, labbyt = %d, lenbyt = %d" % (labrec,labbyt,lenbyt))
     if labbyt != (labrec * lenbyt):
         return 0
     # looks like a valid header
@@ -122,7 +120,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         if iform != 1:
             raise SyntaxError("not a Spider 2D image")
 
-        self.size = int(h[12]), int(h[2])  # size in pixels (width, height)
+        self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 
@@ -195,13 +193,22 @@ class SpiderImageFile(ImageFile.ImageFile):
         from PIL import ImageTk
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 
 # --------------------------------------------------------------------
 # Image series
 
 # given a list of filenames, return a list of images
 def loadImageSeries(filelist=None):
-    " create a list of Image.images for use in montage "
+    """create a list of Image.images for use in montage"""
     if filelist is None or len(filelist) < 1:
         return
 
@@ -212,7 +219,7 @@ def loadImageSeries(filelist=None):
             continue
         try:
             im = Image.open(img).convert2byte()
-        except:
+        except Exception:
             if not isSpiderImage(img):
                 print(img + " is not a Spider image file")
             continue
@@ -281,12 +288,13 @@ def _save_spider(im, fp, filename):
 
 # --------------------------------------------------------------------
 
+
 Image.register_open(SpiderImageFile.format, SpiderImageFile)
 Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
 
-    if not sys.argv[1:]:
+    if len(sys.argv) < 2:
         print("Syntax: python SpiderImagePlugin.py [infile] [outfile]")
         sys.exit()
 
@@ -294,10 +302,6 @@ if __name__ == "__main__":
     if not isSpiderImage(filename):
         print("input image must be in Spider format")
         sys.exit()
-
-    outfile = ""
-    if len(sys.argv[1:]) > 1:
-        outfile = sys.argv[2]
 
     im = Image.open(filename)
     print("image: " + str(im))
@@ -307,7 +311,9 @@ if __name__ == "__main__":
     print("max, min: ", end=' ')
     print(im.getextrema())
 
-    if outfile != "":
+    if len(sys.argv) > 2:
+        outfile = sys.argv[2]
+
         # perform some image operation
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
         print(

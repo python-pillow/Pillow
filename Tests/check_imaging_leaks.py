@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 import sys
 from PIL import Image
 
@@ -9,7 +9,7 @@ min_iterations = 100
 max_iterations = 10000
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestImagingLeaks(PillowTestCase):
 
     def _get_mem_usage(self):
@@ -25,9 +25,8 @@ class TestImagingLeaks(PillowTestCase):
             if i < min_iterations:
                 mem_limit = mem + 1
                 continue
-            self.assertLessEqual(mem, mem_limit,
-                                 msg='memory usage limit exceeded after %d iterations'
-                                 % (i + 1))
+            msg = 'memory usage limit exceeded after %d iterations' % (i + 1)
+            self.assertLessEqual(mem, mem_limit, msg)
 
     def test_leak_putdata(self):
         im = Image.new('RGB', (25, 25))
@@ -39,6 +38,7 @@ class TestImagingLeaks(PillowTestCase):
         self._test_leak(min_iterations, max_iterations,
                         # Pass a new list at each iteration.
                         lambda: im.point(range(256)))
+
 
 if __name__ == '__main__':
     unittest.main()

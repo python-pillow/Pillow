@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import Image
 
 
@@ -95,8 +95,31 @@ class TestImageRotate(PillowTestCase):
         im = hopper()
         self.rotate(im, im.mode, 45, center=(0, 0))
         self.rotate(im, im.mode, 45, translate=(im.size[0]/2, 0))
-        self.rotate(im, im.mode, 45, center=(0, 0), translate=(im.size[0]/2, 0))
+        self.rotate(im, im.mode, 45, center=(0, 0),
+                    translate=(im.size[0]/2, 0))
 
+    def test_rotate_no_fill(self):
+        im = Image.new('RGB', (100, 100), 'green')
+        target = Image.open('Tests/images/rotate_45_no_fill.png')
+        im = im.rotate(45)
+        self.assert_image_equal(im, target)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_rotate_with_fill(self):
+        im = Image.new('RGB', (100, 100), 'green')
+        target = Image.open('Tests/images/rotate_45_with_fill.png')
+        im = im.rotate(45, fillcolor='white')
+        self.assert_image_equal(im, target)
+
+    def test_alpha_rotate_no_fill(self):
+        # Alpha images are handled differently internally
+        im = Image.new('RGBA', (10, 10), 'green')
+        im = im.rotate(45, expand=1)
+        corner = im.getpixel((0, 0))
+        self.assertEqual(corner, (0, 0, 0, 0))
+
+    def test_alpha_rotate_with_fill(self):
+        # Alpha images are handled differently internally
+        im = Image.new('RGBA', (10, 10), 'green')
+        im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))
+        corner = im.getpixel((0, 0))
+        self.assertEqual(corner, (255, 0, 0, 255))

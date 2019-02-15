@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 
 class TestImageGetColors(PillowTestCase):
@@ -65,7 +65,3 @@ class TestImageGetColors(PillowTestCase):
         A = im.getcolors(maxcolors=16)
         A.sort()
         self.assertEqual(A, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

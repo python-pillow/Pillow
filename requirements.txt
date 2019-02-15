@@ -13,11 +13,11 @@ Jinja2
 MarkupSafe
 olefile
 pycodestyle
-pytest
-pytest-cov
 pyflakes
 Pygments
 pyroma
+pytest
+pytest-cov
 pytz
 requests
 six

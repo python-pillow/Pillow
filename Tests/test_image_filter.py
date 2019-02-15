@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageFilter
 
@@ -94,10 +94,19 @@ class TestImageFilter(PillowTestCase):
         self.assertEqual(rankfilter.size, 1)
         self.assertEqual(rankfilter.rank, 2)
 
+    def test_builtinfilter_p(self):
+        builtinFilter = ImageFilter.BuiltinFilter()
+
+        self.assertRaises(ValueError, builtinFilter.filter, hopper("P"))
+
+    def test_kernel_not_enough_coefficients(self):
+        self.assertRaises(ValueError,
+                          lambda: ImageFilter.Kernel((3, 3), (0, 0)))
+
     def test_consistency_3x3(self):
         source = Image.open("Tests/images/hopper.bmp")
         reference = Image.open("Tests/images/hopper_emboss.bmp")
-        kernel = ImageFilter.Kernel((3, 3),
+        kernel = ImageFilter.Kernel((3, 3),  # noqa: E127
                                     (-1, -1,  0,
                                      -1,  0,  1,
                                       0,  1,  1), .3)
@@ -113,7 +122,7 @@ class TestImageFilter(PillowTestCase):
     def test_consistency_5x5(self):
         source = Image.open("Tests/images/hopper.bmp")
         reference = Image.open("Tests/images/hopper_emboss_more.bmp")
-        kernel = ImageFilter.Kernel((5, 5),
+        kernel = ImageFilter.Kernel((5, 5),  # noqa: E127
                                     (-1, -1, -1, -1,  0,
                                      -1, -1, -1,  0,  1,
                                      -1, -1,  0,  1,  1,
@@ -127,7 +136,3 @@ class TestImageFilter(PillowTestCase):
                 Image.merge(mode, source[:len(mode)]).filter(kernel),
                 Image.merge(mode, reference[:len(mode)]),
             )
-
-
-if __name__ == '__main__':
-    unittest.main()

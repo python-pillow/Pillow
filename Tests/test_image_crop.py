@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -102,7 +102,3 @@ class TestImageCrop(PillowTestCase):
         cropped = im.crop((10, 10, 20, 20))
         self.assertEqual(cropped.size, (10, 10))
         self.assertEqual(cropped.getdata()[2], (0, 0, 0))
-
-
-if __name__ == '__main__':
-    unittest.main()

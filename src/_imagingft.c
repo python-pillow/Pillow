@@ -108,7 +108,7 @@ typedef struct {
     t_raqm_set_par_direction set_par_direction;
     t_raqm_add_font_feature add_font_feature;
     t_raqm_set_freetype_face set_freetype_face;
-    t_raqm_layout layout; 
+    t_raqm_layout layout;
     t_raqm_get_glyphs get_glyphs;
     t_raqm_get_glyphs_01 get_glyphs_01;
     t_raqm_destroy destroy;
@@ -247,7 +247,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i", 
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i",
                                      kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
@@ -458,7 +458,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             count = 0;
             goto failed;
         }
-    } else { /* version == 2 */ 
+    } else { /* version == 2 */
         glyphs = (*p_raqm.get_glyphs)(rq, &count);
         if (glyphs == NULL) {
             PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
@@ -654,7 +654,7 @@ font_getsize(FontObject* self, PyObject* args)
         PyMem_Free(glyph_info);
         glyph_info = NULL;
     }
-            
+
     if (face) {
 
         /* left bearing */
@@ -672,47 +672,6 @@ font_getsize(FontObject* self, PyObject* args)
         PIXEL(x), PIXEL(y_max - y_min),
         PIXEL(xoffset), yoffset
         );
-}
-
-static PyObject*
-font_getabc(FontObject* self, PyObject* args)
-{
-    FT_ULong ch;
-    FT_Face face;
-    double a, b, c;
-
-    /* calculate ABC values for a given string */
-
-    PyObject* string;
-    if (!PyArg_ParseTuple(args, "O:getabc", &string))
-        return NULL;
-
-#if PY_VERSION_HEX >= 0x03000000
-    if (!PyUnicode_Check(string)) {
-#else
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#endif
-        PyErr_SetString(PyExc_TypeError, "expected string");
-        return NULL;
-    }
-
-    if (font_getchar(string, 0, &ch)) {
-        int index, error;
-        face = self->face;
-        index = FT_Get_Char_Index(face, ch);
-        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
-        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
-        if (error)
-            return geterror(error);
-        a = face->glyph->metrics.horiBearingX / 64.0;
-        b = face->glyph->metrics.width / 64.0;
-        c = (face->glyph->metrics.horiAdvance -
-             face->glyph->metrics.horiBearingX -
-             face->glyph->metrics.width) / 64.0;
-    } else
-        a = b = c = 0.0;
-
-    return Py_BuildValue("ddd", a, b, c);
 }
 
 static PyObject*
@@ -854,7 +813,6 @@ font_dealloc(FontObject* self)
 static PyMethodDef font_methods[] = {
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
-    {"getabc", (PyCFunction) font_getabc, METH_VARARGS},
     {NULL, NULL}
 };
 

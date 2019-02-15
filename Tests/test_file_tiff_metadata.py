@@ -1,7 +1,7 @@
 import io
 import struct
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import _limit_rational, IFDRational
@@ -56,7 +56,8 @@ class TestFileTiffMetadata(PillowTestCase):
         loaded = Image.open(f)
 
         self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (len(bindata),))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts],
+                         (len(bindata),))
 
         self.assertEqual(loaded.tag[ImageJMetaData], bindata)
         self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
@@ -70,14 +71,15 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertAlmostEqual(loaded_double, doubledata)
 
         # check with 2 element ImageJMetaDataByteCounts, issue #2006
-        
+
         info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
         img.save(f, tiffinfo=info)
         loaded = Image.open(f)
 
-        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
-        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8))
-
+        self.assertEqual(loaded.tag[ImageJMetaDataByteCounts],
+                         (8, len(bindata) - 8))
+        self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts],
+                         (8, len(bindata) - 8))
 
     def test_read_metadata(self):
         img = Image.open('Tests/images/hopper_g4.tif')
@@ -133,9 +135,9 @@ class TestFileTiffMetadata(PillowTestCase):
         for k, v in original.items():
             if isinstance(v, IFDRational):
                 original[k] = IFDRational(*_limit_rational(v, 2**31))
-            if isinstance(v, tuple) and isinstance(v[0], IFDRational):
-                original[k] = tuple([IFDRational(
-                                     *_limit_rational(elt, 2**31)) for elt in v])
+            elif isinstance(v, tuple) and isinstance(v[0], IFDRational):
+                original[k] = tuple(IFDRational(*_limit_rational(elt, 2**31))
+                                    for elt in v)
 
         ignored = ['StripByteCounts', 'RowsPerStrip',
                    'PageNumber', 'StripOffsets']
@@ -170,10 +172,8 @@ class TestFileTiffMetadata(PillowTestCase):
         f = io.BytesIO(b'II*\x00\x08\x00\x00\x00')
         head = f.read(8)
         info = TiffImagePlugin.ImageFileDirectory(head)
-        try:
-            self.assert_warning(UserWarning, info.load, f)
-        except struct.error:
-            self.fail("Should not be struct errors there.")
+        # Should not raise struct.error.
+        self.assert_warning(UserWarning, info.load, f)
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
@@ -187,7 +187,8 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_iccprofile_binary(self):
         # https://github.com/python-pillow/Pillow/issues/1526
-        # We should be able to load this, but probably won't be able to save it.
+        # We should be able to load this,
+        # but probably won't be able to save it.
 
         im = Image.open('Tests/images/hopper.iccprofile_binary.tif')
         self.assertEqual(im.tag_v2.tagtype[34675], 1)
@@ -224,10 +225,8 @@ class TestFileTiffMetadata(PillowTestCase):
         head = data.read(8)
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         info.load(data)
-        try:
-            info = dict(info)
-        except ValueError:
-            self.fail("Should not be struct value error there.")
+        # Should not raise ValueError.
+        info = dict(info)
         self.assertIn(33432, info)
 
     def test_PhotoshopInfo(self):
@@ -243,14 +242,8 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
         #    277: ("SamplesPerPixel", SHORT, 1),
-        ifd._tagdata[277] = struct.pack('hh', 4,4)
+        ifd._tagdata[277] = struct.pack('hh', 4, 4)
         ifd.tagtype[277] = TiffTags.SHORT
 
-        try:
-            self.assert_warning(UserWarning, lambda: ifd[277])
-        except ValueError:
-            self.fail("Invalid Metadata count should not cause a Value Error.")
-
-
-if __name__ == '__main__':
-    unittest.main()
+        # Should not raise ValueError.
+        self.assert_warning(UserWarning, lambda: ifd[277])

@@ -20,6 +20,10 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
+import warnings
+
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 
@@ -33,6 +37,7 @@ MODES = {
     (1, 8):  "P",
     (3, 1):  "1",
     (3, 8):  "L",
+    (3, 16): "LA",
     (2, 16): "BGR;5",
     (2, 24): "BGR",
     (2, 32): "BGRA",
@@ -52,7 +57,7 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        idlen = i8(s[0])
+        id_len = i8(s[0])
 
         colormaptype = i8(s[1])
         imagetype = i8(s[2])
@@ -61,7 +66,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         flags = i8(s[17])
 
-        self.size = i16(s[12:]), i16(s[14:])
+        self._size = i16(s[12:]), i16(s[14:])
 
         # validate header fields
         if colormaptype not in (0, 1) or\
@@ -74,6 +79,8 @@ class TgaImageFile(ImageFile.ImageFile):
             self.mode = "L"
             if depth == 1:
                 self.mode = "1"  # ???
+            elif depth == 16:
+                self.mode = "LA"
         elif imagetype in (1, 9):
             self.mode = "P"
         elif imagetype in (2, 10):
@@ -97,8 +104,8 @@ class TgaImageFile(ImageFile.ImageFile):
         if imagetype & 8:
             self.info["compression"] = "tga_rle"
 
-        if idlen:
-            self.info["id_section"] = self.fp.read(idlen)
+        if id_len:
+            self.info["id_section"] = self.fp.read(id_len)
 
         if colormaptype:
             # read palette
@@ -130,9 +137,11 @@ class TgaImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Write TGA file
 
+
 SAVE = {
     "1": ("1", 1, 0, 3),
     "L": ("L", 8, 0, 3),
+    "LA": ("LA", 16, 0, 3),
     "P": ("P", 8, 1, 1),
     "RGB": ("BGR", 24, 0, 2),
     "RGBA": ("BGRA", 32, 0, 2),
@@ -146,21 +155,39 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as TGA" % im.mode)
 
+    if "rle" in im.encoderinfo:
+        rle = im.encoderinfo["rle"]
+    else:
+        compression = im.encoderinfo.get("compression",
+                                         im.info.get("compression"))
+        rle = compression == "tga_rle"
+    if rle:
+        imagetype += 8
+
+    id_section = im.encoderinfo.get("id_section",
+                                    im.info.get("id_section", ""))
+    id_len = len(id_section)
+    if id_len > 255:
+        id_len = 255
+        id_section = id_section[:255]
+        warnings.warn("id_section has been trimmed to 255 characters")
+
     if colormaptype:
         colormapfirst, colormaplength, colormapentry = 0, 256, 24
     else:
         colormapfirst, colormaplength, colormapentry = 0, 0, 0
 
-    if im.mode == "RGBA":
+    if im.mode in ("LA", "RGBA"):
         flags = 8
     else:
         flags = 0
 
-    orientation = im.info.get("orientation", -1)
+    orientation = im.encoderinfo.get("orientation",
+                                     im.info.get("orientation", -1))
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(b"\000" +
+    fp.write(o8(id_len) +
              o8(colormaptype) +
              o8(imagetype) +
              o16(colormapfirst) +
@@ -173,11 +200,20 @@ def _save(im, fp, filename):
              o8(bits) +
              o8(flags))
 
+    if id_section:
+        fp.write(id_section)
+
     if colormaptype:
         fp.write(im.im.getpalette("RGB", "BGR"))
 
-    ImageFile._save(
-        im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+    if rle:
+        ImageFile._save(
+            im,
+            fp,
+            [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))])
+    else:
+        ImageFile._save(
+            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
 
     # write targa version 2 footer
     fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
@@ -185,6 +221,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry
+
 
 Image.register_open(TgaImageFile.format, TgaImageFile)
 Image.register_save(TgaImageFile.format, _save)

@@ -43,8 +43,8 @@ from __future__ import division, print_function
 
 from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
+from ._util import py3
 
-import collections
 from fractions import Fraction
 from numbers import Number, Rational
 
@@ -54,10 +54,20 @@ import os
 import struct
 import sys
 import warnings
+import distutils.version
 
 from .TiffTags import TYPES
 
+try:
+    # Python 3
+    from collections.abc import MutableMapping
+except ImportError:
+    # Python 2.7
+    from collections import MutableMapping
 
+
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
 
@@ -194,10 +204,22 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (8, 8, 8, 8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
     (II, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (1, 0)): ("RGBA", "RGBaX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (1, 0)): ("RGBA", "RGBaX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (1, 0, 0)): ("RGBA", "RGBaXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (1, 0, 0)): ("RGBA", "RGBaXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (2,)): ("RGBA", "RGBA"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (2, 0)): ("RGBA", "RGBAX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (2, 0)): ("RGBA", "RGBAX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (2, 0, 0)): ("RGBA", "RGBAXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (2, 0, 0)): ("RGBA", "RGBAXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
 
@@ -233,9 +255,15 @@ OPEN_INFO = {
 
     (II, 5, (1,), 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
     (MM, 5, (1,), 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
+    (II, 5, (1,), 1, (8, 8, 8, 8, 8), (0,)): ("CMYK", "CMYKX"),
+    (MM, 5, (1,), 1, (8, 8, 8, 8, 8), (0,)): ("CMYK", "CMYKX"),
+    (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
+    (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
+    # JPEG compressed images handled by LibTiff and auto-converted to RGB
+    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
 
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
@@ -257,6 +285,10 @@ def _limit_rational(val, max_val):
     inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
+
+
+def _libtiff_version():
+    return Image.core.libtiff_version.split("\n")[0].split("Version ")[1]
 
 
 ##
@@ -383,7 +415,7 @@ class IFDRational(Rational):
     __round__ = _delegate('__round__')
 
 
-class ImageFileDirectory_v2(collections.MutableMapping):
+class ImageFileDirectory_v2(MutableMapping):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
@@ -409,7 +441,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         * self.tagtype = {}
 
           * Key: numerical tiff tag number
-          * Value: integer corresponding to the data type from `~PIL.TiffTags.TYPES`
+          * Value: integer corresponding to the data type from
+                   ~PIL.TiffTags.TYPES`
 
     .. versionadded:: 3.0.0
     """
@@ -505,7 +538,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
-    if bytes is str:
+    if not py3:
         def has_key(self, tag):
             return tag in self
 
@@ -514,8 +547,8 @@ class ImageFileDirectory_v2(collections.MutableMapping):
 
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
-        if bytes is str:
-            basetypes += unicode,
+        if not py3:
+            basetypes += unicode,  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -526,25 +559,28 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             else:
                 self.tagtype[tag] = 7
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = 5
+                    self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
-                        self.tagtype[tag] = 3
+                        self.tagtype[tag] = TiffTags.SHORT
                     else:
-                        self.tagtype[tag] = 4
+                        self.tagtype[tag] = TiffTags.LONG
                 elif all(isinstance(v, float) for v in values):
-                    self.tagtype[tag] = 12
+                    self.tagtype[tag] = TiffTags.DOUBLE
                 else:
-                    if bytes is str:
-                        # Never treat data as binary by default on Python 2.
-                        self.tagtype[tag] = 2
-                    else:
+                    if py3:
                         if all(isinstance(v, str) for v in values):
-                            self.tagtype[tag] = 2
+                            self.tagtype[tag] = TiffTags.ASCII
+                    else:
+                        # Never treat data as binary by default on Python 2.
+                        self.tagtype[tag] = TiffTags.ASCII
 
-        if self.tagtype[tag] == 7 and bytes is not str:
+        if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
             values = [value.encode("ascii", 'replace') if isinstance(
                       value, str) else value]
+        elif self.tagtype[tag] == TiffTags.RATIONAL:
+            values = [float(v) if isinstance(v, int) else v
+                      for v in values]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
@@ -555,17 +591,21 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if ((info.length == 1) or
-            (info.length is None and len(values) == 1 and not legacy_api)):
+        if (info.length == 1) or \
+           (info.length is None and len(values) == 1 and not legacy_api):
             # Don't mess with the legacy api, since it's frozen.
-            if legacy_api and self.tagtype[tag] in [5, 10]: # rationals
+            if legacy_api and self.tagtype[tag] in [
+                TiffTags.RATIONAL,
+                TiffTags.SIGNED_RATIONAL
+            ]:  # rationals
                 values = values,
             try:
                 dest[tag], = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: %s, expected 1" % (
+                    "Metadata Warning, tag %s had too many entries: "
+                    "%s, expected 1" % (
                         tag, len(values)))
                 dest[tag] = values[0]
 
@@ -593,13 +633,13 @@ class ImageFileDirectory_v2(collections.MutableMapping):
             from .TiffTags import TYPES
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
-            _load_dispatch[idx] = size, func
+            _load_dispatch[idx] = size, func  # noqa: F821
             return func
         return decorator
 
     def _register_writer(idx):
         def decorator(func):
-            _write_dispatch[idx] = func
+            _write_dispatch[idx] = func  # noqa: F821
             return func
         return decorator
 
@@ -608,19 +648,19 @@ class ImageFileDirectory_v2(collections.MutableMapping):
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (
+        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (  # noqa: F821
             self._unpack("{}{}".format(len(data) // size, fmt), data))
-        _write_dispatch[idx] = lambda self, *values: (
+        _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
             b"".join(self._pack(fmt, value) for value in values))
 
     list(map(_register_basic,
-             [(3, "H", "short"),
-              (4, "L", "long"),
-              (6, "b", "signed byte"),
-              (8, "h", "signed short"),
-              (9, "l", "signed long"),
-              (11, "f", "float"),
-              (12, "d", "double")]))
+             [(TiffTags.SHORT, "H", "short"),
+              (TiffTags.LONG, "L", "long"),
+              (TiffTags.SIGNED_BYTE, "b", "signed byte"),
+              (TiffTags.SIGNED_SHORT, "h", "signed short"),
+              (TiffTags.SIGNED_LONG, "l", "signed long"),
+              (TiffTags.FLOAT, "f", "float"),
+              (TiffTags.DOUBLE, "d", "double")]))
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
@@ -639,7 +679,7 @@ class ImageFileDirectory_v2(collections.MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        if sys.version_info[0] == 2:
+        if sys.version_info.major == 2:
             value = value.decode('ascii', 'replace')
         return b"" + value.encode('ascii', 'replace') + b"\0"
 
@@ -776,7 +816,10 @@ class ImageFileDirectory_v2(collections.MutableMapping):
                     print("- value:", values)
 
             # count is sum of lengths for string and arbitrary data
-            count = len(data) if typ in [2, 7] else len(values)
+            if typ in [TiffTags.ASCII, TiffTags.UNDEFINED]:
+                count = len(data)
+            else:
+                count = len(values)
             # figure out if data fits into the entry
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
@@ -922,7 +965,7 @@ class TiffImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-        "Open the first image in a TIFF file"
+        """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
@@ -979,7 +1022,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return self._is_animated
 
     def seek(self, frame):
-        "Select a given frame as current image"
+        """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
         self._seek(frame)
@@ -1017,22 +1060,21 @@ class TiffImageFile(ImageFile.ImageFile):
         self._setup()
 
     def tell(self):
-        "Return the current frame number"
+        """Return the current frame number"""
         return self.__frame
 
-    def _decoder(self, rawmode, layer, tile=None):
-        "Setup decoder contexts"
+    @property
+    def size(self):
+        return self._size
 
-        args = None
-        if rawmode == "RGB" and self._planar_configuration == 2:
-            rawmode = rawmode[layer]
-        compression = self._compression
-        if compression == "raw":
-            args = (rawmode, 0, 1)
-        elif compression == "packbits":
-            args = rawmode
-
-        return args
+    @size.setter
+    def size(self, value):
+        warnings.warn(
+            'Setting the size of a TIFF image directly is deprecated, and will'
+            ' be removed in a future version. Use the resize method instead.',
+            DeprecationWarning
+        )
+        self._size = value
 
     def load(self):
         if self.use_load_libtiff:
@@ -1133,7 +1175,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
     def _setup(self):
-        "Setup this image object based on current tags"
+        """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")
@@ -1154,11 +1196,12 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- photometric_interpretation:", photo)
             print("- planar_configuration:", self._planar_configuration)
             print("- fill_order:", fillorder)
+            print("- YCbCr subsampling:", self.tag.get(530))
 
         # size
         xsize = self.tag_v2.get(IMAGEWIDTH)
         ysize = self.tag_v2.get(IMAGELENGTH)
-        self.size = xsize, ysize
+        self._size = xsize, ysize
 
         if DEBUG:
             print("- size:", self.size)
@@ -1223,100 +1266,86 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.info["resolution"] = xres, yres
 
         # build tile descriptors
-        x = y = l = 0
+        x = y = layer = 0
         self.tile = []
-        self.use_load_libtiff = False
-        if STRIPOFFSETS in self.tag_v2:
+        self.use_load_libtiff = READ_LIBTIFF or self._compression != 'raw'
+        if self.use_load_libtiff:
+            # Decoder expects entire file as one tile.
+            # There's a buffer size limit in load (64k)
+            # so large g4 images will fail if we use that
+            # function.
+            #
+            # Setup the one tile for the whole image, then
+            # use the _load_libtiff function.
+
+            # libtiff handles the fillmode for us, so 1;IR should
+            # actually be 1;I. Including the R double reverses the
+            # bits, so stripes of the image are reversed.  See
+            # https://github.com/python-pillow/Pillow/issues/279
+            if fillorder == 2:
+                # Replace fillorder with fillorder=1
+                key = key[:3] + (1,) + key[4:]
+                if DEBUG:
+                    print("format key:", key)
+                # this should always work, since all the
+                # fillorder==2 modes have a corresponding
+                # fillorder=1 mode
+                self.mode, rawmode = OPEN_INFO[key]
+            # libtiff always returns the bytes in native order.
+            # we're expecting image byte order. So, if the rawmode
+            # contains I;16, we need to convert from native to image
+            # byte order.
+            if rawmode == 'I;16':
+                rawmode = 'I;16N'
+            if ';16B' in rawmode:
+                rawmode = rawmode.replace(';16B', ';16N')
+            if ';16L' in rawmode:
+                rawmode = rawmode.replace(';16L', ';16N')
+
+            # Offset in the tile tuple is 0, we go from 0,0 to
+            # w,h, and we only do this once -- eds
+            a = (rawmode, self._compression, False)
+            self.tile.append(
+                (self._compression,
+                 (0, 0, xsize, ysize),
+                 0, a))
+
+        elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
-            offsets = self.tag_v2[STRIPOFFSETS]
-            h = self.tag_v2.get(ROWSPERSTRIP, ysize)
-            w = self.size[0]
-            if READ_LIBTIFF or self._compression != 'raw':
-                # if DEBUG:
-                #     print("Activating g4 compression for whole file")
-
-                # Decoder expects entire file as one tile.
-                # There's a buffer size limit in load (64k)
-                # so large g4 images will fail if we use that
-                # function.
-                #
-                # Setup the one tile for the whole image, then
-                # use the _load_libtiff function.
-
-                self.use_load_libtiff = True
-
-                # libtiff handles the fillmode for us, so 1;IR should
-                # actually be 1;I. Including the R double reverses the
-                # bits, so stripes of the image are reversed.  See
-                # https://github.com/python-pillow/Pillow/issues/279
-                if fillorder == 2:
-                    key = (
-                        self.tag_v2.prefix, photo, sampleFormat, 1,
-                        self.tag_v2.get(BITSPERSAMPLE, (1,)),
-                        self.tag_v2.get(EXTRASAMPLES, ())
-                        )
-                    if DEBUG:
-                        print("format key:", key)
-                    # this should always work, since all the
-                    # fillorder==2 modes have a corresponding
-                    # fillorder=1 mode
-                    self.mode, rawmode = OPEN_INFO[key]
-                # libtiff always returns the bytes in native order.
-                # we're expecting image byte order. So, if the rawmode
-                # contains I;16, we need to convert from native to image
-                # byte order.
-                if rawmode == 'I;16':
-                    rawmode = 'I;16N'
-                if ';16B' in rawmode:
-                    rawmode = rawmode.replace(';16B', ';16N')
-                if ';16L' in rawmode:
-                    rawmode = rawmode.replace(';16L', ';16N')
-
-
-                # Offset in the tile tuple is 0, we go from 0,0 to
-                # w,h, and we only do this once -- eds
-                a = (rawmode, self._compression, False)
-                self.tile.append(
-                    (self._compression,
-                     (0, 0, w, ysize),
-                     0, a))
-                a = None
-
+            if STRIPOFFSETS in self.tag_v2:
+                offsets = self.tag_v2[STRIPOFFSETS]
+                h = self.tag_v2.get(ROWSPERSTRIP, ysize)
+                w = self.size[0]
             else:
-                for i, offset in enumerate(offsets):
-                    a = self._decoder(rawmode, l, i)
-                    self.tile.append(
-                        (self._compression,
-                            (0, min(y, ysize), w, min(y+h, ysize)),
-                            offset, a))
-                    if DEBUG:
-                        print("tiles: ", self.tile)
-                    y = y + h
-                    if y >= self.size[1]:
-                        x = y = 0
-                        l += 1
-                    a = None
-        elif TILEOFFSETS in self.tag_v2:
-            # tiled image
-            w = self.tag_v2.get(322)
-            h = self.tag_v2.get(323)
-            a = None
-            for o in self.tag_v2[TILEOFFSETS]:
-                if not a:
-                    a = self._decoder(rawmode, l)
-                # FIXME: this doesn't work if the image size
-                # is not a multiple of the tile size...
+                # tiled image
+                offsets = self.tag_v2[TILEOFFSETS]
+                w = self.tag_v2.get(322)
+                h = self.tag_v2.get(323)
+
+            for offset in offsets:
+                if x + w > xsize:
+                    stride = w * sum(bps_tuple) / 8  # bytes per line
+                else:
+                    stride = 0
+
+                tile_rawmode = rawmode
+                if self._planar_configuration == 2:
+                    # each band on it's own layer
+                    tile_rawmode = rawmode[layer]
+                    # adjust stride width accordingly
+                    stride /= bps_count
+
+                a = (tile_rawmode, int(stride), 1)
                 self.tile.append(
                     (self._compression,
-                        (x, y, x+w, y+h),
-                        o, a))
+                     (x, y, min(x+w, xsize), min(y+h, ysize)),
+                     offset, a))
                 x = x + w
                 if x >= self.size[0]:
                     x, y = 0, y + h
                     if y >= self.size[1]:
                         x = y = 0
-                        l += 1
-                        a = None
+                        layer += 1
         else:
             if DEBUG:
                 print("- unsupported data organization")
@@ -1331,6 +1360,15 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode == "P":
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 #
@@ -1375,8 +1413,9 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
-    compression = im.encoderinfo.get('compression',
-                                     im.info.get('compression', 'raw'))
+    compression = im.encoderinfo.get('compression', im.info.get('compression'))
+    if compression is None:
+        compression = 'raw'
 
     libtiff = WRITE_LIBTIFF or compression != 'raw'
 
@@ -1396,7 +1435,7 @@ def _save(im, fp, filename):
         ifd[key] = info.get(key)
         try:
             ifd.tagtype[key] = info.tagtype[key]
-        except:
+        except Exception:
             pass  # might not be an IFD, Might not have populated type
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
@@ -1483,14 +1522,19 @@ def _save(im, fp, filename):
                                           getattr(im, 'tag_v2', {}).items(),
                                           legacy_ifd.items()):
             # Libtiff can only process certain core items without adding
-            # them to the custom dictionary. It will segfault if it attempts
-            # to add a custom tag without the dictionary entry
-            #
-            # UNDONE --  add code for the custom dictionary
+            # them to the custom dictionary.
+            # Support for custom items has only been been added
+            # for int, float, unicode, string and byte values
             if tag not in TiffTags.LIBTIFF_CORE:
-                continue
+                if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
+                    continue
+                if (distutils.version.StrictVersion(_libtiff_version()) <
+                    distutils.version.StrictVersion("4.0")) \
+                   or not (isinstance(value, (int, float, str, bytes)) or
+                           (not py3 and isinstance(value, unicode))):  # noqa: F821
+                    continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, unicode if bytes is str else str):
+                if isinstance(value, str if py3 else unicode):  # noqa: F821
                     atts[tag] = value.encode('ascii', 'replace') + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
@@ -1508,7 +1552,6 @@ def _save(im, fp, filename):
             rawmode = 'I;16N'
 
         a = (rawmode, compression, _fp, filename, atts)
-        # print(im.mode, compression, a, im.encoderconfig)
         e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
         e.setimage(im.im, (0, 0)+im.size)
         while True:
@@ -1769,7 +1812,7 @@ class AppendingTiffWriter:
                 # local (not referenced with another offset)
                 self.rewriteLastShortToLong(offset)
                 self.f.seek(-10, os.SEEK_CUR)
-                self.writeShort(4)  # rewrite the type to LONG
+                self.writeShort(TiffTags.LONG)  # rewrite the type to LONG
                 self.f.seek(8, os.SEEK_CUR)
             elif isShort:
                 self.rewriteLastShort(offset)

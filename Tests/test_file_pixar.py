@@ -1,4 +1,4 @@
-from helper import hopper, unittest, PillowTestCase
+from .helper import hopper, PillowTestCase
 
 from PIL import Image, PixarImagePlugin
 
@@ -13,6 +13,7 @@ class TestFilePixar(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PIXAR")
+        self.assertIsNone(im.get_format_mimetype())
 
         im2 = hopper()
         self.assert_image_similar(im, im2, 4.8)
@@ -23,7 +24,3 @@ class TestFilePixar(PillowTestCase):
         self.assertRaises(
             SyntaxError,
             PixarImagePlugin.PixarImageFile, invalid_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

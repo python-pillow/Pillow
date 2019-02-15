@@ -12,12 +12,12 @@ images.
 Examples
 --------
 
+Open, rotate, and display an image (using the default viewer)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The following script loads an image, rotates it 45 degrees, and displays it
 using an external viewer (usually xv on Unix, and the paint program on
 Windows).
-
-Open, rotate, and display an image (using the default viewer)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -25,11 +25,11 @@ Open, rotate, and display an image (using the default viewer)
     im = Image.open("bride.jpg")
     im.rotate(45).show()
 
-The following script creates nice thumbnails of all JPEG images in the
-current directory preserving aspect ratios with 128x128 max resolution.
-
 Create thumbnails
 ^^^^^^^^^^^^^^^^^
+
+The following script creates nice thumbnails of all JPEG images in the
+current directory preserving aspect ratios with 128x128 max resolution.
 
 .. code-block:: python
 
@@ -59,7 +59,7 @@ Functions
         documentation`_ to have warnings output to the logging facility instead of stderr.
 
 	.. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
-	.. _the logging documentation: https://docs.python.org/2/library/logging.html?highlight=logging#integration-with-the-warnings-module
+	.. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
 
 Image processing
 ^^^^^^^^^^^^^^^^
@@ -168,10 +168,10 @@ Instances of the :py:class:`Image` class have the following attributes:
 
 .. py:attribute:: filename
 
-    The filename or path of the source file. Only images created with the 
-    factory function `open` have a filename attribute. If the input is a 
+    The filename or path of the source file. Only images created with the
+    factory function `open` have a filename attribute. If the input is a
     file like object, the filename attribute is set to an empty string.
-    
+
     :type: :py:class: `string`
 
 .. py:attribute:: format

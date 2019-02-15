@@ -67,9 +67,8 @@ Methods
                  .. versionadded:: 1.1.5
 
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -81,7 +80,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image, Jpeg2KImagePlugin
 from io import BytesIO
@@ -31,7 +31,7 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_sanity(self):
         # Internal version number
-        self.assertRegexpMatches(Image.core.jp2klib_version, r'\d+\.\d+\.\d+$')
+        self.assertRegex(Image.core.jp2klib_version, r'\d+\.\d+\.\d+$')
 
         im = Image.open('Tests/images/test-card-lossless.jp2')
         px = im.load()
@@ -39,6 +39,12 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(im.mode, 'RGB')
         self.assertEqual(im.size, (640, 480))
         self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jp2')
+
+    def test_jpf(self):
+        im = Image.open('Tests/images/balloon.jpf')
+        self.assertEqual(im.format, 'JPEG2000')
+        self.assertEqual(im.get_format_mimetype(), 'image/jpx')
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -105,6 +111,22 @@ class TestFileJpeg2k(PillowTestCase):
         im.load()
         self.assertEqual(im.size, (160, 120))
 
+    def test_layers_type(self):
+        outfile = self.tempfile('temp_layers.jp2')
+        for quality_layers in [
+            [100, 50, 10],
+            (100, 50, 10),
+            None
+        ]:
+            test_card.save(outfile, quality_layers=quality_layers)
+
+        for quality_layers in [
+            'quality_layers',
+            ('100', '50', '10')
+        ]:
+            self.assertRaises(ValueError, test_card.save, outfile,
+                              quality_layers=quality_layers)
+
     def test_layers(self):
         out = BytesIO()
         test_card.save(out, 'JPEG2000', quality_layers=[100, 50, 10],
@@ -146,13 +168,13 @@ class TestFileJpeg2k(PillowTestCase):
         self.assertEqual(j2k.mode, 'I;16')
         self.assertEqual(jp2.mode, 'I;16')
 
-    def test_16bit_monchrome_jp2_like_tiff(self):
+    def test_16bit_monochrome_jp2_like_tiff(self):
 
         tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
         jp2 = Image.open('Tests/images/16bit.cropped.jp2')
         self.assert_image_similar(jp2, tiff_16bit, 1e-3)
 
-    def test_16bit_monchrome_j2k_like_tiff(self):
+    def test_16bit_monochrome_j2k_like_tiff(self):
 
         tiff_16bit = Image.open('Tests/images/16bit.cropped.tif')
         j2k = Image.open('Tests/images/16bit.cropped.j2k')
@@ -176,5 +198,15 @@ class TestFileJpeg2k(PillowTestCase):
         with self.assertRaises(IOError):
             Image.open('Tests/images/unbound_variable.jp2')
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_parser_feed(self):
+        # Arrange
+        from PIL import ImageFile
+        with open('Tests/images/test-card-lossless.jp2', 'rb') as f:
+            data = f.read()
+
+        # Act
+        p = ImageFile.Parser()
+        p.feed(data)
+
+        # Assert
+        self.assertEqual(p.image.size, (640, 480))

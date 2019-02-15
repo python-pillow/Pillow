@@ -25,7 +25,6 @@ Example: Draw a gray cross over an image
     draw = ImageDraw.Draw(im)
     draw.line((0, 0) + im.size, fill=128)
     draw.line((0, im.size[1], im.size[0], 0), fill=128)
-    del draw
 
     # write to stdout
     im.save(sys.stdout, "PNG")
@@ -38,13 +37,14 @@ Coordinates
 ^^^^^^^^^^^
 
 The graphics interface uses the same coordinate system as PIL itself, with (0,
-0) in the upper left corner.
+0) in the upper left corner. Any pixels drawn outside of the image bounds will
+be discarded.
 
 Colors
 ^^^^^^
 
 To specify colors, you can use numbers or tuples just as you would use with
-:py:meth:`PIL.Image.Image.new` or :py:meth:`PIL.Image.Image.putpixel`. For “1”,
+:py:meth:`PIL.Image.new` or :py:meth:`PIL.Image.Image.putpixel`. For “1”,
 “L”, and “I” images, use integers. For “RGB” images, use a 3-tuple containing
 integer values. For “F” images, use integer or floating point values.
 
@@ -127,17 +127,21 @@ Methods
 
     :returns: An image font.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None, width=0)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the arc.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.bitmap(xy, bitmap, fill=None)
 
@@ -150,51 +154,66 @@ Methods
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None, width=0)
 
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None)
+        .. versionadded:: 5.3.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=0)
 
     Draws an ellipse inside the given bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0)
+        .. versionadded:: 5.3.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the **xy** list.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the line.
-    :param width: The line width, in pixels. Note that line
-        joins are not handled well, so wide polylines will not look good.
+    :param width: The line width, in pixels.
 
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
+    :param joint: Joint type between a sequence of lines. It can be "curve",
+                  for rounded edges, or None.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None)
+        .. versionadded:: 5.3.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=0)
 
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
+             where ``x1 >= x0`` and ``y1 >= y0``.
     :param start: Starting angle, in degrees. Angles are measured from
             3 o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.point(xy, fill=None)
 
@@ -217,7 +236,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=0)
 
     Draws a rectangle.
 
@@ -226,6 +245,9 @@ Methods
             is just outside the drawn rectangle.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: 5.3.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
 
@@ -247,9 +269,8 @@ Methods
     :param align: If the text is passed on to multiline_text(),
                   "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -261,7 +282,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -277,9 +298,8 @@ Methods
     :param spacing: The number of pixels between lines.
     :param align: "left", "center" or "right".
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -291,7 +311,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -306,9 +326,8 @@ Methods
     :param spacing: If the text is passed on to multiline_textsize(),
                     the number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -320,7 +339,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -333,9 +352,8 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
     :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right), 'ttb' (top to
-                      bottom) or 'btt' (bottom to top). Requires
-                      libraqm.
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
 
                       .. versionadded:: 4.2.0
 
@@ -347,7 +365,7 @@ Methods
                      example '-liga' to disable ligatures or '-kern'
                      to disable kerning.  To get all supported
                      features, see
-                     https://www.microsoft.com/typography/otspec/featurelist.htm
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0

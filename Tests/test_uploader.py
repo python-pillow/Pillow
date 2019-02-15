@@ -1,6 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
-
-from PIL import Image
+from .helper import PillowTestCase, hopper
 
 
 class TestUploader(PillowTestCase):
@@ -13,6 +11,3 @@ class TestUploader(PillowTestCase):
         result = hopper('P').convert('RGB')
         target = hopper('RGB')
         self.assert_image_similar(result, target, 0)
-
-if __name__ == '__main__':
-    unittest.main()

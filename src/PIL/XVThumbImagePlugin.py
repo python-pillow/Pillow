@@ -20,6 +20,8 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, o8
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 _MAGIC = b"P7 332"
@@ -65,7 +67,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         s = s.strip().split()
 
         self.mode = "P"
-        self.size = int(s[0]), int(s[1])
+        self._size = int(s[0]), int(s[1])
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 

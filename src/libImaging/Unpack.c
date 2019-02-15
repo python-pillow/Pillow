@@ -45,8 +45,6 @@
 #define Y 2
 #define K 3
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
 /* byte-swapping macros */
 
 #define C16N\
@@ -188,7 +186,7 @@ unpack1IR(UINT8* out, const UINT8* in, int pixels)
 static void
 unpack18(UINT8* out, const UINT8* in, int pixels)
 {
-    /* Unpack a '|b1' image, which is a numpy boolean. 
+    /* Unpack a '|b1' image, which is a numpy boolean.
        1 == true, 0==false, in bytes */
 
     int i;
@@ -749,9 +747,9 @@ unpackRGBa16L(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[1], in[3], in[5], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[1] * 255 / a),
-                                 CLIP(in[3] * 255 / a),
-                                 CLIP(in[5] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[3] * 255 / a),
+                                 CLIP8(in[5] * 255 / a), a);
         }
         in += 8;
     }
@@ -770,9 +768,9 @@ unpackRGBa16B(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[0], in[2], in[4], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
-                                 CLIP(in[2] * 255 / a),
-                                 CLIP(in[4] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[2] * 255 / a),
+                                 CLIP8(in[4] * 255 / a), a);
         }
         in += 8;
     }
@@ -791,11 +789,53 @@ unpackRGBa(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[0] * 255 / a),
-                                 CLIP(in[1] * 255 / a),
-                                 CLIP(in[2] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[2] * 255 / a), a);
         }
         in += 4;
+    }
+}
+
+static void
+unpackRGBaskip1(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    /* premultiplied RGBA */
+    for (i = 0; i < pixels; i++) {
+        int a = in[3];
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
+        } else {
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[2] * 255 / a), a);
+        }
+        in += 5;
+    }
+}
+
+static void
+unpackRGBaskip2(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    /* premultiplied RGBA */
+    for (i = 0; i < pixels; i++) {
+        int a = in[3];
+        if ( ! a) {
+            out[i] = 0;
+        } else if (a == 255) {
+            out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
+        } else {
+            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[2] * 255 / a), a);
+        }
+        in += 6;
     }
 }
 
@@ -812,9 +852,9 @@ unpackBGRa(UINT8* _out, const UINT8* in, int pixels)
         } else if (a == 255) {
             out[i] = MAKE_UINT32(in[2], in[1], in[0], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP(in[2] * 255 / a),
-                                 CLIP(in[1] * 255 / a),
-                                 CLIP(in[0] * 255 / a), a);
+            out[i] = MAKE_UINT32(CLIP8(in[2] * 255 / a),
+                                 CLIP8(in[1] * 255 / a),
+                                 CLIP8(in[0] * 255 / a), a);
         }
         in += 4;
     }
@@ -1039,6 +1079,28 @@ copy4(UINT8* out, const UINT8* in, int pixels)
 {
     /* RGBA, CMYK quadruples */
     memcpy(out, in, 4 * pixels);
+}
+
+static void
+copy4skip1(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 5;
+    }
+}
+
+static void
+copy4skip2(UINT8* _out, const UINT8* in, int pixels)
+{
+    int i;
+    UINT32* out = (UINT32*) _out;
+    for (i = 0; i < pixels; i++) {
+        out[i] = *(UINT32*)&in[0];
+        in += 6;
+    }
 }
 
 
@@ -1281,7 +1343,11 @@ static struct {
     {"RGBA",    "LA",           16,     unpackRGBALA},
     {"RGBA",    "LA;16B",       32,     unpackRGBALA16B},
     {"RGBA",    "RGBA",         32,     copy4},
+    {"RGBA",    "RGBAX",        40,     copy4skip1},
+    {"RGBA",    "RGBAXX",       48,     copy4skip2},
     {"RGBA",    "RGBa",         32,     unpackRGBa},
+    {"RGBA",    "RGBaX",        40,     unpackRGBaskip1},
+    {"RGBA",    "RGBaXX",       48,     unpackRGBaskip2},
     {"RGBA",    "RGBa;16L",     64,     unpackRGBa16L},
     {"RGBA",    "RGBa;16B",     64,     unpackRGBa16B},
     {"RGBA",    "BGRa",         32,     unpackBGRa},
@@ -1312,7 +1378,7 @@ static struct {
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #endif
-   
+
 
     /* true colour w. alpha premultiplied */
     {"RGBa",    "RGBa",         32,     copy4},
@@ -1330,6 +1396,8 @@ static struct {
     {"RGBX",    "RGB;4B",       16,     ImagingUnpackRGB4B},
     {"RGBX",    "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGBX",    "RGBX",         32,     copy4},
+    {"RGBX",    "RGBXX",        40,     copy4skip1},
+    {"RGBX",    "RGBXXX",       48,     copy4skip2},
     {"RGBX",    "RGBX;L",       32,     unpackRGBAL},
     {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
@@ -1344,6 +1412,8 @@ static struct {
 
     /* colour separation */
     {"CMYK",    "CMYK",         32,     copy4},
+    {"CMYK",    "CMYKX",        40,     copy4skip1},
+    {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
     {"CMYK",    "C",            8,      band0},

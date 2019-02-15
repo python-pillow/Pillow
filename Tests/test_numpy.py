@@ -1,39 +1,19 @@
 from __future__ import print_function
-import sys
-from helper import unittest, PillowTestCase, hopper
 
+from .helper import PillowTestCase, hopper, unittest
 from PIL import Image
 
 try:
-    import site
     import numpy
-    assert site  # silence warning
-    assert numpy  # silence warning
 except ImportError:
-    # Skip via setUp()
-    pass
+    numpy = None
+
 
 TEST_IMAGE_SIZE = (10, 10)
 
-# Numpy on pypy as of pypy 5.3.1 is corrupting the numpy.array(Image)
-# call such that it's returning a object of type numpy.ndarray, but
-# the repr is that of a PIL.Image. Size and shape are 1 and (), not the
-# size and shape of the array. This causes failures in several tests.
-SKIP_NUMPY_ON_PYPY = hasattr(sys, 'pypy_version_info') and (
-    sys.pypy_version_info <= (5, 3, 1, 'final', 0))
 
-
+@unittest.skipIf(numpy is None, "Numpy is not installed")
 class TestNumpy(PillowTestCase):
-
-    def setUp(self):
-        try:
-            import site
-            import numpy
-            assert site  # silence warning
-            assert numpy  # silence warning
-        except ImportError:
-            self.skipTest("ImportError")
-
     def test_numpy_to_image(self):
 
         def to_image(dtype, bands=1, boolean=0):
@@ -54,7 +34,6 @@ class TestNumpy(PillowTestCase):
                 i = Image.fromarray(a)
                 if list(i.getchannel(0).getdata()) != list(range(100)):
                     print("data mismatch for", dtype)
-            # print(dtype, list(i.getdata()))
             return i
 
         # Check supported 1-bit integer formats
@@ -121,7 +100,6 @@ class TestNumpy(PillowTestCase):
             for y in range(0, img.size[1], int(img.size[1]/10)):
                 self.assert_deep_equal(px[x, y], np[y, x])
 
-    @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_16bit(self):
         img = Image.open('Tests/images/16bit.cropped.tif')
         np_img = numpy.array(img)
@@ -145,14 +123,15 @@ class TestNumpy(PillowTestCase):
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.
         pixel_value = 0x1234
-        a = numpy.array([pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16)
+        a = numpy.array(
+            [pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1],
+            dtype=numpy.uint16)
         a.shape = TEST_IMAGE_SIZE
         img = Image.fromarray(a)
 
         img_px = img.load()
         self.assertEqual(img_px[0, 0], pixel_value)
 
-    @unittest.skipIf(SKIP_NUMPY_ON_PYPY, "numpy.array(Image) is flaky on PyPy")
     def test_to_array(self):
 
         def _to_array(mode, dtype):
@@ -214,7 +193,7 @@ class TestNumpy(PillowTestCase):
 
     def test_bool(self):
         # https://github.com/python-pillow/Pillow/issues/2044
-        a = numpy.zeros((10,2), dtype=numpy.bool)
+        a = numpy.zeros((10, 2), dtype=numpy.bool)
         a[0][0] = True
 
         im2 = Image.fromarray(a)
@@ -229,7 +208,3 @@ class TestNumpy(PillowTestCase):
 
         # Act/Assert
         self.assert_warning(None, lambda: array(im))
-
-
-if __name__ == '__main__':
-    unittest.main()

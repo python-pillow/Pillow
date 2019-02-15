@@ -1,4 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
+from PIL import Image
+from .helper import PillowTestCase, hopper
 
 
 class TestImageGetExtrema(PillowTestCase):
@@ -18,8 +19,11 @@ class TestImageGetExtrema(PillowTestCase):
         self.assertEqual(
             extrema("RGBA"), ((0, 255), (0, 255), (0, 255), (255, 255)))
         self.assertEqual(
-            extrema("CMYK"), (((0, 255), (0, 255), (0, 255), (0, 0))))
+            extrema("CMYK"), ((0, 255), (0, 255), (0, 255), (0, 0)))
+        self.assertEqual(extrema("I;16"), (0, 255))
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_true_16(self):
+        im = Image.open("Tests/images/16_bit_noise.tif")
+        self.assertEqual(im.mode, 'I;16')
+        extrema = im.getextrema()
+        self.assertEqual(extrema, (106, 285))

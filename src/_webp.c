@@ -13,8 +13,8 @@
 /*
  * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
  * WebPAnimDecoder APIs are present (initial support was added in 0.5.0). The
- * very early versions added had some significant differences, so we require
- * later versions, before enabling animation support.
+ * very early versions had some significant differences, so we require later
+ * versions, before enabling animation support.
  */
 #if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
 #define HAVE_WEBPANIM
@@ -216,6 +216,8 @@ PyObject* _anim_encoder_add(PyObject* self, PyObject* args)
         WebPPictureImportRGBA(frame, rgb, 4 * width);
     } else if (strcmp(mode, "RGBX")==0) {
         WebPPictureImportRGBX(frame, rgb, 4 * width);
+    } else {
+        WebPPictureImportRGB(frame, rgb, 3 * width);
     }
 
     // Add the frame to the encoder
@@ -410,6 +412,7 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
     uint8_t* buf;
     int timestamp;
     PyObject* bytes;
+    PyObject* ret;
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
 
     if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
@@ -419,7 +422,11 @@ PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
 
     bytes = PyBytes_FromStringAndSize((char *)buf,
         decp->info.canvas_width * 4 * decp->info.canvas_height);
-    return Py_BuildValue("Si", bytes, timestamp);
+
+    ret = Py_BuildValue("Si", bytes, timestamp);
+
+    Py_DECREF(bytes);
+    return ret;
 }
 
 PyObject* _anim_decoder_has_more_frames(PyObject* self, PyObject* args)

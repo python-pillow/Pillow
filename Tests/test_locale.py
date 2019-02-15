@@ -1,5 +1,5 @@
 from __future__ import print_function
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image
 
@@ -29,10 +29,6 @@ class TestLocale(PillowTestCase):
         Image.open(path)
         try:
             locale.setlocale(locale.LC_ALL, "polish")
-        except:
+        except locale.Error:
             unittest.skip('Polish locale not available')
         Image.open(path)
-
-
-if __name__ == '__main__':
-    unittest.main()

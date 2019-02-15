@@ -1,29 +1,32 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 from PIL import Image
+from PIL._util import py3
 
 
 try:
     from PIL import ImageTk
-    import Tkinter as tk
+    if py3:
+        import tkinter as tk
+    else:
+        import Tkinter as tk
     dir(ImageTk)
     HAS_TK = True
-except (OSError, ImportError) as v:
+except (OSError, ImportError):
     # Skipped via setUp()
     HAS_TK = False
 
 TK_MODES = ('1', 'L', 'P', 'RGB', 'RGBA')
 
 
+@unittest.skipIf(not HAS_TK, "Tk not installed")
 class TestImageTk(PillowTestCase):
 
     def setUp(self):
-        if not HAS_TK:
-            self.skipTest("Tk not installed")
         try:
             # setup tk
-            app = tk.Frame()
+            tk.Frame()
             # root = tk.Tk()
-        except (tk.TclError) as v:
+        except tk.TclError as v:
             self.skipTest("TCL Error: %s" % v)
 
     def test_kw(self):
@@ -84,7 +87,3 @@ class TestImageTk(PillowTestCase):
 
         # reloaded = ImageTk.getimage(im_tk)
         # self.assert_image_equal(reloaded, im)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 import io
 from PIL import Image, IcoImagePlugin
@@ -28,7 +28,7 @@ class TestFileIco(PillowTestCase):
         # the default image
         output.seek(0)
         reloaded = Image.open(output)
-        self.assertEqual(reloaded.info['sizes'], set([(32, 32), (64, 64)]))
+        self.assertEqual(reloaded.info['sizes'], {(32, 32), (64, 64)})
 
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
@@ -46,6 +46,11 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(reloaded.format, "ICO")
         self.assert_image_equal(reloaded,
                                 hopper().resize((32, 32), Image.LANCZOS))
+
+    def test_incorrect_size(self):
+        im = Image.open(TEST_ICO_FILE)
+        with self.assertRaises(ValueError):
+            im.size = (1, 1)
 
     def test_save_256x256(self):
         """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
@@ -76,8 +81,4 @@ class TestFileIco(PillowTestCase):
         # Assert
         self.assertEqual(
             im_saved.info['sizes'],
-            set([(16, 16), (24, 24), (32, 32), (48, 48)]))
-
-
-if __name__ == '__main__':
-    unittest.main()
+            {(16, 16), (24, 24), (32, 32), (48, 48)})

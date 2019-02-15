@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase
-from helper import djpeg_available, cjpeg_available, netpbm_available
+from .helper import unittest, PillowTestCase
+from .helper import djpeg_available, cjpeg_available, netpbm_available
 
 import sys
 import shutil
@@ -18,7 +18,7 @@ test_filenames = (
 )
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestShellInjection(PillowTestCase):
 
     def assert_save_filename_check(self, src_img, save_func):
@@ -51,7 +51,3 @@ class TestShellInjection(PillowTestCase):
     def test_save_netpbm_filename_l_mode(self):
         im = Image.open(TEST_GIF).convert("L")
         self.assert_save_filename_check(im, GifImagePlugin._save_netpbm)
-
-
-if __name__ == '__main__':
-    unittest.main()

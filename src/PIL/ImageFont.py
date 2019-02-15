@@ -26,12 +26,13 @@
 #
 
 from . import Image
-from ._util import isDirectory, isPath
+from ._util import isDirectory, isPath, py3
 import os
 import sys
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
+
 
 class _imagingft_not_installed(object):
     # module placeholder
@@ -71,7 +72,7 @@ class ImageFont(object):
                 try:
                     fullname = os.path.splitext(filename)[0] + ext
                     image = Image.open(fullname)
-                except:
+                except Exception:
                     pass
                 else:
                     if image and image.mode in ("1", "L"):
@@ -140,11 +141,16 @@ class FreeTypeFont(object):
         self.layout_engine = layout_engine
 
         if isPath(font):
-            self.font = core.getfont(font, size, index, encoding, layout_engine=layout_engine)
+            self.font = core.getfont(font, size, index, encoding,
+                                     layout_engine=layout_engine)
         else:
             self.font_bytes = font.read()
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine)
+
+    def _multiline_split(self, text):
+        split_character = "\n" if isinstance(text, str) else b"\n"
+        return text.split(split_character)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -156,13 +162,26 @@ class FreeTypeFont(object):
         size, offset = self.font.getsize(text, direction, features)
         return (size[0] + offset[0], size[1] + offset[1])
 
+    def getsize_multiline(self, text, direction=None,
+                          spacing=4, features=None):
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = self.getsize('A')[1] + spacing
+        for line in lines:
+            line_width, line_height = self.getsize(line, direction, features)
+            max_width = max(max_width, line_width)
+
+        return max_width, len(lines)*line_spacing - spacing
+
     def getoffset(self, text):
         return self.font.getsize(text)[1]
 
     def getmask(self, text, mode="", direction=None, features=None):
-        return self.getmask2(text, mode, direction=direction, features=features)[0]
+        return self.getmask2(text, mode, direction=direction,
+                             features=features)[0]
 
-    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None, features=None, *args, **kwargs):
+    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
+                 features=None, *args, **kwargs):
         size, offset = self.font.getsize(text, direction, features)
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1", direction, features)
@@ -179,12 +198,13 @@ class FreeTypeFont(object):
 
         :return: A FreeTypeFont object.
         """
-        return FreeTypeFont(font=self.path if font is None else font,
-                            size=self.size if size is None else size,
-                            index=self.index if index is None else index,
-                            encoding=self.encoding if encoding is None else encoding,
-                            layout_engine=self.layout_engine if layout_engine is None else layout_engine
-                            )
+        return FreeTypeFont(
+            font=self.path if font is None else font,
+            size=self.size if size is None else size,
+            index=self.index if index is None else index,
+            encoding=self.encoding if encoding is None else encoding,
+            layout_engine=layout_engine or self.layout_engine
+        )
 
 
 class TransposedFont(object):
@@ -288,12 +308,16 @@ def truetype(font=None, size=10, index=0, encoding="",
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
-                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
+                        return FreeTypeFont(fontpath, size, index,
+                                            encoding, layout_engine)
+                    elif (not ext and
+                          os.path.splitext(walkfilename)[0] == ttf_filename):
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
-                            return FreeTypeFont(fontpath, size, index, encoding, layout_engine)
-                        if not ext and first_font_with_a_different_extension is None:
+                            return FreeTypeFont(fontpath, size, index,
+                                                encoding, layout_engine)
+                        if not ext \
+                           and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
             return FreeTypeFont(first_font_with_a_different_extension, size,
@@ -313,10 +337,10 @@ def load_path(filename):
     for directory in sys.path:
         if isDirectory(directory):
             if not isinstance(filename, str):
-                if bytes is str:
-                    filename = filename.encode("utf-8")
-                else:
+                if py3:
                     filename = filename.decode("utf-8")
+                else:
+                    filename = filename.encode("utf-8")
             try:
                 return load(os.path.join(directory, filename))
             except IOError:

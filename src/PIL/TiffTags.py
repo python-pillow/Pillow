@@ -25,12 +25,16 @@ if False:
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = [] # type: List[Text]
 
-    def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
+    def __new__(cls, value=None, name="unknown",
+                type=None, length=None, enum=None):
         return super(TagInfo, cls).__new__(
             cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value):
-        return self.enum.get(value, value)
+        # Using get will call hash(value), which can be expensive
+        # for some types (e.g. Fraction). Since self.enum is rarely
+        # used, it's usually better to test it first.
+        return self.enum.get(value, value) if self.enum else value
 
 
 def lookup(tag):
@@ -62,8 +66,12 @@ ASCII = 2
 SHORT = 3
 LONG = 4
 RATIONAL = 5
+SIGNED_BYTE = 6
 UNDEFINED = 7
+SIGNED_SHORT = 8
+SIGNED_LONG = 9
 SIGNED_RATIONAL = 10
+FLOAT = 11
 DOUBLE = 12
 
 TAGS_V2 = {
@@ -74,8 +82,8 @@ TAGS_V2 = {
     257: ("ImageLength", LONG, 1),
     258: ("BitsPerSample", SHORT, 0),
     259: ("Compression", SHORT, 1,
-          {"Uncompressed": 1, "CCITT 1d": 2, "Group 3 Fax": 3, "Group 4 Fax": 4,
-           "LZW": 5, "JPEG": 6, "PackBits": 32773}),
+          {"Uncompressed": 1, "CCITT 1d": 2, "Group 3 Fax": 3,
+           "Group 4 Fax": 4, "LZW": 5, "JPEG": 6, "PackBits": 32773}),
 
     262: ("PhotometricInterpretation", SHORT, 1,
           {"WhiteIsZero": 0, "BlackIsZero": 1, "RGB": 2, "RGB Palette": 3,
@@ -123,7 +131,7 @@ TAGS_V2 = {
     316: ("HostComputer", ASCII, 1),
     317: ("Predictor", SHORT, 1, {"none": 1, "Horizontal Differencing": 2}),
     318: ("WhitePoint", RATIONAL, 2),
-    319: ("PrimaryChromaticities", SHORT, 6),
+    319: ("PrimaryChromaticities", RATIONAL, 6),
 
     320: ("ColorMap", SHORT, 0),
     321: ("HalftoneHints", SHORT, 2),
@@ -145,7 +153,7 @@ TAGS_V2 = {
     342: ("TransferRange", SHORT, 6),
 
     347: ("JPEGTables", UNDEFINED, 1),
-    
+
     # obsolete JPEG tags
     512: ("JPEGProc", SHORT, 1),
     513: ("JPEGInterchangeFormat", LONG, 1),
@@ -160,10 +168,10 @@ TAGS_V2 = {
     529: ("YCbCrCoefficients", RATIONAL, 3),
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
-    532: ("ReferenceBlackWhite", LONG, 0),
+    532: ("ReferenceBlackWhite", RATIONAL, 6),
 
     700: ('XMP', BYTE, 1),
-    
+
     33432: ("Copyright", ASCII, 1),
     34377: ('PhotoshopInfo', BYTE, 1),
 
@@ -195,8 +203,8 @@ TAGS_V2 = {
 
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
-    50838: ("ImageJMetaDataByteCounts", LONG, 0), # Can be more than one 
-    50839: ("ImageJMetaData", UNDEFINED, 1)       # see Issue #2006
+    50838: ("ImageJMetaDataByteCounts", LONG, 0),  # Can be more than one
+    50839: ("ImageJMetaData", UNDEFINED, 1)        # see Issue #2006
 }
 
 # Legacy Tags structure
@@ -357,6 +365,7 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
+
 _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
@@ -425,6 +434,7 @@ TYPES = {} # type: Dict[int, Text]
 
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
 
+# This list also exists in encode.c
 LIBTIFF_CORE = {255, 256, 257, 258, 259, 262, 263, 266, 274, 277,
                 278, 280, 281, 340, 341, 282, 283, 284, 286, 287,
                 296, 297, 321, 320, 338, 32995, 322, 323, 32998,
@@ -438,7 +448,7 @@ LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
 
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
-LIBTIFF_CORE.remove(322)  # We don't have support for tiled images in libtiff
+LIBTIFF_CORE.remove(322)  # We don't have support for writing tiled images with libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
 LIBTIFF_CORE.remove(333)  # Ink Names either
 

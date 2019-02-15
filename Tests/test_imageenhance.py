@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageEnhance
@@ -45,9 +45,6 @@ class TestImageEnhance(PillowTestCase):
 
         for op in ['Color', 'Brightness', 'Contrast', 'Sharpness']:
             for amount in [0, 0.5, 1.0]:
-                self._check_alpha(getattr(ImageEnhance, op)(original).enhance(amount),
-                                  original, op, amount)
-
-
-if __name__ == '__main__':
-    unittest.main()
+                self._check_alpha(
+                    getattr(ImageEnhance, op)(original).enhance(amount),
+                    original, op, amount)

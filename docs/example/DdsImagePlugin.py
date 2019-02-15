@@ -3,7 +3,7 @@ A Pillow loader for .dds files (S3TC-compressed aka DXTC)
 Jerome Leclanche <jerome@leclan.ch>
 
 Documentation:
-  http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
+  https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
 
 The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
@@ -221,11 +221,11 @@ class DdsImageFile(ImageFile.ImageFile):
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
-        self.size = (width, height)
+        self._size = (width, height)
         self.mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
-        reserved = struct.unpack("<11I", header.read(44))
+        struct.unpack("<11I", header.read(44))  # reserved
 
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
@@ -235,10 +235,8 @@ class DdsImageFile(ImageFile.ImageFile):
 
         if fourcc == b"DXT1":
             self.decoder = "DXT1"
-            codec = _dxt1
         elif fourcc == b"DXT5":
             self.decoder = "DXT5"
-            codec = _dxt5
         else:
             raise NotImplementedError("Unimplemented pixel format %r" % fourcc)
 
@@ -270,6 +268,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
         except struct.error:
             raise IOError("Truncated DDS file")
         return 0, 0
+
 
 Image.register_decoder('DXT1', DXT1Decoder)
 Image.register_decoder('DXT5', DXT5Decoder)

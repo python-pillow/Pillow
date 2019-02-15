@@ -11,20 +11,21 @@
 # See the README file for information on usage and redistribution.
 #
 
-from struct import unpack, pack
+from struct import unpack_from, pack
+from ._util import py3
 
-if bytes is str:
-    def i8(c):
-        return ord(c)
-
-    def o8(i):
-        return chr(i & 255)
-else:
+if py3:
     def i8(c):
         return c if c.__class__ is int else c[0]
 
     def o8(i):
         return bytes((i & 255,))
+else:
+    def i8(c):
+        return ord(c)
+
+    def o8(i):
+        return chr(i & 255)
 
 
 # Input, le = little endian, be = big endian
@@ -35,7 +36,7 @@ def i16le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return unpack("<H", c[o:o+2])[0]
+    return unpack_from("<H", c, o)[0]
 
 
 def si16le(c, o=0):
@@ -45,7 +46,7 @@ def si16le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return unpack("<h", c[o:o+2])[0]
+    return unpack_from("<h", c, o)[0]
 
 
 def i32le(c, o=0):
@@ -55,7 +56,7 @@ def i32le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return unpack("<I", c[o:o+4])[0]
+    return unpack_from("<I", c, o)[0]
 
 
 def si32le(c, o=0):
@@ -65,15 +66,15 @@ def si32le(c, o=0):
     c: string containing bytes to convert
     o: offset of bytes to convert in string
     """
-    return unpack("<i", c[o:o+4])[0]
+    return unpack_from("<i", c, o)[0]
 
 
 def i16be(c, o=0):
-    return unpack(">H", c[o:o+2])[0]
+    return unpack_from(">H", c, o)[0]
 
 
 def i32be(c, o=0):
-    return unpack(">I", c[o:o+4])[0]
+    return unpack_from(">I", c, o)[0]
 
 
 # Output, le = little endian, be = big endian

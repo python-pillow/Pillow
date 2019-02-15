@@ -30,6 +30,8 @@ import re
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.7"
 
 
@@ -153,7 +155,7 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error as v:
+            except re.error:
                 raise SyntaxError("not an IM file")
 
             if m:
@@ -196,7 +198,7 @@ class ImImageFile(ImageFile.ImageFile):
             raise SyntaxError("Not an IM file")
 
         # Basic attributes
-        self.size = self.info[SIZE]
+        self._size = self.info[SIZE]
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data
@@ -290,9 +292,19 @@ class ImImageFile(ImageFile.ImageFile):
     def tell(self):
         return self.frame
 
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
+
 #
 # --------------------------------------------------------------------
 # Save IM files
+
 
 SAVE = {
     # mode: (im type, raw mode)
@@ -338,6 +350,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry
+
 
 Image.register_open(ImImageFile.format, ImImageFile)
 Image.register_save(ImImageFile.format, _save)

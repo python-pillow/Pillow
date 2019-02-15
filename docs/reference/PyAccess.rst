@@ -29,6 +29,13 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
+Access using negative indexes is also possible.
+
+.. code-block:: python
+
+    px[-1,-1] = (0,0,0)
+    print (px[-1,-1])
+
 
 
 :py:class:`PyAccess` Class

@@ -19,6 +19,8 @@
 import struct
 from . import Image, ImageFile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 
@@ -59,7 +61,7 @@ class McIdasImageFile(ImageFile.ImageFile):
             raise SyntaxError("unsupported McIdas format")
 
         self.mode = mode
-        self.size = w[10], w[9]
+        self._size = w[10], w[9]
 
         offset = w[34] + w[15]
         stride = w[15] + w[10]*w[11]*w[14]

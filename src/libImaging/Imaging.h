@@ -319,6 +319,8 @@ extern Imaging ImagingTransform(
 extern Imaging ImagingUnsharpMask(
     Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
+extern Imaging ImagingColorLUT3D_linear(Imaging imOut, Imaging imIn,
+    int table_channels, int size1D, int size2D, int size3D, INT16* table);
 
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
@@ -347,26 +349,27 @@ extern void ImagingCrack(Imaging im, int x0, int y0);
 
 /* Graphics */
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-                          float start, float end, const void* ink, int op);
+                          float start, float end, const void* ink, int width,
+                          int op);
 extern int ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap,
                              const void* ink, int op);
 extern int ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
                             float start, float end, const void* ink, int fill,
-                            int op);
+                            int width, int op);
 extern int ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
-                              const void* ink, int fill, int op);
+                              const void* ink, int fill, int width, int op);
 extern int ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1,
                            const void* ink, int op);
 extern int ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
                                const void* ink, int width, int op);
 extern int ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
                                float start, float end, const void* ink, int fill,
-                               int op);
+                               int width, int op);
 extern int ImagingDrawPoint(Imaging im, int x, int y, const void* ink, int op);
 extern int ImagingDrawPolygon(Imaging im, int points, int *xy,
                               const void* ink, int fill, int op);
 extern int ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-                                const void* ink, int fill, int op);
+                                const void* ink, int fill, int width, int op);
 
 /* Level 2 graphics (WORK IN PROGRESS) */
 extern ImagingOutline ImagingOutlineNew(void);
@@ -471,6 +474,8 @@ extern int ImagingSunRleDecode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, int bytes);
 extern int ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, int bytes);
+extern int ImagingTgaRleEncode(Imaging im, ImagingCodecState state,
+                               UINT8* buffer, int bytes);
 extern int ImagingXbmDecode(Imaging im, ImagingCodecState state,
                             UINT8* buffer, int bytes);
 extern int ImagingXbmEncode(Imaging im, ImagingCodecState state,
@@ -534,6 +539,8 @@ extern Py_ssize_t _imaging_tell_pyFd(PyObject *fd);
 
 
 #include "ImagingUtils.h"
+extern UINT8 *clip8_lookups;
+
 
 #if defined(__cplusplus)
 }

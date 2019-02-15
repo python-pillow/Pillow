@@ -30,7 +30,6 @@
 from . import Image
 from ._util import isPath
 import io
-import os
 import sys
 import struct
 import logging
@@ -82,6 +81,8 @@ class ImageFile(Image.Image):
         Image.Image.__init__(self)
 
         self._min_frame = 0
+
+        self.custom_mimetype = None
 
         self.tile = None
         self.readonly = 1  # until we know better
@@ -148,12 +149,17 @@ class ImageFile(Image.Image):
         Image.Image.close(self)
         
     def draft(self, mode, size):
-        "Set draft mode"
+        """Set draft mode"""
 
         pass
 
+    def get_format_mimetype(self):
+        if self.format is None:
+            return
+        return self.custom_mimetype or Image.MIME.get(self.format.upper())
+
     def verify(self):
-        "Check file integrity"
+        """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
@@ -162,7 +168,7 @@ class ImageFile(Image.Image):
         self.fp = None
 
     def load(self):
-        "Load image data based on tile list"
+        """Load image data based on tile list"""
 
         pixel = Image.Image.load(self)
 
@@ -195,8 +201,9 @@ class ImageFile(Image.Image):
         if use_mmap:
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
-            if decoder_name == "raw" and len(args) >= 3 and args[0] == self.mode \
-               and args[0] in Image._MAPMODES:
+            if decoder_name == "raw" and len(args) >= 3 and \
+               args[0] == self.mode and \
+               args[0] in Image._MAPMODES:
                 try:
                     if hasattr(Image.core, "map"):
                         # use built-in mapper  WIN32 only
@@ -208,21 +215,22 @@ class ImageFile(Image.Image):
                     else:
                         # use mmap, if possible
                         import mmap
-                        fp = open(self.filename, "r")
-                        size = os.path.getsize(self.filename)
-                        self.map = mmap.mmap(fp.fileno(), size, access=mmap.ACCESS_READ)
+                        with open(self.filename, "r") as fp:
+                            self.map = mmap.mmap(fp.fileno(), 0,
+                                                 access=mmap.ACCESS_READ)
                         self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, extents, offset, args
-                            )
+                            self.map, self.size, decoder_name, extents,
+                            offset, args)
                     readonly = 1
-                    # After trashing self.im, we might need to reload the palette data.
+                    # After trashing self.im,
+                    # we might need to reload the palette data.
                     if self.palette:
                         self.palette.dirty = 1
                 except (AttributeError, EnvironmentError, ImportError):
                     self.map = None
 
         self.load_prepare()
-        err_code = -3 # initialize to unknown error
+        err_code = -3  # initialize to unknown error
         if not self.map:
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
@@ -236,44 +244,41 @@ class ImageFile(Image.Image):
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(self.mode, decoder_name,
                                             args, self.decoderconfig)
-                seek(offset)
-                decoder.setimage(self.im, extents)
-                if decoder.pulls_fd:
-                    decoder.setfd(self.fp)
-                    status, err_code = decoder.decode(b"")
-                else:
-                    b = prefix
-                    while True:
-                        try:
-                            s = read(self.decodermaxblock)
-                        except (IndexError, struct.error):  # truncated png/gif
-                            if LOAD_TRUNCATED_IMAGES:
+                try:
+                    seek(offset)
+                    decoder.setimage(self.im, extents)
+                    if decoder.pulls_fd:
+                        decoder.setfd(self.fp)
+                        status, err_code = decoder.decode(b"")
+                    else:
+                        b = prefix
+                        while True:
+                            try:
+                                s = read(self.decodermaxblock)
+                            except (IndexError, struct.error):
+                                # truncated png/gif
+                                if LOAD_TRUNCATED_IMAGES:
+                                    break
+                                else:
+                                    raise IOError("image file is truncated")
+
+                            if not s:  # truncated jpeg
+                                if LOAD_TRUNCATED_IMAGES:
+                                    break
+                                else:
+                                    self.tile = []
+                                    raise IOError("image file is truncated "
+                                                  "(%d bytes not processed)" %
+                                                  len(b))
+
+                            b = b + s
+                            n, err_code = decoder.decode(b)
+                            if n < 0:
                                 break
-                            else:
-                                raise IOError("image file is truncated")
-
-                        if not s:  # truncated jpeg
-                            self.tile = []
-
-                            # JpegDecode needs to clean things up here either way
-                            # If we don't destroy the decompressor,
-                            # we have a memory leak.
-                            decoder.cleanup()
-
-                            if LOAD_TRUNCATED_IMAGES:
-                                break
-                            else:
-                                raise IOError("image file is truncated "
-                                              "(%d bytes not processed)" % len(b))
-
-                        b = b + s
-                        n, err_code = decoder.decode(b)
-                        if n < 0:
-                            break
-                        b = b[n:]
-
-                # Need to cleanup here to prevent leaks in PyPy
-                decoder.cleanup()
+                            b = b[n:]
+                finally:
+                    # Need to cleanup here to prevent leaks
+                    decoder.cleanup()
 
         self.tile = []
         self.readonly = readonly
@@ -346,7 +351,7 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
 
     def _load(self):
-        "(Hook) Find actual image loader."
+        """(Hook) Find actual image loader."""
         raise NotImplementedError(
             "StubImageFile subclass must implement _load"
             )
@@ -623,10 +628,12 @@ class PyDecoder(object):
         """
         Override to perform the decoding process.
 
-        :param buffer: A bytes object with the data to be decoded.  If `handles_eof`
-             is set, then `buffer` will be empty and `self.fd` will be set.
-        :returns: A tuple of (bytes consumed, errcode). If finished with decoding
-             return <0 for the bytes consumed. Err codes are from `ERRORS`
+        :param buffer: A bytes object with the data to be decoded.
+            If `handles_eof` is set, then `buffer` will be empty and `self.fd`
+            will be set.
+        :returns: A tuple of (bytes consumed, errcode).
+            If finished with decoding return <0 for the bytes consumed.
+            Err codes are from `ERRORS`
         """
         raise NotImplementedError()
 
@@ -685,8 +692,8 @@ class PyDecoder(object):
         Convenience method to set the internal image from a stream of raw data
 
         :param data: Bytes to be set
-        :param rawmode: The rawmode to be used for the decoder. If not specified,
-             it will default to the mode of the image
+        :param rawmode: The rawmode to be used for the decoder.
+            If not specified, it will default to the mode of the image
         :returns: None
         """
 

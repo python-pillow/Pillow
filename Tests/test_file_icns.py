@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image, IcnsImagePlugin
 
@@ -17,13 +17,15 @@ class TestFileIcns(PillowTestCase):
         # Loading this icon by default should result in the largest size
         # (512x512@2x) being loaded
         im = Image.open(TEST_FILE)
-        im.load()
+
+        # Assert that there is no unclosed file warning
+        self.assert_warning(None, im.load)
+
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (1024, 1024))
         self.assertEqual(im.format, "ICNS")
 
-    @unittest.skipIf(sys.platform != 'darwin',
-                     "requires MacOS")
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
     def test_save(self):
         im = Image.open(TEST_FILE)
 
@@ -35,6 +37,22 @@ class TestFileIcns(PillowTestCase):
         self.assertEqual(reread.mode, "RGBA")
         self.assertEqual(reread.size, (1024, 1024))
         self.assertEqual(reread.format, "ICNS")
+
+    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
+    def test_save_append_images(self):
+        im = Image.open(TEST_FILE)
+
+        temp_file = self.tempfile("temp.icns")
+        provided_im = Image.new('RGBA', (32, 32), (255, 0, 0, 128))
+        im.save(temp_file, append_images=[provided_im])
+
+        reread = Image.open(temp_file)
+        self.assert_image_similar(reread, im, 1)
+
+        reread = Image.open(temp_file)
+        reread.size = (16, 16, 2)
+        reread.load()
+        self.assert_image_equal(reread, provided_im)
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
@@ -48,6 +66,10 @@ class TestFileIcns(PillowTestCase):
             im2.load()
             self.assertEqual(im2.mode, 'RGBA')
             self.assertEqual(im2.size, (wr, hr))
+
+        # Check that we cannot load an incorrect size
+        with self.assertRaises(ValueError):
+            im.size = (1, 1)
 
     def test_older_icon(self):
         # This icon was made with Icon Composer rather than iconutil; it still
@@ -99,7 +121,3 @@ class TestFileIcns(PillowTestCase):
         with io.BytesIO(b'invalid\n') as fp:
             self.assertRaises(SyntaxError,
                               IcnsImagePlugin.IcnsFile, fp)
-
-
-if __name__ == '__main__':
-    unittest.main()

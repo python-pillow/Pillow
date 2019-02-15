@@ -15,35 +15,9 @@ pip install coveralls-merge
 coveralls-merge coverage.c.json
 codecov
 
-if [ "$DOCKER" == "" ]; then
-    pip install pyflakes pycodestyle
-    pyflakes *.py | tee >(wc -l)
-    pyflakes src/PIL/*.py | tee >(wc -l)
-    pyflakes Tests/*.py | tee >(wc -l)
-    pycodestyle --statistics --count src/PIL/*.py
-    pycodestyle --statistics --count Tests/*.py
-fi
-
 if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ] && [ "$DOCKER" == "" ]; then
     # Coverage and quality reports on just the latest diff.
     # (Installation is very slow on Py3, so just do it for Py2.)
     depends/diffcover-install.sh
     depends/diffcover-run.sh
-fi
-
-# after_all
-
-if [ "$TRAVIS_REPO_SLUG" = "python-pillow/Pillow" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
-    python travis_after_all.py
-    export $(cat .to_export_back)
-    if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-            echo "All jobs succeeded! Triggering macOS build..."
-            # Trigger a macOS build at the pillow-wheels repo
-            ./build_children.sh
-        else
-            echo "Some jobs failed"
-        fi
-    fi
 fi

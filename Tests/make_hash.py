@@ -32,6 +32,7 @@ def check(size, i0):
         h[i] = m
     return h
 
+
 min_start = 0
 
 # 1) find the smallest table size with no collisions
@@ -51,10 +52,5 @@ for i0 in range(65556):
 
 print()
 
-# print(check(min_size, min_start))
-
 print("#define ACCESS_TABLE_SIZE", min_size)
 print("#define ACCESS_TABLE_HASH", min_start)
-
-# for m in modes:
-#     print(m, "=>", hash(m, min_start) % min_size)

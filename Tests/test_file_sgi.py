@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, SgiImagePlugin
 
@@ -12,6 +12,7 @@ class TestFileSgi(PillowTestCase):
 
         im = Image.open(test_file)
         self.assert_image_equal(im, hopper())
+        self.assertEqual(im.get_format_mimetype(), 'image/rgb')
 
     def test_rgb16(self):
         test_file = "Tests/images/hopper16.rgb"
@@ -26,6 +27,7 @@ class TestFileSgi(PillowTestCase):
 
         im = Image.open(test_file)
         self.assert_image_similar(im, hopper('L'), 2)
+        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
 
     def test_rgba(self):
         # Created with ImageMagick:
@@ -35,6 +37,7 @@ class TestFileSgi(PillowTestCase):
         im = Image.open(test_file)
         target = Image.open('Tests/images/transparent.png')
         self.assert_image_equal(im, target)
+        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
 
     def test_rle(self):
         # Created with ImageMagick:
@@ -80,13 +83,9 @@ class TestFileSgi(PillowTestCase):
 
         reloaded = Image.open(out)
         self.assert_image_equal(im, reloaded)
-       
+
     def test_unsupported_mode(self):
         im = hopper('LA')
         out = self.tempfile('temp.sgi')
 
         self.assertRaises(ValueError, im.save, out, format='sgi')
-
-
-if __name__ == '__main__':
-    unittest.main()

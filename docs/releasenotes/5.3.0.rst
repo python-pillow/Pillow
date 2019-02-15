@@ -1,0 +1,67 @@
+5.3.0
+-----
+
+API Changes
+===========
+
+Image size
+^^^^^^^^^^
+
+If you attempt to set the size of an image directly, e.g.
+``im.size = (100, 100)``, you will now receive an ``AttributeError``. This is
+not about removing existing functionality, but instead about raising an
+explicit error to prevent later consequences. The ``resize`` method is the
+correct way to change an image's size.
+
+The exceptions to this are:
+
+* The ICO and ICNS image formats, which use ``im.size = (100, 100)`` to select a subimage.
+* The TIFF image format, which now has a ``DeprecationWarning`` for this action, as direct image size setting was previously necessary to work around an issue with tile extents.
+
+
+API Additions
+=============
+
+Added line width parameter to rectangle and ellipse-based shapes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An optional line ``width`` parameter has been added to ``ImageDraw.Draw.arc``,
+``chord``, ``ellipse``, ``pieslice`` and ``rectangle``.
+
+Curved joints for line sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageDraw.Draw.line`` draws a line, or lines, between points. Previously,
+when multiple points are given, for a larger ``width``, the joints between
+these lines looked unsightly. There is now an additional optional argument,
+``joint``, defaulting to ``None``. When it is set to ``curved``, the joints
+between the lines will become rounded.
+
+ImageOps.colorize
+^^^^^^^^^^^^^^^^^
+
+Previously ``ImageOps.colorize`` only supported two-color mapping with
+``black`` and ``white`` arguments being mapped to 0 and 255 respectively.
+Now it supports three-color mapping with the optional ``mid`` parameter, and
+the positions for all three color arguments can each be optionally specified
+(``blackpoint``, ``whitepoint`` and ``midpoint``).
+For example, with all optional arguments::
+
+    ImageOps.colorize(im, black=(32, 37, 79), white='white', mid=(59, 101, 175),
+                          blackpoint=15, whitepoint=240, midpoint=100)
+
+ImageOps.pad
+^^^^^^^^^^^^
+
+While ``ImageOps.fit`` allows users to crop images to a requested aspect ratio
+and size, new method ``ImageOps.pad`` pads images to fill a requested aspect
+ratio and size, filling new space with a provided ``color`` and positioning the
+image within the new area through a ``centering`` argument.
+
+Other Changes
+=============
+
+Added support for reading tiled TIFF images through LibTIFF. Compressed TIFF
+images are now read through LibTIFF.
+
+RGB WebP images are now read as RGB mode, rather than RGBX.

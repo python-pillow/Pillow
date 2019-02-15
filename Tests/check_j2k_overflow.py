@@ -1,5 +1,5 @@
 from PIL import Image
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 
 class TestJ2kEncodeOverflow(PillowTestCase):
@@ -9,6 +9,7 @@ class TestJ2kEncodeOverflow(PillowTestCase):
         target = self.tempfile('temp.jpc')
         with self.assertRaises(IOError):
             im.save(target)
+
 
 if __name__ == '__main__':
     unittest.main()

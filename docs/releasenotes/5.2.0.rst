@@ -1,0 +1,113 @@
+5.2.0
+-----
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+These version constants have been deprecated. ``VERSION`` will be removed in
+Pillow 6.0.0, and ``PILLOW_VERSION`` will be removed after that.
+
+* ``PIL.VERSION`` (old PIL version 1.1.7)
+* ``PIL.PILLOW_VERSION``
+* ``PIL.Image.VERSION``
+* ``PIL.Image.PILLOW_VERSION``
+
+Use ``PIL.__version__`` instead.
+
+API Additions
+=============
+
+3D color lookup tables
+^^^^^^^^^^^^^^^^^^^^^^
+
+Support for 3D color lookup table transformations has been added.
+
+* https://en.wikipedia.org/wiki/3D_lookup_table
+
+``Color3DLUT.generate`` transforms 3-channel pixels using the values of the
+channels as coordinates in the 3D lookup table and interpolating the nearest
+elements.
+
+It allows you to apply almost any color transformation in constant time by
+using pre-calculated decimated tables.
+
+``Color3DLUT.transform()`` allows altering table values with a callback.
+
+If NumPy is installed, the performance of argument conversion is dramatically
+improved when a source table supports buffer interface (NumPy && arrays in
+Python >= 3).
+
+ImageColor.getrgb
+^^^^^^^^^^^^^^^^^
+
+Previously ``Image.rotate`` only supported HSL color strings. Now HSB and HSV
+strings are also supported, as well as float values. For example,
+``ImageColor.getrgb("hsv(180,100%,99.5%)")``.
+
+ImageFile.get_format_mimetype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFile.get_format_mimetype`` has been added to return the MIME type of an
+image file, where available. For example,
+``Image.open("hopper.jpg").get_format_mimetype()`` returns ``"image/jpeg"``.
+
+ImageFont.getsize_multiline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method to return the size of multiline text, for example
+``font.getsize_multiline("ABC\nAaaa")``
+
+Image.rotate
+^^^^^^^^^^^^
+
+A new named parameter, ``fillcolor``, has been added to ``Image.rotate``. This
+color specifies the background color to use in the area outside the rotated
+image. This parameter takes the same color specifications as used in
+``Image.new``.
+
+
+TGA file format
+^^^^^^^^^^^^^^^
+
+Pillow can now read and write LA data (in addition to L, P, RGB and RGBA), and
+write RLE data (in addition to uncompressed).
+
+Other Changes
+=============
+
+Support added for Python 3.7
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 5.2 supports Python 3.7.
+
+Build macOS wheels with Xcode 6.4, supporting older macOS versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The macOS wheels for Pillow 5.1.0 were built with Xcode 9.2, meaning 10.12
+Sierra was the lowest supported version.
+
+Prior to Pillow 5.1.0, Xcode 8 was used, supporting El Capitan 10.11.
+
+Instead, Pillow 5.2.0 is built with the oldest available Xcode 6.4 to support
+at least 10.10 Yosemite.
+
+Fix _i2f compilation with some GCC versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For example, this allows compilation with GCC 4.8 on NetBSD.
+
+Resolve confusion getting PIL / Pillow version string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Re: "version constants deprecated" listed above, as user gnbl notes in #3082:
+
+- it's confusing that PIL.VERSION returns the version string of the former PIL instead of Pillow's
+- there does not seem to be documentation on this version number (why this, will it ever change, ..) e.g. at https://pillow.readthedocs.io/en/5.1.x/about.html#why-a-fork
+- it's confusing that PIL.version is a module and does not return the version information directly or hints on how to get it
+- the package information header is essentially useless (placeholder, does not even mention Pillow, nor the version)
+- PIL._version module documentation comment could explain how to access the version information
+
+We have attempted to resolve these issues in #3083, #3090 and #3218.

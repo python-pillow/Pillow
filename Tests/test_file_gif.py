@@ -1,8 +1,14 @@
-from helper import unittest, PillowTestCase, hopper, netpbm_available
+from .helper import unittest, PillowTestCase, hopper, netpbm_available
 
 from PIL import Image, ImagePalette, GifImagePlugin
 
 from io import BytesIO
+
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
 
 codecs = dir(Image.core)
 
@@ -26,6 +32,12 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "GIF")
         self.assertEqual(im.info["version"], b"GIF89a")
+
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_GIF)
+            im.load()
+        self.assert_warning(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -134,13 +146,15 @@ class TestFileGif(PillowTestCase):
         # Multiframe image
         im = Image.open("Tests/images/dispose_bgnd.gif")
 
+        info = im.info.copy()
+
         out = self.tempfile('temp.gif')
         im.save(out, save_all=True)
         reread = Image.open(out)
 
         for header in important_headers:
             self.assertEqual(
-                im.info[header],
+                info[header],
                 reread.info[header]
             )
 
@@ -207,6 +221,15 @@ class TestFileGif(PillowTestCase):
         except EOFError:
             self.assertEqual(framecount, 5)
 
+    def test_seek_info(self):
+        im = Image.open("Tests/images/iss634.gif")
+        info = im.info.copy()
+
+        im.seek(1)
+        im.seek(0)
+
+        self.assertEqual(im.info, info)
+
     def test_n_frames(self):
         for path, n_frames in [
             [TEST_GIF, 1],
@@ -266,7 +289,7 @@ class TestFileGif(PillowTestCase):
             Image.new('L', (100, 100), '#111'),
             Image.new('L', (100, 100), '#222'),
         ]
-        for method in range(0,4):
+        for method in range(0, 4):
             im_list[0].save(
                 out,
                 save_all=True,
@@ -277,7 +300,6 @@ class TestFileGif(PillowTestCase):
             for _ in range(2):
                 img.seek(img.tell() + 1)
                 self.assertEqual(img.disposal_method, method)
-
 
         # check per frame disposal
         im_list[0].save(
@@ -306,9 +328,12 @@ class TestFileGif(PillowTestCase):
 
         out = self.tempfile('temp.gif')
         im = Image.new('L', (100, 100), '#000')
-        im.save(out, duration=duration)
-        reread = Image.open(out)
 
+        # Check that the argument has priority over the info settings
+        im.info['duration'] = 100
+        im.save(out, duration=duration)
+
+        reread = Image.open(out)
         self.assertEqual(reread.info['duration'], duration)
 
     def test_multiple_duration(self):
@@ -398,9 +423,15 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(reread.info['background'], im.info['background'])
 
+        if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+            im = Image.open("Tests/images/hopper.webp")
+            self.assertIsInstance(im.info['background'], tuple)
+            im.save(out)
+
     def test_comment(self):
         im = Image.open(TEST_GIF)
-        self.assertEqual(im.info['comment'], b"File written by Adobe Photoshop\xa8 4.0")
+        self.assertEqual(im.info['comment'],
+                         b"File written by Adobe Photoshop\xa8 4.0")
 
         out = self.tempfile('temp.gif')
         im = Image.new('L', (100, 100), '#000')
@@ -409,6 +440,23 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.info['comment'], im.info['comment'])
+
+    def test_comment_over_255(self):
+        out = self.tempfile('temp.gif')
+        im = Image.new('L', (100, 100), '#000')
+        comment = b"Test comment text"
+        while len(comment) < 256:
+            comment += comment
+        im.info['comment'] = comment
+        im.save(out)
+        reread = Image.open(out)
+
+        self.assertEqual(reread.info['comment'], comment)
+
+    def test_zero_comment_subblocks(self):
+        im = Image.open('Tests/images/hopper_zero_comment_subblocks.gif')
+        expected = Image.open(TEST_GIF)
+        self.assert_image_equal(im, expected)
 
     def test_version(self):
         out = self.tempfile('temp.gif')
@@ -475,8 +523,6 @@ class TestFileGif(PillowTestCase):
         # that's > 128 items where the transparent color is actually
         # the top palette entry to trigger the bug.
 
-        from PIL import ImagePalette
-
         data = bytes(bytearray(range(1, 254)))
         palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
 
@@ -489,6 +535,27 @@ class TestFileGif(PillowTestCase):
         reloaded = Image.open(out)
 
         self.assertEqual(reloaded.info['transparency'], 253)
+
+    def test_rgb_transparency(self):
+        out = self.tempfile('temp.gif')
+
+        # Single frame
+        im = Image.new('RGB', (1, 1))
+        im.info['transparency'] = (255, 0, 0)
+        self.assert_warning(UserWarning, im.save, out)
+
+        reloaded = Image.open(out)
+        self.assertNotIn('transparency', reloaded.info)
+
+        # Multiple frames
+        im = Image.new('RGB', (1, 1))
+        im.info['transparency'] = b""
+        ims = [Image.new('RGB', (1, 1))]
+        self.assert_warning(UserWarning,
+                            im.save, out, save_all=True, append_images=ims)
+
+        reloaded = Image.open(out)
+        self.assertNotIn('transparency', reloaded.info)
 
     def test_bbox(self):
         out = self.tempfile('temp.gif')
@@ -584,9 +651,6 @@ class TestFileGif(PillowTestCase):
         # see https://github.com/python-pillow/Pillow/issues/2811
         im = Image.open('Tests/images/issue_2811.gif')
 
-        self.assertEqual(im.tile[0][3][0], 11) # LZW bits
+        self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
-
-if __name__ == '__main__':
-    unittest.main()

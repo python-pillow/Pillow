@@ -16,6 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.4"
 
 from . import Image, ImageFile, ImagePalette
@@ -71,7 +73,7 @@ class PsdImageFile(ImageFile.ImageFile):
             raise IOError("not enough channels")
 
         self.mode = mode
-        self.size = i32(s[18:]), i32(s[14:])
+        self._size = i32(s[18:]), i32(s[14:])
 
         #
         # color mode data
@@ -92,7 +94,7 @@ class PsdImageFile(ImageFile.ImageFile):
             # load resources
             end = self.fp.tell() + size
             while self.fp.tell() < end:
-                signature = read(4)
+                read(4)  # signature
                 id = i16(read(2))
                 name = read(i8(read(1)))
                 if not (len(name) & 1):
@@ -207,17 +209,13 @@ def _layerinfo(file):
             mode = None  # unknown
 
         # skip over blend flags and extra information
-        filler = read(12)
+        read(12)  # filler
         name = ""
         size = i32(read(4))
         combined = 0
         if size:
             length = i32(read(4))
             if length:
-                mask_y = i32(read(4))
-                mask_x = i32(read(4))
-                mask_h = i32(read(4)) - mask_y
-                mask_w = i32(read(4)) - mask_x
                 file.seek(length - 16, 1)
             combined += length + 4
 
@@ -300,6 +298,7 @@ def _maketile(file, mode, bbox, channels):
 
 # --------------------------------------------------------------------
 # registry
+
 
 Image.register_open(PsdImageFile.format, PsdImageFile, _accept)
 

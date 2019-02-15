@@ -4,7 +4,7 @@ Bug fixes, feature additions, tests, documentation and more can be contributed v
 
 ## Bug fixes, feature additions, etc.
 
-Please send a pull request to the master branch. Please include [documentation](https://pillow.readthedocs.io) and [tests](../Tests/README.rst) for new features. Tests or documentation without bug fixes or feature additions are welcome too. Feel free to ask questions [via issues](https://github.com/python-pillow/Pillow/issues/new) or irc://irc.freenode.net#pil
+Please send a pull request to the master branch. Please include [documentation](https://pillow.readthedocs.io) and [tests](../Tests/README.rst) for new features. Tests or documentation without bug fixes or feature additions are welcome too. Feel free to ask questions [via issues](https://github.com/python-pillow/Pillow/issues/new), [Gitter](https://gitter.im/python-pillow/Pillow) or irc://irc.freenode.net#pil
 
 - Fork the Pillow repository.
 - Create a branch from master.
@@ -21,7 +21,9 @@ Please send a pull request to the master branch. Please include [documentation](
 
 ## Reporting Issues
 
-When reporting issues, please include code that reproduces the issue and whenever possible, an image that demonstrates the issue. The best reproductions are self-contained scripts with minimal dependencies.
+When reporting issues, please include code that reproduces the issue and whenever possible, an image that demonstrates the issue. Please upload images to GitHub, not to third-party file hosting sites. If necessary, add the image to a zip or tar archive.
+
+The best reproductions are self-contained scripts with minimal dependencies. If you are using a framework such as plone, Django, or buildout, try to replicate the issue just using Pillow.
 
 ### Provide details
 

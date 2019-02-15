@@ -3,7 +3,7 @@ Tests for resize functionality.
 """
 from itertools import permutations
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -39,15 +39,15 @@ class TestImagingCoreResize(PillowTestCase):
             self.assertEqual(r.im.bands, im.im.bands)
 
     def test_reduce_filters(self):
-        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS]:
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR,
+                  Image.HAMMING, Image.BICUBIC, Image.LANCZOS]:
             r = self.resize(hopper("RGB"), (15, 12), f)
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (15, 12))
 
     def test_enlarge_filters(self):
-        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS]:
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR,
+                  Image.HAMMING, Image.BICUBIC, Image.LANCZOS]:
             r = self.resize(hopper("RGB"), (212, 195), f)
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (212, 195))
@@ -66,8 +66,8 @@ class TestImagingCoreResize(PillowTestCase):
         }
         samples['dirty'].putpixel((1, 1), 128)
 
-        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS]:
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR,
+                  Image.HAMMING, Image.BICUBIC, Image.LANCZOS]:
             # samples resized with current filter
             references = {
                 name: self.resize(ch, (4, 4), f)
@@ -90,8 +90,8 @@ class TestImagingCoreResize(PillowTestCase):
                         self.assert_image_equal(ch, references[channels[i]])
 
     def test_enlarge_zero(self):
-        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR, Image.HAMMING,
-                Image.BICUBIC, Image.LANCZOS]:
+        for f in [Image.NEAREST, Image.BOX, Image.BILINEAR,
+                  Image.HAMMING, Image.BICUBIC, Image.LANCZOS]:
             r = self.resize(Image.new('RGB', (0, 0), "white"), (212, 195), f)
             self.assertEqual(r.mode, "RGB")
             self.assertEqual(r.size, (212, 195))
@@ -115,7 +115,3 @@ class TestImageResize(PillowTestCase):
         # Test unknown resampling filter
         im = hopper()
         self.assertRaises(ValueError, im.resize, (10, 10), "unknown")
-
-
-if __name__ == '__main__':
-    unittest.main()

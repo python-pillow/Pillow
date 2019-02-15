@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL.GimpPaletteFile import GimpPaletteFile
 
@@ -28,7 +28,3 @@ class TestImage(PillowTestCase):
 
         # Assert
         self.assertEqual(mode, "RGB")
-
-
-if __name__ == '__main__':
-    unittest.main()

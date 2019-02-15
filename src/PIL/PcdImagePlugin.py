@@ -18,6 +18,8 @@
 from . import Image, ImageFile
 from ._binary import i8
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -48,14 +50,14 @@ class PcdImageFile(ImageFile.ImageFile):
             self.tile_post_rotate = -90
 
         self.mode = "RGB"
-        self.size = 768, 512  # FIXME: not correct for rotated images!
+        self._size = 768, 512  # FIXME: not correct for rotated images!
         self.tile = [("pcd", (0, 0)+self.size, 96*2048, None)]
 
     def load_end(self):
         if self.tile_post_rotate:
             # Handle rotated PCDs
             self.im = self.im.rotate(self.tile_post_rotate)
-            self.size = self.im.size
+            self._size = self.im.size
 
 
 #

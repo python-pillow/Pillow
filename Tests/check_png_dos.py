@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image, PngImagePlugin, ImageFile
 from io import BytesIO
 import zlib
@@ -36,7 +36,7 @@ class TestPngDos(PillowTestCase):
 
     def test_dos_total_memory(self):
         im = Image.new('L', (1, 1))
-        compressed_data = zlib.compress('a'*1024*1023)
+        compressed_data = zlib.compress(b'a'*1024*1023)
 
         info = PngImagePlugin.PngInfo()
 
@@ -59,6 +59,7 @@ class TestPngDos(PillowTestCase):
             total_len += len(txt)
         self.assertLess(total_len, 64*1024*1024,
                         "Total text chunks greater than 64M")
+
 
 if __name__ == '__main__':
     unittest.main()

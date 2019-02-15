@@ -28,7 +28,7 @@ static void read4B(UINT32* dest, UINT8* buf)
 static int expandrow(UINT8* dest, UINT8* src, int n, int z)
 {
     UINT8 pixel, count;
-    
+
     for (;n > 0; n--)
     {
         pixel = *src++;
@@ -42,7 +42,7 @@ static int expandrow(UINT8* dest, UINT8* src, int n, int z)
                 *dest = *src++;
                 dest += z;
             }
-                
+
         }
         else {
             pixel = *src++;
@@ -51,7 +51,7 @@ static int expandrow(UINT8* dest, UINT8* src, int n, int z)
                 dest += z;
             }
         }
-        
+
     }
     return 0;
 }
@@ -60,7 +60,7 @@ static int expandrow2(UINT16* dest, UINT16* src, int n, int z)
 {
     UINT8 pixel, count;
 
-   
+
     for (;n > 0; n--)
     {
         pixel = ((UINT8*)src)[1];
@@ -96,7 +96,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     SGISTATE *c;
     int err = 0;
 
-    /* Get all data from File descriptor */    
+    /* Get all data from File descriptor */
     c = (SGISTATE*)state->context;
     _imaging_seek_pyFd(state->fd, 0L, SEEK_END);
     c->bufsize = _imaging_tell_pyFd(state->fd);
@@ -155,7 +155,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
             c->rleoffset = c->starttab[c->rowno + c->channo * im->ysize];
             c->rlelength = c->lengthtab[c->rowno + c->channo * im->ysize];
             c->rleoffset -= SGI_HEADER_SIZE;
-            
+
             /* row decompression */
             if (c->bpc ==1) {
                 if(expandrow(&state->buffer[c->channo], &ptr[c->rleoffset], c->rlelength, im->bands))
@@ -165,19 +165,19 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
                 if(expandrow2((UINT16*)&state->buffer[c->channo * 2], (UINT16*)&ptr[c->rleoffset], c->rlelength, im->bands))
                     goto sgi_finish_decode;
             }
-            
+
             state->count += c->rlelength;
         }
-        
+
         /* store decompressed data in image */
         state->shuffle((UINT8*)im->image[state->y], state->buffer, im->xsize);
-        
+
     }
 
     c->bufsize++;
 
 sgi_finish_decode: ;
-    
+
     free(c->starttab);
     free(c->lengthtab);
     free(ptr);

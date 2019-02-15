@@ -3,7 +3,7 @@ A Pillow loader for .dds files (S3TC-compressed aka DXTC)
 Jerome Leclanche <jerome@leclan.ch>
 
 Documentation:
-  http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
+  https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
 
 The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
@@ -114,11 +114,11 @@ class DdsImageFile(ImageFile.ImageFile):
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
-        self.size = (width, height)
+        self._size = (width, height)
         self.mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
-        reserved = struct.unpack("<11I", header.read(44))
+        struct.unpack("<11I", header.read(44))  # reserved
 
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
@@ -142,7 +142,8 @@ class DdsImageFile(ImageFile.ImageFile):
             # ignoring flags which pertain to volume textures and cubemaps
             dxt10 = BytesIO(self.fp.read(20))
             dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
-            if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
+            if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS,
+                               DXGI_FORMAT_BC7_UNORM):
                 self.pixel_format = "BC7"
                 n = 7
             elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:

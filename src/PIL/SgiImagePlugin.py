@@ -23,12 +23,14 @@
 
 
 from . import Image, ImageFile
-from ._binary import i8, o8, i16be as i16, o16be as o16
+from ._binary import i8, o8, i16be as i16
+from ._util import py3
 import struct
 import os
-import sys
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.3"
 
 
@@ -96,8 +98,10 @@ class SgiImageFile(ImageFile.ImageFile):
         if rawmode == "":
             raise ValueError("Unsupported SGI image mode")
 
-        self.size = xsize, ysize
+        self._size = xsize, ysize
         self.mode = rawmode.split(";")[0]
+        if self.mode == 'RGB':
+            self.custom_mimetype = 'image/rgb'
 
         # orientation -1 : scanlines begins at the bottom-left corner
         orientation = -1
@@ -166,7 +170,7 @@ def _save(im, fp, filename):
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
-    if str is not bytes:
+    if py3:
         imgName = imgName.encode('ascii', 'ignore')
     # Standard representation of pixel in the file
     colormap = 0
@@ -194,6 +198,7 @@ def _save(im, fp, filename):
 
     fp.close()
 
+
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
@@ -219,8 +224,8 @@ Image.register_decoder("SGI16", SGI16Decoder)
 Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 Image.register_save(SgiImageFile.format, _save)
 Image.register_mime(SgiImageFile.format, "image/sgi")
-Image.register_mime(SgiImageFile.format, "image/rgb")
 
-Image.register_extensions(SgiImageFile.format, [".bw", ".rgb", ".rgba", ".sgi"])
+Image.register_extensions(SgiImageFile.format,
+                          [".bw", ".rgb", ".rgba", ".sgi"])
 
 # End of file

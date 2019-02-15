@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import ImageQt
 
@@ -33,6 +33,8 @@ class PillowQPixmapTestCase(PillowQtTestCase):
                 from PyQt4.QtGui import QGuiApplication
             elif ImageQt.qt_version == 'side':
                 from PySide.QtGui import QGuiApplication
+            elif ImageQt.qt_version == 'side2':
+                from PySide2.QtGui import QGuiApplication
         except ImportError:
             self.skipTest('QGuiApplication not installed')
 
@@ -46,7 +48,7 @@ class PillowQPixmapTestCase(PillowQtTestCase):
 class TestImageQt(PillowQtTestCase, PillowTestCase):
 
     def test_rgb(self):
-        # from https://doc.qt.io/qt-4.8/qcolor.html
+        # from https://doc.qt.io/archives/qt-4.8/qcolor.html
         # typedef QRgb
         # An ARGB quadruplet on the format #AARRGGBB,
         # equivalent to an unsigned int.
@@ -56,6 +58,8 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
             from PyQt4.QtGui import qRgb
         elif ImageQt.qt_version == 'side':
             from PySide.QtGui import qRgb
+        elif ImageQt.qt_version == 'side2':
+            from PySide2.QtGui import qRgb
 
         self.assertEqual(qRgb(0, 0, 0), qRgba(0, 0, 0, 255))
 
@@ -74,7 +78,3 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
     def test_image(self):
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             ImageQt.ImageQt(hopper(mode))
-
-
-if __name__ == '__main__':
-    unittest.main()

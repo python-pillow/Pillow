@@ -43,6 +43,8 @@ from ._binary import i8, o8, i16be as i16
 from .JpegPresets import presets
 from ._util import isStringType
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.6"
 
 
@@ -75,7 +77,7 @@ def APP(self, marker):
         try:
             jfif_unit = i8(s[7])
             jfif_density = i16(s, 8), i16(s, 10)
-        except:
+        except Exception:
             pass
         else:
             if jfif_unit == 1:
@@ -83,8 +85,9 @@ def APP(self, marker):
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:5] == b"Exif\0":
-        # extract Exif information (incomplete)
-        self.info["exif"] = s  # FIXME: value will change
+        if "exif" not in self.info:
+            # extract Exif information (incomplete)
+            self.info["exif"] = s  # FIXME: value will change
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -106,7 +109,7 @@ def APP(self, marker):
         # extract Adobe custom properties
         try:
             adobe_transform = i8(s[1])
-        except:
+        except Exception:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
@@ -158,7 +161,7 @@ def SOF(self, marker):
 
     n = i16(self.fp.read(2))-2
     s = ImageFile._safe_read(self.fp, n)
-    self.size = i16(s[3:]), i16(s[1:])
+    self._size = i16(s[3:]), i16(s[1:])
 
     self.bits = i8(s[0])
     if self.bits != 8:
@@ -333,7 +336,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
             if i in MARKER:
                 name, description, handler = MARKER[i]
-                # print(hex(i), name, description)
                 if handler is not None:
                     handler(self, i)
                 if i == 0xFFDA:  # start of scan
@@ -352,6 +354,21 @@ class JpegImageFile(ImageFile.ImageFile):
                 s = self.fp.read(1)
             else:
                 raise SyntaxError("no marker found")
+
+    def load_read(self, read_bytes):
+        """
+        internal: read more image data
+        For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
+        so libjpeg can finish decoding
+        """
+        s = self.fp.read(read_bytes)
+
+        if not s and ImageFile.LOAD_TRUNCATED_IMAGES:
+            # Premature EOF.
+            # Pretend file is finished adding EOI marker
+            return b"\xFF\xD9"
+
+        return s
 
     def draft(self, mode, size):
 
@@ -375,7 +392,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 if scale >= s:
                     break
             e = e[0], e[1], (e[2]-e[0]+s-1)//s+e[0], (e[3]-e[1]+s-1)//s+e[1]
-            self.size = ((self.size[0]+s-1)//s, (self.size[1]+s-1)//s)
+            self._size = ((self.size[0]+s-1)//s, (self.size[1]+s-1)//s)
             scale = s
 
         self.tile = [(d, e, o, a)]
@@ -408,7 +425,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 pass
 
         self.mode = self.im.mode
-        self.size = self.im.size
+        self._size = self.im.size
 
         self.tile = []
 
@@ -426,7 +443,7 @@ def _fixup_dict(src_dict):
         try:
             if len(value) == 1 and not isinstance(value, dict):
                 return value[0]
-        except:
+        except Exception:
             pass
         return value
 
@@ -444,35 +461,36 @@ def _getexif(self):
         data = self.info["exif"]
     except KeyError:
         return None
-    file = io.BytesIO(data[6:])
-    head = file.read(8)
+    fp = io.BytesIO(data[6:])
+    head = fp.read(8)
     # process dictionary
     info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    info.load(file)
+    fp.seek(info.next)
+    info.load(fp)
     exif = dict(_fixup_dict(info))
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
         # of the nested embedded exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8769])
+        fp.seek(exif[0x8769])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif.update(_fixup_dict(info))
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
         # of the nested embedded gps exif ifd.
         # It should be a long, but may be corrupted.
-        file.seek(exif[0x8825])
+        fp.seek(exif[0x8825])
     except (KeyError, TypeError):
         pass
     else:
         info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(file)
+        info.load(fp)
         exif[0x8825] = _fixup_dict(info)
 
     return exif
@@ -495,9 +513,10 @@ def _getmp(self):
     # process dictionary
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
+        file_contents.seek(info.next)
         info.load(file_contents)
         mp = dict(info)
-    except:
+    except Exception:
         raise SyntaxError("malformed MP Index (unreadable directory)")
     # it's an error not to have a number of images
     try:
@@ -563,7 +582,7 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-zigzag_index = (0,  1,  5,  6, 14, 15, 27, 28,
+zigzag_index = (0,  1,  5,  6, 14, 15, 27, 28,  # noqa: E128
                 2,  4,  7, 13, 16, 26, 29, 42,
                 3,  8, 12, 17, 25, 30, 41, 43,
                 9, 11, 18, 24, 31, 40, 44, 53,
@@ -668,7 +687,7 @@ def _save(im, fp, filename):
             for idx, table in enumerate(qtables):
                 try:
                     if len(table) != 64:
-                        raise
+                        raise TypeError
                     table = array.array('B', table)
                 except TypeError:
                     raise ValueError("Invalid quantization table")
@@ -724,7 +743,7 @@ def _save(im, fp, filename):
         )
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
-    # in a shot. Guessing on the size, at im.size bytes. (raw pizel size is
+    # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
     # channels*size, this is a value that's been used in a django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     bufsize = 0
@@ -777,12 +796,13 @@ def jpeg_factory(fp=None, filename=None):
     return im
 
 
-# -------------------------------------------------------------------q-
+# ---------------------------------------------------------------------
 # Registry stuff
 
 Image.register_open(JpegImageFile.format, jpeg_factory, _accept)
 Image.register_save(JpegImageFile.format, _save)
 
-Image.register_extensions(JpegImageFile.format, [".jfif", ".jpe", ".jpg", ".jpeg"])
+Image.register_extensions(JpegImageFile.format,
+                          [".jfif", ".jpe", ".jpg", ".jpeg"])
 
 Image.register_mime(JpegImageFile.format, "image/jpeg")

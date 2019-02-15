@@ -21,7 +21,6 @@ from . import Image
 from ._util import isStringType
 import operator
 import functools
-import warnings
 
 
 #
@@ -136,30 +135,133 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
-def colorize(image, black, white):
+def colorize(image, black, white, mid=None, blackpoint=0,
+             whitepoint=255, midpoint=127):
     """
-    Colorize grayscale image.  The **black** and **white**
-    arguments should be RGB tuples; this function calculates a color
-    wedge mapping all black pixels in the source image to the first
-    color, and all white pixels to the second color.
+    Colorize grayscale image.
+    This function calculates a color wedge which maps all black pixels in
+    the source image to the first color and all white pixels to the
+    second color. If **mid** is specified, it uses three-color mapping.
+    The **black** and **white** arguments should be RGB tuples or color names;
+    optionally you can use three-color mapping by also specifying **mid**.
+    Mapping positions for any of the colors can be specified
+    (e.g. **blackpoint**), where these parameters are the integer
+    value corresponding to where the corresponding color should be mapped.
+    These parameters must have logical order, such that
+    **blackpoint** <= **midpoint** <= **whitepoint** (if **mid** is specified).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
     :param white: The color to use for white input pixels.
+    :param mid: The color to use for midtone input pixels.
+    :param blackpoint: an int value [0, 255] for the black mapping.
+    :param whitepoint: an int value [0, 255] for the white mapping.
+    :param midpoint: an int value [0, 255] for the midtone mapping.
     :return: An image.
     """
+
+    # Initial asserts
     assert image.mode == "L"
+    if mid is None:
+        assert 0 <= blackpoint <= whitepoint <= 255
+    else:
+        assert 0 <= blackpoint <= midpoint <= whitepoint <= 255
+
+    # Define colors from arguments
     black = _color(black, "RGB")
     white = _color(white, "RGB")
+    if mid is not None:
+        mid = _color(mid, "RGB")
+
+    # Empty lists for the mapping
     red = []
     green = []
     blue = []
-    for i in range(256):
-        red.append(black[0]+i*(white[0]-black[0])//255)
-        green.append(black[1]+i*(white[1]-black[1])//255)
-        blue.append(black[2]+i*(white[2]-black[2])//255)
+
+    # Create the low-end values
+    for i in range(0, blackpoint):
+        red.append(black[0])
+        green.append(black[1])
+        blue.append(black[2])
+
+    # Create the mapping (2-color)
+    if mid is None:
+
+        range_map = range(0, whitepoint - blackpoint)
+
+        for i in range_map:
+            red.append(black[0] + i * (white[0] - black[0]) // len(range_map))
+            green.append(black[1] + i * (white[1] - black[1]) // len(range_map))
+            blue.append(black[2] + i * (white[2] - black[2]) // len(range_map))
+
+    # Create the mapping (3-color)
+    else:
+
+        range_map1 = range(0, midpoint - blackpoint)
+        range_map2 = range(0, whitepoint - midpoint)
+
+        for i in range_map1:
+            red.append(black[0] + i * (mid[0] - black[0]) // len(range_map1))
+            green.append(black[1] + i * (mid[1] - black[1]) // len(range_map1))
+            blue.append(black[2] + i * (mid[2] - black[2]) // len(range_map1))
+        for i in range_map2:
+            red.append(mid[0] + i * (white[0] - mid[0]) // len(range_map2))
+            green.append(mid[1] + i * (white[1] - mid[1]) // len(range_map2))
+            blue.append(mid[2] + i * (white[2] - mid[2]) // len(range_map2))
+
+    # Create the high-end values
+    for i in range(0, 256 - whitepoint):
+        red.append(white[0])
+        green.append(white[1])
+        blue.append(white[2])
+
+    # Return converted image
     image = image.convert("RGB")
     return _lut(image, red + green + blue)
+
+
+def pad(image, size, method=Image.NEAREST, color=None, centering=(0.5, 0.5)):
+    """
+    Returns a sized and padded version of the image, expanded to fill the
+    requested aspect ratio and size.
+
+    :param image: The image to size and crop.
+    :param size: The requested output size in pixels, given as a
+                 (width, height) tuple.
+    :param method: What resampling method to use. Default is
+                   :py:attr:`PIL.Image.NEAREST`.
+    :param color: The background color of the padded image.
+    :param centering: Control the position of the original image within the
+                      padded version.
+                          (0.5, 0.5) will keep the image centered
+                          (0, 0) will keep the image aligned to the top left
+                          (1, 1) will keep the image aligned to the bottom
+                          right
+    :return: An image.
+    """
+
+    im_ratio = image.width / image.height
+    dest_ratio = float(size[0]) / size[1]
+
+    if im_ratio == dest_ratio:
+        out = image.resize(size, resample=method)
+    else:
+        out = Image.new(image.mode, size, color)
+        if im_ratio > dest_ratio:
+            new_height = int(image.height / image.width * size[0])
+            if new_height != size[1]:
+                image = image.resize((size[0], new_height), resample=method)
+
+            y = int((size[1] - new_height) * max(0, min(centering[1], 1)))
+            out.paste(image, (0, y))
+        else:
+            new_width = int(image.width / image.height * size[1])
+            if new_width != size[0]:
+                image = image.resize((new_width, size[1]), resample=method)
+
+            x = int((size[0] - new_width) * max(0, min(centering[0], 1)))
+            out.paste(image, (x, 0))
+    return out
 
 
 def crop(image, border=0):
@@ -277,9 +379,10 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
                  (width, height) tuple.
     :param method: What resampling method to use. Default is
                    :py:attr:`PIL.Image.NEAREST`.
-    :param bleed: Remove a border around the outside of the image (from all
+    :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).
+                  Cannot be greater than or equal to 0.5.
     :param centering: Control the cropping position.  Use (0.5, 0.5) for
                       center cropping (e.g. if cropping the width, take 50% off
                       of the left side, and therefore 50% off the right side).
@@ -297,66 +400,53 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # kevin@cazabon.com
     # http://www.cazabon.com
 
-    # ensure inputs are valid
-    if not isinstance(centering, list):
-        centering = [centering[0], centering[1]]
+    # ensure centering is mutable
+    centering = list(centering)
 
-    if centering[0] > 1.0 or centering[0] < 0.0:
-        centering[0] = 0.50
-    if centering[1] > 1.0 or centering[1] < 0.0:
-        centering[1] = 0.50
+    if not 0.0 <= centering[0] <= 1.0:
+        centering[0] = 0.5
+    if not 0.0 <= centering[1] <= 1.0:
+        centering[1] = 0.5
 
-    if bleed > 0.49999 or bleed < 0.0:
+    if not 0.0 <= bleed < 0.5:
         bleed = 0.0
 
     # calculate the area to use for resizing and cropping, subtracting
     # the 'bleed' around the edges
 
     # number of pixels to trim off on Top and Bottom, Left and Right
-    bleedPixels = (
-        int((float(bleed) * float(image.size[0])) + 0.5),
-        int((float(bleed) * float(image.size[1])) + 0.5)
-        )
+    bleed_pixels = (bleed * image.size[0], bleed * image.size[1])
 
-    liveArea = (0, 0, image.size[0], image.size[1])
-    if bleed > 0.0:
-        liveArea = (
-            bleedPixels[0], bleedPixels[1], image.size[0] - bleedPixels[0] - 1,
-            image.size[1] - bleedPixels[1] - 1
-            )
+    live_size = (image.size[0] - bleed_pixels[0] * 2,
+                 image.size[1] - bleed_pixels[1] * 2)
 
-    liveSize = (liveArea[2] - liveArea[0], liveArea[3] - liveArea[1])
-
-    # calculate the aspect ratio of the liveArea
-    liveAreaAspectRatio = float(liveSize[0])/float(liveSize[1])
+    # calculate the aspect ratio of the live_size
+    live_size_ratio = float(live_size[0]) / live_size[1]
 
     # calculate the aspect ratio of the output image
-    aspectRatio = float(size[0]) / float(size[1])
+    output_ratio = float(size[0]) / size[1]
 
     # figure out if the sides or top/bottom will be cropped off
-    if liveAreaAspectRatio >= aspectRatio:
-        # liveArea is wider than what's needed, crop the sides
-        cropWidth = int((aspectRatio * float(liveSize[1])) + 0.5)
-        cropHeight = liveSize[1]
+    if live_size_ratio >= output_ratio:
+        # live_size is wider than what's needed, crop the sides
+        crop_width = output_ratio * live_size[1]
+        crop_height = live_size[1]
     else:
-        # liveArea is taller than what's needed, crop the top and bottom
-        cropWidth = liveSize[0]
-        cropHeight = int((float(liveSize[0])/aspectRatio) + 0.5)
+        # live_size is taller than what's needed, crop the top and bottom
+        crop_width = live_size[0]
+        crop_height = live_size[0] / output_ratio
 
     # make the crop
-    leftSide = int(liveArea[0] + (float(liveSize[0]-cropWidth) * centering[0]))
-    if leftSide < 0:
-        leftSide = 0
-    topSide = int(liveArea[1] + (float(liveSize[1]-cropHeight) * centering[1]))
-    if topSide < 0:
-        topSide = 0
+    crop_left = bleed_pixels[0] + (live_size[0]-crop_width) * centering[0]
+    crop_top = bleed_pixels[1] + (live_size[1]-crop_height) * centering[1]
 
-    out = image.crop(
-        (leftSide, topSide, leftSide + cropWidth, topSide + cropHeight)
-        )
+    crop = (
+        crop_left, crop_top,
+        crop_left + crop_width, crop_top + crop_height
+    )
 
     # resize the image and return it
-    return out.resize(size, method)
+    return image.resize(size, method, box=crop)
 
 
 def flip(image):
@@ -432,98 +522,3 @@ def solarize(image, threshold=128):
         else:
             lut.append(255-i)
     return _lut(image, lut)
-
-
-# --------------------------------------------------------------------
-# PIL USM components, from Kevin Cazabon.
-
-def gaussian_blur(im, radius=None):
-    """ PIL_usm.gblur(im, [radius])"""
-
-    warnings.warn(
-        'PIL.ImageOps.gaussian_blur is deprecated. '
-        'Use PIL.ImageFilter.GaussianBlur instead. '
-        'This function will be removed in a future version.',
-        DeprecationWarning
-    )
-
-    if radius is None:
-        radius = 5.0
-
-    im.load()
-
-    return im.im.gaussian_blur(radius)
-
-
-def gblur(im, radius=None):
-    """ PIL_usm.gblur(im, [radius])"""
-
-    warnings.warn(
-        'PIL.ImageOps.gblur is deprecated. '
-        'Use PIL.ImageFilter.GaussianBlur instead. '
-        'This function will be removed in a future version.',
-        DeprecationWarning
-    )
-
-    return gaussian_blur(im, radius)
-
-
-def unsharp_mask(im, radius=None, percent=None, threshold=None):
-    """ PIL_usm.usm(im, [radius, percent, threshold])"""
-
-    warnings.warn(
-        'PIL.ImageOps.unsharp_mask is deprecated. '
-        'Use PIL.ImageFilter.UnsharpMask instead. '
-        'This function will be removed in a future version.',
-        DeprecationWarning
-    )
-
-    if radius is None:
-        radius = 5.0
-    if percent is None:
-        percent = 150
-    if threshold is None:
-        threshold = 3
-
-    im.load()
-
-    return im.im.unsharp_mask(radius, percent, threshold)
-
-
-def usm(im, radius=None, percent=None, threshold=None):
-    """ PIL_usm.usm(im, [radius, percent, threshold])"""
-
-    warnings.warn(
-        'PIL.ImageOps.usm is deprecated. '
-        'Use PIL.ImageFilter.UnsharpMask instead. '
-        'This function will be removed in a future version.',
-        DeprecationWarning
-    )
-
-    return unsharp_mask(im, radius, percent, threshold)
-
-
-def box_blur(image, radius):
-    """
-    Blur the image by setting each pixel to the average value of the pixels
-    in a square box extending radius pixels in each direction.
-    Supports float radius of arbitrary size. Uses an optimized implementation
-    which runs in linear time relative to the size of the image
-    for any radius value.
-
-    :param image: The image to blur.
-    :param radius: Size of the box in one direction. Radius 0 does not blur,
-                   returns an identical image. Radius 1 takes 1 pixel
-                   in each direction, i.e. 9 pixels in total.
-    :return: An image.
-    """
-    warnings.warn(
-        'PIL.ImageOps.box_blur is deprecated. '
-        'Use PIL.ImageFilter.BoxBlur instead. '
-        'This function will be removed in a future version.',
-        DeprecationWarning
-    )
-
-    image.load()
-
-    return image._new(image.im.box_blur(radius))

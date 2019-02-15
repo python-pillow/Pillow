@@ -14,11 +14,11 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - | |linux| |macos| |windows| |coverage|
+      - |linux| |macos| |windows| |coverage|
     * - package
-      - |zenodo| |version|
-    * - chat
-      - |gitter|
+      - |zenodo| |tidelift| |version| |downloads|
+    * - social
+      - |gitter| |twitter|
 
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
@@ -28,7 +28,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
    :target: https://travis-ci.org/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. |macos| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/latest.svg?label=macOS%20build
+.. |macos| image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg?label=macOS%20build
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (macOS)
 
@@ -43,13 +43,24 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
+.. |tidelift| image:: https://tidelift.com/badges/github/python-pillow/Pillow?style=flat
+   :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=referral&utm_campaign=readme
+
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg
-   :target: https://pypi.python.org/pypi/Pillow/
+   :target: https://pypi.org/project/Pillow/
    :alt: Latest PyPI version
+
+.. |downloads| image:: https://img.shields.io/pypi/dm/pillow.svg
+   :target: https://pypi.org/project/Pillow/
+   :alt: Number of PyPI downloads
 
 .. |gitter| image:: https://badges.gitter.im/python-pillow/Pillow.svg
    :target: https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
    :alt: Join the chat at https://gitter.im/python-pillow/Pillow
+
+.. |twitter| image:: https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg
+   :target: https://twitter.com/PythonPillow
+   :alt: Follow on https://twitter.com/PythonPillow
 
 .. end-badges
 

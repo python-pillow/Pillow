@@ -58,6 +58,8 @@ You can read the image size through the :py:attr:`~PIL.Image.Image.size`
 attribute. This is a 2-tuple, containing the horizontal and vertical size in
 pixels.
 
+.. _coordinate-system:
+
 Coordinate System
 -----------------
 

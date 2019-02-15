@@ -1,6 +1,7 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
+from PIL._util import py3
 import os
 
 
@@ -55,17 +56,16 @@ class TestImage(PillowTestCase):
         self.assertEqual(im.width, 1)
         self.assertEqual(im.height, 2)
 
-        im.size = (3, 4)
-        self.assertEqual(im.width, 3)
-        self.assertEqual(im.height, 4)
+        with self.assertRaises(AttributeError):
+            im.size = (3, 4)
 
     def test_invalid_image(self):
-        if str is bytes:
-            import StringIO
-            im = StringIO.StringIO('')
-        else:
+        if py3:
             import io
             im = io.BytesIO(b'')
+        else:
+            import StringIO
+            im = StringIO.StringIO('')
         self.assertRaises(IOError, Image.open, im)
 
     def test_bad_mode(self):
@@ -112,7 +112,6 @@ class TestImage(PillowTestCase):
         self.assertRaises(ValueError, im.save, temp_file)
 
     def test_internals(self):
-
         im = Image.new("L", (100, 100))
         im.readonly = 1
         im._copy()
@@ -122,8 +121,15 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
 
-        test_file = self.tempfile("temp.ppm")
-        im._dump(test_file)
+    def test_dump(self):
+        im = Image.new("L", (10, 10))
+        im._dump(self.tempfile("temp_L.ppm"))
+
+        im = Image.new("RGB", (10, 10))
+        im._dump(self.tempfile("temp_RGB.ppm"))
+
+        im = Image.new("HSV", (10, 10))
+        self.assertRaises(ValueError, im._dump, self.tempfile("temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self):
         # Arrange
@@ -133,7 +139,6 @@ class TestImage(PillowTestCase):
         # Act/Assert
         # Shouldn't cause AttributeError (#774)
         self.assertFalse(item is None)
-        self.assertFalse(item == None)
         self.assertFalse(item == num)
 
     def test_expand_x(self):
@@ -280,9 +285,9 @@ class TestImage(PillowTestCase):
                           source.alpha_composite, over, (0, 0),
                           "invalid destination")
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0))
+                          source.alpha_composite, over, 0)
         self.assertRaises(ValueError,
-                          source.alpha_composite, over, (0, 0), (0))
+                          source.alpha_composite, over, (0, 0), 0)
         self.assertRaises(ValueError,
                           source.alpha_composite, over, (0, -1))
         self.assertRaises(ValueError,
@@ -510,7 +515,7 @@ class TestImage(PillowTestCase):
                 self.assertEqual(new_im.palette.tobytes(),
                                  palette_result.tobytes())
             else:
-                self.assertEqual(new_im.palette, None)
+                self.assertIsNone(new_im.palette)
 
         _make_new(im, im_p, im_p.palette)
         _make_new(im_p, im, None)
@@ -555,7 +560,3 @@ class TestRegistry(PillowTestCase):
                                                       'DoesNotExist',
                                                       ('args',),
                                                       extra=('extra',))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper, fromstring, tostring
+from .helper import PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 
@@ -144,7 +144,8 @@ class TestImageFile(PillowTestCase):
 class MockPyDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
         # eof
-        return (-1, 0)
+        return -1, 0
+
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
@@ -153,7 +154,7 @@ class MockImageFile(ImageFile.ImageFile):
     def _open(self):
         self.rawmode = 'RGBA'
         self.mode = 'RGBA'
-        self.size = (200, 200)
+        self._size = (200, 200)
         self.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize), 32, None)]
 
 
@@ -203,7 +204,7 @@ class TestPyDecoder(PillowTestCase):
 
         im = MockImageFile(buf)
         im.tile = [("MOCK", (xoff, yoff, -10, yoff+ysize), 32, None)]
-        d = self.get_decoder()
+        self.get_decoder()
 
         self.assertRaises(ValueError, im.load)
 
@@ -214,13 +215,21 @@ class TestPyDecoder(PillowTestCase):
         buf = BytesIO(b'\x00'*255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)]
-        d = self.get_decoder()
+        im.tile = [
+            ("MOCK", (xoff, yoff, xoff+xsize + 100, yoff+ysize), 32, None)
+        ]
+        self.get_decoder()
 
         self.assertRaises(ValueError, im.load)
 
-        im.tile = [("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)]
+        im.tile = [
+            ("MOCK", (xoff, yoff, xoff+xsize, yoff+ysize + 100), 32, None)
+        ]
         self.assertRaises(ValueError, im.load)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_no_format(self):
+        buf = BytesIO(b'\x00'*255)
+
+        im = MockImageFile(buf)
+        self.assertIsNone(im.format)
+        self.assertIsNone(im.get_format_mimetype())

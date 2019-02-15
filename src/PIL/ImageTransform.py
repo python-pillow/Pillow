@@ -65,7 +65,7 @@ class ExtentTransform(Transform):
     See :py:meth:`~PIL.Image.Image.transform`
 
     :param bbox: A 4-tuple (x0, y0, x1, y1) which specifies two points in the
-        input image's coordinate system.
+        input image's coordinate system. See :ref:`coordinate-system`.
     """
     method = Image.EXTENT
 

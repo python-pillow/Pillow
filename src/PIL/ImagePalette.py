@@ -59,7 +59,7 @@ class ImagePalette(object):
 
     def getdata(self):
         """
-        Get palette contents in format suitable # for the low-level
+        Get palette contents in format suitable for the low-level
         ``im.putpalette`` primitive.
 
         .. warning:: This method is experimental.

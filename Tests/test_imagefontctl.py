@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 from PIL import Image, ImageDraw, ImageFont, features
 
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
 
+
 @unittest.skipUnless(features.check('raqm'), "Raqm Library is not installed.")
 class TestImagecomplextext(PillowTestCase):
 
     def test_english(self):
-        #smoke test, this should not fail
+        # smoke test, this should not fail
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), 'TEST', font=ttf, fill=500, direction='ltr')
-        
-    
+
     def test_complex_text(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
@@ -30,7 +30,8 @@ class TestImagecomplextext(PillowTestCase):
         self.assert_image_similar(im, target_img, .5)
 
     def test_y_offset(self):
-        ttf = ImageFont.truetype("Tests/fonts/NotoNastaliqUrdu-Regular.ttf", FONT_SIZE)
+        ttf = ImageFont.truetype("Tests/fonts/NotoNastaliqUrdu-Regular.ttf",
+                                 FONT_SIZE)
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
@@ -70,7 +71,8 @@ class TestImagecomplextext(PillowTestCase):
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0),  'سلطنة عمان Oman', font=ttf, fill=500, direction='ltr')
+        draw.text((0, 0),  'سلطنة عمان Oman',
+                  font=ttf, fill=500, direction='ltr')
 
         target = 'Tests/images/test_direction_ltr.png'
         target_img = Image.open(target)
@@ -82,7 +84,8 @@ class TestImagecomplextext(PillowTestCase):
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0), 'Oman سلطنة عمان', font=ttf, fill=500, direction='rtl')
+        draw.text((0, 0), 'Oman سلطنة عمان',
+                  font=ttf, fill=500, direction='rtl')
 
         target = 'Tests/images/test_direction_ltr.png'
         target_img = Image.open(target)
@@ -101,8 +104,8 @@ class TestImagecomplextext(PillowTestCase):
         self.assert_image_similar(im, target_img, .5)
 
         liga_size = ttf.getsize('fi', features=['-liga'])
-        self.assertEqual(liga_size,(13,19))
-        
+        self.assertEqual(liga_size, (13, 19))
+
     def test_kerning_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
@@ -120,14 +123,10 @@ class TestImagecomplextext(PillowTestCase):
 
         im = Image.new(mode='RGB', size=(300, 100))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0), 'اللغة العربية', font=ttf, fill=500, features=['-fina','-init','-medi'])
+        draw.text((0, 0), 'اللغة العربية', font=ttf, fill=500,
+                  features=['-fina', '-init', '-medi'])
 
         target = 'Tests/images/test_arabictext_features.png'
         target_img = Image.open(target)
 
         self.assert_image_similar(im, target_img, .5)
-
-if __name__ == '__main__':
-    unittest.main()
-
-# End of file

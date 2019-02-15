@@ -54,9 +54,10 @@ def grabclipboard():
         fh, filepath = tempfile.mkstemp('.jpg')
         os.close(fh)
         commands = [
-            "set theFile to (open for access POSIX file \""+filepath+"\" with write permission)",
+            "set theFile to (open for access POSIX file \""
+            + filepath + "\" with write permission)",
             "try",
-                "write (the clipboard as JPEG picture) to theFile",
+            "    write (the clipboard as JPEG picture) to theFile",
             "end try",
             "close access theFile"
         ]

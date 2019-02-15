@@ -38,7 +38,6 @@
 #define MAX(a, b) (a)>(b) ? (a) : (b)
 #define MIN(a, b) (a)<(b) ? (a) : (b)
 
-#define CLIP(v) ((v) <= 0 ? 0 : (v) >= 255 ? 255 : (v))
 #define CLIP16(v) ((v) <= -32768 ? -32768 : (v) >= 32767 ? 32767 : (v))
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
@@ -141,7 +140,7 @@ la2lA(UINT8* out, const UINT8* in, int xsize)
         if (alpha == 255 || alpha == 0) {
             pixel = in[0];
         } else {
-            pixel = CLIP((255 * in[0]) / alpha);
+            pixel = CLIP8((255 * in[0]) / alpha);
         }
         *out++ = (UINT8) pixel;
         *out++ = (UINT8) pixel;
@@ -316,8 +315,8 @@ rgb2hsv(UINT8* out, const UINT8* in, int xsize)
             // incorrect hue happens if h/6 is negative.
             h = fmod((h/6.0 + 1.0), 1.0);
 
-            uh = (UINT8)CLIP((int)(h*255.0));
-            us = (UINT8)CLIP((int)(s*255.0));
+            uh = (UINT8)CLIP8((int)(h*255.0));
+            us = (UINT8)CLIP8((int)(s*255.0));
 
             *out++ = uh;
             *out++ = us;
@@ -355,9 +354,9 @@ hsv2rgb(UINT8* out, const UINT8* in, int xsize)
             p = round((float)v * (1.0-fs));
             q = round((float)v * (1.0-fs*f));
             t = round((float)v * (1.0-fs*(1.0-f)));
-            up = (UINT8)CLIP(p);
-            uq = (UINT8)CLIP(q);
-            ut = (UINT8)CLIP(t);
+            up = (UINT8)CLIP8(p);
+            uq = (UINT8)CLIP8(q);
+            ut = (UINT8)CLIP8(t);
 
             switch (i%6) {
             case 0:
@@ -466,9 +465,9 @@ rgba2rgbA(UINT8* out, const UINT8* in, int xsize)
             *out++ = in[1];
             *out++ = in[2];
         } else {
-            *out++ = CLIP((255 * in[0]) / alpha);
-            *out++ = CLIP((255 * in[1]) / alpha);
-            *out++ = CLIP((255 * in[2]) / alpha);
+            *out++ = CLIP8((255 * in[0]) / alpha);
+            *out++ = CLIP8((255 * in[1]) / alpha);
+            *out++ = CLIP8((255 * in[2]) / alpha);
         }
         *out++ = in[3];
     }
@@ -537,9 +536,9 @@ cmyk2rgb(UINT8* out, const UINT8* in, int xsize)
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
         nk = 255 - in[3];
-        out[0] = CLIP(nk - MULDIV255(in[0], nk, tmp));
-        out[1] = CLIP(nk - MULDIV255(in[1], nk, tmp));
-        out[2] = CLIP(nk - MULDIV255(in[2], nk, tmp));
+        out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
+        out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
+        out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
         out[3] = 255;
         out += 4;
         in += 4;
@@ -1132,9 +1131,9 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                     int d2;
                     INT16* cache;
 
-                    r = CLIP(in[0] + (r + e[3+0])/16);
-                    g = CLIP(in[1] + (g + e[3+1])/16);
-                    b = CLIP(in[2] + (b + e[3+2])/16);
+                    r = CLIP8(in[0] + (r + e[3+0])/16);
+                    g = CLIP8(in[1] + (g + e[3+1])/16);
+                    b = CLIP8(in[2] + (b + e[3+2])/16);
 
                     /* get closest colour */
                     cache = &ImagingPaletteCache(palette, r, g, b);
@@ -1236,7 +1235,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
             for (x = 0; x < imIn->xsize; x++) {
 
                 /* pick closest colour */
-                l = CLIP(in[x] + (l + errors[x+1])/16);
+                l = CLIP8(in[x] + (l + errors[x+1])/16);
                 out[x] = (l > 128) ? 255 : 0;
 
                 /* propagate errors */
@@ -1264,7 +1263,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
             for (x = 0; x < imIn->xsize; x++, in += 4) {
 
                 /* pick closest colour */
-                l = CLIP(L(in)/1000 + (l + errors[x+1])/16);
+                l = CLIP8(L(in)/1000 + (l + errors[x+1])/16);
                 out[x] = (l > 128) ? 255 : 0;
 
                 /* propagate errors */

@@ -28,6 +28,13 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
+Access using negative indexes is also possible.
+
+.. code-block:: python
+
+    px[-1,-1] = (0,0,0)
+    print (px[-1,-1])
+
 
 
 :py:class:`PixelAccess` Class
@@ -58,7 +65,8 @@ Results in the following::
 
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
-        multi-band images
+        multi-band images. In addition to this, RGB and RGBA tuples
+        are accepted for P images.
 
         :param xy: The pixel coordinate, given as (x, y).
         :param color: The pixel value according to its mode. e.g. tuple (r, g, b) for RGB mode)

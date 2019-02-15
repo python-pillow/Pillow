@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImImagePlugin
 
@@ -14,6 +14,12 @@ class TestFileIm(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "IM")
+
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(TEST_IM)
+            im.load()
+        self.assert_warning(None, open)
 
     def test_tell(self):
         # Arrange
@@ -63,7 +69,3 @@ class TestFileIm(PillowTestCase):
 
     def test_number(self):
         self.assertEqual(1.2, ImImagePlugin.number("1.2"))
-
-
-if __name__ == '__main__':
-    unittest.main()

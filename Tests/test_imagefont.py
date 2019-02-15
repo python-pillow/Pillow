@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import Image, ImageDraw, ImageFont, features
 from io import BytesIO
@@ -42,7 +42,7 @@ class SimplePatcher(object):
             delattr(self._parent_obj, self._attr_name)
 
 
-@unittest.skipUnless(HAS_FREETYPE, "ImageFont not Available")
+@unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
 class TestImageFont(PillowTestCase):
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
@@ -58,22 +58,27 @@ class TestImageFont(PillowTestCase):
                 ('2', '8'): {'multiline': 6.2,
                              'textsize': 2.5,
                              'getters': (12, 16)},
+                ('2', '9'): {'multiline': 6.2,
+                             'textsize': 2.5,
+                             'getters': (12, 16)},
                 'Default': {'multiline': 0.5,
                             'textsize': 0.5,
                             'getters': (12, 16)},
                 }
 
     def setUp(self):
-        freetype_version = tuple(ImageFont.core.freetype2_version.split('.'))[:2]
-        self.metrics = self.METRICS.get(freetype_version, self.METRICS['Default'])
+        freetype_version = tuple(
+            ImageFont.core.freetype2_version.split('.')
+        )[:2]
+        self.metrics = self.METRICS.get(freetype_version,
+                                        self.METRICS['Default'])
 
     def get_font(self):
         return ImageFont.truetype(FONT_PATH, FONT_SIZE,
                                   layout_engine=self.LAYOUT_ENGINE)
 
     def test_sanity(self):
-        self.assertRegexpMatches(
-            ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
+        self.assertRegex(ImageFont.core.freetype2_version, r"\d+\.\d+\.\d+$")
 
     def test_font_properties(self):
         ttf = self.get_font()
@@ -200,7 +205,8 @@ class TestImageFont(PillowTestCase):
             target_img = Image.open(target)
 
             # Epsilon ~.5 fails with FreeType 2.7
-            self.assert_image_similar(im, target_img, self.metrics['multiline'])
+            self.assert_image_similar(im, target_img,
+                                      self.metrics['multiline'])
 
     def test_unknown_align(self):
         im = Image.new(mode='RGB', size=(300, 100))
@@ -208,10 +214,9 @@ class TestImageFont(PillowTestCase):
         ttf = self.get_font()
 
         # Act/Assert
-        self.assertRaises(AssertionError,
-                          draw.multiline_text, (0, 0), TEST_TEXT,
-                                                       font=ttf,
-                                                       align="unknown")
+        self.assertRaises(
+            ValueError,
+            draw.multiline_text, (0, 0), TEST_TEXT, font=ttf, align="unknown")
 
     def test_draw_align(self):
         im = Image.new('RGB', (300, 100), 'white')
@@ -228,6 +233,11 @@ class TestImageFont(PillowTestCase):
         # Test that textsize() correctly connects to multiline_textsize()
         self.assertEqual(draw.textsize(TEST_TEXT, font=ttf),
                          draw.multiline_textsize(TEST_TEXT, font=ttf))
+
+        # Test that multiline_textsize corresponds to ImageFont.textsize()
+        # for single line text
+        self.assertEqual(ttf.getsize('A'),
+                         draw.multiline_textsize('A', font=ttf))
 
         # Test that textsize() can pass on additional arguments
         # to multiline_textsize()
@@ -406,10 +416,10 @@ class TestImageFont(PillowTestCase):
         im = Image.new(mode='RGB', size=(300, 100))
         target = im.copy()
         draw = ImageDraw.Draw(im)
-        #should not crash here. 
+        # should not crash here.
         draw.text((10, 10), '', font=font)
         self.assert_image_equal(im, target)
-        
+
     def test_unicode_pilfont(self):
         # should not segfault, should return UnicodeDecodeError
         # issue #2826
@@ -417,12 +427,12 @@ class TestImageFont(PillowTestCase):
         with self.assertRaises(UnicodeEncodeError):
             font.getsize(u"’")
 
-
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
         with SimplePatcher(ImageFont, '_FreeTypeFont', free_type_font):
-            def loadable_font(filepath, size, index, encoding, *args, **kwargs):
+            def loadable_font(filepath, size, index, encoding,
+                              *args, **kwargs):
                 if filepath == path_to_fake:
                     return ImageFont._FreeTypeFont(FONT_PATH, size, index,
                                                    encoding, *args, **kwargs)
@@ -435,7 +445,7 @@ class TestImageFont(PillowTestCase):
                 self.assertEqual(('FreeMono', 'Regular'), name)
 
     @unittest.skipIf(sys.platform.startswith('win32'),
-                     "requires Unix or MacOS")
+                     "requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -469,7 +479,7 @@ class TestImageFont(PillowTestCase):
                         font_directory+'/Duplicate.ttf', 'Duplicate')
 
     @unittest.skipIf(sys.platform.startswith('win32'),
-                     "requires Unix or MacOS")
+                     "requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
@@ -508,12 +518,14 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize('M'), self.metrics['getters'])
         self.assertEqual(t.getsize('y'), (12, 20))
         self.assertEqual(t.getsize('a'), (12, 16))
+        self.assertEqual(t.getsize_multiline('A'), (12, 16))
+        self.assertEqual(t.getsize_multiline('AB'), (24, 16))
+        self.assertEqual(t.getsize_multiline('a'), (12, 16))
+        self.assertEqual(t.getsize_multiline('ABC\n'), (36, 36))
+        self.assertEqual(t.getsize_multiline('ABC\nA'), (36, 36))
+        self.assertEqual(t.getsize_multiline('ABC\nAaaa'), (48, 36))
 
 
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
-
-
-if __name__ == '__main__':
-    unittest.main()

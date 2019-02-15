@@ -8,7 +8,7 @@ Historically there have been two image allocators in Pillow:
 ``ImagingAllocateBlock`` and ``ImagingAllocateArray``. The first works
 for images smaller than 16MB of data and allocates one large chunk of
 memory of ``im->linesize * im->ysize`` bytes. The second works for
-large images and make one allocation for each scan line of size
+large images and makes one allocation for each scan line of size
 ``im->linesize`` bytes.  This makes for a very sharp transition
 between one allocation and potentially thousands of small allocations,
 leading to unpredictable performance penalties around the transition.
@@ -40,8 +40,8 @@ variables:
 
   * ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
     block size for ``ImagingAllocateArray``. Valid values are
-    integers, with an optional `k` or `m` suffix. Defaults to 16M.  
+    integers, with an optional `k` or `m` suffix. Defaults to 16M.
 
   * ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
     retain to fill future memory requests. Any freed blocks over this
-    threshold will be returned to the OS immediately. Defaults to 0. 
+    threshold will be returned to the OS immediately. Defaults to 0.

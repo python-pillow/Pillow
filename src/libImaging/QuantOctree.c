@@ -149,10 +149,17 @@ count_used_color_buckets(const ColorCube cube) {
 static void
 avg_color_from_color_bucket(const ColorBucket bucket, Pixel *dst) {
    float count = bucket->count;
-   dst->c.r = (int)(bucket->r / count);
-   dst->c.g = (int)(bucket->g / count);
-   dst->c.b = (int)(bucket->b / count);
-   dst->c.a = (int)(bucket->a / count);
+   if (count != 0) {
+       dst->c.r = (int)(bucket->r / count);
+       dst->c.g = (int)(bucket->g / count);
+       dst->c.b = (int)(bucket->b / count);
+       dst->c.a = (int)(bucket->a / count);
+   } else {
+       dst->c.r = 0;
+       dst->c.g = 0;
+       dst->c.b = 0;
+       dst->c.a = 0;
+   }
 }
 
 static int
@@ -259,6 +266,10 @@ subtract_color_buckets(ColorCube cube, ColorBucket buckets, long nBuckets) {
    Pixel p;
    for (i=0; i<nBuckets; i++) {
       subtrahend = &buckets[i];
+
+      // If the subtrahend contains no buckets, there is nothing to subtract.
+      if (subtrahend->count == 0) continue;
+
       avg_color_from_color_bucket(subtrahend, &p);
       minuend = color_bucket_from_cube(cube, &p);
       minuend->count -= subtrahend->count;
@@ -470,6 +481,7 @@ error:
    free(qp);
    free_color_cube(lookupCube);
    free_color_cube(coarseLookupCube);
+   free(paletteBuckets);
    free(paletteBucketsCoarse);
    free(paletteBucketsFine);
    free_color_cube(coarseCube);

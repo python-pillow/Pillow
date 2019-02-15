@@ -34,6 +34,7 @@ class Worker(threading.Thread):
             sys.stdout.write(".")
             queue.task_done()
 
+
 t0 = time.time()
 
 threads = 20

@@ -20,6 +20,8 @@
 
 from . import Image, JpegImagePlugin
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -40,7 +42,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
-    
+
     def _open(self):
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
@@ -84,8 +86,17 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def tell(self):
         return self.__frame
 
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
-# -------------------------------------------------------------------q-
+
+# ---------------------------------------------------------------------
 # Registry stuff
 
 # Note that since MPO shares a factory with JPEG, we do not need to do a

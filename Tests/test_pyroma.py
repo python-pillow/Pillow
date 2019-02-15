@@ -1,22 +1,15 @@
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 
-from PIL import PILLOW_VERSION
+from PIL import __version__
 
 try:
     import pyroma
 except ImportError:
-    # Skip via setUp()
-    pass
+    pyroma = None
 
 
+@unittest.skipIf(pyroma is None, "Pyroma is not installed")
 class TestPyroma(PillowTestCase):
-
-    def setUp(self):
-        try:
-            import pyroma
-            assert pyroma  # Ignore warning
-        except ImportError:
-            self.skipTest("ImportError")
 
     def test_pyroma(self):
         # Arrange
@@ -26,7 +19,7 @@ class TestPyroma(PillowTestCase):
         rating = pyroma.ratings.rate(data)
 
         # Assert
-        if 'rc' in PILLOW_VERSION:
+        if 'rc' in __version__:
             # Pyroma needs to chill about RC versions
             # and not kill all our tests.
             self.assertEqual(rating, (9, [
@@ -35,7 +28,3 @@ class TestPyroma(PillowTestCase):
         else:
             # Should have a perfect score
             self.assertEqual(rating, (10, []))
-
-
-if __name__ == '__main__':
-    unittest.main()

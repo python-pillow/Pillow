@@ -7,7 +7,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
 			 python-qt4 ghostscript libffi-dev libjpeg-turbo-progs cmake imagemagick\
              libharfbuzz-dev libfribidi-dev
 
-pip install cffi
+PYTHONOPTIMIZE=0 pip install cffi
 pip install check-manifest
 pip install coverage
 pip install olefile
@@ -15,6 +15,7 @@ pip install -U pytest
 pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
+pip install numpy
 
 # docs only on Python 2.7
 if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip install -r requirements.txt ; fi

@@ -19,9 +19,6 @@
 #include "Imaging.h"
 
 
-#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
-
-
 Imaging
 ImagingGetBand(Imaging imIn, int band)
 {
@@ -214,7 +211,7 @@ ImagingFillBand(Imaging imOut, int band, int color)
     if (imOut->bands == 2 && band == 1)
         band = 3;
 
-    color = CLIP(color);
+    color = CLIP8(color);
 
     /* Insert color into image */
     for (y = 0; y < imOut->ysize; y++) {

@@ -1,9 +1,16 @@
-from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
+from .helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
+from PIL._util import py3
 
 from io import BytesIO
 import zlib
 import sys
+
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
 
 codecs = dir(Image.core)
 
@@ -21,6 +28,7 @@ def chunk(cid, *data):
     test_file = BytesIO()
     PngImagePlugin.putchunk(*(test_file, cid) + data)
     return test_file.getvalue()
+
 
 o32 = PngImagePlugin.o32
 
@@ -67,8 +75,7 @@ class TestFilePng(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(
-            Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
+        self.assertRegex(Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
 
         test_file = self.tempfile("temp.png")
 
@@ -79,21 +86,22 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PNG")
+        self.assertEqual(im.get_format_mimetype(), 'image/png')
 
         hopper("1").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("L").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("P").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("RGB").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
         hopper("I").save(test_file)
-        im = Image.open(test_file)
+        Image.open(test_file)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -291,15 +299,29 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
     def test_save_l_transparency(self):
+        # There are 559 transparent pixels in l_trns.png.
+        num_transparent = 559
+
         in_file = "Tests/images/l_trns.png"
         im = Image.open(in_file)
+        self.assertEqual(im.mode, "L")
+        self.assertEqual(im.info["transparency"], 255)
+
+        im_rgba = im.convert('RGBA')
+        self.assertEqual(
+            im_rgba.getchannel("A").getcolors()[0][0], num_transparent)
 
         test_file = self.tempfile("temp.png")
         im.save(test_file)
 
-        # There are 559 transparent pixels.
-        im = im.convert('RGBA')
-        self.assertEqual(im.getchannel('A').getcolors()[0][0], 559)
+        test_im = Image.open(test_file)
+        self.assertEqual(test_im.mode, "L")
+        self.assertEqual(test_im.info["transparency"], 255)
+        self.assert_image_equal(im, test_im)
+
+        test_im_rgba = test_im.convert('RGBA')
+        self.assertEqual(
+            test_im_rgba.getchannel('A').getcolors()[0][0], num_transparent)
 
     def test_save_rgb_single_transparency(self):
         in_file = "Tests/images/caption_6_33_22.png"
@@ -312,7 +334,9 @@ class TestFilePng(PillowTestCase):
         # Check open/load/verify exception (@PIL150)
 
         im = Image.open(TEST_PNG_FILE)
-        im.verify()
+
+        # Assert that there is no unclosed file warning
+        self.assert_warning(None, im.verify)
 
         im = Image.open(TEST_PNG_FILE)
         im.load()
@@ -340,7 +364,8 @@ class TestFilePng(PillowTestCase):
         broken_crc_chunk_data = chunk_data[:-1] + b'q'  # break CRC
 
         image_data = HEAD + broken_crc_chunk_data + TAIL
-        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+        self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile,
+                          BytesIO(image_data))
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
@@ -356,7 +381,8 @@ class TestFilePng(PillowTestCase):
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
-            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile, BytesIO(image_data))
+            self.assertRaises(SyntaxError, PngImagePlugin.PngImageFile,
+                              BytesIO(image_data))
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
@@ -419,7 +445,7 @@ class TestFilePng(PillowTestCase):
             im = roundtrip(im, pnginfo=info)
             self.assertEqual(im.info, {"Text": value})
 
-        if str is not bytes:
+        if py3:
             rt_text(" Aa" + chr(0xa0) + chr(0xc4) + chr(0xff))  # Latin1
             rt_text(chr(0x400) + chr(0x472) + chr(0x4ff))       # Cyrillic
             rt_text(chr(0x4e00) + chr(0x66f0) +                 # CJK
@@ -538,11 +564,47 @@ class TestFilePng(PillowTestCase):
         chunks = PngImagePlugin.getchunks(im)
         self.assertEqual(len(chunks), 3)
 
+    def test_textual_chunks_after_idat(self):
+        im = Image.open("Tests/images/hopper.png")
+        self.assertIn('comment', im.text.keys())
+        for k, v in {
+            'date:create': '2014-09-04T09:37:08+03:00',
+            'date:modify': '2014-09-04T09:37:08+03:00',
+        }.items():
+            self.assertEqual(im.text[k], v)
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or MacOS")
+        # Raises a SyntaxError in load_end
+        im = Image.open("Tests/images/broken_data_stream.png")
+        with self.assertRaises(IOError):
+            self.assertIsInstance(im.text, dict)
+
+        # Raises a UnicodeDecodeError in load_end
+        im = Image.open("Tests/images/truncated_image.png")
+        # The file is truncated
+        self.assertRaises(IOError, lambda: im.text)
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        self.assertIsInstance(im.text, dict)
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+        # Raises an EOFError in load_end
+        im = Image.open("Tests/images/hopper_idat_after_image_end.png")
+        self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
+
+    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
+                         "WebP support not installed with animation")
+    def test_apng(self):
+        im = Image.open("Tests/images/iss634.apng")
+        self.assertEqual(im.get_format_mimetype(), 'image/apng')
+
+        # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
+        expected = Image.open("Tests/images/iss634.webp")
+        self.assert_image_similar(im, expected, 0.23)
+
+
+@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2*1024  # max increase in K
-    iterations = 100 # Leak is 56k/iteration, this will leak 5.6megs
+    iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs
 
     def setUp(self):
         if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
@@ -564,7 +626,3 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             self._test_leak(core)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
-
-
-if __name__ == '__main__':
-    unittest.main()

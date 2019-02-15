@@ -11,21 +11,20 @@ include LICENSE
 include Makefile
 graft Tests
 graft src
-graft Tk
 graft depends
 graft winbuild
 graft docs
 prune docs/_static
 
 # build/src control detritus
+exclude .appveyor.yml
 exclude .coveragerc
-exclude codecov.yml
+exclude .codecov.yml
 exclude .editorconfig
 exclude .landscape.yaml
+exclude .readthedocs.yml
 exclude .travis
 exclude .travis/*
-exclude appveyor.yml
-exclude build_children.sh
 exclude tox.ini
 global-exclude .git*
 global-exclude *.pyc

@@ -14,5 +14,6 @@ def fetch(url):
             fd.write(content)
     return name
 
+
 if __name__ == '__main__':
     fetch(sys.argv[1])

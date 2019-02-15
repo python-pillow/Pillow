@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
-from helper import djpeg_available, cjpeg_available
+from .helper import unittest, PillowTestCase, hopper
+from .helper import djpeg_available, cjpeg_available
 
 from io import BytesIO
 import os
@@ -41,13 +41,14 @@ class TestFileJpeg(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegexpMatches(Image.core.jpeglib_version, r"\d+\.\d+$")
+        self.assertRegex(Image.core.jpeglib_version, r"\d+\.\d+$")
 
         im = Image.open(TEST_FILE)
         im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "JPEG")
+        self.assertEqual(im.get_format_mimetype(), "image/jpeg")
 
     def test_app(self):
         # Test APP/COM reader (@PIL135)
@@ -119,7 +120,7 @@ class TestFileJpeg(PillowTestCase):
             # using a 4-byte test code should allow us to detect out of
             # order issues.
             icc_profile = (b"Test"*int(n/4+1))[:n]
-            assert len(icc_profile) == n  # sanity
+            self.assertEqual(len(icc_profile), n)  # sanity
             im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
             self.assertEqual(im1.info.get("icc_profile"), icc_profile or None)
         test(0)
@@ -140,11 +141,9 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open('Tests/images/icc_profile_big.jpg')
         f = self.tempfile("temp.jpg")
         icc_profile = im.info["icc_profile"]
-        try:
-            im.save(f, format='JPEG', progressive=True,quality=95,
-                    icc_profile=icc_profile, optimize=True)
-        except IOError:
-            self.fail("Failed saving image with icc larger than image size")
+        # Should not raise IOError for image with icc larger than image size.
+        im.save(f, format='JPEG', progressive=True, quality=95,
+                icc_profile=icc_profile, optimize=True)
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -348,6 +347,21 @@ class TestFileJpeg(PillowTestCase):
         filename = "Tests/images/jpeg_ff00_header.jpg"
         Image.open(filename)
 
+    def test_truncated_jpeg_should_read_all_the_data(self):
+        filename = "Tests/images/truncated_jpeg.jpg"
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        im = Image.open(filename)
+        im.load()
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+        self.assertIsNotNone(im.getbbox())
+
+    def test_truncated_jpeg_throws_IOError(self):
+        filename = "Tests/images/truncated_jpeg.jpg"
+        im = Image.open(filename)
+
+        with self.assertRaises(IOError):
+            im.load()
+
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
         f = self.tempfile('temp.jpg')
@@ -423,17 +437,17 @@ class TestFileJpeg(PillowTestCase):
         self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables='a')
+        self.assertRaises(ValueError, self.roundtrip, im, qtables='a')
         # sequence wrong length
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
         # sequence wrong length
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
         # qtable entry not a sequence
-        self.assertRaises(Exception, self.roundtrip, im, qtables=[1])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
         # qtable entry has wrong number of items
-        self.assertRaises(Exception,
+        self.assertRaises(ValueError,
                           self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
@@ -567,6 +581,15 @@ class TestFileJpeg(PillowTestCase):
         # OSError for unidentified image.
         self.assertEqual(im.info.get("dpi"), (72, 72))
 
+    def test_ifd_offset_exif(self):
+        # Arrange
+        # This image has been manually hexedited to have an IFD offset of 10,
+        # in contrast to normal 8
+        im = Image.open("Tests/images/exif-ifd-offset.jpg")
+
+        # Act / Assert
+        self.assertEqual(im._getexif()[306], '2017:03:13 23:03:09')
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
@@ -576,7 +599,6 @@ class TestFileCloseW32(PillowTestCase):
 
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.jpg")
-        import os
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(tmpfile)
@@ -584,12 +606,8 @@ class TestFileCloseW32(PillowTestCase):
         im = Image.open(tmpfile)
         fp = im.fp
         self.assertFalse(fp.closed)
-        self.assertRaises(Exception, os.remove, tmpfile)
+        self.assertRaises(WindowsError, os.remove, tmpfile)
         im.load()
         self.assertTrue(fp.closed)
         # this should not fail, as load should have closed the file.
         os.remove(tmpfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

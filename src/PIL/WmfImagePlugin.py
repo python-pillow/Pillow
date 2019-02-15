@@ -22,14 +22,18 @@
 from __future__ import print_function
 
 from . import Image, ImageFile
-from ._binary import i16le as word, si16le as short, i32le as dword, si32le as _long
+from ._binary import i16le as word, si16le as short, \
+                     i32le as dword, si32le as _long
+from ._util import py3
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.2"
 
 _handler = None
 
-if str != bytes:
+if py3:
     long = int
 
 
@@ -41,6 +45,7 @@ def register_handler(handler):
     """
     global _handler
     _handler = handler
+
 
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
@@ -106,8 +111,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             self.info["dpi"] = 72
 
-            # print(self.mode, self.size, self.info)
-
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
                 raise SyntaxError("Unsupported WMF file format")
@@ -142,7 +145,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             raise SyntaxError("Unsupported file format")
 
         self.mode = "RGB"
-        self.size = size
+        self._size = size
 
         loader = self._load()
         if loader:
@@ -160,6 +163,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 # Registry stuff
+
 
 Image.register_open(WmfStubImageFile.format, WmfStubImageFile, _accept)
 Image.register_save(WmfStubImageFile.format, _save)

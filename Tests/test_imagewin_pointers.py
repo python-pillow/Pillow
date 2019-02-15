@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import Image, ImageWin
 
 import sys
@@ -96,7 +96,6 @@ if sys.platform.startswith('win32'):
             hdr.biClrImportant = 0
 
             hdc = CreateCompatibleDC(None)
-            # print('hdc:',hex(hdc))
             pixels = ctypes.c_void_p()
             dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS,
                                    ctypes.byref(pixels), None, 0)
@@ -108,6 +107,3 @@ if sys.platform.startswith('win32'):
             DeleteDC(hdc)
 
             Image.open(BytesIO(bitmap)).save(opath)
-
-if __name__ == '__main__':
-    unittest.main()

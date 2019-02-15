@@ -434,7 +434,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     for (i = 0; i < n; i++) {
-        /* This causes that the pixels of horizontal edges are drawn twice :(
+        /* This causes the pixels of horizontal edges to be drawn twice :(
          * but without it there are inconsistencies in ellipses */
         if (e[i].ymin == e[i].ymax) {
             (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
@@ -634,8 +634,9 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-                     const void* ink_, int fill, int op)
+                     const void* ink_, int fill, int width, int op)
 {
+    int i;
     int y;
     int tmp;
     DRAW* draw;
@@ -662,13 +663,16 @@ ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
             draw->hline(im, x0, y, x1, ink);
 
     } else {
-
         /* outline */
-        draw->line(im, x0, y0, x1, y0, ink);
-        draw->line(im, x1, y0, x1, y1, ink);
-        draw->line(im, x1, y1, x0, y1, ink);
-        draw->line(im, x0, y1, x0, y0, ink);
-
+        if (width == 0) {
+            width = 1;
+        }
+        for (i = 0; i < width; i++) {
+            draw->hline(im, x0, y0+i, x1, ink);
+            draw->hline(im, x0, y1-i, x1, ink);
+            draw->line(im, x1-i, y0, x1-i, y1, ink);
+            draw->line(im, x0+i, y1, x0+i, y0, ink);
+        }
     }
 
     return 0;
@@ -732,12 +736,36 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink,
 #define CHORD 1
 #define PIESLICE 2
 
+static void
+ellipsePoint(int cx, int cy, int w, int h,
+             float i, int *x, int *y)
+{
+    float i_cos, i_sin;
+    float x_f, y_f;
+    double modf_int;
+    i_cos = cos(i*M_PI/180);
+    i_sin = sin(i*M_PI/180);
+    x_f = (i_cos * w/2) + cx;
+    y_f = (i_sin * h/2) + cy;
+    if (modf(x_f, &modf_int) == 0.5) {
+        *x = i_cos > 0 ? FLOOR(x_f) : CEIL(x_f);
+    } else {
+        *x = FLOOR(x_f + 0.5);
+    }
+    if (modf(y_f, &modf_int) == 0.5) {
+        *y = i_sin > 0 ? FLOOR(y_f) : CEIL(y_f);
+    } else {
+        *y = FLOOR(y_f + 0.5);
+    }
+}
+
 static int
 ellipse(Imaging im, int x0, int y0, int x1, int y1,
         float start, float end, const void* ink_, int fill,
-        int mode, int op)
+        int width, int mode, int op)
 {
     float i;
+    int j;
     int n;
     int cx, cy;
     int w, h;
@@ -747,122 +775,136 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     DRAW* draw;
     INT32 ink;
 
-    w = x1 - x0;
-    h = y1 - y0;
-    if (w < 0 || h < 0)
-        return 0;
-
     DRAWINIT();
 
-    cx = (x0 + x1) / 2;
-    cy = (y0 + y1) / 2;
-
-    while (end < start)
-        end += 360;
-
-    if (end - start > 360) {
-        /* no need to go in loops */
-        end = start + 361;
+    if (width == 0) {
+        width = 1;
     }
 
-    if (mode != ARC && fill) {
+    for (j = 0; j < width; j++) {
 
-        /* Build edge list */
-        /* malloc check UNDONE, FLOAT? */
-        Edge* e = calloc((end - start + 3), sizeof(Edge));
-        if (!e) {
-            ImagingError_MemoryError();
-            return -1;
+        w = x1 - x0;
+        h = y1 - y0;
+        if (w < 0 || h < 0)
+            return 0;
+
+        cx = (x0 + x1) / 2;
+        cy = (y0 + y1) / 2;
+
+        while (end < start)
+            end += 360;
+
+        if (end - start > 360) {
+            /* no need to go in loops */
+            end = start + 361;
         }
 
-        n = 0;
+        if (mode != ARC && fill) {
 
-        for (i = start; i < end+1; i++) {
-            if (i > end) {
-                i = end;
+            /* Build edge list */
+            /* malloc check UNDONE, FLOAT? */
+            Edge* e = calloc((end - start + 3), sizeof(Edge));
+            if (!e) {
+                ImagingError_MemoryError();
+                return -1;
             }
-            x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
-            y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
-            if (i != start)
-                add_edge(&e[n++], lx, ly, x, y);
-            else
-                sx = x, sy = y;
-            lx = x, ly = y;
-        }
+            n = 0;
 
-        if (n > 0) {
-            /* close and draw polygon */
-            if (mode == PIESLICE) {
-                if (x != cx || y != cy) {
-                    add_edge(&e[n++], x, y, cx, cy);
-                    add_edge(&e[n++], cx, cy, sx, sy);
+            for (i = start; i < end+1; i++) {
+                if (i > end) {
+                    i = end;
                 }
-            } else {
-                if (x != sx || y != sy)
-                    add_edge(&e[n++], x, y, sx, sy);
+                ellipsePoint(cx, cy, w, h, i, &x, &y);
+                if (i != start)
+                    add_edge(&e[n++], lx, ly, x, y);
+                else
+                    sx = x, sy = y;
+                lx = x, ly = y;
             }
-            draw->polygon(im, n, e, ink, 0);
-        }
 
-        free(e);
-
-    } else {
-
-        for (i = start; i < end+1; i++) {
-            if (i > end) {
-                i = end;
-            }
-            x = FLOOR((cos(i*M_PI/180) * w/2) + cx + 0.5);
-            y = FLOOR((sin(i*M_PI/180) * h/2) + cy + 0.5);
-            if (i != start)
-                draw->line(im, lx, ly, x, y, ink);
-            else
-                sx = x, sy = y;
-            lx = x, ly = y;
-        }
-
-        if (i != start) {
-            if (mode == PIESLICE) {
-                if (x != cx || y != cy) {
-                    draw->line(im, x, y, cx, cy, ink);
-                    draw->line(im, cx, cy, sx, sy, ink);
+            if (n > 0) {
+                /* close and draw polygon */
+                if (mode == PIESLICE) {
+                    if (x != cx || y != cy) {
+                        add_edge(&e[n++], x, y, cx, cy);
+                        add_edge(&e[n++], cx, cy, sx, sy);
+                    }
+                } else {
+                    if (x != sx || y != sy)
+                        add_edge(&e[n++], x, y, sx, sy);
                 }
-            } else if (mode == CHORD) {
-                if (x != sx || y != sy)
-                    draw->line(im, x, y, sx, sy, ink);
+                draw->polygon(im, n, e, ink, 0);
+            }
+
+            free(e);
+
+        } else {
+
+            for (i = start; i < end+1; i++) {
+                if (i > end) {
+                    i = end;
+                }
+                ellipsePoint(cx, cy, w, h, i, &x, &y);
+                if (i != start)
+                    draw->line(im, lx, ly, x, y, ink);
+                else
+                    sx = x, sy = y;
+                lx = x, ly = y;
+            }
+
+            if (i != start) {
+                if (mode == PIESLICE) {
+                    if (j == 0 && (x != cx || y != cy)) {
+                        if (width == 1) {
+                            draw->line(im, x, y, cx, cy, ink);
+                            draw->line(im, cx, cy, sx, sy, ink);
+                        } else {
+                            ImagingDrawWideLine(im, x, y, cx, cy, &ink, width, op);
+                            ImagingDrawWideLine(im, cx, cy, sx, sy, &ink, width, op);
+                        }
+                    }
+                } else if (mode == CHORD) {
+                    if (x != sx || y != sy)
+                        draw->line(im, x, y, sx, sy, ink);
+                }
             }
         }
+        x0++;
+        y0++;
+        x1--;
+        y1--;
     }
-
     return 0;
 }
 
 int
 ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-               float start, float end, const void* ink, int op)
+               float start, float end, const void* ink, int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, ARC, op);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, width, ARC, op);
 }
 
 int
 ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-               float start, float end, const void* ink, int fill, int op)
+                 float start, float end, const void* ink, int fill,
+                 int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, CHORD, op);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, width, CHORD, op);
 }
 
 int
 ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
-                   const void* ink, int fill, int op)
+                   const void* ink, int fill, int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, 0, 360, ink, fill, CHORD, op);
+    return ellipse(im, x0, y0, x1, y1, 0, 360, ink, fill, width, CHORD, op);
 }
 
 int
 ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
-                    float start, float end, const void* ink, int fill, int op)
+                    float start, float end, const void* ink, int fill,
+                    int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, PIESLICE, op);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, width, PIESLICE, op);
 }
 
 /* -------------------------------------------------------------------- */
@@ -871,8 +913,6 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
    portions of the arrow api on top of the Edge structure.  the
    semantics are ok, except that "curve" flattens the bezier curves by
    itself */
-
-#if 1 /* ARROW_GRAPHICS */
 
 struct ImagingOutlineInstance {
 
@@ -1102,5 +1142,3 @@ ImagingDrawOutline(Imaging im, ImagingOutline outline, const void* ink_,
 
     return 0;
 }
-
-#endif

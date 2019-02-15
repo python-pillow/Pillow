@@ -1,7 +1,9 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, EpsImagePlugin
 import io
+
+HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
 # Our two EPS test files (they are identical except for their bounding boxes)
 file1 = "Tests/images/zero_bb.eps"
@@ -20,10 +22,7 @@ file3 = "Tests/images/binary_preview_map.eps"
 
 class TestFileEps(PillowTestCase):
 
-    def setUp(self):
-        if not EpsImagePlugin.has_ghostscript():
-            self.skipTest("Ghostscript not available")
-
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_sanity(self):
         # Regular scale
         image1 = Image.open(file1)
@@ -57,6 +56,7 @@ class TestFileEps(PillowTestCase):
         self.assertRaises(SyntaxError,
                           EpsImagePlugin.EpsImageFile, invalid_file)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
         cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
 
@@ -71,28 +71,32 @@ class TestFileEps(PillowTestCase):
             target = Image.open('Tests/images/pil_sample_rgb.jpg')
             self.assert_image_similar(cmyk_image, target, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_showpage(self):
         # See https://github.com/python-pillow/Pillow/issues/2615
         plot_image = Image.open("Tests/images/reqd_showpage.eps")
         target = Image.open("Tests/images/reqd_showpage.png")
 
-        #should not crash/hang
+        # should not crash/hang
         plot_image.load()
         #  fonts could be slightly different
         self.assert_image_similar(plot_image, target, 6)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
         with open(self.tempfile('temp_file.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_iobase_object(self):
         # issue 479
         image1 = Image.open(file1)
         with io.open(self.tempfile('temp_iobase.eps'), 'wb') as fh:
             image1.save(fh, 'EPS')
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_bytesio_object(self):
         with open(file1, 'rb') as f:
             img_bytes = io.BytesIO(f.read())
@@ -109,6 +113,7 @@ class TestFileEps(PillowTestCase):
         tmpfile = self.tempfile('temp.eps')
         self.assertRaises(ValueError, im.save, tmpfile)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale1(self):
         # We need png support for these render test
         codecs = dir(Image.core)
@@ -129,6 +134,7 @@ class TestFileEps(PillowTestCase):
         image2_scale1_compare.load()
         self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale2(self):
         # We need png support for these render test
         codecs = dir(Image.core)
@@ -149,6 +155,7 @@ class TestFileEps(PillowTestCase):
         image2_scale2_compare.load()
         self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_resize(self):
         # Arrange
         image1 = Image.open(file1)
@@ -166,6 +173,7 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image2.size, new_size)
         self.assertEqual(image3.size, new_size)
 
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_thumbnail(self):
         # Issue #619
         # Arrange
@@ -195,41 +203,15 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)
         self.assertEqual(t.readline().strip('\r\n'), 'bif', ending)
 
-    def _test_readline_stringio(self, test_string, ending):
-        # check all the freaking line endings possible
-        try:
-            import StringIO
-        except ImportError:
-            # don't skip, it skips everything in the parent test
-            return
-        t = StringIO.StringIO(test_string)
+    def _test_readline_io_psfile(self, test_string, ending):
+        f = io.BytesIO(test_string.encode('latin-1'))
+        t = EpsImagePlugin.PSFile(f)
         self._test_readline(t, ending)
-
-    def _test_readline_io(self, test_string, ending):
-        if str is bytes:
-            t = io.StringIO(unicode(test_string))
-        else:
-            t = io.StringIO(test_string)
-        self._test_readline(t, ending)
-
-    def _test_readline_file_universal(self, test_string, ending):
-        f = self.tempfile('temp.txt')
-        with open(f, 'wb') as w:
-            if str is bytes:
-                w.write(test_string)
-            else:
-                w.write(test_string.encode('UTF-8'))
-
-        with open(f, 'rU') as t:
-            self._test_readline(t, ending)
 
     def _test_readline_file_psfile(self, test_string, ending):
         f = self.tempfile('temp.txt')
         with open(f, 'wb') as w:
-            if str is bytes:
-                w.write(test_string)
-            else:
-                w.write(test_string.encode('UTF-8'))
+            w.write(test_string.encode('latin-1'))
 
         with open(f, 'rb') as r:
             t = EpsImagePlugin.PSFile(r)
@@ -238,29 +220,12 @@ class TestFileEps(PillowTestCase):
     def test_readline(self):
         # check all the freaking line endings possible from the spec
         # test_string = u'something\r\nelse\n\rbaz\rbif\n'
-        line_endings = ['\r\n', '\n']
-        not_working_endings = ['\n\r', '\r']
+        line_endings = ['\r\n', '\n', '\n\r', '\r']
         strings = ['something', 'else', 'baz', 'bif']
 
         for ending in line_endings:
             s = ending.join(strings)
-            # Native Python versions will pass these endings.
-            # self._test_readline_stringio(s, ending)
-            # self._test_readline_io(s, ending)
-            # self._test_readline_file_universal(s, ending)
-
-            self._test_readline_file_psfile(s, ending)
-
-        for ending in not_working_endings:
-            # these only work with the PSFile, while they're in spec,
-            # they're not likely to be used
-            s = ending.join(strings)
-
-            # Native Python versions may fail on these endings.
-            # self._test_readline_stringio(s, ending)
-            # self._test_readline_io(s, ending)
-            # self._test_readline_file_universal(s, ending)
-
+            self._test_readline_io_psfile(s, ending)
             self._test_readline_file_psfile(s, ending)
 
     def test_open_eps(self):
@@ -271,13 +236,12 @@ class TestFileEps(PillowTestCase):
                  "Tests/images/illuCS6_no_preview.eps",
                  "Tests/images/illuCS6_preview.eps"]
 
-        # Act
+        # Act / Assert
         for filename in FILES:
             img = Image.open(filename)
+            self.assertEqual(img.mode, "RGB")
 
-        # Assert
-        self.assertEqual(img.mode, "RGB")
-
+    @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_emptyline(self):
         # Test file includes an empty line in the header data
         emptyline_file = "Tests/images/zero_bb_emptyline.eps"
@@ -287,7 +251,3 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image.mode, "RGB")
         self.assertEqual(image.size, (460, 352))
         self.assertEqual(image.format, "EPS")
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -71,6 +71,7 @@
 #endif
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
+#define	FLOAT16 UINT16
 #define	FLOAT32 float
 #define	FLOAT64 double
 

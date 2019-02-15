@@ -1,8 +1,9 @@
 Building Pillow on Windows
 ==========================
 
-.. note:: For most people, the :doc:`installation instructions
-          <installation>` should be sufficient
+.. note:: For most people, the `installation instructions
+          <../docs/installation.rst#windows-installation>`_ should
+          be sufficient.
 
 This page will describe a build setup to build Pillow against the
 supported Python versions in 32 and 64-bit modes, using freely
@@ -51,13 +52,11 @@ Compilers
 
 Download and install:
 
-* `Microsoft Windows SDK for Windows 7 and .NET Framework 3.5
-  SP1 <https://www.microsoft.com/en-us/download/details.aspx?id=3138>`_
-
 * `Microsoft Windows SDK for Windows 7 and .NET Framework
   4 <https://www.microsoft.com/en-us/download/details.aspx?id=8279>`_
 
-* `CMake-2.8.10.2-win32-x86.exe <https://cmake.org/download/>`_
+* `CMake-2.8.10.2-win32-x86.exe
+  <https://cmake.org/files/v2.8/cmake-2.8.10.2-win32-x86.exe>`_
 
 The samples and the .NET SDK portions aren't required, just the
 compilers and other tools. UNDONE -- check exact wording.

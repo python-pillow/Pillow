@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -27,26 +27,22 @@ class TestImageQuantize(PillowTestCase):
                 raise
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 15)
-        assert len(converted.getcolors()) == 100
+        self.assertEqual(len(converted.getcolors()), 100)
 
     def test_octree_quantize(self):
         image = hopper()
         converted = image.quantize(100, Image.FASTOCTREE)
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 20)
-        assert len(converted.getcolors()) == 100
+        self.assertEqual(len(converted.getcolors()), 100)
 
     def test_rgba_quantize(self):
         image = hopper('RGBA')
         image.quantize()
-        self.assertRaises(Exception, image.quantize, method=0)
+        self.assertRaises(ValueError, image.quantize, method=0)
 
     def test_quantize(self):
         image = Image.open('Tests/images/caption_6_33_22.png').convert('RGB')
         converted = image.quantize()
         self.assert_image(converted, 'P', converted.size)
         self.assert_image_similar(converted.convert('RGB'), image, 1)
-
-
-if __name__ == '__main__':
-    unittest.main()

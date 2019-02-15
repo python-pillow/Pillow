@@ -1,10 +1,16 @@
-from . import Image, ImageFile, _webp
+from . import Image, ImageFile
+try:
+    from . import _webp
+    SUPPORTED = True
+except ImportError:
+    SUPPORTED = False
 from io import BytesIO
 
 
 _VALID_WEBP_MODES = {
     "RGBX": True,
     "RGBA": True,
+    "RGB": True,
     }
 
 _VALID_WEBP_LEGACY_MODES = {
@@ -24,7 +30,11 @@ def _accept(prefix):
     is_webp_file = prefix[8:12] == b"WEBP"
     is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
 
-    return is_riff_file_format and is_webp_file and is_valid_vp8_mode
+    if is_riff_file_format and is_webp_file and is_valid_vp8_mode:
+        if not SUPPORTED:
+            return "image file could not be identified " \
+                   "because WEBP support not installed"
+        return True
 
 
 class WebPImageFile(ImageFile.ImageFile):
@@ -41,7 +51,7 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.info["icc_profile"] = icc_profile
             if exif:
                 self.info["exif"] = exif
-            self.size = width, height
+            self._size = width, height
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
             self._n_frames = 1
@@ -54,7 +64,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Get info from decoder
         width, height, loop_count, bgcolor, frame_count, mode = \
             self._decoder.get_info()
-        self.size = width, height
+        self._size = width, height
         self.info["loop"] = loop_count
         bg_a, bg_r, bg_g, bg_b = \
             (bgcolor >> 24) & 0xFF, \
@@ -63,7 +73,8 @@ class WebPImageFile(ImageFile.ImageFile):
             bgcolor & 0xFF
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self._n_frames = frame_count
-        self.mode = mode
+        self.mode = 'RGB' if mode == 'RGBX' else mode
+        self.rawmode = mode
         self.tile = []
 
         # Attempt to read ICC / EXIF / XMP chunks from file
@@ -153,8 +164,10 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.__loaded = self.__logical_frame
 
                 # Set tile
+                if self.fp and self._exclusive_fp:
+                    self.fp.close()
                 self.fp = BytesIO(data)
-                self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
+                self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super(WebPImageFile, self).load()
 
@@ -178,7 +191,19 @@ def _save_all(im, fp, filename):
         _save(im, fp, filename)
         return
 
-    background = encoderinfo.get("background", (0, 0, 0, 0))
+    background = (0, 0, 0, 0)
+    if "background" in encoderinfo:
+        background = encoderinfo["background"]
+    elif "background" in im.info:
+        background = im.info["background"]
+        if isinstance(background, int):
+            # GifImagePlugin stores a global color table index in
+            # info["background"]. So it must be converted to an RGBA value
+            palette = im.getpalette()
+            if palette:
+                r, g, b = palette[background*3:(background+1)*3]
+                background = (r, g, b, 0)
+
     duration = im.encoderinfo.get("duration", 0)
     loop = im.encoderinfo.get("loop", 0)
     minimize_size = im.encoderinfo.get("minimize_size", False)
@@ -240,16 +265,24 @@ def _save_all(im, fp, filename):
 
                 # Make sure image mode is supported
                 frame = ims
+                rawmode = ims.mode
                 if ims.mode not in _VALID_WEBP_MODES:
-                    alpha = ims.mode == 'P' and 'A' in ims.im.getpalettemode()
-                    frame = ims.convert('RGBA' if alpha else 'RGBX')
+                    alpha = 'A' in ims.mode or 'a' in ims.mode \
+                            or (ims.mode == 'P' and
+                                'A' in ims.im.getpalettemode())
+                    rawmode = 'RGBA' if alpha else 'RGB'
+                    frame = ims.convert(rawmode)
+
+                if rawmode == 'RGB':
+                    # For faster conversion, use RGBX
+                    rawmode = 'RGBX'
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes(),
+                    frame.tobytes('raw', rawmode),
                     timestamp,
                     frame.size[0], frame.size[1],
-                    frame.mode,
+                    rawmode,
                     lossless,
                     quality,
                     method
@@ -288,7 +321,8 @@ def _save(im, fp, filename):
     xmp = im.encoderinfo.get("xmp", "")
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        alpha = im.mode == 'P' and 'A' in im.im.getpalettemode()
+        alpha = 'A' in im.mode or 'a' in im.mode \
+                or (im.mode == 'P' and 'A' in im.im.getpalettemode())
         im = im.convert('RGBA' if alpha else 'RGB')
 
     data = _webp.WebPEncode(
@@ -309,8 +343,9 @@ def _save(im, fp, filename):
 
 
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
-Image.register_save(WebPImageFile.format, _save)
-if _webp.HAVE_WEBPANIM:
-    Image.register_save_all(WebPImageFile.format, _save_all)
-Image.register_extension(WebPImageFile.format, ".webp")
-Image.register_mime(WebPImageFile.format, "image/webp")
+if SUPPORTED:
+    Image.register_save(WebPImageFile.format, _save)
+    if _webp.HAVE_WEBPANIM:
+        Image.register_save_all(WebPImageFile.format, _save_all)
+    Image.register_extension(WebPImageFile.format, ".webp")
+    Image.register_mime(WebPImageFile.format, "image/webp")
