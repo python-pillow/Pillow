@@ -12,6 +12,17 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
 PIL.*ImagePlugin.__version__ attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -36,17 +47,6 @@ Deprecated                       Deprecated                         Deprecated
 ``ImtImagePlugin.__version__``   ``PdfImagePlugin.__version__``     ``XVThumbImagePlugin.__version__``
 ``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
 ===============================  =================================  ==================================
-
-PyQt4 and PySide
-~~~~~~~~~~~~~~~~
-
-.. deprecated:: 6.0.0
-
-Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
-2018-08-31 and PySide since 2015-10-14.
-
-Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
-a future version. Please upgrade to PyQt5 or PySide2.
 
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
