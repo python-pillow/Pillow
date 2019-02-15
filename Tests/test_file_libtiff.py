@@ -705,4 +705,5 @@ class TestFileLibTiff(LibTiffTestCase):
         infile = "Tests/images/old-style-jpeg-compression.tif"
         im = Image.open(infile)
 
-        self.assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+        self.assert_image_equal_tofile(im,
+                                       "Tests/images/old-style-jpeg-compression.png")
