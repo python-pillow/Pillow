@@ -430,7 +430,11 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = []
 
     def _getexif(self):
-        return _getexif(self)
+        try:
+            return self._exif
+        except AttributeError:
+            self._exif = _getexif(self)
+            return self._exif
 
     def _getmp(self):
         return _getmp(self)
