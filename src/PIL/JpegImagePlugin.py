@@ -493,7 +493,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
         raise NotImplementedError()
 
     def _setitem(self, tag, value, legacy_api):
-        super()._setitem(tag, value, legacy_api)
+        TiffImagePlugin.ImageFileDirectory_v1._setitem(self, tag, value, legacy_api)
         if legacy_api:
             val = self._tags_v1[tag]
             if not isinstance(val, (tuple, bytes)):
@@ -504,7 +504,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
         if isinstance(value, TiffImagePlugin.ImageFileDirectory_v2):
             self._tags_v1[tag] = value
         else:
-            super().__setitem__(tag, value)
+            TiffImagePlugin.ImageFileDirectory_v1.__setitem__(self, tag, value)
 
     def __getitem__(self, tag):
         if tag not in self._tags_v1:  # unpack on the fly
@@ -526,7 +526,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
             self._tagdata.update(other._tagdata)
             self.tagtype.update(other.tagtype)
         else:
-            super().update(*args, **kwds)
+            TiffImagePlugin.ImageFileDirectory_v1.update(self, *args, **kwds)
 
 
 def _getexif(self):
