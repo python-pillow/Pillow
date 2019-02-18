@@ -469,18 +469,64 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup_dict(src_dict):
-    # Helper function for _getexif()
-    # returns a dict with any single item tuples/lists as individual values
-    def _fixup(value):
-        try:
-            if len(value) == 1 and not isinstance(value, dict):
-                return value[0]
-        except Exception:
-            pass
-        return value
+def _fixup(value):
+    try:
+        if len(value) == 1 and not isinstance(value, dict):
+            return value[0]
+    except Exception:
+        pass
+    return value
 
-    return {k: _fixup(v) for k, v in src_dict.items()}
+
+class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
+    '''
+    Specialization for parsing EXIF data:
+    - Remove support for v2 to avoid useless computations
+    - custom __setitem__ to supports IFD values
+    - values are "fixed up" so that 1-size tuples are expanded
+    - custom update() to avoid iterating and expanding non parsed data
+
+    The goal is to use the lazyness of ImageFileDirectory_v1 in _getexif().
+    '''
+
+    def to_v2(self):
+        raise NotImplementedError()
+
+    def _setitem(self, tag, value, legacy_api):
+        super()._setitem(tag, value, legacy_api)
+        if legacy_api:
+            val = self._tags_v1[tag]
+            if not isinstance(val, (tuple, bytes)):
+                val = val,
+            self._tags_v1[tag] = _fixup(val)
+
+    def __setitem__(self, tag, value):
+        if isinstance(value, TiffImagePlugin.ImageFileDirectory_v2):
+            self._tags_v1[tag] = value
+        else:
+            super().__setitem__(tag, value)
+
+    def __getitem__(self, tag):
+        if tag not in self._tags_v1:  # unpack on the fly
+            data = self._tagdata[tag]
+            typ = self.tagtype[tag]
+            size, handler = self._load_dispatch[typ]
+            # We don't support v2
+            self._setitem(tag, handler(self, data, True), True)
+        val = self._tags_v1[tag]
+        # Don't try to convert as tuple, it is done in _setitem
+        return val
+
+    def update(self, *args, **kwds):
+        if args and isinstance(args[0], TiffImagePlugin.ImageFileDirectory_v2):
+            other = args[0]
+            # custom update
+            self._tags_v1.update(other._tags_v1)
+            self._tags_v2.update(other._tags_v2)
+            self._tagdata.update(other._tagdata)
+            self.tagtype.update(other.tagtype)
+        else:
+            super().update(*args, **kwds)
 
 
 def _getexif(self):
@@ -503,10 +549,9 @@ def _getexif(self):
     fp = io.BytesIO(data[6:])
     head = fp.read(8)
     # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    fp.seek(info.next)
-    info.load(fp)
-    exif = dict(_fixup_dict(info))
+    exif = ExifImageFileDirectory(head)
+    fp.seek(exif.next)
+    exif.load(fp)
     # get exif extension
     try:
         # exif field 0x8769 is an offset pointer to the location
@@ -516,9 +561,9 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
+        info = ExifImageFileDirectory(head)
         info.load(fp)
-        exif.update(_fixup_dict(info))
+        exif.update(info)
     # get gpsinfo extension
     try:
         # exif field 0x8825 is an offset pointer to the location
@@ -528,9 +573,9 @@ def _getexif(self):
     except (KeyError, TypeError):
         pass
     else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
+        info = ExifImageFileDirectory(head)
         info.load(fp)
-        exif[0x8825] = _fixup_dict(info)
+        exif[0x8825] = info
 
     # Cache the result for future use
     self.info["parsed_exif"] = exif
