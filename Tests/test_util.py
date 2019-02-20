@@ -1,4 +1,4 @@
-from .helper import PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import _util
 
