@@ -5,6 +5,15 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Add TIFF compression codecs: LZMA, Zstd, WebP #3555
+  [cgohlke]
+
+- Fixed pickling of iTXt class with protocol > 1 #3537
+  [radarhere]
+ 
+- _util.isPath returns True for pathlib.Path objects #3616
+  [wbadart]
+
 - Remove unnecessary unittest.main() boilerplate from test files #3631
   [jdufresne]
 
