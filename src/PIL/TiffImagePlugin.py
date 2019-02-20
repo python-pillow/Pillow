@@ -426,7 +426,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         ifd = ImageFileDirectory_v2()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         'Some Data'
 
@@ -560,7 +560,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if info.type:
                 self.tagtype[tag] = info.type
             else:
-                self.tagtype[tag] = 7
+                self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
@@ -875,7 +875,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
         ifd = ImageFileDirectory_v1()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         ('Some Data',)
 
