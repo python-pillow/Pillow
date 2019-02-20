@@ -496,8 +496,6 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
         TiffImagePlugin.ImageFileDirectory_v1._setitem(self, tag, value, legacy_api)
         if legacy_api:
             val = self._tags_v1[tag]
-            if not isinstance(val, (tuple, bytes)):
-                val = val,
             self._tags_v1[tag] = _fixup(val)
 
     def __setitem__(self, tag, value):
@@ -514,7 +512,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
             # We don't support v2
             self._setitem(tag, handler(self, data, True), True)
         val = self._tags_v1[tag]
-        # Don't try to convert as tuple, it is done in _setitem
+        # Don't try to convert as tuple, it is undone by the _fixup function
         return val
 
     def update(self, *args, **kwds):
