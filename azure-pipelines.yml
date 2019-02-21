@@ -10,36 +10,3 @@ jobs:
   parameters:
     name: Lint
     vmImage: 'Ubuntu-16.04'
-
-- template: .azure-pipelines/jobs/test.yml
-  parameters:
-    name: Linux
-    vmImage: 'Ubuntu-16.04'
-
-- template: .azure-pipelines/jobs/test.yml
-  parameters:
-    name: macOS
-    vmImage: 'xcode9-macos10.13'
-
-- template: .azure-pipelines/jobs/test.yml
-  parameters:
-    name: Windows
-    vmImage: 'vs2017-win2016'
-
-- job: Publish
-  dependsOn:
-  - Lint
-  - Linux
-  - macOS
-  - Windows
-  pool:
-    vmImage: 'Ubuntu-16.04'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.x'
-      architecture: 'x64'
-
-  - script: python setup.py sdist
-    displayName: 'Build sdist'
