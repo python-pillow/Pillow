@@ -12,6 +12,42 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+The version constants of individual plugins have been deprecated and will be removed in
+a future version. Use ``PIL.__version__`` instead.
+
+===============================  =================================  ==================================
+Deprecated                       Deprecated                         Deprecated
+===============================  =================================  ==================================
+``BmpImagePlugin.__version__``   ``Jpeg2KImagePlugin.__version__``  ``PngImagePlugin.__version__``
+``CurImagePlugin.__version__``   ``JpegImagePlugin.__version__``    ``PpmImagePlugin.__version__``
+``DcxImagePlugin.__version__``   ``McIdasImagePlugin.__version__``  ``PsdImagePlugin.__version__``
+``EpsImagePlugin.__version__``   ``MicImagePlugin.__version__``     ``SgiImagePlugin.__version__``
+``FliImagePlugin.__version__``   ``MpegImagePlugin.__version__``    ``SunImagePlugin.__version__``
+``FpxImagePlugin.__version__``   ``MpoImagePlugin.__version__``     ``TgaImagePlugin.__version__``
+``GdImageFile.__version__``      ``MspImagePlugin.__version__``     ``TiffImagePlugin.__version__``
+``GifImagePlugin.__version__``   ``PalmImagePlugin.__version__``    ``WmfImagePlugin.__version__``
+``IcoImagePlugin.__version__``   ``PcdImagePlugin.__version__``     ``XbmImagePlugin.__version__``
+``ImImagePlugin.__version__``    ``PcxImagePlugin.__version__``     ``XpmImagePlugin.__version__``
+``ImtImagePlugin.__version__``   ``PdfImagePlugin.__version__``     ``XVThumbImagePlugin.__version__``
+``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
+===============================  =================================  ==================================
+
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

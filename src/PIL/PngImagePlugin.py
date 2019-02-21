@@ -194,7 +194,7 @@ class iTXt(str):
 
     """
     @staticmethod
-    def __new__(cls, text, lang, tkey):
+    def __new__(cls, text, lang=None, tkey=None):
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
