@@ -4,9 +4,6 @@
 # publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
-trigger:
-- master
-
 jobs:
 
 - template: .azure-pipelines/jobs/lint.yml
