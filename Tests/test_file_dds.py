@@ -68,6 +68,10 @@ class TestFileDds(PillowTestCase):
 
         self.assert_image_equal(target, im)
 
+    def test_unimplemented_dxgi_format(self):
+        self.assertRaises(NotImplementedError, Image.open,
+                          "Tests/images/unimplemented_dxgi_format.dds")
+
     def test_uncompressed_rgb(self):
         """Check uncompressed RGB images can be opened"""
 
@@ -125,3 +129,7 @@ class TestFileDds(PillowTestCase):
             im.load()
 
         self.assertRaises(IOError, short_file)
+
+    def test_unimplemented_pixel_format(self):
+        self.assertRaises(NotImplementedError, Image.open,
+                          "Tests/images/unimplemented_pixel_format.dds")
