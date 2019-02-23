@@ -529,6 +529,11 @@ class PngStream(ChunkStream):
 
         return s
 
+    def chunk_eXIf(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        self.im_info["exif"] = b"Exif\x00\x00"+s
+        return s
+
     # APNG chunks
     def chunk_acTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
@@ -682,6 +687,10 @@ class PngImageFile(ImageFile.ImageFile):
         self._text = self.png.im_text
         self.png.close()
         self.png = None
+
+    def _getexif(self):
+        from .JpegImagePlugin import _getexif
+        return _getexif(self)
 
 
 # --------------------------------------------------------------------
@@ -860,6 +869,12 @@ def _save(im, fp, filename, chunk=putchunk):
             if cid in chunks:
                 chunks.remove(cid)
                 chunk(fp, cid, data)
+
+    exif = im.encoderinfo.get("exif", im.info.get("exif"))
+    if exif:
+        if exif.startswith(b"Exif\x00\x00"):
+            exif = exif[6:]
+        chunk(fp, b"eXIf", exif)
 
     ImageFile._save(im, _idat(fp, chunk),
                     [("zip", (0, 0)+im.size, 0, rawmode)])
