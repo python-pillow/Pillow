@@ -10,3 +10,58 @@ jobs:
   parameters:
     name: Lint
     vmImage: 'Ubuntu-16.04'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'alpine'
+    name:   'alpine'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'arch'
+    name:   'arch'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'ubuntu-trusty-x86'
+    name:   'ubuntu_trusty_x86'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'ubuntu-xenial-amd64'
+    name:   'ubuntu_xenial_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'debian-stretch-x86'
+    name:   'debian_stretch_x86'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'centos-6-amd64'
+    name:   'centos_6_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'centos-7-amd64'
+    name:   'centos_7_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'amazon-1-amd64'
+    name:   'amazon_1_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'amazon-2-amd64'
+    name:   'amazon_2_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'fedora-28-amd64'
+    name:   'fedora_28_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'fedora-29-amd64'
+    name:   'fedora_29_amd64'
