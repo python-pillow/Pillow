@@ -5,6 +5,21 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Fix 'BytesWarning: Comparison between bytes and string' in PdfDict #3580
+  [jdufresne]
+
+- Do not resize in Image.thumbnail if already the destination size #3632
+  [radarhere]
+
+- Replace .seek() magic numbers with io.SEEK_* constants #3572
+  [jdufresne]
+
+- Make ContainerIO.isatty() return a bool, not int #3568
+  [jdufresne]
+
+- Add support for I;16 modes for more transpose operations #3563
+  [radarhere]
+
 - Deprecate support for PyQt4 and PySide #3655
   [hugovk, radarhere]
 
