@@ -491,7 +491,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
@@ -510,7 +510,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
