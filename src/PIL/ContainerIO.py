@@ -39,7 +39,7 @@ class ContainerIO(object):
     # Always false.
 
     def isatty(self):
-        return 0
+        return False
 
     def seek(self, offset, mode=0):
         """
