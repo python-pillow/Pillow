@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Removed deprecated VERSION #3624
+  [hugovk]
+
 - Fix 'BytesWarning: Comparison between bytes and string' in PdfDict #3580
   [jdufresne]
 
