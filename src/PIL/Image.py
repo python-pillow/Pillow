@@ -679,8 +679,7 @@ class Image(object):
 
         :returns: png version of the image as bytes
         """
-        from io import BytesIO
-        b = BytesIO()
+        b = io.BytesIO()
         self.save(b, 'PNG')
         return b.getvalue()
 
