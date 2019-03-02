@@ -61,13 +61,12 @@ a ``DeprecationWarning``:
     Setting the size of a TIFF image directly is deprecated, and will
     be removed in a future version. Use the resize method instead.
 
-PILLOW_VERSION and VERSION constants
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 5.2.0
 
-Two version constants – ``VERSION`` (the old PIL version, always 1.1.7) and
-``PILLOW_VERSION`` – have been deprecated and will be removed in the next
+``PILLOW_VERSION`` has been deprecated and will be removed in the next
 major release. Use ``__version__`` instead.
 
 Removed features
@@ -75,6 +74,14 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+VERSION constant
+~~~~~~~~~~~~~~~~
+
+*Removed in version 6.0.0.*
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use
+``__version__`` instead.
 
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
