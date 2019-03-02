@@ -24,10 +24,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-# VERSION is deprecated and will be removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed after that.
+# VERSION was removed in Pillow 6.0.0.
+# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import VERSION, PILLOW_VERSION, __version__, _plugins
+from . import PILLOW_VERSION, __version__, _plugins
 from ._util import py3
 
 import logging
@@ -60,8 +60,7 @@ except ImportError:
     from collections import Callable
 
 
-# Silence warnings
-assert VERSION
+# Silence warning
 assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
