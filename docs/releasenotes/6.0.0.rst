@@ -26,6 +26,12 @@ Several undocumented functions in ``ImageOps`` were deprecated in Pillow 4.3.0 (
 and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
 ``box_blur``. Use the equivalent operations in ``ImageFilter`` instead.
 
+Removed deprecated VERSION
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use ``__version__``
+instead.
+
 API Changes
 ===========
 
