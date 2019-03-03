@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Python 2.7 support will be removed in Pillow 7.0.0 #3682
+  [hugovk]
+
 - Removed deprecated VERSION #3624
   [hugovk]
 
