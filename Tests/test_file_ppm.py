@@ -1,4 +1,4 @@
-from .helper import PillowTestCase
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -30,6 +30,16 @@ class TestFilePpm(PillowTestCase):
 
         f = self.tempfile('temp.pgm')
         im.save(f, 'PPM')
+
+        reloaded = Image.open(f)
+        self.assert_image_equal(im, reloaded)
+
+    def test_pnm(self):
+        im = Image.open('Tests/images/hopper.pnm')
+        self.assert_image_similar(im, hopper(), 0.0001)
+
+        f = self.tempfile('temp.pnm')
+        im.save(f)
 
         reloaded = Image.open(f)
         self.assert_image_equal(im, reloaded)

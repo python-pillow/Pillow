@@ -37,6 +37,8 @@ class TestFileTga(PillowTestCase):
                         path_no_ext, origin, "rle" if rle else "raw")
 
                     original_im = Image.open(tga_path)
+                    self.assertEqual(original_im.format, "TGA")
+                    self.assertEqual(original_im.get_format_mimetype(), "image/x-tga")
                     if rle:
                         self.assertEqual(
                             original_im.info["compression"], "tga_rle")
