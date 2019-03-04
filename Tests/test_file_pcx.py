@@ -13,6 +13,7 @@ class TestFilePcx(PillowTestCase):
         self.assertEqual(im2.mode, im.mode)
         self.assertEqual(im2.size, im.size)
         self.assertEqual(im2.format, "PCX")
+        self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
         self.assert_image_equal(im2, im)
 
     def test_sanity(self):

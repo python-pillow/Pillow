@@ -14,6 +14,7 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (16, 16))
         self.assertEqual(im.format, "ICO")
+        self.assertEqual(im.get_format_mimetype(), "image/x-icon")
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
