@@ -522,3 +522,31 @@ def solarize(image, threshold=128):
         else:
             lut.append(255-i)
     return _lut(image, lut)
+
+
+def exif_transpose(image):
+    """
+    If an image has an EXIF Orientation tag, return a new image that is
+    transposed accordingly. Otherwise, return a copy of the image.
+
+    :param image: The image to transpose.
+    :return: An image.
+    """
+    if not hasattr(image, '_exif_transposed') and hasattr(image, '_getexif'):
+        exif = image._getexif()
+        if exif:
+            orientation = exif.get(0x0112)
+            method = {
+                2: Image.FLIP_LEFT_RIGHT,
+                3: Image.ROTATE_180,
+                4: Image.FLIP_TOP_BOTTOM,
+                5: Image.TRANSPOSE,
+                6: Image.ROTATE_270,
+                7: Image.TRANSVERSE,
+                8: Image.ROTATE_90
+            }.get(orientation)
+            if method is not None:
+                transposed_image = image.transpose(method)
+                transposed_image._exif_transposed = True
+                return transposed_image
+    return image.copy()
