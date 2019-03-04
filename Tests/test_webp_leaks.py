@@ -1,4 +1,4 @@
-from helper import unittest, PillowLeakTestCase
+from .helper import unittest, PillowLeakTestCase
 from PIL import Image, features
 from io import BytesIO
 
@@ -20,7 +20,3 @@ class TestWebPLeaks(PillowLeakTestCase):
                 im.load()
 
         self._test_leak(core)
-
-
-if __name__ == '__main__':
-    unittest.main()

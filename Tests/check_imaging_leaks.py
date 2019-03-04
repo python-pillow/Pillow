@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from helper import unittest, PillowTestCase
+from .helper import unittest, PillowTestCase
 import sys
 from PIL import Image
 

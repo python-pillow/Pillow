@@ -1,7 +1,16 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
-from PIL import ImageQt
+import warnings
 
+deprecated = False
+with warnings.catch_warnings():
+    warnings.filterwarnings("error", category=DeprecationWarning)
+    try:
+        from PIL import ImageQt
+    except DeprecationWarning:
+        deprecated = True
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        from PIL import ImageQt
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
@@ -79,6 +88,5 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         for mode in ('1', 'RGB', 'RGBA', 'L', 'P'):
             ImageQt.ImageQt(hopper(mode))
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_deprecated(self):
+        self.assertEqual(ImageQt.qt_version in ["4", "side"], deprecated)

@@ -1,5 +1,5 @@
 # Test the ImageMorphology functionality
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageMorph, _imagingmorph
 
@@ -321,7 +321,3 @@ class MorphTests(PillowTestCase):
 
         # Should not raise
         _imagingmorph.match(bytes(lut), iml.im.id)
-
-
-if __name__ == '__main__':
-    unittest.main()

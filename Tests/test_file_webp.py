@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, WebPImagePlugin
 
@@ -172,7 +172,3 @@ class TestFileWebp(PillowTestCase):
         difference = sum([abs(original_value[i] - reread_value[i])
                           for i in range(0, 3)])
         self.assertLess(difference, 5)
-
-
-if __name__ == '__main__':
-    unittest.main()

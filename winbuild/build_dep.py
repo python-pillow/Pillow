@@ -259,6 +259,30 @@ endlocal
 """ % compiler  # noqa: E501
 
 
+def build_ghostscript(compiler, bit):
+    script = r"""
+rem Build gs
+setlocal
+""" + vc_setup(compiler, bit) + r"""
+set MSVC_VERSION=""" + {
+        "2008": "9",
+        "2015": "14"
+    }[compiler['vc_version']] + r"""
+set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
+cd /D %%GHOSTSCRIPT%%
+"""
+    if bit == 64:
+        script += r"""
+set WIN64=""
+"""
+    script += r"""
+nmake -f psi/msvc.mak
+copy /Y /B bin\ C:\Python27\
+endlocal
+"""
+    return script % compiler  # noqa: E501
+
+
 def add_compiler(compiler, bit):
     script.append(setup_compiler(compiler))
     script.append(nmake_libs(compiler, bit))
@@ -268,6 +292,7 @@ def add_compiler(compiler, bit):
     script.append(msbuild_freetype(compiler))
     script.append(build_lcms2(compiler))
     # script.append(nmake_openjpeg(compiler))
+    script.append(build_ghostscript(compiler, bit))
     script.append(end_compiler())
 
 
@@ -282,9 +307,8 @@ if 'PYTHON' in os.environ:
     add_compiler(compiler_from_env(), bit_from_env())
 else:
     # for compiler in all_compilers():
-        # add_compiler(compiler)
+    #     add_compiler(compiler)
     add_compiler(compilers[7.0][2008][32], 32)
-    # add_compiler(compilers[7.1][2010][64])
 
 with open('build_deps.cmd', 'w') as f:
     f.write("\n".join(script))

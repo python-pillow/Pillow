@@ -22,6 +22,8 @@ from ._binary import i32le as i32, i8
 
 import olefile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 # we map from colour field tuples to (mode, rawmode) descriptors

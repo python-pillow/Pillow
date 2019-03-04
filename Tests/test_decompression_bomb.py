@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -83,7 +83,3 @@ class TestDecompressionCrop(PillowTestCase):
         for value in error_values:
             with self.assertRaises(Image.DecompressionBombError):
                 im.crop(value)
-
-
-if __name__ == '__main__':
-    unittest.main()

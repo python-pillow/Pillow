@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ImageEnhance
@@ -48,7 +48,3 @@ class TestImageEnhance(PillowTestCase):
                 self._check_alpha(
                     getattr(ImageEnhance, op)(original).enhance(amount),
                     original, op, amount)
-
-
-if __name__ == '__main__':
-    unittest.main()

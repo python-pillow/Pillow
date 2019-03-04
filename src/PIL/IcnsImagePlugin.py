@@ -195,7 +195,7 @@ class IcnsFile(object):
             i += HEADERSIZE
             blocksize -= HEADERSIZE
             dct[sig] = (i, blocksize)
-            fobj.seek(blocksize, 1)
+            fobj.seek(blocksize, io.SEEK_CUR)
             i += blocksize
 
     def itersizes(self):

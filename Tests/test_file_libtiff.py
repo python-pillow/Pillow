@@ -1,5 +1,5 @@
 from __future__ import print_function
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import features
 from PIL._util import py3
 
@@ -195,7 +195,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open('Tests/images/hopper_g4.tif')
         for tag in im.tag_v2:
             try:
-                del(core_items[tag])
+                del core_items[tag]
             except KeyError:
                 pass
 
@@ -205,7 +205,7 @@ class TestFileLibTiff(LibTiffTestCase):
         #     4: "long",
         #     5: "rational",
         #     12: "double",
-        # type: dummy value
+        # Type: dummy value
         values = {2: 'test',
                   3: 1,
                   4: 2**20,
@@ -223,7 +223,7 @@ class TestFileLibTiff(LibTiffTestCase):
                                      for _ in range(info.length))
 
         # Extra samples really doesn't make sense in this application.
-        del(new_ifd[338])
+        del new_ifd[338]
 
         out = self.tempfile("temp.tif")
         TiffImagePlugin.WRITE_LIBTIFF = True
@@ -700,7 +700,3 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(infile)
 
         self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
-
-
-if __name__ == '__main__':
-    unittest.main()

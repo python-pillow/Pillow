@@ -1,4 +1,4 @@
-from helper import hopper, unittest, PillowTestCase
+from .helper import hopper, PillowTestCase
 
 from PIL import Image, XVThumbImagePlugin
 
@@ -34,7 +34,3 @@ class TestFileXVThumb(PillowTestCase):
         # Act / Assert
         self.assertRaises(SyntaxError,
                           XVThumbImagePlugin.XVThumbImageFile, invalid_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

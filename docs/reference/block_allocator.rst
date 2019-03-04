@@ -8,7 +8,7 @@ Historically there have been two image allocators in Pillow:
 ``ImagingAllocateBlock`` and ``ImagingAllocateArray``. The first works
 for images smaller than 16MB of data and allocates one large chunk of
 memory of ``im->linesize * im->ysize`` bytes. The second works for
-large images and make one allocation for each scan line of size
+large images and makes one allocation for each scan line of size
 ``im->linesize`` bytes.  This makes for a very sharp transition
 between one allocation and potentially thousands of small allocations,
 leading to unpredictable performance penalties around the transition.

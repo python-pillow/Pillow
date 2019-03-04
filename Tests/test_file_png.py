@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
+from .helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 
@@ -86,6 +86,7 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "PNG")
+        self.assertEqual(im.get_format_mimetype(), 'image/png')
 
         hopper("1").save(test_file)
         Image.open(test_file)
@@ -585,10 +586,17 @@ class TestFilePng(PillowTestCase):
         self.assertIsInstance(im.text, dict)
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+        # Raises an EOFError in load_end
+        im = Image.open("Tests/images/hopper_idat_after_image_end.png")
+        self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
+
     @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
                          "WebP support not installed with animation")
     def test_apng(self):
         im = Image.open("Tests/images/iss634.apng")
+        self.assertEqual(im.get_format_mimetype(), 'image/apng')
+
+        # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
         expected = Image.open("Tests/images/iss634.webp")
         self.assert_image_similar(im, expected, 0.23)
 
@@ -618,7 +626,3 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             self._test_leak(core)
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
-
-
-if __name__ == '__main__':
-    unittest.main()

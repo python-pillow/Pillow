@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -34,6 +34,16 @@ class TestFilePpm(PillowTestCase):
         reloaded = Image.open(f)
         self.assert_image_equal(im, reloaded)
 
+    def test_pnm(self):
+        im = Image.open('Tests/images/hopper.pnm')
+        self.assert_image_similar(im, hopper(), 0.0001)
+
+        f = self.tempfile('temp.pnm')
+        im.save(f)
+
+        reloaded = Image.open(f)
+        self.assert_image_equal(im, reloaded)
+
     def test_truncated_file(self):
         path = self.tempfile('temp.pgm')
         with open(path, 'w') as f:
@@ -49,7 +59,3 @@ class TestFilePpm(PillowTestCase):
 
         with self.assertRaises(IOError):
             Image.open('Tests/images/negative_size.ppm')
-
-
-if __name__ == '__main__':
-    unittest.main()

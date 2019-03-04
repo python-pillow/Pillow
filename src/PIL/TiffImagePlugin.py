@@ -66,6 +66,8 @@ except ImportError:
     from collections import MutableMapping
 
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
 
@@ -133,6 +135,9 @@ COMPRESSION_INFO = {
     32946: "tiff_deflate",
     34676: "tiff_sgilog",
     34677: "tiff_sgilog24",
+    34925: "lzma",
+    50000: "zstd",
+    50001: "webp",
 }
 
 COMPRESSION_INFO_REV = {v: k for k, v in COMPRESSION_INFO.items()}
@@ -421,7 +426,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         ifd = ImageFileDirectory_v2()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         'Some Data'
 
@@ -555,7 +560,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if info.type:
                 self.tagtype[tag] = info.type
             else:
-                self.tagtype[tag] = 7
+                self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
@@ -870,7 +875,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
         ifd = ImageFileDirectory_v1()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         ('Some Data',)
 
@@ -963,7 +968,7 @@ class TiffImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-        "Open the first image in a TIFF file"
+        """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
@@ -1020,7 +1025,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return self._is_animated
 
     def seek(self, frame):
-        "Select a given frame as current image"
+        """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
         self._seek(frame)
@@ -1058,7 +1063,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self._setup()
 
     def tell(self):
-        "Return the current frame number"
+        """Return the current frame number"""
         return self.__frame
 
     @property
@@ -1173,7 +1178,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
     def _setup(self):
-        "Setup this image object based on current tags"
+        """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
             raise IOError("Windows Media Photo files not yet supported")
@@ -1361,7 +1366,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def _close__fp(self):
         try:
-            self.__fp.close()
+            if self.__fp != self.fp:
+                self.__fp.close()
         except AttributeError:
             pass
         finally:
@@ -1433,7 +1439,7 @@ def _save(im, fp, filename):
         try:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
-            pass  # might not be an IFD, Might not have populated type
+            pass  # might not be an IFD. Might not have populated type
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
@@ -1677,7 +1683,7 @@ class AppendingTiffWriter:
     def tell(self):
         return self.f.tell() - self.offsetOfNewPage
 
-    def seek(self, offset, whence):
+    def seek(self, offset, whence=io.SEEK_SET):
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 

@@ -27,6 +27,8 @@ import sys
 from . import Image, ImageFile
 from ._binary import i32le as i32
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.5"
 
 #
@@ -102,7 +104,7 @@ def Ghostscript(tile, size, fp, scale=1):
         # Copy whole file to read in Ghostscript
         with open(infile_temp, 'wb') as f:
             # fetch length of fp
-            fp.seek(0, 2)
+            fp.seek(0, io.SEEK_END)
             fsize = fp.tell()
             # ensure start position
             # go back
@@ -144,7 +146,7 @@ def Ghostscript(tile, size, fp, scale=1):
             if sys.platform.startswith('win'):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.check_call(command, stdin=devnull, stdout=devnull,
+            subprocess.check_call(command, stdout=devnull,
                                   startupinfo=startupinfo)
         im = Image.open(outfile)
         im.load()
@@ -167,7 +169,7 @@ class PSFile(object):
         self.fp = fp
         self.char = None
 
-    def seek(self, offset, whence=0):
+    def seek(self, offset, whence=io.SEEK_SET):
         self.char = None
         self.fp.seek(offset, whence)
 
@@ -310,7 +312,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
         if s[:4] == b"%!PS":
             # for HEAD without binary preview
-            fp.seek(0, 2)
+            fp.seek(0, io.SEEK_END)
             length = fp.tell()
             offset = 0
         elif i32(s[0:4]) == 0xC6D3D0C5:

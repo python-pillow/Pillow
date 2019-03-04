@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL.PdfParser import IndirectObjectDef, IndirectReference, PdfBinary, \
                           PdfDict, PdfFormatError, PdfName, PdfParser, \
@@ -122,7 +122,3 @@ class TestPdfParser(PillowTestCase):
         self.assertEqual(pdf_repr([123, True, {"a": PdfName(b"b")}]),
                          b"[ 123 true <<\n/a /b\n>> ]")
         self.assertEqual(pdf_repr(PdfBinary(b"\x90\x1F\xA0")), b"<901FA0>")
-
-
-if __name__ == '__main__':
-    unittest.main()

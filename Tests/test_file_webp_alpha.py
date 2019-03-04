@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image
 
@@ -115,7 +115,3 @@ class TestFileWebpAlpha(PillowTestCase):
         target = Image.open(file_path).convert("RGBA")
 
         self.assert_image_similar(image, target, 25.0)
-
-
-if __name__ == '__main__':
-    unittest.main()

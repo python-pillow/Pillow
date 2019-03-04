@@ -21,6 +21,8 @@ from . import Image, TiffImagePlugin
 
 import olefile
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.1"
 
 
@@ -99,7 +101,8 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     def _close__fp(self):
         try:
-            self.__fp.close()
+            if self.__fp != self.fp:
+                self.__fp.close()
         except AttributeError:
             pass
         finally:

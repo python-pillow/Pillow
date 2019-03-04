@@ -79,6 +79,8 @@ class ImageFile(Image.Image):
 
         self._min_frame = 0
 
+        self.custom_mimetype = None
+
         self.tile = None
         self.readonly = 1  # until we know better
 
@@ -113,17 +115,17 @@ class ImageFile(Image.Image):
             raise SyntaxError("not identified by this driver")
 
     def draft(self, mode, size):
-        "Set draft mode"
+        """Set draft mode"""
 
         pass
 
     def get_format_mimetype(self):
         if self.format is None:
             return
-        return Image.MIME.get(self.format.upper())
+        return self.custom_mimetype or Image.MIME.get(self.format.upper())
 
     def verify(self):
-        "Check file integrity"
+        """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
@@ -132,7 +134,7 @@ class ImageFile(Image.Image):
         self.fp = None
 
     def load(self):
-        "Load image data based on tile list"
+        """Load image data based on tile list"""
 
         pixel = Image.Image.load(self)
 
@@ -315,7 +317,7 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
 
     def _load(self):
-        "(Hook) Find actual image loader."
+        """(Hook) Find actual image loader."""
         raise NotImplementedError(
             "StubImageFile subclass must implement _load"
             )
@@ -489,7 +491,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
@@ -508,7 +510,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)

@@ -12,6 +12,52 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+Python 2.7
+~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
+
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+The version constants of individual plugins have been deprecated and will be removed in
+a future version. Use ``PIL.__version__`` instead.
+
+===============================  =================================  ==================================
+Deprecated                       Deprecated                         Deprecated
+===============================  =================================  ==================================
+``BmpImagePlugin.__version__``   ``Jpeg2KImagePlugin.__version__``  ``PngImagePlugin.__version__``
+``CurImagePlugin.__version__``   ``JpegImagePlugin.__version__``    ``PpmImagePlugin.__version__``
+``DcxImagePlugin.__version__``   ``McIdasImagePlugin.__version__``  ``PsdImagePlugin.__version__``
+``EpsImagePlugin.__version__``   ``MicImagePlugin.__version__``     ``SgiImagePlugin.__version__``
+``FliImagePlugin.__version__``   ``MpegImagePlugin.__version__``    ``SunImagePlugin.__version__``
+``FpxImagePlugin.__version__``   ``MpoImagePlugin.__version__``     ``TgaImagePlugin.__version__``
+``GdImageFile.__version__``      ``MspImagePlugin.__version__``     ``TiffImagePlugin.__version__``
+``GifImagePlugin.__version__``   ``PalmImagePlugin.__version__``    ``WmfImagePlugin.__version__``
+``IcoImagePlugin.__version__``   ``PcdImagePlugin.__version__``     ``XbmImagePlugin.__version__``
+``ImImagePlugin.__version__``    ``PcxImagePlugin.__version__``     ``XpmImagePlugin.__version__``
+``ImtImagePlugin.__version__``   ``PdfImagePlugin.__version__``     ``XVThumbImagePlugin.__version__``
+``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
+===============================  =================================  ==================================
+
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -25,26 +71,38 @@ a ``DeprecationWarning``:
     Setting the size of a TIFF image directly is deprecated, and will
     be removed in a future version. Use the resize method instead.
 
-PILLOW_VERSION and VERSION constants
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 5.2.0
 
-Two version constants – ``VERSION`` (the old PIL version, always 1.1.7) and
-``PILLOW_VERSION`` – have been deprecated and will be removed in the next
+``PILLOW_VERSION`` has been deprecated and will be removed in the next
 major release. Use ``__version__`` instead.
+
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
+VERSION constant
+~~~~~~~~~~~~~~~~
+
+*Removed in version 6.0.0.*
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use
+``__version__`` instead.
 
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. deprecated:: 4.3.0
+*Removed in version 6.0.0.*
 
-Several undocumented functions in ``ImageOps`` have been deprecated. They issue
-a ``DeprecationWarning`` informing which equivalent to use from ``ImageFilter``
-instead:
+Several undocumented functions in ``ImageOps`` have been removed. Use the equivalents
+in ``ImageFilter`` instead:
 
 ==========================  ============================
-Deprecated                  Use instead
+Removed                     Use instead
 ==========================  ============================
 ``ImageOps.box_blur``       ``ImageFilter.BoxBlur``
 ``ImageOps.gaussian_blur``  ``ImageFilter.GaussianBlur``
@@ -56,27 +114,9 @@ Deprecated                  Use instead
 PIL.OleFileIO
 ~~~~~~~~~~~~~
 
-.. deprecated:: 4.0.0
+*Removed in version 6.0.0.*
 
-The vendored version of olefile has been removed. Attempting to import
-``PIL.OleFileIO`` issues a ``DeprecationWarning`` (from 4.0.0) or raises
-``ImportError`` (from 5.0.0):
-
-.. code-block:: none
-
-    PIL.OleFileIO is deprecated. Use the olefile Python package
-    instead. This module will be removed in a future version.
-
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
-
-Vendored olefile
-~~~~~~~~~~~~~~~~
-
-*Removed in version 4.0.0.*
-
-The vendored version of the olefile Python package was removed in favour of the
-upstream package. Install if needed (eg. ``pip install olefile``).
+PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
+(2018-01). The deprecated file has now been removed from Pillow. If needed, install from
+PyPI (eg. ``pip install olefile``).

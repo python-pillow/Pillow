@@ -29,6 +29,8 @@ from ._binary import i8, i16le as i16, o8, o16le as o16
 
 import itertools
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.9"
 
 
@@ -304,7 +306,8 @@ class GifImageFile(ImageFile.ImageFile):
 
     def _close__fp(self):
         try:
-            self.__fp.close()
+            if self.__fp != self.fp:
+                self.__fp.close()
         except AttributeError:
             pass
         finally:
@@ -601,16 +604,16 @@ def _save_netpbm(im, fp, filename):
 
     import os
     from subprocess import Popen, check_call, PIPE, CalledProcessError
-    file = im._dump()
+    tempfile = im._dump()
 
     with open(filename, 'wb') as f:
         if im.mode != "RGB":
             with open(os.devnull, 'wb') as devnull:
-                check_call(["ppmtogif", file], stdout=f, stderr=devnull)
+                check_call(["ppmtogif", tempfile], stdout=f, stderr=devnull)
         else:
             # Pipe ppmquant output into ppmtogif
-            # "ppmquant 256 %s | ppmtogif > %s" % (file, filename)
-            quant_cmd = ["ppmquant", "256", file]
+            # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
+            quant_cmd = ["ppmquant", "256", tempfile]
             togif_cmd = ["ppmtogif"]
             with open(os.devnull, 'wb') as devnull:
                 quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=devnull)
@@ -629,7 +632,7 @@ def _save_netpbm(im, fp, filename):
                 raise CalledProcessError(retcode, togif_cmd)
 
     try:
-        os.unlink(file)
+        os.unlink(tempfile)
     except OSError:
         pass
 

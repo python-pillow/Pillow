@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageFile, PcxImagePlugin
 
@@ -13,6 +13,7 @@ class TestFilePcx(PillowTestCase):
         self.assertEqual(im2.mode, im.mode)
         self.assertEqual(im2.size, im.size)
         self.assertEqual(im2.format, "PCX")
+        self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
         self.assert_image_equal(im2, im)
 
     def test_sanity(self):
@@ -128,7 +129,3 @@ class TestFilePcx(PillowTestCase):
         for x in range(5):
             px[x, 3] = 0
         self._test_buffer_overflow(im)
-
-
-if __name__ == '__main__':
-    unittest.main()

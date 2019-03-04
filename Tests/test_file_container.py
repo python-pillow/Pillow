@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 from PIL import ContainerIO
@@ -16,7 +16,7 @@ class TestFileContainer(PillowTestCase):
         im = hopper()
         container = ContainerIO.ContainerIO(im, 0, 0)
 
-        self.assertEqual(container.isatty(), 0)
+        self.assertFalse(container.isatty())
 
     def test_seek_mode_0(self):
         # Arrange
@@ -123,7 +123,3 @@ class TestFileContainer(PillowTestCase):
             # Assert
 
             self.assertEqual(data, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

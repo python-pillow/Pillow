@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImageSequence, TiffImagePlugin
 
@@ -69,7 +69,3 @@ class TestImageSequence(PillowTestCase):
         im.seek(0)
         color2 = im.getpalette()[0:3]
         self.assertEqual(color1, color2)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -39,7 +39,11 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        FLIP_LEFT_RIGHT(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            FLIP_LEFT_RIGHT(UINT16, image8)
+        } else {
+            FLIP_LEFT_RIGHT(UINT8, image8)
+        }
     } else {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
@@ -253,7 +257,11 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     yr = imIn->ysize-1;
     if (imIn->image8) {
-        ROTATE_180(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_180(UINT16, image8)
+        } else {
+            ROTATE_180(UINT8, image8)
+        }
     } else {
         ROTATE_180(INT32, image32)
     }

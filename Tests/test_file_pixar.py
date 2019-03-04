@@ -1,4 +1,4 @@
-from helper import hopper, unittest, PillowTestCase
+from .helper import hopper, PillowTestCase
 
 from PIL import Image, PixarImagePlugin
 
@@ -24,7 +24,3 @@ class TestFilePixar(PillowTestCase):
         self.assertRaises(
             SyntaxError,
             PixarImagePlugin.PixarImageFile, invalid_file)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 from PIL import Image, PdfParser
 import io
 import os
@@ -266,7 +266,3 @@ class TestFilePdf(PillowTestCase):
         f = io.BytesIO(f.getvalue())
         im.save(f, format="PDF", append=True)
         self.assertGreater(len(f.getvalue()), initial_size)
-
-
-if __name__ == '__main__':
-    unittest.main()

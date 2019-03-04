@@ -28,7 +28,7 @@ VERBOSE = 0
 
 
 def _isconstant(v):
-    return isinstance(v, int) or isinstance(v, float)
+    return isinstance(v, (int, float))
 
 
 class _Operand(object):

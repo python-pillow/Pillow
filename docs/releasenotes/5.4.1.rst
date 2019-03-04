@@ -1,0 +1,36 @@
+5.4.1
+-----
+
+This release fixes regressions in 5.4.0.
+
+Installation on Termux
+^^^^^^^^^^^^^^^^^^^^^^
+
+A change to the way Pillow detects libraries during installed prevented
+installation on Termux, which does not have ``/sbin/ldconfig``. This is now
+fixed.
+
+PNG: Handle IDAT chunks after image end
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some PNG images have multiple IDAT chunks. In some cases, Pillow will stop
+reading image data before the IDAT chunks finish. A regression caused an
+``EOFError`` exception when previously there was none. This is now fixed, and
+file reading continues in case there are subsequent text chunks.
+
+PNG: MIME type
+^^^^^^^^^^^^^^
+
+The addition of limited APNG support to the PNG plugin also overwrote the MIME
+type for PNG files, causing "image/apng" to be returned as the MIME type of
+both APNG and PNG files. This has been fixed so the MIME type of PNG files is
+"image/png".
+
+File closing
+^^^^^^^^^^^^
+
+A regression caused an unsupported image file to report a
+``ValueError: seek of closed file`` exception instead of an ``OSError``. This
+has been fixed by ensuring that image plugins only close their internal ``__fp``
+if they are not the same as ``ImageFile``'s ``fp``, allowing each to manage their own
+file pointers.

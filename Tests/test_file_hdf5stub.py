@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Hdf5StubImagePlugin, Image
 
@@ -44,7 +44,3 @@ class TestFileHdf5Stub(PillowTestCase):
         self.assertRaises(
             IOError,
             Hdf5StubImagePlugin._save, im, dummy_fp, dummy_filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

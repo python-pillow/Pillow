@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 
 class TestImagePoint(PillowTestCase):
@@ -38,7 +38,3 @@ class TestImagePoint(PillowTestCase):
     def test_f_mode(self):
         im = hopper('F')
         self.assertRaises(ValueError, im.point, None)
-
-
-if __name__ == '__main__':
-    unittest.main()

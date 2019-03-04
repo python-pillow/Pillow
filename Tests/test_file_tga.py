@@ -2,7 +2,7 @@ import os
 from glob import glob
 from itertools import product
 
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 
 from PIL import Image
 
@@ -37,6 +37,8 @@ class TestFileTga(PillowTestCase):
                         path_no_ext, origin, "rle" if rle else "raw")
 
                     original_im = Image.open(tga_path)
+                    self.assertEqual(original_im.format, "TGA")
+                    self.assertEqual(original_im.get_format_mimetype(), "image/x-tga")
                     if rle:
                         self.assertEqual(
                             original_im.info["compression"], "tga_rle")
@@ -201,7 +203,3 @@ class TestFileTga(PillowTestCase):
             test_im.getchannel("A").getcolors()[0][0], num_transparent)
 
         self.assert_image_equal(im, test_im)
-
-
-if __name__ == '__main__':
-    unittest.main()

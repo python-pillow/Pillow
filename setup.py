@@ -111,7 +111,7 @@ def _find_library_dirs_ldconfig():
                                  stdout=subprocess.PIPE,
                                  env=env)
     except OSError:  # E.g. command not found
-        return None
+        return []
     [data, _] = p.communicate()
     if isinstance(data, bytes):
         data = data.decode()
@@ -177,12 +177,6 @@ def get_version():
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
-
-try:
-    import _tkinter
-except (ImportError, OSError):
-    # pypy emits an oserror
-    _tkinter = None
 
 NAME = 'Pillow'
 PILLOW_VERSION = get_version()
@@ -271,8 +265,8 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
-        if sys.version_info >= (3, 5) and not self.parallel:
-            # For Python < 3.5, we monkeypatch distutils to have parallel
+        if sys.version_info.major >= 3 and not self.parallel:
+            # For Python 2.7, we monkeypatch distutils to have parallel
             # builds. If --parallel (or -j) wasn't specified, we want to
             # reproduce the same behavior as before, that is, auto-detect the
             # number of jobs.
@@ -780,14 +774,13 @@ try:
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
-              "Programming Language :: Python :: 3.4",
               "Programming Language :: Python :: 3.5",
               "Programming Language :: Python :: 3.6",
               "Programming Language :: Python :: 3.7",
               "Programming Language :: Python :: Implementation :: CPython",
               "Programming Language :: Python :: Implementation :: PyPy",
           ],
-          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
           cmdclass={"build_ext": pil_build_ext},
           ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
           include_package_data=True,

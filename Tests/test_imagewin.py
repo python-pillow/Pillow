@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import ImageWin
 import sys
@@ -106,7 +106,3 @@ class TestImageWinDib(PillowTestCase):
         # Assert
         # Confirm they're the same
         self.assertEqual(dib1.tobytes(), dib2.tobytes())
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,0 +1,116 @@
+6.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+Python 3.4 dropped
+^^^^^^^^^^^^^^^^^^
+
+Python 3.4 is EOL since 2019-03-16 and no longer supported. We will not be creating
+binaries, testing, or retaining compatibility with this version. The final version of
+Pillow for Python 3.4 is 5.4.1.
+
+Removed deprecated PIL.OleFileIO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+the upstream olefile Python package, and replaced with an ``ImportError``. The
+deprecated file has now been removed from Pillow. If needed, install from PyPI (eg.
+``pip install olefile``).
+
+Removed deprecated ImageOps functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Several undocumented functions in ``ImageOps`` were deprecated in Pillow 4.3.0 (2017-10)
+and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
+``box_blur``. Use the equivalent operations in ``ImageFilter`` instead.
+
+Removed deprecated VERSION
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use ``__version__``
+instead.
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+Python 2.7
+~~~~~~~~~~
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
+
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These version constants have been deprecated and will be removed in a future
+version.
+
+* ``BmpImagePlugin.__version__``
+* ``CurImagePlugin.__version__``
+* ``DcxImagePlugin.__version__``
+* ``EpsImagePlugin.__version__``
+* ``FliImagePlugin.__version__``
+* ``FpxImagePlugin.__version__``
+* ``GdImageFile.__version__``
+* ``GifImagePlugin.__version__``
+* ``IcoImagePlugin.__version__``
+* ``ImImagePlugin.__version__``
+* ``ImtImagePlugin.__version__``
+* ``IptcImagePlugin.__version__``
+* ``Jpeg2KImagePlugin.__version__``
+* ``JpegImagePlugin.__version__``
+* ``McIdasImagePlugin.__version__``
+* ``MicImagePlugin.__version__``
+* ``MpegImagePlugin.__version__``
+* ``MpoImagePlugin.__version__``
+* ``MspImagePlugin.__version__``
+* ``PalmImagePlugin.__version__``
+* ``PcdImagePlugin.__version__``
+* ``PcxImagePlugin.__version__``
+* ``PdfImagePlugin.__version__``
+* ``PixarImagePlugin.__version__``
+* ``PngImagePlugin.__version__``
+* ``PpmImagePlugin.__version__``
+* ``PsdImagePlugin.__version__``
+* ``SgiImagePlugin.__version__``
+* ``SunImagePlugin.__version__``
+* ``TgaImagePlugin.__version__``
+* ``TiffImagePlugin.__version__``
+* ``WmfImagePlugin.__version__``
+* ``XbmImagePlugin.__version__``
+* ``XpmImagePlugin.__version__``
+* ``XVThumbImagePlugin.__version__``
+
+Use ``PIL.__version__`` instead.
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

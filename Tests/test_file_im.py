@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image, ImImagePlugin
 
@@ -69,7 +69,3 @@ class TestFileIm(PillowTestCase):
 
     def test_number(self):
         self.assertEqual(1.2, ImImagePlugin.number("1.2"))
-
-
-if __name__ == '__main__':
-    unittest.main()

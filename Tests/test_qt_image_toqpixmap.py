@@ -1,5 +1,5 @@
-from helper import unittest, PillowTestCase, hopper
-from test_imageqt import PillowQPixmapTestCase
+from .helper import PillowTestCase, hopper
+from .test_imageqt import PillowQPixmapTestCase
 
 from PIL import ImageQt
 
@@ -19,7 +19,3 @@ class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
             # Test saving the file
             tempfile = self.tempfile('temp_{}.png'.format(mode))
             data.save(tempfile)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase
+from .helper import PillowTestCase
 from io import BytesIO
 from PIL import Image
 
@@ -61,6 +61,14 @@ class TestFileMpo(PillowTestCase):
             mpinfo = im._getmp()
             self.assertEqual(mpinfo[45056], b'0100')
             self.assertEqual(mpinfo[45057], 2)
+
+    def test_mp_offset(self):
+        # This image has been manually hexedited to have an IFD offset of 10
+        # in APP2 data, in contrast to normal 8
+        im = Image.open("Tests/images/sugarshack_ifd_offset.mpo")
+        mpinfo = im._getmp()
+        self.assertEqual(mpinfo[45056], b'0100')
+        self.assertEqual(mpinfo[45057], 2)
 
     def test_mp_attribute(self):
         for test_file in test_files:
@@ -142,7 +150,3 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(im.tell(), 1)
             jpg1 = self.frame_roundtrip(im)
             self.assert_image_similar(im, jpg1, 30)
-
-
-if __name__ == '__main__':
-    unittest.main()

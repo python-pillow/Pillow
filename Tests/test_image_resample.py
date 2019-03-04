@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 from contextlib import contextmanager
 
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 from PIL import Image, ImageDraw
 
 
@@ -544,7 +544,3 @@ class CoreResampleBoxTest(PillowTestCase):
                 except AssertionError:
                     print('>>>', size, box, flt)
                     raise
-
-
-if __name__ == '__main__':
-    unittest.main()

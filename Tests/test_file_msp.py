@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import unittest, PillowTestCase, hopper
 
 from PIL import Image, MspImagePlugin
 
@@ -12,11 +12,11 @@ YA_EXTRA_DIR = "Tests/images/msp"
 class TestFileMsp(PillowTestCase):
 
     def test_sanity(self):
-        file = self.tempfile("temp.msp")
+        test_file = self.tempfile("temp.msp")
 
-        hopper("1").save(file)
+        hopper("1").save(test_file)
 
-        im = Image.open(file)
+        im = Image.open(test_file)
         im.load()
         self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (128, 128))
@@ -78,7 +78,3 @@ class TestFileMsp(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(IOError, im.save, filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

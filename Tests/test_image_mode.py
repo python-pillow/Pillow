@@ -1,4 +1,4 @@
-from helper import unittest, PillowTestCase, hopper
+from .helper import PillowTestCase, hopper
 
 from PIL import Image
 
@@ -51,7 +51,3 @@ class TestImageMode(PillowTestCase):
         check("RGBX", "RGB", "L", 4, ("R", "G", "B", "X"))
         check("CMYK", "RGB", "L", 4, ("C", "M", "Y", "K"))
         check("YCbCr", "RGB", "L", 3, ("Y", "Cb", "Cr"))
-
-
-if __name__ == '__main__':
-    unittest.main()

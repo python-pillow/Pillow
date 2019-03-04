@@ -40,6 +40,8 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
 from ._util import py3
 
+# __version__ is deprecated and will be removed in a future version. Use
+# PIL.__version__ instead.
 __version__ = "0.9"
 
 logger = logging.getLogger(__name__)
@@ -102,7 +104,7 @@ class ChunkStream(object):
         self.queue = []
 
     def read(self):
-        "Fetch a new chunk. Returns header information."
+        """Fetch a new chunk. Returns header information."""
         cid = None
 
         if self.queue:
@@ -134,13 +136,13 @@ class ChunkStream(object):
         self.queue.append((cid, pos, length))
 
     def call(self, cid, pos, length):
-        "Call the appropriate chunk handler"
+        """Call the appropriate chunk handler"""
 
         logger.debug("STREAM %r %s %s", cid, pos, length)
         return getattr(self, "chunk_" + cid.decode('ascii'))(pos, length)
 
     def crc(self, cid, data):
-        "Read and verify checksum"
+        """Read and verify checksum"""
 
         # Skip CRC checks for ancillary chunks if allowed to load truncated
         # images
@@ -160,7 +162,7 @@ class ChunkStream(object):
                               % cid)
 
     def crc_skip(self, cid, data):
-        "Read checksum.  Used if the C module is not present"
+        """Read checksum.  Used if the C module is not present"""
 
         self.fp.read(4)
 
@@ -192,7 +194,7 @@ class iTXt(str):
 
     """
     @staticmethod
-    def __new__(cls, text, lang, tkey):
+    def __new__(cls, text, lang=None, tkey=None):
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -296,6 +298,7 @@ class PngStream(ChunkStream):
         self.im_mode = None
         self.im_tile = None
         self.im_palette = None
+        self.im_custom_mimetype = None
 
         self.text_memory = 0
 
@@ -529,14 +532,7 @@ class PngStream(ChunkStream):
     # APNG chunks
     def chunk_acTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
-        return s
-
-    def chunk_fcTL(self, pos, length):
-        s = ImageFile._safe_read(self.fp, length)
-        return s
-
-    def chunk_fdAT(self, pos, length):
-        s = ImageFile._safe_read(self.fp, length)
+        self.im_custom_mimetype = 'image/apng'
         return s
 
 
@@ -594,6 +590,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.info = self.png.im_info
         self._text = None
         self.tile = self.png.im_tile
+        self.custom_mimetype = self.png.im_custom_mimetype
 
         if self.png.im_palette:
             rawmode, data = self.png.im_palette
@@ -611,7 +608,7 @@ class PngImageFile(ImageFile.ImageFile):
         return self._text
 
     def verify(self):
-        "Verify PNG file"
+        """Verify PNG file"""
 
         if self.fp is None:
             raise RuntimeError("verify must be called directly after open")
@@ -627,7 +624,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.fp = None
 
     def load_prepare(self):
-        "internal: prepare to read PNG file"
+        """internal: prepare to read PNG file"""
 
         if self.info.get("interlace"):
             self.decoderconfig = self.decoderconfig + (1,)
@@ -635,7 +632,7 @@ class PngImageFile(ImageFile.ImageFile):
         ImageFile.ImageFile.load_prepare(self)
 
     def load_read(self, read_bytes):
-        "internal: read more image data"
+        """internal: read more image data"""
 
         while self.__idat == 0:
             # end of chunk, skip forward to next one
@@ -661,7 +658,7 @@ class PngImageFile(ImageFile.ImageFile):
         return self.fp.read(read_bytes)
 
     def load_end(self):
-        "internal: finished reading image data"
+        """internal: finished reading image data"""
         while True:
             self.fp.read(4)  # CRC
 
@@ -677,6 +674,11 @@ class PngImageFile(ImageFile.ImageFile):
                 self.png.call(cid, pos, length)
             except UnicodeDecodeError:
                 break
+            except EOFError:
+                ImageFile._safe_read(self.fp, length)
+            except AttributeError:
+                logger.debug("%r %s %s (unknown)", cid, pos, length)
+                ImageFile._safe_read(self.fp, length)
         self._text = self.png.im_text
         self.png.close()
         self.png = None
@@ -908,4 +910,3 @@ Image.register_save(PngImageFile.format, _save)
 Image.register_extensions(PngImageFile.format, [".png", ".apng"])
 
 Image.register_mime(PngImageFile.format, "image/png")
-Image.register_mime(PngImageFile.format, "image/apng")
