@@ -735,7 +735,7 @@ class Exif(MutableMapping):
         info.load(fp)
         self._data = dict(self._fixup_dict(info))
 
-        # get exif extension
+        # get EXIF extension
         ifd = self._get_ifd_dict(fp, head, 0x8769)
         if ifd:
             self._data.update(ifd)

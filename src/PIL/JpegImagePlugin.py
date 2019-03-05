@@ -86,7 +86,7 @@ def APP(self, marker):
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:5] == b"Exif\0":
         if "exif" not in self.info:
-            # extract Exif information (incomplete)
+            # extract EXIF information (incomplete)
             self.info["exif"] = s  # FIXME: value will change
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
@@ -168,7 +168,7 @@ def APP(self, marker):
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
         except (KeyError, SyntaxError, ZeroDivisionError):
-            # SyntaxError for invalid/unreadable exif
+            # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
@@ -757,7 +757,7 @@ def _save(im, fp, filename):
         else:
             bufsize = im.size[0] * im.size[1]
 
-    # The exif info needs to be written as one block, + APP1, + one spare byte.
+    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
     # Ensure that our buffer is big enough. Same with the icc_profile block.
     bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5,
                   len(extra) + 1)
