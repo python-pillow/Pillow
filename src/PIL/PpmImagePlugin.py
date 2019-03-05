@@ -76,7 +76,7 @@ class PpmImageFile(ImageFile.ImageFile):
         self.custom_mimetype = {
             b"P4": "image/x-portable-bitmap",
             b"P5": "image/x-portable-graymap",
-            b"P6": "image/x-portable-pixmap"
+            b"P6": "image/x-portable-pixmap",
         }.get(magic_number)
 
         if mode == "1":
