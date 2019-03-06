@@ -176,8 +176,8 @@ class FreeTypeFont(object):
     def getoffset(self, text):
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode="", direction=None, features=None):
-        return self.getmask2(text, mode, direction=direction,
+    def getmask(self, text, mode="", direction=None, language=None, features=None):
+        return self.getmask2(text, mode, direction=direction, language=language,
                              features=features)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
