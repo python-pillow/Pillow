@@ -49,6 +49,40 @@ Methods
 
 .. py:method:: PIL.ImageFont.ImageFont.getsize(text, direction=None, features=[], language=None)
 
+    Returns width and height (in pixels) of given text if rendered in font with
+    provided direction, features, and language.
+    
+    :param text: Text to measure.
+    
+    :param direction: Direction of the text. It can be 'rtl' (right to
+                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                      Requires libraqm.
+
+                      .. versionadded:: 4.2.0
+
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example 'dlig' or 'ss01', but can be also
+                     used to turn off default font features for
+                     example '-liga' to disable ligatures or '-kern'
+                     to disable kerning.  To get all supported
+                     features, see
+                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     Requires libraqm.
+
+                     .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
+
     :return: (width, height)
 
 .. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[], language=None)
