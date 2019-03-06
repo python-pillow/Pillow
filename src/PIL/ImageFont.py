@@ -158,17 +158,17 @@ class FreeTypeFont(object):
     def getmetrics(self):
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text, direction=None, features=None):
-        size, offset = self.font.getsize(text, direction, features)
+    def getsize(self, text, direction=None, language=None, features=None):
+        size, offset = self.font.getsize(text, direction, language, features)
         return (size[0] + offset[0], size[1] + offset[1])
 
-    def getsize_multiline(self, text, direction=None,
+    def getsize_multiline(self, text, direction=None, language=None,
                           spacing=4, features=None):
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.getsize('A')[1] + spacing
         for line in lines:
-            line_width, line_height = self.getsize(line, direction, features)
+            line_width, line_height = self.getsize(line, direction, language, features)
             max_width = max(max_width, line_width)
 
         return max_width, len(lines)*line_spacing - spacing
@@ -181,10 +181,10 @@ class FreeTypeFont(object):
                              features=features)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
-                 features=None, *args, **kwargs):
-        size, offset = self.font.getsize(text, direction, features)
+                 language=None, features=None, *args, **kwargs):
+        size, offset = self.font.getsize(text, direction, language, features)
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1", direction, features)
+        self.font.render(text, im.id, mode == "1", direction, language, features)
         return im, offset
 
     def font_variant(self, font=None, size=None, index=None, encoding=None,

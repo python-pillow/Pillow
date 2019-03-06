@@ -255,7 +255,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, language=None, features=None)
 
     Draws the string at the given position.
 
@@ -273,6 +273,16 @@ Methods
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
 
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
@@ -316,7 +326,7 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, language=None, features=None)
 
     Return the size of the given string, in pixels.
 
@@ -330,7 +340,15 @@ Methods
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
 
+                     .. versionadded:: 6.0.0
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,

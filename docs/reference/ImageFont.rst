@@ -47,11 +47,11 @@ Functions
 Methods
 -------
 
-.. py:method:: PIL.ImageFont.ImageFont.getsize(text)
+.. py:method:: PIL.ImageFont.ImageFont.getsize(text, direction=None, language=None, features=[])
 
     :return: (width, height)
 
-.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
+.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, language=None, features=[])
 
     Create a bitmap for the text.
 
@@ -71,6 +71,16 @@ Methods
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
 
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
