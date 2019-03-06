@@ -28,3 +28,10 @@ class TestImageLoad(PillowTestCase):
             os.fstat(fn)
 
         self.assertRaises(OSError, os.fstat, fn)
+
+    def test_contextmanager_non_exclusive_fp(self):
+        with open("Tests/images/hopper.gif", "rb") as fp:
+            with Image.open(fp):
+                pass
+
+            self.assertFalse(fp.closed)
