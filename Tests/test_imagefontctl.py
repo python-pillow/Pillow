@@ -138,7 +138,7 @@ class TestImagecomplextext(PillowTestCase):
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), 'абвг', font=ttf, fill=500,
                   language='sr')
-        
+
         target = 'Tests/images/test_language.png'
         target_img = Image.open(target)
 
