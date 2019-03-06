@@ -455,6 +455,12 @@ def _getexif(self):
     # and is likely to be replaced with something better in a future
     # version.
 
+    # Use the cached version if possible
+    try:
+        return self.info["parsed_exif"]
+    except KeyError:
+        pass
+
     # The EXIF record consists of a TIFF file embedded in a JPEG
     # application marker (!).
     try:
@@ -493,6 +499,8 @@ def _getexif(self):
         info.load(fp)
         exif[0x8825] = _fixup_dict(info)
 
+    # Cache the result for future use
+    self.info["parsed_exif"] = exif
     return exif
 
 
