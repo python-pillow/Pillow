@@ -389,6 +389,12 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, const char
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
             goto failed;
         }
+        if (lang) {
+            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
+                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
+                goto failed;
+            }
+        }
     }
 #endif
     else {
