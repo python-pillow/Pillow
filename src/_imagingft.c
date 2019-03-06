@@ -341,8 +341,8 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 }
 
 static size_t
-text_layout_raqm(PyObject* string, FontObject* self, const char* dir, const char* lang,
-            PyObject *features ,GlyphInfo **glyph_info, int mask)
+text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+                 const char* lang, GlyphInfo **glyph_info, int mask)
 {
     int i = 0;
     raqm_t *rq;
@@ -521,8 +521,8 @@ failed:
 }
 
 static size_t
-text_layout_fallback(PyObject* string, FontObject* self, const char* dir, const char* lang,
-            PyObject *features ,GlyphInfo **glyph_info, int mask)
+text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+                     const char* lang, GlyphInfo **glyph_info, int mask)
 {
     int error, load_flags;
     FT_ULong ch;
@@ -587,15 +587,15 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, const 
 }
 
 static size_t
-text_layout(PyObject* string, FontObject* self, const char* dir, const char* lang,
-            PyObject *features, GlyphInfo **glyph_info, int mask)
+text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+            const char* lang, GlyphInfo **glyph_info, int mask)
 {
     size_t count;
 
     if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(string, self, dir, lang, features, glyph_info,  mask);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask);
     } else {
-        count = text_layout_fallback(string, self, dir, lang, features, glyph_info, mask);
+        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask);
     }
     return count;
 }
@@ -615,14 +615,14 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zzO:getsize", &string, &dir, &lang, &features))
+    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang))
         return NULL;
 
     face = NULL;
     xoffset = yoffset = 0;
     y_max = y_min = 0;
 
-    count = text_layout(string, self, dir, lang, features, &glyph_info, 0);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -720,12 +720,12 @@ font_render(FontObject* self, PyObject* args)
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
 
-    if (!PyArg_ParseTuple(args, "On|izzO:render", &string,  &id, &mask, &dir, &lang, &features)) {
+    if (!PyArg_ParseTuple(args, "On|izOz:render", &string,  &id, &mask, &dir, &features, &lang)) {
         return NULL;
     }
 
     glyph_info = NULL;
-    count = text_layout(string, self, dir, lang, features, &glyph_info, mask);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
     }
