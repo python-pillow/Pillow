@@ -34,6 +34,6 @@ The best reproductions are self-contained scripts with minimal dependencies. If 
 
 ## Security vulnerabilities
 
-To report sensitive vulnerability information, email security@python-pillow.org.
+To report sensitive vulnerability information, please use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
 
 If your organisation/employer is a distributor of Pillow and would like advance notification of security-related bugs, please let us know your preferred contact method.
