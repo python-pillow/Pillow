@@ -100,7 +100,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     @staticmethod
     def adopt(jpeg_instance, mpheader=None):
-        '''
+        """
         Transform the instance of JpegImageFile into
         instance of MpoImageFile.
         After the call, the JpegImageFile is extended
