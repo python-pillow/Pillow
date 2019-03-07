@@ -40,10 +40,10 @@ if False:
 
     from PyQt5.QtGui import QImage, QPixmap
 
-# VERSION is deprecated and will be removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed after that.
+# VERSION was removed in Pillow 6.0.0.
+# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import VERSION, PILLOW_VERSION, __version__, _plugins
+from . import PILLOW_VERSION, __version__, _plugins
 from ._util import py3
 
 import logging
@@ -76,8 +76,7 @@ except ImportError:
     from collections import Callable
 
 
-# Silence warnings
-assert VERSION
+# Silence warning
 assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
@@ -680,8 +679,7 @@ class Image(object):
 
     def __eq__(self, other):
         # type: (object) -> bool
-        return (isinstance(other, Image) and
-                self.__class__.__name__ == other.__class__.__name__ and
+        return (self.__class__ is other.__class__ and
                 self.mode == other.mode and
                 self.size == other.size and
                 self.info == other.info and
@@ -709,8 +707,7 @@ class Image(object):
 
         :returns: png version of the image as bytes
         """
-        from io import BytesIO
-        b = BytesIO()
+        b = io.BytesIO()
         self.save(b, 'PNG')
         return b.getvalue()
 
@@ -2138,10 +2135,10 @@ class Image(object):
         debugging purposes.
 
         On Unix platforms, this method saves the image to a temporary
-        PPM file, and calls either the **xv** utility or the **display**
+        PPM file, and calls the **display**, **eog** or **xv**
         utility, depending on which one can be found.
 
-        On macOS, this method saves the image to a temporary BMP file, and
+        On macOS, this method saves the image to a temporary PNG file, and
         opens it with the native Preview application.
 
         On Windows, it saves the image to a temporary BMP file, and uses
@@ -2251,11 +2248,12 @@ class Image(object):
 
         self.draft(None, size)
 
-        im = self.resize(size, resample)
+        if self.size != size:
+            im = self.resize(size, resample)
 
-        self.im = im.im
-        self.mode = im.mode
-        self._size = size
+            self.im = im.im
+            self._size = size
+            self.mode = self.im.mode
 
         self.readonly = 0
         self.pyaccess = None
