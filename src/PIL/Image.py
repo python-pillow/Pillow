@@ -2021,7 +2021,7 @@ class Image(object):
         debugging purposes.
 
         On Unix platforms, this method saves the image to a temporary
-        PPM file, and calls either the **xv** utility or the **display**
+        PPM file, and calls the **display**, **eog** or **xv**
         utility, depending on which one can be found.
 
         On macOS, this method saves the image to a temporary PNG file, and
