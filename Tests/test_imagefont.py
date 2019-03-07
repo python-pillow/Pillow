@@ -525,14 +525,15 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize_multiline('ABC\nA'), (36, 36))
         self.assertEqual(t.getsize_multiline('ABC\nAaaa'), (48, 36))
 
-    # def test_complex_font_settings(self):
-    #     # Arrange
-    #     t = self.get_font()
-    #     # Act / Assert
-    #     if t.layout_engine == ImageFont.LAYOUT_BASIC:
-    #         self.assertRaises(KeyError, t.getmask, 'абвг', direction='rtl')
-    #         self.assertRaises(KeyError, t.getmask, 'абвг', features=['-kern'])
-    #         self.assertRaises(KeyError, t.getmask, 'абвг', language='sr')
+    def test_complex_font_settings(self):
+        # Arrange
+        t = self.get_font()
+        # Act / Assert
+        if t.layout_engine == ImageFont.LAYOUT_BASIC:
+            self.assertRaises(KeyError, t.getmask, 'абвг', direction='rtl')
+            self.assertRaises(KeyError, t.getmask, 'абвг', features=['-kern'])
+            self.assertRaises(KeyError, t.getmask, 'абвг', language='sr')
+
 
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")
 class TestImageFont_RaqmLayout(TestImageFont):
