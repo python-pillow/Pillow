@@ -443,7 +443,7 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if encoderinfo["disposal"] == 2:
+                if "disposal" in encoderinfo and encoderinfo["disposal"] == 2:
                     # Entire frame should be delta
                     # Create delta by subtracting empty image from frame (This is required)
                     delta = ImageChops.subtract_modulo(
