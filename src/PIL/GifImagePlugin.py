@@ -443,7 +443,7 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if encoderinfo["disposal"] == 2:
+                if "disposal" in encoderinfo and encoderinfo["disposal"] == 2:
                     # If diposing whole frame, treat full new frame as delta
                     delta = im_frame
                 elif _get_palette_bytes(im_frame) == \
