@@ -443,7 +443,10 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if _get_palette_bytes(im_frame) == \
+                if encoderinfo["disposal"] == 2:
+                    # If diposing whole frame, treat full new frame as delta
+                    delta = im_frame
+                elif _get_palette_bytes(im_frame) == \
                    _get_palette_bytes(previous['im']):
                     delta = ImageChops.subtract_modulo(im_frame,
                                                        previous['im'])
