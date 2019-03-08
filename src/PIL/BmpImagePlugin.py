@@ -52,6 +52,10 @@ def _accept(prefix):
     return prefix[:2] == b"BM"
 
 
+def _dib_accept(prefix):
+    return i32(prefix[:4]) in [12, 40, 64, 108, 124]
+
+
 # =============================================================================
 # Image plugin for the Windows BMP format.
 # =============================================================================
@@ -291,7 +295,11 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _dib_save(im, fp, filename):
+    _save(im, fp, filename, False)
+
+
+def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
@@ -306,14 +314,15 @@ def _save(im, fp, filename):
 
     stride = ((im.size[0]*bits+7)//8+3) & (~3)
     header = 40  # or 64 for OS/2 version 2
-    offset = 14 + header + colors * 4
     image = stride * im.size[1]
 
     # bitmap header
-    fp.write(b"BM" +                      # file type (magic)
-             o32(offset+image) +          # file size
-             o32(0) +                     # reserved
-             o32(offset))                 # image data offset
+    if bitmap_header:
+        offset = 14 + header + colors * 4
+        fp.write(b"BM" +                      # file type (magic)
+                 o32(offset+image) +          # file size
+                 o32(0) +                     # reserved
+                 o32(offset))                 # image data offset
 
     # bitmap info header
     fp.write(o32(header) +                # info header size
@@ -352,3 +361,10 @@ Image.register_save(BmpImageFile.format, _save)
 Image.register_extension(BmpImageFile.format, ".bmp")
 
 Image.register_mime(BmpImageFile.format, "image/bmp")
+
+Image.register_open(DibImageFile.format, DibImageFile, _dib_accept)
+Image.register_save(DibImageFile.format, _dib_save)
+
+Image.register_extension(DibImageFile.format, ".dib")
+
+Image.register_mime(DibImageFile.format, "image/bmp")

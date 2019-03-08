@@ -102,10 +102,10 @@ Use ``PIL.__version__`` instead.
 API Additions
 =============
 
-TODO
-^^^^
+DIB File Format
+^^^^^^^^^^^^^^^
 
-TODO
+Pillow now supports reading and writing the DIB "Device Independent Bitmap" file format.
 
 Other Changes
 =============
