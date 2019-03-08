@@ -31,6 +31,14 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **compression**
     Set to ``bmp_rle`` if the file is run-length encoded.
 
+DIB
+^^^
+
+PIL reads and writes DIB files. DIB files are similar to BMP files, so see
+above for more information.
+
+    .. versionadded:: 6.0.0
+
 EPS
 ^^^
 
