@@ -462,6 +462,10 @@ PNG
 Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
 ``RGB``, or ``RGBA`` data. Interlaced files are supported as of v1.1.7.
 
+As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
+image formats, EXIF data is not guaranteed to have been read until
+:py:meth:`~PIL.Image.Image.load` has been called.
+
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
@@ -526,6 +530,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **icc_profile**
     The ICC Profile to include in the saved file.
+
+**exif**
+    The exif data to include in the saved file.
+
+    .. versionadded:: 6.0.0
 
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,
