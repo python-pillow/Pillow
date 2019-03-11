@@ -5,6 +5,54 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Python 2.7 support will be removed in Pillow 7.0.0 #3682
+  [hugovk]
+
+- Add EXIF support for PNG #3674
+  [radarhere]
+
+- Add option to set dither param on quantize #3699
+  [glasnt]
+
+- Add reading of DDS uncompressed RGB data #3673
+  [radarhere]
+
+- Correct length of Tiff BYTE tags #3672
+  [radarhere]
+
+- Add DIB saving and loading through Image open #3691
+  [radarhere]
+
+- Removed deprecated VERSION #3624
+  [hugovk]
+
+- Fix 'BytesWarning: Comparison between bytes and string' in PdfDict #3580
+  [jdufresne]
+
+- Do not resize in Image.thumbnail if already the destination size #3632
+  [radarhere]
+
+- Replace .seek() magic numbers with io.SEEK_* constants #3572
+  [jdufresne]
+
+- Make ContainerIO.isatty() return a bool, not int #3568
+  [jdufresne]
+
+- Add support for I;16 modes for more transpose operations #3563
+  [radarhere]
+
+- Deprecate support for PyQt4 and PySide #3655
+  [hugovk, radarhere]
+
+- Add TIFF compression codecs: LZMA, Zstd, WebP #3555
+  [cgohlke]
+
+- Fixed pickling of iTXt class with protocol > 1 #3537
+  [radarhere]
+
+- _util.isPath returns True for pathlib.Path objects #3616
+  [wbadart]
+
 - Remove unnecessary unittest.main() boilerplate from test files #3631
   [jdufresne]
 

@@ -123,43 +123,52 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
-        bitcount, rmask, gmask, bmask, amask = struct.unpack("<5I",
-                                                             header.read(20))
+        bitcount, = struct.unpack("<I", header.read(4))
+        masks = struct.unpack("<4I", header.read(16))
+        if pfflags & 0x40:
+            # DDPF_RGB - Texture contains uncompressed RGB data
+            masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
+            rawmode = ""
+            if bitcount == 32:
+                rawmode += masks[0xff000000]
+            rawmode += masks[0xff0000] + masks[0xff00] + masks[0xff]
 
-        data_start = header_size + 4
-        n = 0
-        if fourcc == b"DXT1":
-            self.pixel_format = "DXT1"
-            n = 1
-        elif fourcc == b"DXT3":
-            self.pixel_format = "DXT3"
-            n = 2
-        elif fourcc == b"DXT5":
-            self.pixel_format = "DXT5"
-            n = 3
-        elif fourcc == b"DX10":
-            data_start += 20
-            # ignoring flags which pertain to volume textures and cubemaps
-            dxt10 = BytesIO(self.fp.read(20))
-            dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
-            if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS,
-                               DXGI_FORMAT_BC7_UNORM):
-                self.pixel_format = "BC7"
-                n = 7
-            elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
-                self.pixel_format = "BC7"
-                self.im_info["gamma"] = 1/2.2
-                n = 7
-            else:
-                raise NotImplementedError("Unimplemented DXGI format %d" %
-                                          (dxgi_format))
+            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode, 0, 1))]
         else:
-            raise NotImplementedError("Unimplemented pixel format %r" %
-                                      (fourcc))
+            data_start = header_size + 4
+            n = 0
+            if fourcc == b"DXT1":
+                self.pixel_format = "DXT1"
+                n = 1
+            elif fourcc == b"DXT3":
+                self.pixel_format = "DXT3"
+                n = 2
+            elif fourcc == b"DXT5":
+                self.pixel_format = "DXT5"
+                n = 3
+            elif fourcc == b"DX10":
+                data_start += 20
+                # ignoring flags which pertain to volume textures and cubemaps
+                dxt10 = BytesIO(self.fp.read(20))
+                dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
+                if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS,
+                                   DXGI_FORMAT_BC7_UNORM):
+                    self.pixel_format = "BC7"
+                    n = 7
+                elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
+                    self.pixel_format = "BC7"
+                    self.im_info["gamma"] = 1/2.2
+                    n = 7
+                else:
+                    raise NotImplementedError("Unimplemented DXGI format %d" %
+                                              (dxgi_format))
+            else:
+                raise NotImplementedError("Unimplemented pixel format %r" %
+                                          (fourcc))
 
-        self.tile = [
-            ("bcn", (0, 0) + self.size, data_start, (n))
-        ]
+            self.tile = [
+                ("bcn", (0, 0) + self.size, data_start, (n))
+            ]
 
     def load_seek(self, pos):
         pass

@@ -1,4 +1,4 @@
-from .helper import PillowTestCase
+from .helper import unittest, PillowTestCase
 
 from PIL import _util
 
@@ -31,6 +31,18 @@ class TestUtil(PillowTestCase):
 
         # Act
         it_is = _util.isPath(fp)
+
+        # Assert
+        self.assertTrue(it_is)
+
+    @unittest.skipIf(not _util.py36, 'os.path support for Paths added in 3.6')
+    def test_path_obj_is_path(self):
+        # Arrange
+        from pathlib import Path
+        test_path = Path('filename.ext')
+
+        # Act
+        it_is = _util.isPath(test_path)
 
         # Assert
         self.assertTrue(it_is)

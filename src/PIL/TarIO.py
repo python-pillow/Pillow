@@ -14,6 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import sys
 from . import ContainerIO
 
@@ -51,7 +52,7 @@ class TarIO(ContainerIO.ContainerIO):
             if file == name:
                 break
 
-            self.fh.seek((size + 511) & (~511), 1)
+            self.fh.seek((size + 511) & (~511), io.SEEK_CUR)
 
         # Open region
         ContainerIO.ContainerIO.__init__(self, self.fh, self.fh.tell(), size)

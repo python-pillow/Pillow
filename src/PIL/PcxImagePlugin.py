@@ -25,6 +25,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import logging
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
@@ -82,7 +83,7 @@ class PcxImageFile(ImageFile.ImageFile):
         elif version == 5 and bits == 8 and planes == 1:
             mode = rawmode = "L"
             # FIXME: hey, this doesn't work with the incremental loader !!!
-            self.fp.seek(-769, 2)
+            self.fp.seek(-769, io.SEEK_END)
             s = self.fp.read(769)
             if len(s) == 769 and i8(s[0]) == 12:
                 # check if the palette is linear greyscale

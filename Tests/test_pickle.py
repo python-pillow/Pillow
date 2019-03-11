@@ -67,9 +67,13 @@ class TestPickle(PillowTestCase):
                 "Tests/images/non_zero_bb.png",
                 "Tests/images/non_zero_bb_scale2.png",
                 "Tests/images/p_trns_single.png",
-                "Tests/images/pil123p.png"
+                "Tests/images/pil123p.png",
+                "Tests/images/itxt_chunks.png"
         ]:
-            self.helper_pickle_string(pickle, test_file=test_file)
+            for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+                self.helper_pickle_string(pickle,
+                                          protocol=protocol,
+                                          test_file=test_file)
 
     def test_pickle_l_mode(self):
         # Arrange

@@ -135,6 +135,9 @@ COMPRESSION_INFO = {
     32946: "tiff_deflate",
     34676: "tiff_sgilog",
     34677: "tiff_sgilog24",
+    34925: "lzma",
+    50000: "zstd",
+    50001: "webp",
 }
 
 COMPRESSION_INFO_REV = {v: k for k, v in COMPRESSION_INFO.items()}
@@ -423,7 +426,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         ifd = ImageFileDirectory_v2()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         'Some Data'
 
@@ -557,7 +560,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if info.type:
                 self.tagtype[tag] = info.type
             else:
-                self.tagtype[tag] = 7
+                self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     self.tagtype[tag] = TiffTags.RATIONAL
                 elif all(isinstance(v, int) for v in values):
@@ -816,7 +819,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     print("- value:", values)
 
             # count is sum of lengths for string and arbitrary data
-            if typ in [TiffTags.ASCII, TiffTags.UNDEFINED]:
+            if typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
                 count = len(data)
             else:
                 count = len(values)
@@ -872,7 +875,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
         ifd = ImageFileDirectory_v1()
         ifd[key] = 'Some Data'
-        ifd.tagtype[key] = 2
+        ifd.tagtype[key] = TiffTags.ASCII
         print(ifd[key])
         ('Some Data',)
 
@@ -1440,7 +1443,7 @@ def _save(im, fp, filename):
         try:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
-            pass  # might not be an IFD, Might not have populated type
+            pass  # might not be an IFD. Might not have populated type
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
@@ -1684,7 +1687,7 @@ class AppendingTiffWriter:
     def tell(self):
         return self.f.tell() - self.offsetOfNewPage
 
-    def seek(self, offset, whence):
+    def seek(self, offset, whence=io.SEEK_SET):
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 

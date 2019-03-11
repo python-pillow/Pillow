@@ -12,6 +12,27 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+Python 2.7
+~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
+
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+.. deprecated:: 6.0.0
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
 PIL.*ImagePlugin.__version__ attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -50,13 +71,12 @@ a ``DeprecationWarning``:
     Setting the size of a TIFF image directly is deprecated, and will
     be removed in a future version. Use the resize method instead.
 
-PILLOW_VERSION and VERSION constants
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 5.2.0
 
-Two version constants – ``VERSION`` (the old PIL version, always 1.1.7) and
-``PILLOW_VERSION`` – have been deprecated and will be removed in the next
+``PILLOW_VERSION`` has been deprecated and will be removed in the next
 major release. Use ``__version__`` instead.
 
 Removed features
@@ -64,6 +84,14 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+VERSION constant
+~~~~~~~~~~~~~~~~
+
+*Removed in version 6.0.0.*
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use
+``__version__`` instead.
 
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

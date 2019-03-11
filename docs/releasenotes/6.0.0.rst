@@ -26,11 +26,37 @@ Several undocumented functions in ``ImageOps`` were deprecated in Pillow 4.3.0 (
 and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
 ``box_blur``. Use the equivalent operations in ``ImageFilter`` instead.
 
+Removed deprecated VERSION
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use ``__version__``
+instead.
+
 API Changes
 ===========
 
 Deprecations
 ^^^^^^^^^^^^
+
+Python 2.7
+~~~~~~~~~~
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
+
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
+a future version. Please upgrade to PyQt5 or PySide2.
+
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These version constants have been deprecated and will be removed in a future
 version.
@@ -76,15 +102,27 @@ Use ``PIL.__version__`` instead.
 API Additions
 =============
 
-TODO
-^^^^
+DIB File Format
+^^^^^^^^^^^^^^^
 
-TODO
+Pillow now supports reading and writing the DIB "Device Independent Bitmap" file format.
+
+Image.quantize
+^^^^^^^^^^^^^^
+
+The `dither` option is now a customisable parameter (was previously hardcoded to `1`). This parameter takes the same values used in `Image.convert`
+
+PNG EXIF Data
+^^^^^^^^^^^^^
+
+EXIF data can now be read from and saved to PNG images. However, unlike other image
+formats, EXIF data is not guaranteed to have been read until
+:py:meth:`~PIL.Image.Image.load` has been called.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Reading new DDS image format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO
+Pillow can now read uncompressed RGB data from DDS images.
