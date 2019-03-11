@@ -8,6 +8,18 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add EXIF support for PNG #3674
+  [radarhere]
+
+- Add option to set dither param on quantize #3699
+  [glasnt]
+
+- Add reading of DDS uncompressed RGB data #3673
+  [radarhere]
+
+- Correct length of Tiff BYTE tags #3672
+  [radarhere]
+
 - Add DIB saving and loading through Image open #3691
   [radarhere]
 
