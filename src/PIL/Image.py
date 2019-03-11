@@ -578,11 +578,12 @@ class Image(object):
         return self
 
     def __exit__(self, *args):
-        if hasattr(self, "_close__fp"):
-            self._close__fp()
         if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
-           and self.fp and self._exclusive_fp):
-            self.fp.close()
+           and self._exclusive_fp):
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
+            if self.fp:
+                self.fp.close()
         self.fp = None
 
     def close(self):

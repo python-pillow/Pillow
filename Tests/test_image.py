@@ -532,6 +532,18 @@ class TestImage(PillowTestCase):
         with Image.open(test_file) as im:
             self.assert_warning(None, im.save, temp_file)
 
+    def test_load_on_nonexclusive_multiframe(self):
+        with open("Tests/images/frozenpond.mpo", "rb") as fp:
+            def act(fp):
+                im = Image.open(fp)
+                im.load()
+            act(fp)
+
+            with Image.open(fp) as im:
+                im.load()
+
+            self.assertFalse(fp.closed)
+
 
 class MockEncoder(object):
     pass
