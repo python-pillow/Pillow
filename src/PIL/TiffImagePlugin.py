@@ -785,17 +785,12 @@ class ImageFileDirectory_v2(MutableMapping):
             warnings.warn(str(msg))
             return
 
-    def save(self, fp):
-
-        if fp.tell() == 0:  # skip TIFF header on subsequent pages
-            # tiff header -- PIL always starts the first IFD at offset 8
-            fp.write(self._prefix + self._pack("HL", 42, 8))
-
+    def toBytes(self, offset=0):
         # FIXME What about tagdata?
-        fp.write(self._pack("H", len(self._tags_v2)))
+        result = self._pack("H", len(self._tags_v2))
 
         entries = []
-        offset = fp.tell() + len(self._tags_v2) * 12 + 4
+        offset = offset + len(result) + len(self._tags_v2) * 12 + 4
         stripoffsets = None
 
         # pass 1: convert tags to binary format
@@ -844,18 +839,29 @@ class ImageFileDirectory_v2(MutableMapping):
         for tag, typ, count, value, data in entries:
             if DEBUG > 1:
                 print(tag, typ, count, repr(value), repr(data))
-            fp.write(self._pack("HHL4s", tag, typ, count, value))
+            result += self._pack("HHL4s", tag, typ, count, value)
 
         # -- overwrite here for multi-page --
-        fp.write(b"\0\0\0\0")  # end of entries
+        result += b"\0\0\0\0"  # end of entries
 
         # pass 3: write auxiliary data to file
         for tag, typ, count, value, data in entries:
-            fp.write(data)
+            result += data
             if len(data) & 1:
-                fp.write(b"\0")
+                result += b"\0"
 
-        return offset
+        return result
+
+    def save(self, fp):
+
+        if fp.tell() == 0:  # skip TIFF header on subsequent pages
+            # tiff header -- PIL always starts the first IFD at offset 8
+            fp.write(self._prefix + self._pack("HL", 42, 8))
+
+        offset = fp.tell()
+        result = self.toBytes(offset)
+        fp.write(result)
+        return offset + len(result)
 
 
 ImageFileDirectory_v2._load_dispatch = _load_dispatch

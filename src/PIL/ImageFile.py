@@ -28,10 +28,17 @@
 #
 
 from . import Image
-from ._util import isPath
+from ._util import isPath, py3
 import io
 import sys
 import struct
+
+try:
+    # Python 3
+    from collections.abc import MutableMapping
+except ImportError:
+    # Python 2.7
+    from collections import MutableMapping
 
 MAXBLOCK = 65536
 
@@ -292,6 +299,12 @@ class ImageFile(Image.Image):
             raise EOFError("attempt to seek outside sequence")
 
         return self.tell() != frame
+
+    def getexif(self):
+        exif = Exif()
+        if "exif" in self.info:
+            exif.load(self.info["exif"])
+        return exif
 
 
 class StubImageFile(ImageFile):
@@ -672,3 +685,98 @@ class PyDecoder(object):
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
+
+
+class Exif(MutableMapping):
+    _data = {}
+    endian = "<"
+
+    def _fixup_dict(self, src_dict):
+        # Helper function for _getexif()
+        # returns a dict with any single item tuples/lists as individual values
+        def _fixup(value):
+            try:
+                if len(value) == 1 and not isinstance(value, dict):
+                    return value[0]
+            except Exception:
+                pass
+            return value
+
+        return {k: _fixup(v) for k, v in src_dict.items()}
+
+    def load(self, data):
+        # Extract EXIF information.  This is highly experimental,
+        # and is likely to be replaced with something better in a future
+        # version.
+
+        # The EXIF record consists of a TIFF file embedded in a JPEG
+        # application marker (!).
+        fp = io.BytesIO(data[6:])
+        head = fp.read(8)
+        # process dictionary
+        from . import TiffImagePlugin
+        info = TiffImagePlugin.ImageFileDirectory_v1(head)
+        self.endian = info._endian
+        fp.seek(info.next)
+        info.load(fp)
+        self._data = dict(self._fixup_dict(info))
+        # get exif extension
+        try:
+            # exif field 0x8769 is an offset pointer to the location
+            # of the nested embedded exif ifd.
+            # It should be a long, but may be corrupted.
+            fp.seek(self._data[0x8769])
+        except (KeyError, TypeError):
+            pass
+        else:
+            info = TiffImagePlugin.ImageFileDirectory_v1(head)
+            info.load(fp)
+            self._data.update(self._fixup_dict(info))
+        # get gpsinfo extension
+        try:
+            # exif field 0x8825 is an offset pointer to the location
+            # of the nested embedded gps exif ifd.
+            # It should be a long, but may be corrupted.
+            fp.seek(self._data[0x8825])
+        except (KeyError, TypeError):
+            pass
+        else:
+            info = TiffImagePlugin.ImageFileDirectory_v1(head)
+            info.load(fp)
+            self._data[0x8825] = self._fixup_dict(info)
+
+    def toBytes(self, offset=0):
+        from . import TiffImagePlugin
+        if self.endian == "<":
+            head = b"II\x2A\x00\x08\x00\x00\x00"
+        else:
+            head = b"MM\x00\x2A\x00\x00\x00\x08"
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
+        for tag, value in self._data.items():
+            ifd[tag] = value
+        return b"Exif\x00\x00"+head+ifd.toBytes(offset)
+
+    def __str__(self):
+        return str(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, tag):
+        return self._data[tag]
+
+    def __contains__(self, tag):
+        return tag in self._data
+
+    if not py3:
+        def has_key(self, tag):
+            return tag in self
+
+    def __setitem__(self, tag, value):
+        self._data[tag] = value
+
+    def __delitem__(self, tag):
+        del self._data[tag]
+
+    def __iter__(self):
+        return iter(set(self._data))
