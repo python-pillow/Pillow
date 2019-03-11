@@ -2002,7 +2002,7 @@ class Image(object):
         library automatically seeks to frame 0.
 
         Note that in the current version of the library, most sequence
-        formats only allows you to seek to the next frame.
+        formats only allow you to seek to the next frame.
 
         See :py:meth:`~PIL.Image.Image.tell`.
 
