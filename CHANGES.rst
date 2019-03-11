@@ -8,6 +8,12 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Only close exclusive fp on Image __exit__ #3698
+  [radarhere]
+
+- Changed EPS subprocess stdout from devnull to None #3635
+  [radarhere]
+
 - Add reading old-JPEG compressed TIFFs #3489
   [kkopachev]
 
