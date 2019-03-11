@@ -689,6 +689,8 @@ class PngImageFile(ImageFile.ImageFile):
         self.png = None
 
     def _getexif(self):
+        if "exif" not in self.info:
+            self.load()
         from .JpegImagePlugin import _getexif
         return _getexif(self)
 

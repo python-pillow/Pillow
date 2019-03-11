@@ -591,6 +591,21 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.text, {'TXT': 'VALUE', 'ZIP': 'VALUE'})
 
     def test_exif(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im._getexif()
+        self.assertEqual(exif[274], 1)
+
+    def test_exif_save(self):
+        im = Image.open("Tests/images/exif.png")
+
+        test_file = self.tempfile("temp.png")
+        im.save(test_file)
+
+        reloaded = Image.open(test_file)
+        exif = reloaded._getexif()
+        self.assertEqual(exif[274], 1)
+
+    def test_exif_from_jpg(self):
         im = Image.open("Tests/images/pil_sample_rgb.jpg")
 
         test_file = self.tempfile("temp.png")
