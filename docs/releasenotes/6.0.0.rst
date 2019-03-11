@@ -123,11 +123,11 @@ Other Changes
 =============
 
 Reading new DDS image format
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow can now read uncompressed RGB data from DDS images.
 
 Reading TIFF with old-style JPEG compression
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Added support reading TIFF files with old-style JPEG compression through LibTIFF. All YCbCr TIFF images are now always read as RGB.
