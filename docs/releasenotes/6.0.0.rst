@@ -107,6 +107,11 @@ DIB File Format
 
 Pillow now supports reading and writing the DIB "Device Independent Bitmap" file format.
 
+Image.quantize
+^^^^^^^^^^^^^^
+
+The `dither` option is now a customisable parameter (was previously hardcoded to `1`). This parameter takes the same values used in `Image.convert`
+
 Other Changes
 =============
 
