@@ -110,7 +110,7 @@ Pillow now supports reading and writing the DIB "Device Independent Bitmap" file
 Other Changes
 =============
 
-TODO
-^^^^
+Reading new DDS image format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO
+Pillow can now read uncompressed RGB data from DDS images.

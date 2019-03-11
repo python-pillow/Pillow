@@ -849,8 +849,8 @@ DDS
 
 DDS is a popular container texture format used in video games and natively
 supported by DirectX.
-Currently, DXT1, DXT3, and DXT5 pixel formats are supported and only in ``RGBA``
-mode.
+Currently, uncompressed RGB data and DXT1, DXT3, and DXT5 pixel formats are
+supported, and only in ``RGBA`` mode.
 
 .. versionadded:: 3.4.0 DXT3
 
