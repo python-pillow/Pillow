@@ -284,7 +284,7 @@ class TestPyDecoder(PillowTestCase):
     @unittest.skipIf(not HAVE_WEBP or not _webp.HAVE_WEBPANIM,
                      "WebP support not installed with animation")
     def test_exif_webp(self):
-        im = Image.open("Tests/images/hopper.webp")  # WebP
+        im = Image.open("Tests/images/hopper.webp")
         exif = im.getexif()
         self.assertEqual(exif, {})
 
@@ -321,5 +321,15 @@ class TestPyDecoder(PillowTestCase):
         self.assertEqual(reloaded_exif, {
             258: 8,
             40963: 455,
-            305: 'Pillow test'
+            305: 'Pillow test',
+        })
+
+    def test_exif_interop(self):
+        im = Image.open("Tests/images/flower.jpg")
+        exif = im.getexif()
+        self.assertEqual(exif.get_ifd(0xa005), {
+            1: 'R98',
+            2: b'0100',
+            4097: 2272,
+            4098: 1704,
         })

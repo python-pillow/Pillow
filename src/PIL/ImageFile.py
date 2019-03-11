@@ -689,6 +689,7 @@ class PyDecoder(object):
 
 class Exif(MutableMapping):
     _data = {}
+    _ifds = {}
     endian = "<"
 
     def _fixup_dict(self, src_dict):
@@ -703,6 +704,19 @@ class Exif(MutableMapping):
             return value
 
         return {k: _fixup(v) for k, v in src_dict.items()}
+
+    def _get_ifd_dict(self, fp, head, tag):
+        try:
+            # an offset pointer to the location of the nested embedded ifd.
+            # It should be a long, but may be corrupted.
+            fp.seek(self._data[tag])
+        except (KeyError, TypeError):
+            pass
+        else:
+            from . import TiffImagePlugin
+            info = TiffImagePlugin.ImageFileDirectory_v1(head)
+            info.load(fp)
+            return self._fixup_dict(info)
 
     def load(self, data):
         # Extract EXIF information.  This is highly experimental,
@@ -720,30 +734,25 @@ class Exif(MutableMapping):
         fp.seek(info.next)
         info.load(fp)
         self._data = dict(self._fixup_dict(info))
+
         # get exif extension
-        try:
-            # exif field 0x8769 is an offset pointer to the location
-            # of the nested embedded exif ifd.
-            # It should be a long, but may be corrupted.
-            fp.seek(self._data[0x8769])
-        except (KeyError, TypeError):
-            pass
-        else:
-            info = TiffImagePlugin.ImageFileDirectory_v1(head)
-            info.load(fp)
-            self._data.update(self._fixup_dict(info))
+        ifd = self._get_ifd_dict(fp, head, 0x8769)
+        if ifd:
+            self._data.update(ifd)
+            self._ifds[0x8769] = ifd
+
         # get gpsinfo extension
-        try:
-            # exif field 0x8825 is an offset pointer to the location
-            # of the nested embedded gps exif ifd.
-            # It should be a long, but may be corrupted.
-            fp.seek(self._data[0x8825])
-        except (KeyError, TypeError):
-            pass
-        else:
-            info = TiffImagePlugin.ImageFileDirectory_v1(head)
-            info.load(fp)
-            self._data[0x8825] = self._fixup_dict(info)
+        ifd = self._get_ifd_dict(fp, head, 0x8825)
+        if ifd:
+            self._data[0x8825] = ifd
+            self._ifds[0x8825] = ifd
+
+        for tag in [
+            0xa005,  # interop
+        ]:
+            ifd = self._get_ifd_dict(fp, head, tag)
+            if ifd:
+                self._ifds[tag] = ifd
 
     def toBytes(self, offset=0):
         from . import TiffImagePlugin
@@ -755,6 +764,9 @@ class Exif(MutableMapping):
         for tag, value in self._data.items():
             ifd[tag] = value
         return b"Exif\x00\x00"+head+ifd.toBytes(offset)
+
+    def get_ifd(self, tag):
+        return self._ifds.get(tag, {})
 
     def __str__(self):
         return str(self._data)
