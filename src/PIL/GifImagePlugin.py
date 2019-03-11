@@ -423,6 +423,7 @@ def _write_multiple_frames(im, fp, palette):
 
     im_frames = []
     frame_count = 0
+    background = None
     for imSequence in itertools.chain([im],
                                       im.encoderinfo.get("append_images", [])):
         for im_frame in ImageSequence.Iterator(imSequence):
@@ -443,20 +444,21 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if ("disposal" in im.encoderinfo and im.encoderinfo["disposal"] == 2):
+                if ("disposal" in im.encoderinfo \
+                    and im.encoderinfo["disposal"] == 2):
                     base_image = background
                 else:
                     base_image = previous["im"]
 
                 if _get_palette_bytes(im_frame) == \
                    _get_palette_bytes(base_image):
-                    delta = ImageChops.subtract_modulo(im_frame,
-                                                       base_image)
+                    delta = ImageChops.subtract_modulo(im_frame, base_image)
                 else:
                     delta = ImageChops.subtract_modulo(
                         im_frame.convert('RGB'), base_image.convert('RGB'))
                 bbox = delta.getbbox()
-                if not bbox and not ("disposal" in im.encoderinfo and im.encoderinfo["disposal"] == 2):
+                if not bbox and not ("disposal" in im.encoderinfo \
+                    and im.encoderinfo["disposal"] == 2):
                     # This frame is identical to the previous frame
                     if duration:
                         previous['encoderinfo']['duration'] += \
