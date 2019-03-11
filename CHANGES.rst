@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add reading old-JPEG compressed TIFFs #3489
+  [kkopachev]
+
 - Add EXIF support for PNG #3674
   [radarhere]
 
