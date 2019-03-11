@@ -443,20 +443,20 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if encoderinfo["disposal"] == 2:
-                    # Entire frame should be delta
-                    # Create delta by subtracting empty image from frame (This is required)
-                    delta = ImageChops.subtract_modulo(
-                        im_frame, Image.new('P', (0,0)))
-                elif _get_palette_bytes(im_frame) == \
-                   _get_palette_bytes(previous['im']):
+                if ("disposal" in im.encoderinfo and im.encoderinfo["disposal"] == 2):
+                    base_image = background
+                else:
+                    base_image = previous["im"]
+
+                if _get_palette_bytes(im_frame) == \
+                   _get_palette_bytes(base_image):
                     delta = ImageChops.subtract_modulo(im_frame,
-                                                       previous['im'])
+                                                       base_image)
                 else:
                     delta = ImageChops.subtract_modulo(
-                        im_frame.convert('RGB'), previous['im'].convert('RGB'))
+                        im_frame.convert('RGB'), base_image.convert('RGB'))
                 bbox = delta.getbbox()
-                if not bbox:
+                if not bbox and not ("disposal" in im.encoderinfo and im.encoderinfo["disposal"] == 2):
                     # This frame is identical to the previous frame
                     if duration:
                         previous['encoderinfo']['duration'] += \
@@ -464,6 +464,7 @@ def _write_multiple_frames(im, fp, palette):
                     continue
             else:
                 bbox = None
+                background = Image.new("P", im_frame.size, 0)
             im_frames.append({
                 'im': im_frame,
                 'bbox': bbox,
