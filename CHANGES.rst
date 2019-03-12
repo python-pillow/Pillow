@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add I;16 PNG save #3566
+ [radarhere]
+
 - Add support for BMP RGBA bitfield compression #3705
   [radarhere]
 
