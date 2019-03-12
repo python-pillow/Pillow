@@ -88,20 +88,13 @@ class TestFilePng(PillowTestCase):
         self.assertEqual(im.format, "PNG")
         self.assertEqual(im.get_format_mimetype(), 'image/png')
 
-        hopper("1").save(test_file)
-        Image.open(test_file)
-
-        hopper("L").save(test_file)
-        Image.open(test_file)
-
-        hopper("P").save(test_file)
-        Image.open(test_file)
-
-        hopper("RGB").save(test_file)
-        Image.open(test_file)
-
-        hopper("I").save(test_file)
-        Image.open(test_file)
+        for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
+            im = hopper(mode)
+            im.save(test_file)
+            reloaded = Image.open(test_file)
+            if mode == "I;16":
+                reloaded = reloaded.convert(mode)
+            self.assert_image_equal(reloaded, im)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
