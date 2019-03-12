@@ -8,6 +8,12 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add support for BMP RGBA bitfield compression #3705
+  [radarhere]
+
+- Added ability to set language for text rendering #3693
+  [iwsfutcmd]
+
 - Only close exclusive fp on Image __exit__ #3698
   [radarhere]
 
