@@ -99,6 +99,21 @@ version.
 
 Use ``PIL.__version__`` instead.
 
+New ``language`` parameter
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Text rendering functions now accept a ``language`` parameter, to request language-specific glyphs and ligatures from the font
+
+The following functions accept the new parameter:
+
+* ``PIL.ImageDraw.ImageDraw.text()``
+* ``PIL.ImageDraw.ImageDraw.multiline_text()``
+* ``PIL.ImageDraw.ImageDraw.textsize()``
+* ``PIL.ImageDraw.ImageDraw.multiline_textsize()``
+* ``PIL.ImageFont.ImageFont.getsize()``
+* ``PIL.ImageFont.ImageFont.getsize_multiline()``
+* ``PIL.ImageFont.ImageFont.getmask()``
+
 API Additions
 =============
 

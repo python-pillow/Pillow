@@ -297,7 +297,7 @@ Methods
 
                      .. versionadded:: 6.0.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None)
 
     Draws the string at the given position.
 
@@ -325,6 +325,16 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None)
 
@@ -362,7 +372,7 @@ Methods
 
                      .. versionadded:: 6.0.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None)
 
     Return the size of the given string, in pixels.
 
@@ -387,6 +397,16 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use 
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
 
 .. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
 
