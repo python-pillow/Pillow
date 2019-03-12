@@ -9,7 +9,7 @@ Changelog (Pillow)
   [hugovk]
 
 - Add I;16 PNG save #3566
- [radarhere]
+  [radarhere]
 
 - Add support for BMP RGBA bitfield compression #3705
   [radarhere]
