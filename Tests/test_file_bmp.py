@@ -90,3 +90,15 @@ class TestFileBmp(PillowTestCase):
         self.assertEqual(reloaded.format, "DIB")
         self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
         self.assert_image_equal(im, reloaded)
+
+    def test_rgba_bitfields(self):
+        # This test image has been manually hexedited
+        # to change the bitfield compression in the header from XBGR to RGBA
+        im = Image.open("Tests/images/rgb32bf-rgba.bmp")
+
+        # So before the comparing the image, swap the channels
+        b, g, r = im.split()[1:]
+        im = Image.merge("RGB", (r, g, b))
+
+        target = Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp")
+        self.assert_image_equal(im, target)
