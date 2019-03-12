@@ -9,7 +9,11 @@ def fetch(url):
 
     if not os.path.exists(name):
         print("Fetching", url)
-        content = urllib.request.urlopen(url).read()
+        try:
+            r = urllib.request.urlopen(url)
+        except urllib.error.URLError:
+            r = urllib.request.urlopen(url)
+        content = r.read()
         with open(name, 'wb') as fd:
             fd.write(content)
     return name
