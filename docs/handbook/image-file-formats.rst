@@ -459,8 +459,9 @@ Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` dat
 PNG
 ^^^
 
-Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
-``RGB``, or ``RGBA`` data. Interlaced files are supported as of v1.1.7.
+Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``LA``,
+``I``, ``P``, ``RGB`` or ``RGBA`` data. Interlaced files are supported as of
+v1.1.7.
 
 As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
 image formats, EXIF data is not guaranteed to have been read until
