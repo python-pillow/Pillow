@@ -998,11 +998,8 @@ class TiffImageFile(ImageFile.ImageFile):
     def n_frames(self):
         if self._n_frames is None:
             current = self.tell()
-            try:
-                while True:
-                    self._seek(self.tell() + 1)
-            except EOFError:
-                self._n_frames = self.tell() + 1
+            while self._n_frames is None:
+                self._seek(self.tell() + 1)
             self.seek(current)
         return self._n_frames
 
@@ -1039,6 +1036,8 @@ class TiffImageFile(ImageFile.ImageFile):
                 print("Loading tags, location: %s" % self.fp.tell())
             self.tag_v2.load(self.fp)
             self.__next = self.tag_v2.next
+            if self.__next == 0:
+                self._n_frames = frame + 1
             if len(self._frame_pos) == 1:
                 self._is_animated = self.__next != 0
             self.__frame += 1
