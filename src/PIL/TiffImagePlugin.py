@@ -985,7 +985,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self._frame_pos = []
         self._n_frames = None
-        self._is_animated = None
 
         if DEBUG:
             print("*** TiffImageFile._open ***")
@@ -1009,19 +1008,6 @@ class TiffImageFile(ImageFile.ImageFile):
 
     @property
     def is_animated(self):
-        if self._is_animated is None:
-            if self._n_frames is not None:
-                self._is_animated = self._n_frames != 1
-            else:
-                current = self.tell()
-
-                try:
-                    self.seek(1)
-                    self._is_animated = True
-                except EOFError:
-                    self._is_animated = False
-
-                self.seek(current)
         return self._is_animated
 
     def seek(self, frame):
@@ -1053,6 +1039,8 @@ class TiffImageFile(ImageFile.ImageFile):
                 print("Loading tags, location: %s" % self.fp.tell())
             self.tag_v2.load(self.fp)
             self.__next = self.tag_v2.next
+            if len(self._frame_pos) == 1:
+                self._is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
@@ -1086,7 +1074,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def load_end(self):
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
-        if len(self._frame_pos) == 1 and not self.__next:
+        if not self._is_animated:
             self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
@@ -1166,10 +1154,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
-        if self._exclusive_fp:
-            if len(self._frame_pos) == 1 and not self.__next:
-                self.fp.close()
-                self.fp = None  # might be shared
+        if self._exclusive_fp and not self._is_animated:
+            self.fp.close()
+            self.fp = None  # might be shared
 
         if err < 0:
             raise IOError(err)
