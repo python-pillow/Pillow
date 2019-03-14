@@ -52,6 +52,10 @@ def _accept(prefix):
     return prefix[:2] == b"BM"
 
 
+def _dib_accept(prefix):
+    return i32(prefix[:4]) in [12, 40, 64, 108, 124]
+
+
 # =============================================================================
 # Image plugin for the Windows BMP format.
 # =============================================================================
@@ -176,6 +180,7 @@ class BmpImageFile(ImageFile.ImageFile):
             SUPPORTED = {
                 32: [(0xff0000, 0xff00, 0xff, 0x0),
                      (0xff0000, 0xff00, 0xff, 0xff000000),
+                     (0xff, 0xff00, 0xff0000, 0xff000000),
                      (0x0, 0x0, 0x0, 0x0),
                      (0xff000000, 0xff0000, 0xff00, 0x0)],
                 24: [(0xff0000, 0xff00, 0xff)],
@@ -184,6 +189,7 @@ class BmpImageFile(ImageFile.ImageFile):
             MASK_MODES = {
                 (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
                 (32, (0xff000000, 0xff0000, 0xff00, 0x0)): "XBGR",
+                (32, (0xff, 0xff00, 0xff0000, 0xff000000)): "RGBA",
                 (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xff0000, 0xff00, 0xff)): "BGR",
@@ -196,7 +202,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     raw_mode = MASK_MODES[
                         (file_info["bits"], file_info["rgba_mask"])
                     ]
-                    self.mode = "RGBA" if raw_mode in ("BGRA",) else self.mode
+                    self.mode = "RGBA" if "A" in raw_mode else self.mode
                 elif (file_info['bits'] in (24, 16) and
                       file_info['rgb_mask'] in SUPPORTED[file_info['bits']]):
                     raw_mode = MASK_MODES[
@@ -291,7 +297,11 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _dib_save(im, fp, filename):
+    _save(im, fp, filename, False)
+
+
+def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
@@ -306,14 +316,15 @@ def _save(im, fp, filename):
 
     stride = ((im.size[0]*bits+7)//8+3) & (~3)
     header = 40  # or 64 for OS/2 version 2
-    offset = 14 + header + colors * 4
     image = stride * im.size[1]
 
     # bitmap header
-    fp.write(b"BM" +                      # file type (magic)
-             o32(offset+image) +          # file size
-             o32(0) +                     # reserved
-             o32(offset))                 # image data offset
+    if bitmap_header:
+        offset = 14 + header + colors * 4
+        fp.write(b"BM" +                      # file type (magic)
+                 o32(offset+image) +          # file size
+                 o32(0) +                     # reserved
+                 o32(offset))                 # image data offset
 
     # bitmap info header
     fp.write(o32(header) +                # info header size
@@ -352,3 +363,10 @@ Image.register_save(BmpImageFile.format, _save)
 Image.register_extension(BmpImageFile.format, ".bmp")
 
 Image.register_mime(BmpImageFile.format, "image/bmp")
+
+Image.register_open(DibImageFile.format, DibImageFile, _dib_accept)
+Image.register_save(DibImageFile.format, _dib_save)
+
+Image.register_extension(DibImageFile.format, ".dib")
+
+Image.register_mime(DibImageFile.format, "image/bmp")

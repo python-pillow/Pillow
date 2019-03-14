@@ -102,15 +102,48 @@ Use ``PIL.__version__`` instead.
 API Additions
 =============
 
-TODO
-^^^^
+DIB file format
+^^^^^^^^^^^^^^^
 
-TODO
+Pillow now supports reading and writing the Device Independent Bitmap file format.
+
+Image.quantize
+^^^^^^^^^^^^^^
+
+The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``). 
+This parameter takes the same values used in ``Image.convert``.
+
+New language parameter
+^^^^^^^^^^^^^^^^^^^^^^
+
+These text-rendering functions now accept a ``language`` parameter to request 
+language-specific glyphs and ligatures from the font:
+
+* ``ImageDraw.ImageDraw.multiline_text()``
+* ``ImageDraw.ImageDraw.multiline_textsize()``
+* ``ImageDraw.ImageDraw.text()``
+* ``ImageDraw.ImageDraw.textsize()``
+* ``ImageFont.ImageFont.getmask()``
+* ``ImageFont.ImageFont.getsize_multiline()``
+* ``ImageFont.ImageFont.getsize()``
+
+PNG EXIF data
+^^^^^^^^^^^^^
+
+EXIF data can now be read from and saved to PNG images. However, unlike other image
+formats, EXIF data is not guaranteed to have been read until
+:py:meth:`~PIL.Image.Image.load` has been called.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Reading new DDS image format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Pillow can now read uncompressed RGB data from DDS images.
+
+Reading TIFF with old-style JPEG compression
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added support reading TIFF files with old-style JPEG compression through LibTIFF. All YCbCr 
+TIFF images are now always read as RGB.

@@ -16,6 +16,7 @@ class TestFileBmp(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual(im.size, reloaded.size)
         self.assertEqual(reloaded.format, "BMP")
+        self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
 
     def test_sanity(self):
         self.roundtrip(hopper())
@@ -72,6 +73,32 @@ class TestFileBmp(PillowTestCase):
 
     def test_load_dib(self):
         # test for #1293, Imagegrab returning Unsupported Bitfields Format
-        im = BmpImagePlugin.DibImageFile('Tests/images/clipboard.dib')
+        im = Image.open('Tests/images/clipboard.dib')
+        self.assertEqual(im.format, "DIB")
+        self.assertEqual(im.get_format_mimetype(), "image/bmp")
+
         target = Image.open('Tests/images/clipboard_target.png')
+        self.assert_image_equal(im, target)
+
+    def test_save_dib(self):
+        outfile = self.tempfile("temp.dib")
+
+        im = Image.open('Tests/images/clipboard.dib')
+        im.save(outfile)
+
+        reloaded = Image.open(outfile)
+        self.assertEqual(reloaded.format, "DIB")
+        self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
+        self.assert_image_equal(im, reloaded)
+
+    def test_rgba_bitfields(self):
+        # This test image has been manually hexedited
+        # to change the bitfield compression in the header from XBGR to RGBA
+        im = Image.open("Tests/images/rgb32bf-rgba.bmp")
+
+        # So before the comparing the image, swap the channels
+        b, g, r = im.split()[1:]
+        im = Image.merge("RGB", (r, g, b))
+
+        target = Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp")
         self.assert_image_equal(im, target)

@@ -21,7 +21,7 @@ Fully supported formats
 BMP
 ^^^
 
-PIL reads and writes Windows and OS/2 BMP files containing ``1``, ``L``, ``P``,
+Pillow reads and writes Windows and OS/2 BMP files containing ``1``, ``L``, ``P``,
 or ``RGB`` data. 16-colour images are read as ``P`` images. Run-length encoding
 is not supported.
 
@@ -31,13 +31,21 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 **compression**
     Set to ``bmp_rle`` if the file is run-length encoded.
 
+DIB
+^^^
+
+Pillow reads and writes DIB files. DIB files are similar to BMP files, so see
+above for more information.
+
+    .. versionadded:: 6.0.0
+
 EPS
 ^^^
 
-PIL identifies EPS files containing image data, and can read files that contain
-embedded raster images (ImageData descriptors). If Ghostscript is available,
-other EPS files can be read as well. The EPS driver can also write EPS
-images. The EPS driver can read EPS images in ``L``, ``LAB``, ``RGB`` and
+Pillow identifies EPS files containing image data, and can read files that
+contain embedded raster images (ImageData descriptors). If Ghostscript is
+available, other EPS files can be read as well. The EPS driver can also write
+EPS images. The EPS driver can read EPS images in ``L``, ``LAB``, ``RGB`` and
 ``CMYK`` mode, but Ghostscript may convert the images to ``RGB`` mode rather
 than leaving them in the original color space. The EPS driver can write images
 in ``L``, ``RGB`` and ``CMYK`` modes.
@@ -59,8 +67,8 @@ method with the following parameter to affect how Ghostscript renders the EPS
 GIF
 ^^^
 
-PIL reads GIF87a and GIF89a versions of the GIF file format. The library writes
-run-length encoded files in GIF87a by default, unless GIF89a features
+Pillow reads GIF87a and GIF89a versions of the GIF file format. The library
+writes run-length encoded files in GIF87a by default, unless GIF89a features
 are used or GIF89a is already in use.
 
 Note that GIF files are always read as grayscale (``L``)
@@ -192,7 +200,7 @@ attributes before loading the file::
 ICNS
 ^^^^
 
-PIL reads and (macOS only) writes macOS ``.icns`` files.  By default, the
+Pillow reads and (macOS only) writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
 :py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.Image.open` method
@@ -237,12 +245,12 @@ IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
 versions of this format.
 
-IM is the only format that can store all internal PIL formats.
+IM is the only format that can store all internal Pillow formats.
 
 JPEG
 ^^^^
 
-PIL reads JPEG, JFIF, and Adobe JPEG files containing ``L``, ``RGB``, or
+Pillow reads JPEG, JFIF, and Adobe JPEG files containing ``L``, ``RGB``, or
 ``CMYK`` data. It writes standard and progressive JFIF files.
 
 Using the :py:meth:`~PIL.Image.Image.draft` method, you can speed things up by
@@ -354,15 +362,15 @@ JPEG 2000
 
 .. versionadded:: 2.4.0
 
-PIL reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
+Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
 ``RGBA`` data.  It can also read files containing ``YCbCr`` data, which it
 converts on read into ``RGB`` or ``RGBA`` depending on whether or not there is
-an alpha channel.  PIL supports JPEG 2000 raw codestreams (``.j2k`` files), as
-well as boxed JPEG 2000 files (``.j2p`` or ``.jpx`` files).  PIL does *not*
-support files whose components have different sampling frequencies.
+an alpha channel.  Pillow supports JPEG 2000 raw codestreams (``.j2k`` files),
+as well as boxed JPEG 2000 files (``.j2p`` or ``.jpx`` files).  Pillow does
+*not* support files whose components have different sampling frequencies.
 
 When loading, if you set the ``mode`` on the image prior to the
-:py:meth:`~PIL.Image.Image.load` method being invoked, you can ask PIL to
+:py:meth:`~PIL.Image.Image.load` method being invoked, you can ask Pillow to
 convert the image to either ``RGB`` or ``RGBA`` rather than choosing for
 itself.  It is also possible to set ``reduce`` to the number of resolutions to
 discard (each one reduces the size of the resulting image by a factor of 2),
@@ -433,26 +441,31 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
    Library.
 
    Windows users can install the OpenJPEG binaries available on the
-   OpenJPEG website, but must add them to their PATH in order to use PIL (if
+   OpenJPEG website, but must add them to their PATH in order to use Pillow (if
    you fail to do this, you will get errors about not being able to load the
    ``_imaging`` DLL).
 
 MSP
 ^^^
 
-PIL identifies and reads MSP files from Windows 1 and 2. The library writes
+Pillow identifies and reads MSP files from Windows 1 and 2. The library writes
 uncompressed (Windows 1) versions of this format.
 
 PCX
 ^^^
 
-PIL reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
+Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
 PNG
 ^^^
 
-PIL identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
-``RGB``, or ``RGBA`` data. Interlaced files are supported as of v1.1.7.
+Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``LA``,
+``I``, ``P``, ``RGB`` or ``RGBA`` data. Interlaced files are supported as of
+v1.1.7.
+
+As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
+image formats, EXIF data is not guaranteed to have been read until
+:py:meth:`~PIL.Image.Image.load` has been called.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
@@ -519,6 +532,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **icc_profile**
     The ICC Profile to include in the saved file.
 
+**exif**
+    The exif data to include in the saved file.
+
+    .. versionadded:: 6.0.0
+
 **bits (experimental)**
     For ``P`` images, this option controls how many bits to store. If omitted,
     the PNG writer uses 8 bits (256 colors).
@@ -535,7 +553,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 PPM
 ^^^
 
-PIL reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
+Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
 ``RGB`` data.
 
 SGI
@@ -547,10 +565,10 @@ Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
 SPIDER
 ^^^^^^
 
-PIL reads and writes SPIDER image files of 32-bit floating point data
+Pillow reads and writes SPIDER image files of 32-bit floating point data
 ("F;32F").
 
-PIL also reads SPIDER stack files containing sequences of SPIDER images. The
+Pillow also reads SPIDER stack files containing sequences of SPIDER images. The
 :py:meth:`~file.seek` and :py:meth:`~file.tell` methods are supported, and
 random access is allowed.
 
@@ -587,8 +605,8 @@ For more information about the SPIDER image processing package, see the
 TGA
 ^^^
 
-PIL reads and writes TGA images containing ``L``, ``LA``, ``P``,
-``RGB``, and ``RGBA`` data. PIL can read and write both uncompressed and
+Pillow reads and writes TGA images containing ``L``, ``LA``, ``P``,
+``RGB``, and ``RGBA`` data. Pillow can read and write both uncompressed and
 run-length encoded TGAs.
 
 TIFF
@@ -596,8 +614,8 @@ TIFF
 
 Pillow reads and writes TIFF files. It can read both striped and tiled
 images, pixel and plane interleaved multi-band images. If you have
-libtiff and its headers installed, PIL can read and write many kinds
-of compressed TIFF files. If not, PIL will only read and write
+libtiff and its headers installed, Pillow can read and write many kinds
+of compressed TIFF files. If not, Pillow will only read and write
 uncompressed files.
 
 .. note::
@@ -734,8 +752,8 @@ using the general tags available through tiffinfo.
 WebP
 ^^^^
 
-PIL reads and writes WebP files. The specifics of PIL's capabilities with this
-format are currently undocumented.
+Pillow reads and writes WebP files. The specifics of Pillow's capabilities with
+this format are currently undocumented.
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
@@ -807,7 +825,7 @@ are available when the `save_all` argument is present and true.
 XBM
 ^^^
 
-PIL reads and writes X bitmap files (mode ``1``).
+Pillow reads and writes X bitmap files (mode ``1``).
 
 Read-only formats
 -----------------
@@ -841,15 +859,15 @@ DDS
 
 DDS is a popular container texture format used in video games and natively
 supported by DirectX.
-Currently, DXT1, DXT3, and DXT5 pixel formats are supported and only in ``RGBA``
-mode.
+Currently, uncompressed RGB data and DXT1, DXT3, and DXT5 pixel formats are
+supported, and only in ``RGBA`` mode.
 
 .. versionadded:: 3.4.0 DXT3
 
 FLI, FLC
 ^^^^^^^^
 
-PIL reads Autodesk FLI and FLC animations.
+Pillow reads Autodesk FLI and FLC animations.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -860,7 +878,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 FPX
 ^^^
 
-PIL reads Kodak FlashPix files. In the current version, only the highest
+Pillow reads Kodak FlashPix files. In the current version, only the highest
 resolution image is read from the file, and the viewing transform is not taken
 into account.
 
@@ -896,7 +914,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 GD
 ^^
 
-PIL reads uncompressed GD2 files. Note that you must use
+Pillow reads uncompressed GD2 files. Note that you must use
 :py:func:`PIL.GdImageFile.open` to read such a file.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
@@ -909,23 +927,23 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 IMT
 ^^^
 
-PIL reads Image Tools images containing ``L`` data.
+Pillow reads Image Tools images containing ``L`` data.
 
 IPTC/NAA
 ^^^^^^^^
 
-PIL provides limited read support for IPTC/NAA newsphoto files.
+Pillow provides limited read support for IPTC/NAA newsphoto files.
 
 MCIDAS
 ^^^^^^
 
-PIL identifies and reads 8-bit McIdas area files.
+Pillow identifies and reads 8-bit McIdas area files.
 
 MIC
 ^^^
 
-PIL identifies and reads Microsoft Image Composer (MIC) files. When opened, the
-first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
+Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened,
+the first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
 :py:meth:`~file.tell` to read other sprites from the file.
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
@@ -941,22 +959,22 @@ zero-indexed and random access is supported.
 PCD
 ^^^
 
-PIL reads PhotoCD files containing ``RGB`` data. This only reads the 768x512
+Pillow reads PhotoCD files containing ``RGB`` data. This only reads the 768x512
 resolution image from the file. Higher resolutions are encoded in a proprietary
 encoding.
 
 PIXAR
 ^^^^^
 
-PIL provides limited support for PIXAR raster files. The library can identify
-and read “dumped” RGB files.
+Pillow provides limited support for PIXAR raster files. The library can
+identify and read “dumped” RGB files.
 
 The format code is ``PIXAR``.
 
 PSD
 ^^^
 
-PIL identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
+Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
 
 WAL
@@ -964,7 +982,7 @@ WAL
 
 .. versionadded:: 1.1.4
 
-PIL reads Quake2 WAL texture files.
+Pillow reads Quake2 WAL texture files.
 
 Note that this file format cannot be automatically identified, so you must use
 the open function in the :py:mod:`~PIL.WalImageFile` module to read files in
@@ -976,7 +994,7 @@ the palette, use the putpalette method.
 XPM
 ^^^
 
-PIL reads X pixmap files (mode ``P``) with 256 colors or less.
+Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -991,14 +1009,14 @@ Write-only formats
 PALM
 ^^^^
 
-PIL provides write-only support for PALM pixmap files.
+Pillow provides write-only support for PALM pixmap files.
 
 The format code is ``Palm``, the extension is ``.palm``.
 
 PDF
 ^^^
 
-PIL can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
+Pillow can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
 files, using either JPEG or HEX encoding depending on the image mode (and
 whether JPEG support is available or not).
 
@@ -1077,7 +1095,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 XV Thumbnails
 ^^^^^^^^^^^^^
 
-PIL can read XV thumbnail files.
+Pillow can read XV thumbnail files.
 
 Identify-only formats
 ---------------------
@@ -1087,7 +1105,7 @@ BUFR
 
 .. versionadded:: 1.1.3
 
-PIL provides a stub driver for BUFR files.
+Pillow provides a stub driver for BUFR files.
 
 To add read or write support to your application, use
 :py:func:`PIL.BufrStubImagePlugin.register_handler`.
@@ -1097,7 +1115,7 @@ FITS
 
 .. versionadded:: 1.1.5
 
-PIL provides a stub driver for FITS files.
+Pillow provides a stub driver for FITS files.
 
 To add read or write support to your application, use
 :py:func:`PIL.FitsStubImagePlugin.register_handler`.
@@ -1107,11 +1125,11 @@ GRIB
 
 .. versionadded:: 1.1.5
 
-PIL provides a stub driver for GRIB files.
+Pillow provides a stub driver for GRIB files.
 
 The driver requires the file to start with a GRIB header. If you have files
 with embedded GRIB data, or files with multiple GRIB fields, your application
-has to seek to the header before passing the file handle to PIL.
+has to seek to the header before passing the file handle to Pillow.
 
 To add read or write support to your application, use
 :py:func:`PIL.GribStubImagePlugin.register_handler`.
@@ -1121,7 +1139,7 @@ HDF5
 
 .. versionadded:: 1.1.5
 
-PIL provides a stub driver for HDF5 files.
+Pillow provides a stub driver for HDF5 files.
 
 To add read or write support to your application, use
 :py:func:`PIL.Hdf5StubImagePlugin.register_handler`.
@@ -1129,12 +1147,12 @@ To add read or write support to your application, use
 MPEG
 ^^^^
 
-PIL identifies MPEG files.
+Pillow identifies MPEG files.
 
 WMF
 ^^^
 
-PIL can identify playable WMF files.
+Pillow can identify playable WMF files.
 
 In PIL 1.1.4 and earlier, the WMF driver provides some limited rendering
 support, but not enough to be useful for any real application.

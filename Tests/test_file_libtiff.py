@@ -234,11 +234,11 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_custom_metadata(self):
         custom = {
-            37000: 4,
-            37001: 4.2,
-            37002: 'custom tag value',
-            37003: u'custom tag value',
-            37004: b'custom tag value'
+            37000: [4, TiffTags.SHORT],
+            37001: [4.2, TiffTags.RATIONAL],
+            37002: ['custom tag value', TiffTags.ASCII],
+            37003: [u'custom tag value', TiffTags.ASCII],
+            37004: [b'custom tag value', TiffTags.BYTE]
         }
 
         libtiff_version = TiffImagePlugin._libtiff_version()
@@ -251,17 +251,33 @@ class TestFileLibTiff(LibTiffTestCase):
         for libtiff in libtiffs:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
-            im = hopper()
+            def check_tags(tiffinfo):
+                im = hopper()
 
-            out = self.tempfile("temp.tif")
-            im.save(out, tiffinfo=custom)
-            TiffImagePlugin.WRITE_LIBTIFF = False
+                out = self.tempfile("temp.tif")
+                im.save(out, tiffinfo=tiffinfo)
 
-            reloaded = Image.open(out)
-            for tag, value in custom.items():
-                if libtiff and isinstance(value, bytes):
-                    value = value.decode()
-                self.assertEqual(reloaded.tag_v2[tag], value)
+                reloaded = Image.open(out)
+                for tag, value in tiffinfo.items():
+                    reloaded_value = reloaded.tag_v2[tag]
+                    if isinstance(reloaded_value, TiffImagePlugin.IFDRational):
+                        reloaded_value = float(reloaded_value)
+
+                    if libtiff and isinstance(value, bytes):
+                        value = value.decode()
+
+                    self.assertEqual(reloaded_value, value)
+
+            # Test with types
+            ifd = TiffImagePlugin.ImageFileDirectory_v2()
+            for tag, tagdata in custom.items():
+                ifd[tag] = tagdata[0]
+                ifd.tagtype[tag] = tagdata[1]
+            check_tags(ifd)
+
+            # Test without types
+            check_tags({tag: tagdata[0] for tag, tagdata in custom.items()})
+        TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_int_dpi(self):
         # issue #1765
@@ -700,3 +716,10 @@ class TestFileLibTiff(LibTiffTestCase):
         im = Image.open(infile)
 
         self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+
+    def test_old_style_jpeg(self):
+        infile = "Tests/images/old-style-jpeg-compression.tif"
+        im = Image.open(infile)
+
+        self.assert_image_equal_tofile(im,
+                                       "Tests/images/old-style-jpeg-compression.png")

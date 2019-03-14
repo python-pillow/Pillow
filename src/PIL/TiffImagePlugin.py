@@ -263,10 +263,10 @@ OPEN_INFO = {
     (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
-    # JPEG compressed images handled by LibTiff and auto-converted to RGB
+    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
     # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
 
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
@@ -819,7 +819,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     print("- value:", values)
 
             # count is sum of lengths for string and arbitrary data
-            if typ in [TiffTags.ASCII, TiffTags.UNDEFINED]:
+            if typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
                 count = len(data)
             else:
                 count = len(values)
@@ -1190,6 +1190,10 @@ class TiffImageFile(ImageFile.ImageFile):
         # photometric is a required tag, but not everyone is reading
         # the specification
         photo = self.tag_v2.get(PHOTOMETRIC_INTERPRETATION, 0)
+
+        # old style jpeg compression images most certainly are YCbCr
+        if self._compression == "tiff_jpeg":
+            photo = 6
 
         fillorder = self.tag_v2.get(FILLORDER, 1)
 

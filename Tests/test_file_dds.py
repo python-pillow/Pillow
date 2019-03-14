@@ -7,6 +7,7 @@ TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
+TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/uncompressed_rgb.dds"
 
 
 class TestFileDds(PillowTestCase):
@@ -67,6 +68,24 @@ class TestFileDds(PillowTestCase):
 
         self.assert_image_equal(target, im)
 
+    def test_unimplemented_dxgi_format(self):
+        self.assertRaises(NotImplementedError, Image.open,
+                          "Tests/images/unimplemented_dxgi_format.dds")
+
+    def test_uncompressed_rgb(self):
+        """Check uncompressed RGB images can be opened"""
+
+        target = Image.open(TEST_FILE_UNCOMPRESSED_RGB.replace('.dds', '.png'))
+
+        im = Image.open(TEST_FILE_UNCOMPRESSED_RGB)
+        im.load()
+
+        self.assertEqual(im.format, "DDS")
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (800, 600))
+
+        self.assert_image_equal(target, im)
+
     def test__validate_true(self):
         """Check valid prefix"""
         # Arrange
@@ -110,3 +129,7 @@ class TestFileDds(PillowTestCase):
             im.load()
 
         self.assertRaises(IOError, short_file)
+
+    def test_unimplemented_pixel_format(self):
+        self.assertRaises(NotImplementedError, Image.open,
+                          "Tests/images/unimplemented_pixel_format.dds")
