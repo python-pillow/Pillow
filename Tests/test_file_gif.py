@@ -317,17 +317,19 @@ class TestFileGif(PillowTestCase):
 
     def test_dispose2_diff(self):
         out = self.tempfile('temp.gif')
+
         # 4 backgrounds: White, Grey, Black, Red
-        im_list = [
-            Image.new('RGB', (100, 100), '#fff'),
-            Image.new('RGB', (100, 100), '#999'),
-            Image.new('RGB', (100, 100), '#000'),
-            Image.new('RGB', (100, 100), '#f00'),
-        ]
-        # Red circle in center of each frame
-        for img in im_list:
+        backgrounds = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
+
+        im_list = []
+        for background in backgrounds:
+            img = Image.new('RGB', (100, 100), background)
+
+            # Red circle in center of each frame
             d = ImageDraw.Draw(img)
             d.ellipse([(40, 40), (60, 60)], fill='#f00')
+
+            im_list.append(img)
 
         im_list[0].save(
             out,
@@ -337,24 +339,16 @@ class TestFileGif(PillowTestCase):
             )
 
         img = Image.open(out)
-        top_left_pixels = []
-        center_pixels = []
 
-        for i in range(3):
+        for i, background in enumerate(backgrounds):
+            img.seek(i)
             rgb_img = img.convert('RGB')
-            # Get pixel in top left
-            r, g, b = rgb_img.getpixel((1, 1))
-            top_left_pixels += [(r, g, b)]
-            # Get pixel in center
-            r, g, b = rgb_img.getpixel((50, 50))
-            center_pixels += [(r, g, b)]
-            for prev in top_left_pixels[:i]:
-                # Change background every frame
-                self.assertNotEqual((r, g, b), prev)
-            for prev in center_pixels[:i]:
-                # Center remains red every frame
-                self.assertEqual((r, g, b), (255, 0, 0))
-            img.seek(img.tell() + 1)
+
+            # Check top left pixel matches background
+            self.assertEqual(rgb_img.getpixel((0, 0)), background)
+
+            # Center remains red every frame
+            self.assertEqual(rgb_img.getpixel((50, 50)), (255, 0, 0))
 
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
