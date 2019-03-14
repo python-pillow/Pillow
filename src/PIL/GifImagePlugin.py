@@ -476,8 +476,8 @@ def _write_multiple_frames(im, fp, palette):
     if len(im_frames) > 1:
         for frame_data in im_frames:
             im_frame = frame_data['im']
-            if("disposal" in frame_data["encoderinfo"] \
-               and frame_data["encoderinfo"]["disposal"]==2):
+            if("disposal" in frame_data["encoderinfo"]
+               and frame_data["encoderinfo"]["disposal"] == 2):
                 frame_data['encoderinfo']['include_color_table'] = True
             if not frame_data['bbox']:
                 # global header
@@ -589,7 +589,8 @@ def _write_local_header(fp, im, offset, flags):
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
         # If needed, expand palette to minimum size
-        while(len(palette_bytes)<9): palette_bytes = palette_bytes*2
+        while(len(palette_bytes) < 9):
+            palette_bytes = palette_bytes*2
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:
             flags = flags | 128               # local color table flag
