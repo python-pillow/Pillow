@@ -2374,7 +2374,14 @@ def new(mode, size, color=0):
         from . import ImageColor
         color = ImageColor.getcolor(color, mode)
 
-    return Image()._new(core.fill(mode, size, color))
+    im = Image()
+    if mode == "P" and \
+       isinstance(color, (list, tuple)) and len(color) in [3, 4]:
+        # RGB or RGBA value for a P image
+        from . import ImagePalette
+        im.palette = ImagePalette.ImagePalette()
+        color = im.palette.getcolor(color)
+    return im._new(core.fill(mode, size, color))
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
