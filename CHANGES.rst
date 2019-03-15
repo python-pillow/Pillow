@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add missing MIME types and extensions #3520
+  [pirate486743186]
+
 - Add I;16 PNG save #3566
   [radarhere]
 
