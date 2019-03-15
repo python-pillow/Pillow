@@ -295,3 +295,5 @@ class IcoImageFile(ImageFile.ImageFile):
 Image.register_open(IcoImageFile.format, IcoImageFile, _accept)
 Image.register_save(IcoImageFile.format, _save)
 Image.register_extension(IcoImageFile.format, ".ico")
+
+Image.register_mime(IcoImageFile.format, "image/x-icon")

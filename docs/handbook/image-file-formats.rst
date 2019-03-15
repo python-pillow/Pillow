@@ -553,7 +553,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM and PPM files containing ``1``, ``L`` or
+Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
 ``RGB`` data.
 
 SGI
