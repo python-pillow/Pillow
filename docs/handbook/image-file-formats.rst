@@ -105,8 +105,8 @@ Reading sequences
 ~~~~~~~~~~~~~~~~~
 
 The GIF loader supports the :py:meth:`~file.seek` and :py:meth:`~file.tell`
-methods. You can seek to the next frame (``im.seek(im.tell() + 1)``), or rewind
-the file by seeking to the first frame. Random access is not supported.
+methods. You can combine these methods to seek to the next frame
+(``im.seek(im.tell() + 1)``).
 
 ``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
 
