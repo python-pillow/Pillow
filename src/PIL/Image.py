@@ -1096,7 +1096,13 @@ class Image(object):
             im = self.im.convert("P", dither, palette.im)
             return self._new(im)
 
-        return self._new(self.im.quantize(colors, method, kmeans))
+        im = self._new(self.im.quantize(colors, method, kmeans))
+
+        from . import ImagePalette
+        mode = im.im.getpalettemode()
+        im.palette = ImagePalette.ImagePalette(mode, im.im.getpalette(mode, mode))
+
+        return im
 
     def copy(self):
         """
