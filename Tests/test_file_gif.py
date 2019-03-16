@@ -230,6 +230,15 @@ class TestFileGif(PillowTestCase):
 
         self.assertEqual(im.info, info)
 
+    def test_seek_rewind(self):
+        im = Image.open("Tests/images/iss634.gif")
+        im.seek(2)
+        im.seek(1)
+
+        expected = Image.open("Tests/images/iss634.gif")
+        expected.seek(1)
+        self.assert_image_equal(im, expected)
+
     def test_n_frames(self):
         for path, n_frames in [
             [TEST_GIF, 1],
