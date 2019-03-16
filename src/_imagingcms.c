@@ -1016,7 +1016,7 @@ static PyObject*
 cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
 {
     PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "cms is deprecated. Use padded connection_space instead.", 1);
+                 "pcs is deprecated. Use padded connection_space instead.", 1);
     return PyUnicode_DecodeFSDefault(findICmode(cmsGetPCS(self->profile)));
 }
 
