@@ -396,10 +396,6 @@ Reading sequences
 As seen in this example, you’ll get an :py:exc:`EOFError` exception when the
 sequence ends.
 
-Note that most drivers in the current version of the library only allow you to
-seek to the next frame (as in the above example). To rewind the file, you may
-have to reopen it.
-
 The following class lets you use the for-statement to loop over the sequence:
 
 Using the ImageSequence Iterator class

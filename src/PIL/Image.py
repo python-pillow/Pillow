@@ -2005,9 +2005,6 @@ class Image(object):
         **EOFError** exception. When a sequence file is opened, the
         library automatically seeks to frame 0.
 
-        Note that in the current version of the library, most sequence
-        formats only allow you to seek to the next frame.
-
         See :py:meth:`~PIL.Image.Image.tell`.
 
         :param frame: Frame number, starting at 0.
