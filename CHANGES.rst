@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Fix BytesWarning in Tests/test_numpy.py #3725
+  [jdufresne]
+
 - Add missing MIME types and extensions #3520
   [pirate486743186]
 
