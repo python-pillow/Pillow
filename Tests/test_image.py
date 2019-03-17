@@ -3,6 +3,8 @@ from .helper import unittest, PillowTestCase, hopper
 from PIL import Image
 from PIL._util import py3
 import os
+import sys
+import shutil
 
 
 class TestImage(PillowTestCase):
@@ -120,6 +122,16 @@ class TestImage(PillowTestCase):
         im.readonly = 1
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
+
+    @unittest.skipIf(sys.platform.startswith('win32'),
+                     "Test requires opening tempfile twice")
+    def test_readonly_save(self):
+        temp_file = self.tempfile("temp.bmp")
+        shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
+
+        im = Image.open(temp_file)
+        self.assertTrue(im.readonly)
+        im.save(temp_file)
 
     def test_dump(self):
         im = Image.new("L", (10, 10))

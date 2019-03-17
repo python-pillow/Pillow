@@ -1958,7 +1958,7 @@ class Image(object):
             filename = fp.name
 
         # may mutate self!
-        self.load()
+        self._ensure_mutable()
 
         save_all = params.pop('save_all', False)
         self.encoderinfo = params
