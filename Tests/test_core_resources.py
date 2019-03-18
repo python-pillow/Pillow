@@ -105,6 +105,7 @@ class TestCoreMemory(PillowTestCase):
             Image.new("RGB", (10, 10))
 
         self.assertRaises(ValueError, Image.core.set_blocks_max, -1)
+        self.assertRaises(ValueError, Image.core.set_blocks_max, 2**29)
 
     @unittest.skipIf(is_pypy, "images are not collected")
     def test_set_blocks_max_stats(self):
