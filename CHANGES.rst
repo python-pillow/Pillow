@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Only close original fp in __del__ and __exit__ if original fp is exclusive #3683
+  [radarhere]
+
 - Fix BytesWarning in Tests/test_numpy.py #3725
   [jdufresne]
 
