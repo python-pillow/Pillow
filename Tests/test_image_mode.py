@@ -42,7 +42,7 @@ class TestImageMode(PillowTestCase):
             self.assertEqual(signature, result)
         check("1", "L", "L", 1, ("1",))
         check("L", "L", "L", 1, ("L",))
-        check("P", "RGB", "L", 1, ("P",))
+        check("P", "P", "L", 1, ("P",))
         check("I", "L", "I", 1, ("I",))
         check("F", "L", "F", 1, ("F",))
         check("RGB", "RGB", "L", 3, ("R", "G", "B"))

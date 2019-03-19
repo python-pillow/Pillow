@@ -1018,6 +1018,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
         convert = p2l;
     else if (strcmp(mode, "LA") == 0)
         convert = (alpha) ? pa2la : p2la;
+    else if (strcmp(mode, "PA") == 0)
+        convert = l2la;
     else if (strcmp(mode, "I") == 0)
         convert = p2i;
     else if (strcmp(mode, "F") == 0)

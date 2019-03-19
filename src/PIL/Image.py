@@ -247,7 +247,7 @@ _MODEINFO = {
     "L": ("L", "L", ("L",)),
     "I": ("L", "I", ("I",)),
     "F": ("L", "F", ("F",)),
-    "P": ("RGB", "L", ("P",)),
+    "P": ("P", "L", ("P",)),
     "RGB": ("RGB", "L", ("R", "G", "B")),
     "RGBX": ("RGB", "L", ("R", "G", "B", "X")),
     "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
@@ -1559,7 +1559,7 @@ class Image(object):
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "RGBA"):
+        if self.mode not in ("LA", "PA", "RGBA"):
             # attempt to promote self to a matching alpha mode
             try:
                 mode = getmodebase(self.mode) + "A"
@@ -1568,7 +1568,7 @@ class Image(object):
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
-                    if im.mode not in ("LA", "RGBA"):
+                    if im.mode not in ("LA", "PA", "RGBA"):
                         raise ValueError  # sanity check
                     self.im = im
                 self.pyaccess = None
@@ -1576,7 +1576,7 @@ class Image(object):
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
 
-        if self.mode == "LA":
+        if self.mode in ("LA", "PA"):
             band = 1
         else:
             band = 3
