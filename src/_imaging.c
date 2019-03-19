@@ -1569,7 +1569,8 @@ _putpalette(ImagingObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s"PY_ARG_BYTES_LENGTH, &rawmode, &palette, &palettesize))
         return NULL;
 
-    if (strcmp(self->image->mode, "L") != 0 && strcmp(self->image->mode, "P")) {
+    if (strcmp(self->image->mode, "L") && strcmp(self->image->mode, "LA") &&
+        strcmp(self->image->mode, "P") && strcmp(self->image->mode, "PA")) {
         PyErr_SetString(PyExc_ValueError, wrong_mode);
         return NULL;
     }

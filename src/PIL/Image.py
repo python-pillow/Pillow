@@ -1619,10 +1619,10 @@ class Image(object):
 
     def putpalette(self, data, rawmode="RGB"):
         """
-        Attaches a palette to this image.  The image must be a "P" or
-        "L" image, and the palette sequence must contain 768 integer
-        values, where each group of three values represent the red,
-        green, and blue values for the corresponding pixel
+        Attaches a palette to this image.  The image must be a "P",
+        "PA", "L" or "LA" image, and the palette sequence must contain
+        768 integer values, where each group of three values represent
+        the red, green, and blue values for the corresponding pixel
         index. Instead of an integer sequence, you can use an 8-bit
         string.
 
@@ -1631,7 +1631,7 @@ class Image(object):
         """
         from . import ImagePalette
 
-        if self.mode not in ("L", "P"):
+        if self.mode not in ("L", "LA", "P", "PA"):
             raise ValueError("illegal image mode")
         self.load()
         if isinstance(data, ImagePalette.ImagePalette):
@@ -1643,7 +1643,7 @@ class Image(object):
                 else:
                     data = "".join(chr(x) for x in data)
             palette = ImagePalette.raw(rawmode, data)
-        self.mode = "P"
+        self.mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
         self.palette.mode = "RGB"
         self.load()  # install new palette
