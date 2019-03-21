@@ -22,7 +22,6 @@ import io
 
 
 class ContainerIO(object):
-
     def __init__(self, file, offset, length):
         """
         Create file object.

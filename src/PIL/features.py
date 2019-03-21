@@ -26,12 +26,7 @@ def get_supported_modules():
     return [f for f in modules if check_module(f)]
 
 
-codecs = {
-    "jpg": "jpeg",
-    "jpg_2000": "jpeg2k",
-    "zlib": "zip",
-    "libtiff": "libtiff"
-}
+codecs = {"jpg": "jpeg", "jpg_2000": "jpeg2k", "zlib": "zip", "libtiff": "libtiff"}
 
 
 def check_codec(feature):
@@ -48,8 +43,8 @@ def get_supported_codecs():
 
 
 features = {
-    "webp_anim": ("PIL._webp", 'HAVE_WEBPANIM'),
-    "webp_mux": ("PIL._webp", 'HAVE_WEBPMUX'),
+    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM"),
+    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX"),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
     "raqm": ("PIL._imagingft", "HAVE_RAQM"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO"),
@@ -63,7 +58,7 @@ def check_feature(feature):
     module, flag = features[feature]
 
     try:
-        imported_module = __import__(module, fromlist=['PIL'])
+        imported_module = __import__(module, fromlist=["PIL"])
         return getattr(imported_module, flag)
     except ImportError:
         return None
@@ -74,9 +69,14 @@ def get_supported_features():
 
 
 def check(feature):
-    return (feature in modules and check_module(feature) or
-            feature in codecs and check_codec(feature) or
-            feature in features and check_feature(feature))
+    return (
+        feature in modules
+        and check_module(feature)
+        or feature in codecs
+        and check_codec(feature)
+        or feature in features
+        and check_feature(feature)
+    )
 
 
 def get_supported():

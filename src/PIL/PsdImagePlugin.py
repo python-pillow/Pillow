@@ -34,12 +34,13 @@ MODES = {
     (4, 8): ("CMYK", 4),
     (7, 8): ("L", 1),  # FIXME: multilayer
     (8, 8): ("L", 1),  # duotone
-    (9, 8): ("LAB", 3)
+    (9, 8): ("LAB", 3),
 }
 
 
 # --------------------------------------------------------------------.
 # read PSD images
+
 
 def _accept(prefix):
     return prefix[:4] == b"8BPS"
@@ -47,6 +48,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for Photoshop images.
+
 
 class PsdImageFile(ImageFile.ImageFile):
 
@@ -101,7 +103,7 @@ class PsdImageFile(ImageFile.ImageFile):
                 if not (len(name) & 1):
                     read(1)  # padding
                 data = read(i32(read(4)))
-                if (len(data) & 1):
+                if len(data) & 1:
                     read(1)  # padding
                 self.resources.append((id, name, data))
                 if id == 1039:  # ICC profile
@@ -144,7 +146,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
         # seek to given layer (1..max)
         try:
-            name, mode, bbox, tile = self.layers[layer-1]
+            name, mode, bbox, tile = self.layers[layer - 1]
             self.mode = mode
             self.tile = tile
             self.frame = layer
@@ -159,8 +161,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
     def load_prepare(self):
         # create image memory if necessary
-        if not self.im or\
-           self.im.mode != self.mode or self.im.size != self.size:
+        if not self.im or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.fill(self.mode, self.size, 0)
         # create palette (optional)
         if self.mode == "P":
@@ -229,7 +230,7 @@ def _layerinfo(file):
             if length:
                 # Don't know the proper encoding,
                 # Latin-1 should be a good guess
-                name = read(length).decode('latin-1', 'replace')
+                name = read(length).decode("latin-1", "replace")
             combined += length + 1
 
         file.seek(size - combined, io.SEEK_CUR)
@@ -270,7 +271,7 @@ def _maketile(file, mode, bbox, channels):
             if mode == "CMYK":
                 layer += ";I"
             tile.append(("raw", bbox, offset, layer))
-            offset = offset + xsize*ysize
+            offset = offset + xsize * ysize
 
     elif compression == 1:
         #
@@ -283,11 +284,9 @@ def _maketile(file, mode, bbox, channels):
             layer = mode[channel]
             if mode == "CMYK":
                 layer += ";I"
-            tile.append(
-                ("packbits", bbox, offset, layer)
-                )
+            tile.append(("packbits", bbox, offset, layer))
             for y in range(ysize):
-                offset = offset + i16(bytecount[i:i+2])
+                offset = offset + i16(bytecount[i : i + 2])
                 i += 2
 
     file.seek(offset)
@@ -296,6 +295,7 @@ def _maketile(file, mode, bbox, channels):
         read(1)  # padding
 
     return tile
+
 
 # --------------------------------------------------------------------
 # registry

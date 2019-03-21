@@ -67,6 +67,7 @@ def _get_image_from_kw(kw):
 # --------------------------------------------------------------------
 # PhotoImage
 
+
 class PhotoImage(object):
     """
     A Tkinter-compatible photo image.  This can be used
@@ -183,17 +184,18 @@ class PhotoImage(object):
             # activate Tkinter hook
             try:
                 from . import _imagingtk
+
                 try:
-                    if hasattr(tk, 'interp'):
+                    if hasattr(tk, "interp"):
                         # Required for PyPy, which always has CFFI installed
                         from cffi import FFI
+
                         ffi = FFI()
 
                         # PyPy is using an FFI CDATA element
                         # (Pdb) self.tk.interp
                         #  <cdata 'Tcl_Interp *' 0x3061b50>
-                        _imagingtk.tkinit(
-                            int(ffi.cast("uintptr_t", tk.interp)), 1)
+                        _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
                     else:
                         _imagingtk.tkinit(tk.interpaddr(), 1)
                 except AttributeError:
@@ -201,6 +203,7 @@ class PhotoImage(object):
                 tk.call("PyImagingPhoto", self.__photo, block.id)
             except (ImportError, AttributeError, tkinter.TclError):
                 raise  # configuration problem; cannot attach to Tkinter
+
 
 # --------------------------------------------------------------------
 # BitmapImage
@@ -293,8 +296,7 @@ def _show(image, title):
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            tkinter.Label.__init__(self, master, image=self.image,
-                                   bg="black", bd=0)
+            tkinter.Label.__init__(self, master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
         raise IOError("tkinter not initialized")

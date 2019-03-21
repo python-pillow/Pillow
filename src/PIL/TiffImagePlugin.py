@@ -153,7 +153,6 @@ OPEN_INFO = {
     (MM, 1, (1,), 1, (1,), ()): ("1", "1"),
     (II, 1, (1,), 2, (1,), ()): ("1", "1;R"),
     (MM, 1, (1,), 2, (1,), ()): ("1", "1;R"),
-
     (II, 0, (1,), 1, (2,), ()): ("L", "L;2I"),
     (MM, 0, (1,), 1, (2,), ()): ("L", "L;2I"),
     (II, 0, (1,), 2, (2,), ()): ("L", "L;2IR"),
@@ -162,7 +161,6 @@ OPEN_INFO = {
     (MM, 1, (1,), 1, (2,), ()): ("L", "L;2"),
     (II, 1, (1,), 2, (2,), ()): ("L", "L;2R"),
     (MM, 1, (1,), 2, (2,), ()): ("L", "L;2R"),
-
     (II, 0, (1,), 1, (4,), ()): ("L", "L;4I"),
     (MM, 0, (1,), 1, (4,), ()): ("L", "L;4I"),
     (II, 0, (1,), 2, (4,), ()): ("L", "L;4IR"),
@@ -171,7 +169,6 @@ OPEN_INFO = {
     (MM, 1, (1,), 1, (4,), ()): ("L", "L;4"),
     (II, 1, (1,), 2, (4,), ()): ("L", "L;4R"),
     (MM, 1, (1,), 2, (4,), ()): ("L", "L;4R"),
-
     (II, 0, (1,), 1, (8,), ()): ("L", "L;I"),
     (MM, 0, (1,), 1, (8,), ()): ("L", "L;I"),
     (II, 0, (1,), 2, (8,), ()): ("L", "L;IR"),
@@ -180,14 +177,11 @@ OPEN_INFO = {
     (MM, 1, (1,), 1, (8,), ()): ("L", "L"),
     (II, 1, (1,), 2, (8,), ()): ("L", "L;R"),
     (MM, 1, (1,), 2, (8,), ()): ("L", "L;R"),
-
     (II, 1, (1,), 1, (12,), ()): ("I;16", "I;12"),
-
     (II, 1, (1,), 1, (16,), ()): ("I;16", "I;16"),
     (MM, 1, (1,), 1, (16,), ()): ("I;16B", "I;16B"),
     (II, 1, (2,), 1, (16,), ()): ("I", "I;16S"),
     (MM, 1, (2,), 1, (16,), ()): ("I", "I;16BS"),
-
     (II, 0, (3,), 1, (32,), ()): ("F", "F;32F"),
     (MM, 0, (3,), 1, (32,), ()): ("F", "F;32BF"),
     (II, 1, (1,), 1, (32,), ()): ("I", "I;32N"),
@@ -195,10 +189,8 @@ OPEN_INFO = {
     (MM, 1, (2,), 1, (32,), ()): ("I", "I;32BS"),
     (II, 1, (3,), 1, (32,), ()): ("F", "F;32F"),
     (MM, 1, (3,), 1, (32,), ()): ("F", "F;32BF"),
-
     (II, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (MM, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
-
     (II, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (MM, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
     (II, 2, (1,), 2, (8, 8, 8), ()): ("RGB", "RGB;R"),
@@ -225,7 +217,6 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (2, 0, 0)): ("RGBA", "RGBAXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
     (MM, 2, (1,), 1, (8, 8, 8, 8), (999,)): ("RGBA", "RGBA"),  # Corel Draw 10
-
     (II, 2, (1,), 1, (16, 16, 16), ()): ("RGB", "RGB;16L"),
     (MM, 2, (1,), 1, (16, 16, 16), ()): ("RGB", "RGB;16B"),
     (II, 2, (1,), 1, (16, 16, 16, 16), ()): ("RGBA", "RGBA;16L"),
@@ -236,7 +227,6 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (16, 16, 16, 16), (1,)): ("RGBA", "RGBa;16B"),
     (II, 2, (1,), 1, (16, 16, 16, 16), (2,)): ("RGBA", "RGBA;16L"),
     (MM, 2, (1,), 1, (16, 16, 16, 16), (2,)): ("RGBA", "RGBA;16B"),
-
     (II, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (MM, 3, (1,), 1, (1,), ()): ("P", "P;1"),
     (II, 3, (1,), 2, (1,), ()): ("P", "P;1R"),
@@ -255,7 +245,6 @@ OPEN_INFO = {
     (MM, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (II, 3, (1,), 2, (8,), ()): ("P", "P;R"),
     (MM, 3, (1,), 2, (8,), ()): ("P", "P;R"),
-
     (II, 5, (1,), 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
     (MM, 5, (1,), 1, (8, 8, 8, 8), ()): ("CMYK", "CMYK"),
     (II, 5, (1,), 1, (8, 8, 8, 8, 8), (0,)): ("CMYK", "CMYKX"),
@@ -264,12 +253,10 @@ OPEN_INFO = {
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
     (II, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16L"),
-
     # JPEG compressed images handled by LibTiff and auto-converted to RGBX
     # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
     (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
     (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
-
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
@@ -315,7 +302,7 @@ class IFDRational(Rational):
 
     """
 
-    __slots__ = ('_numerator', '_denominator', '_val')
+    __slots__ = ("_numerator", "_denominator", "_val")
 
     def __init__(self, value, denominator=1):
         """
@@ -339,7 +326,7 @@ class IFDRational(Rational):
             return
 
         if denominator == 0:
-            self._val = float('nan')
+            self._val = float("nan")
             return
 
         elif denominator == 1:
@@ -380,6 +367,7 @@ class IFDRational(Rational):
     def _delegate(op):
         def delegate(self, *args):
             return getattr(self._val, op)(*args)
+
         return delegate
 
     """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
@@ -390,34 +378,34 @@ class IFDRational(Rational):
         print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
         """
 
-    __add__ = _delegate('__add__')
-    __radd__ = _delegate('__radd__')
-    __sub__ = _delegate('__sub__')
-    __rsub__ = _delegate('__rsub__')
-    __div__ = _delegate('__div__')
-    __rdiv__ = _delegate('__rdiv__')
-    __mul__ = _delegate('__mul__')
-    __rmul__ = _delegate('__rmul__')
-    __truediv__ = _delegate('__truediv__')
-    __rtruediv__ = _delegate('__rtruediv__')
-    __floordiv__ = _delegate('__floordiv__')
-    __rfloordiv__ = _delegate('__rfloordiv__')
-    __mod__ = _delegate('__mod__')
-    __rmod__ = _delegate('__rmod__')
-    __pow__ = _delegate('__pow__')
-    __rpow__ = _delegate('__rpow__')
-    __pos__ = _delegate('__pos__')
-    __neg__ = _delegate('__neg__')
-    __abs__ = _delegate('__abs__')
-    __trunc__ = _delegate('__trunc__')
-    __lt__ = _delegate('__lt__')
-    __gt__ = _delegate('__gt__')
-    __le__ = _delegate('__le__')
-    __ge__ = _delegate('__ge__')
-    __nonzero__ = _delegate('__nonzero__')
-    __ceil__ = _delegate('__ceil__')
-    __floor__ = _delegate('__floor__')
-    __round__ = _delegate('__round__')
+    __add__ = _delegate("__add__")
+    __radd__ = _delegate("__radd__")
+    __sub__ = _delegate("__sub__")
+    __rsub__ = _delegate("__rsub__")
+    __div__ = _delegate("__div__")
+    __rdiv__ = _delegate("__rdiv__")
+    __mul__ = _delegate("__mul__")
+    __rmul__ = _delegate("__rmul__")
+    __truediv__ = _delegate("__truediv__")
+    __rtruediv__ = _delegate("__rtruediv__")
+    __floordiv__ = _delegate("__floordiv__")
+    __rfloordiv__ = _delegate("__rfloordiv__")
+    __mod__ = _delegate("__mod__")
+    __rmod__ = _delegate("__rmod__")
+    __pow__ = _delegate("__pow__")
+    __rpow__ = _delegate("__rpow__")
+    __pos__ = _delegate("__pos__")
+    __neg__ = _delegate("__neg__")
+    __abs__ = _delegate("__abs__")
+    __trunc__ = _delegate("__trunc__")
+    __lt__ = _delegate("__lt__")
+    __gt__ = _delegate("__gt__")
+    __le__ = _delegate("__le__")
+    __ge__ = _delegate("__ge__")
+    __nonzero__ = _delegate("__nonzero__")
+    __ceil__ = _delegate("__ceil__")
+    __floor__ = _delegate("__floor__")
+    __round__ = _delegate("__round__")
 
 
 class ImageFileDirectory_v2(MutableMapping):
@@ -451,6 +439,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     .. versionadded:: 3.0.0
     """
+
     """
     Documentation:
 
@@ -510,7 +499,7 @@ class ImageFileDirectory_v2(MutableMapping):
         self._tags_v1 = {}  # will remain empty if legacy_api is false
         self._tags_v2 = {}  # main tag storage
         self._tagdata = {}
-        self.tagtype = {}   # added 2008-06-05 by Florian Hoech
+        self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self._next = None
         self._offset = None
 
@@ -536,13 +525,14 @@ class ImageFileDirectory_v2(MutableMapping):
             self[tag] = handler(self, data, self.legacy_api)  # check type
         val = self._tags_v2[tag]
         if self.legacy_api and not isinstance(val, (tuple, bytes)):
-            val = val,
+            val = (val,)
         return val
 
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
     if not py3:
+
         def has_key(self, tag):
             return tag in self
 
@@ -552,7 +542,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
         if not py3:
-            basetypes += unicode,  # noqa: F821
+            basetypes += (unicode,)  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -580,11 +570,11 @@ class ImageFileDirectory_v2(MutableMapping):
                         self.tagtype[tag] = TiffTags.ASCII
 
         if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
-            values = [value.encode("ascii", 'replace') if isinstance(
-                      value, str) else value]
+            values = [
+                value.encode("ascii", "replace") if isinstance(value, str) else value
+            ]
         elif self.tagtype[tag] == TiffTags.RATIONAL:
-            values = [float(v) if isinstance(v, int) else v
-                      for v in values]
+            values = [float(v) if isinstance(v, int) else v for v in values]
 
         values = tuple(info.cvt_enum(value) for value in values)
 
@@ -595,22 +585,23 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (info.length == 1) or \
-           (info.length is None and len(values) == 1 and not legacy_api):
+        if (info.length == 1) or (
+            info.length is None and len(values) == 1 and not legacy_api
+        ):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [
                 TiffTags.RATIONAL,
-                TiffTags.SIGNED_RATIONAL
+                TiffTags.SIGNED_RATIONAL,
             ]:  # rationals
-                values = values,
+                values = (values,)
             try:
                 dest[tag], = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: "
-                    "%s, expected 1" % (
-                        tag, len(values)))
+                    "Metadata Warning, tag %s had too many entries: %s, expected 1"
+                    % (tag, len(values))
+                )
                 dest[tag] = values[0]
 
         else:
@@ -635,36 +626,51 @@ class ImageFileDirectory_v2(MutableMapping):
     def _register_loader(idx, size):
         def decorator(func):
             from .TiffTags import TYPES
+
             if func.__name__.startswith("load_"):
                 TYPES[idx] = func.__name__[5:].replace("_", " ")
             _load_dispatch[idx] = size, func  # noqa: F821
             return func
+
         return decorator
 
     def _register_writer(idx):
         def decorator(func):
             _write_dispatch[idx] = func  # noqa: F821
             return func
+
         return decorator
 
     def _register_basic(idx_fmt_name):
         from .TiffTags import TYPES
+
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
         size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = size, lambda self, data, legacy_api=True: (  # noqa: F821
-            self._unpack("{}{}".format(len(data) // size, fmt), data))
+        _load_dispatch[idx] = (  # noqa: F821
+            size,
+            lambda self, data, legacy_api=True: (
+                self._unpack("{}{}".format(len(data) // size, fmt), data)
+            ),
+        )
         _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
-            b"".join(self._pack(fmt, value) for value in values))
+            b"".join(self._pack(fmt, value) for value in values)
+        )
 
-    list(map(_register_basic,
-             [(TiffTags.SHORT, "H", "short"),
-              (TiffTags.LONG, "L", "long"),
-              (TiffTags.SIGNED_BYTE, "b", "signed byte"),
-              (TiffTags.SIGNED_SHORT, "h", "signed short"),
-              (TiffTags.SIGNED_LONG, "l", "signed long"),
-              (TiffTags.FLOAT, "f", "float"),
-              (TiffTags.DOUBLE, "d", "double")]))
+    list(
+        map(
+            _register_basic,
+            [
+                (TiffTags.SHORT, "H", "short"),
+                (TiffTags.LONG, "L", "long"),
+                (TiffTags.SIGNED_BYTE, "b", "signed byte"),
+                (TiffTags.SIGNED_SHORT, "h", "signed short"),
+                (TiffTags.SIGNED_LONG, "l", "signed long"),
+                (TiffTags.FLOAT, "f", "float"),
+                (TiffTags.DOUBLE, "d", "double"),
+            ],
+        )
+    )
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
     def load_byte(self, data, legacy_api=True):
@@ -684,21 +690,23 @@ class ImageFileDirectory_v2(MutableMapping):
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
         if sys.version_info.major == 2:
-            value = value.decode('ascii', 'replace')
-        return b"" + value.encode('ascii', 'replace') + b"\0"
+            value = value.decode("ascii", "replace")
+        return b"" + value.encode("ascii", "replace") + b"\0"
 
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
         vals = self._unpack("{}L".format(len(data) // 4), data)
 
-        def combine(a, b): return (a, b) if legacy_api else IFDRational(a, b)
-        return tuple(combine(num, denom)
-                     for num, denom in zip(vals[::2], vals[1::2]))
+        def combine(a, b):
+            return (a, b) if legacy_api else IFDRational(a, b)
+
+        return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
     def write_rational(self, *values):
-        return b"".join(self._pack("2L", *_limit_rational(frac, 2 ** 31))
-                        for frac in values)
+        return b"".join(
+            self._pack("2L", *_limit_rational(frac, 2 ** 31)) for frac in values
+        )
 
     @_register_loader(7, 1)
     def load_undefined(self, data, legacy_api=True):
@@ -712,21 +720,24 @@ class ImageFileDirectory_v2(MutableMapping):
     def load_signed_rational(self, data, legacy_api=True):
         vals = self._unpack("{}l".format(len(data) // 4), data)
 
-        def combine(a, b): return (a, b) if legacy_api else IFDRational(a, b)
-        return tuple(combine(num, denom)
-                     for num, denom in zip(vals[::2], vals[1::2]))
+        def combine(a, b):
+            return (a, b) if legacy_api else IFDRational(a, b)
+
+        return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
     def write_signed_rational(self, *values):
-        return b"".join(self._pack("2L", *_limit_rational(frac, 2 ** 30))
-                        for frac in values)
+        return b"".join(
+            self._pack("2L", *_limit_rational(frac, 2 ** 30)) for frac in values
+        )
 
     def _ensure_read(self, fp, size):
         ret = fp.read(size)
         if len(ret) != size:
-            raise IOError("Corrupt EXIF data.  " +
-                          "Expecting to read %d bytes but only got %d. " %
-                          (size, len(ret)))
+            raise IOError(
+                "Corrupt EXIF data.  "
+                + "Expecting to read %d bytes but only got %d. " % (size, len(ret))
+            )
         return ret
 
     def load(self, fp):
@@ -736,13 +747,14 @@ class ImageFileDirectory_v2(MutableMapping):
 
         try:
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
-                tag, typ, count, data = self._unpack("HHL4s",
-                                                     self._ensure_read(fp, 12))
+                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
                 if DEBUG:
                     tagname = TiffTags.lookup(tag).name
                     typname = TYPES.get(typ, "unknown")
-                    print("tag: %s (%d) - type: %s (%d)" %
-                          (tagname, tag, typname, typ), end=" ")
+                    print(
+                        "tag: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ),
+                        end=" ",
+                    )
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
@@ -755,8 +767,10 @@ class ImageFileDirectory_v2(MutableMapping):
                     here = fp.tell()
                     offset, = self._unpack("L", data)
                     if DEBUG:
-                        print("Tag Location: %s - Data Location: %s" %
-                              (here, offset), end=" ")
+                        print(
+                            "Tag Location: %s - Data Location: %s" % (here, offset),
+                            end=" ",
+                        )
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -764,9 +778,11 @@ class ImageFileDirectory_v2(MutableMapping):
                     data = data[:size]
 
                 if len(data) != size:
-                    warnings.warn("Possibly corrupt EXIF data.  "
-                                  "Expecting to read %d bytes but only got %d."
-                                  " Skipping tag %s" % (size, len(data), tag))
+                    warnings.warn(
+                        "Possibly corrupt EXIF data.  "
+                        "Expecting to read %d bytes but only got %d."
+                        " Skipping tag %s" % (size, len(data), tag)
+                    )
                     continue
 
                 if not data:
@@ -807,8 +823,10 @@ class ImageFileDirectory_v2(MutableMapping):
             if DEBUG:
                 tagname = TiffTags.lookup(tag).name
                 typname = TYPES.get(typ, "unknown")
-                print("save: %s (%d) - type: %s (%d)" %
-                      (tagname, tag, typname, typ), end=" ")
+                print(
+                    "save: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ),
+                    end=" ",
+                )
                 if len(data) >= 16:
                     print("- value: <table: %d bytes>" % len(data))
                 else:
@@ -823,16 +841,14 @@ class ImageFileDirectory_v2(MutableMapping):
             if len(data) <= 4:
                 entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
             else:
-                entries.append((tag, typ, count, self._pack("L", offset),
-                                data))
+                entries.append((tag, typ, count, self._pack("L", offset), data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
             tag, typ, count, value, data = entries[stripoffsets]
             if data:
-                raise NotImplementedError(
-                    "multistrip support not yet implemented")
+                raise NotImplementedError("multistrip support not yet implemented")
             value = self._pack("L", self._unpack("L", value)[0] + offset)
             entries[stripoffsets] = tag, typ, count, value, data
 
@@ -893,6 +909,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     ..  deprecated:: 3.0.0
     """
+
     def __init__(self, *args, **kwargs):
         ImageFileDirectory_v2.__init__(self, *args, **kwargs)
         self._legacy_api = True
@@ -957,7 +974,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
                 self._setitem(tag, handler(self, data, legacy), legacy)
         val = self._tags_v1[tag]
         if not isinstance(val, (tuple, bytes)):
-            val = val,
+            val = (val,)
         return val
 
 
@@ -967,6 +984,7 @@ ImageFileDirectory = ImageFileDirectory_v1
 
 ##
 # Image plugin for TIFF files.
+
 
 class TiffImageFile(ImageFile.ImageFile):
 
@@ -1032,9 +1050,10 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             if DEBUG:
-                print("Seeking to frame %s, on frame %s, "
-                      "__next %s, location: %s" %
-                      (frame, self.__frame, self.__next, self.fp.tell()))
+                print(
+                    "Seeking to frame %s, on frame %s, __next %s, location: %s"
+                    % (frame, self.__frame, self.__next, self.fp.tell())
+                )
             # reset python3 buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
@@ -1067,9 +1086,9 @@ class TiffImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         warnings.warn(
-            'Setting the size of a TIFF image directly is deprecated, and will'
-            ' be removed in a future version. Use the resize method instead.',
-            DeprecationWarning
+            "Setting the size of a TIFF image directly is deprecated, and will"
+            " be removed in a future version. Use the resize method instead.",
+            DeprecationWarning,
         )
         self._size = value
 
@@ -1124,8 +1143,9 @@ class TiffImageFile(ImageFile.ImageFile):
         if fp:
             args[2] = fp
 
-        decoder = Image._getdecoder(self.mode, 'libtiff', tuple(args),
-                                    self.decoderconfig)
+        decoder = Image._getdecoder(
+            self.mode, "libtiff", tuple(args), self.decoderconfig
+        )
         try:
             decoder.setimage(self.im, extents)
         except ValueError:
@@ -1207,8 +1227,7 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- size:", self.size)
 
         sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if (len(sampleFormat) > 1
-           and max(sampleFormat) == min(sampleFormat) == 1):
+        if len(sampleFormat) > 1 and max(sampleFormat) == min(sampleFormat) == 1:
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
@@ -1231,8 +1250,14 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_tuple = bps_tuple * bps_count
 
         # mode: check photometric interpretation and bits per pixel
-        key = (self.tag_v2.prefix, photo, sampleFormat, fillorder,
-               bps_tuple, extra_tuple)
+        key = (
+            self.tag_v2.prefix,
+            photo,
+            sampleFormat,
+            fillorder,
+            bps_tuple,
+            extra_tuple,
+        )
         if DEBUG:
             print("format key:", key)
         try:
@@ -1268,7 +1293,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = layer = 0
         self.tile = []
-        self.use_load_libtiff = READ_LIBTIFF or self._compression != 'raw'
+        self.use_load_libtiff = READ_LIBTIFF or self._compression != "raw"
         if self.use_load_libtiff:
             # Decoder expects entire file as one tile.
             # There's a buffer size limit in load (64k)
@@ -1295,20 +1320,17 @@ class TiffImageFile(ImageFile.ImageFile):
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image
             # byte order.
-            if rawmode == 'I;16':
-                rawmode = 'I;16N'
-            if ';16B' in rawmode:
-                rawmode = rawmode.replace(';16B', ';16N')
-            if ';16L' in rawmode:
-                rawmode = rawmode.replace(';16L', ';16N')
+            if rawmode == "I;16":
+                rawmode = "I;16N"
+            if ";16B" in rawmode:
+                rawmode = rawmode.replace(";16B", ";16N")
+            if ";16L" in rawmode:
+                rawmode = rawmode.replace(";16L", ";16N")
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
             a = (rawmode, self._compression, False)
-            self.tile.append(
-                (self._compression,
-                 (0, 0, xsize, ysize),
-                 0, a))
+            self.tile.append((self._compression, (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
@@ -1337,9 +1359,13 @@ class TiffImageFile(ImageFile.ImageFile):
 
                 a = (tile_rawmode, int(stride), 1)
                 self.tile.append(
-                    (self._compression,
-                     (x, y, min(x+w, xsize), min(y+h, ysize)),
-                     offset, a))
+                    (
+                        self._compression,
+                        (x, y, min(x + w, xsize), min(y + h, ysize)),
+                        offset,
+                        a,
+                    )
+                )
                 x = x + w
                 if x >= self.size[0]:
                     x, y = 0, y + h
@@ -1353,7 +1379,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # Fix up info.
         if ICCPROFILE in self.tag_v2:
-            self.info['icc_profile'] = self.tag_v2[ICCPROFILE]
+            self.info["icc_profile"] = self.tag_v2[ICCPROFILE]
 
         # fixup palette descriptor
 
@@ -1396,7 +1422,6 @@ SAVE_INFO = {
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-
     "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
     "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
@@ -1413,14 +1438,14 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
-    compression = im.encoderinfo.get('compression', im.info.get('compression'))
+    compression = im.encoderinfo.get("compression", im.info.get("compression"))
     if compression is None:
-        compression = 'raw'
+        compression = "raw"
 
-    libtiff = WRITE_LIBTIFF or compression != 'raw'
+    libtiff = WRITE_LIBTIFF or compression != "raw"
 
     # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = getattr(im, '_planar_configuration', 1)
+    ifd[PLANAR_CONFIGURATION] = getattr(im, "_planar_configuration", 1)
 
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
@@ -1440,10 +1465,16 @@ def _save(im, fp, filename):
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
-    if hasattr(im, 'tag_v2'):
+    if hasattr(im, "tag_v2"):
         # preserve tags from original TIFF image file
-        for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION,
-                    IPTC_NAA_CHUNK, PHOTOSHOP_CHUNK, XMP):
+        for key in (
+            RESOLUTION_UNIT,
+            X_RESOLUTION,
+            Y_RESOLUTION,
+            IPTC_NAA_CHUNK,
+            PHOTOSHOP_CHUNK,
+            XMP,
+        ):
             if key in im.tag_v2:
                 ifd[key] = im.tag_v2[key]
                 ifd.tagtype[key] = im.tag_v2.tagtype[key]
@@ -1453,16 +1484,18 @@ def _save(im, fp, filename):
     if "icc_profile" in im.info:
         ifd[ICCPROFILE] = im.info["icc_profile"]
 
-    for key, name in [(IMAGEDESCRIPTION, "description"),
-                      (X_RESOLUTION, "resolution"),
-                      (Y_RESOLUTION, "resolution"),
-                      (X_RESOLUTION, "x_resolution"),
-                      (Y_RESOLUTION, "y_resolution"),
-                      (RESOLUTION_UNIT, "resolution_unit"),
-                      (SOFTWARE, "software"),
-                      (DATE_TIME, "date_time"),
-                      (ARTIST, "artist"),
-                      (COPYRIGHT, "copyright")]:
+    for key, name in [
+        (IMAGEDESCRIPTION, "description"),
+        (X_RESOLUTION, "resolution"),
+        (Y_RESOLUTION, "resolution"),
+        (X_RESOLUTION, "x_resolution"),
+        (Y_RESOLUTION, "y_resolution"),
+        (RESOLUTION_UNIT, "resolution_unit"),
+        (SOFTWARE, "software"),
+        (DATE_TIME, "date_time"),
+        (ARTIST, "artist"),
+        (COPYRIGHT, "copyright"),
+    ]:
         if name in im.encoderinfo:
             ifd[key] = im.encoderinfo[name]
 
@@ -1487,7 +1520,7 @@ def _save(im, fp, filename):
         lut = im.im.getpalette("RGB", "RGB;L")
         ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
     # data orientation
-    stride = len(bits) * ((im.size[0]*bits[0]+7)//8)
+    stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
@@ -1516,11 +1549,11 @@ def _save(im, fp, filename):
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
         legacy_ifd = {}
-        if hasattr(im, 'tag'):
+        if hasattr(im, "tag"):
             legacy_ifd = im.tag.to_v2()
-        for tag, value in itertools.chain(ifd.items(),
-                                          getattr(im, 'tag_v2', {}).items(),
-                                          legacy_ifd.items()):
+        for tag, value in itertools.chain(
+            ifd.items(), getattr(im, "tag_v2", {}).items(), legacy_ifd.items()
+        ):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.
             # Support for custom items has only been been added
@@ -1528,14 +1561,17 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
                     continue
-                if (distutils.version.StrictVersion(_libtiff_version()) <
-                    distutils.version.StrictVersion("4.0")) \
-                   or not (isinstance(value, (int, float, str, bytes)) or
-                           (not py3 and isinstance(value, unicode))):  # noqa: F821
+                if (
+                    distutils.version.StrictVersion(_libtiff_version())
+                    < distutils.version.StrictVersion("4.0")
+                ) or not (
+                    isinstance(value, (int, float, str, bytes))
+                    or (not py3 and isinstance(value, unicode))  # noqa: F821
+                ):
                     continue
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str if py3 else unicode):  # noqa: F821
-                    atts[tag] = value.encode('ascii', 'replace') + b"\0"
+                    atts[tag] = value.encode("ascii", "replace") + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
                 else:
@@ -1548,15 +1584,15 @@ def _save(im, fp, filename):
         # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
-        if im.mode in ('I;16B', 'I;16'):
-            rawmode = 'I;16N'
+        if im.mode in ("I;16B", "I;16"):
+            rawmode = "I;16N"
 
         a = (rawmode, compression, _fp, filename, atts)
-        e = Image._getencoder(im.mode, 'libtiff', a, im.encoderconfig)
-        e.setimage(im.im, (0, 0)+im.size)
+        e = Image._getencoder(im.mode, "libtiff", a, im.encoderconfig)
+        e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            l, s, d = e.encode(16*1024)
+            l, s, d = e.encode(16 * 1024)
             if not _fp:
                 fp.write(d)
             if s:
@@ -1567,9 +1603,9 @@ def _save(im, fp, filename):
     else:
         offset = ifd.save(fp)
 
-        ImageFile._save(im, fp, [
-            ("raw", (0, 0)+im.size, offset, (rawmode, stride, 1))
-            ])
+        ImageFile._save(
+            im, fp, [("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))]
+        )
 
     # -- helper for multi-page save --
     if "_debug_multipage" in im.encoderinfo:
@@ -1603,7 +1639,7 @@ class AppendingTiffWriter:
     Tags = {273, 288, 324, 519, 520, 521}
 
     def __init__(self, fn, new=False):
-        if hasattr(fn, 'read'):
+        if hasattr(fn, "read"):
             self.f = fn
             self.close_fp = False
         else:
@@ -1654,8 +1690,7 @@ class AppendingTiffWriter:
             return
 
         if IIMM != self.IIMM:
-            raise RuntimeError("IIMM of new page doesn't match IIMM of "
-                               "first page")
+            raise RuntimeError("IIMM of new page doesn't match IIMM of first page")
 
         IFDoffset = self.readLong()
         IFDoffset += self.offsetOfNewPage
@@ -1729,34 +1764,29 @@ class AppendingTiffWriter:
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" %
-                               bytesWritten)
+            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" %
-                               bytesWritten)
+            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" %
-                               bytesWritten)
+            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
 
     def writeShort(self, value):
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" %
-                               bytesWritten)
+            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
 
     def writeLong(self, value):
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" %
-                               bytesWritten)
+            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
 
     def close(self):
         self.finalize()
@@ -1766,12 +1796,11 @@ class AppendingTiffWriter:
         numTags = self.readShort()
 
         for i in range(numTags):
-            tag, fieldType, count = struct.unpack(self.tagFormat,
-                                                  self.f.read(8))
+            tag, fieldType, count = struct.unpack(self.tagFormat, self.f.read(8))
 
             fieldSize = self.fieldSizes[fieldType]
             totalSize = fieldSize * count
-            isLocal = (totalSize <= 4)
+            isLocal = totalSize <= 4
             if not isLocal:
                 offset = self.readLong()
                 offset += self.offsetOfNewPage
@@ -1781,13 +1810,15 @@ class AppendingTiffWriter:
                 curPos = self.f.tell()
 
                 if isLocal:
-                    self.fixOffsets(count, isShort=(fieldSize == 2),
-                                    isLong=(fieldSize == 4))
+                    self.fixOffsets(
+                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
+                    )
                     self.f.seek(curPos + 4)
                 else:
                     self.f.seek(offset)
-                    self.fixOffsets(count, isShort=(fieldSize == 2),
-                                    isLong=(fieldSize == 4))
+                    self.fixOffsets(
+                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
+                    )
                     self.f.seek(curPos)
 
                 offset = curPos = None
@@ -1830,7 +1861,7 @@ def _save_all(im, fp, filename):
     cur_idx = im.tell()
     try:
         with AppendingTiffWriter(fp) as tf:
-            for ims in [im]+append_images:
+            for ims in [im] + append_images:
                 ims.encoderinfo = encoderinfo
                 ims.encoderconfig = encoderconfig
                 if not hasattr(ims, "n_frames"):

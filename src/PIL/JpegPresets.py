@@ -67,6 +67,7 @@ https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/li
 
 """
 
+# fmt: off
 presets = {  # noqa: E128
             'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
@@ -240,3 +241,4 @@ presets = {  # noqa: E128
                                 15, 12, 12, 12, 12, 12, 12, 12]
                              ]},
 }
+# fmt: on

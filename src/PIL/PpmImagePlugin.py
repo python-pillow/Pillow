@@ -24,7 +24,7 @@ __version__ = "0.2"
 #
 # --------------------------------------------------------------------
 
-b_whitespace = b'\x20\x09\x0a\x0b\x0c\x0d'
+b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
     # standard
@@ -36,7 +36,7 @@ MODES = {
     # PIL extensions (for test purposes only)
     b"PyP": "P",
     b"PyRGBA": "RGBA",
-    b"PyCMYK": "CMYK"
+    b"PyCMYK": "CMYK",
 }
 
 
@@ -46,6 +46,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for PBM, PGM, and PPM images.
+
 
 class PpmImageFile(ImageFile.ImageFile):
 
@@ -57,10 +58,10 @@ class PpmImageFile(ImageFile.ImageFile):
             c = self.fp.read(1)
             if not c or c in b_whitespace:
                 break
-            if c > b'\x79':
+            if c > b"\x79":
                 raise ValueError("Expected ASCII value, found binary")
             s = s + c
-            if (len(s) > 9):
+            if len(s) > 9:
                 raise ValueError("Expected int, got > 9 digits")
         return s
 
@@ -92,8 +93,7 @@ class PpmImageFile(ImageFile.ImageFile):
                     if s not in b_whitespace:
                         break
                     if s == b"":
-                        raise ValueError(
-                            "File does not extend beyond magic number")
+                        raise ValueError("File does not extend beyond magic number")
                 if s != b"#":
                     break
                 s = self.fp.readline()
@@ -107,24 +107,22 @@ class PpmImageFile(ImageFile.ImageFile):
             elif ix == 2:
                 # maxgrey
                 if s > 255:
-                    if not mode == 'L':
+                    if not mode == "L":
                         raise ValueError("Too many colors for band: %s" % s)
-                    if s < 2**16:
-                        self.mode = 'I'
-                        rawmode = 'I;16B'
+                    if s < 2 ** 16:
+                        self.mode = "I"
+                        rawmode = "I;16B"
                     else:
-                        self.mode = 'I'
-                        rawmode = 'I;32B'
+                        self.mode = "I"
+                        rawmode = "I;32B"
 
         self._size = xsize, ysize
-        self.tile = [("raw",
-                     (0, 0, xsize, ysize),
-                     self.fp.tell(),
-                     (rawmode, 0, 1))]
+        self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
 
 
 #
 # --------------------------------------------------------------------
+
 
 def _save(im, fp, filename):
     if im.mode == "1":
@@ -132,7 +130,7 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2**16:
+        if im.getextrema()[1] < 2 ** 16:
             rawmode, head = "I;16B", b"P5"
         else:
             rawmode, head = "I;32B", b"P5"
@@ -142,7 +140,7 @@ def _save(im, fp, filename):
         rawmode, head = "RGB", b"P6"
     else:
         raise IOError("cannot write mode %s as PPM" % im.mode)
-    fp.write(head + ("\n%d %d\n" % im.size).encode('ascii'))
+    fp.write(head + ("\n%d %d\n" % im.size).encode("ascii"))
     if head == b"P6":
         fp.write(b"255\n")
     if head == b"P5":
@@ -152,10 +150,11 @@ def _save(im, fp, filename):
             fp.write(b"65535\n")
         elif rawmode == "I;32B":
             fp.write(b"2147483648\n")
-    ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function
     # im._dump(filename)
+
 
 #
 # --------------------------------------------------------------------

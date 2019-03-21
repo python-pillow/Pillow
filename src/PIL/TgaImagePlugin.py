@@ -34,9 +34,9 @@ __version__ = "0.3"
 
 MODES = {
     # map imagetype/depth to rawmode
-    (1, 8):  "P",
-    (3, 1):  "1",
-    (3, 8):  "L",
+    (1, 8): "P",
+    (3, 1): "1",
+    (3, 8): "L",
     (3, 16): "LA",
     (2, 16): "BGR;5",
     (2, 24): "BGR",
@@ -46,6 +46,7 @@ MODES = {
 
 ##
 # Image plugin for Targa files.
+
 
 class TgaImageFile(ImageFile.ImageFile):
 
@@ -69,9 +70,12 @@ class TgaImageFile(ImageFile.ImageFile):
         self._size = i16(s[12:]), i16(s[14:])
 
         # validate header fields
-        if colormaptype not in (0, 1) or\
-           self.size[0] <= 0 or self.size[1] <= 0 or\
-           depth not in (1, 8, 16, 24, 32):
+        if (
+            colormaptype not in (0, 1)
+            or self.size[0] <= 0
+            or self.size[1] <= 0
+            or depth not in (1, 8, 16, 24, 32)
+        ):
             raise SyntaxError("not a TGA file")
 
         # image mode
@@ -112,26 +116,42 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s[3:]), i16(s[5:]), i16(s[7:])
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;16", b"\0"*2*start + self.fp.read(2*size))
+                    "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size)
+                )
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
-                    "BGR", b"\0"*3*start + self.fp.read(3*size))
+                    "BGR", b"\0" * 3 * start + self.fp.read(3 * size)
+                )
             elif mapdepth == 32:
                 self.palette = ImagePalette.raw(
-                    "BGRA", b"\0"*4*start + self.fp.read(4*size))
+                    "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
+                )
 
         # setup tile descriptor
         try:
             rawmode = MODES[(imagetype & 7, depth)]
             if imagetype & 8:
                 # compressed
-                self.tile = [("tga_rle", (0, 0)+self.size,
-                              self.fp.tell(), (rawmode, orientation, depth))]
+                self.tile = [
+                    (
+                        "tga_rle",
+                        (0, 0) + self.size,
+                        self.fp.tell(),
+                        (rawmode, orientation, depth),
+                    )
+                ]
             else:
-                self.tile = [("raw", (0, 0)+self.size,
-                              self.fp.tell(), (rawmode, 0, orientation))]
+                self.tile = [
+                    (
+                        "raw",
+                        (0, 0) + self.size,
+                        self.fp.tell(),
+                        (rawmode, 0, orientation),
+                    )
+                ]
         except KeyError:
             pass  # cannot decode
+
 
 #
 # --------------------------------------------------------------------
@@ -158,14 +178,12 @@ def _save(im, fp, filename):
     if "rle" in im.encoderinfo:
         rle = im.encoderinfo["rle"]
     else:
-        compression = im.encoderinfo.get("compression",
-                                         im.info.get("compression"))
+        compression = im.encoderinfo.get("compression", im.info.get("compression"))
         rle = compression == "tga_rle"
     if rle:
         imagetype += 8
 
-    id_section = im.encoderinfo.get("id_section",
-                                    im.info.get("id_section", ""))
+    id_section = im.encoderinfo.get("id_section", im.info.get("id_section", ""))
     id_len = len(id_section)
     if id_len > 255:
         id_len = 255
@@ -182,23 +200,24 @@ def _save(im, fp, filename):
     else:
         flags = 0
 
-    orientation = im.encoderinfo.get("orientation",
-                                     im.info.get("orientation", -1))
+    orientation = im.encoderinfo.get("orientation", im.info.get("orientation", -1))
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(o8(id_len) +
-             o8(colormaptype) +
-             o8(imagetype) +
-             o16(colormapfirst) +
-             o16(colormaplength) +
-             o8(colormapentry) +
-             o16(0) +
-             o16(0) +
-             o16(im.size[0]) +
-             o16(im.size[1]) +
-             o8(bits) +
-             o8(flags))
+    fp.write(
+        o8(id_len)
+        + o8(colormaptype)
+        + o8(imagetype)
+        + o16(colormapfirst)
+        + o16(colormaplength)
+        + o8(colormapentry)
+        + o16(0)
+        + o16(0)
+        + o16(im.size[0])
+        + o16(im.size[1])
+        + o8(bits)
+        + o8(flags)
+    )
 
     if id_section:
         fp.write(id_section)
@@ -208,15 +227,16 @@ def _save(im, fp, filename):
 
     if rle:
         ImageFile._save(
-            im,
-            fp,
-            [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))])
+            im, fp, [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))]
+        )
     else:
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
+            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))]
+        )
 
     # write targa version 2 footer
     fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
+
 
 #
 # --------------------------------------------------------------------

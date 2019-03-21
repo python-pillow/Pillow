@@ -45,6 +45,7 @@ def _accept(prefix):
 # Image plugin for Windows MSP images.  This plugin supports both
 # uncompressed (Windows 1.0).
 
+
 class MspImageFile(ImageFile.ImageFile):
 
     format = "MSP"
@@ -60,7 +61,7 @@ class MspImageFile(ImageFile.ImageFile):
         # Header checksum
         checksum = 0
         for i in range(0, 32, 2):
-            checksum = checksum ^ i16(s[i:i+2])
+            checksum = checksum ^ i16(s[i : i + 2])
         if checksum != 0:
             raise SyntaxError("bad MSP checksum")
 
@@ -68,9 +69,9 @@ class MspImageFile(ImageFile.ImageFile):
         self._size = i16(s[4:]), i16(s[6:])
 
         if s[:4] == b"DanM":
-            self.tile = [("raw", (0, 0)+self.size, 32, ("1", 0, 1))]
+            self.tile = [("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
         else:
-            self.tile = [("MSP", (0, 0)+self.size, 32, None)]
+            self.tile = [("MSP", (0, 0) + self.size, 32, None)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
@@ -113,11 +114,12 @@ class MspDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
 
         img = io.BytesIO()
-        blank_line = bytearray((0xff,)*((self.state.xsize+7)//8))
+        blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
             self.fd.seek(32)
-            rowmap = struct.unpack_from("<%dH" % (self.state.ysize),
-                                        self.fd.read(self.state.ysize*2))
+            rowmap = struct.unpack_from(
+                "<%dH" % (self.state.ysize), self.fd.read(self.state.ysize * 2)
+            )
         except struct.error:
             raise IOError("Truncated MSP file in row map")
 
@@ -129,8 +131,8 @@ class MspDecoder(ImageFile.PyDecoder):
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
                     raise IOError(
-                        "Truncated MSP file, expected %d bytes on row %s",
-                        (rowlen, x))
+                        "Truncated MSP file, expected %d bytes on row %s", (rowlen, x)
+                    )
                 idx = 0
                 while idx < rowlen:
                     runtype = i8(row[idx])
@@ -141,7 +143,7 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += 2
                     else:
                         runcount = runtype
-                        img.write(row[idx:idx+runcount])
+                        img.write(row[idx : idx + runcount])
                         idx += runcount
 
             except struct.error:
@@ -152,7 +154,7 @@ class MspDecoder(ImageFile.PyDecoder):
         return 0, 0
 
 
-Image.register_decoder('MSP', MspDecoder)
+Image.register_decoder("MSP", MspDecoder)
 
 
 #
@@ -183,7 +185,7 @@ def _save(im, fp, filename):
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 32, ("1", 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
 
 
 #
