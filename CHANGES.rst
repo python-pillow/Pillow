@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Fixed GIF bug when rewinding to a non-zero frame #3716
+  [radarhere]
+
 - Only close original fp in __del__ and __exit__ if original fp is exclusive #3683
   [radarhere]
 
