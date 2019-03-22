@@ -323,7 +323,7 @@ class TestFileGif(PillowTestCase):
 
         im_list = []
         for circle in circles:
-            img = Image.new('RGB', (100, 100), (255,0,0))
+            img = Image.new('RGB', (100, 100), (255, 0, 0))
 
             # Red circle in center of each frame
             d = ImageDraw.Draw(img)
@@ -355,16 +355,16 @@ class TestFileGif(PillowTestCase):
 
         # 4 frames: red/blue, red/red, blue/blue, red/blue
         circles = [
-            ((255, 0, 0, 255),(0, 0, 255, 255)),
-            ((255, 0, 0, 255),(255, 0, 0, 255)),
-            ((0, 0, 255, 255),(0, 0, 255, 255)),
-            ((255, 0, 0, 255),(0, 0, 255, 255))
+            ((255, 0, 0, 255), (0, 0, 255, 255)),
+            ((255, 0, 0, 255), (255, 0, 0, 255)),
+            ((0, 0, 255, 255), (0, 0, 255, 255)),
+            ((255, 0, 0, 255), (0, 0, 255, 255))
         ]
 
         im_list = []
         for i in range(len(circles)):
             # Transparent BG
-            img = Image.new('RGBA', (100, 100), (255,255,255,0))
+            img = Image.new('RGBA', (100, 100), (255, 255, 255, 0))
 
             # Two circles per frame
             d = ImageDraw.Draw(img)
@@ -394,8 +394,7 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(rgb_img.getpixel((80, 50)), colours[1])
 
             # Check BG is correct colour
-            self.assertEqual(rgb_img.getpixel((1, 1)), (255,255,255,0))
-
+            self.assertEqual(rgb_img.getpixel((1, 1)), (255, 255, 255, 0))
 
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
