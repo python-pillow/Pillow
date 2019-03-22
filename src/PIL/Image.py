@@ -1688,7 +1688,7 @@ class Image(object):
         Rewrites the image to reorder the palette.
 
         :param dest_map: A list of indexes into the original palette.
-           e.g. [1,0] would swap a two item palette, and list(range(255))
+           e.g. [1,0] would swap a two item palette, and list(range(256))
            is the identity transform.
         :param source_palette: Bytes or None.
         :returns:  An :py:class:`~PIL.Image.Image` object.
