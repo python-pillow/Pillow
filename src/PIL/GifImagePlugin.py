@@ -457,8 +457,7 @@ def _write_multiple_frames(im, fp, palette):
                     delta = ImageChops.subtract_modulo(
                         im_frame.convert('RGB'), base_image.convert('RGB'))
                 bbox = delta.getbbox()
-                if not bbox and not ("disposal" in encoderinfo
-                   and encoderinfo["disposal"] == 2):
+                if not bbox:
                     # This frame is identical to the previous frame
                     if duration:
                         previous['encoderinfo']['duration'] += \
