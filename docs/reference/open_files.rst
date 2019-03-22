@@ -89,13 +89,6 @@ Complications
   the file descriptor internally, it is duplicated prior to passing it
   into libtiff.
 
-* ``decoder.handles_eof`` This slightly misnamed flag indicates that
-  the decoder wants to be called with a 0 length buffer when reads are
-  done. Despite the comments in ``ImageFile.load()``, the only decoder
-  that actually uses this flag is the Jpeg2K decoder. The use of this
-  flag in Jpeg2K predated the change to the decoder that added the
-  pulls_fd flag, and is therefore not used.
-
 * I don't think that there's any way to make this safe without
   changing the lazy loading::
 
