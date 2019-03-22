@@ -122,6 +122,8 @@ class GifImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
+            if frame != 0:
+                self.im = None
             self._seek(0)
 
         last_frame = self.__frame
