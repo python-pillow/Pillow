@@ -762,3 +762,22 @@ class TestImageDraw(PillowTestCase):
                     expected = ("Tests/images/imagedraw_outline"
                                 "_{}_{}.png".format(operation, mode))
                     self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_xy(self):
+        im = hopper()
+        draw = ImageDraw.Draw(im)
+
+        for xy in [
+            [(X0, Y0), (X1, Y1)],
+            [[X0, Y0], [X1, Y1]],
+            [X0, Y0, X1, Y1]
+        ]:
+            draw.arc(xy, 0, 90)
+            draw.chord(xy, 0, 90)
+            draw.pieslice(xy, 0, 90)
+
+            draw.ellipse(xy)
+            draw.line(xy)
+            draw.point(xy)
+            draw.polygon(xy)
+            draw.rectangle(xy)

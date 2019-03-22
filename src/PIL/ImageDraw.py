@@ -98,6 +98,10 @@ class ImageDraw(object):
             self.font = ImageFont.load_default()
         return self.font
 
+    def _getxy(self, xy):
+        return [tuple(coord) if isinstance(coord, list) else coord
+                for coord in xy]
+
     def _getink(self, ink, fill=None):
         if ink is None and fill is None:
             if self.fill:
@@ -121,6 +125,7 @@ class ImageDraw(object):
 
     def arc(self, xy, start, end, fill=None, width=0):
         """Draw an arc."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_arc(xy, start, end, ink, width)
@@ -136,6 +141,7 @@ class ImageDraw(object):
 
     def chord(self, xy, start, end, fill=None, outline=None, width=0):
         """Draw a chord."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_chord(xy, start, end, fill, 1)
@@ -144,6 +150,7 @@ class ImageDraw(object):
 
     def ellipse(self, xy, fill=None, outline=None, width=0):
         """Draw an ellipse."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_ellipse(xy, fill, 1)
@@ -152,6 +159,7 @@ class ImageDraw(object):
 
     def line(self, xy, fill=None, width=0, joint=None):
         """Draw a line, or a connected sequence of line segments."""
+        xy = self._getxy(xy)
         ink = self._getink(fill)[0]
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
@@ -220,6 +228,7 @@ class ImageDraw(object):
 
     def pieslice(self, xy, start, end, fill=None, outline=None, width=0):
         """Draw a pieslice."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_pieslice(xy, start, end, fill, 1)
@@ -228,12 +237,14 @@ class ImageDraw(object):
 
     def point(self, xy, fill=None):
         """Draw one or more individual pixels."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_points(xy, ink)
 
     def polygon(self, xy, fill=None, outline=None):
         """Draw a polygon."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_polygon(xy, fill, 1)
@@ -242,6 +253,7 @@ class ImageDraw(object):
 
     def rectangle(self, xy, fill=None, outline=None, width=0):
         """Draw a rectangle."""
+        xy = self._getxy(xy)
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
@@ -264,6 +276,7 @@ class ImageDraw(object):
         if self._multiline_check(text):
             return self.multiline_text(xy, text, fill, font, anchor,
                                        *args, **kwargs)
+        xy = self._getxy(xy)
         ink, fill = self._getink(fill)
         if font is None:
             font = self.getfont()
