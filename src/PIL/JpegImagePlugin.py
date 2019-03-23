@@ -479,7 +479,7 @@ def _fixup(value):
 
 
 class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
-    '''
+    """
     Specialization for parsing EXIF data:
     - Remove support for v2 to avoid useless computations
     - custom __setitem__ to supports IFD values
