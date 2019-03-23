@@ -131,7 +131,7 @@ Image.quantize
 ^^^^^^^^^^^^^^
 
 The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``).
-This parameter takes the same values used in ``Image.convert``.
+This parameter takes the same values used in :py:meth:`~PIL.Image.Image.convert`.
 
 New language parameter
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -172,3 +172,9 @@ TIFF compression codecs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added for the LZMA, Zstd and WebP TIFF compression codecs.
+
+Improved support for transposing I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+I;16, I;16L and I;16B are now supported image modes for all
+:py:meth:`~PIL.Image.Image.transpose` operations.
