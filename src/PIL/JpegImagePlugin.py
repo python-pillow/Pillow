@@ -487,7 +487,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
     - custom update() to avoid iterating and expanding non parsed data
 
     The goal is to use the lazyness of ImageFileDirectory_v1 in _getexif().
-    '''
+    """
 
     def to_v2(self):
         raise NotImplementedError()
