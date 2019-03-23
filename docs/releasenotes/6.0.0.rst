@@ -99,6 +99,26 @@ version.
 
 Use ``PIL.__version__`` instead.
 
+MIME type improvements
+^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, all JPEG2000 images had the MIME type "image/jpx". This has now been
+corrected. After the file format drivers have been loaded, ``Image.MIME["JPEG2000"]``
+will return "image/jp2". ``ImageFile.get_format_mimetype`` will return "image/jpx" if
+a JPX profile is present, or "image/jp2" otherwise.
+
+Previously, all SGI images had the MIME type "image/rgb". This has now been
+corrected. After the file format drivers have been loaded, ``Image.MIME["SGI"]``
+will return "image/sgi". ``ImageFile.get_format_mimetype`` will return "image/rgb" if
+RGB image data is present, or "image/sgi" otherwise.
+
+MIME types have been added to the PPM format. After the file format drivers have been
+loaded, ``Image.MIME["PPM"]`` will now return the generic "image/x-portable-anymap".
+``ImageFile.get_format_mimetype`` will return a MIME type specific to the color type.
+
+The TGA, PCX and ICO formats also now have MIME types: "image/x-tga", "image/x-pcx" and
+"image/x-icon" respectively.
+
 API Additions
 =============
 
@@ -110,13 +130,13 @@ Pillow now supports reading and writing the Device Independent Bitmap file forma
 Image.quantize
 ^^^^^^^^^^^^^^
 
-The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``). 
+The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``).
 This parameter takes the same values used in ``Image.convert``.
 
 New language parameter
 ^^^^^^^^^^^^^^^^^^^^^^
 
-These text-rendering functions now accept a ``language`` parameter to request 
+These text-rendering functions now accept a ``language`` parameter to request
 language-specific glyphs and ligatures from the font:
 
 * ``ImageDraw.ImageDraw.multiline_text()``
@@ -145,5 +165,5 @@ Pillow can now read uncompressed RGB data from DDS images.
 Reading TIFF with old-style JPEG compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Added support reading TIFF files with old-style JPEG compression through LibTIFF. All YCbCr 
-TIFF images are now always read as RGB.
+Added support reading TIFF files with old-style JPEG compression through LibTIFF. All
+YCbCr TIFF images are now always read as RGB.
