@@ -3,10 +3,10 @@
 File Handling in Pillow
 =======================
 
-When opening a file as an image, Pillow requires a filename,
-pathlib.Path object, or a file-like object. Pillow uses the filename
-or Path to open a file, so for the rest of this article, they will all
-be treated as a file-like object.
+When opening a file as an image, Pillow requires a filename, ``pathlib.Path``
+object, or a file-like object. Pillow uses the filename or ``Path`` to open a
+file, so for the rest of this article, they will all be treated as a file-like
+object.
 
 The first four of these items are equivalent, the last is dangerous
 and may fail::
@@ -48,24 +48,23 @@ Issues
 Image Lifecycle
 ---------------
 
-* ``Image.open()`` Path-like objects are opened as a file. Metadata is read
-  from the open file. The file is left open for further usage.
+* ``Image.open()`` Filenames and ``Path`` objects are opened as a file.
+  Metadata is read from the open file. The file is left open for further usage.
 
 * ``Image.Image.load()`` When the pixel data from the image is
   required, ``load()`` is called. The current frame is read into
   memory. The image can now be used independently of the underlying
   image file.
 
-  If a filename or a path-like object was passed to ``Image.open()``, then
-  the file object was opened by Pillow and is considered to be used exclusively
-  by Pillow. So if the image is a single-frame image, the file will
-  be closed in this method after the frame is read. If the image is a
-  multi-frame image, (e.g. multipage TIFF and animated GIF) the image file is
-  left open so that ``Image.Image.seek()`` can load the appropriate frame.
+  If a filename or a ``Path`` object was passed to ``Image.open()``, then the
+  file object was opened by Pillow and is considered to be used exclusively by
+  Pillow. So if the image is a single-frame image, the file will be closed in
+  this method after the frame is read. If the image is a multi-frame image,
+  (e.g. multipage TIFF and animated GIF) the image file is left open so that
+  ``Image.Image.seek()`` can load the appropriate frame.
 
-* ``Image.Image.close()`` Closes the file pointer and destroys the
-  core image object. This is used in the Pillow context manager
-  support. e.g.::
+* ``Image.Image.close()`` Closes the file and destroys the core image object.
+  This is used in the Pillow context manager support. e.g.::
 
       with Image.open('test.jpg') as img:
          ...  # image operations here.
@@ -84,10 +83,9 @@ data until the caller has explicitly closed the image.
 Complications
 -------------
 
-* TiffImagePlugin has some code to pass the underlying file descriptor
-  into libtiff (if working on an actual file). Since libtiff closes
-  the file descriptor internally, it is duplicated prior to passing it
-  into libtiff.
+* ``TiffImagePlugin`` has some code to pass the underlying file descriptor into
+  libtiff (if working on an actual file). Since libtiff closes the file
+  descriptor internally, it is duplicated prior to passing it into libtiff.
 
 * I don't think that there's any way to make this safe without
   changing the lazy loading::
