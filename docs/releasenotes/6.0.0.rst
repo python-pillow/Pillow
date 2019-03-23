@@ -167,3 +167,8 @@ Reading TIFF with old-style JPEG compression
 
 Added support reading TIFF files with old-style JPEG compression through LibTIFF. All
 YCbCr TIFF images are now always read as RGB.
+
+TIFF compression codecs
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for the LZMA, Zstd and WebP TIFF compression codecs.
