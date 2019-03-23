@@ -68,7 +68,7 @@ Changelog (Pillow)
 - Make ContainerIO.isatty() return a bool, not int #3568
   [jdufresne]
 
-- Add support for I;16 modes for more transpose operations #3563
+- Add support to all transpose operations for I;16 modes #3563, #3741
   [radarhere]
 
 - Deprecate support for PyQt4 and PySide #3655
