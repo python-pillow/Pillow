@@ -43,7 +43,7 @@ More Information
 Report a Vulnerability
 ----------------------
 
-To report a security vulnerability, please use the `Tidelift security contact <https://tidelift.com/docs/security>`_. Tidelift will coordinate the fix and disclosure.
+To report a security vulnerability, please follow the procedure described in the `Tidelift security policy <https://tidelift.com/docs/security#report-a-vulnerability>`_.
 
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
