@@ -39,6 +39,12 @@ More Information
 
   - `Pre-fork <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork>`_
 
+
+Report a Vulnerability
+----------------------
+
+To report a security vulnerability, please use the `Tidelift security contact <https://tidelift.com/docs/security>`_. Tidelift will coordinate the fix and disclosure.
+
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
