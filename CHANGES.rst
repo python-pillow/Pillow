@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Fix deprecation warnings in Python 3.8 #3749
+  [radarhere]
+
 - Fixed GIF bug when rewinding to a non-zero frame #3716
   [radarhere]
 
