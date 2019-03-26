@@ -2,6 +2,7 @@
 -e .
 alabaster
 Babel
+black
 check-manifest
 cov-core
 coverage
