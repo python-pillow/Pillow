@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Added transparency for all PNG greyscale modes #3744
+  [radarhere]
+
 - Fix deprecation warnings in Python 3.8 #3749
   [radarhere]
 
