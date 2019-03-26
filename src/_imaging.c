@@ -71,6 +71,7 @@
  * See the README file for information on usage and redistribution.
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 #ifdef HAVE_LIBJPEG
@@ -1564,7 +1565,7 @@ _putpalette(ImagingObject* self, PyObject* args)
 
     char* rawmode;
     UINT8* palette;
-    int palettesize;
+    Py_ssize_t palettesize;
     if (!PyArg_ParseTuple(args, "s"PY_ARG_BYTES_LENGTH, &rawmode, &palette, &palettesize))
         return NULL;
 
@@ -1626,7 +1627,7 @@ _putpalettealphas(ImagingObject* self, PyObject* args)
 {
     int i;
     UINT8 *values;
-    int length;
+    Py_ssize_t length;
     if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &values, &length))
         return NULL;
 
@@ -1770,7 +1771,7 @@ im_setmode(ImagingObject* self, PyObject* args)
     Imaging im;
 
     char* mode;
-    int modelen;
+    Py_ssize_t modelen;
     if (!PyArg_ParseTuple(args, "s#:setmode", &mode, &modelen))
     return NULL;
 
@@ -2066,8 +2067,8 @@ _getprojection(ImagingObject* self, PyObject* args)
     ImagingGetProjection(self->image, (unsigned char *)xprofile, (unsigned char *)yprofile);
 
     result = Py_BuildValue(PY_ARG_BYTES_LENGTH PY_ARG_BYTES_LENGTH,
-                           xprofile, self->image->xsize,
-                           yprofile, self->image->ysize);
+                           xprofile, (Py_ssize_t)self->image->xsize,
+                           yprofile, (Py_ssize_t)self->image->ysize);
 
     free(xprofile);
     free(yprofile);
@@ -2342,7 +2343,7 @@ _font_new(PyObject* self_, PyObject* args)
 
     ImagingObject* imagep;
     unsigned char* glyphdata;
-    int glyphdata_length;
+    Py_ssize_t glyphdata_length;
     if (!PyArg_ParseTuple(args, "O!"PY_ARG_BYTES_LENGTH,
                           &Imaging_Type, &imagep,
                           &glyphdata, &glyphdata_length))
