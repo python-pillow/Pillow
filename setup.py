@@ -765,7 +765,7 @@ try:
           url='http://python-pillow.org',
           classifiers=[
               "Development Status :: 6 - Mature",
-              "License :: Other/Proprietary License",
+              "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
@@ -789,7 +789,6 @@ try:
           packages=["PIL"],
           package_dir={'': 'src'},
           keywords=["Imaging", ],
-          license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )
 except RequiredDependencyException as err:
     msg = """
