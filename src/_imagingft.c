@@ -18,6 +18,7 @@
  * Copyright (c) 1998-2007 by Secret Labs AB
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "Imaging.h"
 
@@ -237,12 +238,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     int error = 0;
 
     char* filename = NULL;
-    int size;
-    int index = 0;
-    int layout_engine = 0;
+    Py_ssize_t size;
+    Py_ssize_t index = 0;
+    Py_ssize_t layout_engine = 0;
     unsigned char* encoding;
     unsigned char* font_bytes;
-    int font_bytes_size = 0;
+    Py_ssize_t font_bytes_size = 0;
     static char* kwlist[] = {
         "filename", "size", "index", "encoding", "font_bytes",
         "layout_engine", NULL

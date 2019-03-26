@@ -25,6 +25,7 @@ kevin@cazabon.com\n\
 http://www.cazabon.com\n\
 "
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h" // Include before wchar.h so _GNU_SOURCE is set
 #include "wchar.h"
 #include "datetime.h"
@@ -120,7 +121,7 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     cmsHPROFILE hProfile;
 
     char* pProfile;
-    int nProfile;
+    Py_ssize_t nProfile;
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, "y#:profile_frombytes", &pProfile, &nProfile))
         return NULL;

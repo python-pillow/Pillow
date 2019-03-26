@@ -29,6 +29,7 @@
 
 /* FIXME: make these pluggable! */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 #include "Imaging.h"
@@ -117,7 +118,8 @@ static PyObject*
 _decode(ImagingDecoderObject* decoder, PyObject* args)
 {
     UINT8* buffer;
-    int bufsize, status;
+    Py_ssize_t bufsize;
+    int status;
     ImagingSectionCookie cookie;
 
     if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
