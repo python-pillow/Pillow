@@ -770,7 +770,7 @@ class TestImageDraw(PillowTestCase):
         for xy in [
             [(X0, Y0), (X1, Y1)],
             [[X0, Y0], [X1, Y1]],
-            [X0, Y0, X1, Y1]
+            [X0, Y0, X1, Y1],
         ]:
             draw.arc(xy, 0, 90)
             draw.chord(xy, 0, 90)
