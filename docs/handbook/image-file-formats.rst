@@ -490,12 +490,12 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     For ``P`` images: Either the palette index for full transparent pixels,
     or a byte string with alpha values for each palette entry.
 
-    For ``L`` and ``RGB`` images, the color that represents full transparent
-    pixels in this image.
+    For ``1``, ``L``, ``I`` and ``RGB`` images, the color that represents
+    full transparent pixels in this image.
 
     This key is omitted if the image is not a transparent palette image.
 
-``Open`` also sets ``Image.text`` to a dictionary of the values of the
+``open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
 ``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
@@ -511,8 +511,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     encoder settings.
 
 **transparency**
-    For ``P``, ``L``, and ``RGB`` images, this option controls what
-    color image to mark as transparent.
+    For ``P``, ``1``, ``L``, ``I``, and ``RGB`` images, this option controls
+    what color from the image to mark as transparent.
 
     For ``P`` images, this can be a either the palette index,
     or a byte string with alpha values for each palette entry.

@@ -592,6 +592,22 @@ i2f(UINT8* out_, const UINT8* in_, int xsize)
         *out++ = (FLOAT32) *in++;
 }
 
+static void
+i2rgb(UINT8* out, const UINT8* in_, int xsize)
+{
+    int x;
+    INT32* in = (INT32*) in_;
+    for (x = 0; x < xsize; x++, in++, out+=4) {
+        if (*in <= 0)
+            out[0] = out[1] = out[2] = 0;
+        else if (*in >= 255)
+            out[0] = out[1] = out[2] = 255;
+        else
+            out[0] = out[1] = out[2] = (UINT8) *in;
+        out[3] = 255;
+    }
+}
+
 /* ------------- */
 /* F conversions */
 /* ------------- */
@@ -807,11 +823,14 @@ static struct {
 
     { "La", "LA", la2lA },
 
-    { "I",    "L",    i2l },
-    { "I",    "F",    i2f },
+    { "I", "L", i2l },
+    { "I", "F", i2f },
+    { "I", "RGB", i2rgb },
+    { "I", "RGBA", i2rgb },
+    { "I", "RGBX", i2rgb },
 
-    { "F",    "L",    f2l },
-    { "F",    "I",    f2i },
+    { "F", "L", f2l },
+    { "F", "I", f2i },
 
     { "RGB", "1", rgb2bit },
     { "RGB", "L", rgb2l },
@@ -1385,6 +1404,8 @@ ImagingConvertTransparent(Imaging imIn, const char *mode,
     }
 
     if (!((strcmp(imIn->mode, "RGB") == 0 ||
+           strcmp(imIn->mode, "1") == 0 ||
+           strcmp(imIn->mode, "I") == 0 ||
            strcmp(imIn->mode, "L") == 0)
           && strcmp(mode, "RGBA") == 0))
 #ifdef notdef
@@ -1403,7 +1424,13 @@ ImagingConvertTransparent(Imaging imIn, const char *mode,
     if (strcmp(imIn->mode, "RGB") == 0) {
         convert = rgb2rgba;
     } else {
-        convert = l2rgb;
+        if (strcmp(imIn->mode, "1") == 0) {
+            convert = bit2rgb;
+        } else if (strcmp(imIn->mode, "I") == 0) {
+            convert = i2rgb;
+        } else {
+            convert = l2rgb;
+        }
         g = b = r;
     }
 

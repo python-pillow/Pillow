@@ -950,7 +950,7 @@ class Image(object):
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if self.mode in ('L', 'RGB') and mode == 'RGBA':
+            if self.mode in ('1', 'L', 'I', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(self.im.convert_transparent(
