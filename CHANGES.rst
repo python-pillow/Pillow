@@ -8,6 +8,15 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Allow RGB and RGBA values for new P images #3719
+  [radarhere]
+
+- Fixed TIFF bug when seeking backwards and then forwards #3713
+  [radarhere]
+
+- Cache EXIF information #3498
+  [Glandos]
+
 - Added transparency for all PNG greyscale modes #3744
   [radarhere]
 
