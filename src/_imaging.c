@@ -1265,10 +1265,9 @@ static PyObject*
 _entropy(ImagingObject* self, PyObject* args)
 {
     ImagingHistogram h;
-    PyObject* entropy;
     int idx, length;
     long sum;
-    double fentropy, fsum, p;
+    double entropy, fsum, p;
     union hist_extrema extrema;
     union hist_extrema* ep;
 
@@ -1295,21 +1294,18 @@ _entropy(ImagingObject* self, PyObject* args)
     /* Next, normalize the histogram data, */
     /* using the histogram sum value */
     fsum = (double)sum;
-    fentropy = 0.0;
+    entropy = 0.0;
     for (idx = 0; idx < length; idx++) {
         p = (double)h->histogram[idx] / fsum;
         if (p != 0.0) {
-            fentropy += p * log(p) * M_LOG2E;
+            entropy += p * log(p) * M_LOG2E;
         }
     }
-
-    /* Finally, allocate a PyObject* for return */
-    entropy = PyFloat_FromDouble(-fentropy);
 
     /* Destroy the histogram structure */
     ImagingHistogramDelete(h);
 
-    return entropy;
+    return PyFloat_FromDouble(-entropy);
 }
 
 #ifdef WITH_MODEFILTER
