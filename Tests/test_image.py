@@ -522,6 +522,16 @@ class TestImage(PillowTestCase):
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
 
+    def test_p_from_rgb_rgba(self):
+        for mode, color in [
+            ("RGB", '#DDEEFF'),
+            ("RGB", (221, 238, 255)),
+            ("RGBA", (221, 238, 255, 255))
+        ]:
+            im = Image.new("P", (100, 100), color)
+            expected = Image.new(mode, (100, 100), color)
+            self.assert_image_equal(im.convert(mode), expected)
+
     def test_no_resource_warning_on_save(self):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
