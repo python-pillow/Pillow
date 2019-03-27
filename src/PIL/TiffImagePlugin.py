@@ -1056,7 +1056,6 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
-        self.__next = self.tag_v2.next
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
@@ -1087,7 +1086,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def load_end(self):
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
-        if self.__frame == 0 and not self.__next:
+        if len(self._frame_pos) == 1 and not self.__next:
             self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
@@ -1168,7 +1167,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
         if self._exclusive_fp:
-            if self.__frame == 0 and not self.__next:
+            if len(self._frame_pos) == 1 and not self.__next:
                 self.fp.close()
                 self.fp = None  # might be shared
 

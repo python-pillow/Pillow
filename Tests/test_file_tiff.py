@@ -263,6 +263,11 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.size, (10, 10))
         self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
 
+        im.seek(0)
+        im.load()
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
+
         im.seek(2)
         im.load()
         self.assertEqual(im.size, (20, 20))
