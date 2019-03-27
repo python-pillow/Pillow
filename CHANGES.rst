@@ -5,6 +5,78 @@ Changelog (Pillow)
 6.0.0 (unreleased)
 ------------------
 
+- Python 2.7 support will be removed in Pillow 7.0.0 #3682
+  [hugovk]
+
+- Added transparency for all PNG greyscale modes #3744
+  [radarhere]
+
+- Fix deprecation warnings in Python 3.8 #3749
+  [radarhere]
+
+- Fixed GIF bug when rewinding to a non-zero frame #3716
+  [radarhere]
+
+- Only close original fp in __del__ and __exit__ if original fp is exclusive #3683
+  [radarhere]
+
+- Fix BytesWarning in Tests/test_numpy.py #3725
+  [jdufresne]
+
+- Add missing MIME types and extensions #3520
+  [pirate486743186]
+
+- Add I;16 PNG save #3566
+  [radarhere]
+
+- Add support for BMP RGBA bitfield compression #3705
+  [radarhere]
+
+- Added ability to set language for text rendering #3693
+  [iwsfutcmd]
+
+- Only close exclusive fp on Image __exit__ #3698
+  [radarhere]
+
+- Changed EPS subprocess stdout from devnull to None #3635
+  [radarhere]
+
+- Add reading old-JPEG compressed TIFFs #3489
+  [kkopachev]
+
+- Add EXIF support for PNG #3674
+  [radarhere]
+
+- Add option to set dither param on quantize #3699
+  [glasnt]
+
+- Add reading of DDS uncompressed RGB data #3673
+  [radarhere]
+
+- Correct length of Tiff BYTE tags #3672
+  [radarhere]
+
+- Add DIB saving and loading through Image open #3691
+  [radarhere]
+
+- Removed deprecated VERSION #3624
+  [hugovk]
+
+- Fix 'BytesWarning: Comparison between bytes and string' in PdfDict #3580
+  [jdufresne]
+
+- Do not resize in Image.thumbnail if already the destination size #3632
+  [radarhere]
+
+- Replace .seek() magic numbers with io.SEEK_* constants #3572
+  [jdufresne]
+
+- Make ContainerIO.isatty() return a bool, not int #3568
+  [jdufresne]
+
+- Add support to all transpose operations for I;16 modes #3563, #3741
+  [radarhere]
+
 - Deprecate support for PyQt4 and PySide #3655
   [hugovk, radarhere]
 

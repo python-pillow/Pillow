@@ -16,7 +16,7 @@ class TestFileContainer(PillowTestCase):
         im = hopper()
         container = ContainerIO.ContainerIO(im, 0, 0)
 
-        self.assertEqual(container.isatty(), 0)
+        self.assertFalse(container.isatty())
 
     def test_seek_mode_0(self):
         # Arrange

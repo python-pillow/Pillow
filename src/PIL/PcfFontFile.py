@@ -16,6 +16,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 from . import Image, FontFile
 from ._binary import i8, i16le as l16, i32le as l32, i16be as b16, i32be as b32
 
@@ -117,7 +118,7 @@ class PcfFontFile(FontFile.FontFile):
         for i in range(nprops):
             p.append((i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))))
         if nprops & 3:
-            fp.seek(4 - (nprops & 3), 1)  # pad
+            fp.seek(4 - (nprops & 3), io.SEEK_CUR)  # pad
 
         data = fp.read(i32(fp.read(4)))
 

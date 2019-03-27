@@ -20,6 +20,30 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - social
       - |gitter| |twitter|
 
+.. end-badges
+
+More Information
+----------------
+
+- `Documentation <https://pillow.readthedocs.io/>`_
+
+  - `Installation <https://pillow.readthedocs.io/en/latest/installation.html>`_
+  - `Handbook <https://pillow.readthedocs.io/en/latest/handbook/index.html>`_
+
+- `Contribute <https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md>`_
+
+  - `Issues <https://github.com/python-pillow/Pillow/issues>`_
+  - `Pull requests <https://github.com/python-pillow/Pillow/pulls>`_
+
+- `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
+
+  - `Pre-fork <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork>`_
+
+Report a Vulnerability
+----------------------
+
+To report a security vulnerability, please follow the procedure described in the `Tidelift security policy <https://tidelift.com/docs/security>`_.
+
 .. |docs| image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
@@ -61,24 +85,3 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 .. |twitter| image:: https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg
    :target: https://twitter.com/PythonPillow
    :alt: Follow on https://twitter.com/PythonPillow
-
-.. end-badges
-
-
-
-More Information
-----------------
-
-- `Documentation <https://pillow.readthedocs.io/>`_
-
-  - `Installation <https://pillow.readthedocs.io/en/latest/installation.html>`_
-  - `Handbook <https://pillow.readthedocs.io/en/latest/handbook/index.html>`_
-
-- `Contribute <https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md>`_
-
-  - `Issues <https://github.com/python-pillow/Pillow/issues>`_
-  - `Pull requests <https://github.com/python-pillow/Pillow/pulls>`_
-
-- `Changelog <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst>`_
-
-  - `Pre-fork <https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork>`_

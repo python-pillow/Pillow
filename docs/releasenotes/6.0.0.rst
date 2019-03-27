@@ -26,11 +26,25 @@ Several undocumented functions in ``ImageOps`` were deprecated in Pillow 4.3.0 (
 and have now been removed: ``gaussian_blur``, ``gblur``, ``unsharp_mask``, ``usm`` and
 ``box_blur``. Use the equivalent operations in ``ImageFilter`` instead.
 
+Removed deprecated VERSION
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use ``__version__``
+instead.
+
 API Changes
 ===========
 
 Deprecations
 ^^^^^^^^^^^^
+
+Python 2.7
+~~~~~~~~~~
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
 
 PyQt4 and PySide
 ~~~~~~~~~~~~~~~~
@@ -103,18 +117,76 @@ Deprecated                Use instead
 ``product_model``         Unicode ``model``
 ========================  ===============================
 
+MIME type improvements
+^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, all JPEG2000 images had the MIME type "image/jpx". This has now been
+corrected. After the file format drivers have been loaded, ``Image.MIME["JPEG2000"]``
+will return "image/jp2". ``ImageFile.get_format_mimetype`` will return "image/jpx" if
+a JPX profile is present, or "image/jp2" otherwise.
+
+Previously, all SGI images had the MIME type "image/rgb". This has now been
+corrected. After the file format drivers have been loaded, ``Image.MIME["SGI"]``
+will return "image/sgi". ``ImageFile.get_format_mimetype`` will return "image/rgb" if
+RGB image data is present, or "image/sgi" otherwise.
+
+MIME types have been added to the PPM format. After the file format drivers have been
+loaded, ``Image.MIME["PPM"]`` will now return the generic "image/x-portable-anymap".
+``ImageFile.get_format_mimetype`` will return a MIME type specific to the color type.
+
+The TGA, PCX and ICO formats also now have MIME types: "image/x-tga", "image/x-pcx" and
+"image/x-icon" respectively.
+
 API Additions
 =============
 
-TODO
-^^^^
+DIB file format
+^^^^^^^^^^^^^^^
 
-TODO
+Pillow now supports reading and writing the Device Independent Bitmap file format.
+
+Image.quantize
+^^^^^^^^^^^^^^
+
+The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``).
+This parameter takes the same values used in ``Image.convert``.
+
+New language parameter
+^^^^^^^^^^^^^^^^^^^^^^
+
+These text-rendering functions now accept a ``language`` parameter to request
+language-specific glyphs and ligatures from the font:
+
+* ``ImageDraw.ImageDraw.multiline_text()``
+* ``ImageDraw.ImageDraw.multiline_textsize()``
+* ``ImageDraw.ImageDraw.text()``
+* ``ImageDraw.ImageDraw.textsize()``
+* ``ImageFont.ImageFont.getmask()``
+* ``ImageFont.ImageFont.getsize_multiline()``
+* ``ImageFont.ImageFont.getsize()``
+
+PNG EXIF data
+^^^^^^^^^^^^^
+
+EXIF data can now be read from and saved to PNG images. However, unlike other image
+formats, EXIF data is not guaranteed to have been read until
+:py:meth:`~PIL.Image.Image.load` has been called.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Reading new DDS image format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Pillow can now read uncompressed RGB data from DDS images.
+
+Reading TIFF with old-style JPEG compression
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added support reading TIFF files with old-style JPEG compression through LibTIFF. All
+YCbCr TIFF images are now always read as RGB.
+
+TIFF compression codecs
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for the LZMA, Zstd and WebP TIFF compression codecs.

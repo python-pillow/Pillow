@@ -24,10 +24,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-# VERSION is deprecated and will be removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed after that.
+# VERSION was removed in Pillow 6.0.0.
+# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import VERSION, PILLOW_VERSION, __version__, _plugins
+from . import PILLOW_VERSION, __version__, _plugins
 from ._util import py3
 
 import logging
@@ -60,8 +60,7 @@ except ImportError:
     from collections import Callable
 
 
-# Silence warnings
-assert VERSION
+# Silence warning
 assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
@@ -579,7 +578,12 @@ class Image(object):
         return self
 
     def __exit__(self, *args):
-        self.close()
+        if hasattr(self, 'fp') and getattr(self, '_exclusive_fp', False):
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
+            if self.fp:
+                self.fp.close()
+        self.fp = None
 
     def close(self):
         """
@@ -611,12 +615,7 @@ class Image(object):
 
     if sys.version_info.major >= 3:
         def __del__(self):
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
-            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
-               and self.fp and self._exclusive_fp):
-                self.fp.close()
-            self.fp = None
+            self.__exit__()
 
     def _copy(self):
         self.load()
@@ -680,8 +679,7 @@ class Image(object):
 
         :returns: png version of the image as bytes
         """
-        from io import BytesIO
-        b = BytesIO()
+        b = io.BytesIO()
         self.save(b, 'PNG')
         return b.getvalue()
 
@@ -952,7 +950,7 @@ class Image(object):
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if self.mode in ('L', 'RGB') and mode == 'RGBA':
+            if self.mode in ('1', 'L', 'I', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(self.im.convert_transparent(
@@ -1051,7 +1049,7 @@ class Image(object):
                 new_im.info['transparency'] = trns
         return new_im
 
-    def quantize(self, colors=256, method=None, kmeans=0, palette=None):
+    def quantize(self, colors=256, method=None, kmeans=0, palette=None, dither=1):
         """
         Convert the image to 'P' mode with the specified number
         of colors.
@@ -1064,6 +1062,10 @@ class Image(object):
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
+        :param dither: Dithering method, used when converting from
+           mode "RGB" to "P" or from "RGB" or "L" to "1".
+           Available methods are NONE or FLOYDSTEINBERG (default).
+           Default: 1 (legacy setting)
         :returns: A new image
 
         """
@@ -1091,7 +1093,7 @@ class Image(object):
                 raise ValueError(
                     "only RGB or L mode images can be quantized to a palette"
                     )
-            im = self.im.convert("P", 1, palette.im)
+            im = self.im.convert("P", dither, palette.im)
             return self._new(im)
 
         return self._new(self.im.quantize(colors, method, kmeans))
@@ -2003,9 +2005,6 @@ class Image(object):
         **EOFError** exception. When a sequence file is opened, the
         library automatically seeks to frame 0.
 
-        Note that in the current version of the library, most sequence
-        formats only allows you to seek to the next frame.
-
         See :py:meth:`~PIL.Image.Image.tell`.
 
         :param frame: Frame number, starting at 0.
@@ -2023,10 +2022,10 @@ class Image(object):
         debugging purposes.
 
         On Unix platforms, this method saves the image to a temporary
-        PPM file, and calls either the **xv** utility or the **display**
+        PPM file, and calls the **display**, **eog** or **xv**
         utility, depending on which one can be found.
 
-        On macOS, this method saves the image to a temporary BMP file, and
+        On macOS, this method saves the image to a temporary PNG file, and
         opens it with the native Preview application.
 
         On Windows, it saves the image to a temporary BMP file, and uses
@@ -2128,11 +2127,12 @@ class Image(object):
 
         self.draft(None, size)
 
-        im = self.resize(size, resample)
+        if self.size != size:
+            im = self.resize(size, resample)
 
-        self.im = im.im
-        self.mode = im.mode
-        self._size = size
+            self.im = im.im
+            self._size = size
+            self.mode = self.im.mode
 
         self.readonly = 0
         self.pyaccess = None

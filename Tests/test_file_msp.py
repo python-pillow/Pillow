@@ -12,11 +12,11 @@ YA_EXTRA_DIR = "Tests/images/msp"
 class TestFileMsp(PillowTestCase):
 
     def test_sanity(self):
-        file = self.tempfile("temp.msp")
+        test_file = self.tempfile("temp.msp")
 
-        hopper("1").save(file)
+        hopper("1").save(test_file)
 
-        im = Image.open(file)
+        im = Image.open(test_file)
         im.load()
         self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (128, 128))

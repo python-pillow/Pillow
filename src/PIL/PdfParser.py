@@ -269,18 +269,13 @@ class PdfDict(UserDict):
             else:
                 self.__dict__[key] = value
         else:
-            if isinstance(key, str):
-                key = key.encode("us-ascii")
-            self[key] = value
+            self[key.encode("us-ascii")] = value
 
     def __getattr__(self, key):
         try:
-            value = self[key]
+            value = self[key.encode("us-ascii")]
         except KeyError:
-            try:
-                value = self[key.encode("us-ascii")]
-            except KeyError:
-                raise AttributeError(key)
+            raise AttributeError(key)
         if isinstance(value, bytes):
             value = decode_text(value)
         if key.endswith("Date"):
@@ -361,8 +356,7 @@ def pdf_repr(x):
         return b"false"
     elif x is None:
         return b"null"
-    elif (isinstance(x, PdfName) or isinstance(x, PdfDict) or
-          isinstance(x, PdfArray) or isinstance(x, PdfBinary)):
+    elif isinstance(x, (PdfName, PdfDict, PdfArray, PdfBinary)):
         return bytes(x)
     elif isinstance(x, int):
         return str(x).encode("us-ascii")

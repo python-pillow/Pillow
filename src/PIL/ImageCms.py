@@ -950,5 +950,5 @@ def versions():
 
     return (
         VERSION, core.littlecms_version,
-        sys.version.split()[0], Image.VERSION
+        sys.version.split()[0], Image.__version__
     )

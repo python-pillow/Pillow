@@ -186,7 +186,7 @@ def _save_all(im, fp, filename):
     # will preserve non-alpha modes
     total = 0
     for ims in [im]+append_images:
-        total += 1 if not hasattr(ims, "n_frames") else ims.n_frames
+        total += getattr(ims, "n_frames", 1)
     if total == 1:
         _save(im, fp, filename)
         return
@@ -254,10 +254,7 @@ def _save_all(im, fp, filename):
     try:
         for ims in [im]+append_images:
             # Get # of frames in this image
-            if not hasattr(ims, "n_frames"):
-                nfr = 1
-            else:
-                nfr = ims.n_frames
+            nfr = getattr(ims, "n_frames", 1)
 
             for idx in range(nfr):
                 ims.seek(idx)

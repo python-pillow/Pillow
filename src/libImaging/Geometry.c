@@ -39,7 +39,11 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        FLIP_LEFT_RIGHT(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            FLIP_LEFT_RIGHT(UINT16, image8)
+        } else {
+            FLIP_LEFT_RIGHT(UINT8, image8)
+        }
     } else {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
@@ -104,7 +108,8 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
                         INT* in = imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yyy] = in[xxx]; \
+                            INT* out = imOut->image[xr]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -114,10 +119,15 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_90(UINT8, image8)
-    else
-        ROTATE_90(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_90(UINT16, image8);
+        } else {
+            ROTATE_90(UINT8, image8);
+        }
+    } else {
+        ROTATE_90(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -153,7 +163,8 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
                     for (yyy = yy; yyy < yyysize; yyy++) { \
                         INT* in = imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yyy] = in[xxx]; \
+                            INT* out = imOut->image[xxx]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -163,10 +174,15 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSPOSE(UINT8, image8)
-    else
-        TRANSPOSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSPOSE(UINT16, image8);
+        } else {
+            TRANSPOSE(UINT8, image8);
+        }
+    } else {
+        TRANSPOSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -204,7 +220,8 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
                         INT* in = imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yr] = in[xxx]; \
+                            INT* out = imOut->image[xr]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -214,10 +231,15 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSVERSE(UINT8, image8)
-    else
-        TRANSVERSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSVERSE(UINT16, image8);
+        } else {
+            TRANSVERSE(UINT8, image8);
+        }
+    } else {
+        TRANSVERSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -253,7 +275,11 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     yr = imIn->ysize-1;
     if (imIn->image8) {
-        ROTATE_180(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_180(UINT16, image8)
+        } else {
+            ROTATE_180(UINT8, image8)
+        }
     } else {
         ROTATE_180(INT32, image32)
     }
@@ -293,7 +319,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
                     for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
                         INT* in = imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yr] = in[xxx]; \
+                            INT* out = imOut->image[xxx]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -303,10 +330,15 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_270(UINT8, image8)
-    else
-        ROTATE_270(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_270(UINT16, image8);
+        } else {
+            ROTATE_270(UINT8, image8);
+        }
+    } else {
+        ROTATE_270(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 

@@ -122,6 +122,8 @@ class GifImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
+            if frame != 0:
+                self.im = None
             self._seek(0)
 
         last_frame = self.__frame
@@ -604,16 +606,16 @@ def _save_netpbm(im, fp, filename):
 
     import os
     from subprocess import Popen, check_call, PIPE, CalledProcessError
-    file = im._dump()
+    tempfile = im._dump()
 
     with open(filename, 'wb') as f:
         if im.mode != "RGB":
             with open(os.devnull, 'wb') as devnull:
-                check_call(["ppmtogif", file], stdout=f, stderr=devnull)
+                check_call(["ppmtogif", tempfile], stdout=f, stderr=devnull)
         else:
             # Pipe ppmquant output into ppmtogif
-            # "ppmquant 256 %s | ppmtogif > %s" % (file, filename)
-            quant_cmd = ["ppmquant", "256", file]
+            # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
+            quant_cmd = ["ppmquant", "256", tempfile]
             togif_cmd = ["ppmtogif"]
             with open(os.devnull, 'wb') as devnull:
                 quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=devnull)
@@ -632,7 +634,7 @@ def _save_netpbm(im, fp, filename):
                 raise CalledProcessError(retcode, togif_cmd)
 
     try:
-        os.unlink(file)
+        os.unlink(tempfile)
     except OSError:
         pass
 

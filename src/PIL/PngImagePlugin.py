@@ -54,19 +54,24 @@ _MAGIC = b"\211PNG\r\n\032\n"
 
 _MODES = {
     # supported bits/color combinations, and corresponding modes/rawmodes
+    # Greyscale
     (1, 0):  ("1", "1"),
     (2, 0):  ("L", "L;2"),
     (4, 0):  ("L", "L;4"),
     (8, 0):  ("L", "L"),
     (16, 0): ("I", "I;16B"),
+    # Truecolour
     (8, 2):  ("RGB", "RGB"),
     (16, 2): ("RGB", "RGB;16B"),
+    # Indexed-colour
     (1, 3):  ("P", "P;1"),
     (2, 3):  ("P", "P;2"),
     (4, 3):  ("P", "P;4"),
     (8, 3):  ("P", "P"),
+    # Greyscale with alpha
     (8, 4):  ("LA", "LA"),
     (16, 4): ("RGBA", "LA;16B"),  # LA;16B->LA not yet available
+    # Truecolour with alpha
     (8, 6):  ("RGBA", "RGBA"),
     (16, 6): ("RGBA", "RGBA;16B"),
 }
@@ -386,7 +391,7 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode == "L":
+        elif self.im_mode in ("1", "L", "I"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s[2:]), i16(s[4:])
@@ -527,6 +532,11 @@ class PngStream(ChunkStream):
         self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
         self.check_text_memory(len(v))
 
+        return s
+
+    def chunk_eXIf(self, pos, length):
+        s = ImageFile._safe_read(self.fp, length)
+        self.im_info["exif"] = b"Exif\x00\x00"+s
         return s
 
     # APNG chunks
@@ -683,6 +693,12 @@ class PngImageFile(ImageFile.ImageFile):
         self.png.close()
         self.png = None
 
+    def _getexif(self):
+        if "exif" not in self.info:
+            self.load()
+        from .JpegImagePlugin import _getexif
+        return _getexif(self)
+
 
 # --------------------------------------------------------------------
 # PNG writer
@@ -696,6 +712,7 @@ _OUTMODES = {
     "L":    ("L",       b'\x08\x00'),
     "LA":   ("LA",      b'\x08\x04'),
     "I":    ("I;16B",   b'\x10\x00'),
+    "I;16": ("I;16B",   b'\x10\x00'),
     "P;1":  ("P;1",     b'\x01\x03'),
     "P;2":  ("P;2",     b'\x02\x03'),
     "P;4":  ("P;4",     b'\x04\x03'),
@@ -829,7 +846,7 @@ def _save(im, fp, filename, chunk=putchunk):
                 transparency = max(0, min(255, transparency))
                 alpha = b'\xFF' * transparency + b'\0'
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
-        elif im.mode == "L":
+        elif im.mode in ("1", "L", "I"):
             transparency = max(0, min(65535, transparency))
             chunk(fp, b"tRNS", o16(transparency))
         elif im.mode == "RGB":
@@ -860,6 +877,12 @@ def _save(im, fp, filename, chunk=putchunk):
             if cid in chunks:
                 chunks.remove(cid)
                 chunk(fp, cid, data)
+
+    exif = im.encoderinfo.get("exif", im.info.get("exif"))
+    if exif:
+        if exif.startswith(b"Exif\x00\x00"):
+            exif = exif[6:]
+        chunk(fp, b"eXIf", exif)
 
     ImageFile._save(im, _idat(fp, chunk),
                     [("zip", (0, 0)+im.size, 0, rawmode)])

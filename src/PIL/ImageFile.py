@@ -120,9 +120,10 @@ class ImageFile(Image.Image):
         pass
 
     def get_format_mimetype(self):
-        if self.format is None:
-            return
-        return self.custom_mimetype or Image.MIME.get(self.format.upper())
+        if self.custom_mimetype:
+            return self.custom_mimetype
+        if self.format is not None:
+            return Image.MIME.get(self.format.upper())
 
     def verify(self):
         """Check file integrity"""
@@ -491,7 +492,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
@@ -510,7 +511,7 @@ def _save(im, fp, tile, bufsize=0):
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             if o > 0:
-                fp.seek(o, 0)
+                fp.seek(o)
             e.setimage(im.im, b)
             if e.pushes_fd:
                 e.setfd(fp)
@@ -595,8 +596,6 @@ class PyDecoder(object):
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-            If `handles_eof` is set, then `buffer` will be empty and `self.fd`
-            will be set.
         :returns: A tuple of (bytes consumed, errcode).
             If finished with decoding return <0 for the bytes consumed.
             Err codes are from `ERRORS`

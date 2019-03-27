@@ -18,6 +18,8 @@
 # A file object that provides read access to a part of an existing
 # file (for example a TAR file).
 
+import io
+
 
 class ContainerIO(object):
 
@@ -39,9 +41,9 @@ class ContainerIO(object):
     # Always false.
 
     def isatty(self):
-        return 0
+        return False
 
-    def seek(self, offset, mode=0):
+    def seek(self, offset, mode=io.SEEK_SET):
         """
         Move file pointer.
 

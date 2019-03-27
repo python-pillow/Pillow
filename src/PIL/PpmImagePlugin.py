@@ -70,7 +70,14 @@ class PpmImageFile(ImageFile.ImageFile):
         s = self.fp.read(1)
         if s != b"P":
             raise SyntaxError("not a PPM file")
-        mode = MODES[self._token(s)]
+        magic_number = self._token(s)
+        mode = MODES[magic_number]
+
+        self.custom_mimetype = {
+            b"P4": "image/x-portable-bitmap",
+            b"P5": "image/x-portable-graymap",
+            b"P6": "image/x-portable-pixmap",
+        }.get(magic_number)
 
         if mode == "1":
             self.mode = "1"
@@ -157,4 +164,6 @@ def _save(im, fp, filename):
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
 
-Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm"])
+Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm", ".pnm"])
+
+Image.register_mime(PpmImageFile.format, "image/x-portable-anymap")
