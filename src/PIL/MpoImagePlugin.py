@@ -18,7 +18,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, JpegImagePlugin
+from . import Image, ImageFile, JpegImagePlugin
+from ._binary import i16be as i16
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -78,6 +79,20 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             return
         self.fp = self.__fp
         self.offset = self.__mpoffsets[frame]
+
+        self.fp.seek(self.offset + 2)  # skip SOI marker
+        if "parsed_exif" in self.info:
+            del self.info["parsed_exif"]
+        if i16(self.fp.read(2)) == 0xFFE1:  # APP1
+            n = i16(self.fp.read(2))-2
+            self.info["exif"] = ImageFile._safe_read(self.fp, n)
+
+            exif = self._getexif()
+            if 40962 in exif and 40963 in exif:
+                self._size = (exif[40962], exif[40963])
+        elif "exif" in self.info:
+            del self.info["exif"]
+
         self.tile = [
             ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
         ]
