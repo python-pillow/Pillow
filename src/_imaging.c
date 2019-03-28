@@ -2642,8 +2642,7 @@ _draw_ink(ImagingDrawObject* self, PyObject* args)
 {
     INT32 ink = 0;
     PyObject* color;
-    char* mode = NULL; /* not used in this release */
-    if (!PyArg_ParseTuple(args, "O|s", &color, &mode))
+    if (!PyArg_ParseTuple(args, "O", &color))
         return NULL;
 
     if (!getink(color, self->image->image, (char*) &ink))
