@@ -590,6 +590,15 @@ class TestFileJpeg(PillowTestCase):
         # Act / Assert
         self.assertEqual(im._getexif()[306], '2017:03:13 23:03:09')
 
+    def test_photoshop(self):
+        im = Image.open("Tests/images/photoshop-200dpi.jpg")
+        self.assertEqual(im.info["photoshop"][0x03ed], {
+            'XResolution': 200.0,
+            'DisplayedUnitsX': 1,
+            'YResolution': 200.0,
+            'DisplayedUnitsY': 1,
+        })
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
