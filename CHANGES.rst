@@ -8,6 +8,21 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Change size of MPO image to match frame #3588
+  [radarhere]
+
+- Read Photoshop resolution data #3701
+  [radarhere]
+
+- Ensure image is mutable before saving #3724
+  [radarhere]
+
+- Correct remap_palette documentation #3740
+  [radarhere]
+
+- Promote P images to PA in putalpha #3726
+  [radarhere]
+
 - Allow RGB and RGBA values for new P images #3719
   [radarhere]
 
