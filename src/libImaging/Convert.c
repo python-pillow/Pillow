@@ -518,6 +518,18 @@ l2cmyk(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+la2cmyk(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        *out++ = 0;
+        *out++ = 0;
+        *out++ = 0;
+        *out++ = ~(in[0]);
+    }
+}
+
+static void
 rgb2cmyk(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -674,11 +686,33 @@ l2ycbcr(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+la2ycbcr(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        *out++ = in[0];
+        *out++ = 128;
+        *out++ = 128;
+        *out++ = 255;
+    }
+}
+
+static void
 ycbcr2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 4)
         *out++ = in[0];
+}
+
+static void
+ycbcr2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+        out[0] = out[1] = out[2] = in[0];
+        out[3] = 255;
+    }
 }
 
 /* ------------------------- */
@@ -818,8 +852,10 @@ static struct {
     { "LA", "L", la2l },
     { "LA", "La", lA2la },
     { "LA", "RGB", la2rgb },
-    { "LA", "RGBX", la2rgb },
     { "LA", "RGBA", la2rgb },
+    { "LA", "RGBX", la2rgb },
+    { "LA", "CMYK", la2cmyk },
+    { "LA", "YCbCr", la2ycbcr },
 
     { "La", "LA", la2lA },
 
@@ -861,8 +897,9 @@ static struct {
 
     { "RGBX", "1", rgb2bit },
     { "RGBX", "L", rgb2l },
-    { "RGBA", "I", rgb2i },
-    { "RGBA", "F", rgb2f },
+    { "RGBX", "LA", rgb2la },
+    { "RGBX", "I", rgb2i },
+    { "RGBX", "F", rgb2f },
     { "RGBX", "RGB", rgba2rgb },
     { "RGBX", "CMYK", rgb2cmyk },
     { "RGBX", "YCbCr", ImagingConvertRGB2YCbCr },
@@ -872,6 +909,7 @@ static struct {
     { "CMYK", "RGBX", cmyk2rgb },
 
     { "YCbCr", "L", ycbcr2l },
+    { "YCbCr", "LA", ycbcr2la },
     { "YCbCr", "RGB", ImagingConvertYCbCr2RGB },
 
     { "HSV", "RGB", hsv2rgb },
