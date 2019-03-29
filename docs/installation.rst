@@ -151,7 +151,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.9**.
 
 * **libwebp** provides the WebP format.
 
