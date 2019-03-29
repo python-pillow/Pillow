@@ -914,12 +914,43 @@ p2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    /* FIXME: precalculate greyscale palette? */
+    for (x = 0; x < xsize; x++, in += 4)
+        *out++ = (L(&palette[in[0]*4]) >= 128000) ? 255 : 0;
+}
+
+static void
 p2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++)
         *out++ = L(&palette[in[x]*4]) / 1000;
+}
+
+static void
+pa2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    /* FIXME: precalculate greyscale palette? */
+    for (x = 0; x < xsize; x++, in += 4)
+        *out++ = L(&palette[in[0]*4]) / 1000;
+}
+
+static void
+p2pa(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in+=4) {
+        const UINT8* rgba = &palette[in[0] * 4];
+        *out++ = in[0];
+        *out++ = in[0];
+        *out++ = in[0];
+        *out++ = rgba[3];
+    }
 }
 
 static void
@@ -939,9 +970,9 @@ pa2la(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
-    for (x = 0; x < xsize; x++, in += 2) {
-        *out++ = L(&palette[in[0]*4]) / 1000;
-        *out++ = in[1];
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+        out[0] = out[1] = out[2] = L(&palette[in[0]*4]) / 1000;
+        out[3] = in[3];
     }
 }
 
@@ -955,6 +986,15 @@ p2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    INT32* out = (INT32*) out_;
+    for (x = 0; x < xsize; x++, in += 4)
+        *out++ = L(&palette[in[0]*4]) / 1000;
+}
+
+static void
 p2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
@@ -964,11 +1004,33 @@ p2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    FLOAT32* out = (FLOAT32*) out_;
+    for (x = 0; x < xsize; x++, in += 4)
+        *out++ = (float) L(&palette[in[0]*4]) / 1000.0F;
+}
+
+static void
 p2rgb(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     for (x = 0; x < xsize; x++) {
         const UINT8* rgb = &palette[*in++ * 4];
+        *out++ = rgb[0];
+        *out++ = rgb[1];
+        *out++ = rgb[2];
+        *out++ = 255;
+    }
+}
+
+static void
+pa2rgb(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        const UINT8* rgb = &palette[in[0] * 4];
         *out++ = rgb[0];
         *out++ = rgb[1];
         *out++ = rgb[2];
@@ -1010,9 +1072,23 @@ p2cmyk(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2cmyk(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    pa2rgb(out, in, xsize, palette);
+    rgb2cmyk(out, out, xsize);
+}
+
+static void
 p2ycbcr(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     p2rgb(out, in, xsize, palette);
+    ImagingConvertRGB2YCbCr(out, out, xsize);
+}
+
+static void
+pa2ycbcr(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    pa2rgb(out, in, xsize, palette);
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
@@ -1032,27 +1108,27 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     alpha = !strcmp(imIn->mode, "PA");
 
     if (strcmp(mode, "1") == 0)
-        convert = p2bit;
+        convert = alpha ? pa2bit : p2bit;
     else if (strcmp(mode, "L") == 0)
-        convert = p2l;
+        convert = alpha ? pa2l : p2l;
     else if (strcmp(mode, "LA") == 0)
-        convert = (alpha) ? pa2la : p2la;
+        convert = alpha ? pa2la : p2la;
     else if (strcmp(mode, "PA") == 0)
-        convert = l2la;
+        convert = p2pa;
     else if (strcmp(mode, "I") == 0)
-        convert = p2i;
+        convert = alpha ? pa2i : p2i;
     else if (strcmp(mode, "F") == 0)
-        convert = p2f;
+        convert = alpha ? pa2f : p2f;
     else if (strcmp(mode, "RGB") == 0)
-        convert = p2rgb;
+        convert = alpha ? pa2rgb : p2rgb;
     else if (strcmp(mode, "RGBA") == 0)
-        convert = (alpha) ? pa2rgba : p2rgba;
+        convert = alpha ? pa2rgba : p2rgba;
     else if (strcmp(mode, "RGBX") == 0)
-        convert = p2rgba;
+        convert = alpha ? pa2rgba : p2rgba;
     else if (strcmp(mode, "CMYK") == 0)
-        convert = p2cmyk;
+        convert = alpha ? pa2cmyk : p2cmyk;
     else if (strcmp(mode, "YCbCr") == 0)
-        convert = p2ycbcr;
+        convert = alpha ? pa2ycbcr : p2ycbcr;
     else
         return (Imaging) ImagingError_ValueError("conversion not supported");
 
@@ -1073,15 +1149,18 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
 #pragma optimize("", off)
 #endif
 static Imaging
-topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
+topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalette, int dither)
 {
     ImagingSectionCookie cookie;
+    int alpha;
     int x, y;
     ImagingPalette palette = inpalette;;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0)
         return (Imaging) ImagingError_ValueError("conversion not supported");
+
+    alpha = !strcmp(mode, "PA");
 
     if (palette == NULL) {
       /* FIXME: make user configurable */
@@ -1094,7 +1173,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
     if (!palette)
         return (Imaging) ImagingError_ValueError("no palette");
 
-    imOut = ImagingNew2Dirty("P", imOut, imIn);
+    imOut = ImagingNew2Dirty(mode, imOut, imIn);
     if (!imOut) {
       if (palette != inpalette)
         ImagingPaletteDelete(palette);
@@ -1109,8 +1188,13 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 
         /* Greyscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
-        for (y = 0; y < imIn->ysize; y++)
-            memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+        for (y = 0; y < imIn->ysize; y++) {
+            if (alpha) {
+                l2la((UINT8*) imOut->image[y], (UINT8*) imIn->image[y], imIn->xsize);
+            } else {
+                memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+            }
+        }
         ImagingSectionLeave(&cookie);
 
     } else {
@@ -1141,7 +1225,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                 int g, g0, g1, g2;
                 int b, b0, b1, b2;
                 UINT8* in  = (UINT8*) imIn->image[y];
-                UINT8* out = imOut->image8[y];
+                UINT8* out = alpha ? (UINT8*) imOut->image32[y] : imOut->image8[y];
                 int* e = errors;
 
                 r = r0 = r1 = 0;
@@ -1160,7 +1244,12 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                     cache = &ImagingPaletteCache(palette, r, g, b);
                     if (cache[0] == 0x100)
                         ImagingPaletteCacheUpdate(palette, r, g, b);
-                    out[x] = (UINT8) cache[0];
+                    if (alpha) {
+                        out[x*4] = out[x*4+1] = out[x*4+2] = (UINT8) cache[0];
+                        out[x*4+3] = 255;
+                    } else {
+                        out[x] = (UINT8) cache[0];
+                    }
 
                     r -= (int) palette->palette[cache[0]*4];
                     g -= (int) palette->palette[cache[0]*4+1];
@@ -1193,7 +1282,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
             for (y = 0; y < imIn->ysize; y++) {
                 int r, g, b;
                 UINT8* in  = (UINT8*) imIn->image[y];
-                UINT8* out = imOut->image8[y];
+                UINT8* out = alpha ? (UINT8*) imOut->image32[y] : imOut->image8[y];
 
                 for (x = 0; x < imIn->xsize; x++, in += 4) {
                     INT16* cache;
@@ -1204,8 +1293,12 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                     cache = &ImagingPaletteCache(palette, r, g, b);
                     if (cache[0] == 0x100)
                         ImagingPaletteCacheUpdate(palette, r, g, b);
-                    out[x] = (UINT8) cache[0];
-
+                    if (alpha) {
+                        out[x*4] = out[x*4+1] = out[x*4+2] = (UINT8) cache[0];
+                        out[x*4+3] = 255;
+                    } else {
+                        out[x] = (UINT8) cache[0];
+                    }
                 }
             }
             ImagingSectionLeave(&cookie);
@@ -1335,8 +1428,8 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
     if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0)
         return frompalette(imOut, imIn, mode);
 
-    if (strcmp(mode, "P") == 0)
-        return topalette(imOut, imIn, palette, dither);
+    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0)
+        return topalette(imOut, imIn, mode, palette, dither);
 
     if (dither && strcmp(mode, "1") == 0)
         return tobilevel(imOut, imIn, dither);
