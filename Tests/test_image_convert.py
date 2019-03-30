@@ -12,7 +12,8 @@ class TestImageConvert(PillowTestCase):
             self.assertEqual(out.mode, mode)
             self.assertEqual(out.size, im.size)
 
-        modes = "1", "L", "I", "F", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"
+        modes = ("1", "L", "LA", "P", "PA", "I", "F",
+                 "RGB", "RGBA", "RGBX", "CMYK", "YCbCr")
 
         for mode in modes:
             im = hopper(mode)
