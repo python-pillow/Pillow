@@ -1331,6 +1331,7 @@ static struct {
     {"RGB",     "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGB",     "RGBX",         32,     copy4},
     {"RGB",     "RGBX;L",       32,     unpackRGBAL},
+    {"RGB",     "RGBA;L",       32,     unpackRGBAL},
     {"RGB",     "BGRX",         32,     ImagingUnpackBGRX},
     {"RGB",     "XRGB",         24,     ImagingUnpackXRGB},
     {"RGB",     "XBGR",         32,     ImagingUnpackXBGR},

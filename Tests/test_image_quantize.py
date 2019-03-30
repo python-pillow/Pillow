@@ -38,8 +38,9 @@ class TestImageQuantize(PillowTestCase):
 
     def test_rgba_quantize(self):
         image = hopper('RGBA')
-        image.quantize()
         self.assertRaises(ValueError, image.quantize, method=0)
+
+        self.assertEqual(image.quantize().convert().mode, "RGBA")
 
     def test_quantize(self):
         image = Image.open('Tests/images/caption_6_33_22.png').convert('RGB')
