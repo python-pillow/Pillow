@@ -27,7 +27,6 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, i32le as i32, \
                      o8, o16le as o16, o32le as o32
-import math
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -121,8 +120,7 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info['colors'] = i32(header_data[28:32])
             file_info['palette_padding'] = 4
             self.info["dpi"] = tuple(
-                map(lambda x: int(math.ceil(x / 39.3701)),
-                    file_info['pixels_per_meter']))
+                int(x / 39.3701 + 0.5) for x in file_info['pixels_per_meter'])
             if file_info['compression'] == self.BITFIELDS:
                 if len(header_data) >= 52:
                     for idx, mask in enumerate(['r_mask',
@@ -311,7 +309,7 @@ def _save(im, fp, filename, bitmap_header=True):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701), dpi))
+    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
 
     stride = ((im.size[0]*bits+7)//8+3) & (~3)
     header = 40  # or 64 for OS/2 version 2

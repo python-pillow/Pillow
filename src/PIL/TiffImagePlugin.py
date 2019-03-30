@@ -1260,11 +1260,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
             if resunit == 2:  # dots per inch
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
             elif resunit == 3:  # dots per centimeter. convert to dpi
-                self.info["dpi"] = xres * 2.54, yres * 2.54
+                self.info["dpi"] = int(xres * 2.54 + 0.5), int(yres * 2.54 + 0.5)
             elif resunit is None:  # used to default to 1, but now 2)
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
                 # For backward compatibility,
                 # we also preserve the old behavior
                 self.info["resolution"] = xres, yres
@@ -1475,8 +1475,8 @@ def _save(im, fp, filename):
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         ifd[RESOLUTION_UNIT] = 2
-        ifd[X_RESOLUTION] = dpi[0]
-        ifd[Y_RESOLUTION] = dpi[1]
+        ifd[X_RESOLUTION] = int(dpi[0] + 0.5)
+        ifd[Y_RESOLUTION] = int(dpi[1] + 0.5)
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits

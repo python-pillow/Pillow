@@ -524,6 +524,27 @@ class TestFileJpeg(PillowTestCase):
         reloaded.load()
         self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
 
+    def test_load_dpi_rounding(self):
+        # Round up
+        im = Image.open('Tests/images/iptc_roundUp.jpg')
+        self.assertEqual(im.info["dpi"], (44, 44))
+
+        # Round down
+        im = Image.open('Tests/images/iptc_roundDown.jpg')
+        self.assertEqual(im.info["dpi"], (2, 2))
+
+    def test_save_dpi_rounding(self):
+        outfile = self.tempfile("temp.jpg")
+        im = Image.open('Tests/images/hopper.jpg')
+
+        im.save(outfile, dpi=(72.2, 72.2))
+        reloaded = Image.open(outfile)
+        self.assertEqual(reloaded.info["dpi"], (72, 72))
+
+        im.save(outfile, dpi=(72.8, 72.8))
+        reloaded = Image.open(outfile)
+        self.assertEqual(reloaded.info["dpi"], (73, 73))
+
     def test_dpi_tuple_from_exif(self):
         # Arrange
         # This Photoshop CC 2017 image has DPI in EXIF not metadata
