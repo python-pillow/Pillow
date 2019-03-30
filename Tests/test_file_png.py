@@ -389,6 +389,24 @@ class TestFilePng(PillowTestCase):
         im = roundtrip(im, dpi=(100, 100))
         self.assertEqual(im.info["dpi"], (100, 100))
 
+    def test_load_dpi_rounding(self):
+        # Round up
+        im = Image.open(TEST_PNG_FILE)
+        self.assertEqual(im.info["dpi"], (96, 96))
+
+        # Round down
+        im = Image.open("Tests/images/icc_profile_none.png")
+        self.assertEqual(im.info["dpi"], (72, 72))
+
+    def test_save_dpi_rounding(self):
+        im = Image.open(TEST_PNG_FILE)
+
+        im = roundtrip(im, dpi=(72.2, 72.2))
+        self.assertEqual(im.info["dpi"], (72, 72))
+
+        im = roundtrip(im, dpi=(72.8, 72.8))
+        self.assertEqual(im.info["dpi"], (73, 73))
+
     def test_roundtrip_text(self):
         # Check text roundtripping
 

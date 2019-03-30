@@ -160,13 +160,13 @@ def APP(self, marker):
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:
-                dpi = x_resolution[0] / x_resolution[1]
+                dpi = float(x_resolution[0]) / x_resolution[1]
             except TypeError:
                 dpi = x_resolution
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
+            self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
         except (KeyError, SyntaxError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable exif
             # KeyError for dpi not included
