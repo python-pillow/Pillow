@@ -8,6 +8,21 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Update palette in quantize #3721
+  [radarhere]
+
+- Improvements to TIFF is_animated and n_frames #3714
+  [radarhere]
+
+- Fixed incompatible pointer type warnings #3754
+  [radarhere]
+
+- Improvements to PA and LA conversion and palette operations #3728
+  [radarhere]
+
+- Consistent DPI rounding #3709
+  [radarhere]
+
 - Change size of MPO image to match frame #3588
   [radarhere]
 
