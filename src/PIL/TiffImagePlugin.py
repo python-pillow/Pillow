@@ -785,7 +785,7 @@ class ImageFileDirectory_v2(MutableMapping):
             warnings.warn(str(msg))
             return
 
-    def toBytes(self, offset=0):
+    def tobytes(self, offset=0):
         # FIXME What about tagdata?
         result = self._pack("H", len(self._tags_v2))
 
@@ -859,7 +859,7 @@ class ImageFileDirectory_v2(MutableMapping):
             fp.write(self._prefix + self._pack("HL", 42, 8))
 
         offset = fp.tell()
-        result = self.toBytes(offset)
+        result = self.tobytes(offset)
         fp.write(result)
         return offset + len(result)
 

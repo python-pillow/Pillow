@@ -726,7 +726,7 @@ def _save(im, fp, filename):
 
     exif = info.get("exif", b"")
     if isinstance(exif, ImageFile.Exif):
-        exif = exif.toBytes()
+        exif = exif.tobytes()
 
     # get keyword arguments
     im.encoderconfig = (

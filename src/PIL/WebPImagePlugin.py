@@ -218,7 +218,7 @@ def _save_all(im, fp, filename):
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, ImageFile.Exif):
-        exif = exif.toBytes()
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
         lossless = False
@@ -319,7 +319,7 @@ def _save(im, fp, filename):
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, ImageFile.Exif):
-        exif = exif.toBytes()
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:

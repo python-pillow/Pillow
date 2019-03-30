@@ -751,7 +751,7 @@ class Exif(MutableMapping):
             self._data[0x8825] = ifd
             self._ifds[0x8825] = ifd
 
-    def toBytes(self, offset=0):
+    def tobytes(self, offset=0):
         from . import TiffImagePlugin
         if self.endian == "<":
             head = b"II\x2A\x00\x08\x00\x00\x00"
@@ -760,7 +760,7 @@ class Exif(MutableMapping):
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self._data.items():
             ifd[tag] = value
-        return b"Exif\x00\x00"+head+ifd.toBytes(offset)
+        return b"Exif\x00\x00"+head+ifd.tobytes(offset)
 
     def get_ifd(self, tag):
         if tag not in self._ifds and tag in self._data:
