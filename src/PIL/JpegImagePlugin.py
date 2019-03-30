@@ -486,7 +486,7 @@ class ExifImageFileDirectory(TiffImagePlugin.ImageFileDirectory_v1):
     - values are "fixed up" so that 1-size tuples are expanded
     - custom update() to avoid iterating and expanding non parsed data
 
-    The goal is to use the lazyness of ImageFileDirectory_v1 in _getexif().
+    The goal is to use the laziness of ImageFileDirectory_v1 in _getexif().
     """
 
     def to_v2(self):
