@@ -667,20 +667,17 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
-
 Reading Multi-frame TIFF Images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
-:py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame
-numbers within the image file.  Frames are numbered from 0 to
-`im.num_frames - 1`.  You can seek to the next frame
-(``im.seek(im.tell() + 1)``), or rewind the file by seeking to the
-first frame.  Images can be accessed in any order.
+:py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame numbers
+within the image file. You can combine these methods to seek to the next frame
+(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.num_frames - 1``,
+and can be accessed in any order.
 
 ``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the
 last frame.
-
 
 Saving Tiff Images
 ~~~~~~~~~~~~~~~~~~
