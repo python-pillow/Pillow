@@ -8,6 +8,12 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Documented reading TIFF multiframe images #3720
+  [akuchling]
+
+- Improved speed of opening an MPO file #3658
+  [Glandos]
+
 - Update palette in quantize #3721
   [radarhere]
 
