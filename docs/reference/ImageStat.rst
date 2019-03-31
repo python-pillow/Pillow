@@ -24,9 +24,8 @@ for a region of an image.
         returns the low and high bins used. This is correct for images with 8 bits per
         channel, but fails for other modes such as ``I`` or ``F``. Instead, use
         :py:meth:`~PIL.Image.getextrema` to return per-band extrema for the image.
-        This is more correct and efficient because :py:meth:`~PIL.Image.getextrema` is
-        used by the histogram method for non-8-bit modes to return extrema to define the
-        bins used in the histogram.
+        This is more correct and efficient because, for non-8-bit modes, the histogram
+        method uses :py:meth:`~PIL.Image.getextrema` to determine the bins used.
 
     .. py:attribute:: count
 
