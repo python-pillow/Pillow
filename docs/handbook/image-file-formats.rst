@@ -640,9 +640,6 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
     .. versionadded:: 1.1.5
 
-**n_frames**
-    Number of frames in the TIFF file.
-
 **resolution**
     Image resolution as an ``(xres, yres)`` tuple, where applicable. This is a
     measurement in whichever unit is specified by the file.
