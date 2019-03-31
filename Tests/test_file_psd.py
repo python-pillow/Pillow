@@ -17,6 +17,12 @@ class TestImagePsd(PillowTestCase):
         im2 = hopper()
         self.assert_image_similar(im, im2, 4.8)
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(test_file)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
