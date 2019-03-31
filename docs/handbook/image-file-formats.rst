@@ -104,11 +104,11 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 Reading sequences
 ~~~~~~~~~~~~~~~~~
 
-The GIF loader supports the :py:meth:`~file.seek` and :py:meth:`~file.tell`
-methods. You can combine these methods to seek to the next frame
-(``im.seek(im.tell() + 1)``).
+The GIF loader supports the :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods. You can combine these methods
+to seek to the next frame (``im.seek(im.tell() + 1)``).
 
-``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
+``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the last frame.
 
 Saving
 ~~~~~~
@@ -569,7 +569,7 @@ Pillow reads and writes SPIDER image files of 32-bit floating point data
 ("F;32F").
 
 Pillow also reads SPIDER stack files containing sequences of SPIDER images. The
-:py:meth:`~file.seek` and :py:meth:`~file.tell` methods are supported, and
+:py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell` methods are supported, and
 random access is allowed.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
@@ -580,7 +580,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
 **istack**
     Set to 1 if the file is an image stack, else 0.
 
-**nimages**
+**n_frames**
     Set to the number of images in the stack.
 
 A convenience method, :py:meth:`~PIL.Image.Image.convert2byte`, is provided for
@@ -664,6 +664,17 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
+Reading Multi-frame TIFF Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame numbers
+within the image file. You can combine these methods to seek to the next frame
+(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.num_frames - 1``,
+and can be accessed in any order.
+
+``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the
+last frame.
 
 Saving Tiff Images
 ~~~~~~~~~~~~~~~~~~
@@ -851,7 +862,7 @@ is commonly used in fax applications. The DCX decoder can read files containing
 ``1``, ``L``, ``P``, or ``RGB`` data.
 
 When the file is opened, only the first image is read. You can use
-:py:meth:`~file.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
+:py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
 
 
 DDS
@@ -943,8 +954,8 @@ MIC
 ^^^
 
 Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened,
-the first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
-:py:meth:`~file.tell` to read other sprites from the file.
+the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` to read other sprites from the file.
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
@@ -952,7 +963,7 @@ MPO
 ^^^
 
 Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
-image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
+image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
 
