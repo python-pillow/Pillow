@@ -65,6 +65,12 @@ class TestImagePsd(PillowTestCase):
 
         self.assertRaises(EOFError, im.seek, -1)
 
+    def test_open_after_exclusive_load(self):
+        im = Image.open(test_file)
+        im.load()
+        im.seek(im.tell()+1)
+        im.load()
+
     def test_icc_profile(self):
         im = Image.open(test_file)
         self.assertIn("icc_profile", im.info)
