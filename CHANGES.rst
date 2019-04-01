@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Added warnings to deprecated CMSProfile attributes #3615
+  [hugovk]
+
 - Documented reading TIFF multiframe images #3720
   [akuchling]
 
