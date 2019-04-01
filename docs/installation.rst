@@ -165,7 +165,7 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
-    with Ubuntu <= 14.04 and Debian Jessie.
+    with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
@@ -402,10 +402,6 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7, 3.5, 3.6, 3.7,           |x86-64                 |
 |                                  | PyPy, PyPy3                   |                       |
-+----------------------------------+-------------------------------+-----------------------+
-| Ubuntu Linux 14.04 LTS           | 2.7, 3.5, 3.6                 |x86-64                 |
-|                                  +-------------------------------+-----------------------+
-|                                  | 2.7                           |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 | Windows Server 2012 R2           | 2.7, 3.5, 3.6, 3.7            |x86, x86-64            |
 |                                  +-------------------------------+-----------------------+
