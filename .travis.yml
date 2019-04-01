@@ -18,10 +18,8 @@ matrix:
       env: LINT="true"
     - python: "pypy2.7-6.0"
       name: "PyPy2 Xenial"
-      dist: xenial
     - python: "pypy3.5-6.0"
       name: "PyPy3 Xenial"
-      dist: xenial
     - python: '3.7'
       name: "3.7 Xenial"
     - python: '2.7'
