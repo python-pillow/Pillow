@@ -240,22 +240,26 @@ class TestImageOps(PillowTestCase):
             for i in range(2, 9):
                 im = Image.open("Tests/images/hopper_orientation_"+str(i)+ext)
                 orientations.append(im)
-            for im in orientations:
-                if im is base_im:
-                    self.assertNotIn("exif", im.info)
-                else:
-                    original_exif = im.info["exif"]
-                transposed_im = ImageOps.exif_transpose(im)
-                self.assert_image_similar(base_im, transposed_im, 17)
-                if im is base_im:
-                    self.assertNotIn("exif", im.info)
-                else:
-                    self.assertNotEqual(transposed_im.info["exif"], original_exif)
+            for i, orientation_im in enumerate(orientations):
+                for im in [
+                    orientation_im,        # ImageFile
+                    orientation_im.copy()  # Image
+                ]:
+                    if i == 0:
+                        self.assertNotIn("exif", im.info)
+                    else:
+                        original_exif = im.info["exif"]
+                    transposed_im = ImageOps.exif_transpose(im)
+                    self.assert_image_similar(base_im, transposed_im, 17)
+                    if i == 0:
+                        self.assertNotIn("exif", im.info)
+                    else:
+                        self.assertNotEqual(transposed_im.info["exif"], original_exif)
 
-                    exif = ImageFile.Exif()
-                    exif.load(transposed_im.info["exif"])
-                    self.assertNotIn(0x0112, exif)
+                        exif = ImageFile.Exif()
+                        exif.load(transposed_im.info["exif"])
+                        self.assertNotIn(0x0112, exif)
 
-                # Repeat the operation, to test that it does not keep transposing
-                transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                self.assert_image_equal(transposed_im2, transposed_im)
+                    # Repeat the operation, to test that it does not keep transposing
+                    transposed_im2 = ImageOps.exif_transpose(transposed_im)
+                    self.assert_image_equal(transposed_im2, transposed_im)

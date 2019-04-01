@@ -532,22 +532,22 @@ def exif_transpose(image):
     :param image: The image to transpose.
     :return: An image.
     """
-    if isinstance(image, ImageFile.ImageFile):
-        exif = image.getexif()
-        if exif:
-            orientation = exif.get(0x0112)
-            method = {
-                2: Image.FLIP_LEFT_RIGHT,
-                3: Image.ROTATE_180,
-                4: Image.FLIP_TOP_BOTTOM,
-                5: Image.TRANSPOSE,
-                6: Image.ROTATE_270,
-                7: Image.TRANSVERSE,
-                8: Image.ROTATE_90
-            }.get(orientation)
-            if method is not None:
-                transposed_image = image.transpose(method)
-                del exif[0x0112]
-                transposed_image.info["exif"] = exif.tobytes()
-                return transposed_image
+    if "exif" in image.info:
+        exif = ImageFile.Exif()
+        exif.load(image.info["exif"])
+        orientation = exif.get(0x0112)
+        method = {
+            2: Image.FLIP_LEFT_RIGHT,
+            3: Image.ROTATE_180,
+            4: Image.FLIP_TOP_BOTTOM,
+            5: Image.TRANSPOSE,
+            6: Image.ROTATE_270,
+            7: Image.TRANSVERSE,
+            8: Image.ROTATE_90
+        }.get(orientation)
+        if method is not None:
+            transposed_image = image.transpose(method)
+            del exif[0x0112]
+            transposed_image.info["exif"] = exif.tobytes()
+            return transposed_image
     return image.copy()
