@@ -93,8 +93,9 @@ class WebPImageFile(ImageFile.ImageFile):
         self.seek(0)
 
     def _getexif(self):
-        from .JpegImagePlugin import _getexif
-        return _getexif(self)
+        if "exif" not in self.info:
+            return None
+        return dict(self.getexif())
 
     @property
     def n_frames(self):
@@ -216,6 +217,8 @@ def _save_all(im, fp, filename):
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    if isinstance(exif, ImageFile.Exif):
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
         lossless = False
@@ -315,6 +318,8 @@ def _save(im, fp, filename):
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    if isinstance(exif, ImageFile.Exif):
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:

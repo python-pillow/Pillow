@@ -86,7 +86,7 @@ def APP(self, marker):
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:5] == b"Exif\0":
         if "exif" not in self.info:
-            # extract Exif information (incomplete)
+            # extract EXIF information (incomplete)
             self.info["exif"] = s  # FIXME: value will change
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
@@ -168,7 +168,7 @@ def APP(self, marker):
                 dpi *= 2.54
             self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
         except (KeyError, SyntaxError, ZeroDivisionError):
-            # SyntaxError for invalid/unreadable exif
+            # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
@@ -472,65 +472,20 @@ class JpegImageFile(ImageFile.ImageFile):
 def _fixup_dict(src_dict):
     # Helper function for _getexif()
     # returns a dict with any single item tuples/lists as individual values
-    def _fixup(value):
-        try:
-            if len(value) == 1 and not isinstance(value, dict):
-                return value[0]
-        except Exception:
-            pass
-        return value
-
-    return {k: _fixup(v) for k, v in src_dict.items()}
+    exif = ImageFile.Exif()
+    return exif._fixup_dict(src_dict)
 
 
 def _getexif(self):
-    # Extract EXIF information.  This method is highly experimental,
-    # and is likely to be replaced with something better in a future
-    # version.
-
     # Use the cached version if possible
     try:
         return self.info["parsed_exif"]
     except KeyError:
         pass
 
-    # The EXIF record consists of a TIFF file embedded in a JPEG
-    # application marker (!).
-    try:
-        data = self.info["exif"]
-    except KeyError:
+    if "exif" not in self.info:
         return None
-    fp = io.BytesIO(data[6:])
-    head = fp.read(8)
-    # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    fp.seek(info.next)
-    info.load(fp)
-    exif = dict(_fixup_dict(info))
-    # get exif extension
-    try:
-        # exif field 0x8769 is an offset pointer to the location
-        # of the nested embedded exif ifd.
-        # It should be a long, but may be corrupted.
-        fp.seek(exif[0x8769])
-    except (KeyError, TypeError):
-        pass
-    else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(fp)
-        exif.update(_fixup_dict(info))
-    # get gpsinfo extension
-    try:
-        # exif field 0x8825 is an offset pointer to the location
-        # of the nested embedded gps exif ifd.
-        # It should be a long, but may be corrupted.
-        fp.seek(exif[0x8825])
-    except (KeyError, TypeError):
-        pass
-    else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(fp)
-        exif[0x8825] = _fixup_dict(info)
+    exif = dict(self.getexif())
 
     # Cache the result for future use
     self.info["parsed_exif"] = exif
@@ -769,6 +724,10 @@ def _save(im, fp, filename):
 
     optimize = info.get("optimize", False)
 
+    exif = info.get("exif", b"")
+    if isinstance(exif, ImageFile.Exif):
+        exif = exif.tobytes()
+
     # get keyword arguments
     im.encoderconfig = (
         quality,
@@ -780,7 +739,7 @@ def _save(im, fp, filename):
         subsampling,
         qtables,
         extra,
-        info.get("exif", b"")
+        exif
         )
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
@@ -798,9 +757,9 @@ def _save(im, fp, filename):
         else:
             bufsize = im.size[0] * im.size[1]
 
-    # The exif info needs to be written as one block, + APP1, + one spare byte.
+    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
     # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif", b"")) + 5,
+    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5,
                   len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0)+im.size, 0, rawmode)], bufsize)

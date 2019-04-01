@@ -696,8 +696,14 @@ class PngImageFile(ImageFile.ImageFile):
     def _getexif(self):
         if "exif" not in self.info:
             self.load()
-        from .JpegImagePlugin import _getexif
-        return _getexif(self)
+        if "exif" not in self.info:
+            return None
+        return dict(self.getexif())
+
+    def getexif(self):
+        if "exif" not in self.info:
+            self.load()
+        return ImageFile.ImageFile.getexif(self)
 
 
 # --------------------------------------------------------------------
@@ -880,6 +886,8 @@ def _save(im, fp, filename, chunk=putchunk):
 
     exif = im.encoderinfo.get("exif", im.info.get("exif"))
     if exif:
+        if isinstance(exif, ImageFile.Exif):
+            exif = exif.tobytes(8)
         if exif.startswith(b"Exif\x00\x00"):
             exif = exif[6:]
         chunk(fp, b"eXIf", exif)
