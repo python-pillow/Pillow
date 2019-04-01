@@ -50,8 +50,7 @@ class GimpPaletteFile(object):
             if len(v) != 3:
                 raise ValueError("bad palette entry")
 
-            if 0 <= i <= 255:
-                self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
+            self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
 
             i += 1
 
