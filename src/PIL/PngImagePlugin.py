@@ -886,7 +886,7 @@ def _save(im, fp, filename, chunk=putchunk):
 
     exif = im.encoderinfo.get("exif", im.info.get("exif"))
     if exif:
-        if isinstance(exif, ImageFile.Exif):
+        if isinstance(exif, Image.Exif):
             exif = exif.tobytes(8)
         if exif.startswith(b"Exif\x00\x00"):
             exif = exif[6:]

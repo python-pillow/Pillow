@@ -217,7 +217,7 @@ def _save_all(im, fp, filename):
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
-    if isinstance(exif, ImageFile.Exif):
+    if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
@@ -318,7 +318,7 @@ def _save(im, fp, filename):
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
-    if isinstance(exif, ImageFile.Exif):
+    if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
 

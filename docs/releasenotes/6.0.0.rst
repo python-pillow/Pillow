@@ -165,12 +165,20 @@ language-specific glyphs and ligatures from the font:
 * ``ImageFont.ImageFont.getsize_multiline()``
 * ``ImageFont.ImageFont.getsize()``
 
+Added EXIF class
+^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getexif` has been added, and returning an
+:py:class:`~PIL.Image.Exif` instance. Values can be retrieved and set like a
+dictionary. When saving JPEG, PNG or WEBP, the instance can be passed as an
+``exif`` argument to include any changes in the output image.
+
 PNG EXIF data
 ^^^^^^^^^^^^^
 
 EXIF data can now be read from and saved to PNG images. However, unlike other image
-formats, EXIF data is not guaranteed to have been read until
-:py:meth:`~PIL.Image.Image.load` has been called.
+formats, EXIF data is not guaranteed to be present in :py:attr:`~PIL.Image.Image.info`
+until :py:meth:`~PIL.Image.Image.load` has been called.
 
 Other Changes
 =============

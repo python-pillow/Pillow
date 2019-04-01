@@ -27,20 +27,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, TiffTags
-from ._binary import i32le
-from ._util import isPath, py3
+from . import Image
+from ._util import isPath
 import io
 import sys
 import struct
-import warnings
-
-try:
-    # Python 3
-    from collections.abc import MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import MutableMapping
 
 MAXBLOCK = 65536
 
@@ -301,12 +292,6 @@ class ImageFile(Image.Image):
             raise EOFError("attempt to seek outside sequence")
 
         return self.tell() != frame
-
-    def getexif(self):
-        exif = Exif()
-        if "exif" in self.info:
-            exif.load(self.info["exif"])
-        return exif
 
 
 class StubImageFile(ImageFile):
@@ -687,182 +672,3 @@ class PyDecoder(object):
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
-
-
-class Exif(MutableMapping):
-    endian = "<"
-
-    def __init__(self):
-        self._data = {}
-        self._ifds = {}
-
-    def _fixup_dict(self, src_dict):
-        # Helper function for _getexif()
-        # returns a dict with any single item tuples/lists as individual values
-        def _fixup(value):
-            try:
-                if len(value) == 1 and not isinstance(value, dict):
-                    return value[0]
-            except Exception:
-                pass
-            return value
-
-        return {k: _fixup(v) for k, v in src_dict.items()}
-
-    def _get_ifd_dict(self, tag):
-        try:
-            # an offset pointer to the location of the nested embedded IFD.
-            # It should be a long, but may be corrupted.
-            self.fp.seek(self._data[tag])
-        except (KeyError, TypeError):
-            pass
-        else:
-            from . import TiffImagePlugin
-            info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
-            info.load(self.fp)
-            return self._fixup_dict(info)
-
-    def load(self, data):
-        # Extract EXIF information.  This is highly experimental,
-        # and is likely to be replaced with something better in a future
-        # version.
-
-        # The EXIF record consists of a TIFF file embedded in a JPEG
-        # application marker (!).
-        self.fp = io.BytesIO(data[6:])
-        self.head = self.fp.read(8)
-        # process dictionary
-        from . import TiffImagePlugin
-        info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
-        self.endian = info._endian
-        self.fp.seek(info.next)
-        info.load(self.fp)
-        self._data = dict(self._fixup_dict(info))
-
-        # get EXIF extension
-        ifd = self._get_ifd_dict(0x8769)
-        if ifd:
-            self._data.update(ifd)
-            self._ifds[0x8769] = ifd
-
-        # get gpsinfo extension
-        ifd = self._get_ifd_dict(0x8825)
-        if ifd:
-            self._data[0x8825] = ifd
-            self._ifds[0x8825] = ifd
-
-    def tobytes(self, offset=0):
-        from . import TiffImagePlugin
-        if self.endian == "<":
-            head = b"II\x2A\x00\x08\x00\x00\x00"
-        else:
-            head = b"MM\x00\x2A\x00\x00\x00\x08"
-        ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
-        for tag, value in self._data.items():
-            ifd[tag] = value
-        return b"Exif\x00\x00"+head+ifd.tobytes(offset)
-
-    def get_ifd(self, tag):
-        if tag not in self._ifds and tag in self._data:
-            if tag == 0xa005:  # interop
-                self._ifds[tag] = self._get_ifd_dict(tag)
-            elif tag == 0x927c:  # makernote
-                from . import TiffImagePlugin
-                if self._data[0x927c][:8] == b"FUJIFILM":
-                    exif_data = self._data[0x927c]
-                    ifd_offset = i32le(exif_data[8:12])
-                    ifd_data = exif_data[ifd_offset:]
-
-                    makernote = {}
-                    for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
-                        ifd_tag, typ, count, data = struct.unpack(
-                            "<HHL4s", ifd_data[i*12 + 2:(i+1)*12 + 2])
-                        try:
-                            unit_size, handler =\
-                                TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
-                                    typ
-                                ]
-                        except KeyError:
-                            continue
-                        size = count * unit_size
-                        if size > 4:
-                            offset, = struct.unpack("<L", data)
-                            data = ifd_data[offset-12:offset+size-12]
-                        else:
-                            data = data[:size]
-
-                        if len(data) != size:
-                            warnings.warn("Possibly corrupt EXIF MakerNote data.  "
-                                          "Expecting to read %d bytes but only got %d."
-                                          " Skipping tag %s"
-                                          % (size, len(data), ifd_tag))
-                            continue
-
-                        if not data:
-                            continue
-
-                        makernote[ifd_tag] = handler(
-                            TiffImagePlugin.ImageFileDirectory_v2(), data, False)
-                    self._ifds[0x927c] = dict(self._fixup_dict(makernote))
-                elif self._data.get(0x010f) == "Nintendo":
-                    ifd_data = self._data[0x927c]
-
-                    makernote = {}
-                    for i in range(0, struct.unpack(">H", ifd_data[:2])[0]):
-                        ifd_tag, typ, count, data = struct.unpack(
-                            ">HHL4s", ifd_data[i*12 + 2:(i+1)*12 + 2])
-                        if ifd_tag == 0x1101:
-                            # CameraInfo
-                            offset, = struct.unpack(">L", data)
-                            self.fp.seek(offset)
-
-                            camerainfo = {'ModelID': self.fp.read(4)}
-
-                            self.fp.read(4)
-                            # Seconds since 2000
-                            camerainfo['TimeStamp'] = i32le(self.fp.read(12))
-
-                            self.fp.read(4)
-                            camerainfo['InternalSerialNumber'] = self.fp.read(4)
-
-                            self.fp.read(12)
-                            parallax = self.fp.read(4)
-                            handler =\
-                                TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
-                                    TiffTags.FLOAT
-                                ][1]
-                            camerainfo['Parallax'] = handler(
-                                TiffImagePlugin.ImageFileDirectory_v2(),
-                                parallax, False)
-
-                            self.fp.read(4)
-                            camerainfo['Category'] = self.fp.read(2)
-
-                            makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
-                    self._ifds[0x927c] = makernote
-        return self._ifds.get(tag, {})
-
-    def __str__(self):
-        return str(self._data)
-
-    def __len__(self):
-        return len(self._data)
-
-    def __getitem__(self, tag):
-        return self._data[tag]
-
-    def __contains__(self, tag):
-        return tag in self._data
-
-    if not py3:
-        def has_key(self, tag):
-            return tag in self
-
-    def __setitem__(self, tag, value):
-        self._data[tag] = value
-
-    def __delitem__(self, tag):
-        del self._data[tag]
-
-    def __iter__(self):
-        return iter(set(self._data))
