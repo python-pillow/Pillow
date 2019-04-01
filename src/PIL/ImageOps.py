@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+from . import Image, ImageFile
 from ._util import isStringType
 import operator
 import functools
@@ -532,8 +532,8 @@ def exif_transpose(image):
     :param image: The image to transpose.
     :return: An image.
     """
-    if not hasattr(image, '_exif_transposed') and hasattr(image, '_getexif'):
-        exif = image._getexif()
+    if isinstance(image, ImageFile.ImageFile):
+        exif = image.getexif()
         if exif:
             orientation = exif.get(0x0112)
             method = {
@@ -547,6 +547,7 @@ def exif_transpose(image):
             }.get(orientation)
             if method is not None:
                 transposed_image = image.transpose(method)
-                transposed_image._exif_transposed = True
+                del exif[0x0112]
+                transposed_image.info["exif"] = exif.tobytes()
                 return transposed_image
     return image.copy()

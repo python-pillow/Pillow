@@ -1,7 +1,8 @@
 from .helper import PillowTestCase, hopper
 
-from PIL import ImageOps
 from PIL import Image
+from PIL import ImageFile
+from PIL import ImageOps
 
 try:
     from PIL import _webp
@@ -240,8 +241,20 @@ class TestImageOps(PillowTestCase):
                 im = Image.open("Tests/images/hopper_orientation_"+str(i)+ext)
                 orientations.append(im)
             for im in orientations:
+                if im is base_im:
+                    self.assertNotIn("exif", im.info)
+                else:
+                    original_exif = im.info["exif"]
                 transposed_im = ImageOps.exif_transpose(im)
                 self.assert_image_similar(base_im, transposed_im, 17)
+                if im is base_im:
+                    self.assertNotIn("exif", im.info)
+                else:
+                    self.assertNotEqual(transposed_im.info["exif"], original_exif)
+
+                    exif = ImageFile.Exif()
+                    exif.load(transposed_im.info["exif"])
+                    self.assertNotIn(0x0112, exif)
 
                 # Repeat the operation, to test that it does not keep transposing
                 transposed_im2 = ImageOps.exif_transpose(transposed_im)
