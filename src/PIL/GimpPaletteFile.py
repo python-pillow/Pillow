@@ -32,14 +32,12 @@ class GimpPaletteFile(object):
         if fp.readline()[:12] != b"GIMP Palette":
             raise SyntaxError("not a GIMP palette file")
 
-        i = 0
-
-        while i <= 255:
+        for i in range(256):
 
             s = fp.readline()
-
             if not s:
                 break
+
             # skip fields and comment lines
             if re.match(br"\w+:|#", s):
                 continue
@@ -50,10 +48,7 @@ class GimpPaletteFile(object):
             if len(v) != 3:
                 raise ValueError("bad palette entry")
 
-            if 0 <= i <= 255:
-                self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
-
-            i += 1
+            self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
 
         self.palette = b"".join(self.palette)
 
