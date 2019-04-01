@@ -60,14 +60,6 @@ install:
       .travis/install.sh;
     fi
 
-before_script:
-# Qt needs a display for some of the tests, and it's only run on the system site packages install
-- |
-  if [ "$TRAVIS_JOB_NAME" == "2.7_with_system_site_packages Xenial" ]; then
-    export DISPLAY=:99.0
-    sh -e /etc/init.d/xvfb start
-  fi
-
 script:
 - |
   if [ "$LINT" == "true" ]; then
