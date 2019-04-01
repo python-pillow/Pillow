@@ -464,8 +464,9 @@ Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``LA``,
 v1.1.7.
 
 As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
-image formats, EXIF data is not guaranteed to have been read until
-:py:meth:`~PIL.Image.Image.load` has been called.
+image formats, EXIF data is not guaranteed to be present in
+:py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
+called.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
