@@ -8,6 +8,12 @@ Changelog (Pillow)
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
 
+- Add EXIF class #3625
+  [radarhere]
+
+- Add ImageOps exif_transpose method #3687
+  [radarhere]
+
 - Added warnings to deprecated CMSProfile attributes #3615
   [hugovk]
 
