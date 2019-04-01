@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-6.0.0 (unreleased)
+6.0.0 (2019-04-01)
 ------------------
 
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
