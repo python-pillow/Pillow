@@ -472,7 +472,7 @@ class JpegImageFile(ImageFile.ImageFile):
 def _fixup_dict(src_dict):
     # Helper function for _getexif()
     # returns a dict with any single item tuples/lists as individual values
-    exif = ImageFile.Exif()
+    exif = Image.Exif()
     return exif._fixup_dict(src_dict)
 
 
@@ -725,7 +725,7 @@ def _save(im, fp, filename):
     optimize = info.get("optimize", False)
 
     exif = info.get("exif", b"")
-    if isinstance(exif, ImageFile.Exif):
+    if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
 
     # get keyword arguments

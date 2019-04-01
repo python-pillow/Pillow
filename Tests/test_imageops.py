@@ -1,7 +1,6 @@
 from .helper import PillowTestCase, hopper
 
 from PIL import Image
-from PIL import ImageFile
 from PIL import ImageOps
 
 try:
@@ -256,9 +255,7 @@ class TestImageOps(PillowTestCase):
                     else:
                         self.assertNotEqual(transposed_im.info["exif"], original_exif)
 
-                        exif = ImageFile.Exif()
-                        exif.load(transposed_im.info["exif"])
-                        self.assertNotIn(0x0112, exif)
+                        self.assertNotIn(0x0112, transposed_im.getexif())
 
                     # Repeat the operation, to test that it does not keep transposing
                     transposed_im2 = ImageOps.exif_transpose(transposed_im)
