@@ -99,6 +99,24 @@ version.
 
 Use ``PIL.__version__`` instead.
 
+ImageCms.CmsProfile attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
+6.0.0, they issue a ``DeprecationWarning``:
+
+========================  ===============================
+Deprecated                Use instead
+========================  ===============================
+``color_space``           Padded ``xcolor_space``
+``pcs``                   Padded ``connection_space``
+``product_copyright``     Unicode ``copyright``
+``product_desc``          Unicode ``profile_description``
+``product_description``   Unicode ``profile_description``
+``product_manufacturer``  Unicode ``manufacturer``
+``product_model``         Unicode ``model``
+========================  ===============================
+
 MIME type improvements
 ^^^^^^^^^^^^^^^^^^^^^^
 

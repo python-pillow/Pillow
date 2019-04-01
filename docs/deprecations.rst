@@ -79,6 +79,26 @@ PILLOW_VERSION constant
 ``PILLOW_VERSION`` has been deprecated and will be removed in the next
 major release. Use ``__version__`` instead.
 
+ImageCms.CmsProfile attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 3.2.0
+
+Some attributes in ``ImageCms.CmsProfile`` are deprecated. From 6.0.0, they issue a
+``DeprecationWarning``:
+
+========================  ===============================
+Deprecated                Use instead
+========================  ===============================
+``color_space``           Padded ``xcolor_space``
+``pcs``                   Padded ``connection_space``
+``product_copyright``     Unicode ``copyright``
+``product_desc``          Unicode ``profile_description``
+``product_description``   Unicode ``profile_description``
+``product_manufacturer``  Unicode ``manufacturer``
+``product_model``         Unicode ``model``
+========================  ===============================
+
 Removed features
 ----------------
 

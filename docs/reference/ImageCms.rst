@@ -132,21 +132,21 @@ can be easily displayed in a chromaticity diagram, for example).
 
     .. py:attribute:: manufacturer
 
-        The (english) display string for the device manufacturer (see
+        The (English) display string for the device manufacturer (see
         9.2.22 of ICC.1:2010).
 
         :type: :py:class:`unicode` or ``None``
 
     .. py:attribute:: model
 
-        The (english) display string for the device model of the device
+        The (English) display string for the device model of the device
         for which this profile is created (see 9.2.23 of ICC.1:2010).
 
         :type: :py:class:`unicode` or ``None``
 
     .. py:attribute:: profile_description
 
-        The (english) display string for the profile description (see
+        The (English) display string for the profile description (see
         9.2.41 of ICC.1:2010).
 
         :type: :py:class:`unicode` or ``None``
@@ -269,14 +269,14 @@ can be easily displayed in a chromaticity diagram, for example).
 
     .. py:attribute:: viewing_condition
 
-        The (english) display string for the viewing conditions (see
+        The (English) display string for the viewing conditions (see
         9.2.48 of ICC.1:2010).
 
         :type: :py:class:`unicode` or ``None``
 
     .. py:attribute:: screening_description
 
-        The (english) display string for the screening conditions.
+        The (English) display string for the screening conditions.
 
         This tag was available in ICC 3.2, but it is removed from
         version 4.
