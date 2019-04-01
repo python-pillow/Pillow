@@ -168,10 +168,16 @@ language-specific glyphs and ligatures from the font:
 Added EXIF class
 ^^^^^^^^^^^^^^^^
 
-:py:meth:`~PIL.Image.Image.getexif` has been added, and returning an
+:py:meth:`~PIL.Image.Image.getexif` has been added, which returns an
 :py:class:`~PIL.Image.Exif` instance. Values can be retrieved and set like a
 dictionary. When saving JPEG, PNG or WEBP, the instance can be passed as an
 ``exif`` argument to include any changes in the output image.
+
+Added ImageOps.exif_transpose
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageOps.exif_transpose` returns a copy of an image, transposed
+according to its EXIF Orientation tag.
 
 PNG EXIF data
 ^^^^^^^^^^^^^
