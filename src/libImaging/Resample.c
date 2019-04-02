@@ -284,11 +284,12 @@ normalize_coeffs_8bpc(int outSize, int ksize, double *prekk)
         }
     }
 
-    coefs_precision = 0;
-    while (maxkk < (1 << (MAX_COEFS_PRECISION-1)) && (coefs_precision < PRECISION_BITS)) {
-        maxkk *= 2;
-        coefs_precision += 1;
-    };
+    for (coefs_precision = 0; coefs_precision < PRECISION_BITS; coefs_precision += 1) {
+        int next_value = (int) (0.5 + maxkk * (1 << (coefs_precision + 1)));
+        // The next value will be outside of the range, so just stop
+        if (next_value >= (1 << MAX_COEFS_PRECISION))
+            break;
+    }
 
     for (x = 0; x < outSize * ksize; x++) {
         if (prekk[x] < 0) {
