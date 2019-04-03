@@ -3184,7 +3184,7 @@ class Exif(MutableMapping):
             if tag == 0xA005:  # interop
                 self._ifds[tag] = self._get_ifd_dict(tag)
             elif tag == 0x927C:  # makernote
-                from . import TiffImagePlugin
+                from .TiffImagePlugin import ImageFileDirectory_v2
 
                 if self._data[0x927C][:8] == b"FUJIFILM":
                     exif_data = self._data[0x927C]
@@ -3197,7 +3197,7 @@ class Exif(MutableMapping):
                             "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                         )
                         try:
-                            unit_size, handler = TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
+                            unit_size, handler = ImageFileDirectory_v2._load_dispatch[
                                 typ
                             ]
                         except KeyError:
@@ -3221,7 +3221,7 @@ class Exif(MutableMapping):
                             continue
 
                         makernote[ifd_tag] = handler(
-                            TiffImagePlugin.ImageFileDirectory_v2(), data, False
+                            ImageFileDirectory_v2(), data, False
                         )
                     self._ifds[0x927C] = dict(self._fixup_dict(makernote))
                 elif self._data.get(0x010F) == "Nintendo":
@@ -3248,13 +3248,11 @@ class Exif(MutableMapping):
 
                             self.fp.read(12)
                             parallax = self.fp.read(4)
-                            handler = TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
+                            handler = ImageFileDirectory_v2._load_dispatch[
                                 TiffTags.FLOAT
-                            ][
-                                1
-                            ]
+                            ][1]
                             camerainfo["Parallax"] = handler(
-                                TiffImagePlugin.ImageFileDirectory_v2(), parallax, False
+                                ImageFileDirectory_v2(), parallax, False
                             )
 
                             self.fp.read(4)
