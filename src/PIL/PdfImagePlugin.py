@@ -61,7 +61,7 @@ def _save(im, fp, filename, save_all=False):
         resolution2D = (resolution,resolution)
     else:
         resolution2D = resolution
-        
+
     info = {
         "title": None if is_appending else os.path.splitext(
                                                os.path.basename(filename)
