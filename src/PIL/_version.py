@@ -1,2 +1,2 @@
 # Master version for Pillow
-__version__ = '5.3.0.post0'
+__version__ = '5.3.0.post1'
