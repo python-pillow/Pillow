@@ -56,6 +56,13 @@ def _save(im, fp, filename, save_all=False):
         existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
 
     resolution = im.encoderinfo.get("resolution", 72.0)
+    # Allows the user to specify either a 1D resolution or 2D resolution.
+    if not isinstance(resolution, (list, tuple)):
+        pdf_width_res = resolution
+        pdf_height_res = resolution
+    else:
+        pdf_width_res = resolution[0]
+        pdf_height_res = resolution[1]
 
     info = {
         "title": None if is_appending else os.path.splitext(
@@ -211,8 +218,8 @@ def _save(im, fp, filename, save_all=False):
                                     MediaBox=[
                                         0,
                                         0,
-                                        int(width * 72.0 / resolution),
-                                        int(height * 72.0 / resolution)
+                                        int(width * 72.0 / pdf_width_res),
+                                        int(height * 72.0 / pdf_height_res)
                                     ],
                                     Contents=contents_refs[pageNumber])
 
@@ -221,8 +228,8 @@ def _save(im, fp, filename, save_all=False):
 
             page_contents = PdfParser.make_bytes(
                 "q %d 0 0 %d 0 0 cm /image Do Q\n" % (
-                    int(width * 72.0 / resolution),
-                    int(height * 72.0 / resolution)))
+                    int(width * 72.0 / pdf_width_res),
+                    int(height * 72.0 / pdf_height_res)))
 
             existing_pdf.write_obj(contents_refs[pageNumber],
                                    stream=page_contents)
