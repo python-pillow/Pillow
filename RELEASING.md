@@ -102,4 +102,4 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Documentation
 
-* [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. `d2d43879` (5.4.0)
+* [ ] Make sure the [default version for Read the Docs](https://pillow.readthedocs.io/en/stable/) is up-to-date with the release changes
