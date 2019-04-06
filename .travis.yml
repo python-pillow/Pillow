@@ -37,7 +37,8 @@ matrix:
       name: "3.8-dev Xenial"
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
-    - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="master"
+    - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
+    - env: DOCKER="ubuntu-18.04-bionic-amd64" DOCKER_TAG="master"
     - env: DOCKER="debian-stretch-x86" DOCKER_TAG="master"
     - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
     - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
