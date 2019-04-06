@@ -765,12 +765,7 @@ try:
           url='http://python-pillow.org',
           classifiers=[
               "Development Status :: 6 - Mature",
-              "Topic :: Multimedia :: Graphics",
-              "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-              "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-              "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-              "Topic :: Multimedia :: Graphics :: Viewers",
-              "License :: Other/Proprietary License",
+              "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
               "Programming Language :: Python :: 2",
               "Programming Language :: Python :: 2.7",
               "Programming Language :: Python :: 3",
@@ -779,6 +774,11 @@ try:
               "Programming Language :: Python :: 3.7",
               "Programming Language :: Python :: Implementation :: CPython",
               "Programming Language :: Python :: Implementation :: PyPy",
+              "Topic :: Multimedia :: Graphics",
+              "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+              "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+              "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+              "Topic :: Multimedia :: Graphics :: Viewers",
           ],
           python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
           cmdclass={"build_ext": pil_build_ext},
@@ -789,7 +789,6 @@ try:
           packages=["PIL"],
           package_dir={'': 'src'},
           keywords=["Imaging", ],
-          license='Standard PIL License',
           zip_safe=not (debug_build() or PLATFORM_MINGW), )
 except RequiredDependencyException as err:
     msg = """

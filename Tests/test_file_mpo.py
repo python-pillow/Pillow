@@ -55,6 +55,27 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(info[296], 2)
             self.assertEqual(info[34665], 188)
 
+    def test_frame_size(self):
+        # This image has been hexedited to contain a different size
+        # in the EXIF data of the second frame
+        im = Image.open("Tests/images/sugarshack_frame_size.mpo")
+        self.assertEqual(im.size, (640, 480))
+
+        im.seek(1)
+        self.assertEqual(im.size, (680, 480))
+
+    def test_parallax(self):
+        # Nintendo
+        im = Image.open("Tests/images/sugarshack.mpo")
+        exif = im.getexif()
+        self.assertEqual(exif.get_ifd(0x927c)[0x1101]["Parallax"], -44.798187255859375)
+
+        # Fujifilm
+        im = Image.open("Tests/images/fujifilm.mpo")
+        im.seek(1)
+        exif = im.getexif()
+        self.assertEqual(exif.get_ifd(0x927c)[0xb211], -3.125)
+
     def test_mp(self):
         for test_file in test_files:
             im = Image.open(test_file)

@@ -291,30 +291,32 @@ class TestFilePng(PillowTestCase):
         self.assert_image(im, "RGBA", (10, 10))
         self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
-    def test_save_l_transparency(self):
-        # There are 559 transparent pixels in l_trns.png.
-        num_transparent = 559
+    def test_save_greyscale_transparency(self):
+        for mode, num_transparent in {
+            "1": 1994,
+            "L": 559,
+            "I": 559,
+        }.items():
+            in_file = "Tests/images/"+mode.lower()+"_trns.png"
+            im = Image.open(in_file)
+            self.assertEqual(im.mode, mode)
+            self.assertEqual(im.info["transparency"], 255)
 
-        in_file = "Tests/images/l_trns.png"
-        im = Image.open(in_file)
-        self.assertEqual(im.mode, "L")
-        self.assertEqual(im.info["transparency"], 255)
+            im_rgba = im.convert('RGBA')
+            self.assertEqual(
+                im_rgba.getchannel("A").getcolors()[0][0], num_transparent)
 
-        im_rgba = im.convert('RGBA')
-        self.assertEqual(
-            im_rgba.getchannel("A").getcolors()[0][0], num_transparent)
+            test_file = self.tempfile("temp.png")
+            im.save(test_file)
 
-        test_file = self.tempfile("temp.png")
-        im.save(test_file)
+            test_im = Image.open(test_file)
+            self.assertEqual(test_im.mode, mode)
+            self.assertEqual(test_im.info["transparency"], 255)
+            self.assert_image_equal(im, test_im)
 
-        test_im = Image.open(test_file)
-        self.assertEqual(test_im.mode, "L")
-        self.assertEqual(test_im.info["transparency"], 255)
-        self.assert_image_equal(im, test_im)
-
-        test_im_rgba = test_im.convert('RGBA')
-        self.assertEqual(
-            test_im_rgba.getchannel('A').getcolors()[0][0], num_transparent)
+            test_im_rgba = test_im.convert('RGBA')
+            self.assertEqual(
+                test_im_rgba.getchannel('A').getcolors()[0][0], num_transparent)
 
     def test_save_rgb_single_transparency(self):
         in_file = "Tests/images/caption_6_33_22.png"
@@ -386,6 +388,24 @@ class TestFilePng(PillowTestCase):
 
         im = roundtrip(im, dpi=(100, 100))
         self.assertEqual(im.info["dpi"], (100, 100))
+
+    def test_load_dpi_rounding(self):
+        # Round up
+        im = Image.open(TEST_PNG_FILE)
+        self.assertEqual(im.info["dpi"], (96, 96))
+
+        # Round down
+        im = Image.open("Tests/images/icc_profile_none.png")
+        self.assertEqual(im.info["dpi"], (72, 72))
+
+    def test_save_dpi_rounding(self):
+        im = Image.open(TEST_PNG_FILE)
+
+        im = roundtrip(im, dpi=(72.2, 72.2))
+        self.assertEqual(im.info["dpi"], (72, 72))
+
+        im = roundtrip(im, dpi=(72.8, 72.8))
+        self.assertEqual(im.info["dpi"], (73, 73))
 
     def test_roundtrip_text(self):
         # Check text roundtripping

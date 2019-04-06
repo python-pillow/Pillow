@@ -18,40 +18,25 @@ matrix:
       env: LINT="true"
     - python: "pypy2.7-6.0"
       name: "PyPy2 Xenial"
-      dist: xenial
     - python: "pypy3.5-6.0"
       name: "PyPy3 Xenial"
-      dist: xenial
     - python: '3.7'
       name: "3.7 Xenial"
     - python: '2.7'
       name: "2.7 Xenial"
-    - python: '2.7'
-      name: "2.7 Trusty"
-      dist: trusty
     - python:  "2.7_with_system_site_packages" # For PyQt4
       name: "2.7_with_system_site_packages Xenial"
       services: xvfb
-    - python:  "2.7_with_system_site_packages" # For PyQt4
-      name: "2.7_with_system_site_packages Trusty"
-      dist: trusty
     - python: '3.6'
-      name: "3.6 Xenial"
-    - python: '3.6'
-      name: "3.6 Trusty PYTHONOPTIMIZE=1"
-      dist: trusty
+      name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
     - python: '3.5'
-      name: "3.5 Xenial"
-    - python: '3.5'
-      name: "3.5 Trusty PYTHONOPTIMIZE=2"
-      dist: trusty
+      name: "3.5 Xenial PYTHONOPTIMIZE=2"
       env: PYTHONOPTIMIZE=2
     - python: "3.8-dev"
       name: "3.8-dev Xenial"
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
-    - env: DOCKER="ubuntu-trusty-x86" DOCKER_TAG="master"
     - env: DOCKER="ubuntu-xenial-amd64" DOCKER_TAG="master"
     - env: DOCKER="debian-stretch-x86" DOCKER_TAG="master"
     - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
@@ -74,14 +59,6 @@ install:
     elif [ "$DOCKER" == "" ]; then
       .travis/install.sh;
     fi
-
-before_script:
-# Qt needs a display for some of the tests, and it's only run on the system site packages install
-- |
-  if [ "$TRAVIS_JOB_NAME" == "2.7_with_system_site_packages Trusty" ]; then
-    export DISPLAY=:99.0
-    sh -e /etc/init.d/xvfb start
-  fi
 
 script:
 - |

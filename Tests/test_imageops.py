@@ -1,7 +1,13 @@
 from .helper import PillowTestCase, hopper
 
-from PIL import ImageOps
 from PIL import Image
+from PIL import ImageOps
+
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
 
 
 class TestImageOps(PillowTestCase):
@@ -61,6 +67,9 @@ class TestImageOps(PillowTestCase):
 
         ImageOps.solarize(hopper("L"))
         ImageOps.solarize(hopper("RGB"))
+
+        ImageOps.exif_transpose(hopper("L"))
+        ImageOps.exif_transpose(hopper("RGB"))
 
     def test_1pxfit(self):
         # Division by zero in equalize if image is 1 pixel high
@@ -218,3 +227,36 @@ class TestImageOps(PillowTestCase):
                                        (0, 127, 0),
                                        threshold=1,
                                        msg='white test pixel incorrect')
+
+    def test_exif_transpose(self):
+        exts = [".jpg"]
+        if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+            exts.append(".webp")
+        for ext in exts:
+            base_im = Image.open("Tests/images/hopper"+ext)
+
+            orientations = [base_im]
+            for i in range(2, 9):
+                im = Image.open("Tests/images/hopper_orientation_"+str(i)+ext)
+                orientations.append(im)
+            for i, orientation_im in enumerate(orientations):
+                for im in [
+                    orientation_im,        # ImageFile
+                    orientation_im.copy()  # Image
+                ]:
+                    if i == 0:
+                        self.assertNotIn("exif", im.info)
+                    else:
+                        original_exif = im.info["exif"]
+                    transposed_im = ImageOps.exif_transpose(im)
+                    self.assert_image_similar(base_im, transposed_im, 17)
+                    if i == 0:
+                        self.assertNotIn("exif", im.info)
+                    else:
+                        self.assertNotEqual(transposed_im.info["exif"], original_exif)
+
+                        self.assertNotIn(0x0112, transposed_im.getexif())
+
+                    # Repeat the operation, to test that it does not keep transposing
+                    transposed_im2 = ImageOps.exif_transpose(transposed_im)
+                    self.assert_image_equal(transposed_im2, transposed_im)

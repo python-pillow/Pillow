@@ -1,10 +1,16 @@
-from .helper import PillowTestCase, hopper, fromstring, tostring
+from .helper import unittest, PillowTestCase, hopper, fromstring, tostring
 
 from io import BytesIO
 
 from PIL import Image
 from PIL import ImageFile
 from PIL import EpsImagePlugin
+
+try:
+    from PIL import _webp
+    HAVE_WEBP = True
+except ImportError:
+    HAVE_WEBP = False
 
 
 codecs = dir(Image.core)
@@ -233,3 +239,97 @@ class TestPyDecoder(PillowTestCase):
         im = MockImageFile(buf)
         self.assertIsNone(im.format)
         self.assertIsNone(im.get_format_mimetype())
+
+    def test_exif_jpeg(self):
+        im = Image.open("Tests/images/exif-72dpi-int.jpg")  # Little endian
+        exif = im.getexif()
+        self.assertNotIn(258, exif)
+        self.assertIn(40960, exif)
+        self.assertEqual(exif[40963], 450)
+        self.assertEqual(exif[11], "gThumb 3.0.1")
+
+        out = self.tempfile('temp.jpg')
+        exif[258] = 8
+        del exif[40960]
+        exif[40963] = 455
+        exif[11] = "Pillow test"
+        im.save(out, exif=exif)
+        reloaded = Image.open(out)
+        reloaded_exif = reloaded.getexif()
+        self.assertEqual(reloaded_exif[258], 8)
+        self.assertNotIn(40960, exif)
+        self.assertEqual(reloaded_exif[40963], 455)
+        self.assertEqual(exif[11], "Pillow test")
+
+        im = Image.open("Tests/images/no-dpi-in-exif.jpg")  # Big endian
+        exif = im.getexif()
+        self.assertNotIn(258, exif)
+        self.assertIn(40962, exif)
+        self.assertEqual(exif[40963], 200)
+        self.assertEqual(exif[305], "Adobe Photoshop CC 2017 (Macintosh)")
+
+        out = self.tempfile('temp.jpg')
+        exif[258] = 8
+        del exif[34665]
+        exif[40963] = 455
+        exif[305] = "Pillow test"
+        im.save(out, exif=exif)
+        reloaded = Image.open(out)
+        reloaded_exif = reloaded.getexif()
+        self.assertEqual(reloaded_exif[258], 8)
+        self.assertNotIn(40960, exif)
+        self.assertEqual(reloaded_exif[40963], 455)
+        self.assertEqual(exif[305], "Pillow test")
+
+    @unittest.skipIf(not HAVE_WEBP or not _webp.HAVE_WEBPANIM,
+                     "WebP support not installed with animation")
+    def test_exif_webp(self):
+        im = Image.open("Tests/images/hopper.webp")
+        exif = im.getexif()
+        self.assertEqual(exif, {})
+
+        out = self.tempfile('temp.webp')
+        exif[258] = 8
+        exif[40963] = 455
+        exif[305] = "Pillow test"
+
+        def check_exif():
+            reloaded = Image.open(out)
+            reloaded_exif = reloaded.getexif()
+            self.assertEqual(reloaded_exif[258], 8)
+            self.assertEqual(reloaded_exif[40963], 455)
+            self.assertEqual(exif[305], "Pillow test")
+        im.save(out, exif=exif)
+        check_exif()
+        im.save(out, exif=exif, save_all=True)
+        check_exif()
+
+    def test_exif_png(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im.getexif()
+        self.assertEqual(exif, {274: 1})
+
+        out = self.tempfile('temp.png')
+        exif[258] = 8
+        del exif[274]
+        exif[40963] = 455
+        exif[305] = "Pillow test"
+        im.save(out, exif=exif)
+
+        reloaded = Image.open(out)
+        reloaded_exif = reloaded.getexif()
+        self.assertEqual(reloaded_exif, {
+            258: 8,
+            40963: 455,
+            305: 'Pillow test',
+        })
+
+    def test_exif_interop(self):
+        im = Image.open("Tests/images/flower.jpg")
+        exif = im.getexif()
+        self.assertEqual(exif.get_ifd(0xa005), {
+            1: 'R98',
+            2: b'0100',
+            4097: 2272,
+            4098: 1704,
+        })

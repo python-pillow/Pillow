@@ -686,11 +686,11 @@ def getProfileName(profile):
         #    // name was "%s - %s" (model, manufacturer) || Description ,
         #    // but if the Model and Manufacturer were the same or the model
         #    // was long, Just the model,  in 1.x
-        model = profile.profile.product_model
-        manufacturer = profile.profile.product_manufacturer
+        model = profile.profile.model
+        manufacturer = profile.profile.manufacturer
 
         if not (model or manufacturer):
-            return profile.profile.product_description + "\n"
+            return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
         return "%s - %s\n" % (model, manufacturer)
@@ -727,8 +727,8 @@ def getProfileInfo(profile):
         # Python, not C. the white point bits weren't working well,
         # so skipping.
         # info was description \r\n\r\n copyright \r\n\r\n K007 tag \r\n\r\n whitepoint
-        description = profile.profile.product_description
-        cpright = profile.profile.product_copyright
+        description = profile.profile.profile_description
+        cpright = profile.profile.copyright
         arr = []
         for elt in (description, cpright):
             if elt:
@@ -762,7 +762,7 @@ def getProfileCopyright(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_copyright + "\n"
+        return (profile.profile.copyright or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
@@ -790,7 +790,7 @@ def getProfileManufacturer(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_manufacturer + "\n"
+        return (profile.profile.manufacturer or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
@@ -819,7 +819,7 @@ def getProfileModel(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_model + "\n"
+        return (profile.profile.model or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
@@ -848,7 +848,7 @@ def getProfileDescription(profile):
         # add an extra newline to preserve pyCMS compatibility
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
-        return profile.profile.product_description + "\n"
+        return (profile.profile.profile_description or "") + "\n"
     except (AttributeError, IOError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 

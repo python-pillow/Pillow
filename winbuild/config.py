@@ -3,8 +3,8 @@ import os
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
-pythons = {'27': {'compiler': 7, 'vc': 2008},
-           'pypy2': {'compiler': 7, 'vc': 2008},
+pythons = {'27': {'compiler': 7, 'vc': 2010},
+           'pypy2': {'compiler': 7, 'vc': 2010},
            '35': {'compiler': 7.1, 'vc': 2015},
            '36': {'compiler': 7.1, 'vc': 2015},
            '37': {'compiler': 7.1, 'vc': 2015}}
@@ -43,9 +43,9 @@ libs = {
         'dir': 'lcms2-2.7',
     },
     'ghostscript': {
-        'url': 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs926/ghostscript-9.26.tar.gz',  # noqa: E501
-        'filename': PILLOW_DEPENDS_DIR + 'ghostscript-9.26.tar.gz',
-        'dir': 'ghostscript-9.26',
+        'url': 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostscript-9.27.tar.gz',  # noqa: E501
+        'filename': PILLOW_DEPENDS_DIR + 'ghostscript-9.27.tar.gz',
+        'dir': 'ghostscript-9.27',
     },
     'tcl-8.5': {
         'url': SF_MIRROR+'/project/tcl/Tcl/8.5.19/tcl8519-src.zip',
@@ -83,10 +83,10 @@ libs = {
 
 compilers = {
     7: {
-        2008: {
+        2010: {
             64: {
                 'env_version': 'v7.0',
-                'vc_version': '2008',
+                'vc_version': '2010',
                 'env_flags': '/x64 /xp',
                 'inc_dir': 'msvcr90-x64',
                 'platform': 'x64',
@@ -94,7 +94,7 @@ compilers = {
             },
             32: {
                 'env_version': 'v7.0',
-                'vc_version': '2008',
+                'vc_version': '2010',
                 'env_flags': '/x86 /xp',
                 'inc_dir': 'msvcr90-x32',
                 'platform': 'Win32',

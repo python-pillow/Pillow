@@ -99,6 +99,24 @@ version.
 
 Use ``PIL.__version__`` instead.
 
+ImageCms.CmsProfile attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
+6.0.0, they issue a ``DeprecationWarning``:
+
+========================  ===============================
+Deprecated                Use instead
+========================  ===============================
+``color_space``           Padded ``xcolor_space``
+``pcs``                   Padded ``connection_space``
+``product_copyright``     Unicode ``copyright``
+``product_desc``          Unicode ``profile_description``
+``product_description``   Unicode ``profile_description``
+``product_manufacturer``  Unicode ``manufacturer``
+``product_model``         Unicode ``model``
+========================  ===============================
+
 MIME type improvements
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -131,7 +149,7 @@ Image.quantize
 ^^^^^^^^^^^^^^
 
 The ``dither`` option is now a customisable parameter (was previously hardcoded to ``1``).
-This parameter takes the same values used in ``Image.convert``.
+This parameter takes the same values used in :py:meth:`~PIL.Image.Image.convert`.
 
 New language parameter
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -147,12 +165,26 @@ language-specific glyphs and ligatures from the font:
 * ``ImageFont.ImageFont.getsize_multiline()``
 * ``ImageFont.ImageFont.getsize()``
 
+Added EXIF class
+^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getexif` has been added, which returns an
+:py:class:`~PIL.Image.Exif` instance. Values can be retrieved and set like a
+dictionary. When saving JPEG, PNG or WEBP, the instance can be passed as an
+``exif`` argument to include any changes in the output image.
+
+Added ImageOps.exif_transpose
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageOps.exif_transpose` returns a copy of an image, transposed
+according to its EXIF Orientation tag.
+
 PNG EXIF data
 ^^^^^^^^^^^^^
 
 EXIF data can now be read from and saved to PNG images. However, unlike other image
-formats, EXIF data is not guaranteed to have been read until
-:py:meth:`~PIL.Image.Image.load` has been called.
+formats, EXIF data is not guaranteed to be present in :py:attr:`~PIL.Image.Image.info`
+until :py:meth:`~PIL.Image.Image.load` has been called.
 
 Other Changes
 =============
@@ -172,3 +204,9 @@ TIFF compression codecs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added for the LZMA, Zstd and WebP TIFF compression codecs.
+
+Improved support for transposing I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+I;16, I;16L and I;16B are now supported image modes for all
+:py:meth:`~PIL.Image.Image.transpose` operations.
