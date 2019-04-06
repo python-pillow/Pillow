@@ -113,12 +113,7 @@ class TestNumpy(PillowTestCase):
         img = Image.fromarray(arr * 255).convert('1')
         self.assertEqual(img.mode, '1')
         arr_back = numpy.array(img)
-        # numpy 1.8 and earlier return this as a boolean. (trusty/precise)
-        if arr_back.dtype == numpy.bool:
-            arr_bool = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], numpy.bool)
-            numpy.testing.assert_array_equal(arr_bool, arr_back)
-        else:
-            numpy.testing.assert_array_equal(arr, arr_back)
+        numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.

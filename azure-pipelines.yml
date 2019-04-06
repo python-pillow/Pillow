@@ -23,11 +23,6 @@ jobs:
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
-    docker: 'ubuntu-trusty-x86'
-    name:   'ubuntu_trusty_x86'
-
-- template: .azure-pipelines/jobs/test-docker.yml
-  parameters:
     docker: 'ubuntu-xenial-amd64'
     name:   'ubuntu_xenial_amd64'
 
