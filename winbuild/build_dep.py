@@ -238,9 +238,9 @@ setlocal
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
-%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=Win32 /m
+%%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=Win32 /p:PlatformToolset=v90 /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
-copy /Y /B %%LCMS%%\Projects\VC%(vc_version)s\Release\*.lib %%INCLIB%%
+copy /Y /B %%LCMS%%\Lib\MS\*.lib %%INCLIB%%
 endlocal
 """ % compiler  # noqa: E501
 
@@ -265,7 +265,7 @@ rem Build gs
 setlocal
 """ + vc_setup(compiler, bit) + r"""
 set MSVC_VERSION=""" + {
-        "2008": "9",
+        "2010": "90",
         "2015": "14"
     }[compiler['vc_version']] + r"""
 set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
@@ -308,7 +308,7 @@ if 'PYTHON' in os.environ:
 else:
     # for compiler in all_compilers():
     #     add_compiler(compiler)
-    add_compiler(compilers[7.0][2008][32], 32)
+    add_compiler(compilers[7.0][2010][32], 32)
 
 with open('build_deps.cmd', 'w') as f:
     f.write("\n".join(script))

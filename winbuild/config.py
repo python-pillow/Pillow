@@ -3,8 +3,8 @@ import os
 SF_MIRROR = 'http://iweb.dl.sourceforge.net'
 PILLOW_DEPENDS_DIR = 'C:\\pillow-depends\\'
 
-pythons = {'27': {'compiler': 7, 'vc': 2008},
-           'pypy2': {'compiler': 7, 'vc': 2008},
+pythons = {'27': {'compiler': 7, 'vc': 2010},
+           'pypy2': {'compiler': 7, 'vc': 2010},
            '35': {'compiler': 7.1, 'vc': 2015},
            '36': {'compiler': 7.1, 'vc': 2015},
            '37': {'compiler': 7.1, 'vc': 2015}}
@@ -83,10 +83,10 @@ libs = {
 
 compilers = {
     7: {
-        2008: {
+        2010: {
             64: {
                 'env_version': 'v7.0',
-                'vc_version': '2008',
+                'vc_version': '2010',
                 'env_flags': '/x64 /xp',
                 'inc_dir': 'msvcr90-x64',
                 'platform': 'x64',
@@ -94,7 +94,7 @@ compilers = {
             },
             32: {
                 'env_version': 'v7.0',
-                'vc_version': '2008',
+                'vc_version': '2010',
                 'env_flags': '/x86 /xp',
                 'inc_dir': 'msvcr90-x32',
                 'platform': 'Win32',
