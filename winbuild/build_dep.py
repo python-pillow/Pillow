@@ -187,37 +187,30 @@ endlocal
     return script % compiler
 
 
-def msbuild_freetype(compiler):
-    if compiler['env_version'] == 'v7.1':
-        return msbuild_freetype_71(compiler)
-    return msbuild_freetype_70(compiler)
-
-
-def msbuild_freetype_71(compiler):
-    return r"""
+def msbuild_freetype(compiler, bit):
+    script = r"""
 rem Build freetype
 setlocal
 rd /S /Q %%FREETYPE%%\objs
-%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="Release" /p:Platform=%(platform)s /m
+set DefaultPlatformToolset=v100
+"""
+    properties = r"""/p:Configuration="Release" /p:Platform=%(platform)s"""
+    if bit == 64:
+        script += r'copy /Y /B ' +\
+            r'"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64\*.Lib" ' +\
+            r'%%FREETYPE%%\builds\windows\vc2010'
+        properties += r" /p:_IsNativeEnvironment=false"
+    script += r"""
+%%MSBUILD%% %%FREETYPE%%\builds\windows\vc2010\freetype.sln /t:Clean;Build """+properties+r""" /m
 xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
-copy /Y /B %%FREETYPE%%\objs\vc%(vc_version)s\%(platform)s\*.lib %%INCLIB%%\freetype.lib
+"""
+    freetypeReleaseDir = r"%%FREETYPE%%\objs\%(platform)s\Release"
+    script += r"""
+copy /Y /B """+freetypeReleaseDir+r"""\freetype.lib %%INCLIB%%\freetype.lib
+copy /Y /B """+freetypeReleaseDir+r"""\freetype.dll %%INCLIB%%\..\freetype.dll
 endlocal
-""" % compiler  # noqa: E501
-
-
-def msbuild_freetype_70(compiler):
-    return r"""
-rem Build freetype
-setlocal
-py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln %(platform)s
-py -3 %%~dp0\fixproj.py %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.vcproj %(platform)s
-rd /S /Q %%FREETYPE%%\objs
-%%MSBUILD%% %%FREETYPE%%\builds\windows\vc%(vc_version)s\freetype.sln /t:Clean;Build /p:Configuration="LIB Release";Platform=%(platform)s /m
-xcopy /Y /E /Q %%FREETYPE%%\include %%INCLIB%%
-xcopy /Y /E /Q %%FREETYPE%%\objs\win32\vc%(vc_version)s %%INCLIB%%
-copy /Y /B %%FREETYPE%%\objs\win32\vc%(vc_version)s\*.lib %%INCLIB%%\freetype.lib
-endlocal
-""" % compiler  # noqa: E501
+"""
+    return script % compiler  # noqa: E501
 
 
 def build_lcms2(compiler):
@@ -289,7 +282,7 @@ def add_compiler(compiler, bit):
 
     # script.append(extract_openjpeg(compiler))
 
-    script.append(msbuild_freetype(compiler))
+    script.append(msbuild_freetype(compiler, bit))
     script.append(build_lcms2(compiler))
     # script.append(nmake_openjpeg(compiler))
     script.append(build_ghostscript(compiler, bit))
