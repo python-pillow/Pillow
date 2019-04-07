@@ -140,13 +140,26 @@ class FreeTypeFont(object):
 
         self.layout_engine = layout_engine
 
+        def load_from_bytes(f):
+            self.font_bytes = f.read()
+            self.font = core.getfont(
+                "", size, index, encoding, self.font_bytes, layout_engine)
+
         if isPath(font):
+            if sys.platform == "win32":
+                font_bytes_path = font if isinstance(font, bytes) else font.encode()
+                try:
+                    font_bytes_path.decode('ascii')
+                except UnicodeDecodeError:
+                    # FreeType cannot load fonts with non-ASCII characters on Windows
+                    # So load it into memory first
+                    with open(font, 'rb') as f:
+                        load_from_bytes(f)
+                    return
             self.font = core.getfont(font, size, index, encoding,
                                      layout_engine=layout_engine)
         else:
-            self.font_bytes = font.read()
-            self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine)
+            load_from_bytes(font)
 
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"

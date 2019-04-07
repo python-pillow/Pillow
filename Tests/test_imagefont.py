@@ -7,6 +7,7 @@ import os
 import sys
 import copy
 import re
+import shutil
 import distutils.version
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -130,6 +131,15 @@ class TestImageFont(PillowTestCase):
     def test_font_with_open_file(self):
         with open(FONT_PATH, 'rb') as f:
             self._render(f)
+
+    def test_non_unicode_path(self):
+        try:
+            tempfile = self.tempfile("temp_"+chr(128)+".ttf")
+        except UnicodeEncodeError:
+            self.skipTest("Unicode path could not be created")
+        shutil.copy(FONT_PATH, tempfile)
+
+        ImageFont.truetype(tempfile, FONT_SIZE)
 
     def _render(self, font):
         txt = "Hello World!"
