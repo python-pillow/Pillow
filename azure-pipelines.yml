@@ -23,8 +23,13 @@ jobs:
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
-    docker: 'ubuntu-xenial-amd64'
-    name:   'ubuntu_xenial_amd64'
+    docker: 'ubuntu-16.04-xenial-amd64'
+    name:   'ubuntu_16_04_xenial_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'ubuntu-18.04-bionic-amd64'
+    name:   'ubuntu_18_04_bionic_amd64'
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
