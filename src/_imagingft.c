@@ -346,9 +346,9 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
     }
 #else
     if (PyUnicode_Check(string)) {
-        if (index >= PyUnicode_GetLength(string))
+        if (index >= PyUnicode_GET_LENGTH(string))
             return 0;
-        *char_out = PyUnicode_ReadChar(string, index);
+        *char_out = PyUnicode_READ_CHAR(string, index);
         return 1;
     }
 #endif
@@ -412,7 +412,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
 #else
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
-        Py_ssize_t size = PyUnicode_GetLength(string);
+        Py_ssize_t size = PyUnicode_GET_LENGTH(string);
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
