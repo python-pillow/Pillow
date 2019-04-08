@@ -472,7 +472,7 @@ class TestImageFont(PillowTestCase):
         d = ImageDraw.Draw(img)
         d.text((10, 10), text, font=ttf)
 
-        self.assert_image_similar_tofile(img, target, self.metrics['textsize'])
+        self.assert_image_similar_tofile(img, target, self.metrics['multiline'])
 
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
