@@ -75,9 +75,9 @@ libs = {
         'dir': 'libwebp-1.0.2',
     },
     'openjpeg': {
-        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.3.0/openjpeg-2.3.0.tar.gz',
-        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.3.0.tar.gz',
-        'dir': 'openjpeg-2.3.0',
+        'url': SF_MIRROR+'/project/openjpeg/openjpeg/2.3.1/openjpeg-2.3.1.tar.gz',
+        'filename': PILLOW_DEPENDS_DIR + 'openjpeg-2.3.1.tar.gz',
+        'dir': 'openjpeg-2.3.1',
     },
 }
 
