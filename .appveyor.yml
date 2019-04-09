@@ -52,7 +52,7 @@ install:
       }
       else
       {
-        c:\python34\python.exe c:\pillow\winbuild\build_dep.py
+        c:\python37\python.exe c:\pillow\winbuild\build_dep.py
         c:\pillow\winbuild\build_deps.cmd
         $host.SetShouldExit(0)
       }

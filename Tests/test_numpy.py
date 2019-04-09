@@ -113,12 +113,7 @@ class TestNumpy(PillowTestCase):
         img = Image.fromarray(arr * 255).convert('1')
         self.assertEqual(img.mode, '1')
         arr_back = numpy.array(img)
-        # numpy 1.8 and earlier return this as a boolean. (trusty/precise)
-        if arr_back.dtype == numpy.bool:
-            arr_bool = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], 'bool')
-            numpy.testing.assert_array_equal(arr_bool, arr_back)
-        else:
-            numpy.testing.assert_array_equal(arr, arr_back)
+        numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.
@@ -143,21 +138,21 @@ class TestNumpy(PillowTestCase):
 
             np_img = numpy.array(img)
             self._test_img_equals_nparray(img, np_img)
-            self.assertEqual(np_img.dtype, numpy.dtype(dtype))
+            self.assertEqual(np_img.dtype, dtype)
 
-        modes = [("L", 'uint8'),
-                 ("I", 'int32'),
-                 ("F", 'float32'),
-                 ("LA", 'uint8'),
-                 ("RGB", 'uint8'),
-                 ("RGBA", 'uint8'),
-                 ("RGBX", 'uint8'),
-                 ("CMYK", 'uint8'),
-                 ("YCbCr", 'uint8'),
+        modes = [("L", numpy.uint8),
+                 ("I", numpy.int32),
+                 ("F", numpy.float32),
+                 ("LA", numpy.uint8),
+                 ("RGB", numpy.uint8),
+                 ("RGBA", numpy.uint8),
+                 ("RGBX", numpy.uint8),
+                 ("CMYK", numpy.uint8),
+                 ("YCbCr", numpy.uint8),
                  ("I;16", '<u2'),
                  ("I;16B", '>u2'),
                  ("I;16L", '<u2'),
-                 ("HSV", 'uint8'),
+                 ("HSV", numpy.uint8),
                  ]
 
         for mode in modes:
@@ -167,7 +162,7 @@ class TestNumpy(PillowTestCase):
         # see https://github.com/python-pillow/Pillow/issues/439
 
         data = list(range(256))*3
-        lut = numpy.array(data, dtype='uint8')
+        lut = numpy.array(data, dtype=numpy.uint8)
 
         im = hopper()
 

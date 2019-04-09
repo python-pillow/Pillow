@@ -25,6 +25,7 @@ kevin@cazabon.com\n\
 http://www.cazabon.com\n\
 "
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h" // Include before wchar.h so _GNU_SOURCE is set
 #include "wchar.h"
 #include "datetime.h"
@@ -120,7 +121,7 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
     cmsHPROFILE hProfile;
 
     char* pProfile;
-    int nProfile;
+    Py_ssize_t nProfile;
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, "y#:profile_frombytes", &pProfile, &nProfile))
         return NULL;
@@ -735,12 +736,12 @@ _xyz3_py(cmsCIEXYZ* XYZ)
     cmsXYZ2xyY(&xyY[2], &XYZ[2]);
 
     return Py_BuildValue("(((d,d,d),(d,d,d),(d,d,d)),((d,d,d),(d,d,d),(d,d,d)))",
-			 XYZ[0].X, XYZ[0].Y, XYZ[0].Z,
-			 XYZ[1].X, XYZ[1].Y, XYZ[1].Z,
-			 XYZ[2].X, XYZ[2].Y, XYZ[2].Z,
-			 xyY[0].x, xyY[0].y, xyY[0].Y,
-			 xyY[1].x, xyY[1].y, xyY[1].Y,
-			 xyY[2].x, xyY[2].y, xyY[2].Y);
+        XYZ[0].X, XYZ[0].Y, XYZ[0].Z,
+        XYZ[1].X, XYZ[1].Y, XYZ[1].Z,
+        XYZ[2].X, XYZ[2].Y, XYZ[2].Z,
+        xyY[0].x, xyY[0].y, xyY[0].Y,
+        xyY[1].x, xyY[1].y, xyY[1].Y,
+        xyY[2].x, xyY[2].y, xyY[2].Y);
 }
 
 static PyObject*
@@ -783,9 +784,9 @@ _profile_read_ciexyy_triple(CmsProfileObject* self, cmsTagSignature info)
     /* Note: lcms does all the heavy lifting and error checking (nr of
        channels == 3).  */
     return Py_BuildValue("((d,d,d),(d,d,d),(d,d,d)),",
-			 triple->Red.x, triple->Red.y, triple->Red.Y,
-			 triple->Green.x, triple->Green.y, triple->Green.Y,
-			 triple->Blue.x, triple->Blue.y, triple->Blue.Y);
+        triple->Red.x, triple->Red.y, triple->Red.Y,
+        triple->Green.x, triple->Green.y, triple->Green.Y,
+        triple->Blue.x, triple->Blue.y, triple->Blue.Y);
 }
 
 static PyObject*
@@ -817,12 +818,12 @@ _profile_read_named_color_list(CmsProfileObject* self, cmsTagSignature info)
     for (i = 0; i < n; i++) {
         PyObject* str;
         cmsNamedColorInfo(ncl, i, name, NULL, NULL, NULL, NULL);
-	str = PyUnicode_FromString(name);
-	if (str == NULL) {
- 	    Py_DECREF(result);
-	    Py_INCREF(Py_None);
-	    return Py_None;
-	}
+        str = PyUnicode_FromString(name);
+        if (str == NULL) {
+            Py_DECREF(result);
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
         PyList_SET_ITEM(result, i, str);
     }
 
@@ -844,9 +845,9 @@ static cmsBool _calculate_rgb_primaries(CmsProfileObject* self, cmsCIEXYZTRIPLE*
 
     // transform from our profile to XYZ using doubles for highest precision
     hTransform = cmsCreateTransform(self->profile, TYPE_RGB_DBL,
-				    hXYZ, TYPE_XYZ_DBL,
-				    INTENT_RELATIVE_COLORIMETRIC,
-				    cmsFLAGS_NOCACHE | cmsFLAGS_NOOPTIMIZE);
+                                    hXYZ, TYPE_XYZ_DBL,
+                                    INTENT_RELATIVE_COLORIMETRIC,
+                                    cmsFLAGS_NOCACHE | cmsFLAGS_NOOPTIMIZE);
     cmsCloseProfile(hXYZ);
     if (hTransform == NULL)
         return 0;
@@ -885,31 +886,31 @@ _is_intent_supported(CmsProfileObject* self, int clut)
 
 
     n = cmsGetSupportedIntents(INTENTS,
-			       intent_ids,
-			       intent_descs);
+                               intent_ids,
+                               intent_descs);
     for (i = 0; i < n; i++) {
         int intent = (int) intent_ids[i];
         PyObject* id;
-	PyObject* entry;
+        PyObject* entry;
 
-	/* Only valid for ICC Intents (otherwise we read invalid memory in lcms cmsio1.c). */
-	if (!(intent == INTENT_PERCEPTUAL || intent == INTENT_RELATIVE_COLORIMETRIC
-	      || intent == INTENT_SATURATION || intent == INTENT_ABSOLUTE_COLORIMETRIC))
-	  continue;
+        /* Only valid for ICC Intents (otherwise we read invalid memory in lcms cmsio1.c). */
+        if (!(intent == INTENT_PERCEPTUAL || intent == INTENT_RELATIVE_COLORIMETRIC
+            || intent == INTENT_SATURATION || intent == INTENT_ABSOLUTE_COLORIMETRIC))
+            continue;
 
-	id = PyInt_FromLong((long) intent);
-	entry = Py_BuildValue("(OOO)",
-			      _check_intent(clut, self->profile, intent, LCMS_USED_AS_INPUT) ? Py_True : Py_False,
-			      _check_intent(clut, self->profile, intent, LCMS_USED_AS_OUTPUT) ? Py_True : Py_False,
-			      _check_intent(clut, self->profile, intent, LCMS_USED_AS_PROOF) ? Py_True : Py_False);
-	if (id == NULL || entry == NULL) {
-	    Py_XDECREF(id);
-	    Py_XDECREF(entry);
-	    Py_XDECREF(result);
-	    Py_INCREF(Py_None);
-	    return Py_None;
-	}
-	PyDict_SetItem(result, id, entry);
+        id = PyInt_FromLong((long) intent);
+        entry = Py_BuildValue("(OOO)",
+            _check_intent(clut, self->profile, intent, LCMS_USED_AS_INPUT) ? Py_True : Py_False,
+            _check_intent(clut, self->profile, intent, LCMS_USED_AS_OUTPUT) ? Py_True : Py_False,
+            _check_intent(clut, self->profile, intent, LCMS_USED_AS_PROOF) ? Py_True : Py_False);
+        if (id == NULL || entry == NULL) {
+            Py_XDECREF(id);
+            Py_XDECREF(entry);
+            Py_XDECREF(result);
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+        PyDict_SetItem(result, id, entry);
     }
     return result;
 }
@@ -966,6 +967,8 @@ _profile_getattr(CmsProfileObject* self, cmsInfoType field)
 static PyObject*
 cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_desc is deprecated. Use Unicode profile_description instead.", 1);
     // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
     return _profile_getattr(self, cmsInfoDescription);
 }
@@ -975,24 +978,32 @@ cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_description is deprecated. Use Unicode profile_description instead.", 1);
     return _profile_getattr(self, cmsInfoDescription);
 }
 
 static PyObject*
 cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_model is deprecated. Use Unicode model instead.", 1);
     return _profile_getattr(self, cmsInfoModel);
 }
 
 static PyObject*
 cms_profile_getattr_product_manufacturer(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_manufacturer is deprecated. Use Unicode manufacturer instead.", 1);
     return _profile_getattr(self, cmsInfoManufacturer);
 }
 
 static PyObject*
 cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "product_copyright is deprecated. Use Unicode copyright instead.", 1);
     return _profile_getattr(self, cmsInfoCopyright);
 }
 
@@ -1005,12 +1016,16 @@ cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "pcs is deprecated. Use padded connection_space instead.", 1);
     return PyUnicode_DecodeFSDefault(findICmode(cmsGetPCS(self->profile)));
 }
 
 static PyObject*
 cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
 {
+    PyErr_WarnEx(PyExc_DeprecationWarning,
+                 "color_space is deprecated. Use padded xcolor_space instead.", 1);
     return PyUnicode_DecodeFSDefault(findICmode(cmsGetColorSpace(self->profile)));
 }
 
@@ -1070,7 +1085,7 @@ cms_profile_getattr_creation_date(CmsProfileObject* self, void* closure)
     }
 
     return PyDateTime_FromDateAndTime(1900 + ct.tm_year, ct.tm_mon, ct.tm_mday,
-				      ct.tm_hour, ct.tm_min, ct.tm_sec, 0);
+                                      ct.tm_hour, ct.tm_min, ct.tm_sec, 0);
 }
 
 static PyObject*
@@ -1295,7 +1310,7 @@ cms_profile_getattr_green_primary(CmsProfileObject* self, void* closure)
         result = _calculate_rgb_primaries(self, &primaries);
     if (! result) {
         Py_INCREF(Py_None);
-	return Py_None;
+        return Py_None;
     }
 
     return _xyz_py(&primaries.Green);
@@ -1311,7 +1326,7 @@ cms_profile_getattr_blue_primary(CmsProfileObject* self, void* closure)
         result = _calculate_rgb_primaries(self, &primaries);
     if (! result) {
         Py_INCREF(Py_None);
-	return Py_None;
+        return Py_None;
     }
 
     return _xyz_py(&primaries.Blue);
@@ -1394,11 +1409,11 @@ cms_profile_getattr_icc_measurement_condition (CmsProfileObject* self, void* clo
         geo = "unknown";
 
     return Py_BuildValue("{s:i,s:(ddd),s:s,s:d,s:s}",
-			 "observer", mc->Observer,
-			 "backing", mc->Backing.X, mc->Backing.Y, mc->Backing.Z,
-			 "geo", geo,
-			 "flare", mc->Flare,
-			 "illuminant_type", _illu_map(mc->IlluminantType));
+                         "observer", mc->Observer,
+                         "backing", mc->Backing.X, mc->Backing.Y, mc->Backing.Z,
+                         "geo", geo,
+                         "flare", mc->Flare,
+                         "illuminant_type", _illu_map(mc->IlluminantType));
 }
 
 static PyObject*
@@ -1419,9 +1434,9 @@ cms_profile_getattr_icc_viewing_condition (CmsProfileObject* self, void* closure
     }
 
     return Py_BuildValue("{s:(ddd),s:(ddd),s:s}",
-			 "illuminant", vc->IlluminantXYZ.X, vc->IlluminantXYZ.Y, vc->IlluminantXYZ.Z,
-			 "surround", vc->SurroundXYZ.X, vc->SurroundXYZ.Y, vc->SurroundXYZ.Z,
-			 "illuminant_type", _illu_map(vc->IlluminantType));
+        "illuminant", vc->IlluminantXYZ.X, vc->IlluminantXYZ.Y, vc->IlluminantXYZ.Z,
+        "surround", vc->SurroundXYZ.X, vc->SurroundXYZ.Y, vc->SurroundXYZ.Z,
+        "illuminant_type", _illu_map(vc->IlluminantType));
 }
 
 

@@ -104,11 +104,11 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 Reading sequences
 ~~~~~~~~~~~~~~~~~
 
-The GIF loader supports the :py:meth:`~file.seek` and :py:meth:`~file.tell`
-methods. You can seek to the next frame (``im.seek(im.tell() + 1)``), or rewind
-the file by seeking to the first frame. Random access is not supported.
+The GIF loader supports the :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods. You can combine these methods
+to seek to the next frame (``im.seek(im.tell() + 1)``).
 
-``im.seek()`` raises an ``EOFError`` if you try to seek after the last frame.
+``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the last frame.
 
 Saving
 ~~~~~~
@@ -459,12 +459,14 @@ Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` dat
 PNG
 ^^^
 
-Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``P``,
-``RGB``, or ``RGBA`` data. Interlaced files are supported as of v1.1.7.
+Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``LA``,
+``I``, ``P``, ``RGB`` or ``RGBA`` data. Interlaced files are supported as of
+v1.1.7.
 
 As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
-image formats, EXIF data is not guaranteed to have been read until
-:py:meth:`~PIL.Image.Image.load` has been called.
+image formats, EXIF data is not guaranteed to be present in
+:py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
+called.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
@@ -489,12 +491,12 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
     For ``P`` images: Either the palette index for full transparent pixels,
     or a byte string with alpha values for each palette entry.
 
-    For ``L`` and ``RGB`` images, the color that represents full transparent
-    pixels in this image.
+    For ``1``, ``L``, ``I`` and ``RGB`` images, the color that represents
+    full transparent pixels in this image.
 
     This key is omitted if the image is not a transparent palette image.
 
-``Open`` also sets ``Image.text`` to a dictionary of the values of the
+``open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
 ``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
@@ -510,8 +512,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     encoder settings.
 
 **transparency**
-    For ``P``, ``L``, and ``RGB`` images, this option controls what
-    color image to mark as transparent.
+    For ``P``, ``1``, ``L``, ``I``, and ``RGB`` images, this option controls
+    what color from the image to mark as transparent.
 
     For ``P`` images, this can be a either the palette index,
     or a byte string with alpha values for each palette entry.
@@ -552,7 +554,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM and PPM files containing ``1``, ``L`` or
+Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
 ``RGB`` data.
 
 SGI
@@ -568,7 +570,7 @@ Pillow reads and writes SPIDER image files of 32-bit floating point data
 ("F;32F").
 
 Pillow also reads SPIDER stack files containing sequences of SPIDER images. The
-:py:meth:`~file.seek` and :py:meth:`~file.tell` methods are supported, and
+:py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell` methods are supported, and
 random access is allowed.
 
 The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
@@ -579,7 +581,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
 **istack**
     Set to 1 if the file is an image stack, else 0.
 
-**nimages**
+**n_frames**
     Set to the number of images in the stack.
 
 A convenience method, :py:meth:`~PIL.Image.Image.convert2byte`, is provided for
@@ -663,6 +665,17 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
+Reading Multi-frame TIFF Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame numbers
+within the image file. You can combine these methods to seek to the next frame
+(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.num_frames - 1``,
+and can be accessed in any order.
+
+``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the
+last frame.
 
 Saving Tiff Images
 ~~~~~~~~~~~~~~~~~~
@@ -850,7 +863,7 @@ is commonly used in fax applications. The DCX decoder can read files containing
 ``1``, ``L``, ``P``, or ``RGB`` data.
 
 When the file is opened, only the first image is read. You can use
-:py:meth:`~file.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
+:py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
 
 
 DDS
@@ -942,8 +955,8 @@ MIC
 ^^^
 
 Pillow identifies and reads Microsoft Image Composer (MIC) files. When opened,
-the first sprite in the file is loaded. You can use :py:meth:`~file.seek` and
-:py:meth:`~file.tell` to read other sprites from the file.
+the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` to read other sprites from the file.
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
@@ -951,7 +964,7 @@ MPO
 ^^^
 
 Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
-image when first opened. The :py:meth:`~file.seek` and :py:meth:`~file.tell`
+image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
 

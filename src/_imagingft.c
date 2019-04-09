@@ -18,6 +18,7 @@
  * Copyright (c) 1998-2007 by Secret Labs AB
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "Imaging.h"
 
@@ -87,6 +88,10 @@ typedef bool (*t_raqm_set_text_utf8) (raqm_t     *rq,
                                       size_t      len);
 typedef bool (*t_raqm_set_par_direction) (raqm_t          *rq,
                                           raqm_direction_t dir);
+typedef bool (*t_raqm_set_language) (raqm_t     *rq,
+                                     const char *lang,
+                                     size_t      start,
+                                     size_t      len);
 typedef bool (*t_raqm_add_font_feature)  (raqm_t     *rq,
                                           const char *feature,
                                           int         len);
@@ -106,6 +111,7 @@ typedef struct {
     t_raqm_set_text set_text;
     t_raqm_set_text_utf8 set_text_utf8;
     t_raqm_set_par_direction set_par_direction;
+    t_raqm_set_language set_language;
     t_raqm_add_font_feature add_font_feature;
     t_raqm_set_freetype_face set_freetype_face;
     t_raqm_layout layout;
@@ -160,6 +166,7 @@ setraqm(void)
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
     p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)dlsym(p_raqm.raqm, "raqm_set_text_utf8");
     p_raqm.set_par_direction = (t_raqm_set_par_direction)dlsym(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.set_language = (t_raqm_set_language)dlsym(p_raqm.raqm, "raqm_set_language");
     p_raqm.add_font_feature = (t_raqm_add_font_feature)dlsym(p_raqm.raqm, "raqm_add_font_feature");
     p_raqm.set_freetype_face = (t_raqm_set_freetype_face)dlsym(p_raqm.raqm, "raqm_set_freetype_face");
     p_raqm.layout = (t_raqm_layout)dlsym(p_raqm.raqm, "raqm_layout");
@@ -176,6 +183,7 @@ setraqm(void)
           p_raqm.set_text &&
           p_raqm.set_text_utf8 &&
           p_raqm.set_par_direction &&
+          p_raqm.set_language &&
           p_raqm.add_font_feature &&
           p_raqm.set_freetype_face &&
           p_raqm.layout &&
@@ -190,6 +198,7 @@ setraqm(void)
     p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
     p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
     p_raqm.set_par_direction = (t_raqm_set_par_direction)GetProcAddress(p_raqm.raqm, "raqm_set_par_direction");
+    p_raqm.set_language = (t_raqm_set_language)GetProcAddress(p_raqm.raqm, "raqm_set_language");
     p_raqm.add_font_feature = (t_raqm_add_font_feature)GetProcAddress(p_raqm.raqm, "raqm_add_font_feature");
     p_raqm.set_freetype_face = (t_raqm_set_freetype_face)GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
     p_raqm.layout = (t_raqm_layout)GetProcAddress(p_raqm.raqm, "raqm_layout");
@@ -205,6 +214,7 @@ setraqm(void)
           p_raqm.set_text &&
           p_raqm.set_text_utf8 &&
           p_raqm.set_par_direction &&
+          p_raqm.set_language &&
           p_raqm.add_font_feature &&
           p_raqm.set_freetype_face &&
           p_raqm.layout &&
@@ -228,12 +238,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     int error = 0;
 
     char* filename = NULL;
-    int size;
-    int index = 0;
-    int layout_engine = 0;
+    Py_ssize_t size;
+    Py_ssize_t index = 0;
+    Py_ssize_t layout_engine = 0;
     unsigned char* encoding;
     unsigned char* font_bytes;
-    int font_bytes_size = 0;
+    Py_ssize_t font_bytes_size = 0;
     static char* kwlist[] = {
         "filename", "size", "index", "encoding", "font_bytes",
         "layout_engine", NULL
@@ -332,8 +342,8 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 }
 
 static size_t
-text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
-            PyObject *features ,GlyphInfo **glyph_info, int mask)
+text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+                 const char* lang, GlyphInfo **glyph_info, int mask)
 {
     int i = 0;
     raqm_t *rq;
@@ -341,6 +351,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
     raqm_glyph_t *glyphs = NULL;
     raqm_glyph_t_01 *glyphs_01 = NULL;
     raqm_direction_t direction;
+    size_t start = 0;
 
     rq = (*p_raqm.create)();
     if (rq == NULL) {
@@ -360,6 +371,13 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
         }
+        if (lang) {
+            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
+                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
+                goto failed;
+            }
+        }
+
     }
 #if PY_VERSION_HEX < 0x03000000
     else if (PyString_Check(string)) {
@@ -371,6 +389,12 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir,
         if (!(*p_raqm.set_text_utf8)(rq, text, size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
             goto failed;
+        }
+        if (lang) {
+            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
+                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
+                goto failed;
+            }
         }
     }
 #endif
@@ -498,8 +522,8 @@ failed:
 }
 
 static size_t
-text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
-            PyObject *features ,GlyphInfo **glyph_info, int mask)
+text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+                     const char* lang, GlyphInfo **glyph_info, int mask)
 {
     int error, load_flags;
     FT_ULong ch;
@@ -509,8 +533,8 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
     FT_UInt last_index = 0;
     int i;
 
-    if (features != Py_None || dir != NULL) {
-      PyErr_SetString(PyExc_KeyError, "setting text direction or font features is not supported without libraqm");
+    if (features != Py_None || dir != NULL || lang != NULL) {
+      PyErr_SetString(PyExc_KeyError, "setting text direction, language or font features is not supported without libraqm");
     }
 #if PY_VERSION_HEX >= 0x03000000
     if (!PyUnicode_Check(string)) {
@@ -564,15 +588,15 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir,
 }
 
 static size_t
-text_layout(PyObject* string, FontObject* self, const char* dir,
-            PyObject *features, GlyphInfo **glyph_info, int mask)
+text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *features,
+            const char* lang, GlyphInfo **glyph_info, int mask)
 {
     size_t count;
 
     if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(string, self, dir, features, glyph_info,  mask);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask);
     } else {
-        count = text_layout_fallback(string, self, dir, features, glyph_info, mask);
+        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask);
     }
     return count;
 }
@@ -584,6 +608,7 @@ font_getsize(FontObject* self, PyObject* args)
     FT_Face face;
     int xoffset, yoffset;
     const char *dir = NULL;
+    const char *lang = NULL;
     size_t count;
     GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
@@ -591,14 +616,14 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zO:getsize", &string, &dir, &features))
+    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang))
         return NULL;
 
     face = NULL;
     xoffset = yoffset = 0;
     y_max = y_min = 0;
 
-    count = text_layout(string, self, dir, features, &glyph_info, 0);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -691,16 +716,17 @@ font_render(FontObject* self, PyObject* args)
     int temp;
     int xx, x0, x1;
     const char *dir = NULL;
+    const char *lang = NULL;
     size_t count;
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
 
-    if (!PyArg_ParseTuple(args, "On|izO:render", &string,  &id, &mask, &dir, &features)) {
+    if (!PyArg_ParseTuple(args, "On|izOz:render", &string,  &id, &mask, &dir, &features, &lang)) {
         return NULL;
     }
 
     glyph_info = NULL;
-    count = text_layout(string, self, dir, features, &glyph_info, mask);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
     }

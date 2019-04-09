@@ -27,7 +27,6 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, i32le as i32, \
                      o8, o16le as o16, o32le as o32
-import math
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -105,53 +104,51 @@ class BmpImageFile(ImageFile.ImageFile):
         # --------------------------------------------- Windows Bitmap v2 to v5
         # v3, OS/2 v2, v4, v5
         elif file_info['header_size'] in (40, 64, 108, 124):
-            if file_info['header_size'] >= 40:  # v3 and OS/2
-                file_info['y_flip'] = i8(header_data[7]) == 0xff
-                file_info['direction'] = 1 if file_info['y_flip'] else -1
-                file_info['width'] = i32(header_data[0:4])
-                file_info['height'] = (i32(header_data[4:8])
-                                       if not file_info['y_flip']
-                                       else 2**32 - i32(header_data[4:8]))
-                file_info['planes'] = i16(header_data[8:10])
-                file_info['bits'] = i16(header_data[10:12])
-                file_info['compression'] = i32(header_data[12:16])
-                # byte size of pixel data
-                file_info['data_size'] = i32(header_data[16:20])
-                file_info['pixels_per_meter'] = (i32(header_data[20:24]),
-                                                 i32(header_data[24:28]))
-                file_info['colors'] = i32(header_data[28:32])
-                file_info['palette_padding'] = 4
-                self.info["dpi"] = tuple(
-                    map(lambda x: int(math.ceil(x / 39.3701)),
-                        file_info['pixels_per_meter']))
-                if file_info['compression'] == self.BITFIELDS:
-                    if len(header_data) >= 52:
-                        for idx, mask in enumerate(['r_mask',
-                                                    'g_mask',
-                                                    'b_mask',
-                                                    'a_mask']):
-                            file_info[mask] = i32(
-                                header_data[36 + idx * 4:40 + idx * 4]
-                            )
-                    else:
-                        # 40 byte headers only have the three components in the
-                        # bitfields masks, ref:
-                        # https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376(v=vs.85).aspx
-                        # See also
-                        # https://github.com/python-pillow/Pillow/issues/1293
-                        # There is a 4th component in the RGBQuad, in the alpha
-                        # location, but it is listed as a reserved component,
-                        # and it is not generally an alpha channel
-                        file_info['a_mask'] = 0x0
-                        for mask in ['r_mask', 'g_mask', 'b_mask']:
-                            file_info[mask] = i32(read(4))
-                    file_info['rgb_mask'] = (file_info['r_mask'],
-                                             file_info['g_mask'],
-                                             file_info['b_mask'])
-                    file_info['rgba_mask'] = (file_info['r_mask'],
-                                              file_info['g_mask'],
-                                              file_info['b_mask'],
-                                              file_info['a_mask'])
+            file_info['y_flip'] = i8(header_data[7]) == 0xff
+            file_info['direction'] = 1 if file_info['y_flip'] else -1
+            file_info['width'] = i32(header_data[0:4])
+            file_info['height'] = (i32(header_data[4:8])
+                                   if not file_info['y_flip']
+                                   else 2**32 - i32(header_data[4:8]))
+            file_info['planes'] = i16(header_data[8:10])
+            file_info['bits'] = i16(header_data[10:12])
+            file_info['compression'] = i32(header_data[12:16])
+            # byte size of pixel data
+            file_info['data_size'] = i32(header_data[16:20])
+            file_info['pixels_per_meter'] = (i32(header_data[20:24]),
+                                             i32(header_data[24:28]))
+            file_info['colors'] = i32(header_data[28:32])
+            file_info['palette_padding'] = 4
+            self.info["dpi"] = tuple(
+                int(x / 39.3701 + 0.5) for x in file_info['pixels_per_meter'])
+            if file_info['compression'] == self.BITFIELDS:
+                if len(header_data) >= 52:
+                    for idx, mask in enumerate(['r_mask',
+                                                'g_mask',
+                                                'b_mask',
+                                                'a_mask']):
+                        file_info[mask] = i32(
+                            header_data[36 + idx * 4:40 + idx * 4]
+                        )
+                else:
+                    # 40 byte headers only have the three components in the
+                    # bitfields masks, ref:
+                    # https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376(v=vs.85).aspx
+                    # See also
+                    # https://github.com/python-pillow/Pillow/issues/1293
+                    # There is a 4th component in the RGBQuad, in the alpha
+                    # location, but it is listed as a reserved component,
+                    # and it is not generally an alpha channel
+                    file_info['a_mask'] = 0x0
+                    for mask in ['r_mask', 'g_mask', 'b_mask']:
+                        file_info[mask] = i32(read(4))
+                file_info['rgb_mask'] = (file_info['r_mask'],
+                                         file_info['g_mask'],
+                                         file_info['b_mask'])
+                file_info['rgba_mask'] = (file_info['r_mask'],
+                                          file_info['g_mask'],
+                                          file_info['b_mask'],
+                                          file_info['a_mask'])
         else:
             raise IOError("Unsupported BMP header type (%d)" %
                           file_info['header_size'])
@@ -180,6 +177,7 @@ class BmpImageFile(ImageFile.ImageFile):
             SUPPORTED = {
                 32: [(0xff0000, 0xff00, 0xff, 0x0),
                      (0xff0000, 0xff00, 0xff, 0xff000000),
+                     (0xff, 0xff00, 0xff0000, 0xff000000),
                      (0x0, 0x0, 0x0, 0x0),
                      (0xff000000, 0xff0000, 0xff00, 0x0)],
                 24: [(0xff0000, 0xff00, 0xff)],
@@ -188,6 +186,7 @@ class BmpImageFile(ImageFile.ImageFile):
             MASK_MODES = {
                 (32, (0xff0000, 0xff00, 0xff, 0x0)): "BGRX",
                 (32, (0xff000000, 0xff0000, 0xff00, 0x0)): "XBGR",
+                (32, (0xff, 0xff00, 0xff0000, 0xff000000)): "RGBA",
                 (32, (0xff0000, 0xff00, 0xff, 0xff000000)): "BGRA",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xff0000, 0xff00, 0xff)): "BGR",
@@ -200,7 +199,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     raw_mode = MASK_MODES[
                         (file_info["bits"], file_info["rgba_mask"])
                     ]
-                    self.mode = "RGBA" if raw_mode in ("BGRA",) else self.mode
+                    self.mode = "RGBA" if "A" in raw_mode else self.mode
                 elif (file_info['bits'] in (24, 16) and
                       file_info['rgb_mask'] in SUPPORTED[file_info['bits']]):
                     raw_mode = MASK_MODES[
@@ -310,7 +309,7 @@ def _save(im, fp, filename, bitmap_header=True):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701), dpi))
+    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
 
     stride = ((im.size[0]*bits+7)//8+3) & (~3)
     header = 40  # or 64 for OS/2 version 2

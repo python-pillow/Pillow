@@ -126,6 +126,30 @@ class TestFileTiff(PillowTestCase):
         im._setup()
         self.assertEqual(im.info['dpi'], (71., 71.))
 
+    def test_load_dpi_rounding(self):
+        for resolutionUnit, dpi in ((None, (72, 73)),
+                                    (2, (72, 73)),
+                                    (3, (183, 185))):
+            im = Image.open(
+                "Tests/images/hopper_roundDown_"+str(resolutionUnit)+".tif")
+            self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
+            self.assertEqual(im.info['dpi'], (dpi[0], dpi[0]))
+
+            im = Image.open("Tests/images/hopper_roundUp_"+str(resolutionUnit)+".tif")
+            self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
+            self.assertEqual(im.info['dpi'], (dpi[1], dpi[1]))
+
+    def test_save_dpi_rounding(self):
+        outfile = self.tempfile("temp.tif")
+        im = Image.open("Tests/images/hopper.tif")
+
+        for dpi in (72.2, 72.8):
+            im.save(outfile, dpi=(dpi, dpi))
+
+            reloaded = Image.open(outfile)
+            reloaded.load()
+            self.assertEqual((round(dpi), round(dpi)), reloaded.info['dpi'])
+
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
         Image.open("Tests/images/10ct_32bit_128.tiff").save(
@@ -229,11 +253,6 @@ class TestFileTiff(PillowTestCase):
             ['Tests/images/multipage-lastframe.tif', 1],
             ['Tests/images/multipage.tiff', 3]
         ]:
-            # Test is_animated before n_frames
-            im = Image.open(path)
-            self.assertEqual(im.is_animated, n_frames != 1)
-
-            # Test is_animated after n_frames
             im = Image.open(path)
             self.assertEqual(im.n_frames, n_frames)
             self.assertEqual(im.is_animated, n_frames != 1)
@@ -262,6 +281,11 @@ class TestFileTiff(PillowTestCase):
         im.load()
         self.assertEqual(im.size, (10, 10))
         self.assertEqual(im.convert('RGB').getpixel((0, 0)), (255, 0, 0))
+
+        im.seek(0)
+        im.load()
+        self.assertEqual(im.size, (10, 10))
+        self.assertEqual(im.convert('RGB').getpixel((0, 0)), (0, 128, 0))
 
         im.seek(2)
         im.load()

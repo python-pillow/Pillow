@@ -29,8 +29,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 
 #define FLIP_LEFT_RIGHT(INT, image) \
     for (y = 0; y < imIn->ysize; y++) { \
-        INT* in = imIn->image[y]; \
-        INT* out = imOut->image[y]; \
+        INT* in = (INT *)imIn->image[y]; \
+        INT* out = (INT *)imOut->image[y]; \
         xr = imIn->xsize-1; \
         for (x = 0; x < imIn->xsize; x++, xr--) \
             out[xr] = in[x]; \
@@ -105,10 +105,11 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
                     yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     for (yyy = yy; yyy < yyysize; yyy++) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yyy] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xr]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -118,10 +119,15 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_90(UINT8, image8)
-    else
-        ROTATE_90(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_90(UINT16, image8);
+        } else {
+            ROTATE_90(UINT8, image8);
+        }
+    } else {
+        ROTATE_90(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -155,9 +161,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
                     yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     for (yyy = yy; yyy < yyysize; yyy++) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yyy] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xxx]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -167,10 +174,15 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSPOSE(UINT8, image8)
-    else
-        TRANSPOSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSPOSE(UINT16, image8);
+        } else {
+            TRANSPOSE(UINT8, image8);
+        }
+    } else {
+        TRANSPOSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -205,10 +217,11 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     yr = imIn->ysize - 1 - yy; \
                     for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yr] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xr]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -218,10 +231,15 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSVERSE(UINT8, image8)
-    else
-        TRANSVERSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSVERSE(UINT16, image8);
+        } else {
+            TRANSVERSE(UINT8, image8);
+        }
+    } else {
+        TRANSVERSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -246,8 +264,8 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
 #define ROTATE_180(INT, image) \
     for (y = 0; y < imIn->ysize; y++, yr--) { \
-        INT* in = imIn->image[y]; \
-        INT* out = imOut->image[yr]; \
+        INT* in = (INT *)imIn->image[y]; \
+        INT* out = (INT *)imOut->image[yr]; \
         xr = imIn->xsize-1; \
         for (x = 0; x < imIn->xsize; x++, xr--) \
             out[xr] = in[x]; \
@@ -299,9 +317,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     yr = imIn->ysize - 1 - yy; \
                     for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yr] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xxx]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -311,10 +330,15 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_270(UINT8, image8)
-    else
-        ROTATE_270(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_270(UINT16, image8);
+        } else {
+            ROTATE_270(UINT8, image8);
+        }
+    } else {
+        ROTATE_270(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 

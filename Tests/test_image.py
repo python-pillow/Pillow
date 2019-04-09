@@ -3,6 +3,8 @@ from .helper import unittest, PillowTestCase, hopper
 from PIL import Image
 from PIL._util import py3
 import os
+import sys
+import shutil
 
 
 class TestImage(PillowTestCase):
@@ -120,6 +122,16 @@ class TestImage(PillowTestCase):
         im.readonly = 1
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
+
+    @unittest.skipIf(sys.platform.startswith('win32'),
+                     "Test requires opening tempfile twice")
+    def test_readonly_save(self):
+        temp_file = self.tempfile("temp.bmp")
+        shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
+
+        im = Image.open(temp_file)
+        self.assertTrue(im.readonly)
+        im.save(temp_file)
 
     def test_dump(self):
         im = Image.new("L", (10, 10))
@@ -522,6 +534,16 @@ class TestImage(PillowTestCase):
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
 
+    def test_p_from_rgb_rgba(self):
+        for mode, color in [
+            ("RGB", '#DDEEFF'),
+            ("RGB", (221, 238, 255)),
+            ("RGBA", (221, 238, 255, 255))
+        ]:
+            im = Image.new("P", (100, 100), color)
+            expected = Image.new(mode, (100, 100), color)
+            self.assert_image_equal(im.convert(mode), expected)
+
     def test_no_resource_warning_on_save(self):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -531,6 +553,18 @@ class TestImage(PillowTestCase):
         # Act/Assert
         with Image.open(test_file) as im:
             self.assert_warning(None, im.save, temp_file)
+
+    def test_load_on_nonexclusive_multiframe(self):
+        with open("Tests/images/frozenpond.mpo", "rb") as fp:
+            def act(fp):
+                im = Image.open(fp)
+                im.load()
+            act(fp)
+
+            with Image.open(fp) as im:
+                im.load()
+
+            self.assertFalse(fp.closed)
 
 
 class MockEncoder(object):

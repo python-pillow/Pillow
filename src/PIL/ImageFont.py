@@ -158,17 +158,17 @@ class FreeTypeFont(object):
     def getmetrics(self):
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text, direction=None, features=None):
-        size, offset = self.font.getsize(text, direction, features)
+    def getsize(self, text, direction=None, features=None, language=None):
+        size, offset = self.font.getsize(text, direction, features, language)
         return (size[0] + offset[0], size[1] + offset[1])
 
-    def getsize_multiline(self, text, direction=None,
-                          spacing=4, features=None):
+    def getsize_multiline(self, text, direction=None, spacing=4,
+                          features=None, language=None):
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.getsize('A')[1] + spacing
         for line in lines:
-            line_width, line_height = self.getsize(line, direction, features)
+            line_width, line_height = self.getsize(line, direction, features, language)
             max_width = max(max_width, line_width)
 
         return max_width, len(lines)*line_spacing - spacing
@@ -176,15 +176,15 @@ class FreeTypeFont(object):
     def getoffset(self, text):
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode="", direction=None, features=None):
-        return self.getmask2(text, mode, direction=direction,
-                             features=features)[0]
+    def getmask(self, text, mode="", direction=None, features=None, language=None):
+        return self.getmask2(text, mode, direction=direction, features=features,
+                             language=language)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
-                 features=None, *args, **kwargs):
-        size, offset = self.font.getsize(text, direction, features)
+                 features=None, language=None, *args, **kwargs):
+        size, offset = self.font.getsize(text, direction, features, language)
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1", direction, features)
+        self.font.render(text, im.id, mode == "1", direction, features, language)
         return im, offset
 
     def font_variant(self, font=None, size=None, index=None, encoding=None,

@@ -596,8 +596,6 @@ class PyDecoder(object):
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-            If `handles_eof` is set, then `buffer` will be empty and `self.fd`
-            will be set.
         :returns: A tuple of (bytes consumed, errcode).
             If finished with decoding return <0 for the bytes consumed.
             Err codes are from `ERRORS`

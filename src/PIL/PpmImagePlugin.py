@@ -164,6 +164,6 @@ def _save(im, fp, filename):
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
 
-Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm"])
+Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm", ".pnm"])
 
 Image.register_mime(PpmImageFile.format, "image/x-portable-anymap")

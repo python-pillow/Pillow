@@ -263,10 +263,10 @@ OPEN_INFO = {
     (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
-    # JPEG compressed images handled by LibTiff and auto-converted to RGB
+    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
     # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
 
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
@@ -785,17 +785,12 @@ class ImageFileDirectory_v2(MutableMapping):
             warnings.warn(str(msg))
             return
 
-    def save(self, fp):
-
-        if fp.tell() == 0:  # skip TIFF header on subsequent pages
-            # tiff header -- PIL always starts the first IFD at offset 8
-            fp.write(self._prefix + self._pack("HL", 42, 8))
-
+    def tobytes(self, offset=0):
         # FIXME What about tagdata?
-        fp.write(self._pack("H", len(self._tags_v2)))
+        result = self._pack("H", len(self._tags_v2))
 
         entries = []
-        offset = fp.tell() + len(self._tags_v2) * 12 + 4
+        offset = offset + len(result) + len(self._tags_v2) * 12 + 4
         stripoffsets = None
 
         # pass 1: convert tags to binary format
@@ -844,18 +839,29 @@ class ImageFileDirectory_v2(MutableMapping):
         for tag, typ, count, value, data in entries:
             if DEBUG > 1:
                 print(tag, typ, count, repr(value), repr(data))
-            fp.write(self._pack("HHL4s", tag, typ, count, value))
+            result += self._pack("HHL4s", tag, typ, count, value)
 
         # -- overwrite here for multi-page --
-        fp.write(b"\0\0\0\0")  # end of entries
+        result += b"\0\0\0\0"  # end of entries
 
         # pass 3: write auxiliary data to file
         for tag, typ, count, value, data in entries:
-            fp.write(data)
+            result += data
             if len(data) & 1:
-                fp.write(b"\0")
+                result += b"\0"
 
-        return offset
+        return result
+
+    def save(self, fp):
+
+        if fp.tell() == 0:  # skip TIFF header on subsequent pages
+            # tiff header -- PIL always starts the first IFD at offset 8
+            fp.write(self._prefix + self._pack("HL", 42, 8))
+
+        offset = fp.tell()
+        result = self.tobytes(offset)
+        fp.write(result)
+        return offset + len(result)
 
 
 ImageFileDirectory_v2._load_dispatch = _load_dispatch
@@ -985,7 +991,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self._frame_pos = []
         self._n_frames = None
-        self._is_animated = None
 
         if DEBUG:
             print("*** TiffImageFile._open ***")
@@ -999,29 +1004,14 @@ class TiffImageFile(ImageFile.ImageFile):
     def n_frames(self):
         if self._n_frames is None:
             current = self.tell()
-            try:
-                while True:
-                    self._seek(self.tell() + 1)
-            except EOFError:
-                self._n_frames = self.tell() + 1
+            self._seek(len(self._frame_pos))
+            while self._n_frames is None:
+                self._seek(self.tell() + 1)
             self.seek(current)
         return self._n_frames
 
     @property
     def is_animated(self):
-        if self._is_animated is None:
-            if self._n_frames is not None:
-                self._is_animated = self._n_frames != 1
-            else:
-                current = self.tell()
-
-                try:
-                    self.seek(1)
-                    self._is_animated = True
-                except EOFError:
-                    self._is_animated = False
-
-                self.seek(current)
         return self._is_animated
 
     def seek(self, frame):
@@ -1053,10 +1043,13 @@ class TiffImageFile(ImageFile.ImageFile):
                 print("Loading tags, location: %s" % self.fp.tell())
             self.tag_v2.load(self.fp)
             self.__next = self.tag_v2.next
+            if self.__next == 0:
+                self._n_frames = frame + 1
+            if len(self._frame_pos) == 1:
+                self._is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
-        self.__next = self.tag_v2.next
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
@@ -1087,7 +1080,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def load_end(self):
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
-        if self.__frame == 0 and not self.__next:
+        if not self._is_animated:
             self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
@@ -1167,10 +1160,9 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
-        if self._exclusive_fp:
-            if self.__frame == 0 and not self.__next:
-                self.fp.close()
-                self.fp = None  # might be shared
+        if self._exclusive_fp and not self._is_animated:
+            self.fp.close()
+            self.fp = None  # might be shared
 
         if err < 0:
             raise IOError(err)
@@ -1190,6 +1182,10 @@ class TiffImageFile(ImageFile.ImageFile):
         # photometric is a required tag, but not everyone is reading
         # the specification
         photo = self.tag_v2.get(PHOTOMETRIC_INTERPRETATION, 0)
+
+        # old style jpeg compression images most certainly are YCbCr
+        if self._compression == "tiff_jpeg":
+            photo = 6
 
         fillorder = self.tag_v2.get(FILLORDER, 1)
 
@@ -1257,11 +1253,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
             if resunit == 2:  # dots per inch
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
             elif resunit == 3:  # dots per centimeter. convert to dpi
-                self.info["dpi"] = xres * 2.54, yres * 2.54
+                self.info["dpi"] = int(xres * 2.54 + 0.5), int(yres * 2.54 + 0.5)
             elif resunit is None:  # used to default to 1, but now 2)
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
                 # For backward compatibility,
                 # we also preserve the old behavior
                 self.info["resolution"] = xres, yres
@@ -1472,8 +1468,8 @@ def _save(im, fp, filename):
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         ifd[RESOLUTION_UNIT] = 2
-        ifd[X_RESOLUTION] = dpi[0]
-        ifd[Y_RESOLUTION] = dpi[1]
+        ifd[X_RESOLUTION] = int(dpi[0] + 0.5)
+        ifd[Y_RESOLUTION] = int(dpi[1] + 0.5)
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits

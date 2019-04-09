@@ -2,11 +2,101 @@
 Changelog (Pillow)
 ==================
 
-6.0.0 (unreleased)
+6.0.0 (2019-04-01)
 ------------------
 
 - Python 2.7 support will be removed in Pillow 7.0.0 #3682
   [hugovk]
+
+- Add EXIF class #3625
+  [radarhere]
+
+- Add ImageOps exif_transpose method #3687
+  [radarhere]
+
+- Added warnings to deprecated CMSProfile attributes #3615
+  [hugovk]
+
+- Documented reading TIFF multiframe images #3720
+  [akuchling]
+
+- Improved speed of opening an MPO file #3658
+  [Glandos]
+
+- Update palette in quantize #3721
+  [radarhere]
+
+- Improvements to TIFF is_animated and n_frames #3714
+  [radarhere]
+
+- Fixed incompatible pointer type warnings #3754
+  [radarhere]
+
+- Improvements to PA and LA conversion and palette operations #3728
+  [radarhere]
+
+- Consistent DPI rounding #3709
+  [radarhere]
+
+- Change size of MPO image to match frame #3588
+  [radarhere]
+
+- Read Photoshop resolution data #3701
+  [radarhere]
+
+- Ensure image is mutable before saving #3724
+  [radarhere]
+
+- Correct remap_palette documentation #3740
+  [radarhere]
+
+- Promote P images to PA in putalpha #3726
+  [radarhere]
+
+- Allow RGB and RGBA values for new P images #3719
+  [radarhere]
+
+- Fixed TIFF bug when seeking backwards and then forwards #3713
+  [radarhere]
+
+- Cache EXIF information #3498
+  [Glandos]
+
+- Added transparency for all PNG greyscale modes #3744
+  [radarhere]
+
+- Fix deprecation warnings in Python 3.8 #3749
+  [radarhere]
+
+- Fixed GIF bug when rewinding to a non-zero frame #3716
+  [radarhere]
+
+- Only close original fp in __del__ and __exit__ if original fp is exclusive #3683
+  [radarhere]
+
+- Fix BytesWarning in Tests/test_numpy.py #3725
+  [jdufresne]
+
+- Add missing MIME types and extensions #3520
+  [pirate486743186]
+
+- Add I;16 PNG save #3566
+  [radarhere]
+
+- Add support for BMP RGBA bitfield compression #3705
+  [radarhere]
+
+- Added ability to set language for text rendering #3693
+  [iwsfutcmd]
+
+- Only close exclusive fp on Image __exit__ #3698
+  [radarhere]
+
+- Changed EPS subprocess stdout from devnull to None #3635
+  [radarhere]
+
+- Add reading old-JPEG compressed TIFFs #3489
+  [kkopachev]
 
 - Add EXIF support for PNG #3674
   [radarhere]
@@ -38,7 +128,7 @@ Changelog (Pillow)
 - Make ContainerIO.isatty() return a bool, not int #3568
   [jdufresne]
 
-- Add support for I;16 modes for more transpose operations #3563
+- Add support to all transpose operations for I;16 modes #3563, #3741
   [radarhere]
 
 - Deprecate support for PyQt4 and PySide #3655

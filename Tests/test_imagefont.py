@@ -6,6 +6,8 @@ from io import BytesIO
 import os
 import sys
 import copy
+import re
+import distutils.version
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -49,29 +51,40 @@ class TestImageFont(PillowTestCase):
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-                ('2', '3'): {'multiline': 30,
-                             'textsize': 12,
-                             'getters': (13, 16)},
-                ('2', '7'): {'multiline': 6.2,
-                             'textsize': 2.5,
-                             'getters': (12, 16)},
-                ('2', '8'): {'multiline': 6.2,
-                             'textsize': 2.5,
-                             'getters': (12, 16)},
-                ('2', '9'): {'multiline': 6.2,
-                             'textsize': 2.5,
-                             'getters': (12, 16)},
-                'Default': {'multiline': 0.5,
-                            'textsize': 0.5,
-                            'getters': (12, 16)},
+                ('>=2.3', '<2.4'): {
+                    'multiline': 30,
+                    'textsize': 12,
+                    'getters': (13, 16)},
+                ('>=2.7',): {
+                    'multiline': 6.2,
+                    'textsize': 2.5,
+                    'getters': (12, 16)},
+                'Default': {
+                    'multiline': 0.5,
+                    'textsize': 0.5,
+                    'getters': (12, 16)},
                 }
 
     def setUp(self):
-        freetype_version = tuple(
-            ImageFont.core.freetype2_version.split('.')
-        )[:2]
-        self.metrics = self.METRICS.get(freetype_version,
-                                        self.METRICS['Default'])
+        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+
+        self.metrics = self.METRICS['Default']
+        for conditions, metrics in self.METRICS.items():
+            if not isinstance(conditions, tuple):
+                continue
+
+            for condition in conditions:
+                version = re.sub('[<=>]', '', condition)
+                if (condition.startswith('>=') and freetype >= version) or \
+                   (condition.startswith('<') and freetype < version):
+                    # Condition was met
+                    continue
+
+                # Condition failed
+                break
+            else:
+                # All conditions were met
+                self.metrics = metrics
 
     def get_font(self):
         return ImageFont.truetype(FONT_PATH, FONT_SIZE,
@@ -524,6 +537,15 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize_multiline('ABC\n'), (36, 36))
         self.assertEqual(t.getsize_multiline('ABC\nA'), (36, 36))
         self.assertEqual(t.getsize_multiline('ABC\nAaaa'), (48, 36))
+
+    def test_complex_font_settings(self):
+        # Arrange
+        t = self.get_font()
+        # Act / Assert
+        if t.layout_engine == ImageFont.LAYOUT_BASIC:
+            self.assertRaises(KeyError, t.getmask, 'абвг', direction='rtl')
+            self.assertRaises(KeyError, t.getmask, 'абвг', features=['-kern'])
+            self.assertRaises(KeyError, t.getmask, 'абвг', language='sr')
 
 
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")

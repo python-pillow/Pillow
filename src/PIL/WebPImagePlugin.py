@@ -93,8 +93,9 @@ class WebPImageFile(ImageFile.ImageFile):
         self.seek(0)
 
     def _getexif(self):
-        from .JpegImagePlugin import _getexif
-        return _getexif(self)
+        if "exif" not in self.info:
+            return None
+        return dict(self.getexif())
 
     @property
     def n_frames(self):
@@ -186,7 +187,7 @@ def _save_all(im, fp, filename):
     # will preserve non-alpha modes
     total = 0
     for ims in [im]+append_images:
-        total += 1 if not hasattr(ims, "n_frames") else ims.n_frames
+        total += getattr(ims, "n_frames", 1)
     if total == 1:
         _save(im, fp, filename)
         return
@@ -216,6 +217,8 @@ def _save_all(im, fp, filename):
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    if isinstance(exif, Image.Exif):
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
         lossless = False
@@ -254,10 +257,7 @@ def _save_all(im, fp, filename):
     try:
         for ims in [im]+append_images:
             # Get # of frames in this image
-            if not hasattr(ims, "n_frames"):
-                nfr = 1
-            else:
-                nfr = ims.n_frames
+            nfr = getattr(ims, "n_frames", 1)
 
             for idx in range(nfr):
                 ims.seek(idx)
@@ -318,6 +318,8 @@ def _save(im, fp, filename):
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile", "")
     exif = im.encoderinfo.get("exif", "")
+    if isinstance(exif, Image.Exif):
+        exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:

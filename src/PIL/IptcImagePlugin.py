@@ -198,35 +198,9 @@ def getiptcinfo(im):
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
         # extract the IPTC/NAA resource
-        try:
-            app = im.app["APP13"]
-            if app[:14] == b"Photoshop 3.0\x00":
-                app = app[14:]
-                # parse the image resource block
-                offset = 0
-                while app[offset:offset+4] == b"8BIM":
-                    offset += 4
-                    # resource code
-                    code = i16(app, offset)
-                    offset += 2
-                    # resource name (usually empty)
-                    name_len = i8(app[offset])
-                    # name = app[offset+1:offset+1+name_len]
-                    offset = 1 + offset + name_len
-                    if offset & 1:
-                        offset += 1
-                    # resource data block
-                    size = i32(app, offset)
-                    offset += 4
-                    if code == 0x0404:
-                        # 0x0404 contains IPTC/NAA data
-                        data = app[offset:offset+size]
-                        break
-                    offset = offset + size
-                    if offset & 1:
-                        offset += 1
-        except (AttributeError, KeyError):
-            pass
+        photoshop = im.info.get("photoshop")
+        if photoshop:
+            data = photoshop.get(0x0404)
 
     elif isinstance(im, TiffImagePlugin.TiffImageFile):
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data

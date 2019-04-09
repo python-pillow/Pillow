@@ -39,7 +39,7 @@ import struct
 import io
 import warnings
 from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, o8, i16be as i16
+from ._binary import i8, o8, i16be as i16, i32be as i32
 from .JpegPresets import presets
 from ._util import isStringType
 
@@ -86,7 +86,7 @@ def APP(self, marker):
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:5] == b"Exif\0":
         if "exif" not in self.info:
-            # extract Exif information (incomplete)
+            # extract EXIF information (incomplete)
             self.info["exif"] = s  # FIXME: value will change
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
@@ -104,6 +104,39 @@ def APP(self, marker):
         # reassemble the profile, rather than assuming that the APP2
         # markers appear in the correct sequence.
         self.icclist.append(s)
+    elif marker == 0xFFED:
+        if s[:14] == b"Photoshop 3.0\x00":
+            blocks = s[14:]
+            # parse the image resource block
+            offset = 0
+            photoshop = {}
+            while blocks[offset:offset+4] == b"8BIM":
+                offset += 4
+                # resource code
+                code = i16(blocks, offset)
+                offset += 2
+                # resource name (usually empty)
+                name_len = i8(blocks[offset])
+                # name = blocks[offset+1:offset+1+name_len]
+                offset = 1 + offset + name_len
+                if offset & 1:
+                    offset += 1
+                # resource data block
+                size = i32(blocks, offset)
+                offset += 4
+                data = blocks[offset:offset+size]
+                if code == 0x03ED:  # ResolutionInfo
+                    data = {
+                        'XResolution': i32(data[:4]) / 65536,
+                        'DisplayedUnitsX': i16(data[4:8]),
+                        'YResolution': i32(data[8:12]) / 65536,
+                        'DisplayedUnitsY': i16(data[12:]),
+                    }
+                photoshop[code] = data
+                offset = offset + size
+                if offset & 1:
+                    offset += 1
+        self.info["photoshop"] = photoshop
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
@@ -127,15 +160,15 @@ def APP(self, marker):
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:
-                dpi = x_resolution[0] / x_resolution[1]
+                dpi = float(x_resolution[0]) / x_resolution[1]
             except TypeError:
                 dpi = x_resolution
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
+            self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
         except (KeyError, SyntaxError, ZeroDivisionError):
-            # SyntaxError for invalid/unreadable exif
+            # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
@@ -439,60 +472,23 @@ class JpegImageFile(ImageFile.ImageFile):
 def _fixup_dict(src_dict):
     # Helper function for _getexif()
     # returns a dict with any single item tuples/lists as individual values
-    def _fixup(value):
-        try:
-            if len(value) == 1 and not isinstance(value, dict):
-                return value[0]
-        except Exception:
-            pass
-        return value
-
-    return {k: _fixup(v) for k, v in src_dict.items()}
+    exif = Image.Exif()
+    return exif._fixup_dict(src_dict)
 
 
 def _getexif(self):
-    # Extract EXIF information.  This method is highly experimental,
-    # and is likely to be replaced with something better in a future
-    # version.
-
-    # The EXIF record consists of a TIFF file embedded in a JPEG
-    # application marker (!).
+    # Use the cached version if possible
     try:
-        data = self.info["exif"]
+        return self.info["parsed_exif"]
     except KeyError:
-        return None
-    fp = io.BytesIO(data[6:])
-    head = fp.read(8)
-    # process dictionary
-    info = TiffImagePlugin.ImageFileDirectory_v1(head)
-    fp.seek(info.next)
-    info.load(fp)
-    exif = dict(_fixup_dict(info))
-    # get exif extension
-    try:
-        # exif field 0x8769 is an offset pointer to the location
-        # of the nested embedded exif ifd.
-        # It should be a long, but may be corrupted.
-        fp.seek(exif[0x8769])
-    except (KeyError, TypeError):
         pass
-    else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(fp)
-        exif.update(_fixup_dict(info))
-    # get gpsinfo extension
-    try:
-        # exif field 0x8825 is an offset pointer to the location
-        # of the nested embedded gps exif ifd.
-        # It should be a long, but may be corrupted.
-        fp.seek(exif[0x8825])
-    except (KeyError, TypeError):
-        pass
-    else:
-        info = TiffImagePlugin.ImageFileDirectory_v1(head)
-        info.load(fp)
-        exif[0x8825] = _fixup_dict(info)
 
+    if "exif" not in self.info:
+        return None
+    exif = dict(self.getexif())
+
+    # Cache the result for future use
+    self.info["parsed_exif"] = exif
     return exif
 
 
@@ -728,6 +724,10 @@ def _save(im, fp, filename):
 
     optimize = info.get("optimize", False)
 
+    exif = info.get("exif", b"")
+    if isinstance(exif, Image.Exif):
+        exif = exif.tobytes()
+
     # get keyword arguments
     im.encoderconfig = (
         quality,
@@ -739,7 +739,7 @@ def _save(im, fp, filename):
         subsampling,
         qtables,
         extra,
-        info.get("exif", b"")
+        exif
         )
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
@@ -757,9 +757,9 @@ def _save(im, fp, filename):
         else:
             bufsize = im.size[0] * im.size[1]
 
-    # The exif info needs to be written as one block, + APP1, + one spare byte.
+    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
     # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(info.get("exif", b"")) + 5,
+    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5,
                   len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0)+im.size, 0, rawmode)], bufsize)
@@ -786,7 +786,8 @@ def jpeg_factory(fp=None, filename=None):
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
-            im = MpoImageFile(fp, filename)
+            # Don't reload everything, just convert it.
+            im = MpoImageFile.adopt(im, mpheader)
     except (TypeError, IndexError):
         # It is really a JPEG
         pass

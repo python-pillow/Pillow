@@ -40,8 +40,8 @@ except ImportError:
     import __builtin__
     builtins = __builtin__
 
-from . import ImageMode
-from ._binary import i8
+from . import ImageMode, TiffTags
+from ._binary import i8, i32le
 from ._util import isPath, isStringType, deferred_error
 
 import os
@@ -54,10 +54,10 @@ import atexit
 import numbers
 try:
     # Python 3
-    from collections.abc import Callable
+    from collections.abc import Callable, MutableMapping
 except ImportError:
     # Python 2.7
-    from collections import Callable
+    from collections import Callable, MutableMapping
 
 
 # Silence warning
@@ -247,7 +247,7 @@ _MODEINFO = {
     "L": ("L", "L", ("L",)),
     "I": ("L", "I", ("I",)),
     "F": ("L", "F", ("F",)),
-    "P": ("RGB", "L", ("P",)),
+    "P": ("P", "L", ("P",)),
     "RGB": ("RGB", "L", ("R", "G", "B")),
     "RGBX": ("RGB", "L", ("R", "G", "B", "X")),
     "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
@@ -578,7 +578,12 @@ class Image(object):
         return self
 
     def __exit__(self, *args):
-        self.close()
+        if hasattr(self, 'fp') and getattr(self, '_exclusive_fp', False):
+            if hasattr(self, "_close__fp"):
+                self._close__fp()
+            if self.fp:
+                self.fp.close()
+        self.fp = None
 
     def close(self):
         """
@@ -610,12 +615,7 @@ class Image(object):
 
     if sys.version_info.major >= 3:
         def __del__(self):
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
-            if (hasattr(self, 'fp') and hasattr(self, '_exclusive_fp')
-               and self.fp and self._exclusive_fp):
-                self.fp.close()
-            self.fp = None
+            self.__exit__()
 
     def _copy(self):
         self.load()
@@ -950,7 +950,7 @@ class Image(object):
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if self.mode in ('L', 'RGB') and mode == 'RGBA':
+            if self.mode in ('1', 'L', 'I', 'RGB') and mode == 'RGBA':
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(self.im.convert_transparent(
@@ -1096,7 +1096,13 @@ class Image(object):
             im = self.im.convert("P", dither, palette.im)
             return self._new(im)
 
-        return self._new(self.im.quantize(colors, method, kmeans))
+        im = self._new(self.im.quantize(colors, method, kmeans))
+
+        from . import ImagePalette
+        mode = im.im.getpalettemode()
+        im.palette = ImagePalette.ImagePalette(mode, im.im.getpalette(mode, mode))
+
+        return im
 
     def copy(self):
         """
@@ -1290,6 +1296,12 @@ class Image(object):
                 extrema.append(self.im.getband(i).getextrema())
             return tuple(extrema)
         return self.im.getextrema()
+
+    def getexif(self):
+        exif = Exif()
+        if "exif" in self.info:
+            exif.load(self.info["exif"])
+        return exif
 
     def getim(self):
         """
@@ -1559,7 +1571,7 @@ class Image(object):
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "RGBA"):
+        if self.mode not in ("LA", "PA", "RGBA"):
             # attempt to promote self to a matching alpha mode
             try:
                 mode = getmodebase(self.mode) + "A"
@@ -1568,7 +1580,7 @@ class Image(object):
                 except (AttributeError, ValueError):
                     # do things the hard way
                     im = self.im.convert(mode)
-                    if im.mode not in ("LA", "RGBA"):
+                    if im.mode not in ("LA", "PA", "RGBA"):
                         raise ValueError  # sanity check
                     self.im = im
                 self.pyaccess = None
@@ -1576,7 +1588,7 @@ class Image(object):
             except (KeyError, ValueError):
                 raise ValueError("illegal image mode")
 
-        if self.mode == "LA":
+        if self.mode in ("LA", "PA"):
             band = 1
         else:
             band = 3
@@ -1619,10 +1631,10 @@ class Image(object):
 
     def putpalette(self, data, rawmode="RGB"):
         """
-        Attaches a palette to this image.  The image must be a "P" or
-        "L" image, and the palette sequence must contain 768 integer
-        values, where each group of three values represent the red,
-        green, and blue values for the corresponding pixel
+        Attaches a palette to this image.  The image must be a "P",
+        "PA", "L" or "LA" image, and the palette sequence must contain
+        768 integer values, where each group of three values represent
+        the red, green, and blue values for the corresponding pixel
         index. Instead of an integer sequence, you can use an 8-bit
         string.
 
@@ -1631,7 +1643,7 @@ class Image(object):
         """
         from . import ImagePalette
 
-        if self.mode not in ("L", "P"):
+        if self.mode not in ("L", "LA", "P", "PA"):
             raise ValueError("illegal image mode")
         self.load()
         if isinstance(data, ImagePalette.ImagePalette):
@@ -1643,7 +1655,7 @@ class Image(object):
                 else:
                     data = "".join(chr(x) for x in data)
             palette = ImagePalette.raw(rawmode, data)
-        self.mode = "P"
+        self.mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
         self.palette.mode = "RGB"
         self.load()  # install new palette
@@ -1688,7 +1700,7 @@ class Image(object):
         Rewrites the image to reorder the palette.
 
         :param dest_map: A list of indexes into the original palette.
-           e.g. [1,0] would swap a two item palette, and list(range(255))
+           e.g. [1,0] would swap a two item palette, and list(range(256))
            is the identity transform.
         :param source_palette: Bytes or None.
         :returns:  An :py:class:`~PIL.Image.Image` object.
@@ -1958,7 +1970,7 @@ class Image(object):
             filename = fp.name
 
         # may mutate self!
-        self.load()
+        self._ensure_mutable()
 
         save_all = params.pop('save_all', False)
         self.encoderinfo = params
@@ -2004,9 +2016,6 @@ class Image(object):
         beyond the end of the sequence, the method raises an
         **EOFError** exception. When a sequence file is opened, the
         library automatically seeks to frame 0.
-
-        Note that in the current version of the library, most sequence
-        formats only allow you to seek to the next frame.
 
         See :py:meth:`~PIL.Image.Image.tell`.
 
@@ -2374,7 +2383,14 @@ def new(mode, size, color=0):
         from . import ImageColor
         color = ImageColor.getcolor(color, mode)
 
-    return Image()._new(core.fill(mode, size, color))
+    im = Image()
+    if mode == "P" and \
+       isinstance(color, (list, tuple)) and len(color) in [3, 4]:
+        # RGB or RGBA value for a P image
+        from . import ImagePalette
+        im.palette = ImagePalette.ImagePalette()
+        color = im.palette.getcolor(color)
+    return im._new(core.fill(mode, size, color))
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
@@ -2995,3 +3011,182 @@ def _apply_env_variables(env=None):
 
 _apply_env_variables()
 atexit.register(core.clear_cache)
+
+
+class Exif(MutableMapping):
+    endian = "<"
+
+    def __init__(self):
+        self._data = {}
+        self._ifds = {}
+
+    def _fixup_dict(self, src_dict):
+        # Helper function for _getexif()
+        # returns a dict with any single item tuples/lists as individual values
+        def _fixup(value):
+            try:
+                if len(value) == 1 and not isinstance(value, dict):
+                    return value[0]
+            except Exception:
+                pass
+            return value
+
+        return {k: _fixup(v) for k, v in src_dict.items()}
+
+    def _get_ifd_dict(self, tag):
+        try:
+            # an offset pointer to the location of the nested embedded IFD.
+            # It should be a long, but may be corrupted.
+            self.fp.seek(self._data[tag])
+        except (KeyError, TypeError):
+            pass
+        else:
+            from . import TiffImagePlugin
+            info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+            info.load(self.fp)
+            return self._fixup_dict(info)
+
+    def load(self, data):
+        # Extract EXIF information.  This is highly experimental,
+        # and is likely to be replaced with something better in a future
+        # version.
+
+        # The EXIF record consists of a TIFF file embedded in a JPEG
+        # application marker (!).
+        self.fp = io.BytesIO(data[6:])
+        self.head = self.fp.read(8)
+        # process dictionary
+        from . import TiffImagePlugin
+        info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+        self.endian = info._endian
+        self.fp.seek(info.next)
+        info.load(self.fp)
+        self._data = dict(self._fixup_dict(info))
+
+        # get EXIF extension
+        ifd = self._get_ifd_dict(0x8769)
+        if ifd:
+            self._data.update(ifd)
+            self._ifds[0x8769] = ifd
+
+        # get gpsinfo extension
+        ifd = self._get_ifd_dict(0x8825)
+        if ifd:
+            self._data[0x8825] = ifd
+            self._ifds[0x8825] = ifd
+
+    def tobytes(self, offset=0):
+        from . import TiffImagePlugin
+        if self.endian == "<":
+            head = b"II\x2A\x00\x08\x00\x00\x00"
+        else:
+            head = b"MM\x00\x2A\x00\x00\x00\x08"
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
+        for tag, value in self._data.items():
+            ifd[tag] = value
+        return b"Exif\x00\x00"+head+ifd.tobytes(offset)
+
+    def get_ifd(self, tag):
+        if tag not in self._ifds and tag in self._data:
+            if tag == 0xa005:  # interop
+                self._ifds[tag] = self._get_ifd_dict(tag)
+            elif tag == 0x927c:  # makernote
+                from . import TiffImagePlugin
+                if self._data[0x927c][:8] == b"FUJIFILM":
+                    exif_data = self._data[0x927c]
+                    ifd_offset = i32le(exif_data[8:12])
+                    ifd_data = exif_data[ifd_offset:]
+
+                    makernote = {}
+                    for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        ifd_tag, typ, count, data = struct.unpack(
+                            "<HHL4s", ifd_data[i*12 + 2:(i+1)*12 + 2])
+                        try:
+                            unit_size, handler =\
+                                TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
+                                    typ
+                                ]
+                        except KeyError:
+                            continue
+                        size = count * unit_size
+                        if size > 4:
+                            offset, = struct.unpack("<L", data)
+                            data = ifd_data[offset-12:offset+size-12]
+                        else:
+                            data = data[:size]
+
+                        if len(data) != size:
+                            warnings.warn("Possibly corrupt EXIF MakerNote data.  "
+                                          "Expecting to read %d bytes but only got %d."
+                                          " Skipping tag %s"
+                                          % (size, len(data), ifd_tag))
+                            continue
+
+                        if not data:
+                            continue
+
+                        makernote[ifd_tag] = handler(
+                            TiffImagePlugin.ImageFileDirectory_v2(), data, False)
+                    self._ifds[0x927c] = dict(self._fixup_dict(makernote))
+                elif self._data.get(0x010f) == "Nintendo":
+                    ifd_data = self._data[0x927c]
+
+                    makernote = {}
+                    for i in range(0, struct.unpack(">H", ifd_data[:2])[0]):
+                        ifd_tag, typ, count, data = struct.unpack(
+                            ">HHL4s", ifd_data[i*12 + 2:(i+1)*12 + 2])
+                        if ifd_tag == 0x1101:
+                            # CameraInfo
+                            offset, = struct.unpack(">L", data)
+                            self.fp.seek(offset)
+
+                            camerainfo = {'ModelID': self.fp.read(4)}
+
+                            self.fp.read(4)
+                            # Seconds since 2000
+                            camerainfo['TimeStamp'] = i32le(self.fp.read(12))
+
+                            self.fp.read(4)
+                            camerainfo['InternalSerialNumber'] = self.fp.read(4)
+
+                            self.fp.read(12)
+                            parallax = self.fp.read(4)
+                            handler =\
+                                TiffImagePlugin.ImageFileDirectory_v2._load_dispatch[
+                                    TiffTags.FLOAT
+                                ][1]
+                            camerainfo['Parallax'] = handler(
+                                TiffImagePlugin.ImageFileDirectory_v2(),
+                                parallax, False)
+
+                            self.fp.read(4)
+                            camerainfo['Category'] = self.fp.read(2)
+
+                            makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
+                    self._ifds[0x927c] = makernote
+        return self._ifds.get(tag, {})
+
+    def __str__(self):
+        return str(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, tag):
+        return self._data[tag]
+
+    def __contains__(self, tag):
+        return tag in self._data
+
+    if not py3:
+        def has_key(self, tag):
+            return tag in self
+
+    def __setitem__(self, tag, value):
+        self._data[tag] = value
+
+    def __delitem__(self, tag):
+        del self._data[tag]
+
+    def __iter__(self):
+        return iter(set(self._data))
