@@ -444,8 +444,7 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if "disposal" in encoderinfo \
-                   and encoderinfo["disposal"] == 2:
+                if disposal == 2:
                     base_image = background
                 else:
                     base_image = previous["im"]
