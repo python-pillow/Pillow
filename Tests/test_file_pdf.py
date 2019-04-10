@@ -67,6 +67,7 @@ class TestFilePdf(PillowTestCase):
     def test_resolution(self):
         self.helper_save_as_pdf("RGB", resolution=300.5)
         self.helper_save_as_pdf("RGB", resolution=(300, 150))
+        self.assertRaises(ValueError, self.helper_save_as_pdf, "RGB", resolution=-100)
 
     def test_unsupported_mode(self):
         im = hopper("LA")

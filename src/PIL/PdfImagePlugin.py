@@ -63,6 +63,8 @@ def _save(im, fp, filename, save_all=False):
     else:
         pdf_width_res = resolution[0]
         pdf_height_res = resolution[1]
+    if pdf_width_res <= 0 or pdf_height_res <= 0:
+        raise ValueError("Resolution must be > 0")
 
     info = {
         "title": None if is_appending else os.path.splitext(
