@@ -755,9 +755,6 @@ font_render(FontObject* self, PyObject* args)
     }
 
     for (x = i = 0; i < count; i++) {
-        if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
-            x = -self->face->glyph->metrics.horiBearingX;
-
         index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
