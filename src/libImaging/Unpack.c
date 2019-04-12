@@ -1280,7 +1280,7 @@ static struct {
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
-    {"1",       "1;8",          1,      unpack18},
+    {"1",       "1;8",          8,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
