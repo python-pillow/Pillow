@@ -345,13 +345,11 @@ static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
                  const char* lang, GlyphInfo **glyph_info, int mask)
 {
-    int i = 0;
+    size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
-    size_t count = 0;
     raqm_glyph_t *glyphs = NULL;
     raqm_glyph_t_01 *glyphs_01 = NULL;
     raqm_direction_t direction;
-    size_t start = 0;
 
     rq = (*p_raqm.create)();
     if (rq == NULL) {
@@ -423,15 +421,15 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
     }
 
     if (features != Py_None) {
-        int len;
+        int j, len;
         PyObject *seq = PySequence_Fast(features, "expected a sequence");
         if (!seq) {
             goto failed;
         }
 
         len = PySequence_Size(seq);
-        for (i = 0; i < len; i++) {
-            PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
+        for (j = 0; j < len; j++) {
+            PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
             char *feature = NULL;
             Py_ssize_t size = 0;
             PyObject *bytes;
@@ -604,12 +602,12 @@ text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *featu
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
-    int i, x, y_max, y_min;
+    int x, y_max, y_min;
     FT_Face face;
     int xoffset, yoffset;
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t count;
+    size_t i, count;
     GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
 
@@ -702,7 +700,8 @@ font_getsize(FontObject* self, PyObject* args)
 static PyObject*
 font_render(FontObject* self, PyObject* args)
 {
-    int i, x, y;
+    int x;
+    unsigned int y;
     Imaging im;
     int index, error, ascender;
     int load_flags;
@@ -717,7 +716,7 @@ font_render(FontObject* self, PyObject* args)
     int xx, x0, x1;
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t count;
+    size_t i, count;
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
 
