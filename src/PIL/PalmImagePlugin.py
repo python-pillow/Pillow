@@ -130,26 +130,23 @@ def _save(im, fp, filename):
         bpp = 8
         version = 1
 
-    elif im.mode == "L" and im.encoderinfo.get("bpp") in (1, 2, 4):
+    elif im.mode == "L":
+        if im.encoderinfo.get("bpp") in (1, 2, 4):
+            # this is 8-bit grayscale, so we shift it to get the high-order bits,
+            # and invert it because
+            # Palm does greyscale from white (0) to black (1)
+            bpp = im.encoderinfo["bpp"]
+            im = im.point(
+                lambda x, shift=8-bpp, maxval=(1 << bpp)-1: maxval - (x >> shift))
+        elif im.info.get("bpp") in (1, 2, 4):
+            # here we assume that even though the inherent mode is 8-bit grayscale,
+            # only the lower bpp bits are significant.
+            # We invert them to match the Palm.
+            bpp = im.info["bpp"]
+            im = im.point(lambda x, maxval=(1 << bpp)-1: maxval - (x & maxval))
+        else:
+            raise IOError("cannot write mode %s as Palm" % im.mode)
 
-        # this is 8-bit grayscale, so we shift it to get the high-order bits,
-        # and invert it because
-        # Palm does greyscale from white (0) to black (1)
-        bpp = im.encoderinfo["bpp"]
-        im = im.point(
-            lambda x, shift=8-bpp, maxval=(1 << bpp)-1: maxval - (x >> shift))
-        # we ignore the palette here
-        im.mode = "P"
-        rawmode = "P;" + str(bpp)
-        version = 1
-
-    elif im.mode == "L" and im.info.get("bpp") in (1, 2, 4):
-
-        # here we assume that even though the inherent mode is 8-bit grayscale,
-        # only the lower bpp bits are significant.
-        # We invert them to match the Palm.
-        bpp = im.info["bpp"]
-        im = im.point(lambda x, maxval=(1 << bpp)-1: maxval - (x & maxval))
         # we ignore the palette here
         im.mode = "P"
         rawmode = "P;" + str(bpp)
