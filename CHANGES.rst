@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+6.1.0 (unreleased)
+------------------
+
+- Fix numpy bool bug #3790
+  [radarhere]
+
 6.0.0 (2019-04-01)
 ------------------
 
