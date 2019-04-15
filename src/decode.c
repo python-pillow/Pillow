@@ -48,7 +48,7 @@
 typedef struct {
     PyObject_HEAD
     int (*decode)(Imaging im, ImagingCodecState state,
-                  UINT8* buffer, int bytes);
+                  UINT8* buffer, Py_ssize_t bytes);
     int (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
