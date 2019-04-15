@@ -178,6 +178,14 @@ class TestNumpy(PillowTestCase):
 
         self.assertEqual(len(im.getdata()), len(arr))
 
+    def test_roundtrip_eye(self):
+        for dtype in (numpy.bool, numpy.bool8,
+                      numpy.int8, numpy.int16, numpy.int32,
+                      numpy.uint8, numpy.uint16, numpy.uint32,
+                      numpy.float, numpy.float32, numpy.float64):
+            arr = numpy.eye(10, dtype=dtype)
+            numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
+
     def test_zero_size(self):
         # Shouldn't cause floating point exception
         # See https://github.com/python-pillow/Pillow/issues/2259
