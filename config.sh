@@ -8,7 +8,7 @@ FREETYPE_VERSION=2.10.0
 LIBPNG_VERSION=1.6.36
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9c
-OPENJPEG_VERSION=2.1
+OPENJPEG_VERSION=2.3.1
 XZ_VERSION=5.2.4
 TIFF_VERSION=4.0.10
 LCMS2_VERSION=2.9
@@ -31,7 +31,7 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         # Fix openjpeg library install id
         # https://code.google.com/p/openjpeg/issues/detail?id=367
-        install_name_tool -id $BUILD_PREFIX/lib/libopenjp2.7.dylib $BUILD_PREFIX/lib/libopenjp2.2.1.0.dylib
+        install_name_tool -id $BUILD_PREFIX/lib/libopenjp2.7.dylib $BUILD_PREFIX/lib/libopenjp2.2.3.1.dylib
     fi
     build_lcms2
 
