@@ -1121,7 +1121,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = list(self.tile[0][3]) + [self.tag_v2.offset]
+        args = list(self.tile[0][3])
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1356,10 +1356,10 @@ class TiffImageFile(ImageFile.ImageFile):
                     # adjust stride width accordingly
                     stride /= bps_count
 
-                a = (tile_rawmode, int(stride), 1, offset.offset)
+                a = (tile_rawmode, int(stride), 1)
                 self.tile.append(
                     (
-                        "libtiff",
+                        self._compression,
                         (x, y, min(x + w, xsize), min(y + h, ysize)),
                         offset,
                         a,
