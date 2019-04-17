@@ -1328,8 +1328,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False)
-            self.tile.append((self._compression, (0, 0, xsize, ysize), 0, a))
+            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            self.tile.append(("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
@@ -1356,10 +1356,10 @@ class TiffImageFile(ImageFile.ImageFile):
                     # adjust stride width accordingly
                     stride /= bps_count
 
-                a = (tile_rawmode, int(stride), 1)
+                a = (tile_rawmode, int(stride), 1, offset.offset)
                 self.tile.append(
                     (
-                        self._compression,
+                        "libtiff",
                         (x, y, min(x + w, xsize), min(y + h, ysize)),
                         offset,
                         a,
