@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Depends: Updated openjpeg to 2.3.1 #3794
+  [radarhere]
+
 - Fix numpy bool bug #3790
   [radarhere]
 
