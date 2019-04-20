@@ -113,23 +113,27 @@ endlocal
 """
 
 
-def nmake_openjpeg(compiler):
-    atts = {'op_ver': '2.1'}
+def nmake_openjpeg(compiler, bit):
+    if compiler['env_version'] == 'v7.0':
+        return ""
+
+    atts = {'op_ver': '2.3.1'}
     atts.update(compiler)
     return r"""
 rem build openjpeg
 setlocal
+""" + vc_setup(compiler, bit) + r"""
 @echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
 
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -G "NMake Makefiles" .
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -G "NMake Makefiles" .
 nmake -f Makefile clean
 nmake -f Makefile
 copy /Y /B bin\* %%INCLIB%%
 mkdir %%INCLIB%%\openjpeg-%(op_ver)s
 copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
 endlocal
-""" % atts
+""" % atts  # noqa: E501
 
 
 def nmake_libs(compiler, bit):
@@ -284,7 +288,7 @@ def add_compiler(compiler, bit):
 
     script.append(msbuild_freetype(compiler, bit))
     script.append(build_lcms2(compiler))
-    # script.append(nmake_openjpeg(compiler))
+    script.append(nmake_openjpeg(compiler, bit))
     script.append(build_ghostscript(compiler, bit))
     script.append(end_compiler())
 

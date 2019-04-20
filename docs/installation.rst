@@ -163,7 +163,7 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
+  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0** and **2.3.1**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
