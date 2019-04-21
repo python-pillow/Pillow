@@ -133,3 +133,4 @@ Methods
              :py:mod:`PIL.Image.core` interface module.
 
 .. autoclass:: PIL.ImageFont.FreeTypeFont
+    :members:

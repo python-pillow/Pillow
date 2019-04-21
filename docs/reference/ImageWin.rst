@@ -24,6 +24,8 @@ Tkinter makes the window handle available via the winfo_id method:
 .. autoclass:: PIL.ImageWin.Dib
     :members:
 
-
 .. autoclass:: PIL.ImageWin.HDC
+    :members:
+
 .. autoclass:: PIL.ImageWin.HWND
+    :members:

@@ -25,3 +25,4 @@ The :py:class:`~PIL.ImageSequence.Iterator` class
 -------------------------------------------------
 
 .. autoclass:: PIL.ImageSequence.Iterator
+    :members:
