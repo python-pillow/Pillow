@@ -197,7 +197,7 @@ class FreeTypeFont(object):
                          different glyph shapes or ligatures. This parameter tells
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
-                         It should be a `BCP47 language code
+                         It should be a `BCP 47 language code
                          <https://www.w3.org/International/articles/language-tags/>`
                          Requires libraqm.
 
@@ -238,7 +238,7 @@ class FreeTypeFont(object):
                          different glyph shapes or ligatures. This parameter tells
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
-                         It should be a `BCP47 language code
+                         It should be a `BCP 47 language code
                          <https://www.w3.org/International/articles/language-tags/>`
                          Requires libraqm.
 
@@ -305,7 +305,7 @@ class FreeTypeFont(object):
                          different glyph shapes or ligatures. This parameter tells
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
-                         It should be a `BCP47 language code
+                         It should be a `BCP 47 language code
                          <https://www.w3.org/International/articles/language-tags/>`
                          Requires libraqm.
 
@@ -356,7 +356,7 @@ class FreeTypeFont(object):
                          different glyph shapes or ligatures. This parameter tells
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
-                         It should be a `BCP47 language code
+                         It should be a `BCP 47 language code
                          <https://www.w3.org/International/articles/language-tags/>`
                          Requires libraqm.
 
