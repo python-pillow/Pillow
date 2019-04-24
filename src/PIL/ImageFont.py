@@ -153,17 +153,99 @@ class FreeTypeFont(object):
         return text.split(split_character)
 
     def getname(self):
+        """
+        :return: A tuple of the font family (e.g. Helvetica) and the font style
+            (e.g. Bold)
+        """
         return self.font.family, self.font.style
 
     def getmetrics(self):
+        """
+        :return: A tuple of the font ascent (the distance from the baseline to
+            the highest outline point) and descent (the distance from the
+            baseline to the lowest outline point, a negative value)
+        """
         return self.font.ascent, self.font.descent
 
     def getsize(self, text, direction=None, features=None, language=None):
+        """
+        Returns width and height (in pixels) of given text if rendered in font with
+        provided direction, features, and language.
+
+        :param text: Text to measure.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :return: (width, height)
+        """
         size, offset = self.font.getsize(text, direction, features, language)
         return (size[0] + offset[0], size[1] + offset[1])
 
     def getsize_multiline(self, text, direction=None, spacing=4,
                           features=None, language=None):
+        """
+        Returns width and height (in pixels) of given text if rendered in font
+        with provided direction, features, and language, while respecting
+        newline characters.
+
+        :param text: Text to measure.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param spacing: The vertical gap between lines, defaulting to 4 pixels.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :return: (width, height)
+        """
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self.getsize('A')[1] + spacing
@@ -174,14 +256,116 @@ class FreeTypeFont(object):
         return max_width, len(lines)*line_spacing - spacing
 
     def getoffset(self, text):
+        """
+        Returns the offset of given text. This is the gap between the
+        starting coordinate and the first marking. Note that this gap is
+        included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
+
+        :param text: Text to measure.
+
+        :return: A tuple of the x and y offset
+        """
         return self.font.getsize(text)[1]
 
     def getmask(self, text, mode="", direction=None, features=None, language=None):
+        """
+        Create a bitmap for the text.
+
+        If the font uses antialiasing, the bitmap should have mode “L” and use a
+        maximum value of 255. Otherwise, it should have mode “1”.
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+                     .. versionadded:: 1.1.5
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :return: An internal PIL storage memory instance as defined by the
+                 :py:mod:`PIL.Image.core` interface module.
+        """
         return self.getmask2(text, mode, direction=direction, features=features,
                              language=language)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
                  features=None, language=None, *args, **kwargs):
+        """
+        Create a bitmap for the text.
+
+        If the font uses antialiasing, the bitmap should have mode “L” and use a
+        maximum value of 255. Otherwise, it should have mode “1”.
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+                     .. versionadded:: 1.1.5
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :return: A tuple of an internal PIL storage memory instance as defined by the
+                 :py:mod:`PIL.Image.core` interface module, and the text offset, the
+                 gap between the starting coordinate and the first marking
+        """
         size, offset = self.font.getsize(text, direction, features, language)
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode == "1", direction, features, language)
