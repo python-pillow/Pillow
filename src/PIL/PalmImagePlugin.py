@@ -130,9 +130,7 @@ def _save(im, fp, filename):
         bpp = 8
         version = 1
 
-    elif (im.mode == "L" and
-          "bpp" in im.encoderinfo and
-          im.encoderinfo["bpp"] in (1, 2, 4)):
+    elif im.mode == "L" and im.encoderinfo.get("bpp") in (1, 2, 4):
 
         # this is 8-bit grayscale, so we shift it to get the high-order bits,
         # and invert it because
@@ -145,7 +143,7 @@ def _save(im, fp, filename):
         rawmode = "P;" + str(bpp)
         version = 1
 
-    elif im.mode == "L" and "bpp" in im.info and im.info["bpp"] in (1, 2, 4):
+    elif im.mode == "L" and im.info.get("bpp") in (1, 2, 4):
 
         # here we assume that even though the inherent mode is 8-bit grayscale,
         # only the lower bpp bits are significant.
