@@ -135,7 +135,7 @@ class FreeTypeFont(object):
             layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
                 layout_engine = LAYOUT_RAQM
-        if layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
+        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
             layout_engine = LAYOUT_BASIC
 
         self.layout_engine = layout_engine
