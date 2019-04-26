@@ -323,10 +323,15 @@ PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
     int width, height;
+    int includeLayeredWindows = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
+    DWORD rop;
     PyObject* buffer;
+
+    if (!PyArg_ParseTuple(args, "|i", &includeLayeredWindows))
+        return NULL;
 
     /* step 1: create a memory DC large enough to hold the
        entire screen */
@@ -346,7 +351,10 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 
     /* step 2: copy bits into memory DC bitmap */
 
-    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, SRCCOPY))
+    rop = SRCCOPY;
+    if (includeLayeredWindows)
+        rop |= CAPTUREBLT;
+    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, rop))
         goto error;
 
     /* step 3: extract bits from bitmap */

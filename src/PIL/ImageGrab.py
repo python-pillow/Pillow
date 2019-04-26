@@ -29,7 +29,7 @@ elif sys.platform == "darwin":
     import subprocess
 
 
-def grab(bbox=None):
+def grab(bbox=None, include_layered_windows=False):
     if sys.platform == "darwin":
         fh, filepath = tempfile.mkstemp('.png')
         os.close(fh)
@@ -38,7 +38,7 @@ def grab(bbox=None):
         im.load()
         os.unlink(filepath)
     else:
-        size, data = grabber()
+        size, data = grabber(include_layered_windows)
         im = Image.frombytes(
             "RGB", size, data,
             # RGB, 32-bit line padding, origin lower left corner
