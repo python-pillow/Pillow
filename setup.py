@@ -439,9 +439,13 @@ class pil_build_ext(build_ext):
             # alpine, at least
             _add_directory(library_dirs, "/lib")
 
-        # on Windows, look for the OpenJPEG libraries in the location that
-        # the official installer puts them
         if sys.platform == "win32":
+            if PLATFORM_MINGW:
+                _add_directory(include_dirs,
+                               "C:\\msys64\\mingw32\\include\\libimagequant")
+
+            # on Windows, look for the OpenJPEG libraries in the location that
+            # the official installer puts them
             program_files = os.environ.get('ProgramFiles', '')
             best_version = (0, 0)
             best_path = None
