@@ -275,10 +275,13 @@ class BitmapImage(object):
 
 
 def getimage(photo):
-    """ This function is unimplemented """
-
     """Copies the contents of a PhotoImage to a PIL image memory."""
-    photo.tk.call("PyImagingPhotoGet", photo)
+    im = Image.new("RGBA", (photo.width(), photo.height()))
+    block = im.im
+
+    photo.tk.call("PyImagingPhotoGet", photo, block.id)
+
+    return im
 
 
 def _show(image, title):

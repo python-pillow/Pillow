@@ -149,17 +149,18 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
     return TCL_OK;
 }
 
-/*  Warning -- this does not work at all */
 static int
 PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
                int argc, const char **argv)
 {
+    Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
+    int x, y, z;
 
-    if (argc != 2) {
+    if (argc != 3) {
         TCL_APPEND_RESULT(interp, "usage: ", argv[0],
-                         " srcPhoto", (char *) NULL);
+                         " srcPhoto destImage", (char *) NULL);
         return TCL_ERROR;
     }
 
@@ -172,21 +173,26 @@ PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
         return TCL_ERROR;
     }
 
+    /* get PIL Image handle */
+    im = ImagingFind(argv[2]);
+    if (!im) {
+        TCL_APPEND_RESULT(interp, "bad name", (char*) NULL);
+        return TCL_ERROR;
+    }
+
     TK_PHOTO_GET_IMAGE(photo, &block);
 
-    printf("pixelPtr = %p\n", block.pixelPtr);
-    printf("width = %d\n", block.width);
-    printf("height = %d\n", block.height);
-    printf("pitch = %d\n", block.pitch);
-    printf("pixelSize = %d\n", block.pixelSize);
-    printf("offset = %d %d %d %d\n", block.offset[0], block.offset[1],
-           block.offset[2], block.offset[3]);
+    for (y = 0; y < block.height; y++) {
+        UINT8* out = (UINT8*)im->image32[y];
+        for (x = 0; x < block.pitch; x += block.pixelSize) {
+            for (z=0; z < block.pixelSize; z++) {
+                int offset = block.offset[z];
+                out[x + offset] = block.pixelPtr[y * block.pitch + x + offset];
+            }
+        }
+    }
 
-    TCL_APPEND_RESULT(
-        interp, "this function is not yet supported", (char *) NULL
-        );
-
-    return TCL_ERROR;
+    return TCL_OK;
 }
 
 
