@@ -166,7 +166,7 @@ def _save(im, fp, filename, save_all=False):
                     # FIXME: the hex encoder doesn't support packed 1-bit
                     # images; do things the hard way...
                     data = im.tobytes("raw", "1")
-                    im = Image.new("L", (len(data), 1), None)
+                    im = Image.new("L", im.size)
                     im.putdata(data)
                 ImageFile._save(im, op, [("hex", (0, 0)+im.size, 0, im.mode)])
             elif filter == "DCTDecode":
