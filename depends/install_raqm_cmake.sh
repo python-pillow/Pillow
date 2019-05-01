@@ -2,7 +2,7 @@
 # install raqm
 
 
-archive=raqm-cmake-b517ba80
+archive=raqm-cmake-99300ff3
 
 ./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/master/$archive.tar.gz
 
