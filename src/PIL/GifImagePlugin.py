@@ -233,6 +233,8 @@ class GifImageFile(ImageFile.ImageFile):
                 # extent
                 x0, y0 = i16(s[0:]), i16(s[2:])
                 x1, y1 = x0 + i16(s[4:]), y0 + i16(s[6:])
+                if x1 > self.size[0] or y1 > self.size[1]:
+                    self._size = max(x1, self.size[0]), max(y1, self.size[1])
                 self.dispose_extent = x0, y0, x1, y1
                 flags = i8(s[8])
 
