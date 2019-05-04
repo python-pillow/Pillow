@@ -54,6 +54,18 @@ class TestImagecomplextext(PillowTestCase):
 
         self.assert_image_similar(im, target_img, .5)
 
+        ttf = ImageFont.truetype("Tests/fonts/KhmerOSBattambang-Regular.ttf",
+                                 FONT_SIZE)
+
+        im = Image.new(mode='RGB', size=(300, 100))
+        draw = ImageDraw.Draw(im)
+        draw.text((0, 0), 'លោកុប្បត្តិ', font=ttf, fill=500)
+
+        target = 'Tests/images/test_complex_unicode_text2.png'
+        target_img = Image.open(target)
+
+        self.assert_image_similar(im, target_img, 2.3)
+
     def test_text_direction_rtl(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
