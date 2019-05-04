@@ -12,6 +12,12 @@ from .helper import unittest, PillowTestCase
 # 2.7 and 3.2.
 
 from PIL import Image
+
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 YDIM = 32769
 XDIM = 48000
 
@@ -31,6 +37,11 @@ class LargeMemoryTest(PillowTestCase):
     def test_2gpx(self):
         """failed prepatch"""
         self._write_png(XDIM, XDIM)
+
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_size_greater_than_int(self):
+        arr = numpy.ndarray(shape=(16394, 16394))
+        Image.fromarray(arr)
 
 
 if __name__ == '__main__':

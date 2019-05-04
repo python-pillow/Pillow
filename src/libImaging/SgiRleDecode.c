@@ -90,7 +90,7 @@ static int expandrow2(UINT16* dest, UINT16* src, int n, int z)
 
 int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
-		    UINT8* buf, int bytes)
+		    UINT8* buf, Py_ssize_t bytes)
 {
     UINT8 *ptr;
     SGISTATE *c;

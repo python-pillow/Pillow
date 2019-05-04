@@ -20,7 +20,7 @@
 
 
 int
-ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
+ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
     int n;
     UINT8* ptr;
