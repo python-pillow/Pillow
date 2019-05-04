@@ -18,15 +18,14 @@
 from . import Image
 
 import sys
-if sys.platform not in ["win32", "darwin"]:
-    raise ImportError("ImageGrab is macOS and Windows only")
-
 if sys.platform == "win32":
     grabber = Image.core.grabscreen
 elif sys.platform == "darwin":
     import os
     import tempfile
     import subprocess
+else:
+    raise ImportError("ImageGrab is macOS and Windows only")
 
 
 def grab(bbox=None, include_layered_windows=False):

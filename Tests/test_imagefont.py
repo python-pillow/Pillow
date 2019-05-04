@@ -141,6 +141,18 @@ class TestImageFont(PillowTestCase):
 
         ImageFont.truetype(tempfile, FONT_SIZE)
 
+    def test_unavailable_layout_engine(self):
+        have_raqm = ImageFont.core.HAVE_RAQM
+        ImageFont.core.HAVE_RAQM = False
+
+        try:
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE,
+                                     layout_engine=ImageFont.LAYOUT_RAQM)
+        finally:
+            ImageFont.core.HAVE_RAQM = have_raqm
+
+        self.assertEqual(ttf.layout_engine, ImageFont.LAYOUT_BASIC)
+
     def _render(self, font):
         txt = "Hello World!"
         ttf = ImageFont.truetype(font, FONT_SIZE,
@@ -410,6 +422,7 @@ class TestImageFont(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(IOError, ImageFont.load_path, filename)
+        self.assertRaises(IOError, ImageFont.truetype, filename)
 
     def test_default_font(self):
         # Arrange

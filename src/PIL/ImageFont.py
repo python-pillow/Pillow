@@ -135,7 +135,7 @@ class FreeTypeFont(object):
             layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
                 layout_engine = LAYOUT_RAQM
-        if layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
+        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
             layout_engine = LAYOUT_BASIC
 
         self.layout_engine = layout_engine
@@ -472,9 +472,10 @@ def truetype(font=None, size=10, index=0, encoding="",
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
-
-    try:
+    def freetype(font):
         return FreeTypeFont(font, size, index, encoding, layout_engine)
+    try:
+        return freetype(font)
     except IOError:
         ttf_filename = os.path.basename(font)
 
@@ -504,21 +505,17 @@ def truetype(font=None, size=10, index=0, encoding="",
             for walkroot, walkdir, walkfilenames in os.walk(directory):
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
-                        fontpath = os.path.join(walkroot, walkfilename)
-                        return FreeTypeFont(fontpath, size, index,
-                                            encoding, layout_engine)
+                        return freetype(os.path.join(walkroot, walkfilename))
                     elif (not ext and
                           os.path.splitext(walkfilename)[0] == ttf_filename):
                         fontpath = os.path.join(walkroot, walkfilename)
                         if os.path.splitext(fontpath)[1] == '.ttf':
-                            return FreeTypeFont(fontpath, size, index,
-                                                encoding, layout_engine)
+                            return freetype(fontpath)
                         if not ext \
                            and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
-            return FreeTypeFont(first_font_with_a_different_extension, size,
-                                index, encoding, layout_engine)
+            return freetype(first_font_with_a_different_extension)
         raise
 
 

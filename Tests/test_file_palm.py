@@ -46,6 +46,13 @@ class TestFilePalm(PillowTestCase):
         self.skipKnownBadTest("Palm P image is wrong")
         self.roundtrip(mode)
 
+    def test_l_ioerror(self):
+        # Arrange
+        mode = "L"
+
+        # Act / Assert
+        self.assertRaises(IOError, self.helper_save_as_palm, mode)
+
     def test_rgb_ioerror(self):
         # Arrange
         mode = "RGB"
