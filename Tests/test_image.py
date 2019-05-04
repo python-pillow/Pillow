@@ -76,6 +76,10 @@ class TestImage(PillowTestCase):
     @unittest.skipUnless(Image.HAS_PATHLIB, "requires pathlib/pathlib2")
     def test_pathlib(self):
         from PIL.Image import Path
+        im = Image.open(Path("Tests/images/multipage-mmap.tiff"))
+        self.assertEqual(im.mode, "P")
+        self.assertEqual(im.size, (10, 10))
+
         im = Image.open(Path("Tests/images/hopper.jpg"))
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))

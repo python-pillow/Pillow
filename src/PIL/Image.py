@@ -2643,10 +2643,10 @@ def open(fp, mode="r"):
 
     exclusive_fp = False
     filename = ""
-    if isPath(fp):
-        filename = fp
-    elif HAS_PATHLIB and isinstance(fp, Path):
+    if HAS_PATHLIB and isinstance(fp, Path):
         filename = str(fp.resolve())
+    elif isPath(fp):
+        filename = fp
 
     if filename:
         fp = builtins.open(filename, "rb")
