@@ -136,7 +136,7 @@ def APP(self, marker):
                 offset = offset + size
                 if offset & 1:
                     offset += 1
-        self.info["photoshop"] = photoshop
+            self.info["photoshop"] = photoshop
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties

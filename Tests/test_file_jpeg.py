@@ -620,6 +620,10 @@ class TestFileJpeg(PillowTestCase):
             'DisplayedUnitsY': 1,
         })
 
+        # This image does not contain a Photoshop header string
+        im = Image.open("Tests/images/app13.jpg")
+        self.assertNotIn("photoshop", im.info)
+
 
 @unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
 class TestFileCloseW32(PillowTestCase):
