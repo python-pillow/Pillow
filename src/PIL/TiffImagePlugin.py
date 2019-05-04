@@ -263,6 +263,8 @@ OPEN_INFO = {
     (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
 
+    (II, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16L"),
+
     # JPEG compressed images handled by LibTiff and auto-converted to RGBX
     # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
     (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),

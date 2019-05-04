@@ -687,6 +687,12 @@ class TestFileLibTiff(LibTiffTestCase):
 
         self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
+    def test_strip_cmyk_16l_jpeg(self):
+        infile = "Tests/images/tiff_strip_cmyk_16l_jpeg.tif"
+        im = Image.open(infile)
+
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         im = Image.open(infile)
