@@ -255,9 +255,10 @@ If the raw decoder cannot handle your format, PIL also provides a special “bit
 decoder that can be used to read various packed formats into a floating point
 image memory.
 
-To use the bit decoder with the frombytes function, use the following syntax::
+To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
+the following syntax::
 
-    image = frombytes(
+    image = Image.frombytes(
         mode, size, data, "bit",
         bits, pad, fill, sign, orientation
         )
