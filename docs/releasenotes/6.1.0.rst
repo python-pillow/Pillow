@@ -1,0 +1,21 @@
+6.1.0
+-----
+
+API Additions
+=============
+
+ImageGrab.grab
+^^^^^^^^^^^^^^
+
+An optional ``include_layered_windows`` parameter has been added to ``ImageGrab.grab``,
+defaulting to ``False``. If true, layered windows will be included in the resulting
+image on Windows.
+
+Other Changes
+=============
+
+ImageTk.getimage
+^^^^^^^^^^^^^^^^
+
+This function is now supported. It returns the contents of an ``ImageTk.PhotoImage`` as
+an RGBA ``Image.Image`` instance.
