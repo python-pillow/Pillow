@@ -31,22 +31,22 @@ class TestImageMath(PillowTestCase):
     def test_sanity(self):
         self.assertEqual(ImageMath.eval("1"), 1)
         self.assertEqual(ImageMath.eval("1+A", A=2), 3)
-        self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B)), "I 3")
-        self.assertEqual(pixel(ImageMath.eval("A+B", images)), "I 3")
+        self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B)), "I 768")
+        self.assertEqual(pixel(ImageMath.eval("A+B", images)), "I 768")
         self.assertEqual(pixel(ImageMath.eval("float(A)+B", images)), "F 3.0")
         self.assertEqual(pixel(
-            ImageMath.eval("int(float(A)+B)", images)), "I 3")
+            ImageMath.eval("int(float(A)+B)", images)), "I 768")
 
     def test_ops(self):
 
-        self.assertEqual(pixel(ImageMath.eval("-A", images)), "I -1")
+        self.assertEqual(pixel(ImageMath.eval("-A", images)), "I -256")
         self.assertEqual(pixel(ImageMath.eval("+B", images)), "L 2")
 
-        self.assertEqual(pixel(ImageMath.eval("A+B", images)), "I 3")
-        self.assertEqual(pixel(ImageMath.eval("A-B", images)), "I -1")
-        self.assertEqual(pixel(ImageMath.eval("A*B", images)), "I 2")
+        self.assertEqual(pixel(ImageMath.eval("A+B", images)), "I 768")
+        self.assertEqual(pixel(ImageMath.eval("A-B", images)), "I -256")
+        self.assertEqual(pixel(ImageMath.eval("A*B", images)), "I 131072")
         self.assertEqual(pixel(ImageMath.eval("A/B", images)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("B**2", images)), "I 4")
+        self.assertEqual(pixel(ImageMath.eval("B**2", images)), "I 262144")
         self.assertEqual(pixel(
             ImageMath.eval("B**33", images)), "I 2147483647")
 
@@ -72,61 +72,61 @@ class TestImageMath(PillowTestCase):
             ImageMath.eval("convert(A+B, 'RGB')", images)), "RGB (3, 3, 3)")
 
     def test_compare(self):
-        self.assertEqual(pixel(ImageMath.eval("min(A, B)", images)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("max(A, B)", images)), "I 2")
-        self.assertEqual(pixel(ImageMath.eval("A == 1", images)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("min(A, B)", images)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("max(A, B)", images)), "I 512")
+        self.assertEqual(pixel(ImageMath.eval("A == 256", images)), "I 1")
         self.assertEqual(pixel(ImageMath.eval("A == 2", images)), "I 0")
 
     def test_one_image_larger(self):
-        self.assertEqual(pixel(ImageMath.eval("A+B", A=A2, B=B)), "I 3")
-        self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B2)), "I 3")
+        self.assertEqual(pixel(ImageMath.eval("A+B", A=A2, B=B)), "I 768")
+        self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B2)), "I 768")
 
     def test_abs(self):
-        self.assertEqual(pixel(ImageMath.eval("abs(A)", A=A)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("abs(B)", B=B)), "I 2")
+        self.assertEqual(pixel(ImageMath.eval("abs(A)", A=A)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("abs(B)", B=B)), "I 512")
 
     def test_binary_mod(self):
         self.assertEqual(pixel(ImageMath.eval("A%A", A=A)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("B%B", B=B)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("A%B", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A%B", A=A, B=B)), "I 256")
         self.assertEqual(pixel(ImageMath.eval("B%A", A=A, B=B)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("Z%A", A=A, Z=Z)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("Z%B", B=B, Z=Z)), "I 0")
 
     def test_bitwise_invert(self):
         self.assertEqual(pixel(ImageMath.eval("~Z", Z=Z)), "I -1")
-        self.assertEqual(pixel(ImageMath.eval("~A", A=A)), "I -2")
-        self.assertEqual(pixel(ImageMath.eval("~B", B=B)), "I -3")
+        self.assertEqual(pixel(ImageMath.eval("~A", A=A)), "I -257")
+        self.assertEqual(pixel(ImageMath.eval("~B", B=B)), "I -513")
 
     def test_bitwise_and(self):
         self.assertEqual(pixel(ImageMath.eval("Z&Z", A=A, Z=Z)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("Z&A", A=A, Z=Z)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("A&Z", A=A, Z=Z)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("A&A", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("A&A", A=A, Z=Z)), "I 256")
 
     def test_bitwise_or(self):
         self.assertEqual(pixel(ImageMath.eval("Z|Z", A=A, Z=Z)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("Z|A", A=A, Z=Z)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("A|Z", A=A, Z=Z)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("A|A", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("Z|A", A=A, Z=Z)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("A|Z", A=A, Z=Z)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("A|A", A=A, Z=Z)), "I 256")
 
     def test_bitwise_xor(self):
         self.assertEqual(pixel(ImageMath.eval("Z^Z", A=A, Z=Z)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("Z^A", A=A, Z=Z)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("A^Z", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("Z^A", A=A, Z=Z)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("A^Z", A=A, Z=Z)), "I 256")
         self.assertEqual(pixel(ImageMath.eval("A^A", A=A, Z=Z)), "I 0")
 
     def test_bitwise_leftshift(self):
         self.assertEqual(pixel(ImageMath.eval("Z<<0", Z=Z)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("Z<<1", Z=Z)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("A<<0", A=A)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("A<<1", A=A)), "I 2")
+        self.assertEqual(pixel(ImageMath.eval("A<<0", A=A)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("A<<1", A=A)), "I 512")
 
     def test_bitwise_rightshift(self):
         self.assertEqual(pixel(ImageMath.eval("Z>>0", Z=Z)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("Z>>1", Z=Z)), "I 0")
-        self.assertEqual(pixel(ImageMath.eval("A>>0", A=A)), "I 1")
-        self.assertEqual(pixel(ImageMath.eval("A>>1", A=A)), "I 0")
+        self.assertEqual(pixel(ImageMath.eval("A>>0", A=A)), "I 256")
+        self.assertEqual(pixel(ImageMath.eval("A>>1", A=A)), "I 128")
 
     def test_logical_eq(self):
         self.assertEqual(pixel(ImageMath.eval("A==A", A=A)), "I 1")
