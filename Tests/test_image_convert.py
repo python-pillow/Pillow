@@ -38,6 +38,8 @@ class TestImageConvert(PillowTestCase):
 
     def _test_float_conversion(self, im):
         orig = im.getpixel((5, 5))
+        if im.mode[0] == 'I':
+            orig //= 256
         converted = im.convert('F').getpixel((5, 5))
         self.assertEqual(orig, converted)
 
