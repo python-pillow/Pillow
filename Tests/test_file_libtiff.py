@@ -631,6 +631,21 @@ class TestFileLibTiff(LibTiffTestCase):
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
 
+    def test_16bit_RGB_tiff(self):
+        im = Image.open("Tests/images/tiff_16bit_RGB.tiff")
+
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (100, 40))
+        self.assertEqual(
+            im.tile,
+            [('tiff_adobe_deflate', (0, 0, 100, 40), 0,
+              ('RGB;16N', 'tiff_adobe_deflate', False))]
+        )
+        im.load()
+
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_16bit_RGB_target.png")
+
     def test_16bit_RGBa_tiff(self):
         im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
 
