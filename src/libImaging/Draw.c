@@ -771,10 +771,10 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     int w, h;
     int x, y;
     int cx, cy;
-    int lx, ly;
-    int sx, sy;
-    int lx_inner, ly_inner;
-    int sx_inner, sy_inner;
+    int lx = 0, ly = 0;
+    int sx = 0, sy = 0;
+    int lx_inner = 0, ly_inner = 0;
+    int sx_inner = 0, sy_inner = 0;
     DRAW* draw;
     INT32 ink;
     Edge* e;
