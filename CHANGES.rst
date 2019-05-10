@@ -1417,7 +1417,7 @@ Changelog (Pillow)
 - Test: Faster assert_image_similar #2279
   [homm]
 
-- Removed depreciated internal "stretch" method #2276
+- Removed deprecated internal "stretch" method #2276
   [homm]
 
 - Removed the handles_eof flag in decode.c #2223
