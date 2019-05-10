@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Fixed bits value for RGB;16N unpackers #3837
+  [kkopachev]
+
 - Travis CI: Add Fedora 30, remove Fedora 28 #3821
   [hugovk]
 
