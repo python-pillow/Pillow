@@ -1358,7 +1358,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # fixup palette descriptor
 
-        if self.mode == "P":
+        if self.mode in ["P", "PA"]:
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 
@@ -1484,7 +1484,7 @@ def _save(im, fp, filename):
 
     ifd[PHOTOMETRIC_INTERPRETATION] = photo
 
-    if im.mode == "P":
+    if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
         ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
     # data orientation

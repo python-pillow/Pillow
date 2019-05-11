@@ -489,6 +489,16 @@ class TestFileTiff(PillowTestCase):
         self.assert_image_equal_tofile(im,
                                        "Tests/images/tiff_adobe_deflate.png")
 
+    def test_palette(self):
+        for mode in ["P", "PA"]:
+            outfile = self.tempfile("temp.tif")
+
+            im = hopper(mode)
+            im.save(outfile)
+
+            reloaded = Image.open(outfile)
+            self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+
     def test_tiff_save_all(self):
         import io
         import os

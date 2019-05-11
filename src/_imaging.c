@@ -1588,7 +1588,7 @@ _putpalette(ImagingObject* self, PyObject* args)
 
     ImagingPaletteDelete(self->image->palette);
 
-    strcpy(self->image->mode, "P");
+    strcpy(self->image->mode, strlen(self->image->mode) == 2 ? "PA" : "P");
 
     self->image->palette = ImagingPaletteNew("RGB");
 
