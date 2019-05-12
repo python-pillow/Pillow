@@ -473,8 +473,8 @@ Reading from a string
 
 ::
 
+    from PIL import Image
     import StringIO
-
     im = Image.open(StringIO.StringIO(buffer))
 
 Note that the library rewinds the file (using ``seek(0)``) before reading the
