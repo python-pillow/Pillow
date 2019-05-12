@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Handle unexpected ICO image sizes #3836
+  [radarhere]
+
 - Fixed bits value for RGB;16N unpackers #3837
   [kkopachev]
 
