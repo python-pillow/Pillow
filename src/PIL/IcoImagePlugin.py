@@ -23,6 +23,7 @@
 
 
 import struct
+import warnings
 from io import BytesIO
 
 from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
@@ -143,14 +144,17 @@ class IcoFile(object):
         """
         return {(h['width'], h['height']) for h in self.entry}
 
+    def getentryindex(self, size, bpp=False):
+        for (i, h) in enumerate(self.entry):
+            if size == h['dim'] and (bpp is False or bpp == h['color_depth']):
+                return i
+        return 0
+
     def getimage(self, size, bpp=False):
         """
         Get an image from the icon
         """
-        for (i, h) in enumerate(self.entry):
-            if size == h['dim'] and (bpp is False or bpp == h['color_depth']):
-                return self.frame(i)
-        return self.frame(0)
+        return self.frame(self.getentryindex(size, bpp))
 
     def frame(self, idx):
         """
@@ -282,7 +286,15 @@ class IcoImageFile(ImageFile.ImageFile):
         im.load()
         self.im = im.im
         self.mode = im.mode
-        self.size = im.size
+        if im.size != self.size:
+            warnings.warn("Image was not the expected size")
+
+            index = self.ico.getentryindex(self.size)
+            sizes = list(self.info['sizes'])
+            sizes[index] = im.size
+            self.info['sizes'] = set(sizes)
+
+            self.size = im.size
 
     def load_seek(self):
         # Flag the ImageFile.Parser so that it

@@ -83,3 +83,10 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(
             im_saved.info['sizes'],
             {(16, 16), (24, 24), (32, 32), (48, 48)})
+
+    def test_unexpected_size(self):
+        # This image has been manually hexedited to state that it is 16x32
+        # while the image within is still 16x16
+        im = self.assert_warning(UserWarning,
+                                 Image.open, "Tests/images/hopper_unexpected.ico")
+        self.assertEqual(im.size, (16, 16))
