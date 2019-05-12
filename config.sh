@@ -57,6 +57,7 @@ function pre_build {
 
 function run_tests_in_repo {
     # Run Pillow tests from within source repo
+    python selftest.py
     pytest
 }
 
