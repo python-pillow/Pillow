@@ -24,7 +24,13 @@ function pre_build {
         # Update to latest zlib for OSX build
         build_new_zlib
     fi
+    
+    # Custom flags to include both multibuild and jpeg defaults
+    ORIGINAL_CFLAGS=$CFLAGS
+    CFLAGS="$CFLAGS -g -O2"
     build_jpeg
+    CFLAGS=$ORIGINAL_CFLAGS
+    
     build_tiff
     build_libpng
     build_openjpeg
