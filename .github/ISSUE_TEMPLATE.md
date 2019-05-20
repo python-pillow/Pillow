@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Issue report
 about: Create a report to help us improve Pillow
 ---
 ### What did you do?
