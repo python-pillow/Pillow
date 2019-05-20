@@ -1794,7 +1794,18 @@ class Image(object):
         if resample not in (
                 NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING,
         ):
-            raise ValueError("unknown resampling filter")
+            message = "Unknown resampling filter ("+str(resample)+")."
+
+            filters = [filter[1]+" (%d)" % filter[0] for filter in (
+                (NEAREST, "Image.NEAREST"),
+                (LANCZOS, "Image.LANCZOS"),
+                (BILINEAR, "Image.BILINEAR"),
+                (BICUBIC, "Image.BICUBIC"),
+                (BOX, "Image.BOX"),
+                (HAMMING, "Image.HAMMING")
+            )]
+            raise ValueError(
+                message+" Use "+", ".join(filters[:-1])+" or "+filters[-1])
 
         size = tuple(size)
 
@@ -2263,7 +2274,22 @@ class Image(object):
             raise ValueError("unknown transformation method")
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
-            raise ValueError("unknown resampling filter")
+            if resample in (BOX, HAMMING, LANCZOS):
+                message = {
+                    BOX: "Image.BOX",
+                    HAMMING: "Image.HAMMING",
+                    LANCZOS: "Image.LANCZOS/Image.ANTIALIAS"
+                }[resample]+" (%d) cannot be used." % resample
+            else:
+                message = "Unknown resampling filter ("+str(resample)+")."
+
+            filters = [filter[1]+" (%d)" % filter[0] for filter in (
+                (NEAREST, "Image.NEAREST"),
+                (BILINEAR, "Image.BILINEAR"),
+                (BICUBIC, "Image.BICUBIC")
+            )]
+            raise ValueError(
+                message+" Use "+", ".join(filters[:-1])+" or "+filters[-1])
 
         image.load()
 
