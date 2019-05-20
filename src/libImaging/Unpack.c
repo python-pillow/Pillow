@@ -480,6 +480,16 @@ void
 ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i = 0;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (; i < pixels; i++) {
+        _out[R] = in[0];
+        _out[G] = in[1];
+        _out[B] = in[2];
+        _out[A] = 255;
+        _out += 4; in += 3;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     /* RGB triplets */
     for (; i < pixels-1; i++) {
@@ -490,6 +500,7 @@ ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
         out[i] = MAKE_UINT32(in[0], in[1], in[2], 255);
         in += 3;
     }
+#endif
 }
 
 void
@@ -1085,22 +1096,44 @@ static void
 copy4skip1(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (i = 0; i < pixels; i++) {
+        _out[0] = in[0];
+        _out[1] = in[1];
+        _out[2] = in[2];
+        _out[3] = in[3];
+        _out += 4; in += 5;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
         out[i] = *(UINT32*)&in[0];
         in += 5;
     }
+#endif
 }
 
 static void
 copy4skip2(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (i = 0; i < pixels; i++) {
+        _out[0] = in[0];
+        _out[1] = in[1];
+        _out[2] = in[2];
+        _out[3] = in[3];
+        _out += 4; in += 6;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
         out[i] = *(UINT32*)&in[0];
         in += 6;
     }
+#endif
 }
 
 
