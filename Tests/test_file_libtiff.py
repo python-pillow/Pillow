@@ -3,6 +3,7 @@ from .helper import PillowTestCase, hopper
 from PIL import features
 from PIL._util import py3
 
+from collections import namedtuple
 from ctypes import c_float
 import io
 import logging
@@ -235,12 +236,39 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_custom_metadata(self):
+        tc = namedtuple("test_case", "value,type,supported_by_default")
         custom = {
-            37000: [4, TiffTags.SHORT],
-            37001: [4.2, TiffTags.RATIONAL],
-            37002: ["custom tag value", TiffTags.ASCII],
-            37003: [u"custom tag value", TiffTags.ASCII],
-            37004: [b"custom tag value", TiffTags.BYTE],
+            37000 + k: v
+            for k, v in enumerate(
+                [
+                    tc(4, TiffTags.SHORT, True),
+                    tc(123456789, TiffTags.LONG, True),
+                    tc(-4, TiffTags.SIGNED_BYTE, False),
+                    tc(-4, TiffTags.SIGNED_SHORT, False),
+                    tc(-123456789, TiffTags.SIGNED_LONG, False),
+                    tc(TiffImagePlugin.IFDRational(4, 7), TiffTags.RATIONAL, True),
+                    tc(4.25, TiffTags.FLOAT, True),
+                    tc(4.25, TiffTags.DOUBLE, True),
+                    tc("custom tag value", TiffTags.ASCII, True),
+                    tc(u"custom tag value", TiffTags.ASCII, True),
+                    tc(b"custom tag value", TiffTags.BYTE, True),
+                    tc((4, 5, 6), TiffTags.SHORT, True),
+                    tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
+                    tc((-4, 9, 10), TiffTags.SIGNED_BYTE, False),
+                    tc((-4, 5, 6), TiffTags.SIGNED_SHORT, False),
+                    tc(
+                        (-123456789, 9, 34, 234, 219387, -92432323),
+                        TiffTags.SIGNED_LONG,
+                        False,
+                    ),
+                    tc((4.25, 5.25), TiffTags.FLOAT, True),
+                    tc((4.25, 5.25), TiffTags.DOUBLE, True),
+                    # array of TIFF_BYTE requires bytes instead of tuple for backwards
+                    # compatibility
+                    tc(bytes([4]), TiffTags.BYTE, True),
+                    tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
+                ]
+            )
         }
 
         libtiff_version = TiffImagePlugin._libtiff_version()
@@ -263,8 +291,13 @@ class TestFileLibTiff(LibTiffTestCase):
                 reloaded = Image.open(out)
                 for tag, value in tiffinfo.items():
                     reloaded_value = reloaded.tag_v2[tag]
-                    if isinstance(reloaded_value, TiffImagePlugin.IFDRational):
-                        reloaded_value = float(reloaded_value)
+                    if (
+                        isinstance(reloaded_value, TiffImagePlugin.IFDRational)
+                        and libtiff
+                    ):
+                        # libtiff does not support real RATIONALS
+                        self.assertAlmostEqual(float(reloaded_value), float(value))
+                        continue
 
                     if libtiff and isinstance(value, bytes):
                         value = value.decode()
@@ -274,12 +307,19 @@ class TestFileLibTiff(LibTiffTestCase):
             # Test with types
             ifd = TiffImagePlugin.ImageFileDirectory_v2()
             for tag, tagdata in custom.items():
-                ifd[tag] = tagdata[0]
-                ifd.tagtype[tag] = tagdata[1]
+                ifd[tag] = tagdata.value
+                ifd.tagtype[tag] = tagdata.type
             check_tags(ifd)
 
-            # Test without types
-            check_tags({tag: tagdata[0] for tag, tagdata in custom.items()})
+            # Test without types. This only works for some types, int for example are
+            # always encoded as LONG and not SIGNED_LONG.
+            check_tags(
+                {
+                    tag: tagdata.value
+                    for tag, tagdata in custom.items()
+                    if tagdata.supported_by_default
+                }
+            )
         TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_int_dpi(self):

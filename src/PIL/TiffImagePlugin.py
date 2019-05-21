@@ -99,6 +99,7 @@ X_RESOLUTION = 282
 Y_RESOLUTION = 283
 PLANAR_CONFIGURATION = 284
 RESOLUTION_UNIT = 296
+TRANSFERFUNCTION = 301
 SOFTWARE = 305
 DATE_TIME = 306
 ARTIST = 315
@@ -108,6 +109,7 @@ TILEOFFSETS = 324
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
 JPEGTABLES = 347
+REFERENCEBLACKWHITE = 532
 COPYRIGHT = 33432
 IPTC_NAA_CHUNK = 33723  # newsphoto properties
 PHOTOSHOP_CHUNK = 34377  # photoshop properties
@@ -1538,9 +1540,21 @@ def _save(im, fp, filename):
             except io.UnsupportedOperation:
                 pass
 
+        # optional types for non core tags
+        types = {}
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
-        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS]
+        # The other tags expect arrays with a certain length (fixed or depending on
+        # BITSPERSAMPLE, etc), passing arrays with a different length will result in
+        # segfaults. Block these tags until we add extra validation.
+        blocklist = [
+            COLORMAP,
+            REFERENCEBLACKWHITE,
+            STRIPBYTECOUNTS,
+            STRIPOFFSETS,
+            TRANSFERFUNCTION,
+        ]
+
         atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
@@ -1555,15 +1569,19 @@ def _save(im, fp, filename):
         ):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.
-            # Support for custom items has only been been added
-            # for int, float, unicode, string and byte values
+            # Custom items are supported for int, float, unicode, string and byte
+            # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
                 if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
                     continue
-                if (
-                    distutils.version.StrictVersion(_libtiff_version())
-                    < distutils.version.StrictVersion("4.0")
-                ) or not (
+                if distutils.version.StrictVersion(
+                    _libtiff_version()
+                ) < distutils.version.StrictVersion("4.0"):
+                    continue
+
+                if tag in ifd.tagtype:
+                    types[tag] = ifd.tagtype[tag]
+                elif not (
                     isinstance(value, (int, float, str, bytes))
                     or (not py3 and isinstance(value, unicode))  # noqa: F821
                 ):
@@ -1586,7 +1604,7 @@ def _save(im, fp, filename):
         if im.mode in ("I;16B", "I;16"):
             rawmode = "I;16N"
 
-        a = (rawmode, compression, _fp, filename, atts)
+        a = (rawmode, compression, _fp, filename, atts, types)
         e = Image._getencoder(im.mode, "libtiff", a, im.encoderconfig)
         e.setimage(im.im, (0, 0) + im.size)
         while True:

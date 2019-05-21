@@ -614,6 +614,310 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 
 
 /* -------------------------------------------------------------------- */
+/* LibTiff                                                              */
+/* -------------------------------------------------------------------- */
+
+#ifdef HAVE_LIBTIFF
+
+#include "TiffDecode.h"
+
+#include <string.h>
+
+PyObject*
+PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
+{
+    ImagingEncoderObject* encoder;
+
+    char* mode;
+    char* rawmode;
+    char* compname;
+    char* filename;
+    Py_ssize_t fp;
+
+    PyObject *tags, *types;
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
+    TIFFDataType type = TIFF_NOTYPE;
+    // This list also exists in TiffTags.py
+    const int core_tags[] = {
+        256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
+        341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
+        339, 32997, 330, 531, 530
+    };
+
+    Py_ssize_t d_size;
+    PyObject *keys, *values;
+
+
+    if (! PyArg_ParseTuple(args, "sssisOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types)) {
+        return NULL;
+    }
+
+    if (!PyDict_Check(tags)) {
+        PyErr_SetString(PyExc_ValueError, "Invalid tags dictionary");
+        return NULL;
+    } else {
+        d_size = PyDict_Size(tags);
+        TRACE(("dict size: %d\n", (int)d_size));
+        keys = PyDict_Keys(tags);
+        values = PyDict_Values(tags);
+        for (pos=0;pos<d_size;pos++){
+            TRACE(("  key: %d\n", (int)PyInt_AsLong(PyList_GetItem(keys,pos))));
+        }
+        pos = 0;
+    }
+    if (!PyDict_Check(types)) {
+        PyErr_SetString(PyExc_ValueError, "Invalid types dictionary");
+        return NULL;
+    }
+
+    TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
+
+    encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
+    if (encoder == NULL)
+        return NULL;
+
+    if (get_packer(encoder, mode, rawmode) < 0)
+        return NULL;
+
+    if (! ImagingLibTiffEncodeInit(&encoder->state, filename, fp)) {
+        Py_DECREF(encoder);
+        PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
+        return NULL;
+    }
+
+    num_core_tags = sizeof(core_tags) / sizeof(int);
+    for (pos = 0; pos < d_size; pos++) {
+        key = PyList_GetItem(keys, pos);
+        key_int = (int)PyInt_AsLong(key);
+        value = PyList_GetItem(values, pos);
+        status = 0;
+        is_core_tag = 0;
+        is_var_length = 0;
+        type = TIFF_NOTYPE;
+
+        for (i=0; i<num_core_tags; i++) {
+            if (core_tags[i] == key_int) {
+                is_core_tag = 1;
+                break;
+            }
+        }
+
+        if (!is_core_tag) {
+            PyObject *tag_type = PyDict_GetItem(types, key);
+            if (tag_type) {
+                int type_int = PyInt_AsLong(tag_type);
+                if (type_int >= TIFF_BYTE && type_int <= TIFF_DOUBLE) {
+                    type = (TIFFDataType)type_int;
+                }
+            }
+        }
+
+
+        if (type == TIFF_NOTYPE) {
+            // Autodetect type. Types should not be changed for backwards
+            // compatibility.
+            if (PyInt_Check(value)) {
+                type = TIFF_LONG;
+            } else if (PyFloat_Check(value)) {
+                type = TIFF_DOUBLE;
+            } else if (PyBytes_Check(value)) {
+                type = TIFF_ASCII;
+            }
+        }
+
+        if (PyBytes_Check(value) &&
+                (type == TIFF_BYTE || type == TIFF_UNDEFINED)) {
+            // For backwards compatibility
+            type = TIFF_ASCII;
+        }
+
+        if (PyTuple_Check(value)) {
+            Py_ssize_t len;
+            len = PyTuple_Size(value);
+
+            is_var_length = 1;
+
+            if (!len) {
+                continue;
+            }
+
+            if (type == TIFF_NOTYPE) {
+                // Autodetect type based on first item. Types should not be
+                // changed for backwards compatibility.
+                if (PyInt_Check(PyTuple_GetItem(value,0))) {
+                    type = TIFF_LONG;
+                } else if (PyFloat_Check(PyTuple_GetItem(value,0))) {
+                    type = TIFF_FLOAT;
+                }
+            }
+        }
+
+        if (!is_core_tag) {
+            // Register field for non core tags.
+            if (ImagingLibTiffMergeFieldInfo(&encoder->state, type, key_int, is_var_length)) {
+                continue;
+            }
+        }
+
+        if (is_var_length) {
+            Py_ssize_t len,i;
+            TRACE(("Setting from Tuple: %d \n", key_int));
+            len = PyTuple_Size(value);
+
+            if (type == TIFF_BYTE) {
+                UINT8 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(UINT8));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (UINT8)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_SHORT) {
+                UINT16 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(UINT16));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (UINT16)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_LONG) {
+                UINT32 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(UINT32));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (UINT32)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_SBYTE) {
+                INT8 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(INT8));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (INT8)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_SSHORT) {
+                INT16 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(INT16));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (INT16)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_SLONG) {
+                INT32 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(INT32));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (INT32)PyInt_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_FLOAT) {
+                FLOAT32 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(FLOAT32));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (FLOAT32)PyFloat_AsDouble(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            } else if (type == TIFF_DOUBLE) {
+                FLOAT64 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(FLOAT64));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = PyFloat_AsDouble(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    free(av);
+                }
+            }
+        } else {
+            if (type == TIFF_SHORT) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (UINT16)PyInt_AsLong(value));
+            } else if (type == TIFF_LONG) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (UINT32)PyInt_AsLong(value));
+            } else if (type == TIFF_SSHORT) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (INT16)PyInt_AsLong(value));
+            } else if (type == TIFF_SLONG) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (INT32)PyInt_AsLong(value));
+            } else if (type == TIFF_FLOAT) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (FLOAT32)PyFloat_AsDouble(value));
+            } else if (type == TIFF_DOUBLE) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (FLOAT64)PyFloat_AsDouble(value));
+            } else if (type == TIFF_BYTE) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (UINT8)PyInt_AsLong(value));
+            } else if (type == TIFF_SBYTE) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (INT8)PyInt_AsLong(value));
+            } else if (type == TIFF_ASCII) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        PyBytes_AsString(value));
+            } else if (type == TIFF_RATIONAL) {
+                status = ImagingLibTiffSetField(&encoder->state,
+                        (ttag_t) key_int,
+                        (FLOAT64)PyFloat_AsDouble(value));
+            } else {
+                TRACE(("Unhandled type for key %d : %s \n",
+                            key_int,
+                            PyBytes_AsString(PyObject_Str(value))));
+            }
+        }
+        if (!status) {
+            TRACE(("Error setting Field\n"));
+            Py_DECREF(encoder);
+            PyErr_SetString(PyExc_RuntimeError, "Error setting from dictionary");
+            return NULL;
+        }
+    }
+
+    encoder->encode  = ImagingLibTiffEncode;
+
+    return (PyObject*) encoder;
+}
+
+#endif
+
+/* -------------------------------------------------------------------- */
 /* JPEG                                                                 */
 /* -------------------------------------------------------------------- */
 
@@ -787,168 +1091,6 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 #endif
 
-/* -------------------------------------------------------------------- */
-/* LibTiff                                                              */
-/* -------------------------------------------------------------------- */
-
-#ifdef HAVE_LIBTIFF
-
-#include "TiffDecode.h"
-
-#include <string.h>
-
-PyObject*
-PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
-{
-    ImagingEncoderObject* encoder;
-
-    char* mode;
-    char* rawmode;
-    char* compname;
-    char* filename;
-    Py_ssize_t fp;
-
-    PyObject *dir;
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
-    int key_int, status, is_core_tag, number_of_tags, i;
-    // This list also exists in TiffTags.py
-    const int tags[] = {
-        256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
-        341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
-        339, 32997, 330, 531, 530
-    };
-
-    Py_ssize_t d_size;
-    PyObject *keys, *values;
-
-
-    if (! PyArg_ParseTuple(args, "sssisO", &mode, &rawmode, &compname, &fp, &filename, &dir)) {
-        return NULL;
-    }
-
-    if (!PyDict_Check(dir)) {
-        PyErr_SetString(PyExc_ValueError, "Invalid Dictionary");
-        return NULL;
-    } else {
-        d_size = PyDict_Size(dir);
-        TRACE(("dict size: %d\n", (int)d_size));
-        keys = PyDict_Keys(dir);
-        values = PyDict_Values(dir);
-        for (pos=0;pos<d_size;pos++){
-            TRACE(("  key: %d\n", (int)PyInt_AsLong(PyList_GetItem(keys,pos))));
-        }
-        pos = 0;
-    }
-
-    TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
-
-    encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
-    if (encoder == NULL)
-        return NULL;
-
-    if (get_packer(encoder, mode, rawmode) < 0)
-        return NULL;
-
-    if (! ImagingLibTiffEncodeInit(&encoder->state, filename, fp)) {
-        Py_DECREF(encoder);
-        PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
-        return NULL;
-    }
-
-    number_of_tags = sizeof(tags) / sizeof(int);
-    for (pos = 0; pos < d_size; pos++) {
-        key = PyList_GetItem(keys, pos);
-        key_int = (int)PyInt_AsLong(key);
-        value = PyList_GetItem(values, pos);
-        status = 0;
-        is_core_tag = 0;
-        for (i=0; i<number_of_tags; i++) {
-            if (tags[i] == key_int) {
-                is_core_tag = 1;
-                break;
-            }
-        }
-        TRACE(("Attempting to set key: %d\n", key_int));
-        if (PyInt_Check(value)) {
-            TRACE(("Setting from Int: %d %ld \n", key_int, PyInt_AsLong(value)));
-            if (is_core_tag || !ImagingLibTiffMergeFieldInfo(&encoder->state, TIFF_LONG, key_int)) {
-                status = ImagingLibTiffSetField(&encoder->state,
-                                                (ttag_t) PyInt_AsLong(key),
-                                                PyInt_AsLong(value));
-            }
-        } else if (PyFloat_Check(value)) {
-            TRACE(("Setting from Float: %d, %f \n", key_int, PyFloat_AsDouble(value)));
-            if (is_core_tag || !ImagingLibTiffMergeFieldInfo(&encoder->state, TIFF_DOUBLE, key_int)) {
-                status = ImagingLibTiffSetField(&encoder->state,
-                                                (ttag_t) PyInt_AsLong(key),
-                                                (double)PyFloat_AsDouble(value));
-            }
-        } else if (PyBytes_Check(value)) {
-            TRACE(("Setting from Bytes: %d, %s \n", key_int, PyBytes_AsString(value)));
-            if (is_core_tag || !ImagingLibTiffMergeFieldInfo(&encoder->state, TIFF_ASCII, key_int)) {
-                status = ImagingLibTiffSetField(&encoder->state,
-                                                (ttag_t) PyInt_AsLong(key),
-                                                PyBytes_AsString(value));
-            }
-        } else if (PyTuple_Check(value)) {
-            Py_ssize_t len,i;
-            float *floatav;
-            int *intav;
-            TRACE(("Setting from Tuple: %d \n", key_int));
-            len = PyTuple_Size(value);
-            if (len) {
-                if (PyInt_Check(PyTuple_GetItem(value,0))) {
-                    TRACE((" %d elements, setting as ints \n", (int)len));
-                    /* malloc check ok, calloc checks for overflow */
-                    intav = calloc(len, sizeof(int));
-                    if (intav) {
-                        for (i=0;i<len;i++) {
-                            intav[i] = (int)PyInt_AsLong(PyTuple_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        len, intav);
-                        free(intav);
-                    }
-                } else if (PyFloat_Check(PyTuple_GetItem(value,0))) {
-                    TRACE((" %d elements, setting as floats \n", (int)len));
-                    /* malloc check ok, calloc checks for overflow */
-                    floatav = calloc(len, sizeof(float));
-                    if (floatav) {
-                        for (i=0;i<len;i++) {
-                            floatav[i] = (float)PyFloat_AsDouble(PyTuple_GetItem(value,i));
-                        }
-                        status = ImagingLibTiffSetField(&encoder->state,
-                                                        (ttag_t) PyInt_AsLong(key),
-                                                        len, floatav);
-                        free(floatav);
-                    }
-                } else {
-                    TRACE(("Unhandled type in tuple for key %d : %s \n",
-                           key_int,
-                           PyBytes_AsString(PyObject_Str(value))));
-                }
-            }
-        } else {
-            TRACE(("Unhandled type for key %d : %s \n",
-                   key_int,
-                   PyBytes_AsString(PyObject_Str(value))));
-        }
-        if (!status) {
-            TRACE(("Error setting Field\n"));
-            Py_DECREF(encoder);
-            PyErr_SetString(PyExc_RuntimeError, "Error setting from dictionary");
-            return NULL;
-        }
-    }
-
-    encoder->encode  = ImagingLibTiffEncode;
-
-    return (PyObject*) encoder;
-}
-
-#endif
 
 /* -------------------------------------------------------------------- */
 /* JPEG	2000								*/
