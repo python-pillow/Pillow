@@ -716,13 +716,19 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1` object may
     be passed in this field. However, this is deprecated.
 
-    .. versionadded:: 3.0.0
+    .. versionadded:: 5.4.0
 
- .. note::
-
-    Only some tags are currently supported when writing using
+    Previous versions only supported some tags when writing using
     libtiff. The supported list is found in
     :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
+
+    .. versionadded:: 6.1.0
+
+    Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
+    Multiple values for a single tag must be to
+    :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
+    require a matching type in
+    :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
 
 **compression**
     A string containing the desired compression method for the
