@@ -284,8 +284,8 @@ class FreeTypeFont(object):
         """
         Create a bitmap for the text.
 
-        If the font uses antialiasing, the bitmap should have mode “L” and use a
-        maximum value of 255. Otherwise, it should have mode “1”.
+        If the font uses antialiasing, the bitmap should have mode ``L`` and use a
+        maximum value of 255. Otherwise, it should have mode ``1``.
 
         :param text: Text to render.
         :param mode: Used by some graphics drivers to indicate what mode the
@@ -335,8 +335,8 @@ class FreeTypeFont(object):
         """
         Create a bitmap for the text.
 
-        If the font uses antialiasing, the bitmap should have mode “L” and use a
-        maximum value of 255. Otherwise, it should have mode “1”.
+        If the font uses antialiasing, the bitmap should have mode ``L`` and use a
+        maximum value of 255. Otherwise, it should have mode ``1``.
 
         :param text: Text to render.
         :param mode: Used by some graphics drivers to indicate what mode the
