@@ -686,8 +686,8 @@ font_getsize(FontObject* self, PyObject* args)
                     x_max -= offset;
             }
 
-            bbox.yMax -= glyph_info[i].y_offset;
-            bbox.yMin -= glyph_info[i].y_offset;
+            bbox.yMax += glyph_info[i].y_offset;
+            bbox.yMin += glyph_info[i].y_offset;
             if (bbox.yMax > y_max)
                 y_max = bbox.yMax;
             if (bbox.yMin < y_min)
