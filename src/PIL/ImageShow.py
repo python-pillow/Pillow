@@ -71,7 +71,9 @@ class Viewer(object):
             # FIXME: auto-contrast if max() > 255?
         else:
             base = Image.getmodebase(image.mode)
-        if base != image.mode and image.mode != "1" and image.mode != "RGBA":
+        if not (base == image.mode or
+                image.mode in ("1", "RGBA") or
+                (self.format == "PNG" and image.mode == "LA")):
             image = image.convert(base)
 
         return self.show_image(image, **options)
