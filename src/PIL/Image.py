@@ -2816,7 +2816,6 @@ def register_open(id, factory, accept=None):
     :param accept: An optional function that can be used to quickly
        reject images having another format.
     """
-    id = id.upper()
     ID.append(id)
     OPEN[id] = factory, accept
 
@@ -2829,7 +2828,7 @@ def register_mime(id, mimetype):
     :param id: An image format identifier.
     :param mimetype: The image MIME type for this format.
     """
-    MIME[id.upper()] = mimetype
+    MIME[id] = mimetype
 
 
 def register_save(id, driver):
@@ -2840,7 +2839,7 @@ def register_save(id, driver):
     :param id: An image format identifier.
     :param driver: A function to save images in this format.
     """
-    SAVE[id.upper()] = driver
+    SAVE[id] = driver
 
 
 def register_save_all(id, driver):
@@ -2852,7 +2851,7 @@ def register_save_all(id, driver):
     :param id: An image format identifier.
     :param driver: A function to save images in this format.
     """
-    SAVE_ALL[id.upper()] = driver
+    SAVE_ALL[id] = driver
 
 
 def register_extension(id, extension):
@@ -2863,7 +2862,7 @@ def register_extension(id, extension):
     :param id: An image format identifier.
     :param extension: An extension used for this format.
     """
-    EXTENSION[extension.lower()] = id.upper()
+    EXTENSION[extension] = id
 
 
 def register_extensions(id, extensions):

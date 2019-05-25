@@ -226,8 +226,8 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 
-Image.register_save("Palm", _save)
+Image.register_save("PALM", _save)
 
-Image.register_extension("Palm", ".palm")
+Image.register_extension("PALM", ".palm")
 
-Image.register_mime("Palm", "image/palm")
+Image.register_mime("PALM", "image/palm")
