@@ -42,8 +42,8 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open("Tests/images/hopper.gif")
-    >>> _info(im)
+    >>> with Image.open("Tests/images/hopper.gif") as im:
+    ...     _info(im)
     ('GIF', 'P', (128, 128))
     >>> _info(Image.open("Tests/images/hopper.ppm"))
     ('PPM', 'RGB', (128, 128))

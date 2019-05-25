@@ -15,7 +15,6 @@
 #
 
 import io
-import sys
 
 from . import ContainerIO
 
@@ -63,11 +62,6 @@ class TarIO(ContainerIO.ContainerIO):
 
     def __exit__(self, *args):
         self.close()
-
-    if sys.version_info.major >= 3:
-
-        def __del__(self):
-            self.close()
 
     def close(self):
         self.fh.close()

@@ -103,7 +103,8 @@ class TestFileWebpAlpha(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
         file_path = "Tests/images/transparent.gif"
-        Image.open(file_path).save(temp_file)
+        with Image.open(file_path) as im:
+            im.save(temp_file)
         image = Image.open(temp_file)
 
         self.assertEqual(image.mode, "RGBA")
@@ -112,6 +113,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
         image.load()
         image.getdata()
-        target = Image.open(file_path).convert("RGBA")
+        with Image.open(file_path) as im:
+            target = im.convert("RGBA")
 
         self.assert_image_similar(image, target, 25.0)

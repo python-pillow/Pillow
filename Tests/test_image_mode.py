@@ -6,8 +6,8 @@ from .helper import PillowTestCase, hopper
 class TestImageMode(PillowTestCase):
     def test_sanity(self):
 
-        im = hopper()
-        im.mode
+        with hopper() as im:
+            im.mode
 
         from PIL import ImageMode
 
