@@ -66,7 +66,8 @@ class BmpImageFile(ImageFile.ImageFile):
 
     # -------------------------------------------------- BMP Compression values
     COMPRESSIONS = {"RAW": 0, "RLE8": 1, "RLE4": 2, "BITFIELDS": 3, "JPEG": 4, "PNG": 5}
-    RAW, RLE8, RLE4, BITFIELDS, JPEG, PNG = 0, 1, 2, 3, 4, 5
+    for k, v in COMPRESSIONS.items():
+        vars()[k] = v
 
     def _bitmap(self, header=0, offset=0):
         """ Read relevant info about the BMP """
