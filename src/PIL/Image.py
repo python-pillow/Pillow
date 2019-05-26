@@ -3000,13 +3000,13 @@ def _apply_env_variables(env=None):
         try:
             var = int(var) * units
         except ValueError:
-            warnings.warn("{0} is not int".format(var_name))
+            warnings.warn("{} is not int".format(var_name))
             continue
 
         try:
             setter(var)
         except ValueError as e:
-            warnings.warn("{0}: {1}".format(var_name, e))
+            warnings.warn("{}: {}".format(var_name, e))
 
 
 _apply_env_variables()
