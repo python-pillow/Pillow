@@ -523,8 +523,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return dict((TiffTags.lookup(code).name, value)
-                    for code, value in self.items())
+        return {TiffTags.lookup(code).name: value for code, value in self.items()}
 
     def __len__(self):
         return len(set(self._tagdata) | set(self._tags_v2))
