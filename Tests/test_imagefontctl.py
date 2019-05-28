@@ -112,8 +112,8 @@ class TestImagecomplextext(PillowTestCase):
         try:
             draw.text((0, 0), 'English あい', font=ttf, fill=500, direction='ttb')
         except ValueError as ex:
-            if str(ex) == "libraqm 0.6 or greater required for 'ttb' direction":
-                self.skipTest('libraqm 0.6 or greater not available')
+            if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
+                self.skipTest('libraqm 0.7 or greater not available')
 
         target = 'Tests/images/test_direction_ttb.png'
         target_img = Image.open(target)

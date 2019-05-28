@@ -410,11 +410,11 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
 #if !defined(_MSC_VER)
-            if (!dlsym(p_raqm.raqm, "raqm_set_invisible_glyph")) {
+            if (!dlsym(p_raqm.raqm, "raqm_version_atleast")) {
 #else
-            if (!GetProcAddress(p_raqm.raqm, "raqm_set_invisible_glyph")) {
+            if (!GetProcAddress(p_raqm.raqm, "raqm_version_atleast")) {
 #endif
-                PyErr_SetString(PyExc_ValueError, "libraqm 0.6 or greater required for 'ttb' direction");
+                PyErr_SetString(PyExc_ValueError, "libraqm 0.7 or greater required for 'ttb' direction");
                 goto failed;
             }
         } else {
