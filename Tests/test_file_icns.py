@@ -61,11 +61,10 @@ class TestFileIcns(PillowTestCase):
         for w, h, r in im.info['sizes']:
             wr = w * r
             hr = h * r
-            im2 = Image.open(TEST_FILE)
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, 'RGBA')
-            self.assertEqual(im2.size, (wr, hr))
+            im.size = (w, h, r)
+            im.load()
+            self.assertEqual(im.mode, 'RGBA')
+            self.assertEqual(im.size, (wr, hr))
 
         # Check that we cannot load an incorrect size
         with self.assertRaises(ValueError):
