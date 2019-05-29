@@ -288,6 +288,9 @@ class IcoImageFile(ImageFile.ImageFile):
         self._size = value
 
     def load(self):
+        if self.im and self.im.size == self.size:
+            # Already loaded
+            return
         im = self.ico.getimage(self.size)
         # if tile is PNG, it won't really be loaded yet
         im.load()
