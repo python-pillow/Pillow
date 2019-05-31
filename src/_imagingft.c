@@ -54,7 +54,7 @@
 
 typedef struct
 {
-  int index, x_offset, x_advance, y_offset;
+  int index, x_offset, x_advance, y_offset, y_advance;
   unsigned int cluster;
 } GlyphInfo;
 
@@ -407,9 +407,17 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             direction = RAQM_DIRECTION_RTL;
         else if (strcmp(dir, "ltr") == 0)
             direction = RAQM_DIRECTION_LTR;
-        else if (strcmp(dir, "ttb") == 0)
+        else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
-        else {
+#if !defined(_MSC_VER)
+            if (!dlsym(p_raqm.raqm, "raqm_set_invisible_glyph")) {
+#else
+            if (!GetProcAddress(p_raqm.raqm, "raqm_set_invisible_glyph")) {
+#endif
+                PyErr_SetString(PyExc_ValueError, "libraqm 0.6 or greater required for 'ttb' direction");
+                goto failed;
+            }
+        } else {
             PyErr_SetString(PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'");
             goto failed;
         }
@@ -473,7 +481,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-    if (p_raqm.version == 1){
+    if (p_raqm.version == 1) {
         glyphs_01 = (*p_raqm.get_glyphs_01)(rq, &count);
         if (glyphs_01 == NULL) {
             PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
@@ -496,12 +504,13 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-    if (p_raqm.version == 1){
+    if (p_raqm.version == 1) {
         for (i = 0; i < count; i++) {
             (*glyph_info)[i].index = glyphs_01[i].index;
             (*glyph_info)[i].x_offset = glyphs_01[i].x_offset;
             (*glyph_info)[i].x_advance = glyphs_01[i].x_advance;
             (*glyph_info)[i].y_offset = glyphs_01[i].y_offset;
+            (*glyph_info)[i].y_advance = glyphs_01[i].y_advance;
             (*glyph_info)[i].cluster = glyphs_01[i].cluster;
         }
     } else {
@@ -510,6 +519,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             (*glyph_info)[i].x_offset = glyphs[i].x_offset;
             (*glyph_info)[i].x_advance = glyphs[i].x_advance;
             (*glyph_info)[i].y_offset = glyphs[i].y_offset;
+            (*glyph_info)[i].y_advance = glyphs[i].y_advance;
             (*glyph_info)[i].cluster = glyphs[i].cluster;
         }
     }
@@ -576,9 +586,11 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
             if (FT_Get_Kerning(self->face, last_index, (*glyph_info)[i].index,
                            ft_kerning_default,&delta) == 0)
             (*glyph_info)[i-1].x_advance += PIXEL(delta.x);
+            (*glyph_info)[i-1].y_advance += PIXEL(delta.y);
         }
 
         (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
+        (*glyph_info)[i].y_advance = glyph->metrics.vertAdvance;
         last_index = (*glyph_info)[i].index;
         (*glyph_info)[i].cluster = ch;
     }
@@ -602,9 +614,10 @@ text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *featu
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
-    int x, y_max, y_min;
+    int x_max, x_min, y_max, y_min;
     FT_Face face;
     int xoffset, yoffset;
+    int horizontal_dir;
     const char *dir = NULL;
     const char *lang = NULL;
     size_t i, count;
@@ -619,15 +632,15 @@ font_getsize(FontObject* self, PyObject* args)
 
     face = NULL;
     xoffset = yoffset = 0;
-    y_max = y_min = 0;
+    x_max = x_min = y_max = y_min = 0;
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-
-    for (x = i = 0; i < count; i++) {
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+    for (i = 0; i < count; i++) {
         int index, error;
         FT_BBox bbox;
         FT_Glyph glyph;
@@ -640,35 +653,63 @@ font_getsize(FontObject* self, PyObject* args)
         if (error)
             return geterror(error);
 
-        if (i == 0 && face->glyph->metrics.horiBearingX < 0) {
-            xoffset = face->glyph->metrics.horiBearingX;
-            x -= xoffset;
-        }
-
-        x += glyph_info[i].x_advance;
-
-        if (i == count - 1)
-        {
-            int offset;
-            offset = glyph_info[i].x_advance -
-                    face->glyph->metrics.width -
-                    face->glyph->metrics.horiBearingX;
-            if (offset < 0)
-                x -= offset;
+        if (i == 0) {
+            if (horizontal_dir) {
+                if (face->glyph->metrics.horiBearingX < 0) {
+                    xoffset = face->glyph->metrics.horiBearingX;
+                    x_max -= xoffset;
+                }
+            } else {
+                if (face->glyph->metrics.vertBearingY < 0) {
+                    yoffset = face->glyph->metrics.vertBearingY;
+                    y_max -= yoffset;
+                }
+            }
         }
 
         FT_Get_Glyph(face->glyph, &glyph);
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
-        bbox.yMax -= glyph_info[i].y_offset;
-        bbox.yMin -= glyph_info[i].y_offset;
-        if (bbox.yMax > y_max)
-            y_max = bbox.yMax;
-        if (bbox.yMin < y_min)
-            y_min = bbox.yMin;
+        if (horizontal_dir) {
+            x_max += glyph_info[i].x_advance;
 
-        /* find max distance of baseline from top */
-        if (face->glyph->metrics.horiBearingY > yoffset)
-            yoffset = face->glyph->metrics.horiBearingY;
+            if (i == count - 1) {
+                // trim end gap from final glyph
+                int offset;
+                offset = glyph_info[i].x_advance -
+                        face->glyph->metrics.width -
+                        face->glyph->metrics.horiBearingX;
+                if (offset < 0)
+                    x_max -= offset;
+            }
+
+            bbox.yMax -= glyph_info[i].y_offset;
+            bbox.yMin -= glyph_info[i].y_offset;
+            if (bbox.yMax > y_max)
+                y_max = bbox.yMax;
+            if (bbox.yMin < y_min)
+                y_min = bbox.yMin;
+
+            // find max distance of baseline from top
+            if (face->glyph->metrics.horiBearingY > yoffset)
+                yoffset = face->glyph->metrics.horiBearingY;
+        } else {
+            y_max -= glyph_info[i].y_advance;
+
+            if (i == count - 1) {
+                // trim end gap from final glyph
+                int offset;
+                offset = -glyph_info[i].y_advance -
+                        face->glyph->metrics.height -
+                        face->glyph->metrics.vertBearingY;
+                if (offset < 0)
+                    y_max -= offset;
+            }
+
+            if (bbox.xMax > x_max)
+                x_max = bbox.xMax;
+            if (i == 0 || bbox.xMin < x_min)
+                x_min = bbox.xMin;
+        }
 
         FT_Done_Glyph(glyph);
     }
@@ -679,20 +720,28 @@ font_getsize(FontObject* self, PyObject* args)
     }
 
     if (face) {
+        if (horizontal_dir) {
+            // left bearing
+            if (xoffset < 0)
+                x_max -= xoffset;
+            else
+                xoffset = 0;
 
-        /* left bearing */
-        if (xoffset < 0)
-            x -= xoffset;
-        else
-            xoffset = 0;
-        /* difference between the font ascender and the distance of
-         * the baseline from the top */
-        yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
+            /* difference between the font ascender and the distance of
+             * the baseline from the top */
+            yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
+        } else {
+            // top bearing
+            if (yoffset < 0)
+                y_max -= yoffset;
+            else
+                yoffset = 0;
+        }
     }
 
     return Py_BuildValue(
         "(ii)(ii)",
-        PIXEL(x), PIXEL(y_max - y_min),
+        PIXEL(x_max - x_min), PIXEL(y_max - y_min),
         PIXEL(xoffset), yoffset
         );
 }
@@ -703,7 +752,7 @@ font_render(FontObject* self, PyObject* args)
     int x;
     unsigned int y;
     Imaging im;
-    int index, error, ascender;
+    int index, error, ascender, horizontal_dir;
     int load_flags;
     unsigned char *source;
     FT_GlyphSlot glyph;
@@ -714,6 +763,8 @@ font_render(FontObject* self, PyObject* args)
     int mask = 0;
     int temp;
     int xx, x0, x1;
+    int yy;
+    unsigned int bitmap_y;
     const char *dir = NULL;
     const char *lang = NULL;
     size_t i, count;
@@ -747,27 +798,34 @@ font_render(FontObject* self, PyObject* args)
             return geterror(error);
 
         glyph = self->face->glyph;
-        temp = (glyph->bitmap.rows - glyph->bitmap_top);
+        temp = glyph->bitmap.rows - glyph->bitmap_top;
         temp -= PIXEL(glyph_info[i].y_offset);
         if (temp > ascender)
             ascender = temp;
     }
 
-    for (x = i = 0; i < count; i++) {
+    x = y = 0;
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+    for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
 
-        if (i == 0 && self->face->glyph->metrics.horiBearingX < 0) {
-            x = -self->face->glyph->metrics.horiBearingX;
-     }
-
         glyph = self->face->glyph;
+        if (horizontal_dir) {
+            if (i == 0 && self->face->glyph->metrics.horiBearingX < 0) {
+                x = -self->face->glyph->metrics.horiBearingX;
+            }
+            xx = PIXEL(x) + glyph->bitmap_left;
+            xx += PIXEL(glyph_info[i].x_offset);
+        } else {
+            if (self->face->glyph->metrics.vertBearingX < 0) {
+                x = -self->face->glyph->metrics.vertBearingX;
+            }
+            xx = im->xsize / 2 - glyph->bitmap.width / 2;
+        }
 
-        source = (unsigned char*) glyph->bitmap.buffer;
-        xx = PIXEL(x) + glyph->bitmap_left;
-        xx += PIXEL(glyph_info[i].x_offset);
         x0 = 0;
         x1 = glyph->bitmap.width;
         if (xx < 0)
@@ -775,45 +833,42 @@ font_render(FontObject* self, PyObject* args)
         if (xx + x1 > im->xsize)
             x1 = im->xsize - xx;
 
-        if (mask) {
-            /* use monochrome mask (on palette images, etc) */
-            for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
+        source = (unsigned char*) glyph->bitmap.buffer;
+        for (bitmap_y = 0; bitmap_y < glyph->bitmap.rows; bitmap_y++) {
+            if (horizontal_dir) {
+                yy = bitmap_y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
                 yy -= PIXEL(glyph_info[i].y_offset);
-                if (yy >= 0 && yy < im->ysize) {
-                    /* blend this glyph into the buffer */
-                    unsigned char *target = im->image8[yy] + xx;
-                    int i, j, m = 128;
-                    for (i = j = 0; j < x1; j++) {
-                        if (j >= x0 && (source[i] & m))
+            } else {
+                yy = bitmap_y + PIXEL(y + glyph->metrics.vertBearingY) + ascender;
+                yy += PIXEL(glyph_info[i].y_offset);
+            }
+            if (yy >= 0 && yy < im->ysize) {
+                // blend this glyph into the buffer
+                unsigned char *target = im->image8[yy] + xx;
+                if (mask) {
+                    // use monochrome mask (on palette images, etc)
+                    int j, k, m = 128;
+                    for (j = k = 0; j < x1; j++) {
+                        if (j >= x0 && (source[k] & m))
                             target[j] = 255;
                         if (!(m >>= 1)) {
                             m = 128;
-                            i++;
+                            k++;
                         }
                     }
-                }
-                source += glyph->bitmap.pitch;
-            }
-        } else {
-            /* use antialiased rendering */
-            for (y = 0; y < glyph->bitmap.rows; y++) {
-                int yy = y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
-                yy -= PIXEL(glyph_info[i].y_offset);
-                if (yy >= 0 && yy < im->ysize) {
-                    /* blend this glyph into the buffer */
-
-                    int i;
-                    unsigned char *target = im->image8[yy] + xx;
-                    for (i = x0; i < x1; i++) {
-                        if (target[i] < source[i])
-                            target[i] = source[i];
+                } else {
+                    // use antialiased rendering
+                    int k;
+                    for (k = x0; k < x1; k++) {
+                        if (target[k] < source[k])
+                            target[k] = source[k];
                     }
                 }
-                source += glyph->bitmap.pitch;
             }
+            source += glyph->bitmap.pitch;
         }
         x += glyph_info[i].x_advance;
+        y -= glyph_info[i].y_advance;
     }
 
     PyMem_Del(glyph_info);
