@@ -79,6 +79,9 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
+typedef bool (*t_raqm_version_atleast)(unsigned int major,
+                                       unsigned int minor,
+                                       unsigned int micro);
 typedef raqm_t* (*t_raqm_create)(void);
 typedef int (*t_raqm_set_text)(raqm_t         *rq,
                                const uint32_t *text,
@@ -107,6 +110,7 @@ typedef void (*t_raqm_destroy) (raqm_t *rq);
 typedef struct {
     void* raqm;
     int version;
+    t_raqm_version_atleast version_atleast;
     t_raqm_create create;
     t_raqm_set_text set_text;
     t_raqm_set_text_utf8 set_text_utf8;
@@ -162,6 +166,7 @@ setraqm(void)
     }
 
 #if !defined(_MSC_VER)
+    p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
     p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)dlsym(p_raqm.raqm, "raqm_set_text_utf8");
@@ -194,6 +199,7 @@ setraqm(void)
         return 2;
     }
 #else
+    p_raqm.version_atleast = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
     p_raqm.set_text_utf8 = (t_raqm_set_text_utf8)GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
@@ -409,11 +415,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             direction = RAQM_DIRECTION_LTR;
         else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
-#if !defined(_MSC_VER)
-            if (!dlsym(p_raqm.raqm, "raqm_version_atleast")) {
-#else
-            if (!GetProcAddress(p_raqm.raqm, "raqm_version_atleast")) {
-#endif
+            if (p_raqm.version_atleast == NULL || !(*p_raqm.version_atleast)(0, 7, 0)) {
                 PyErr_SetString(PyExc_ValueError, "libraqm 0.7 or greater required for 'ttb' direction");
                 goto failed;
             }
