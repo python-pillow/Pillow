@@ -34,11 +34,6 @@ function pre_build {
     build_tiff
     build_libpng
     build_openjpeg
-    if [ -n "$IS_OSX" ]; then
-        # Fix openjpeg library install id
-        # https://code.google.com/p/openjpeg/issues/detail?id=367
-        install_name_tool -id $BUILD_PREFIX/lib/libopenjp2.7.dylib $BUILD_PREFIX/lib/libopenjp2.2.3.1.dylib
-    fi
     build_lcms2
 
     if [ -n "$IS_OSX" ]; then
