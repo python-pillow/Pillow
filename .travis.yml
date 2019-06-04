@@ -35,6 +35,8 @@ matrix:
       env: PYTHONOPTIMIZE=2
     - python: "3.8-dev"
       name: "3.8-dev Xenial"
+      cache:
+        pip: false
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
     - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
