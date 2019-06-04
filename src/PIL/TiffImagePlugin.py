@@ -116,6 +116,7 @@ PHOTOSHOP_CHUNK = 34377  # photoshop properties
 ICCPROFILE = 34675
 EXIFIFD = 34665
 XMP = 700
+JPEGQUALITY = 65537  # pseudo-tag by libtiff
 
 # https://github.com/imagej/ImageJA/blob/master/src/main/java/ij/io/TiffDecoder.java
 IMAGEJ_META_DATA_BYTE_COUNTS = 50838
@@ -1529,6 +1530,16 @@ def _save(im, fp, filename):
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 
     if libtiff:
+        if "quality" in im.encoderinfo:
+            quality = im.encoderinfo["quality"]
+            if not isinstance(quality, int) or quality < 0 or quality > 100:
+                raise ValueError("Invalid quality setting")
+            if compression != "jpeg":
+                raise ValueError(
+                    "quality setting only supported for 'jpeg' compression"
+                )
+            ifd[JPEGQUALITY] = quality
+
         if DEBUG:
             print("Saving using libtiff encoder")
             print("Items: %s" % sorted(ifd.items()))
@@ -1604,7 +1615,12 @@ def _save(im, fp, filename):
         if im.mode in ("I;16B", "I;16"):
             rawmode = "I;16N"
 
-        a = (rawmode, compression, _fp, filename, atts, types)
+        # Pass tags as sorted list so that the tags are set in a fixed order.
+        # This is required by libtiff for some tags. For example, the JPEGQUALITY
+        # pseudo tag requires that the COMPRESS tag was already set.
+        tags = list(atts.items())
+        tags.sort()
+        a = (rawmode, compression, _fp, filename, tags, types)
         e = Image._getencoder(im.mode, "libtiff", a, im.encoderconfig)
         e.setimage(im.im, (0, 0) + im.size)
         while True:
