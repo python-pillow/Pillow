@@ -71,6 +71,7 @@ OPEN = {
     "RYB3 image": ("RGB", "RYB;T"),
     # extensions
     "LA image": ("LA", "LA;L"),
+    "PA image": ("LA", "PA;L"),
     "RGBA image": ("RGBA", "RGBA;L"),
     "RGBX image": ("RGBX", "RGBX;L"),
     "CMYK image": ("CMYK", "CMYK;L"),
@@ -218,15 +219,16 @@ class ImImageFile(ImageFile.ImageFile):
                         linear = 0
                 else:
                     greyscale = 0
-            if self.mode == "L" or self.mode == "LA":
+            if self.mode in ["L", "LA", "P", "PA"]:
                 if greyscale:
                     if not linear:
                         self.lut = [i8(c) for c in palette[:256]]
                 else:
-                    if self.mode == "L":
+                    if self.mode in ["L", "P"]:
                         self.mode = self.rawmode = "P"
-                    elif self.mode == "LA":
-                        self.mode = self.rawmode = "PA"
+                    elif self.mode in ["LA", "PA"]:
+                        self.mode = "PA"
+                        self.rawmode = "PA;L"
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
@@ -340,10 +342,10 @@ def _save(im, fp, filename):
         fp.write(("Name: %s\r\n" % filename).encode('ascii'))
     fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
     fp.write(("File size (no of images): %d\r\n" % frames).encode('ascii'))
-    if im.mode == "P":
+    if im.mode in ["P", "PA"]:
         fp.write(b"Lut: 1\r\n")
     fp.write(b"\000" * (511-fp.tell()) + b"\032")
-    if im.mode == "P":
+    if im.mode in ["P", "PA"]:
         fp.write(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, -1))])
 
