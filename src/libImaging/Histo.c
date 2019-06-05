@@ -135,11 +135,10 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                 if (imin >= imax)
                     break;
                 ImagingSectionEnter(&cookie);
-                scale = 255.0F / (imax - imin);
                 for (y = 0; y < im->ysize; y++) {
                     INT32* in = im->image32[y];
                     for (x = 0; x < im->xsize; x++) {
-                        i = (int) (((*in++)-imin)*scale);
+                        i = (int) (((*in++)-imin) * 255.0F / (imax - imin));
                         if (i >= 0 && i < 256)
                             h->histogram[i]++;
                     }

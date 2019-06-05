@@ -231,7 +231,7 @@ rgb2i(UINT8* out_, const UINT8* in, int xsize)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-        *out++ = L24(in) >> 16;
+        *out++ = L24(in) >> 8;
 }
 
 static void
@@ -575,8 +575,8 @@ l2i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
     INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (INT32) *in++;
+    for (x = 0; x < xsize; x++, in++)
+        *out++ = (INT32) (*in << 8);
 }
 
 static void
@@ -585,12 +585,7 @@ i2l(UINT8* out, const UINT8* in_, int xsize)
     int x;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++, out++) {
-        if (*in <= 0)
-            *out = 0;
-        else if (*in >= 255)
-            *out = 255;
-        else
-            *out = (UINT8) *in;
+        *out = (UINT8) (*in >> 8);
     }
 }
 
@@ -601,7 +596,7 @@ i2f(UINT8* out_, const UINT8* in_, int xsize)
     INT32* in = (INT32*) in_;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-        *out++ = (FLOAT32) *in++;
+        *out++ = (FLOAT32) (*in++ >> 8);
 }
 
 static void
@@ -610,12 +605,7 @@ i2rgb(UINT8* out, const UINT8* in_, int xsize)
     int x;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++, out+=4) {
-        if (*in <= 0)
-            out[0] = out[1] = out[2] = 0;
-        else if (*in >= 255)
-            out[0] = out[1] = out[2] = 255;
-        else
-            out[0] = out[1] = out[2] = (UINT8) *in;
+        out[0] = out[1] = out[2] = (UINT8) (*in >> 8);
         out[3] = 255;
     }
 }
@@ -664,7 +654,7 @@ f2i(UINT8* out_, const UINT8* in_, int xsize)
     FLOAT32* in = (FLOAT32*) in_;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-        *out++ = (INT32) *in++;
+        *out++ = (INT32) *in++ << 8;
 }
 
 /* ----------------- */
@@ -722,24 +712,22 @@ ycbcr2la(UINT8* out, const UINT8* in, int xsize)
 static void
 I_I16L(UINT8* out, const UINT8* in_, int xsize)
 {
-    int x, v;
+    int x;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++) {
-        v = CLIP16(*in);
-        *out++ = (UINT8) v;
-        *out++ = (UINT8) (v >> 8);
+        *out++ = (UINT8) *in;
+        *out++ = (UINT8) (*in >> 8);
     }
 }
 
 static void
 I_I16B(UINT8* out, const UINT8* in_, int xsize)
 {
-    int x, v;
+    int x;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++) {
-        v = CLIP16(*in);
-        *out++ = (UINT8) (v >> 8);
-        *out++ = (UINT8) v;
+        *out++ = (UINT8) (*in >> 8);
+        *out++ = (UINT8) *in;
     }
 }
 
@@ -769,7 +757,7 @@ I16L_F(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
-        *out++ = (FLOAT32) (in[0] + ((int) in[1] << 8));
+        *out++ = (FLOAT32) in[1];
 }
 
 
@@ -779,7 +767,7 @@ I16B_F(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
-        *out++ = (FLOAT32) (in[1] + ((int) in[0] << 8));
+        *out++ = (FLOAT32) in[0];
 }
 
 static void
@@ -787,8 +775,8 @@ L_I16L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in++) {
+        *out++ = *in << 8;
         *out++ = *in;
-        *out++ = 0;
     }
 }
 
@@ -797,8 +785,8 @@ L_I16B(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in++) {
-        *out++ = 0;
         *out++ = *in;
+        *out++ = *in << 8;
     }
 }
 
@@ -807,10 +795,7 @@ I16L_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 2)
-        if (in[1] != 0)
-            *out++ = 255;
-        else
-            *out++ = in[0];
+        *out++ = in[1] + (in[0] << 8);
 }
 
 static void
@@ -818,10 +803,7 @@ I16B_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 2)
-        if (in[0] != 0)
-            *out++ = 255;
-        else
-            *out++ = in[1];
+        *out++ = in[0] + (in[1] << 8);
 }
 
 static struct {
@@ -1020,7 +1002,7 @@ p2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++)
-        *out++ = L(&palette[in[x]*4]) / 1000;
+        *out++ = (L(&palette[in[x]*4]) / 1000) << 8;
 }
 
 static void
@@ -1029,7 +1011,7 @@ pa2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-        *out++ = L(&palette[in[0]*4]) / 1000;
+        *out++ = (L(&palette[in[0]*4]) / 1000) << 8;
 }
 
 static void

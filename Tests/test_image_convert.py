@@ -38,6 +38,8 @@ class TestImageConvert(PillowTestCase):
 
     def _test_float_conversion(self, im):
         orig = im.getpixel((5, 5))
+        if im.mode[0] == 'I':
+            orig //= 256
         converted = im.convert('F').getpixel((5, 5))
         self.assertEqual(orig, converted)
 
@@ -231,3 +233,11 @@ class TestImageConvert(PillowTestCase):
         # Assert
         # No change
         self.assert_image_equal(converted_im, im)
+
+    def test_i_to_l(self):
+        im = Image.open("Tests/images/hopper_I.png").convert("L")
+        self.assert_image_similar(hopper("L"), im, 0.02)
+
+    def test_i_to_rgb(self):
+        im = Image.open("Tests/images/hopper_I.png").convert("RGB")
+        self.assert_image_similar(hopper("L").convert("RGB"), im, 0.05)

@@ -17,6 +17,8 @@ class TestModeI16(PillowTestCase):
                 xy = x, y
                 p1 = pix1[xy]
                 p2 = pix2[xy]
+                if im1.mode[0] != "I" and im2.mode[0] == "I":
+                    p2 //= 256
                 self.assertEqual(
                     p1, p2,
                     ("got %r from mode %s at %s, expected %r" %
