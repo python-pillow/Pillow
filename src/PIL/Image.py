@@ -1794,7 +1794,7 @@ class Image(object):
         if resample not in (
                 NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING,
         ):
-            message = "Unknown resampling filter ("+str(resample)+")."
+            message = "Unknown resampling filter ({}).".format(resample)
 
             filters = [filter[1]+" (%d)" % filter[0] for filter in (
                 (NEAREST, "Image.NEAREST"),
@@ -2279,7 +2279,7 @@ class Image(object):
                     BOX: "Image.BOX",
                     HAMMING: "Image.HAMMING",
                     LANCZOS: "Image.LANCZOS/Image.ANTIALIAS"
-                }[resample]+" (%d) cannot be used." % resample
+                }[resample]+" ({}) cannot be used.".format(resample)
             else:
                 message = "Unknown resampling filter ("+str(resample)+")."
 
