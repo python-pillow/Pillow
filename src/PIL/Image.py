@@ -1796,7 +1796,7 @@ class Image(object):
         ):
             message = "Unknown resampling filter ({}).".format(resample)
 
-            filters = [filter[1]+" (%d)" % filter[0] for filter in (
+            filters = ["{} ({})".format(filter[1], filter[0]) for filter in (
                 (NEAREST, "Image.NEAREST"),
                 (LANCZOS, "Image.LANCZOS"),
                 (BILINEAR, "Image.BILINEAR"),
@@ -2281,9 +2281,9 @@ class Image(object):
                     LANCZOS: "Image.LANCZOS/Image.ANTIALIAS"
                 }[resample]+" ({}) cannot be used.".format(resample)
             else:
-                message = "Unknown resampling filter ("+str(resample)+")."
+                message = "Unknown resampling filter ({}).".format(resample)
 
-            filters = [filter[1]+" (%d)" % filter[0] for filter in (
+            filters = ["{} ({})".format(filter[1], filter[0]) for filter in (
                 (NEAREST, "Image.NEAREST"),
                 (BILINEAR, "Image.BILINEAR"),
                 (BICUBIC, "Image.BICUBIC")
