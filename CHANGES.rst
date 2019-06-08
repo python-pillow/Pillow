@@ -53,7 +53,7 @@ Changelog (Pillow)
 - Travis CI: Upgrade PyPy from 6.0.0 to 7.1.1 #3783
   [hugovk, johnthagen]
 
-- Depends: Updated openjpeg to 2.3.1 #3794, raqm to 0.7.0 #3877
+- Depends: Updated openjpeg to 2.3.1 #3794, raqm to 0.7.0 #3877, libimagequant to 2.12.3 #3889
   [radarhere]
 
 - Fix numpy bool bug #3790
