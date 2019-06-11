@@ -295,7 +295,7 @@ class TestFilePng(PillowTestCase):
         for mode, num_transparent in {
             "1": 1994,
             "L": 559,
-            "I": 4096,
+            "I": 559,
         }.items():
             in_file = "Tests/images/"+mode.lower()+"_trns.png"
             im = Image.open(in_file)

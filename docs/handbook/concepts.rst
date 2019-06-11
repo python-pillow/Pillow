@@ -25,9 +25,9 @@ Modes
 -----
 
 The ``mode`` of an image defines the type and depth of a pixel in the image.
-A 1-bit pixel has a range of 0-1, an 8-bit pixel or a 32-bit floating point
-pixel has a range of 0-255, and a 32-bit signed integer has a range of 0-65535.
-These modes are supported:
+Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
+of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
+supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
     * ``L`` (8-bit pixels, black and white)

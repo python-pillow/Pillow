@@ -17,13 +17,13 @@ class TestImageGetColors(PillowTestCase):
 
         self.assertEqual(getcolors("1"), 2)
         self.assertEqual(getcolors("L"), 255)
+        self.assertEqual(getcolors("I"), 255)
         self.assertEqual(getcolors("F"), 255)
         self.assertEqual(getcolors("P"), 90)  # fixed palette
         self.assertIsNone(getcolors("RGB"))
         self.assertIsNone(getcolors("RGBA"))
         self.assertIsNone(getcolors("CMYK"))
         self.assertIsNone(getcolors("YCbCr"))
-        self.assertIsNone(getcolors("I"))
 
         self.assertIsNone(getcolors("L", 128))
         self.assertEqual(getcolors("L", 1024), 255)

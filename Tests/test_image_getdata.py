@@ -21,7 +21,7 @@ class TestImageGetData(PillowTestCase):
 
         self.assertEqual(getdata("1"), (0, 960, 960))
         self.assertEqual(getdata("L"), (16, 960, 960))
-        self.assertEqual(getdata("I"), (4313, 960, 960))
+        self.assertEqual(getdata("I"), (16, 960, 960))
         self.assertEqual(getdata("F"), (16.0, 960, 960))
         self.assertEqual(getdata("RGB"), ((11, 13, 52), 960, 960))
         self.assertEqual(getdata("RGBA"), ((11, 13, 52, 255), 960, 960))
