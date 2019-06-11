@@ -143,21 +143,23 @@ class FreeTypeFont(object):
         def load_from_bytes(f):
             self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine)
+                "", size, index, encoding, self.font_bytes, layout_engine
+            )
 
         if isPath(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
-                    font_bytes_path.decode('ascii')
+                    font_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
                     # FreeType cannot load fonts with non-ASCII characters on Windows
                     # So load it into memory first
-                    with open(font, 'rb') as f:
+                    with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(font, size, index, encoding,
-                                     layout_engine=layout_engine)
+            self.font = core.getfont(
+                font, size, index, encoding, layout_engine=layout_engine
+            )
         else:
             load_from_bytes(font)
 
@@ -221,8 +223,9 @@ class FreeTypeFont(object):
         size, offset = self.font.getsize(text, direction, features, language)
         return (size[0] + offset[0], size[1] + offset[1])
 
-    def getsize_multiline(self, text, direction=None, spacing=4,
-                          features=None, language=None):
+    def getsize_multiline(
+        self, text, direction=None, spacing=4, features=None, language=None
+    ):
         """
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
@@ -327,11 +330,21 @@ class FreeTypeFont(object):
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
-        return self.getmask2(text, mode, direction=direction, features=features,
-                             language=language)[0]
+        return self.getmask2(
+            text, mode, direction=direction, features=features, language=language
+        )[0]
 
-    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
-                 features=None, language=None, *args, **kwargs):
+    def getmask2(
+        self,
+        text,
+        mode="",
+        fill=Image.core.fill,
+        direction=None,
+        features=None,
+        language=None,
+        *args,
+        **kwargs
+    ):
         """
         Create a bitmap for the text.
 
@@ -472,8 +485,10 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
+
     def freetype(font):
         return FreeTypeFont(font, size, index, encoding, layout_engine)
+
     try:
         return freetype(font)
     except IOError:
@@ -508,13 +523,11 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         return freetype(os.path.join(walkroot, walkfilename))
-                    elif (not ext and
-                          os.path.splitext(walkfilename)[0] == ttf_filename):
+                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        if os.path.splitext(fontpath)[1] == '.ttf':
+                        if os.path.splitext(fontpath)[1] == ".ttf":
                             return freetype(fontpath)
-                        if not ext \
-                           and first_font_with_a_different_extension is None:
+                        if not ext and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
             return freetype(first_font_with_a_different_extension)

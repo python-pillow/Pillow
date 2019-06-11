@@ -351,12 +351,12 @@ def _save(im, fp, filename):
 
     fp.write(("Image type: %s image\r\n" % image_type).encode("ascii"))
     if filename:
-        fp.write(("Name: %s\r\n" % filename).encode('ascii'))
-    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
-    fp.write(("File size (no of images): %d\r\n" % frames).encode('ascii'))
+        fp.write(("Name: %s\r\n" % filename).encode("ascii"))
+    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode("ascii"))
+    fp.write(("File size (no of images): %d\r\n" % frames).encode("ascii"))
     if im.mode in ["P", "PA"]:
         fp.write(b"Lut: 1\r\n")
-    fp.write(b"\000" * (511-fp.tell()) + b"\032")
+    fp.write(b"\000" * (511 - fp.tell()) + b"\032")
     if im.mode in ["P", "PA"]:
         fp.write(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))])

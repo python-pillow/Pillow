@@ -1824,21 +1824,23 @@ class Image(object):
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if resample not in (
-                NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING,
-        ):
+        if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
             message = "Unknown resampling filter ({}).".format(resample)
 
-            filters = ["{} ({})".format(filter[1], filter[0]) for filter in (
-                (NEAREST, "Image.NEAREST"),
-                (LANCZOS, "Image.LANCZOS"),
-                (BILINEAR, "Image.BILINEAR"),
-                (BICUBIC, "Image.BICUBIC"),
-                (BOX, "Image.BOX"),
-                (HAMMING, "Image.HAMMING")
-            )]
+            filters = [
+                "{} ({})".format(filter[1], filter[0])
+                for filter in (
+                    (NEAREST, "Image.NEAREST"),
+                    (LANCZOS, "Image.LANCZOS"),
+                    (BILINEAR, "Image.BILINEAR"),
+                    (BICUBIC, "Image.BICUBIC"),
+                    (BOX, "Image.BOX"),
+                    (HAMMING, "Image.HAMMING"),
+                )
+            ]
             raise ValueError(
-                message+" Use "+", ".join(filters[:-1])+" or "+filters[-1])
+                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            )
 
         size = tuple(size)
 
@@ -2330,18 +2332,22 @@ class Image(object):
                 message = {
                     BOX: "Image.BOX",
                     HAMMING: "Image.HAMMING",
-                    LANCZOS: "Image.LANCZOS/Image.ANTIALIAS"
-                }[resample]+" ({}) cannot be used.".format(resample)
+                    LANCZOS: "Image.LANCZOS/Image.ANTIALIAS",
+                }[resample] + " ({}) cannot be used.".format(resample)
             else:
                 message = "Unknown resampling filter ({}).".format(resample)
 
-            filters = ["{} ({})".format(filter[1], filter[0]) for filter in (
-                (NEAREST, "Image.NEAREST"),
-                (BILINEAR, "Image.BILINEAR"),
-                (BICUBIC, "Image.BICUBIC")
-            )]
+            filters = [
+                "{} ({})".format(filter[1], filter[0])
+                for filter in (
+                    (NEAREST, "Image.NEAREST"),
+                    (BILINEAR, "Image.BILINEAR"),
+                    (BICUBIC, "Image.BICUBIC"),
+                )
+            ]
             raise ValueError(
-                message+" Use "+", ".join(filters[:-1])+" or "+filters[-1])
+                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            )
 
         image.load()
 

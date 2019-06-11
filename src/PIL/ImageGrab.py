@@ -18,6 +18,7 @@
 from . import Image
 
 import sys
+
 if sys.platform == "win32":
     grabber = Image.core.grabscreen
 elif sys.platform == "darwin":

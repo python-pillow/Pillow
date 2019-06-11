@@ -104,9 +104,9 @@ TAGS_V2 = {
             "YCbCr": 6,
             "CieLAB": 8,
             "CFA": 32803,  # TIFF/EP, Adobe DNG
-            "LinearRaw": 32892,
+            "LinearRaw": 32892,  # Adobe DNG
         },
-    ),  # Adobe DNG
+    ),
     263: ("Threshholding", SHORT, 1),
     264: ("CellWidth", SHORT, 1),
     265: ("CellLength", SHORT, 1),

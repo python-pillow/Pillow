@@ -153,7 +153,7 @@ class IcoFile(object):
 
     def getentryindex(self, size, bpp=False):
         for (i, h) in enumerate(self.entry):
-            if size == h['dim'] and (bpp is False or bpp == h['color_depth']):
+            if size == h["dim"] and (bpp is False or bpp == h["color_depth"]):
                 return i
         return 0
 
@@ -297,9 +297,9 @@ class IcoImageFile(ImageFile.ImageFile):
             warnings.warn("Image was not the expected size")
 
             index = self.ico.getentryindex(self.size)
-            sizes = list(self.info['sizes'])
+            sizes = list(self.info["sizes"])
             sizes[index] = im.size
-            self.info['sizes'] = set(sizes)
+            self.info["sizes"] = set(sizes)
 
             self.size = im.size
 
