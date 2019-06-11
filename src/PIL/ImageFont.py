@@ -98,7 +98,7 @@ class ImageFont(object):
             self.info.append(s)
 
         # read PILfont metrics
-        data = file.read(256*20)
+        data = file.read(256 * 20)
 
         # check image
         if image.mode not in ("1", "L"):
@@ -119,11 +119,11 @@ class ImageFont(object):
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
 
+
 class FreeTypeFont(object):
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, font=None, size=10, index=0, encoding="",
-                 layout_engine=None):
+    def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
         # FIXME: use service provider instead
 
         self.path = font
@@ -143,21 +143,23 @@ class FreeTypeFont(object):
         def load_from_bytes(f):
             self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine)
+                "", size, index, encoding, self.font_bytes, layout_engine
+            )
 
         if isPath(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
-                    font_bytes_path.decode('ascii')
+                    font_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
                     # FreeType cannot load fonts with non-ASCII characters on Windows
                     # So load it into memory first
-                    with open(font, 'rb') as f:
+                    with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(font, size, index, encoding,
-                                     layout_engine=layout_engine)
+            self.font = core.getfont(
+                font, size, index, encoding, layout_engine=layout_engine
+            )
         else:
             load_from_bytes(font)
 
@@ -221,8 +223,9 @@ class FreeTypeFont(object):
         size, offset = self.font.getsize(text, direction, features, language)
         return (size[0] + offset[0], size[1] + offset[1])
 
-    def getsize_multiline(self, text, direction=None, spacing=4,
-                          features=None, language=None):
+    def getsize_multiline(
+        self, text, direction=None, spacing=4, features=None, language=None
+    ):
         """
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
@@ -261,12 +264,12 @@ class FreeTypeFont(object):
         """
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize('A')[1] + spacing
+        line_spacing = self.getsize("A")[1] + spacing
         for line in lines:
             line_width, line_height = self.getsize(line, direction, features, language)
             max_width = max(max_width, line_width)
 
-        return max_width, len(lines)*line_spacing - spacing
+        return max_width, len(lines) * line_spacing - spacing
 
     def getoffset(self, text):
         """
@@ -327,11 +330,21 @@ class FreeTypeFont(object):
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
-        return self.getmask2(text, mode, direction=direction, features=features,
-                             language=language)[0]
+        return self.getmask2(
+            text, mode, direction=direction, features=features, language=language
+        )[0]
 
-    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
-                 features=None, language=None, *args, **kwargs):
+    def getmask2(
+        self,
+        text,
+        mode="",
+        fill=Image.core.fill,
+        direction=None,
+        features=None,
+        language=None,
+        *args,
+        **kwargs
+    ):
         """
         Create a bitmap for the text.
 
@@ -384,8 +397,9 @@ class FreeTypeFont(object):
         self.font.render(text, im.id, mode == "1", direction, features, language)
         return im, offset
 
-    def font_variant(self, font=None, size=None, index=None, encoding=None,
-                     layout_engine=None):
+    def font_variant(
+        self, font=None, size=None, index=None, encoding=None, layout_engine=None
+    ):
         """
         Create a copy of this FreeTypeFont object,
         using any specified arguments to override the settings.
@@ -400,7 +414,7 @@ class FreeTypeFont(object):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine
+            layout_engine=layout_engine or self.layout_engine,
         )
 
 
@@ -447,8 +461,7 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="",
-             layout_engine=None):
+def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     """
     Load a TrueType or OpenType font from a file or file-like object,
     and create a font object.
@@ -472,8 +485,10 @@ def truetype(font=None, size=10, index=0, encoding="",
     :return: A font object.
     :exception IOError: If the file could not be read.
     """
+
     def freetype(font):
         return FreeTypeFont(font, size, index, encoding, layout_engine)
+
     try:
         return freetype(font)
     except IOError:
@@ -487,17 +502,19 @@ def truetype(font=None, size=10, index=0, encoding="",
             windir = os.environ.get("WINDIR")
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
-        elif sys.platform in ('linux', 'linux2'):
+        elif sys.platform in ("linux", "linux2"):
             lindirs = os.environ.get("XDG_DATA_DIRS", "")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
-                lindirs = '/usr/share'
-            dirs += [os.path.join(lindir, "fonts")
-                     for lindir in lindirs.split(":")]
-        elif sys.platform == 'darwin':
-            dirs += ['/Library/Fonts', '/System/Library/Fonts',
-                     os.path.expanduser('~/Library/Fonts')]
+                lindirs = "/usr/share"
+            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+        elif sys.platform == "darwin":
+            dirs += [
+                "/Library/Fonts",
+                "/System/Library/Fonts",
+                os.path.expanduser("~/Library/Fonts"),
+            ]
 
         ext = os.path.splitext(ttf_filename)[1]
         first_font_with_a_different_extension = None
@@ -506,13 +523,11 @@ def truetype(font=None, size=10, index=0, encoding="",
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
                         return freetype(os.path.join(walkroot, walkfilename))
-                    elif (not ext and
-                          os.path.splitext(walkfilename)[0] == ttf_filename):
+                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        if os.path.splitext(fontpath)[1] == '.ttf':
+                        if os.path.splitext(fontpath)[1] == ".ttf":
                             return freetype(fontpath)
-                        if not ext \
-                           and first_font_with_a_different_extension is None:
+                        if not ext and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
             return freetype(first_font_with_a_different_extension)
@@ -551,10 +566,13 @@ def load_default():
     """
     from io import BytesIO
     import base64
+
     f = ImageFont()
     f._load_pilfont_data(
         # courB08
-        BytesIO(base64.b64decode(b'''
+        BytesIO(
+            base64.b64decode(
+                b"""
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -646,7 +664,13 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-''')), Image.open(BytesIO(base64.b64decode(b'''
+"""
+            )
+        ),
+        Image.open(
+            BytesIO(
+                base64.b64decode(
+                    b"""
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -670,5 +694,9 @@ evta/58PTEWzr21hufPjA8N+qlnBwAAAAAD//2JiWLci5v1+HmFXDqcnULE/MxgYGBj+f6CaJQAA
 AAD//2Ji2FrkY3iYpYC5qDeGgeEMAwPDvwQBBoYvcTwOVLMEAAAA//9isDBgkP///0EOg9z35v//
 Gc/eeW7BwPj5+QGZhANUswMAAAD//2JgqGBgYGBgqEMXlvhMPUsAAAAA//8iYDd1AAAAAP//AwDR
 w7IkEbzhVQAAAABJRU5ErkJggg==
-'''))))
+"""
+                )
+            )
+        ),
+    )
     return f

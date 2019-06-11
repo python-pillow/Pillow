@@ -26,6 +26,7 @@ import functools
 #
 # helpers
 
+
 def _border(border):
     if isinstance(border, tuple):
         if len(border) == 2:
@@ -40,6 +41,7 @@ def _border(border):
 def _color(color, mode):
     if isStringType(color):
         from . import ImageColor
+
         color = ImageColor.getcolor(color, mode)
     return color
 
@@ -54,6 +56,7 @@ def _lut(image, lut):
         return image.point(lut)
     else:
         raise IOError("not supported for this image mode")
+
 
 #
 # actions
@@ -75,7 +78,7 @@ def autocontrast(image, cutoff=0, ignore=None):
     histogram = image.histogram()
     lut = []
     for layer in range(0, len(histogram), 256):
-        h = histogram[layer:layer+256]
+        h = histogram[layer : layer + 256]
         if ignore is not None:
             # get rid of outliers
             try:
@@ -135,8 +138,7 @@ def autocontrast(image, cutoff=0, ignore=None):
     return _lut(image, lut)
 
 
-def colorize(image, black, white, mid=None, blackpoint=0,
-             whitepoint=255, midpoint=127):
+def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoint=127):
     """
     Colorize grayscale image.
     This function calculates a color wedge which maps all black pixels in
@@ -276,9 +278,7 @@ def crop(image, border=0):
     :return: An image.
     """
     left, top, right, bottom = _border(border)
-    return image.crop(
-        (left, top, image.size[0]-right, image.size[1]-bottom)
-        )
+    return image.crop((left, top, image.size[0] - right, image.size[1] - bottom))
 
 
 def scale(image, factor, resample=Image.NEAREST):
@@ -298,8 +298,7 @@ def scale(image, factor, resample=Image.NEAREST):
     elif factor <= 0:
         raise ValueError("the factor must be greater than 0")
     else:
-        size = (int(round(factor * image.width)),
-                int(round(factor * image.height)))
+        size = (int(round(factor * image.width)), int(round(factor * image.height)))
         return image.resize(size, resample)
 
 
@@ -314,9 +313,7 @@ def deform(image, deformer, resample=Image.BILINEAR):
        in the PIL.Image.transform function.
     :return: An image.
     """
-    return image.transform(
-        image.size, Image.MESH, deformer.getmesh(image), resample
-        )
+    return image.transform(image.size, Image.MESH, deformer.getmesh(image), resample)
 
 
 def equalize(image, mask=None):
@@ -335,7 +332,7 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = [_f for _f in h[b:b+256] if _f]
+        histo = [_f for _f in h[b : b + 256] if _f]
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
@@ -346,7 +343,7 @@ def equalize(image, mask=None):
                 n = step // 2
                 for i in range(256):
                     lut.append(n // step)
-                    n = n + h[i+b]
+                    n = n + h[i + b]
     return _lut(image, lut)
 
 
@@ -417,8 +414,10 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     # number of pixels to trim off on Top and Bottom, Left and Right
     bleed_pixels = (bleed * image.size[0], bleed * image.size[1])
 
-    live_size = (image.size[0] - bleed_pixels[0] * 2,
-                 image.size[1] - bleed_pixels[1] * 2)
+    live_size = (
+        image.size[0] - bleed_pixels[0] * 2,
+        image.size[1] - bleed_pixels[1] * 2,
+    )
 
     # calculate the aspect ratio of the live_size
     live_size_ratio = float(live_size[0]) / live_size[1]
@@ -437,13 +436,10 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
         crop_height = live_size[0] / output_ratio
 
     # make the crop
-    crop_left = bleed_pixels[0] + (live_size[0]-crop_width) * centering[0]
-    crop_top = bleed_pixels[1] + (live_size[1]-crop_height) * centering[1]
+    crop_left = bleed_pixels[0] + (live_size[0] - crop_width) * centering[0]
+    crop_top = bleed_pixels[1] + (live_size[1] - crop_height) * centering[1]
 
-    crop = (
-        crop_left, crop_top,
-        crop_left + crop_width, crop_top + crop_height
-    )
+    crop = (crop_left, crop_top, crop_left + crop_width, crop_top + crop_height)
 
     # resize the image and return it
     return image.resize(size, method, box=crop)
@@ -478,7 +474,7 @@ def invert(image):
     """
     lut = []
     for i in range(256):
-        lut.append(255-i)
+        lut.append(255 - i)
     return _lut(image, lut)
 
 
@@ -501,7 +497,7 @@ def posterize(image, bits):
     :return: An image.
     """
     lut = []
-    mask = ~(2**(8-bits)-1)
+    mask = ~(2 ** (8 - bits) - 1)
     for i in range(256):
         lut.append(i & mask)
     return _lut(image, lut)
@@ -520,7 +516,7 @@ def solarize(image, threshold=128):
         if i < threshold:
             lut.append(i)
         else:
-            lut.append(255-i)
+            lut.append(255 - i)
     return _lut(image, lut)
 
 
@@ -541,7 +537,7 @@ def exif_transpose(image):
         5: Image.TRANSPOSE,
         6: Image.ROTATE_270,
         7: Image.TRANSVERSE,
-        8: Image.ROTATE_90
+        8: Image.ROTATE_90,
     }.get(orientation)
     if method is not None:
         transposed_image = image.transpose(method)

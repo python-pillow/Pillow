@@ -26,11 +26,12 @@ __version__ = "0.3"
 
 
 def _accept(prefix):
-    return len(prefix) >= 4 and i32(prefix) == 0x59a66a95
+    return len(prefix) >= 4 and i32(prefix) == 0x59A66A95
 
 
 ##
 # Image plugin for Sun raster files.
+
 
 class SunImageFile(ImageFile.ImageFile):
 
@@ -56,7 +57,7 @@ class SunImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(32)
-        if i32(s) != 0x59a66a95:
+        if i32(s) != 0x59A66A95:
             raise SyntaxError("not an SUN raster file")
 
         offset = 32
@@ -82,9 +83,9 @@ class SunImageFile(ImageFile.ImageFile):
                 self.mode, rawmode = "RGB", "BGR"
         elif depth == 32:
             if file_type == 3:
-                self.mode, rawmode = 'RGB', 'RGBX'
+                self.mode, rawmode = "RGB", "RGBX"
             else:
-                self.mode, rawmode = 'RGB', 'BGRX'
+                self.mode, rawmode = "RGB", "BGRX"
         else:
             raise SyntaxError("Unsupported Mode/Bit Depth")
 
@@ -96,11 +97,10 @@ class SunImageFile(ImageFile.ImageFile):
                 raise SyntaxError("Unsupported Palette Type")
 
             offset = offset + palette_length
-            self.palette = ImagePalette.raw("RGB;L",
-                                            self.fp.read(palette_length))
+            self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
             if self.mode == "L":
                 self.mode = "P"
-                rawmode = rawmode.replace('L', 'P')
+                rawmode = rawmode.replace("L", "P")
 
         # 16 bit boundaries on stride
         stride = ((self.size[0] * depth + 15) // 16) * 2
@@ -124,11 +124,12 @@ class SunImageFile(ImageFile.ImageFile):
         # (https://www.fileformat.info/format/sunraster/egff.htm)
 
         if file_type in (0, 1, 3, 4, 5):
-            self.tile = [("raw", (0, 0)+self.size, offset, (rawmode, stride))]
+            self.tile = [("raw", (0, 0) + self.size, offset, (rawmode, stride))]
         elif file_type == 2:
-            self.tile = [("sun_rle", (0, 0)+self.size, offset, rawmode)]
+            self.tile = [("sun_rle", (0, 0) + self.size, offset, rawmode)]
         else:
-            raise SyntaxError('Unsupported Sun Raster file type')
+            raise SyntaxError("Unsupported Sun Raster file type")
+
 
 #
 # registry

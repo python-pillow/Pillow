@@ -38,11 +38,12 @@ class ImagePalette(object):
     def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
-        self.palette = palette or bytearray(range(256))*len(self.mode)
+        self.palette = palette or bytearray(range(256)) * len(self.mode)
         self.colors = {}
         self.dirty = None
-        if ((size == 0 and len(self.mode)*256 != len(self.palette)) or
-                (size != 0 and size != len(self.palette))):
+        if (size == 0 and len(self.mode) * 256 != len(self.palette)) or (
+            size != 0 and size != len(self.palette)
+        ):
             raise ValueError("wrong palette size")
 
     def copy(self):
@@ -78,7 +79,7 @@ class ImagePalette(object):
         if isinstance(self.palette, bytes):
             return self.palette
         arr = array.array("B", self.palette)
-        if hasattr(arr, 'tobytes'):
+        if hasattr(arr, "tobytes"):
             return arr.tobytes()
         return arr.tostring()
 
@@ -104,8 +105,8 @@ class ImagePalette(object):
                     raise ValueError("cannot allocate more than 256 colors")
                 self.colors[color] = index
                 self.palette[index] = color[0]
-                self.palette[index+256] = color[1]
-                self.palette[index+512] = color[2]
+                self.palette[index + 256] = color[1]
+                self.palette[index + 512] = color[2]
                 self.dirty = 1
                 return index
         else:
@@ -124,7 +125,7 @@ class ImagePalette(object):
         fp.write("# Mode: %s\n" % self.mode)
         for i in range(256):
             fp.write("%d" % i)
-            for j in range(i*len(self.mode), (i+1)*len(self.mode)):
+            for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
                 try:
                     fp.write(" %d" % self.palette[j])
                 except IndexError:
@@ -135,6 +136,7 @@ class ImagePalette(object):
 
 # --------------------------------------------------------------------
 # Internal
+
 
 def raw(rawmode, data):
     palette = ImagePalette()
@@ -147,11 +149,12 @@ def raw(rawmode, data):
 # --------------------------------------------------------------------
 # Factories
 
+
 def make_linear_lut(black, white):
     lut = []
     if black == 0:
         for i in range(256):
-            lut.append(white*i//255)
+            lut.append(white * i // 255)
     else:
         raise NotImplementedError  # FIXME
     return lut
@@ -172,8 +175,9 @@ def negative(mode="RGB"):
 
 def random(mode="RGB"):
     from random import randint
+
     palette = []
-    for i in range(256*len(mode)):
+    for i in range(256 * len(mode)):
         palette.append(randint(0, 255))
     return ImagePalette(mode, palette)
 
@@ -199,7 +203,7 @@ def load(filename):
         for paletteHandler in [
             GimpPaletteFile.GimpPaletteFile,
             GimpGradientFile.GimpGradientFile,
-            PaletteFile.PaletteFile
+            PaletteFile.PaletteFile,
         ]:
             try:
                 fp.seek(0)

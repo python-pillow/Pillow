@@ -7,7 +7,7 @@ if sys.version_info.major > 2:
 else:
     from Tkinter import tkinter as tk
 
-if hasattr(sys, 'pypy_find_executable'):
+if hasattr(sys, "pypy_find_executable"):
     # Tested with packages at https://bitbucket.org/pypy/pypy/downloads.
     # PyPies 1.6, 2.0 do not have tkinter built in.  PyPy3-2.3.1 gives an
     # OSError trying to import tkinter. Otherwise:

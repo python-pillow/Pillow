@@ -31,7 +31,9 @@ PALETTE = b""
 for r in range(8):
     for g in range(8):
         for b in range(4):
-            PALETTE = PALETTE + (o8((r*255)//7)+o8((g*255)//7)+o8((b*255)//3))
+            PALETTE = PALETTE + (
+                o8((r * 255) // 7) + o8((g * 255) // 7) + o8((b * 255) // 3)
+            )
 
 
 def _accept(prefix):
@@ -40,6 +42,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for XV thumbnail images.
+
 
 class XVThumbImageFile(ImageFile.ImageFile):
 
@@ -71,10 +74,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
-        self.tile = [
-            ("raw", (0, 0)+self.size,
-             self.fp.tell(), (self.mode, 0, 1)
-             )]
+        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1))]
 
 
 # --------------------------------------------------------------------

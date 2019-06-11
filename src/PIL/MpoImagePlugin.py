@@ -38,6 +38,7 @@ def _save(im, fp, filename):
 ##
 # Image plugin for MPO images.
 
+
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     format = "MPO"
@@ -52,13 +53,14 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def _after_jpeg_open(self, mpheader=None):
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
         self.__framecount = self.mpinfo[0xB001]
-        self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset']
-                            for mpent in self.mpinfo[0xB002]]
+        self.__mpoffsets = [
+            mpent["DataOffset"] + self.info["mpoffset"] for mpent in self.mpinfo[0xB002]
+        ]
         self.__mpoffsets[0] = 0
         # Note that the following assertion will only be invalid if something
         # gets broken within JpegImagePlugin.
         assert self.__framecount == len(self.__mpoffsets)
-        del self.info['mpoffset']  # no longer needed
+        del self.info["mpoffset"]  # no longer needed
         self.__fp = self.fp  # FIXME: hack
         self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
@@ -87,7 +89,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if "parsed_exif" in self.info:
             del self.info["parsed_exif"]
         if i16(self.fp.read(2)) == 0xFFE1:  # APP1
-            n = i16(self.fp.read(2))-2
+            n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
 
             exif = self._getexif()
@@ -96,9 +98,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         elif "exif" in self.info:
             del self.info["exif"]
 
-        self.tile = [
-            ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
-        ]
+        self.tile = [("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))]
         self.__frame = frame
 
     def tell(self):

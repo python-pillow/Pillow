@@ -15,12 +15,16 @@ from struct import unpack_from, pack
 from ._util import py3
 
 if py3:
+
     def i8(c):
         return c if c.__class__ is int else c[0]
 
     def o8(i):
         return bytes((i & 255,))
+
+
 else:
+
     def i8(c):
         return ord(c)
 

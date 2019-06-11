@@ -23,6 +23,7 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+
 # --------------------------------------------------------------------
 # Image adapter
 
