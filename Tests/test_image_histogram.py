@@ -11,7 +11,7 @@ class TestImageHistogram(PillowTestCase):
 
         self.assertEqual(histogram("1"), (256, 0, 10994))
         self.assertEqual(histogram("L"), (256, 0, 638))
-        self.assertEqual(histogram("I"), (256, 1, 662))
+        self.assertEqual(histogram("I"), (256, 0, 638))
         self.assertEqual(histogram("F"), (256, 0, 638))
         self.assertEqual(histogram("P"), (256, 0, 1871))
         self.assertEqual(histogram("RGB"), (768, 4, 675))
