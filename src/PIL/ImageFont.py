@@ -417,6 +417,59 @@ class FreeTypeFont(object):
             layout_engine=layout_engine or self.layout_engine,
         )
 
+    def get_variation_names(self):
+        """
+        :returns: A list of the named styles in a variation font.
+        :exception IOError: If the font is not a variation font.
+        """
+        try:
+            names = self.font.getvarnames()
+        except AttributeError:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        return [name.replace(b"\x00", b"") for name in names]
+
+    def set_variation_by_name(self, name):
+        """
+        :param name: The name of the style.
+        :exception IOError: If the font is not a variation font.
+        """
+        names = self.get_variation_names()
+        if not isinstance(name, bytes):
+            name = name.encode()
+        index = names.index(name)
+
+        if index == getattr(self, "_last_variation_index", None):
+            # When the same name is set twice in a row,
+            # there is an 'unknown freetype error'
+            # https://savannah.nongnu.org/bugs/?56186
+            return
+        self._last_variation_index = index
+
+        self.font.setvarname(index)
+
+    def get_variation_axes(self):
+        """
+        :returns: A list of the axes in a variation font.
+        :exception IOError: If the font is not a variation font.
+        """
+        try:
+            axes = self.font.getvaraxes()
+        except AttributeError:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        for axis in axes:
+            axis["name"] = axis["name"].replace(b"\x00", b"")
+        return axes
+
+    def set_variation_by_axes(self, axes):
+        """
+        :param axes: A list of values for each axis.
+        :exception IOError: If the font is not a variation font.
+        """
+        try:
+            self.font.setvaraxes(axes)
+        except AttributeError:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+
 
 class TransposedFont(object):
     "Wrapper for writing rotated or mirrored text"
