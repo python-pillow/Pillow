@@ -32,7 +32,7 @@ class Iterator(object):
         if not hasattr(im, "seek"):
             raise AttributeError("im must have seek method")
         self.im = im
-        self.position = 0
+        self.position = getattr(self.im, "_min_frame", 0)
 
     def __getitem__(self, ix):
         try:

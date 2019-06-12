@@ -32,6 +32,12 @@ class TestImageSequence(PillowTestCase):
         self.assertRaises(IndexError, lambda: i[index+1])
         self.assertRaises(StopIteration, next, i)
 
+    def test_iterator_min_frame(self):
+        im = Image.open('Tests/images/hopper.psd')
+        i = ImageSequence.Iterator(im)
+        for index in range(1, im.n_frames):
+            self.assertEqual(i[index], next(i))
+
     def _test_multipage_tiff(self):
         im = Image.open('Tests/images/multipage.tiff')
         for index, frame in enumerate(ImageSequence.Iterator(im)):
