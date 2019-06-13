@@ -6,7 +6,6 @@ TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 
 
 class TestFileBufrStub(PillowTestCase):
-
     def test_open(self):
         # Act
         im = Image.open(TEST_FILE)
@@ -23,8 +22,9 @@ class TestFileBufrStub(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         # Act / Assert
-        self.assertRaises(SyntaxError,
-                          BufrStubImagePlugin.BufrStubImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, BufrStubImagePlugin.BufrStubImageFile, invalid_file
+        )
 
     def test_load(self):
         # Arrange

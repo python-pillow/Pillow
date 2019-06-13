@@ -7,7 +7,6 @@ TEST_FILE = "Tests/images/dummy.container"
 
 
 class TestFileContainer(PillowTestCase):
-
     def test_sanity(self):
         dir(Image)
         dir(ContainerIO)
@@ -106,14 +105,16 @@ class TestFileContainer(PillowTestCase):
 
     def test_readlines(self):
         # Arrange
-        expected = ["This is line 1\n",
-                    "This is line 2\n",
-                    "This is line 3\n",
-                    "This is line 4\n",
-                    "This is line 5\n",
-                    "This is line 6\n",
-                    "This is line 7\n",
-                    "This is line 8\n"]
+        expected = [
+            "This is line 1\n",
+            "This is line 2\n",
+            "This is line 3\n",
+            "This is line 4\n",
+            "This is line 5\n",
+            "This is line 6\n",
+            "This is line 7\n",
+            "This is line 8\n",
+        ]
         with open(TEST_FILE) as fh:
             container = ContainerIO.ContainerIO(fh, 0, 120)
 

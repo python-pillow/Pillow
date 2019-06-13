@@ -6,6 +6,7 @@ from io import BytesIO
 
 try:
     from PIL import _webp
+
     HAVE_WEBP = True
 except ImportError:
     HAVE_WEBP = False
@@ -20,7 +21,6 @@ with open(TEST_GIF, "rb") as f:
 
 
 class TestFileGif(PillowTestCase):
-
     def setUp(self):
         if "gif_encoder" not in codecs or "gif_decoder" not in codecs:
             self.skipTest("gif support not available")  # can this happen?
@@ -37,13 +37,13 @@ class TestFileGif(PillowTestCase):
         def open():
             im = Image.open(TEST_GIF)
             im.load()
+
         self.assert_warning(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          GifImagePlugin.GifImageFile, invalid_file)
+        self.assertRaises(SyntaxError, GifImagePlugin.GifImageFile, invalid_file)
 
     def test_optimize(self):
         def test_grayscale(optimize):
@@ -70,19 +70,22 @@ class TestFileGif(PillowTestCase):
         # Check for correctness after conversion back to RGB
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
-            im = Image.frombytes('P', (colors, colors),
-                                 bytes(bytearray(range(256-colors, 256))*colors))
+            im = Image.frombytes(
+                "P",
+                (colors, colors),
+                bytes(bytearray(range(256 - colors, 256)) * colors),
+            )
             im = im.resize((size, size))
             outfile = BytesIO()
-            im.save(outfile, 'GIF')
+            im.save(outfile, "GIF")
             outfile.seek(0)
             reloaded = Image.open(outfile)
 
             # check palette length
-            palette_length = max(i+1 for i, v in enumerate(reloaded.histogram()) if v)
+            palette_length = max(i + 1 for i, v in enumerate(reloaded.histogram()) if v)
             self.assertEqual(expected_palette_length, palette_length)
 
-            self.assert_image_equal(im.convert('RGB'), reloaded.convert('RGB'))
+            self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
         # These do optimize the palette
         check(128, 511, 128)
@@ -106,79 +109,76 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.mode, "L")
 
     def test_roundtrip(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im = hopper()
         im.save(out)
         reread = Image.open(out)
 
-        self.assert_image_similar(reread.convert('RGB'), im, 50)
+        self.assert_image_similar(reread.convert("RGB"), im, 50)
 
     def test_roundtrip2(self):
         # see https://github.com/python-pillow/Pillow/issues/403
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im = Image.open(TEST_GIF)
         im2 = im.copy()
         im2.save(out)
         reread = Image.open(out)
 
-        self.assert_image_similar(reread.convert('RGB'), hopper(), 50)
+        self.assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
     def test_roundtrip_save_all(self):
         # Single frame image
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im = hopper()
         im.save(out, save_all=True)
         reread = Image.open(out)
 
-        self.assert_image_similar(reread.convert('RGB'), im, 50)
+        self.assert_image_similar(reread.convert("RGB"), im, 50)
 
         # Multiframe image
         im = Image.open("Tests/images/dispose_bgnd.gif")
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out, save_all=True)
         reread = Image.open(out)
 
         self.assertEqual(reread.n_frames, 5)
 
     def test_headers_saving_for_animated_gifs(self):
-        important_headers = ['background', 'version', 'duration', 'loop']
+        important_headers = ["background", "version", "duration", "loop"]
         # Multiframe image
         im = Image.open("Tests/images/dispose_bgnd.gif")
 
         info = im.info.copy()
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out, save_all=True)
         reread = Image.open(out)
 
         for header in important_headers:
-            self.assertEqual(
-                info[header],
-                reread.info[header]
-            )
+            self.assertEqual(info[header], reread.info[header])
 
     def test_palette_handling(self):
         # see https://github.com/python-pillow/Pillow/issues/513
 
         im = Image.open(TEST_GIF)
-        im = im.convert('RGB')
+        im = im.convert("RGB")
 
         im = im.resize((100, 100), Image.LANCZOS)
-        im2 = im.convert('P', palette=Image.ADAPTIVE, colors=256)
+        im2 = im.convert("P", palette=Image.ADAPTIVE, colors=256)
 
-        f = self.tempfile('temp.gif')
+        f = self.tempfile("temp.gif")
         im2.save(f, optimize=True)
 
         reloaded = Image.open(f)
 
-        self.assert_image_similar(im, reloaded.convert('RGB'), 10)
+        self.assert_image_similar(im, reloaded.convert("RGB"), 10)
 
     def test_palette_434(self):
         # see https://github.com/python-pillow/Pillow/issues/434
 
         def roundtrip(im, *args, **kwargs):
-            out = self.tempfile('temp.gif')
+            out = self.tempfile("temp.gif")
             im.copy().save(out, *args, **kwargs)
             reloaded = Image.open(out)
 
@@ -192,7 +192,7 @@ class TestFileGif(PillowTestCase):
 
         im = im.convert("RGB")
         # check automatic P conversion
-        reloaded = roundtrip(im).convert('RGB')
+        reloaded = roundtrip(im).convert("RGB")
         self.assert_image_equal(im, reloaded)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
@@ -240,10 +240,7 @@ class TestFileGif(PillowTestCase):
         self.assert_image_equal(im, expected)
 
     def test_n_frames(self):
-        for path, n_frames in [
-            [TEST_GIF, 1],
-            ['Tests/images/iss634.gif', 42]
-        ]:
+        for path, n_frames in [[TEST_GIF, 1], ["Tests/images/iss634.gif", 42]]:
             # Test is_animated before n_frames
             im = Image.open(path)
             self.assertEqual(im.is_animated, n_frames != 1)
@@ -262,7 +259,7 @@ class TestFileGif(PillowTestCase):
         self.assertLess(im.tell(), n_frames)
 
         # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames-1)
+        im.seek(n_frames - 1)
 
     def test_dispose_none(self):
         img = Image.open("Tests/images/dispose_none.gif")
@@ -292,18 +289,15 @@ class TestFileGif(PillowTestCase):
             pass
 
     def test_save_dispose(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im_list = [
-            Image.new('L', (100, 100), '#000'),
-            Image.new('L', (100, 100), '#111'),
-            Image.new('L', (100, 100), '#222'),
+            Image.new("L", (100, 100), "#000"),
+            Image.new("L", (100, 100), "#111"),
+            Image.new("L", (100, 100), "#222"),
         ]
         for method in range(0, 4):
             im_list[0].save(
-                out,
-                save_all=True,
-                append_images=im_list[1:],
-                disposal=method
+                out, save_all=True, append_images=im_list[1:], disposal=method
             )
             img = Image.open(out)
             for _ in range(2):
@@ -315,14 +309,14 @@ class TestFileGif(PillowTestCase):
             out,
             save_all=True,
             append_images=im_list[1:],
-            disposal=tuple(range(len(im_list)))
-            )
+            disposal=tuple(range(len(im_list))),
+        )
 
         img = Image.open(out)
 
         for i in range(2):
             img.seek(img.tell() + 1)
-            self.assertEqual(img.disposal_method, i+1)
+            self.assertEqual(img.disposal_method, i + 1)
 
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")
@@ -330,42 +324,39 @@ class TestFileGif(PillowTestCase):
         img.seek(img.tell() + 1)
         # all transparent pixels should be replaced with the color from the
         # first frame
-        self.assertEqual(img.histogram()[img.info['transparency']], 0)
+        self.assertEqual(img.histogram()[img.info["transparency"]], 0)
 
     def test_duration(self):
         duration = 1000
 
-        out = self.tempfile('temp.gif')
-        im = Image.new('L', (100, 100), '#000')
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
 
         # Check that the argument has priority over the info settings
-        im.info['duration'] = 100
+        im.info["duration"] = 100
         im.save(out, duration=duration)
 
         reread = Image.open(out)
-        self.assertEqual(reread.info['duration'], duration)
+        self.assertEqual(reread.info["duration"], duration)
 
     def test_multiple_duration(self):
         duration_list = [1000, 2000, 3000]
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im_list = [
-            Image.new('L', (100, 100), '#000'),
-            Image.new('L', (100, 100), '#111'),
-            Image.new('L', (100, 100), '#222')
+            Image.new("L", (100, 100), "#000"),
+            Image.new("L", (100, 100), "#111"),
+            Image.new("L", (100, 100), "#222"),
         ]
 
         # duration as list
         im_list[0].save(
-            out,
-            save_all=True,
-            append_images=im_list[1:],
-            duration=duration_list
+            out, save_all=True, append_images=im_list[1:], duration=duration_list
         )
         reread = Image.open(out)
 
         for duration in duration_list:
-            self.assertEqual(reread.info['duration'], duration)
+            self.assertEqual(reread.info["duration"], duration)
             try:
                 reread.seek(reread.tell() + 1)
             except EOFError:
@@ -373,15 +364,12 @@ class TestFileGif(PillowTestCase):
 
         # duration as tuple
         im_list[0].save(
-            out,
-            save_all=True,
-            append_images=im_list[1:],
-            duration=tuple(duration_list)
+            out, save_all=True, append_images=im_list[1:], duration=tuple(duration_list)
         )
         reread = Image.open(out)
 
         for duration in duration_list:
-            self.assertEqual(reread.info['duration'], duration)
+            self.assertEqual(reread.info["duration"], duration)
             try:
                 reread.seek(reread.tell() + 1)
             except EOFError:
@@ -390,20 +378,17 @@ class TestFileGif(PillowTestCase):
     def test_identical_frames(self):
         duration_list = [1000, 1500, 2000, 4000]
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im_list = [
-            Image.new('L', (100, 100), '#000'),
-            Image.new('L', (100, 100), '#000'),
-            Image.new('L', (100, 100), '#000'),
-            Image.new('L', (100, 100), '#111')
+            Image.new("L", (100, 100), "#000"),
+            Image.new("L", (100, 100), "#000"),
+            Image.new("L", (100, 100), "#000"),
+            Image.new("L", (100, 100), "#111"),
         ]
 
         # duration as list
         im_list[0].save(
-            out,
-            save_all=True,
-            append_images=im_list[1:],
-            duration=duration_list
+            out, save_all=True, append_images=im_list[1:], duration=duration_list
         )
         reread = Image.open(out)
 
@@ -411,64 +396,63 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(reread.n_frames, 2)
 
         # Assert that the new duration is the total of the identical frames
-        self.assertEqual(reread.info['duration'], 4500)
+        self.assertEqual(reread.info["duration"], 4500)
 
     def test_number_of_loops(self):
         number_of_loops = 2
 
-        out = self.tempfile('temp.gif')
-        im = Image.new('L', (100, 100), '#000')
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
         im.save(out, loop=number_of_loops)
         reread = Image.open(out)
 
-        self.assertEqual(reread.info['loop'], number_of_loops)
+        self.assertEqual(reread.info["loop"], number_of_loops)
 
     def test_background(self):
-        out = self.tempfile('temp.gif')
-        im = Image.new('L', (100, 100), '#000')
-        im.info['background'] = 1
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
+        im.info["background"] = 1
         im.save(out)
         reread = Image.open(out)
 
-        self.assertEqual(reread.info['background'], im.info['background'])
+        self.assertEqual(reread.info["background"], im.info["background"])
 
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
             im = Image.open("Tests/images/hopper.webp")
-            self.assertIsInstance(im.info['background'], tuple)
+            self.assertIsInstance(im.info["background"], tuple)
             im.save(out)
 
     def test_comment(self):
         im = Image.open(TEST_GIF)
-        self.assertEqual(im.info['comment'],
-                         b"File written by Adobe Photoshop\xa8 4.0")
+        self.assertEqual(im.info["comment"], b"File written by Adobe Photoshop\xa8 4.0")
 
-        out = self.tempfile('temp.gif')
-        im = Image.new('L', (100, 100), '#000')
-        im.info['comment'] = b"Test comment text"
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
+        im.info["comment"] = b"Test comment text"
         im.save(out)
         reread = Image.open(out)
 
-        self.assertEqual(reread.info['comment'], im.info['comment'])
+        self.assertEqual(reread.info["comment"], im.info["comment"])
 
     def test_comment_over_255(self):
-        out = self.tempfile('temp.gif')
-        im = Image.new('L', (100, 100), '#000')
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
         comment = b"Test comment text"
         while len(comment) < 256:
             comment += comment
-        im.info['comment'] = comment
+        im.info["comment"] = comment
         im.save(out)
         reread = Image.open(out)
 
-        self.assertEqual(reread.info['comment'], comment)
+        self.assertEqual(reread.info["comment"], comment)
 
     def test_zero_comment_subblocks(self):
-        im = Image.open('Tests/images/hopper_zero_comment_subblocks.gif')
+        im = Image.open("Tests/images/hopper_zero_comment_subblocks.gif")
         expected = Image.open(TEST_GIF)
         self.assert_image_equal(im, expected)
 
     def test_version(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
 
         def assertVersionAfterSave(im, version):
             im.save(out)
@@ -476,11 +460,11 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(reread.info["version"], version)
 
         # Test that GIF87a is used by default
-        im = Image.new('L', (100, 100), '#000')
+        im = Image.new("L", (100, 100), "#000")
         assertVersionAfterSave(im, b"GIF87a")
 
         # Test setting the version to 89a
-        im = Image.new('L', (100, 100), '#000')
+        im = Image.new("L", (100, 100), "#000")
         im.info["version"] = b"89a"
         assertVersionAfterSave(im, b"GIF89a")
 
@@ -497,12 +481,11 @@ class TestFileGif(PillowTestCase):
         assertVersionAfterSave(im, b"GIF87a")
 
     def test_append_images(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
 
         # Test appending single frame images
-        im = Image.new('RGB', (100, 100), '#f00')
-        ims = [Image.new('RGB', (100, 100), color) for color
-               in ['#0f0', '#00f']]
+        im = Image.new("RGB", (100, 100), "#f00")
+        ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
         im.copy().save(out, save_all=True, append_images=ims)
 
         reread = Image.open(out)
@@ -512,6 +495,7 @@ class TestFileGif(PillowTestCase):
         def imGenerator(ims):
             for im in ims:
                 yield im
+
         im.save(out, save_all=True, append_images=imGenerator(ims))
 
         reread = Image.open(out)
@@ -533,44 +517,43 @@ class TestFileGif(PillowTestCase):
         # the top palette entry to trigger the bug.
 
         data = bytes(bytearray(range(1, 254)))
-        palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
+        palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
-        im = Image.new('L', (253, 1))
+        im = Image.new("L", (253, 1))
         im.frombytes(data)
         im.putpalette(palette)
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out, transparency=253)
         reloaded = Image.open(out)
 
-        self.assertEqual(reloaded.info['transparency'], 253)
+        self.assertEqual(reloaded.info["transparency"], 253)
 
     def test_rgb_transparency(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
 
         # Single frame
-        im = Image.new('RGB', (1, 1))
-        im.info['transparency'] = (255, 0, 0)
+        im = Image.new("RGB", (1, 1))
+        im.info["transparency"] = (255, 0, 0)
         self.assert_warning(UserWarning, im.save, out)
 
         reloaded = Image.open(out)
-        self.assertNotIn('transparency', reloaded.info)
+        self.assertNotIn("transparency", reloaded.info)
 
         # Multiple frames
-        im = Image.new('RGB', (1, 1))
-        im.info['transparency'] = b""
-        ims = [Image.new('RGB', (1, 1))]
-        self.assert_warning(UserWarning,
-                            im.save, out, save_all=True, append_images=ims)
+        im = Image.new("RGB", (1, 1))
+        im.info["transparency"] = b""
+        ims = [Image.new("RGB", (1, 1))]
+        self.assert_warning(UserWarning, im.save, out, save_all=True, append_images=ims)
 
         reloaded = Image.open(out)
-        self.assertNotIn('transparency', reloaded.info)
+        self.assertNotIn("transparency", reloaded.info)
 
     def test_bbox(self):
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
 
-        im = Image.new('RGB', (100, 100), '#fff')
-        ims = [Image.new("RGB", (100, 100), '#000')]
+        im = Image.new("RGB", (100, 100), "#fff")
+        ims = [Image.new("RGB", (100, 100), "#000")]
         im.save(out, save_all=True, append_images=ims)
 
         reread = Image.open(out)
@@ -579,26 +562,26 @@ class TestFileGif(PillowTestCase):
     def test_palette_save_L(self):
         # generate an L mode image with a separate palette
 
-        im = hopper('P')
-        im_l = Image.frombytes('L', im.size, im.tobytes())
+        im = hopper("P")
+        im_l = Image.frombytes("L", im.size, im.tobytes())
         palette = bytes(bytearray(im.getpalette()))
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im_l.save(out, palette=palette)
 
         reloaded = Image.open(out)
 
-        self.assert_image_equal(reloaded.convert('RGB'), im.convert('RGB'))
+        self.assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
     def test_palette_save_P(self):
         # pass in a different palette, then construct what the image
         # would look like.
         # Forcing a non-straight grayscale palette.
 
-        im = hopper('P')
-        palette = bytes(bytearray([255-i//3 for i in range(768)]))
+        im = hopper("P")
+        palette = bytes(bytearray([255 - i // 3 for i in range(768)]))
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out, palette=palette)
 
         reloaded = Image.open(out)
@@ -609,10 +592,10 @@ class TestFileGif(PillowTestCase):
         # pass in a different palette, as an ImagePalette.ImagePalette
         # effectively the same as test_palette_save_P
 
-        im = hopper('P')
-        palette = ImagePalette.ImagePalette('RGB', list(range(256))[::-1]*3)
+        im = hopper("P")
+        palette = ImagePalette.ImagePalette("RGB", list(range(256))[::-1] * 3)
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out, palette=palette)
 
         reloaded = Image.open(out)
@@ -622,22 +605,22 @@ class TestFileGif(PillowTestCase):
     def test_save_I(self):
         # Test saving something that would trigger the auto-convert to 'L'
 
-        im = hopper('I')
+        im = hopper("I")
 
-        out = self.tempfile('temp.gif')
+        out = self.tempfile("temp.gif")
         im.save(out)
 
         reloaded = Image.open(out)
-        self.assert_image_equal(reloaded.convert('L'), im.convert('L'))
+        self.assert_image_equal(reloaded.convert("L"), im.convert("L"))
 
     def test_getdata(self):
         # test getheader/getdata against legacy values
         # Create a 'P' image with holes in the palette
         im = Image._wedge().resize((16, 16))
-        im.putpalette(ImagePalette.ImagePalette('RGB'))
-        im.info = {'background': 0}
+        im.putpalette(ImagePalette.ImagePalette("RGB"))
+        im.info = {"background": 0}
 
-        passed_palette = bytes(bytearray([255-i//3 for i in range(768)]))
+        passed_palette = bytes(bytearray([255 - i // 3 for i in range(768)]))
 
         GifImagePlugin._FORCE_OPTIMIZE = True
         try:
@@ -645,10 +628,11 @@ class TestFileGif(PillowTestCase):
             d = GifImagePlugin.getdata(im)
 
             import pickle
+
             # Enable to get target values on pre-refactor version
             # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
             #    pickle.dump((h, d), f, 1)
-            with open('Tests/images/gif_header_data.pkl', 'rb') as f:
+            with open("Tests/images/gif_header_data.pkl", "rb") as f:
                 (h_target, d_target) = pickle.load(f)
 
             self.assertEqual(h, h_target)
@@ -658,14 +642,14 @@ class TestFileGif(PillowTestCase):
 
     def test_lzw_bits(self):
         # see https://github.com/python-pillow/Pillow/issues/2811
-        im = Image.open('Tests/images/issue_2811.gif')
+        im = Image.open("Tests/images/issue_2811.gif")
 
         self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
 
     def test_extents(self):
-        im = Image.open('Tests/images/test_extents.gif')
+        im = Image.open("Tests/images/test_extents.gif")
         self.assertEqual(im.size, (100, 100))
         im.seek(1)
         self.assertEqual(im.size, (150, 150))

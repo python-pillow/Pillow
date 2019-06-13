@@ -15,7 +15,7 @@ class TestFileDds(PillowTestCase):
 
     def test_sanity_dxt1(self):
         """Check DXT1 images can be opened"""
-        target = Image.open(TEST_FILE_DXT1.replace('.dds', '.png'))
+        target = Image.open(TEST_FILE_DXT1.replace(".dds", ".png"))
 
         im = Image.open(TEST_FILE_DXT1)
         im.load()
@@ -24,12 +24,12 @@ class TestFileDds(PillowTestCase):
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
 
-        self.assert_image_equal(target.convert('RGBA'), im)
+        self.assert_image_equal(target.convert("RGBA"), im)
 
     def test_sanity_dxt5(self):
         """Check DXT5 images can be opened"""
 
-        target = Image.open(TEST_FILE_DXT5.replace('.dds', '.png'))
+        target = Image.open(TEST_FILE_DXT5.replace(".dds", ".png"))
 
         im = Image.open(TEST_FILE_DXT5)
         im.load()
@@ -43,7 +43,7 @@ class TestFileDds(PillowTestCase):
     def test_sanity_dxt3(self):
         """Check DXT3 images can be opened"""
 
-        target = Image.open(TEST_FILE_DXT3.replace('.dds', '.png'))
+        target = Image.open(TEST_FILE_DXT3.replace(".dds", ".png"))
 
         im = Image.open(TEST_FILE_DXT3)
         im.load()
@@ -57,7 +57,7 @@ class TestFileDds(PillowTestCase):
     def test_dx10_bc7(self):
         """Check DX10 images can be opened"""
 
-        target = Image.open(TEST_FILE_DX10_BC7.replace('.dds', '.png'))
+        target = Image.open(TEST_FILE_DX10_BC7.replace(".dds", ".png"))
 
         im = Image.open(TEST_FILE_DX10_BC7)
         im.load()
@@ -69,13 +69,16 @@ class TestFileDds(PillowTestCase):
         self.assert_image_equal(target, im)
 
     def test_unimplemented_dxgi_format(self):
-        self.assertRaises(NotImplementedError, Image.open,
-                          "Tests/images/unimplemented_dxgi_format.dds")
+        self.assertRaises(
+            NotImplementedError,
+            Image.open,
+            "Tests/images/unimplemented_dxgi_format.dds",
+        )
 
     def test_uncompressed_rgb(self):
         """Check uncompressed RGB images can be opened"""
 
-        target = Image.open(TEST_FILE_UNCOMPRESSED_RGB.replace('.dds', '.png'))
+        target = Image.open(TEST_FILE_UNCOMPRESSED_RGB.replace(".dds", ".png"))
 
         im = Image.open(TEST_FILE_UNCOMPRESSED_RGB)
         im.load()
@@ -110,7 +113,7 @@ class TestFileDds(PillowTestCase):
 
     def test_short_header(self):
         """ Check a short header"""
-        with open(TEST_FILE_DXT5, 'rb') as f:
+        with open(TEST_FILE_DXT5, "rb") as f:
             img_file = f.read()
 
         def short_header():
@@ -121,7 +124,7 @@ class TestFileDds(PillowTestCase):
     def test_short_file(self):
         """ Check that the appropriate error is thrown for a short file"""
 
-        with open(TEST_FILE_DXT5, 'rb') as f:
+        with open(TEST_FILE_DXT5, "rb") as f:
             img_file = f.read()
 
         def short_file():
@@ -131,5 +134,8 @@ class TestFileDds(PillowTestCase):
         self.assertRaises(IOError, short_file)
 
     def test_unimplemented_pixel_format(self):
-        self.assertRaises(NotImplementedError, Image.open,
-                          "Tests/images/unimplemented_pixel_format.dds")
+        self.assertRaises(
+            NotImplementedError,
+            Image.open,
+            "Tests/images/unimplemented_pixel_format.dds",
+        )

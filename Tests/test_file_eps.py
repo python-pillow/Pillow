@@ -21,7 +21,6 @@ file3 = "Tests/images/binary_preview_map.eps"
 
 
 class TestFileEps(PillowTestCase):
-
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_sanity(self):
         # Regular scale
@@ -53,8 +52,7 @@ class TestFileEps(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          EpsImagePlugin.EpsImageFile, invalid_file)
+        self.assertRaises(SyntaxError, EpsImagePlugin.EpsImageFile, invalid_file)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
@@ -67,8 +65,8 @@ class TestFileEps(PillowTestCase):
         cmyk_image.load()
         self.assertEqual(cmyk_image.mode, "RGB")
 
-        if 'jpeg_decoder' in dir(Image.core):
-            target = Image.open('Tests/images/pil_sample_rgb.jpg')
+        if "jpeg_decoder" in dir(Image.core):
+            target = Image.open("Tests/images/pil_sample_rgb.jpg")
             self.assert_image_similar(cmyk_image, target, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
@@ -86,19 +84,19 @@ class TestFileEps(PillowTestCase):
     def test_file_object(self):
         # issue 479
         image1 = Image.open(file1)
-        with open(self.tempfile('temp_file.eps'), 'wb') as fh:
-            image1.save(fh, 'EPS')
+        with open(self.tempfile("temp_file.eps"), "wb") as fh:
+            image1.save(fh, "EPS")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_iobase_object(self):
         # issue 479
         image1 = Image.open(file1)
-        with io.open(self.tempfile('temp_iobase.eps'), 'wb') as fh:
-            image1.save(fh, 'EPS')
+        with io.open(self.tempfile("temp_iobase.eps"), "wb") as fh:
+            image1.save(fh, "EPS")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_bytesio_object(self):
-        with open(file1, 'rb') as f:
+        with open(file1, "rb") as f:
             img_bytes = io.BytesIO(f.read())
 
         img = Image.open(img_bytes)
@@ -110,7 +108,7 @@ class TestFileEps(PillowTestCase):
 
     def test_image_mode_not_supported(self):
         im = hopper("RGBA")
-        tmpfile = self.tempfile('temp.eps')
+        tmpfile = self.tempfile("temp.eps")
         self.assertRaises(ValueError, im.save, tmpfile)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
@@ -195,33 +193,33 @@ class TestFileEps(PillowTestCase):
         Image.open(file3)
 
     def _test_readline(self, t, ending):
-        ending = "Failure with line ending: %s" % ("".join(
-                                                   "%s" % ord(s)
-                                                   for s in ending))
-        self.assertEqual(t.readline().strip('\r\n'), 'something', ending)
-        self.assertEqual(t.readline().strip('\r\n'), 'else', ending)
-        self.assertEqual(t.readline().strip('\r\n'), 'baz', ending)
-        self.assertEqual(t.readline().strip('\r\n'), 'bif', ending)
+        ending = "Failure with line ending: %s" % (
+            "".join("%s" % ord(s) for s in ending)
+        )
+        self.assertEqual(t.readline().strip("\r\n"), "something", ending)
+        self.assertEqual(t.readline().strip("\r\n"), "else", ending)
+        self.assertEqual(t.readline().strip("\r\n"), "baz", ending)
+        self.assertEqual(t.readline().strip("\r\n"), "bif", ending)
 
     def _test_readline_io_psfile(self, test_string, ending):
-        f = io.BytesIO(test_string.encode('latin-1'))
+        f = io.BytesIO(test_string.encode("latin-1"))
         t = EpsImagePlugin.PSFile(f)
         self._test_readline(t, ending)
 
     def _test_readline_file_psfile(self, test_string, ending):
-        f = self.tempfile('temp.txt')
-        with open(f, 'wb') as w:
-            w.write(test_string.encode('latin-1'))
+        f = self.tempfile("temp.txt")
+        with open(f, "wb") as w:
+            w.write(test_string.encode("latin-1"))
 
-        with open(f, 'rb') as r:
+        with open(f, "rb") as r:
             t = EpsImagePlugin.PSFile(r)
             self._test_readline(t, ending)
 
     def test_readline(self):
         # check all the freaking line endings possible from the spec
         # test_string = u'something\r\nelse\n\rbaz\rbif\n'
-        line_endings = ['\r\n', '\n', '\n\r', '\r']
-        strings = ['something', 'else', 'baz', 'bif']
+        line_endings = ["\r\n", "\n", "\n\r", "\r"]
+        strings = ["something", "else", "baz", "bif"]
 
         for ending in line_endings:
             s = ending.join(strings)
@@ -231,10 +229,12 @@ class TestFileEps(PillowTestCase):
     def test_open_eps(self):
         # https://github.com/python-pillow/Pillow/issues/1104
         # Arrange
-        FILES = ["Tests/images/illu10_no_preview.eps",
-                 "Tests/images/illu10_preview.eps",
-                 "Tests/images/illuCS6_no_preview.eps",
-                 "Tests/images/illuCS6_preview.eps"]
+        FILES = [
+            "Tests/images/illu10_no_preview.eps",
+            "Tests/images/illu10_preview.eps",
+            "Tests/images/illuCS6_no_preview.eps",
+            "Tests/images/illuCS6_preview.eps",
+        ]
 
         # Act / Assert
         for filename in FILES:
