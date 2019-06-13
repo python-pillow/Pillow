@@ -27,15 +27,13 @@ images = {"A": A, "B": B, "F": F, "I": I}
 
 
 class TestImageMath(PillowTestCase):
-
     def test_sanity(self):
         self.assertEqual(ImageMath.eval("1"), 1)
         self.assertEqual(ImageMath.eval("1+A", A=2), 3)
         self.assertEqual(pixel(ImageMath.eval("A+B", A=A, B=B)), "I 3")
         self.assertEqual(pixel(ImageMath.eval("A+B", images)), "I 3")
         self.assertEqual(pixel(ImageMath.eval("float(A)+B", images)), "F 3.0")
-        self.assertEqual(pixel(
-            ImageMath.eval("int(float(A)+B)", images)), "I 3")
+        self.assertEqual(pixel(ImageMath.eval("int(float(A)+B)", images)), "I 3")
 
     def test_ops(self):
 
@@ -47,16 +45,16 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("A*B", images)), "I 2")
         self.assertEqual(pixel(ImageMath.eval("A/B", images)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("B**2", images)), "I 4")
-        self.assertEqual(pixel(
-            ImageMath.eval("B**33", images)), "I 2147483647")
+        self.assertEqual(pixel(ImageMath.eval("B**33", images)), "I 2147483647")
 
         self.assertEqual(pixel(ImageMath.eval("float(A)+B", images)), "F 3.0")
         self.assertEqual(pixel(ImageMath.eval("float(A)-B", images)), "F -1.0")
         self.assertEqual(pixel(ImageMath.eval("float(A)*B", images)), "F 2.0")
         self.assertEqual(pixel(ImageMath.eval("float(A)/B", images)), "F 0.5")
         self.assertEqual(pixel(ImageMath.eval("float(B)**2", images)), "F 4.0")
-        self.assertEqual(pixel(
-            ImageMath.eval("float(B)**33", images)), "F 8589934592.0")
+        self.assertEqual(
+            pixel(ImageMath.eval("float(B)**33", images)), "F 8589934592.0"
+        )
 
     def test_logical(self):
         self.assertEqual(pixel(ImageMath.eval("not A", images)), 0)
@@ -64,12 +62,11 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("A or B", images)), "L 1")
 
     def test_convert(self):
-        self.assertEqual(pixel(
-            ImageMath.eval("convert(A+B, 'L')", images)), "L 3")
-        self.assertEqual(pixel(
-            ImageMath.eval("convert(A+B, '1')", images)), "1 0")
-        self.assertEqual(pixel(
-            ImageMath.eval("convert(A+B, 'RGB')", images)), "RGB (3, 3, 3)")
+        self.assertEqual(pixel(ImageMath.eval("convert(A+B, 'L')", images)), "L 3")
+        self.assertEqual(pixel(ImageMath.eval("convert(A+B, '1')", images)), "1 0")
+        self.assertEqual(
+            pixel(ImageMath.eval("convert(A+B, 'RGB')", images)), "RGB (3, 3, 3)"
+        )
 
     def test_compare(self):
         self.assertEqual(pixel(ImageMath.eval("min(A, B)", images)), "I 1")
@@ -176,9 +173,6 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(pixel(ImageMath.eval("notequal(A, A)", A=A)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("notequal(B, B)", B=B)), "I 0")
         self.assertEqual(pixel(ImageMath.eval("notequal(Z, Z)", Z=Z)), "I 0")
-        self.assertEqual(
-            pixel(ImageMath.eval("notequal(A, B)", A=A, B=B)), "I 1")
-        self.assertEqual(
-            pixel(ImageMath.eval("notequal(B, A)", A=A, B=B)), "I 1")
-        self.assertEqual(
-            pixel(ImageMath.eval("notequal(A, Z)", A=A, Z=Z)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("notequal(A, B)", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("notequal(B, A)", A=A, B=B)), "I 1")
+        self.assertEqual(pixel(ImageMath.eval("notequal(A, Z)", A=A, Z=Z)), "I 1")

@@ -4,8 +4,7 @@ import sys
 from PIL import Image
 
 
-@unittest.skipIf(sys.platform.startswith('win32'),
-                 "Win32 does not call map_buffer")
+@unittest.skipIf(sys.platform.startswith("win32"), "Win32 does not call map_buffer")
 class TestMap(PillowTestCase):
     def test_overflow(self):
         # There is the potential to overflow comparisons in map.c
@@ -18,7 +17,7 @@ class TestMap(PillowTestCase):
         Image.MAX_IMAGE_PIXELS = None
 
         # This image hits the offset test.
-        im = Image.open('Tests/images/l2rgb_read.bmp')
+        im = Image.open("Tests/images/l2rgb_read.bmp")
         with self.assertRaises((ValueError, MemoryError, IOError)):
             im.load()
 

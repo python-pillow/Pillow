@@ -9,18 +9,11 @@ from PIL import Image, JpegImagePlugin, GifImagePlugin
 TEST_JPG = "Tests/images/hopper.jpg"
 TEST_GIF = "Tests/images/hopper.gif"
 
-test_filenames = (
-    "temp_';",
-    "temp_\";",
-    "temp_'\"|",
-    "temp_'\"||",
-    "temp_'\"&&",
-)
+test_filenames = ("temp_';", 'temp_";', "temp_'\"|", "temp_'\"||", "temp_'\"&&")
 
 
-@unittest.skipIf(sys.platform.startswith('win32'), "requires Unix or macOS")
+@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
 class TestShellInjection(PillowTestCase):
-
     def assert_save_filename_check(self, src_img, save_func):
         for filename in test_filenames:
             dest_file = self.tempfile(filename)
