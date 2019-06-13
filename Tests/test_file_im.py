@@ -7,7 +7,6 @@ TEST_IM = "Tests/images/hopper.im"
 
 
 class TestFileIm(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(TEST_IM)
         im.load()
@@ -19,6 +18,7 @@ class TestFileIm(PillowTestCase):
         def open():
             im = Image.open(TEST_IM)
             im.load()
+
         self.assert_warning(None, open)
 
     def test_tell(self):
@@ -45,11 +45,11 @@ class TestFileIm(PillowTestCase):
         self.assertLess(im.tell(), n_frames)
 
         # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames-1)
+        im.seek(n_frames - 1)
 
     def test_roundtrip(self):
         for mode in ["RGB", "P", "PA"]:
-            out = self.tempfile('temp.im')
+            out = self.tempfile("temp.im")
             im = hopper(mode)
             im.save(out)
             reread = Image.open(out)
@@ -57,15 +57,14 @@ class TestFileIm(PillowTestCase):
             self.assert_image_equal(reread, im)
 
     def test_save_unsupported_mode(self):
-        out = self.tempfile('temp.im')
+        out = self.tempfile("temp.im")
         im = hopper("HSV")
         self.assertRaises(ValueError, im.save, out)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          ImImagePlugin.ImImageFile, invalid_file)
+        self.assertRaises(SyntaxError, ImImagePlugin.ImImageFile, invalid_file)
 
     def test_number(self):
         self.assertEqual(1.2, ImImagePlugin.number("1.2"))

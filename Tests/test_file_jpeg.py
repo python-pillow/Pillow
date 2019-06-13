@@ -15,7 +15,6 @@ TEST_FILE = "Tests/images/hopper.jpg"
 
 
 class TestFileJpeg(PillowTestCase):
-
     def setUp(self):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
             self.skipTest("jpeg support not available")
@@ -29,14 +28,13 @@ class TestFileJpeg(PillowTestCase):
         im.bytes = test_bytes  # for testing only
         return im
 
-    def gen_random_image(self, size, mode='RGB'):
+    def gen_random_image(self, size, mode="RGB"):
         """ Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
 
         """
-        return Image.frombytes(mode, size,
-                               os.urandom(size[0]*size[1]*len(mode)))
+        return Image.frombytes(mode, size, os.urandom(size[0] * size[1] * len(mode)))
 
     def test_sanity(self):
 
@@ -54,10 +52,11 @@ class TestFileJpeg(PillowTestCase):
         # Test APP/COM reader (@PIL135)
         im = Image.open(TEST_FILE)
         self.assertEqual(
-            im.applist[0],
-            ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00"))
-        self.assertEqual(im.applist[1], (
-            "COM", b"File written by Adobe Photoshop\xa8 4.0\x00"))
+            im.applist[0], ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
+        )
+        self.assertEqual(
+            im.applist[1], ("COM", b"File written by Adobe Photoshop\xa8 4.0\x00")
+        )
         self.assertEqual(len(im.applist), 2)
 
     def test_cmyk(self):
@@ -72,8 +71,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
         # the opposite corner is black
-        c, m, y, k = [x / 255.0 for x in im.getpixel((
-            im.size[0]-1, im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))]
         self.assertGreater(k, 0.9)
         # roundtrip, and check again
         im = self.roundtrip(im)
@@ -82,8 +80,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreater(m, 0.8)
         self.assertGreater(y, 0.8)
         self.assertEqual(k, 0.0)
-        c, m, y, k = [x / 255.0 for x in im.getpixel((
-            im.size[0]-1, im.size[1]-1))]
+        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))]
         self.assertGreater(k, 0.9)
 
     def test_dpi(self):
@@ -91,6 +88,7 @@ class TestFileJpeg(PillowTestCase):
             im = Image.open(TEST_FILE)
             im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
+
         self.assertEqual(test(72), (72, 72))
         self.assertEqual(test(300), (300, 300))
         self.assertEqual(test(100, 200), (100, 200))
@@ -119,31 +117,38 @@ class TestFileJpeg(PillowTestCase):
             # The ICC APP marker can store 65519 bytes per marker, so
             # using a 4-byte test code should allow us to detect out of
             # order issues.
-            icc_profile = (b"Test"*int(n/4+1))[:n]
+            icc_profile = (b"Test" * int(n / 4 + 1))[:n]
             self.assertEqual(len(icc_profile), n)  # sanity
             im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
             self.assertEqual(im1.info.get("icc_profile"), icc_profile or None)
+
         test(0)
         test(1)
         test(3)
         test(4)
         test(5)
-        test(65533-14)  # full JPEG marker block
-        test(65533-14+1)  # full block plus one byte
+        test(65533 - 14)  # full JPEG marker block
+        test(65533 - 14 + 1)  # full block plus one byte
         test(ImageFile.MAXBLOCK)  # full buffer block
-        test(ImageFile.MAXBLOCK+1)  # full buffer block plus one byte
-        test(ImageFile.MAXBLOCK*4+3)  # large block
+        test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
+        test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
     def test_large_icc_meta(self):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
-        im = Image.open('Tests/images/icc_profile_big.jpg')
+        im = Image.open("Tests/images/icc_profile_big.jpg")
         f = self.tempfile("temp.jpg")
         icc_profile = im.info["icc_profile"]
         # Should not raise IOError for image with icc larger than image size.
-        im.save(f, format='JPEG', progressive=True, quality=95,
-                icc_profile=icc_profile, optimize=True)
+        im.save(
+            f,
+            format="JPEG",
+            progressive=True,
+            quality=95,
+            icc_profile=icc_profile,
+            optimize=True,
+        )
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -156,9 +161,9 @@ class TestFileJpeg(PillowTestCase):
 
     def test_optimize_large_buffer(self):
         # https://github.com/python-pillow/Pillow/issues/148
-        f = self.tempfile('temp.jpg')
+        f = self.tempfile("temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
-        im = Image.new("RGB", (4096, 4096), 0xff3333)
+        im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", optimize=True)
 
     def test_progressive(self):
@@ -173,13 +178,13 @@ class TestFileJpeg(PillowTestCase):
         self.assertGreaterEqual(im1.bytes, im3.bytes)
 
     def test_progressive_large_buffer(self):
-        f = self.tempfile('temp.jpg')
+        f = self.tempfile("temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
-        im = Image.new("RGB", (4096, 4096), 0xff3333)
+        im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", progressive=True)
 
     def test_progressive_large_buffer_highest_quality(self):
-        f = self.tempfile('temp.jpg')
+        f = self.tempfile("temp.jpg")
         im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -187,30 +192,31 @@ class TestFileJpeg(PillowTestCase):
     def test_progressive_cmyk_buffer(self):
         # Issue 2272, quality 90 cmyk image is tripping the large buffer bug.
         f = BytesIO()
-        im = self.gen_random_image((256, 256), 'CMYK')
-        im.save(f, format='JPEG', progressive=True, quality=94)
+        im = self.gen_random_image((256, 256), "CMYK")
+        im.save(f, format="JPEG", progressive=True, quality=94)
 
     def test_large_exif(self):
         # https://github.com/python-pillow/Pillow/issues/148
-        f = self.tempfile('temp.jpg')
+        f = self.tempfile("temp.jpg")
         im = hopper()
-        im.save(f, 'JPEG', quality=90, exif=b"1"*65532)
+        im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
 
     def test_exif_typeerror(self):
-        im = Image.open('Tests/images/exif_typeerror.jpg')
+        im = Image.open("Tests/images/exif_typeerror.jpg")
         # Should not raise a TypeError
         im._getexif()
 
     def test_exif_gps(self):
         # Arrange
-        im = Image.open('Tests/images/exif_gps.jpg')
+        im = Image.open("Tests/images/exif_gps.jpg")
         gps_index = 34853
         expected_exif_gps = {
-            0: b'\x00\x00\x00\x01',
+            0: b"\x00\x00\x00\x01",
             2: (4294967295, 1),
-            5: b'\x01',
+            5: b"\x01",
             30: 65535,
-            29: '1999:99:99 99:99:99'}
+            29: "1999:99:99 99:99:99",
+        }
 
         # Act
         exif = im._getexif()
@@ -222,35 +228,39 @@ class TestFileJpeg(PillowTestCase):
         # rolling back exif support in 3.1 to pre-3.0 formatting.
         # expected from 2.9, with b/u qualifiers switched for 3.2 compatibility
         # this test passes on 2.9 and 3.1, but not 3.0
-        expected_exif = {34867: 4294967295,
-                         258: (24, 24, 24),
-                         36867: '2099:09:29 10:10:10',
-                         34853: {0: b'\x00\x00\x00\x01',
-                                 2: (4294967295, 1),
-                                 5: b'\x01',
-                                 30: 65535,
-                                 29: '1999:99:99 99:99:99'},
-                         296: 65535,
-                         34665: 185,
-                         41994: 65535,
-                         514: 4294967295,
-                         271: 'Make',
-                         272: 'XXX-XXX',
-                         305: 'PIL',
-                         42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
-                         42035: 'LensMake',
-                         34856: b'\xaa\xaa\xaa\xaa\xaa\xaa',
-                         282: (4294967295, 1),
-                         33434: (4294967295, 1)}
+        expected_exif = {
+            34867: 4294967295,
+            258: (24, 24, 24),
+            36867: "2099:09:29 10:10:10",
+            34853: {
+                0: b"\x00\x00\x00\x01",
+                2: (4294967295, 1),
+                5: b"\x01",
+                30: 65535,
+                29: "1999:99:99 99:99:99",
+            },
+            296: 65535,
+            34665: 185,
+            41994: 65535,
+            514: 4294967295,
+            271: "Make",
+            272: "XXX-XXX",
+            305: "PIL",
+            42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
+            42035: "LensMake",
+            34856: b"\xaa\xaa\xaa\xaa\xaa\xaa",
+            282: (4294967295, 1),
+            33434: (4294967295, 1),
+        }
 
-        im = Image.open('Tests/images/exif_gps.jpg')
+        im = Image.open("Tests/images/exif_gps.jpg")
         exif = im._getexif()
 
         for tag, value in expected_exif.items():
             self.assertEqual(value, exif[tag])
 
     def test_exif_gps_typeerror(self):
-        im = Image.open('Tests/images/exif_gps_typeerror.jpg')
+        im = Image.open("Tests/images/exif_gps_typeerror.jpg")
 
         # Should not raise a TypeError
         im._getexif()
@@ -291,6 +301,7 @@ class TestFileJpeg(PillowTestCase):
         def getsampling(im):
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
+
         # experimental API
         im = self.roundtrip(hopper(), subsampling=-1)  # default
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
@@ -312,13 +323,12 @@ class TestFileJpeg(PillowTestCase):
         im = self.roundtrip(hopper(), subsampling="4:1:1")
         self.assertEqual(getsampling(im), (2, 2, 1, 1, 1, 1))
 
-        self.assertRaises(
-            TypeError, self.roundtrip, hopper(), subsampling="1:1:1")
+        self.assertRaises(TypeError, self.roundtrip, hopper(), subsampling="1:1:1")
 
     def test_exif(self):
         im = Image.open("Tests/images/pil_sample_rgb.jpg")
         info = im._getexif()
-        self.assertEqual(info[305], 'Adobe Photoshop CS Macintosh')
+        self.assertEqual(info[305], "Adobe Photoshop CS Macintosh")
 
     def test_mp(self):
         im = Image.open("Tests/images/pil_sample_rgb.jpg")
@@ -327,16 +337,16 @@ class TestFileJpeg(PillowTestCase):
     def test_quality_keep(self):
         # RGB
         im = Image.open("Tests/images/hopper.jpg")
-        f = self.tempfile('temp.jpg')
-        im.save(f, quality='keep')
+        f = self.tempfile("temp.jpg")
+        im.save(f, quality="keep")
         # Grayscale
         im = Image.open("Tests/images/hopper_gray.jpg")
-        f = self.tempfile('temp.jpg')
-        im.save(f, quality='keep')
+        f = self.tempfile("temp.jpg")
+        im.save(f, quality="keep")
         # CMYK
         im = Image.open("Tests/images/pil_sample_cmyk.jpg")
-        f = self.tempfile('temp.jpg')
-        im.save(f, quality='keep')
+        f = self.tempfile("temp.jpg")
+        im.save(f, quality="keep")
 
     def test_junk_jpeg_header(self):
         # https://github.com/python-pillow/Pillow/issues/630
@@ -364,8 +374,8 @@ class TestFileJpeg(PillowTestCase):
 
     def _n_qtables_helper(self, n, test_file):
         im = Image.open(test_file)
-        f = self.tempfile('temp.jpg')
-        im.save(f, qtables=[[n]*64]*n)
+        f = self.tempfile("temp.jpg")
+        im.save(f, qtables=[[n] * 64] * n)
         im = Image.open(f)
         self.assertEqual(len(im.quantization), n)
         reloaded = self.roundtrip(im, qtables="keep")
@@ -376,18 +386,18 @@ class TestFileJpeg(PillowTestCase):
         qtables = im.quantization
         reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
         self.assertEqual(im.quantization, reloaded.quantization)
-        self.assert_image_similar(im, self.roundtrip(im, qtables='web_low'),
-                                  30)
-        self.assert_image_similar(im, self.roundtrip(im, qtables='web_high'),
-                                  30)
-        self.assert_image_similar(im, self.roundtrip(im, qtables='keep'), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables="web_low"), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables="web_high"), 30)
+        self.assert_image_similar(im, self.roundtrip(im, qtables="keep"), 30)
 
         # valid bounds for baseline qtable
         bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
         self.roundtrip(im, qtables=[bounds_qtable])
 
         # values from wizard.txt in jpeg9-a src package.
-        standard_l_qtable = [int(s) for s in """
+        standard_l_qtable = [
+            int(s)
+            for s in """
             16  11  10  16  24  40  51  61
             12  12  14  19  26  58  60  55
             14  13  16  24  40  57  69  56
@@ -396,9 +406,14 @@ class TestFileJpeg(PillowTestCase):
             24  35  55  64  81 104 113  92
             49  64  78  87 103 121 120 101
             72  92  95  98 112 100 103  99
-            """.split(None)]
+            """.split(
+                None
+            )
+        ]
 
-        standard_chrominance_qtable = [int(s) for s in """
+        standard_chrominance_qtable = [
+            int(s)
+            for s in """
             17  18  24  47  99  99  99  99
             18  21  26  66  99  99  99  99
             24  26  56  99  99  99  99  99
@@ -407,25 +422,36 @@ class TestFileJpeg(PillowTestCase):
             99  99  99  99  99  99  99  99
             99  99  99  99  99  99  99  99
             99  99  99  99  99  99  99  99
-            """.split(None)]
+            """.split(
+                None
+            )
+        ]
         # list of qtable lists
         self.assert_image_similar(
-            im, self.roundtrip(
-                im, qtables=[standard_l_qtable, standard_chrominance_qtable]),
-            30)
+            im,
+            self.roundtrip(
+                im, qtables=[standard_l_qtable, standard_chrominance_qtable]
+            ),
+            30,
+        )
 
         # tuple of qtable lists
         self.assert_image_similar(
-            im, self.roundtrip(
-                im, qtables=(standard_l_qtable, standard_chrominance_qtable)),
-            30)
+            im,
+            self.roundtrip(
+                im, qtables=(standard_l_qtable, standard_chrominance_qtable)
+            ),
+            30,
+        )
 
         # dict of qtable lists
-        self.assert_image_similar(im,
-                                  self.roundtrip(im, qtables={
-                                      0: standard_l_qtable,
-                                      1: standard_chrominance_qtable
-                                  }), 30)
+        self.assert_image_similar(
+            im,
+            self.roundtrip(
+                im, qtables={0: standard_l_qtable, 1: standard_chrominance_qtable}
+            ),
+            30,
+        )
 
         self._n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
         self._n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
@@ -437,18 +463,16 @@ class TestFileJpeg(PillowTestCase):
         self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
         # not a sequence
-        self.assertRaises(ValueError, self.roundtrip, im, qtables='a')
+        self.assertRaises(ValueError, self.roundtrip, im, qtables="a")
         # sequence wrong length
         self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
         # sequence wrong length
-        self.assertRaises(ValueError,
-                          self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
         # qtable entry not a sequence
         self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
         # qtable entry has wrong number of items
-        self.assertRaises(ValueError,
-                          self.roundtrip, im, qtables=[[1, 2, 3, 4]])
+        self.assertRaises(ValueError, self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
@@ -468,11 +492,12 @@ class TestFileJpeg(PillowTestCase):
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
         from PIL import ExifTags
+
         tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
 
         # Assert
-        self.assertEqual(tag_ids['RelatedImageWidth'], 0x1001)
-        self.assertEqual(tag_ids['RelatedImageLength'], 0x1002)
+        self.assertEqual(tag_ids["RelatedImageWidth"], 0x1001)
+        self.assertEqual(tag_ids["RelatedImageLength"], 0x1002)
 
     def test_MAXBLOCK_scaling(self):
         im = self.gen_random_image((512, 512))
@@ -482,9 +507,9 @@ class TestFileJpeg(PillowTestCase):
         reloaded = Image.open(f)
 
         # none of these should crash
-        reloaded.save(f, quality='keep')
-        reloaded.save(f, quality='keep', progressive=True)
-        reloaded.save(f, quality='keep', optimize=True)
+        reloaded.save(f, quality="keep")
+        reloaded.save(f, quality="keep", progressive=True)
+        reloaded.save(f, quality="keep", optimize=True)
 
     def test_bad_mpo_header(self):
         """ Treat unknown MPO as JPEG """
@@ -500,14 +525,14 @@ class TestFileJpeg(PillowTestCase):
 
     def test_save_correct_modes(self):
         out = BytesIO()
-        for mode in ['1', 'L', 'RGB', 'RGBX', 'CMYK', 'YCbCr']:
+        for mode in ["1", "L", "RGB", "RGBX", "CMYK", "YCbCr"]:
             img = Image.new(mode, (20, 20))
             img.save(out, "JPEG")
 
     def test_save_wrong_modes(self):
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
-        for mode in ['LA', 'La', 'RGBA', 'RGBa', 'P']:
+        for mode in ["LA", "La", "RGBA", "RGBa", "P"]:
             img = Image.new(mode, (20, 20))
             self.assertRaises(IOError, img.save, out, "JPEG")
 
@@ -517,25 +542,25 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open("Tests/images/hopper.tif")
 
         # Act
-        im.save(outfile, 'JPEG', dpi=im.info['dpi'])
+        im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
         # Assert
         reloaded = Image.open(outfile)
         reloaded.load()
-        self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+        self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
 
     def test_load_dpi_rounding(self):
         # Round up
-        im = Image.open('Tests/images/iptc_roundUp.jpg')
+        im = Image.open("Tests/images/iptc_roundUp.jpg")
         self.assertEqual(im.info["dpi"], (44, 44))
 
         # Round down
-        im = Image.open('Tests/images/iptc_roundDown.jpg')
+        im = Image.open("Tests/images/iptc_roundDown.jpg")
         self.assertEqual(im.info["dpi"], (2, 2))
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.jpg")
-        im = Image.open('Tests/images/hopper.jpg')
+        im = Image.open("Tests/images/hopper.jpg")
 
         im.save(outfile, dpi=(72.2, 72.2))
         reloaded = Image.open(outfile)
@@ -609,23 +634,26 @@ class TestFileJpeg(PillowTestCase):
         im = Image.open("Tests/images/exif-ifd-offset.jpg")
 
         # Act / Assert
-        self.assertEqual(im._getexif()[306], '2017:03:13 23:03:09')
+        self.assertEqual(im._getexif()[306], "2017:03:13 23:03:09")
 
     def test_photoshop(self):
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
-        self.assertEqual(im.info["photoshop"][0x03ed], {
-            'XResolution': 200.0,
-            'DisplayedUnitsX': 1,
-            'YResolution': 200.0,
-            'DisplayedUnitsY': 1,
-        })
+        self.assertEqual(
+            im.info["photoshop"][0x03ED],
+            {
+                "XResolution": 200.0,
+                "DisplayedUnitsX": 1,
+                "YResolution": 200.0,
+                "DisplayedUnitsY": 1,
+            },
+        )
 
         # This image does not contain a Photoshop header string
         im = Image.open("Tests/images/app13.jpg")
         self.assertNotIn("photoshop", im.info)
 
 
-@unittest.skipUnless(sys.platform.startswith('win32'), "Windows only")
+@unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
 class TestFileCloseW32(PillowTestCase):
     def setUp(self):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:

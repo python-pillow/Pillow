@@ -6,7 +6,6 @@ TEST_FILE = "Tests/images/hdf5.h5"
 
 
 class TestFileHdf5Stub(PillowTestCase):
-
     def test_open(self):
         # Act
         im = Image.open(TEST_FILE)
@@ -23,8 +22,9 @@ class TestFileHdf5Stub(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         # Act / Assert
-        self.assertRaises(SyntaxError,
-                          Hdf5StubImagePlugin.HDF5StubImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, Hdf5StubImagePlugin.HDF5StubImageFile, invalid_file
+        )
 
     def test_load(self):
         # Arrange
@@ -42,5 +42,5 @@ class TestFileHdf5Stub(PillowTestCase):
         # Act / Assert: stub cannot save without an implemented handler
         self.assertRaises(IOError, im.save, dummy_filename)
         self.assertRaises(
-            IOError,
-            Hdf5StubImagePlugin._save, im, dummy_fp, dummy_filename)
+            IOError, Hdf5StubImagePlugin._save, im, dummy_fp, dummy_filename
+        )

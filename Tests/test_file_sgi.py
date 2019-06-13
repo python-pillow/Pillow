@@ -4,7 +4,6 @@ from PIL import Image, SgiImagePlugin
 
 
 class TestFileSgi(PillowTestCase):
-
     def test_rgb(self):
         # Created with ImageMagick then renamed:
         # convert hopper.ppm -compress None sgi:hopper.rgb
@@ -12,7 +11,7 @@ class TestFileSgi(PillowTestCase):
 
         im = Image.open(test_file)
         self.assert_image_equal(im, hopper())
-        self.assertEqual(im.get_format_mimetype(), 'image/rgb')
+        self.assertEqual(im.get_format_mimetype(), "image/rgb")
 
     def test_rgb16(self):
         test_file = "Tests/images/hopper16.rgb"
@@ -26,8 +25,8 @@ class TestFileSgi(PillowTestCase):
         test_file = "Tests/images/hopper.bw"
 
         im = Image.open(test_file)
-        self.assert_image_similar(im, hopper('L'), 2)
-        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
+        self.assert_image_similar(im, hopper("L"), 2)
+        self.assertEqual(im.get_format_mimetype(), "image/sgi")
 
     def test_rgba(self):
         # Created with ImageMagick:
@@ -35,9 +34,9 @@ class TestFileSgi(PillowTestCase):
         test_file = "Tests/images/transparent.sgi"
 
         im = Image.open(test_file)
-        target = Image.open('Tests/images/transparent.png')
+        target = Image.open("Tests/images/transparent.png")
         self.assert_image_equal(im, target)
-        self.assertEqual(im.get_format_mimetype(), 'image/sgi')
+        self.assertEqual(im.get_format_mimetype(), "image/sgi")
 
     def test_rle(self):
         # Created with ImageMagick:
@@ -45,47 +44,46 @@ class TestFileSgi(PillowTestCase):
         test_file = "Tests/images/hopper.sgi"
 
         im = Image.open(test_file)
-        target = Image.open('Tests/images/hopper.rgb')
+        target = Image.open("Tests/images/hopper.rgb")
         self.assert_image_equal(im, target)
 
     def test_rle16(self):
         test_file = "Tests/images/tv16.sgi"
 
         im = Image.open(test_file)
-        target = Image.open('Tests/images/tv.rgb')
+        target = Image.open("Tests/images/tv.rgb")
         self.assert_image_equal(im, target)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(ValueError,
-                          SgiImagePlugin.SgiImageFile, invalid_file)
+        self.assertRaises(ValueError, SgiImagePlugin.SgiImageFile, invalid_file)
 
     def test_write(self):
         def roundtrip(img):
-            out = self.tempfile('temp.sgi')
-            img.save(out, format='sgi')
+            out = self.tempfile("temp.sgi")
+            img.save(out, format="sgi")
             reloaded = Image.open(out)
             self.assert_image_equal(img, reloaded)
 
-        for mode in ('L', 'RGB', 'RGBA'):
+        for mode in ("L", "RGB", "RGBA"):
             roundtrip(hopper(mode))
 
         # Test 1 dimension for an L mode image
-        roundtrip(Image.new('L', (10, 1)))
+        roundtrip(Image.new("L", (10, 1)))
 
     def test_write16(self):
         test_file = "Tests/images/hopper16.rgb"
 
         im = Image.open(test_file)
-        out = self.tempfile('temp.sgi')
-        im.save(out, format='sgi', bpc=2)
+        out = self.tempfile("temp.sgi")
+        im.save(out, format="sgi", bpc=2)
 
         reloaded = Image.open(out)
         self.assert_image_equal(im, reloaded)
 
     def test_unsupported_mode(self):
-        im = hopper('LA')
-        out = self.tempfile('temp.sgi')
+        im = hopper("LA")
+        out = self.tempfile("temp.sgi")
 
-        self.assertRaises(ValueError, im.save, out, format='sgi')
+        self.assertRaises(ValueError, im.save, out, format="sgi")

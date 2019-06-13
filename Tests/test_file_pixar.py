@@ -6,7 +6,6 @@ TEST_FILE = "Tests/images/hopper.pxr"
 
 
 class TestFilePixar(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(TEST_FILE)
         im.load()
@@ -21,6 +20,4 @@ class TestFilePixar(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(
-            SyntaxError,
-            PixarImagePlugin.PixarImageFile, invalid_file)
+        self.assertRaises(SyntaxError, PixarImagePlugin.PixarImageFile, invalid_file)
