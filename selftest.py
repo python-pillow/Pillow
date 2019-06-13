@@ -161,12 +161,12 @@ if __name__ == "__main__":
 
     exit_status = 0
 
-    print("-"*68)
+    print("-" * 68)
     print("Pillow", Image.__version__, "TEST SUMMARY ")
-    print("-"*68)
+    print("-" * 68)
     print("Python modules loaded from", os.path.dirname(Image.__file__))
     print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
-    print("-"*68)
+    print("-" * 68)
     for name, feature in [
         ("pil", "PIL CORE"),
         ("tkinter", "TKINTER"),
@@ -180,16 +180,17 @@ if __name__ == "__main__":
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
         ("libtiff", "LIBTIFF"),
-        ("raqm", "RAQM (Bidirectional Text)")
+        ("raqm", "RAQM (Bidirectional Text)"),
     ]:
         if features.check(name):
             print("---", feature, "support ok")
         else:
             print("***", feature, "support not installed")
-    print("-"*68)
+    print("-" * 68)
 
     # use doctest to make sure the test program behaves as documented!
     import doctest
+
     print("Running selftest:")
     status = doctest.testmod(sys.modules[__name__])
     if status[0]:
