@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImageMode(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper()
@@ -36,10 +35,13 @@ class TestImageMode(PillowTestCase):
     def test_properties(self):
         def check(mode, *result):
             signature = (
-                Image.getmodebase(mode), Image.getmodetype(mode),
-                Image.getmodebands(mode), Image.getmodebandnames(mode),
-                )
+                Image.getmodebase(mode),
+                Image.getmodetype(mode),
+                Image.getmodebands(mode),
+                Image.getmodebandnames(mode),
+            )
             self.assertEqual(signature, result)
+
         check("1", "L", "L", 1, ("1",))
         check("L", "L", "L", 1, ("L",))
         check("P", "P", "L", 1, ("P",))

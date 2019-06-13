@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImagePutAlpha(PillowTestCase):
-
     def test_interface(self):
 
         im = Image.new("RGBA", (1, 1), (1, 2, 3, 0))
@@ -25,21 +24,21 @@ class TestImagePutAlpha(PillowTestCase):
         self.assertEqual(im.getpixel((0, 0)), 1)
 
         im.putalpha(2)
-        self.assertEqual(im.mode, 'LA')
+        self.assertEqual(im.mode, "LA")
         self.assertEqual(im.getpixel((0, 0)), (1, 2))
 
         im = Image.new("P", (1, 1), 1)
         self.assertEqual(im.getpixel((0, 0)), 1)
 
         im.putalpha(2)
-        self.assertEqual(im.mode, 'PA')
+        self.assertEqual(im.mode, "PA")
         self.assertEqual(im.getpixel((0, 0)), (1, 2))
 
         im = Image.new("RGB", (1, 1), (1, 2, 3))
         self.assertEqual(im.getpixel((0, 0)), (1, 2, 3))
 
         im.putalpha(4)
-        self.assertEqual(im.mode, 'RGBA')
+        self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))
 
     def test_readonly(self):
@@ -49,5 +48,5 @@ class TestImagePutAlpha(PillowTestCase):
 
         im.putalpha(4)
         self.assertFalse(im.readonly)
-        self.assertEqual(im.mode, 'RGBA')
+        self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))

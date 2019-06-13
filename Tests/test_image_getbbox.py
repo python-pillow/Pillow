@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImageGetBbox(PillowTestCase):
-
     def test_sanity(self):
 
         bbox = hopper().getbbox()

@@ -6,28 +6,25 @@ im = hopper().resize((128, 100))
 
 
 class TestImageArray(PillowTestCase):
-
     def test_toarray(self):
         def test(mode):
             ai = im.convert(mode).__array_interface__
-            return ai['version'], ai["shape"], ai["typestr"], len(ai["data"])
+            return ai["version"], ai["shape"], ai["typestr"], len(ai["data"])
+
         # self.assertEqual(test("1"), (3, (100, 128), '|b1', 1600))
-        self.assertEqual(test("L"), (3, (100, 128), '|u1', 12800))
+        self.assertEqual(test("L"), (3, (100, 128), "|u1", 12800))
 
         # FIXME: wrong?
-        self.assertEqual(test("I"), (3, (100, 128),
-                         Image._ENDIAN + 'i4', 51200))
+        self.assertEqual(test("I"), (3, (100, 128), Image._ENDIAN + "i4", 51200))
         # FIXME: wrong?
-        self.assertEqual(test("F"), (3, (100, 128),
-                         Image._ENDIAN + 'f4', 51200))
+        self.assertEqual(test("F"), (3, (100, 128), Image._ENDIAN + "f4", 51200))
 
-        self.assertEqual(test("LA"), (3, (100, 128, 2), '|u1', 25600))
-        self.assertEqual(test("RGB"), (3, (100, 128, 3), '|u1', 38400))
-        self.assertEqual(test("RGBA"), (3, (100, 128, 4), '|u1', 51200))
-        self.assertEqual(test("RGBX"), (3, (100, 128, 4), '|u1', 51200))
+        self.assertEqual(test("LA"), (3, (100, 128, 2), "|u1", 25600))
+        self.assertEqual(test("RGB"), (3, (100, 128, 3), "|u1", 38400))
+        self.assertEqual(test("RGBA"), (3, (100, 128, 4), "|u1", 51200))
+        self.assertEqual(test("RGBX"), (3, (100, 128, 4), "|u1", 51200))
 
     def test_fromarray(self):
-
         class Wrapper(object):
             """ Class with API matching Image.fromarray """
 
