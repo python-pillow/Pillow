@@ -410,7 +410,7 @@ These platforms are built and tested for every change.
 |                                  | PyPy, 3.7/MinGW               |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 
-\* Mac OS X CI is not run for every commit, but is run for every release.
+\* macOS CI is not run for every commit, but is run for every release.
 
 Other Platforms
 ^^^^^^^^^^^^^^^
