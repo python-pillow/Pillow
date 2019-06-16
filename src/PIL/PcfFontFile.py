@@ -56,7 +56,7 @@ class PcfFontFile(FontFile.FontFile):
 
     name = "name"
 
-    def __init__(self, fp, charset_encoding='iso8859-1'):
+    def __init__(self, fp, charset_encoding="iso8859-1"):
 
         self.charset_encoding = charset_encoding
 
