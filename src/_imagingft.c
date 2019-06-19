@@ -25,6 +25,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include FT_MULTIPLE_MASTERS_H
+#include FT_SFNT_NAMES_H
 
 #define KEEP_PY_UNICODE
 #include "py3.h"
@@ -877,6 +879,158 @@ font_render(FontObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+#if FREETYPE_MAJOR > 2 ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
+    static PyObject*
+    font_getvarnames(FontObject* self, PyObject* args)
+    {
+        int error;
+        FT_UInt i, j, num_namedstyles, name_count;
+        FT_MM_Var *master;
+        FT_SfntName name;
+        PyObject *list_names, *list_name;
+
+        error = FT_Get_MM_Var(self->face, &master);
+        if (error)
+            return geterror(error);
+
+        num_namedstyles = master->num_namedstyles;
+        list_names = PyList_New(num_namedstyles);
+
+        name_count = FT_Get_Sfnt_Name_Count(self->face);
+        for (i = 0; i < name_count; i++) {
+            error = FT_Get_Sfnt_Name(self->face, i, &name);
+            if (error)
+                return geterror(error);
+
+            for (j = 0; j < num_namedstyles; j++) {
+                if (PyList_GetItem(list_names, j) != NULL)
+                    continue;
+
+                if (master->namedstyle[j].strid == name.name_id) {
+                    list_name = Py_BuildValue(PY_ARG_BYTES_LENGTH,
+                                              name.string, name.string_len);
+                    PyList_SetItem(list_names, j, list_name);
+                    break;
+                }
+            }
+        }
+
+        FT_Done_MM_Var(library, master);
+
+        return list_names;
+    }
+
+    static PyObject*
+    font_getvaraxes(FontObject* self, PyObject* args)
+    {
+        int error;
+        FT_UInt i, j, num_axis, name_count;
+        FT_MM_Var* master;
+        FT_Var_Axis axis;
+        FT_SfntName name;
+        PyObject *list_axes, *list_axis, *axis_name;
+        error = FT_Get_MM_Var(self->face, &master);
+        if (error)
+            return geterror(error);
+
+        num_axis = master->num_axis;
+        name_count = FT_Get_Sfnt_Name_Count(self->face);
+
+        list_axes = PyList_New(num_axis);
+        for (i = 0; i < num_axis; i++) {
+            axis = master->axis[i];
+
+            list_axis = PyDict_New();
+            PyDict_SetItemString(list_axis, "minimum",
+                                 PyInt_FromLong(axis.minimum / 65536));
+            PyDict_SetItemString(list_axis, "default",
+                                 PyInt_FromLong(axis.def / 65536));
+            PyDict_SetItemString(list_axis, "maximum",
+                                 PyInt_FromLong(axis.maximum / 65536));
+
+            for (j = 0; j < name_count; j++) {
+                error = FT_Get_Sfnt_Name(self->face, j, &name);
+                if (error)
+                    return geterror(error);
+
+                if (name.name_id == axis.strid) {
+                    axis_name = Py_BuildValue(PY_ARG_BYTES_LENGTH,
+                                              name.string, name.string_len);
+                    PyDict_SetItemString(list_axis, "name", axis_name);
+                    break;
+                }
+            }
+
+            PyList_SetItem(list_axes, i, list_axis);
+        }
+
+        FT_Done_MM_Var(library, master);
+
+        return list_axes;
+    }
+
+    static PyObject*
+    font_setvarname(FontObject* self, PyObject* args)
+    {
+        int error;
+
+        int instance_index;
+        if (!PyArg_ParseTuple(args, "i", &instance_index))
+            return NULL;
+
+        error = FT_Set_Named_Instance(self->face, instance_index);
+        if (error)
+            return geterror(error);
+
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    static PyObject*
+    font_setvaraxes(FontObject* self, PyObject* args)
+    {
+        int error;
+
+        PyObject *axes, *item;
+        Py_ssize_t i, num_coords;
+        FT_Fixed *coords;
+        FT_Fixed coord;
+        if (!PyArg_ParseTuple(args, "O", &axes))
+            return NULL;
+
+        if (!PyList_Check(axes)) {
+            PyErr_SetString(PyExc_TypeError, "argument must be a list");
+            return NULL;
+        }
+
+        num_coords = PyObject_Length(axes);
+        coords = malloc(2 * sizeof(coords));
+        for (i = 0; i < num_coords; i++) {
+            item = PyList_GET_ITEM(axes, i);
+            if (PyFloat_Check(item))
+                coord = PyFloat_AS_DOUBLE(item);
+            else if (PyInt_Check(item))
+                coord = (float) PyInt_AS_LONG(item);
+            else if (PyNumber_Check(item))
+                coord = PyFloat_AsDouble(item);
+            else {
+                PyErr_SetString(PyExc_TypeError, "list must contain numbers");
+                return NULL;
+            }
+            coords[i] = coord * 65536;
+        }
+
+        error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);
+        if (error)
+            return geterror(error);
+
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+#endif
+
 static void
 font_dealloc(FontObject* self)
 {
@@ -892,6 +1046,14 @@ font_dealloc(FontObject* self)
 static PyMethodDef font_methods[] = {
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
+#if FREETYPE_MAJOR > 2 ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
+    {"getvarnames", (PyCFunction) font_getvarnames, METH_VARARGS },
+    {"getvaraxes", (PyCFunction) font_getvaraxes, METH_VARARGS },
+    {"setvarname", (PyCFunction) font_setvarname, METH_VARARGS},
+    {"setvaraxes", (PyCFunction) font_setvaraxes, METH_VARARGS},
+#endif
     {NULL, NULL}
 };
 
