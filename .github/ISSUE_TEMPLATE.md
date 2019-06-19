@@ -10,8 +10,8 @@ Follow these guidelines to ensure your issue is handled properly.
 
 If you have a ...
 
-1.  **General question**: consider asking the question on Stack Overflow
-     with the python-imaging-library tag:
+1.  General question: consider asking the question on Stack Overflow
+    with the python-imaging-library tag:
 
     * https://stackoverflow.com/questions/tagged/python-imaging-library
 
@@ -20,7 +20,7 @@ If you have a ...
     If you think you have found a bug or have an unexplained exception
     then file a bug report here.
 
-2.  **Bug report:** include a self-contained, copy-pastable example that
+2.  Bug report: include a self-contained, copy-pastable example that
     generates the issue if possible. Be concise with code posted.
     Guidelines on how to provide a good bug report:
 
@@ -29,7 +29,7 @@ If you have a ...
     Bug reports which follow these guidelines are easier to diagnose,
     and are often handled much more quickly.
 
-3.  **Feature request:** do a quick search of existing issues
+3.  Feature request: do a quick search of existing issues
     to make sure this has not been asked before.
 
 We know asking good questions takes effort, and we appreciate your time.
