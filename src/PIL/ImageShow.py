@@ -63,16 +63,12 @@ class Viewer(object):
     def show(self, image, **options):
 
         # save temporary image to disk
-        if image.mode[:4] == "I;16":
-            # @PIL88 @PIL101
-            # "I;16" isn't an 'official' mode, but we still want to
-            # provide a simple way to show 16-bit images.
-            base = "L"
-            # FIXME: auto-contrast if max() > 255?
-        else:
+        if not (
+            image.mode in ("1", "RGBA") or (self.format == "PNG" and image.mode == "LA")
+        ):
             base = Image.getmodebase(image.mode)
-        if base != image.mode and image.mode != "1" and image.mode != "RGBA":
-            image = image.convert(base)
+            if image.mode != base:
+                image = image.convert(base)
 
         return self.show_image(image, **options)
 
@@ -128,7 +124,7 @@ elif sys.platform == "darwin":
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
-            command = "open -a /Applications/Preview.app"
+            command = "open -a Preview.app"
             command = "(%s %s; sleep 20; rm -f %s)&" % (
                 command,
                 quote(file),
@@ -143,12 +139,7 @@ elif sys.platform == "darwin":
                 f.write(file)
             with open(path, "r") as f:
                 subprocess.Popen(
-                    [
-                        "im=$(cat);"
-                        "open -a /Applications/Preview.app $im;"
-                        "sleep 20;"
-                        "rm -f $im"
-                    ],
+                    ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
                     shell=True,
                     stdin=f,
                 )

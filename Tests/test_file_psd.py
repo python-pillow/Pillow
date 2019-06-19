@@ -16,6 +16,12 @@ class TestImagePsd(PillowTestCase):
         im2 = hopper()
         self.assert_image_similar(im, im2, 4.8)
 
+    def test_unclosed_file(self):
+        def open():
+            im = Image.open(test_file)
+            im.load()
+        self.assert_warning(None, open)
+
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
@@ -62,6 +68,12 @@ class TestImagePsd(PillowTestCase):
         im = Image.open(test_file)
 
         self.assertRaises(EOFError, im.seek, -1)
+
+    def test_open_after_exclusive_load(self):
+        im = Image.open(test_file)
+        im.load()
+        im.seek(im.tell()+1)
+        im.load()
 
     def test_icc_profile(self):
         im = Image.open(test_file)

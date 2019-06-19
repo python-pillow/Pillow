@@ -54,6 +54,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
     format = "PSD"
     format_description = "Adobe Photoshop"
+    _close_exclusive_fp_after_loading = False
 
     def _open(self):
 
@@ -128,7 +129,7 @@ class PsdImageFile(ImageFile.ImageFile):
         self.tile = _maketile(self.fp, mode, (0, 0) + self.size, channels)
 
         # keep the file open
-        self._fp = self.fp
+        self.__fp = self.fp
         self.frame = 1
         self._min_frame = 1
 
@@ -150,7 +151,7 @@ class PsdImageFile(ImageFile.ImageFile):
             self.mode = mode
             self.tile = tile
             self.frame = layer
-            self.fp = self._fp
+            self.fp = self.__fp
             return name, bbox
         except IndexError:
             raise EOFError("no such layer")
@@ -166,6 +167,15 @@ class PsdImageFile(ImageFile.ImageFile):
         # create palette (optional)
         if self.mode == "P":
             Image.Image.load(self)
+
+    def _close__fp(self):
+        try:
+            if self.__fp != self.fp:
+                self.__fp.close()
+        except AttributeError:
+            pass
+        finally:
+            self.__fp = None
 
 
 def _layerinfo(file):

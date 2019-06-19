@@ -251,8 +251,6 @@ class IcnsImageFile(ImageFile.ImageFile):
             self.best_size[0] * self.best_size[2],
             self.best_size[1] * self.best_size[2],
         )
-        # Just use this to see if it's loaded or not yet.
-        self.tile = ("",)
 
     @property
     def size(self):
@@ -286,7 +284,8 @@ class IcnsImageFile(ImageFile.ImageFile):
             )
 
         Image.Image.load(self)
-        if not self.tile:
+        if self.im and self.im.size == self.size:
+            # Already loaded
             return
         self.load_prepare()
         # This is likely NOT the best way to do it, but whatever.
@@ -298,11 +297,6 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
-        if self._exclusive_fp:
-            self.fp.close()
-        self.fp = None
-        self.icns = None
-        self.tile = ()
         self.load_end()
 
 
