@@ -159,6 +159,18 @@ class TestImagecomplextext(PillowTestCase):
 
         self.assert_image_similar(im, target_img, .5)
 
+    def test_x_max_and_y_offset(self):
+        ttf = ImageFont.truetype("Tests/fonts/ArefRuqaa-Regular.ttf", 40)
+
+        im = Image.new(mode='RGB', size=(50, 100))
+        draw = ImageDraw.Draw(im)
+        draw.text((0, 0), 'لح', font=ttf, fill=500)
+
+        target = 'Tests/images/test_x_max_and_y_offset.png'
+        target_img = Image.open(target)
+
+        self.assert_image_similar(im, target_img, .5)
+
     def test_language(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 

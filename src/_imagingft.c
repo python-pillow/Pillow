@@ -618,7 +618,7 @@ text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *featu
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
-    int x_max, x_min, y_max, y_min;
+    int x_position, x_max, x_min, y_max, y_min;
     FT_Face face;
     int xoffset, yoffset;
     int horizontal_dir;
@@ -634,18 +634,18 @@ font_getsize(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang))
         return NULL;
 
-    face = NULL;
-    xoffset = yoffset = 0;
-    x_max = x_min = y_max = y_min = 0;
-
     count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
+    face = NULL;
+    xoffset = yoffset = 0;
+    x_position = x_max = x_min = y_max = y_min = 0;
+
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
     for (i = 0; i < count; i++) {
-        int index, error;
+        int index, error, offset, x_advanced;
         FT_BBox bbox;
         FT_Glyph glyph;
         face = self->face;
@@ -661,7 +661,7 @@ font_getsize(FontObject* self, PyObject* args)
             if (horizontal_dir) {
                 if (face->glyph->metrics.horiBearingX < 0) {
                     xoffset = face->glyph->metrics.horiBearingX;
-                    x_max -= xoffset;
+                    x_position -= xoffset;
                 }
             } else {
                 if (face->glyph->metrics.vertBearingY < 0) {
@@ -674,17 +674,16 @@ font_getsize(FontObject* self, PyObject* args)
         FT_Get_Glyph(face->glyph, &glyph);
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
         if (horizontal_dir) {
-            x_max += glyph_info[i].x_advance;
+            x_position += glyph_info[i].x_advance;
 
-            if (i == count - 1) {
-                // trim end gap from final glyph
-                int offset;
-                offset = glyph_info[i].x_advance -
-                        face->glyph->metrics.width -
-                        face->glyph->metrics.horiBearingX;
-                if (offset < 0)
-                    x_max -= offset;
-            }
+            x_advanced = x_position;
+            offset = glyph_info[i].x_advance -
+                    face->glyph->metrics.width -
+                    face->glyph->metrics.horiBearingX;
+            if (offset < 0)
+                x_advanced -= offset;
+            if (x_advanced > x_max)
+                x_max = x_advanced;
 
             bbox.yMax += glyph_info[i].y_offset;
             bbox.yMin += glyph_info[i].y_offset;
