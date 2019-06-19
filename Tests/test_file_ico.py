@@ -93,7 +93,7 @@ class TestFileIco(PillowTestCase):
         outfile = self.tempfile("temp_saved_hopper_draw.ico")
 
         draw = ImageDraw.Draw(im)
-        draw.line((0, 0) + im.size, '#f00')
+        draw.line((0, 0) + im.size, "#f00")
         im.save(outfile)
 
         im = Image.open(outfile)

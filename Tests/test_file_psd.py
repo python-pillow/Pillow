@@ -20,6 +20,7 @@ class TestImagePsd(PillowTestCase):
         def open():
             im = Image.open(test_file)
             im.load()
+
         self.assert_warning(None, open)
 
     def test_invalid_file(self):
@@ -72,7 +73,7 @@ class TestImagePsd(PillowTestCase):
     def test_open_after_exclusive_load(self):
         im = Image.open(test_file)
         im.load()
-        im.seek(im.tell()+1)
+        im.seek(im.tell() + 1)
         im.load()
 
     def test_icc_profile(self):

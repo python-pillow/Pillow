@@ -25,10 +25,16 @@ class TestImageMode(PillowTestCase):
         self.assertEqual(m.basemode, "L")
         self.assertEqual(m.basetype, "L")
 
-        for mode in ("I;16", "I;16S",
-                     "I;16L", "I;16LS",
-                     "I;16B", "I;16BS",
-                     "I;16N", "I;16NS"):
+        for mode in (
+            "I;16",
+            "I;16S",
+            "I;16L",
+            "I;16LS",
+            "I;16B",
+            "I;16BS",
+            "I;16N",
+            "I;16NS",
+        ):
             m = ImageMode.getmode(mode)
             self.assertEqual(m.mode, mode)
             self.assertEqual(str(m), mode)
