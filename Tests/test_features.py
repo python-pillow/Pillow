@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+
+import io
+
 from .helper import unittest, PillowTestCase
 
 from PIL import features
@@ -63,3 +67,25 @@ class TestFeatures(PillowTestCase):
         module = "unsupported_module"
         # Act / Assert
         self.assertRaises(ValueError, features.check_module, module)
+
+    def test_pilinfo(self):
+        buf = io.StringIO()
+        features.pilinfo(buf)
+        out = buf.getvalue()
+        lines = out.splitlines()
+        self.assertEqual(lines[0], "-" * 68)
+        self.assertTrue(lines[1].startswith("Pillow "))
+        self.assertEqual(lines[2], "-" * 68)
+        self.assertTrue(lines[3].startswith("Python modules loaded from "))
+        self.assertTrue(lines[4].startswith("Binary modules loaded from "))
+        self.assertEqual(lines[5], "-" * 68)
+        self.assertTrue(lines[6].startswith("Python "))
+        jpeg = (
+            "\n" +
+            "-" * 68 + "\n" +
+            "JPEG image/jpeg\n" +
+            "Extensions: .jfif, .jpe, .jpeg, .jpg\n" +
+            "Features: open, save\n" +
+            "-" * 68 + "\n"
+        )
+        self.assertIn(jpeg, out)
