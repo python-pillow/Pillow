@@ -5,6 +5,21 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Do not down-convert if image is LA when showing with PNG format #3869
+  [radarhere]
+
+- Improve handling of PSD frames #3759
+  [radarhere]
+
+- Improved ICO and ICNS loading #3897
+  [radarhere]
+
+- Changed Preview application path so that it is no longer static #3896
+  [radarhere]
+
+- Corrected ttb text positioning #3856
+  [radarhere]
+
 - Handle unexpected ICO image sizes #3836
   [radarhere]
 
