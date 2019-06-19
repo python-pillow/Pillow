@@ -5,6 +5,15 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Fixed bugs in calculating text size #3864
+  [radarhere]
+
+- Add __main__.py to output basic format and support information #3870
+  [jdufresne]
+
+- Added variation font support #3802
+  [radarhere]
+
 - Do not down-convert if image is LA when showing with PNG format #3869
   [radarhere]
 
