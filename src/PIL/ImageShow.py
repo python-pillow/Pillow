@@ -128,7 +128,7 @@ elif sys.platform == "darwin":
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
-            command = "open -a /Applications/Preview.app"
+            command = "open -a Preview.app"
             command = "(%s %s; sleep 20; rm -f %s)&" % (
                 command,
                 quote(file),
@@ -143,12 +143,7 @@ elif sys.platform == "darwin":
                 f.write(file)
             with open(path, "r") as f:
                 subprocess.Popen(
-                    [
-                        "im=$(cat);"
-                        "open -a /Applications/Preview.app $im;"
-                        "sleep 20;"
-                        "rm -f $im"
-                    ],
+                    ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
                     shell=True,
                     stdin=f,
                 )
