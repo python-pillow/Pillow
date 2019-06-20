@@ -23,6 +23,7 @@
 
 
 import struct
+import warnings
 from io import BytesIO
 
 from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
@@ -41,16 +42,20 @@ _MAGIC = b"\0\0\1\0"
 
 def _save(im, fp, filename):
     fp.write(_MAGIC)  # (2+2)
-    sizes = im.encoderinfo.get("sizes",
-                               [(16, 16), (24, 24), (32, 32), (48, 48),
-                                (64, 64), (128, 128), (256, 256)])
+    sizes = im.encoderinfo.get(
+        "sizes",
+        [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+    )
     width, height = im.size
-    sizes = filter(lambda x: False if (x[0] > width or x[1] > height or
-                                       x[0] > 256 or x[1] > 256) else True,
-                   sizes)
+    sizes = filter(
+        lambda x: False
+        if (x[0] > width or x[1] > height or x[0] > 256 or x[1] > 256)
+        else True,
+        sizes,
+    )
     sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
-    offset = fp.tell() + len(sizes)*16
+    offset = fp.tell() + len(sizes) * 16
     for size in sizes:
         width, height = size
         # 0 means 256
@@ -103,54 +108,60 @@ class IcoFile(object):
             s = buf.read(16)
 
             icon_header = {
-                'width': i8(s[0]),
-                'height': i8(s[1]),
-                'nb_color': i8(s[2]),  # No. of colors in image (0 if >=8bpp)
-                'reserved': i8(s[3]),
-                'planes': i16(s[4:]),
-                'bpp': i16(s[6:]),
-                'size': i32(s[8:]),
-                'offset': i32(s[12:])
+                "width": i8(s[0]),
+                "height": i8(s[1]),
+                "nb_color": i8(s[2]),  # No. of colors in image (0 if >=8bpp)
+                "reserved": i8(s[3]),
+                "planes": i16(s[4:]),
+                "bpp": i16(s[6:]),
+                "size": i32(s[8:]),
+                "offset": i32(s[12:]),
             }
 
             # See Wikipedia
-            for j in ('width', 'height'):
+            for j in ("width", "height"):
                 if not icon_header[j]:
                     icon_header[j] = 256
 
             # See Wikipedia notes about color depth.
             # We need this just to differ images with equal sizes
-            icon_header['color_depth'] = (icon_header['bpp'] or
-                                          (icon_header['nb_color'] != 0 and
-                                           ceil(log(icon_header['nb_color'],
-                                                    2))) or 256)
+            icon_header["color_depth"] = (
+                icon_header["bpp"]
+                or (
+                    icon_header["nb_color"] != 0
+                    and ceil(log(icon_header["nb_color"], 2))
+                )
+                or 256
+            )
 
-            icon_header['dim'] = (icon_header['width'], icon_header['height'])
-            icon_header['square'] = (icon_header['width'] *
-                                     icon_header['height'])
+            icon_header["dim"] = (icon_header["width"], icon_header["height"])
+            icon_header["square"] = icon_header["width"] * icon_header["height"]
 
             self.entry.append(icon_header)
 
-        self.entry = sorted(self.entry, key=lambda x: x['color_depth'])
+        self.entry = sorted(self.entry, key=lambda x: x["color_depth"])
         # ICO images are usually squares
         # self.entry = sorted(self.entry, key=lambda x: x['width'])
-        self.entry = sorted(self.entry, key=lambda x: x['square'])
+        self.entry = sorted(self.entry, key=lambda x: x["square"])
         self.entry.reverse()
 
     def sizes(self):
         """
         Get a list of all available icon sizes and color depths.
         """
-        return {(h['width'], h['height']) for h in self.entry}
+        return {(h["width"], h["height"]) for h in self.entry}
+
+    def getentryindex(self, size, bpp=False):
+        for (i, h) in enumerate(self.entry):
+            if size == h["dim"] and (bpp is False or bpp == h["color_depth"]):
+                return i
+        return 0
 
     def getimage(self, size, bpp=False):
         """
         Get an image from the icon
         """
-        for (i, h) in enumerate(self.entry):
-            if size == h['dim'] and (bpp is False or bpp == h['color_depth']):
-                return self.frame(i)
-        return self.frame(0)
+        return self.frame(self.getentryindex(size, bpp))
 
     def frame(self, idx):
         """
@@ -159,9 +170,9 @@ class IcoFile(object):
 
         header = self.entry[idx]
 
-        self.buf.seek(header['offset'])
+        self.buf.seek(header["offset"])
         data = self.buf.read(8)
-        self.buf.seek(header['offset'])
+        self.buf.seek(header["offset"])
 
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
@@ -196,11 +207,11 @@ class IcoFile(object):
 
                 # convert to an 8bpp grayscale image
                 mask = Image.frombuffer(
-                    'L',            # 8bpp
-                    im.size,        # (w, h)
-                    alpha_bytes,    # source chars
-                    'raw',          # raw decoder
-                    ('L', 0, -1)    # 8bpp inverted, unpadded, reversed
+                    "L",  # 8bpp
+                    im.size,  # (w, h)
+                    alpha_bytes,  # source chars
+                    "raw",  # raw decoder
+                    ("L", 0, -1),  # 8bpp inverted, unpadded, reversed
                 )
             else:
                 # get AND image from end of bitmap
@@ -212,8 +223,7 @@ class IcoFile(object):
                 # the total mask data is
                 # padded row size * height / bits per char
 
-                and_mask_offset = o + int(im.size[0] * im.size[1] *
-                                          (bpp / 8.0))
+                and_mask_offset = o + int(im.size[0] * im.size[1] * (bpp / 8.0))
                 total_bytes = int((w * im.size[1]) / 8)
 
                 self.buf.seek(and_mask_offset)
@@ -221,17 +231,17 @@ class IcoFile(object):
 
                 # convert raw data to image
                 mask = Image.frombuffer(
-                    '1',            # 1 bpp
-                    im.size,        # (w, h)
-                    mask_data,      # source chars
-                    'raw',          # raw decoder
-                    ('1;I', int(w/8), -1)  # 1bpp inverted, padded, reversed
+                    "1",  # 1 bpp
+                    im.size,  # (w, h)
+                    mask_data,  # source chars
+                    "raw",  # raw decoder
+                    ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
                 )
 
                 # now we have two images, im is XOR image and mask is AND image
 
             # apply mask image as alpha channel
-            im = im.convert('RGBA')
+            im = im.convert("RGBA")
             im.putalpha(mask)
 
         return im
@@ -239,6 +249,7 @@ class IcoFile(object):
 
 ##
 # Image plugin for Windows Icon files.
+
 
 class IcoImageFile(ImageFile.ImageFile):
     """
@@ -256,13 +267,14 @@ class IcoImageFile(ImageFile.ImageFile):
     <casadebender@gmail.com>.
     https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
     """
+
     format = "ICO"
     format_description = "Windows Icon"
 
     def _open(self):
         self.ico = IcoFile(self.fp)
-        self.info['sizes'] = self.ico.sizes()
-        self.size = self.ico.entry[0]['dim']
+        self.info["sizes"] = self.ico.sizes()
+        self.size = self.ico.entry[0]["dim"]
         self.load()
 
     @property
@@ -271,23 +283,35 @@ class IcoImageFile(ImageFile.ImageFile):
 
     @size.setter
     def size(self, value):
-        if value not in self.info['sizes']:
-            raise ValueError(
-                "This is not one of the allowed sizes of this image")
+        if value not in self.info["sizes"]:
+            raise ValueError("This is not one of the allowed sizes of this image")
         self._size = value
 
     def load(self):
+        if self.im and self.im.size == self.size:
+            # Already loaded
+            return
         im = self.ico.getimage(self.size)
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
         self.mode = im.mode
-        self.size = im.size
+        if im.size != self.size:
+            warnings.warn("Image was not the expected size")
+
+            index = self.ico.getentryindex(self.size)
+            sizes = list(self.info["sizes"])
+            sizes[index] = im.size
+            self.info["sizes"] = set(sizes)
+
+            self.size = im.size
 
     def load_seek(self):
         # Flag the ImageFile.Parser so that it
         # just does all the decode at the end.
         pass
+
+
 #
 # --------------------------------------------------------------------
 

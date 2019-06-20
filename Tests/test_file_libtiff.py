@@ -631,6 +631,21 @@ class TestFileLibTiff(LibTiffTestCase):
         # Should not raise UnicodeDecodeError or anything else
         im.save(outfile)
 
+    def test_16bit_RGB_tiff(self):
+        im = Image.open("Tests/images/tiff_16bit_RGB.tiff")
+
+        self.assertEqual(im.mode, "RGB")
+        self.assertEqual(im.size, (100, 40))
+        self.assertEqual(
+            im.tile,
+            [('tiff_adobe_deflate', (0, 0, 100, 40), 0,
+              ('RGB;16N', 'tiff_adobe_deflate', False))]
+        )
+        im.load()
+
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_16bit_RGB_target.png")
+
     def test_16bit_RGBa_tiff(self):
         im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
 
@@ -683,6 +698,12 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_strip_cmyk_jpeg(self):
         infile = "Tests/images/tiff_strip_cmyk_jpeg.tif"
+        im = Image.open(infile)
+
+        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+
+    def test_strip_cmyk_16l_jpeg(self):
+        infile = "Tests/images/tiff_strip_cmyk_16l_jpeg.tif"
         im = Image.open(infile)
 
         self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)

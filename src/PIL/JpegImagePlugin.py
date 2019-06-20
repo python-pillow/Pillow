@@ -51,8 +51,9 @@ __version__ = "0.6"
 #
 # Parser
 
+
 def Skip(self, marker):
-    n = i16(self.fp.read(2))-2
+    n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
 
@@ -61,7 +62,7 @@ def APP(self, marker):
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
 
-    n = i16(self.fp.read(2))-2
+    n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
     app = "APP%d" % (marker & 15)
@@ -110,7 +111,7 @@ def APP(self, marker):
             # parse the image resource block
             offset = 0
             photoshop = {}
-            while blocks[offset:offset+4] == b"8BIM":
+            while blocks[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
                 code = i16(blocks, offset)
@@ -124,19 +125,19 @@ def APP(self, marker):
                 # resource data block
                 size = i32(blocks, offset)
                 offset += 4
-                data = blocks[offset:offset+size]
+                data = blocks[offset : offset + size]
                 if code == 0x03ED:  # ResolutionInfo
                     data = {
-                        'XResolution': i32(data[:4]) / 65536,
-                        'DisplayedUnitsX': i16(data[4:8]),
-                        'YResolution': i32(data[8:12]) / 65536,
-                        'DisplayedUnitsY': i16(data[12:]),
+                        "XResolution": i32(data[:4]) / 65536,
+                        "DisplayedUnitsX": i16(data[4:8]),
+                        "YResolution": i32(data[8:12]) / 65536,
+                        "DisplayedUnitsY": i16(data[12:]),
                     }
                 photoshop[code] = data
                 offset = offset + size
                 if offset & 1:
                     offset += 1
-        self.info["photoshop"] = photoshop
+            self.info["photoshop"] = photoshop
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
@@ -177,7 +178,7 @@ def APP(self, marker):
 def COM(self, marker):
     #
     # Comment marker.  Store these in the APP dictionary.
-    n = i16(self.fp.read(2))-2
+    n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
     self.app["COM"] = s  # compatibility
@@ -192,7 +193,7 @@ def SOF(self, marker):
     # mode.  Note that this could be made a bit brighter, by
     # looking for JFIF and Adobe APP markers.
 
-    n = i16(self.fp.read(2))-2
+    n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s[3:]), i16(s[1:])
 
@@ -227,9 +228,9 @@ def SOF(self, marker):
         self.icclist = None
 
     for i in range(6, len(s), 3):
-        t = s[i:i+3]
+        t = s[i : i + 3]
         # 4-tuples: id, vsamp, hsamp, qtable
-        self.layer.append((t[0], i8(t[1])//16, i8(t[1]) & 15, i8(t[2])))
+        self.layer.append((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
 
 
 def DQT(self, marker):
@@ -241,13 +242,13 @@ def DQT(self, marker):
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
 
-    n = i16(self.fp.read(2))-2
+    n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
         if len(s) < 65:
             raise SyntaxError("bad quantization table marker")
         v = i8(s[0])
-        if v//16 == 0:
+        if v // 16 == 0:
             self.quantization[v & 15] = array.array("B", s[1:65])
             s = s[65:]
         else:
@@ -321,7 +322,7 @@ MARKER = {
     0xFFFB: ("JPG11", "Extension 11", None),
     0xFFFC: ("JPG12", "Extension 12", None),
     0xFFFD: ("JPG13", "Extension 13", None),
-    0xFFFE: ("COM", "Comment", COM)
+    0xFFFE: ("COM", "Comment", COM),
 }
 
 
@@ -331,6 +332,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for JPEG and JFIF images.
+
 
 class JpegImageFile(ImageFile.ImageFile):
 
@@ -375,8 +377,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [("jpeg", (0, 0) + self.size, 0,
-                                 (rawmode, ""))]
+                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -424,8 +425,13 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            e = e[0], e[1], (e[2]-e[0]+s-1)//s+e[0], (e[3]-e[1]+s-1)//s+e[1]
-            self._size = ((self.size[0]+s-1)//s, (self.size[1]+s-1)//s)
+            e = (
+                e[0],
+                e[1],
+                (e[2] - e[0] + s - 1) // s + e[0],
+                (e[3] - e[1] + s - 1) // s + e[1],
+            )
+            self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
         self.tile = [(d, e, o, a)]
@@ -440,6 +446,7 @@ class JpegImageFile(ImageFile.ImageFile):
         import subprocess
         import tempfile
         import os
+
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
@@ -505,7 +512,7 @@ def _getmp(self):
         return None
     file_contents = io.BytesIO(data)
     head = file_contents.read(8)
-    endianness = '>' if head[:4] == b'\x4d\x4d\x00\x2a' else '<'
+    endianness = ">" if head[:4] == b"\x4d\x4d\x00\x2a" else "<"
     # process dictionary
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
@@ -525,37 +532,33 @@ def _getmp(self):
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
             unpackedentry = struct.unpack_from(
-                '{}LLLHH'.format(endianness), rawmpentries, entrynum * 16)
-            labels = ('Attribute', 'Size', 'DataOffset', 'EntryNo1',
-                      'EntryNo2')
+                "{}LLLHH".format(endianness), rawmpentries, entrynum * 16
+            )
+            labels = ("Attribute", "Size", "DataOffset", "EntryNo1", "EntryNo2")
             mpentry = dict(zip(labels, unpackedentry))
             mpentryattr = {
-                'DependentParentImageFlag': bool(mpentry['Attribute'] &
-                                                 (1 << 31)),
-                'DependentChildImageFlag': bool(mpentry['Attribute'] &
-                                                (1 << 30)),
-                'RepresentativeImageFlag': bool(mpentry['Attribute'] &
-                                                (1 << 29)),
-                'Reserved': (mpentry['Attribute'] & (3 << 27)) >> 27,
-                'ImageDataFormat': (mpentry['Attribute'] & (7 << 24)) >> 24,
-                'MPType': mpentry['Attribute'] & 0x00FFFFFF
+                "DependentParentImageFlag": bool(mpentry["Attribute"] & (1 << 31)),
+                "DependentChildImageFlag": bool(mpentry["Attribute"] & (1 << 30)),
+                "RepresentativeImageFlag": bool(mpentry["Attribute"] & (1 << 29)),
+                "Reserved": (mpentry["Attribute"] & (3 << 27)) >> 27,
+                "ImageDataFormat": (mpentry["Attribute"] & (7 << 24)) >> 24,
+                "MPType": mpentry["Attribute"] & 0x00FFFFFF,
             }
-            if mpentryattr['ImageDataFormat'] == 0:
-                mpentryattr['ImageDataFormat'] = 'JPEG'
+            if mpentryattr["ImageDataFormat"] == 0:
+                mpentryattr["ImageDataFormat"] = "JPEG"
             else:
                 raise SyntaxError("unsupported picture format in MPO")
             mptypemap = {
-                0x000000: 'Undefined',
-                0x010001: 'Large Thumbnail (VGA Equivalent)',
-                0x010002: 'Large Thumbnail (Full HD Equivalent)',
-                0x020001: 'Multi-Frame Image (Panorama)',
-                0x020002: 'Multi-Frame Image: (Disparity)',
-                0x020003: 'Multi-Frame Image: (Multi-Angle)',
-                0x030000: 'Baseline MP Primary Image'
+                0x000000: "Undefined",
+                0x010001: "Large Thumbnail (VGA Equivalent)",
+                0x010002: "Large Thumbnail (Full HD Equivalent)",
+                0x020001: "Multi-Frame Image (Panorama)",
+                0x020002: "Multi-Frame Image: (Disparity)",
+                0x020003: "Multi-Frame Image: (Multi-Angle)",
+                0x030000: "Baseline MP Primary Image",
             }
-            mpentryattr['MPType'] = mptypemap.get(mpentryattr['MPType'],
-                                                  'Unknown')
-            mpentry['Attribute'] = mpentryattr
+            mpentryattr["MPType"] = mptypemap.get(mpentryattr["MPType"], "Unknown")
+            mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
     except KeyError:
@@ -578,19 +581,24 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-zigzag_index = (0,  1,  5,  6, 14, 15, 27, 28,  # noqa: E128
-                2,  4,  7, 13, 16, 26, 29, 42,
-                3,  8, 12, 17, 25, 30, 41, 43,
-                9, 11, 18, 24, 31, 40, 44, 53,
-               10, 19, 23, 32, 39, 45, 52, 54,
-               20, 22, 33, 38, 46, 51, 55, 60,
-               21, 34, 37, 47, 50, 56, 59, 61,
-               35, 36, 48, 49, 57, 58, 62, 63)
+# fmt: off
+zigzag_index = (
+    0,  1,  5,  6, 14, 15, 27, 28,
+    2,  4,  7, 13, 16, 26, 29, 42,
+    3,  8, 12, 17, 25, 30, 41, 43,
+    9, 11, 18, 24, 31, 40, 44, 53,
+    10, 19, 23, 32, 39, 45, 52, 54,
+    20, 22, 33, 38, 46, 51, 55, 60,
+    21, 34, 37, 47, 50, 56, 59, 61,
+    35, 36, 48, 49, 57, 58, 62, 63,
+)
 
-samplings = {(1, 1, 1, 1, 1, 1): 0,
-             (2, 1, 1, 1, 1, 1): 1,
-             (2, 2, 1, 1, 1, 1): 2,
-             }
+samplings = {
+    (1, 1, 1, 1, 1, 1): 0,
+    (2, 1, 1, 1, 1, 1): 1,
+    (2, 2, 1, 1, 1, 1): 2,
+}
+# fmt: on
 
 
 def convert_dict_qtables(qtables):
@@ -608,7 +616,7 @@ def get_sampling(im):
     # NOTE: currently Pillow can't encode JPEG to YCCK format.
     # If YCCK support is added in the future, subsampling code will have
     # to be updated (here and in JpegEncode.c) to deal with 4 layers.
-    if not hasattr(im, 'layers') or im.layers in (1, 4):
+    if not hasattr(im, "layers") or im.layers in (1, 4):
         return -1
     sampling = im.layer[0][1:3] + im.layer[1][1:3] + im.layer[2][1:3]
     return samplings.get(sampling, -1)
@@ -636,15 +644,15 @@ def _save(im, fp, filename):
     elif quality in presets:
         preset = presets[quality]
         quality = 0
-        subsampling = preset.get('subsampling', -1)
-        qtables = preset.get('quantization')
+        subsampling = preset.get("subsampling", -1)
+        qtables = preset.get("quantization")
     elif not isinstance(quality, int):
         raise ValueError("Invalid quality setting")
     else:
         if subsampling in presets:
-            subsampling = presets[subsampling].get('subsampling', -1)
+            subsampling = presets[subsampling].get("subsampling", -1)
         if isStringType(qtables) and qtables in presets:
-            qtables = presets[qtables].get('quantization')
+            qtables = presets[qtables].get("quantization")
 
     if subsampling == "4:4:4":
         subsampling = 0
@@ -658,8 +666,7 @@ def _save(im, fp, filename):
         subsampling = 2
     elif subsampling == "keep":
         if im.format != "JPEG":
-            raise ValueError(
-                "Cannot use 'keep' when original image is not a JPEG")
+            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
         subsampling = get_sampling(im)
 
     def validate_qtables(qtables):
@@ -667,12 +674,15 @@ def _save(im, fp, filename):
             return qtables
         if isStringType(qtables):
             try:
-                lines = [int(num) for line in qtables.splitlines()
-                         for num in line.split('#', 1)[0].split()]
+                lines = [
+                    int(num)
+                    for line in qtables.splitlines()
+                    for num in line.split("#", 1)[0].split()
+                ]
             except ValueError:
                 raise ValueError("Invalid quantization table")
             else:
-                qtables = [lines[s:s+64] for s in range(0, len(lines), 64)]
+                qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
                 qtables = convert_dict_qtables(qtables)
@@ -684,7 +694,7 @@ def _save(im, fp, filename):
                 try:
                     if len(table) != 64:
                         raise TypeError
-                    table = array.array('B', table)
+                    table = array.array("B", table)
                 except TypeError:
                     raise ValueError("Invalid quantization table")
                 else:
@@ -693,8 +703,7 @@ def _save(im, fp, filename):
 
     if qtables == "keep":
         if im.format != "JPEG":
-            raise ValueError(
-                "Cannot use 'keep' when original image is not a JPEG")
+            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
         qtables = getattr(im, "quantization", None)
     qtables = validate_qtables(qtables)
 
@@ -712,15 +721,20 @@ def _save(im, fp, filename):
         i = 1
         for marker in markers:
             size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
-            extra += (b"\xFF\xE2" + size + b"ICC_PROFILE\0" + o8(i) +
-                      o8(len(markers)) + marker)
+            extra += (
+                b"\xFF\xE2"
+                + size
+                + b"ICC_PROFILE\0"
+                + o8(i)
+                + o8(len(markers))
+                + marker
+            )
             i += 1
 
     # "progressive" is the official name, but older documentation
     # says "progression"
     # FIXME: issue a warning if the wrong form is used (post-1.1.7)
-    progressive = (info.get("progressive", False) or
-                   info.get("progression", False))
+    progressive = info.get("progressive", False) or info.get("progression", False)
 
     optimize = info.get("optimize", False)
 
@@ -735,12 +749,13 @@ def _save(im, fp, filename):
         info.get("smooth", 0),
         optimize,
         info.get("streamtype", 0),
-        dpi[0], dpi[1],
+        dpi[0],
+        dpi[1],
         subsampling,
         qtables,
         extra,
-        exif
-        )
+        exif,
+    )
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
@@ -749,7 +764,7 @@ def _save(im, fp, filename):
     bufsize = 0
     if optimize or progressive:
         # CMYK can be bigger
-        if im.mode == 'CMYK':
+        if im.mode == "CMYK":
             bufsize = 4 * im.size[0] * im.size[1]
         # keep sets quality to 0, but the actual value may be high.
         elif quality >= 95 or quality == 0:
@@ -759,16 +774,16 @@ def _save(im, fp, filename):
 
     # The EXIF info needs to be written as one block, + APP1, + one spare byte.
     # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5,
-                  len(extra) + 1)
+    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5, len(extra) + 1)
 
-    ImageFile._save(im, fp, [("jpeg", (0, 0)+im.size, 0, rawmode)], bufsize)
+    ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     import os
     import subprocess
+
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:
@@ -786,14 +801,17 @@ def jpeg_factory(fp=None, filename=None):
         if mpheader[45057] > 1:
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
+
             # Don't reload everything, just convert it.
             im = MpoImageFile.adopt(im, mpheader)
     except (TypeError, IndexError):
         # It is really a JPEG
         pass
     except SyntaxError:
-        warnings.warn("Image appears to be a malformed MPO file, it will be "
-                      "interpreted as a base JPEG file")
+        warnings.warn(
+            "Image appears to be a malformed MPO file, it will be "
+            "interpreted as a base JPEG file"
+        )
     return im
 
 
@@ -803,7 +821,6 @@ def jpeg_factory(fp=None, filename=None):
 Image.register_open(JpegImageFile.format, jpeg_factory, _accept)
 Image.register_save(JpegImageFile.format, _save)
 
-Image.register_extensions(JpegImageFile.format,
-                          [".jfif", ".jpe", ".jpg", ".jpeg"])
+Image.register_extensions(JpegImageFile.format, [".jfif", ".jpe", ".jpg", ".jpeg"])
 
 Image.register_mime(JpegImageFile.format, "image/jpeg")

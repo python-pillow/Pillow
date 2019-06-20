@@ -39,6 +39,7 @@ def _accept(prefix):
 ##
 # Image plugin for the Intel DCX format.
 
+
 class DcxImageFile(PcxImageFile):
 
     format = "DCX"

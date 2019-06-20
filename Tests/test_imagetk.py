@@ -61,9 +61,8 @@ class TestImageTk(PillowTestCase):
             self.assertEqual(im_tk.width(), im.width)
             self.assertEqual(im_tk.height(), im.height)
 
-            # _tkinter.TclError: this function is not yet supported
-            # reloaded = ImageTk.getimage(im_tk)
-            # self.assert_image_equal(reloaded, im)
+            reloaded = ImageTk.getimage(im_tk)
+            self.assert_image_equal(reloaded, im.convert("RGBA"))
 
     def test_photoimage_blank(self):
         # test a image using mode/size:

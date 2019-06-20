@@ -1,7 +1,7 @@
 from .helper import PillowTestCase, hopper
 
 import io
-from PIL import Image, IcoImagePlugin
+from PIL import Image, ImageDraw, IcoImagePlugin
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
@@ -83,3 +83,23 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(
             im_saved.info['sizes'],
             {(16, 16), (24, 24), (32, 32), (48, 48)})
+
+    def test_unexpected_size(self):
+        # This image has been manually hexedited to state that it is 16x32
+        # while the image within is still 16x16
+        im = self.assert_warning(UserWarning,
+                                 Image.open, "Tests/images/hopper_unexpected.ico")
+        self.assertEqual(im.size, (16, 16))
+
+    def test_draw_reloaded(self):
+        im = Image.open(TEST_ICO_FILE)
+        outfile = self.tempfile("temp_saved_hopper_draw.ico")
+
+        draw = ImageDraw.Draw(im)
+        draw.line((0, 0) + im.size, '#f00')
+        im.save(outfile)
+
+        im = Image.open(outfile)
+        im.save("Tests/images/hopper_draw.ico")
+        reloaded = Image.open("Tests/images/hopper_draw.ico")
+        self.assert_image_equal(im, reloaded)

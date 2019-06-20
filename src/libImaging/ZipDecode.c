@@ -41,7 +41,7 @@ static int get_row_len(ImagingCodecState state, int pass)
 /* -------------------------------------------------------------------- */
 
 int
-ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
+ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
     ZIPSTATE* context = (ZIPSTATE*) state->context;
     int err;

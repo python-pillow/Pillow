@@ -12,6 +12,19 @@ import re
 
 LUT_SIZE = 1 << 9
 
+# fmt: off
+ROTATION_MATRIX = [
+    6, 3, 0,
+    7, 4, 1,
+    8, 5, 2,
+]
+MIRROR_MATRIX = [
+    2, 1, 0,
+    5, 4, 3,
+    8, 7, 6,
+]
+# fmt: on
+
 
 class LutBuilder(object):
     """A class for building a MorphLut from a descriptive language
@@ -48,6 +61,7 @@ class LutBuilder(object):
           lut = lb.build_lut()
 
     """
+
     def __init__(self, patterns=None, op_name=None):
         if patterns is not None:
             self.patterns = patterns
@@ -56,20 +70,19 @@ class LutBuilder(object):
         self.lut = None
         if op_name is not None:
             known_patterns = {
-                'corner': ['1:(... ... ...)->0',
-                           '4:(00. 01. ...)->1'],
-                'dilation4': ['4:(... .0. .1.)->1'],
-                'dilation8': ['4:(... .0. .1.)->1',
-                              '4:(... .0. ..1)->1'],
-                'erosion4': ['4:(... .1. .0.)->0'],
-                'erosion8': ['4:(... .1. .0.)->0',
-                             '4:(... .1. ..0)->0'],
-                'edge': ['1:(... ... ...)->0',
-                         '4:(.0. .1. ...)->1',
-                         '4:(01. .1. ...)->1']
+                "corner": ["1:(... ... ...)->0", "4:(00. 01. ...)->1"],
+                "dilation4": ["4:(... .0. .1.)->1"],
+                "dilation8": ["4:(... .0. .1.)->1", "4:(... .0. ..1)->1"],
+                "erosion4": ["4:(... .1. .0.)->0"],
+                "erosion8": ["4:(... .1. .0.)->0", "4:(... .1. ..0)->0"],
+                "edge": [
+                    "1:(... ... ...)->0",
+                    "4:(.0. .1. ...)->1",
+                    "4:(01. .1. ...)->1",
+                ],
             }
             if op_name not in known_patterns:
-                raise Exception('Unknown pattern '+op_name+'!')
+                raise Exception("Unknown pattern " + op_name + "!")
 
             self.patterns = known_patterns[op_name]
 
@@ -88,8 +101,8 @@ class LutBuilder(object):
         """string_permute takes a pattern and a permutation and returns the
         string permuted according to the permutation list.
         """
-        assert(len(permutation) == 9)
-        return ''.join(pattern[p] for p in permutation)
+        assert len(permutation) == 9
+        return "".join(pattern[p] for p in permutation)
 
     def _pattern_permute(self, basic_pattern, options, basic_result):
         """pattern_permute takes a basic pattern and its result and clones
@@ -98,32 +111,25 @@ class LutBuilder(object):
         patterns = [(basic_pattern, basic_result)]
 
         # rotations
-        if '4' in options:
+        if "4" in options:
             res = patterns[-1][1]
             for i in range(4):
                 patterns.append(
-                    (self._string_permute(patterns[-1][0], [6, 3, 0,
-                                                            7, 4, 1,
-                                                            8, 5, 2]), res))
+                    (self._string_permute(patterns[-1][0], ROTATION_MATRIX), res)
+                )
         # mirror
-        if 'M' in options:
+        if "M" in options:
             n = len(patterns)
             for pattern, res in patterns[0:n]:
-                patterns.append(
-                    (self._string_permute(pattern, [2, 1, 0,
-                                                    5, 4, 3,
-                                                    8, 7, 6]), res))
+                patterns.append((self._string_permute(pattern, MIRROR_MATRIX), res))
 
         # negate
-        if 'N' in options:
+        if "N" in options:
             n = len(patterns)
             for pattern, res in patterns[0:n]:
                 # Swap 0 and 1
-                pattern = (pattern
-                           .replace('0', 'Z')
-                           .replace('1', '0')
-                           .replace('Z', '1'))
-                res = 1-int(res)
+                pattern = pattern.replace("0", "Z").replace("1", "0").replace("Z", "1")
+                res = 1 - int(res)
                 patterns.append((pattern, res))
 
         return patterns
@@ -138,22 +144,21 @@ class LutBuilder(object):
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.search(
-                r'(\w*):?\s*\((.+?)\)\s*->\s*(\d)', p.replace('\n', ''))
+            m = re.search(r"(\w*):?\s*\((.+?)\)\s*->\s*(\d)", p.replace("\n", ""))
             if not m:
-                raise Exception('Syntax error in pattern "'+p+'"')
+                raise Exception('Syntax error in pattern "' + p + '"')
             options = m.group(1)
             pattern = m.group(2)
             result = int(m.group(3))
 
             # Get rid of spaces
-            pattern = pattern.replace(' ', '').replace('\n', '')
+            pattern = pattern.replace(" ", "").replace("\n", "")
 
             patterns += self._pattern_permute(pattern, options, result)
 
         # compile the patterns into regular expressions for speed
         for i, pattern in enumerate(patterns):
-            p = pattern[0].replace('.', 'X').replace('X', '[01]')
+            p = pattern[0].replace(".", "X").replace("X", "[01]")
             p = re.compile(p)
             patterns[i] = (p, pattern[1])
 
@@ -163,7 +168,7 @@ class LutBuilder(object):
         for i in range(LUT_SIZE):
             # Build the bit pattern
             bitpattern = bin(i)[2:]
-            bitpattern = ('0'*(9-len(bitpattern)) + bitpattern)[::-1]
+            bitpattern = ("0" * (9 - len(bitpattern)) + bitpattern)[::-1]
 
             for p, r in patterns:
                 if p.match(bitpattern):
@@ -175,10 +180,7 @@ class LutBuilder(object):
 class MorphOp(object):
     """A class for binary morphological operators"""
 
-    def __init__(self,
-                 lut=None,
-                 op_name=None,
-                 patterns=None):
+    def __init__(self, lut=None, op_name=None, patterns=None):
         """Create a binary morphological operator"""
         self.lut = lut
         if op_name is not None:
@@ -192,13 +194,12 @@ class MorphOp(object):
         Returns a tuple of the number of changed pixels and the
         morphed image"""
         if self.lut is None:
-            raise Exception('No operator loaded')
+            raise Exception("No operator loaded")
 
-        if image.mode != 'L':
-            raise Exception('Image must be binary, meaning it must use mode L')
+        if image.mode != "L":
+            raise Exception("Image must be binary, meaning it must use mode L")
         outimage = Image.new(image.mode, image.size, None)
-        count = _imagingmorph.apply(
-            bytes(self.lut), image.im.id, outimage.im.id)
+        count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
         return count, outimage
 
     def match(self, image):
@@ -208,10 +209,10 @@ class MorphOp(object):
         Returns a list of tuples of (x,y) coordinates
         of all matching pixels. See :ref:`coordinate-system`."""
         if self.lut is None:
-            raise Exception('No operator loaded')
+            raise Exception("No operator loaded")
 
-        if image.mode != 'L':
-            raise Exception('Image must be binary, meaning it must use mode L')
+        if image.mode != "L":
+            raise Exception("Image must be binary, meaning it must use mode L")
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
     def get_on_pixels(self, image):
@@ -220,24 +221,24 @@ class MorphOp(object):
         Returns a list of tuples of (x,y) coordinates
         of all matching pixels. See :ref:`coordinate-system`."""
 
-        if image.mode != 'L':
-            raise Exception('Image must be binary, meaning it must use mode L')
+        if image.mode != "L":
+            raise Exception("Image must be binary, meaning it must use mode L")
         return _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename):
         """Load an operator from an mrl file"""
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             self.lut = bytearray(f.read())
 
         if len(self.lut) != LUT_SIZE:
             self.lut = None
-            raise Exception('Wrong size operator file!')
+            raise Exception("Wrong size operator file!")
 
     def save_lut(self, filename):
         """Save an operator to an mrl file"""
         if self.lut is None:
-            raise Exception('No operator loaded')
-        with open(filename, 'wb') as f:
+            raise Exception("No operator loaded")
+        with open(filename, "wb") as f:
             f.write(self.lut)
 
     def set_lut(self, lut):

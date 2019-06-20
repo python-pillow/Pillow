@@ -37,6 +37,7 @@ __version__ = "0.1"
 # this plugin, you have to import the <b>GdImageFile</b> module and
 # use the <b>GdImageFile.open</b> function.
 
+
 class GdImageFile(ImageFile.ImageFile):
 
     format = "GD"
@@ -57,15 +58,17 @@ class GdImageFile(ImageFile.ImageFile):
         trueColorOffset = 2 if trueColor else 0
 
         # transparency index
-        tindex = i32(s[7+trueColorOffset:7+trueColorOffset+4])
+        tindex = i32(s[7 + trueColorOffset : 7 + trueColorOffset + 4])
         if tindex < 256:
             self.info["transparency"] = tindex
 
         self.palette = ImagePalette.raw(
-            "XBGR", s[7+trueColorOffset+4:7+trueColorOffset+4+256*4])
+            "XBGR", s[7 + trueColorOffset + 4 : 7 + trueColorOffset + 4 + 256 * 4]
+        )
 
-        self.tile = [("raw", (0, 0)+self.size, 7+trueColorOffset+4+256*4,
-                      ("L", 0, 1))]
+        self.tile = [
+            ("raw", (0, 0) + self.size, 7 + trueColorOffset + 4 + 256 * 4, ("L", 0, 1))
+        ]
 
 
 def open(fp, mode="r"):

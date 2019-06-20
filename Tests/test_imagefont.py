@@ -7,6 +7,7 @@ import os
 import sys
 import copy
 import re
+import shutil
 import distutils.version
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -130,6 +131,27 @@ class TestImageFont(PillowTestCase):
     def test_font_with_open_file(self):
         with open(FONT_PATH, 'rb') as f:
             self._render(f)
+
+    def test_non_unicode_path(self):
+        try:
+            tempfile = self.tempfile("temp_"+chr(128)+".ttf")
+        except UnicodeEncodeError:
+            self.skipTest("Unicode path could not be created")
+        shutil.copy(FONT_PATH, tempfile)
+
+        ImageFont.truetype(tempfile, FONT_SIZE)
+
+    def test_unavailable_layout_engine(self):
+        have_raqm = ImageFont.core.HAVE_RAQM
+        ImageFont.core.HAVE_RAQM = False
+
+        try:
+            ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE,
+                                     layout_engine=ImageFont.LAYOUT_RAQM)
+        finally:
+            ImageFont.core.HAVE_RAQM = have_raqm
+
+        self.assertEqual(ttf.layout_engine, ImageFont.LAYOUT_BASIC)
 
     def _render(self, font):
         txt = "Hello World!"
@@ -400,6 +422,7 @@ class TestImageFont(PillowTestCase):
 
         # Act/Assert
         self.assertRaises(IOError, ImageFont.load_path, filename)
+        self.assertRaises(IOError, ImageFont.truetype, filename)
 
     def test_default_font(self):
         # Arrange
@@ -546,6 +569,91 @@ class TestImageFont(PillowTestCase):
             self.assertRaises(KeyError, t.getmask, 'абвг', direction='rtl')
             self.assertRaises(KeyError, t.getmask, 'абвг', features=['-kern'])
             self.assertRaises(KeyError, t.getmask, 'абвг', language='sr')
+
+    def test_variation_get(self):
+        font = self.get_font()
+
+        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        if freetype < '2.9.1':
+            self.assertRaises(NotImplementedError, font.get_variation_names)
+            self.assertRaises(NotImplementedError, font.get_variation_axes)
+            return
+
+        self.assertRaises(IOError, font.get_variation_names)
+        self.assertRaises(IOError, font.get_variation_axes)
+
+        font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
+        self.assertEqual(
+            font.get_variation_names(),
+            [b'ExtraLight', b'Light', b'Regular', b'Semibold', b'Bold',
+             b'Black', b'Black Medium Contrast', b'Black High Contrast', b'Default'])
+        self.assertEqual(
+            font.get_variation_axes(),
+            [{'name': b'Weight', 'minimum': 200, 'maximum': 900, 'default': 389},
+             {'name': b'Contrast', 'minimum': 0, 'maximum': 100, 'default': 0}])
+
+        font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf")
+        self.assertEqual(
+            font.get_variation_names(),
+            [b'20', b'40', b'60', b'80', b'100', b'120', b'140', b'160', b'180',
+             b'200', b'220', b'240', b'260', b'280', b'300', b'Regular'])
+        self.assertEqual(
+            font.get_variation_axes(),
+            [{'name': b'Size', 'minimum': 0, 'maximum': 300, 'default': 0}])
+
+    def test_variation_set_by_name(self):
+        font = self.get_font()
+
+        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        if freetype < '2.9.1':
+            self.assertRaises(NotImplementedError, font.set_variation_by_name, "Bold")
+            return
+
+        self.assertRaises(IOError, font.set_variation_by_name, "Bold")
+
+        def _check_text(font, path, epsilon):
+            im = Image.new("RGB", (100, 75), "white")
+            d = ImageDraw.Draw(im)
+            d.text((10, 10), "Text", font=font, fill="black")
+
+            expected = Image.open(path)
+            self.assert_image_similar(im, expected, epsilon)
+        font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
+        _check_text(font, "Tests/images/variation_adobe.png", 11)
+        for name in ["Bold", b"Bold"]:
+            font.set_variation_by_name(name)
+        _check_text(font, "Tests/images/variation_adobe_name.png", 11)
+
+        font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
+        _check_text(font, "Tests/images/variation_tiny.png", 40)
+        for name in ["200", b"200"]:
+            font.set_variation_by_name(name)
+        _check_text(font, "Tests/images/variation_tiny_name.png", 40)
+
+    def test_variation_set_by_axes(self):
+        font = self.get_font()
+
+        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        if freetype < '2.9.1':
+            self.assertRaises(NotImplementedError, font.set_variation_by_axes, [100])
+            return
+
+        self.assertRaises(IOError, font.set_variation_by_axes, [500, 50])
+
+        def _check_text(font, path, epsilon):
+            im = Image.new("RGB", (100, 75), "white")
+            d = ImageDraw.Draw(im)
+            d.text((10, 10), "Text", font=font, fill="black")
+
+            expected = Image.open(path)
+            self.assert_image_similar(im, expected, epsilon)
+        font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
+        font.set_variation_by_axes([500, 50])
+        _check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
+
+        font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
+        font.set_variation_by_axes([100])
+        _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
 @unittest.skipUnless(HAS_RAQM, "Raqm not Available")

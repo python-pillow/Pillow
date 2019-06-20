@@ -21,13 +21,14 @@ from ._binary import o8
 ##
 # File handler for GIMP's palette format.
 
+
 class GimpPaletteFile(object):
 
     rawmode = "RGB"
 
     def __init__(self, fp):
 
-        self.palette = [o8(i)*3 for i in range(256)]
+        self.palette = [o8(i) * 3 for i in range(256)]
 
         if fp.readline()[:12] != b"GIMP Palette":
             raise SyntaxError("not a GIMP palette file")

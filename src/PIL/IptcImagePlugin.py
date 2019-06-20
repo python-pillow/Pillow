@@ -26,10 +26,7 @@ import tempfile
 # PIL.__version__ instead.
 __version__ = "0.3"
 
-COMPRESSION = {
-    1: "raw",
-    5: "jpeg"
-}
+COMPRESSION = {1: "raw", 5: "jpeg"}
 
 PAD = o8(0) * 4
 
@@ -37,19 +34,21 @@ PAD = o8(0) * 4
 #
 # Helpers
 
+
 def i(c):
     return i32((PAD + c)[-4:])
 
 
 def dump(c):
     for i in c:
-        print("%02x" % i8(i), end=' ')
+        print("%02x" % i8(i), end=" ")
     print()
 
 
 ##
 # Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields
 # from TIFF and JPEG files, use the <b>getiptcinfo</b> function.
+
 
 class IptcImageFile(ImageFile.ImageFile):
 
@@ -79,7 +78,7 @@ class IptcImageFile(ImageFile.ImageFile):
         elif size == 128:
             size = 0
         elif size > 128:
-            size = i(self.fp.read(size-128))
+            size = i(self.fp.read(size - 128))
         else:
             size = i16(s[3:])
 
@@ -109,7 +108,7 @@ class IptcImageFile(ImageFile.ImageFile):
         layers = i8(self.info[(3, 60)][0])
         component = i8(self.info[(3, 60)][1])
         if (3, 65) in self.info:
-            id = i8(self.info[(3, 65)][0])-1
+            id = i8(self.info[(3, 65)][0]) - 1
         else:
             id = 0
         if layers == 1 and not component:
@@ -130,8 +129,9 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [("iptc", (compression, offset),
-                         (0, 0, self.size[0], self.size[1]))]
+            self.tile = [
+                ("iptc", (compression, offset), (0, 0, self.size[0], self.size[1]))
+            ]
 
     def load(self):
 
@@ -216,6 +216,7 @@ def getiptcinfo(im):
     # create an IptcImagePlugin object without initializing it
     class FakeImage(object):
         pass
+
     im = FakeImage()
     im.__class__ = IptcImageFile
 

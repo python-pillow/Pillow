@@ -663,3 +663,9 @@ class TestFileGif(PillowTestCase):
         self.assertEqual(im.tile[0][3][0], 11)  # LZW bits
         # codec error prepatch
         im.load()
+
+    def test_extents(self):
+        im = Image.open('Tests/images/test_extents.gif')
+        self.assertEqual(im.size, (100, 100))
+        im.seek(1)
+        self.assertEqual(im.size, (150, 150))

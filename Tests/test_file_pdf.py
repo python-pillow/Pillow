@@ -26,6 +26,11 @@ class TestFilePdf(PillowTestCase):
                 self.assertGreater(len(pdf.pages), 1)
             else:
                 self.assertGreater(len(pdf.pages), 0)
+        with open(outfile, 'rb') as fp:
+            contents = fp.read()
+        size = tuple(int(d) for d in
+                     contents.split(b'/MediaBox [ 0 0 ')[1].split(b']')[0].split())
+        self.assertEqual(im.size, size)
 
         return outfile
 

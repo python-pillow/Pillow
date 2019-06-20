@@ -175,7 +175,7 @@ class TestBoxBlur(PillowTestCase):
             delta=0,
         )
 
-    def test_exteme_large_radius(self):
+    def test_extreme_large_radius(self):
         self.assertBlur(
             sample, 600,
             [

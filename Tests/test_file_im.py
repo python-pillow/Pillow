@@ -48,7 +48,7 @@ class TestFileIm(PillowTestCase):
         im.seek(n_frames-1)
 
     def test_roundtrip(self):
-        for mode in ["RGB", "P"]:
+        for mode in ["RGB", "P", "PA"]:
             out = self.tempfile('temp.im')
             im = hopper(mode)
             im.save(out)

@@ -76,8 +76,8 @@ PILLOW_VERSION constant
 
 .. deprecated:: 5.2.0
 
-``PILLOW_VERSION`` has been deprecated and will be removed in the next
-major release. Use ``__version__`` instead.
+``PILLOW_VERSION`` has been deprecated and will be removed in 7.0.0. Use ``__version__``
+instead.
 
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

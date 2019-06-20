@@ -51,9 +51,9 @@ Methods
 
     Returns width and height (in pixels) of given text if rendered in font with
     provided direction, features, and language.
-    
+
     :param text: Text to measure.
-    
+
     :param direction: Direction of the text. It can be 'rtl' (right to
                       left), 'ltr' (left to right) or 'ttb' (top to bottom).
                       Requires libraqm.
@@ -73,11 +73,11 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-    :param language: Language of the text. Different languages may use 
+    :param language: Language of the text. Different languages may use
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP47 language code
+                     It should be a `BCP 47 language code
                      <https://www.w3.org/International/articles/language-tags/>`
                      Requires libraqm.
 
@@ -119,11 +119,11 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-    :param language: Language of the text. Different languages may use 
+    :param language: Language of the text. Different languages may use
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP47 language code
+                     It should be a `BCP 47 language code
                      <https://www.w3.org/International/articles/language-tags/>`
                      Requires libraqm.
 
@@ -131,3 +131,6 @@ Methods
 
     :return: An internal PIL storage memory instance as defined by the
              :py:mod:`PIL.Image.core` interface module.
+
+.. autoclass:: PIL.ImageFont.FreeTypeFont
+    :members:

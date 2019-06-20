@@ -114,6 +114,19 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    def test_arc_width_pieslice_large(self):
+        # Tests an arc with a large enough width that it is a pieslice
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_arc_width_pieslice.png"
+
+        # Act
+        draw.arc(BBOX1, 10, 260, fill="yellow", width=100)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
     def test_arc_width_fill(self):
         # Arrange
         im = Image.new("RGB", (W, H))
@@ -235,6 +248,18 @@ class TestImageDraw(PillowTestCase):
 
         # Act
         draw.ellipse(BBOX1, outline="blue", width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_ellipse_width_large(self):
+        # Arrange
+        im = Image.new("RGB", (500, 500))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_ellipse_width_large.png"
+
+        # Act
+        draw.ellipse((25, 25, 475, 475), outline="blue", width=75)
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)

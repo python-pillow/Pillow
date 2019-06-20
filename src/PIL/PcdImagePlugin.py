@@ -28,6 +28,7 @@ __version__ = "0.1"
 # image from the file; higher resolutions are encoded in a proprietary
 # encoding.
 
+
 class PcdImageFile(ImageFile.ImageFile):
 
     format = "PCD"
@@ -51,7 +52,7 @@ class PcdImageFile(ImageFile.ImageFile):
 
         self.mode = "RGB"
         self._size = 768, 512  # FIXME: not correct for rotated images!
-        self.tile = [("pcd", (0, 0)+self.size, 96*2048, None)]
+        self.tile = [("pcd", (0, 0) + self.size, 96 * 2048, None)]
 
     def load_end(self):
         if self.tile_post_rotate:

@@ -113,12 +113,7 @@ class TestNumpy(PillowTestCase):
         img = Image.fromarray(arr * 255).convert('1')
         self.assertEqual(img.mode, '1')
         arr_back = numpy.array(img)
-        # numpy 1.8 and earlier return this as a boolean. (trusty/precise)
-        if arr_back.dtype == numpy.bool:
-            arr_bool = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], numpy.bool)
-            numpy.testing.assert_array_equal(arr_bool, arr_back)
-        else:
-            numpy.testing.assert_array_equal(arr, arr_back)
+        numpy.testing.assert_array_equal(arr, arr_back)
 
     def test_save_tiff_uint16(self):
         # Tests that we're getting the pixel value in the right byte order.
@@ -182,6 +177,14 @@ class TestNumpy(PillowTestCase):
         im.putdata(arr)
 
         self.assertEqual(len(im.getdata()), len(arr))
+
+    def test_roundtrip_eye(self):
+        for dtype in (numpy.bool, numpy.bool8,
+                      numpy.int8, numpy.int16, numpy.int32,
+                      numpy.uint8, numpy.uint16, numpy.uint32,
+                      numpy.float, numpy.float32, numpy.float64):
+            arr = numpy.eye(10, dtype=dtype)
+            numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
 
     def test_zero_size(self):
         # Shouldn't cause floating point exception

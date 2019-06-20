@@ -1280,7 +1280,7 @@ static struct {
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
-    {"1",       "1;8",          1,      unpack18},
+    {"1",       "1;8",          8,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
@@ -1369,12 +1369,12 @@ static struct {
     {"RGBA",    "A",            8,      band3},
 
 #ifdef WORDS_BIGENDIAN
-    {"RGB",     "RGB;16N",      64,     unpackRGB16B},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16B},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16B},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16B},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #else
-    {"RGB",     "RGB;16N",      64,     unpackRGB16L},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16L},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16L},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
@@ -1417,6 +1417,7 @@ static struct {
     {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
+    {"CMYK",    "CMYK;16L",     64,     unpackRGBA16L},
     {"CMYK",    "C",            8,      band0},
     {"CMYK",    "M",            8,      band1},
     {"CMYK",    "Y",            8,      band2},

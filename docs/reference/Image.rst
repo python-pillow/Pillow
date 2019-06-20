@@ -210,9 +210,9 @@ Instances of the :py:class:`Image` class have the following attributes:
 
 .. py:attribute:: palette
 
-    Colour palette table, if any. If mode is “P”, this should be an instance of
-    the :py:class:`~PIL.ImagePalette.ImagePalette` class. Otherwise, it should
-    be set to ``None``.
+    Colour palette table, if any. If mode is "P" or "PA", this should be an
+    instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
+    Otherwise, it should be set to ``None``.
 
     :type: :py:class:`~PIL.ImagePalette.ImagePalette` or ``None``
 

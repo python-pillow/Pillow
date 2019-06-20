@@ -46,7 +46,7 @@ MODES = {
     (1, 3, 3): "RGB",
     (2, 3, 3): "RGB;16B",
     (1, 3, 4): "RGBA",
-    (2, 3, 4): "RGBA;16B"
+    (2, 3, 4): "RGBA;16B",
 }
 
 
@@ -100,8 +100,8 @@ class SgiImageFile(ImageFile.ImageFile):
 
         self._size = xsize, ysize
         self.mode = rawmode.split(";")[0]
-        if self.mode == 'RGB':
-            self.custom_mimetype = 'image/rgb'
+        if self.mode == "RGB":
+            self.custom_mimetype = "image/rgb"
 
         # orientation -1 : scanlines begins at the bottom-left corner
         orientation = -1
@@ -110,19 +110,21 @@ class SgiImageFile(ImageFile.ImageFile):
         if compression == 0:
             pagesize = xsize * ysize * bpc
             if bpc == 2:
-                self.tile = [("SGI16", (0, 0) + self.size,
-                              headlen, (self.mode, 0, orientation))]
+                self.tile = [
+                    ("SGI16", (0, 0) + self.size, headlen, (self.mode, 0, orientation))
+                ]
             else:
                 self.tile = []
                 offset = headlen
                 for layer in self.mode:
                     self.tile.append(
-                        ("raw", (0, 0) + self.size,
-                            offset, (layer, 0, orientation)))
+                        ("raw", (0, 0) + self.size, offset, (layer, 0, orientation))
+                    )
                     offset += pagesize
         elif compression == 1:
-            self.tile = [("sgi_rle", (0, 0) + self.size,
-                          headlen, (rawmode, orientation, bpc))]
+            self.tile = [
+                ("sgi_rle", (0, 0) + self.size, headlen, (rawmode, orientation, bpc))
+            ]
 
 
 def _save(im, fp, filename):
@@ -161,8 +163,9 @@ def _save(im, fp, filename):
 
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
-        raise ValueError("incorrect number of bands in SGI write: %s vs %s" %
-                         (z, len(im.getbands())))
+        raise ValueError(
+            "incorrect number of bands in SGI write: %s vs %s" % (z, len(im.getbands()))
+        )
 
     # Minimum Byte value
     pinmin = 0
@@ -171,30 +174,30 @@ def _save(im, fp, filename):
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
     if py3:
-        imgName = imgName.encode('ascii', 'ignore')
+        imgName = imgName.encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
-    fp.write(struct.pack('>h', magicNumber))
+    fp.write(struct.pack(">h", magicNumber))
     fp.write(o8(rle))
     fp.write(o8(bpc))
-    fp.write(struct.pack('>H', dim))
-    fp.write(struct.pack('>H', x))
-    fp.write(struct.pack('>H', y))
-    fp.write(struct.pack('>H', z))
-    fp.write(struct.pack('>l', pinmin))
-    fp.write(struct.pack('>l', pinmax))
-    fp.write(struct.pack('4s', b''))  # dummy
-    fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
-    fp.write(struct.pack('s', b''))  # force null byte after imgname
-    fp.write(struct.pack('>l', colormap))
-    fp.write(struct.pack('404s', b''))  # dummy
+    fp.write(struct.pack(">H", dim))
+    fp.write(struct.pack(">H", x))
+    fp.write(struct.pack(">H", y))
+    fp.write(struct.pack(">H", z))
+    fp.write(struct.pack(">l", pinmin))
+    fp.write(struct.pack(">l", pinmax))
+    fp.write(struct.pack("4s", b""))  # dummy
+    fp.write(struct.pack("79s", imgName))  # truncates to 79 chars
+    fp.write(struct.pack("s", b""))  # force null byte after imgname
+    fp.write(struct.pack(">l", colormap))
+    fp.write(struct.pack("404s", b""))  # dummy
 
-    rawmode = 'L'
+    rawmode = "L"
     if bpc == 2:
-        rawmode = 'L;16B'
+        rawmode = "L;16B"
 
     for channel in im.split():
-        fp.write(channel.tobytes('raw', rawmode, 0, orientation))
+        fp.write(channel.tobytes("raw", rawmode, 0, orientation))
 
     fp.close()
 
@@ -209,12 +212,14 @@ class SGI16Decoder(ImageFile.PyDecoder):
         self.fd.seek(512)
 
         for band in range(zsize):
-            channel = Image.new('L', (self.state.xsize, self.state.ysize))
-            channel.frombytes(self.fd.read(2 * pagesize), 'raw',
-                              'L;16B', stride, orientation)
+            channel = Image.new("L", (self.state.xsize, self.state.ysize))
+            channel.frombytes(
+                self.fd.read(2 * pagesize), "raw", "L;16B", stride, orientation
+            )
             self.im.putband(channel.im, band)
 
         return -1, 0
+
 
 #
 # registry
@@ -225,7 +230,6 @@ Image.register_open(SgiImageFile.format, SgiImageFile, _accept)
 Image.register_save(SgiImageFile.format, _save)
 Image.register_mime(SgiImageFile.format, "image/sgi")
 
-Image.register_extensions(SgiImageFile.format,
-                          [".bw", ".rgb", ".rgba", ".sgi"])
+Image.register_extensions(SgiImageFile.format, [".bw", ".rgb", ".rgba", ".sgi"])
 
 # End of file
