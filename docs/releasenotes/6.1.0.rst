@@ -11,6 +11,18 @@ An optional ``include_layered_windows`` parameter has been added to ``ImageGrab.
 defaulting to ``False``. If true, layered windows will be included in the resulting
 image on Windows.
 
+Variation fonts
+^^^^^^^^^^^^^^^
+
+Variation fonts are now supported, allowing for different styles from the same font
+file. ``ImageFont.FreeTypeFont`` has four new methods,
+:py:meth:`PIL.ImageFont.FreeTypeFont.get_variation_names` and
+:py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_name` for using named styles, and
+:py:meth:`PIL.ImageFont.FreeTypeFont.get_variation_axes` and
+:py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_axes` for using font axes
+instead. An ``IOError`` will be raised if the font is not a variation font. FreeType
+2.9.1 or greater is required.
+
 Other Changes
 =============
 
@@ -19,3 +31,9 @@ ImageTk.getimage
 
 This function is now supported. It returns the contents of an ``ImageTk.PhotoImage`` as
 an RGBA ``Image.Image`` instance.
+
+Top To Bottom Complex Text Rendering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Drawing text in the 'ttb' direction with ImageFont has been significantly improved.
+Note that it now requires raqm 0.7 or greater however.
