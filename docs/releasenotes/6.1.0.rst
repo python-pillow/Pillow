@@ -35,5 +35,5 @@ an RGBA ``Image.Image`` instance.
 Top To Bottom Complex Text Rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Drawing text in the 'ttb' direction with ImageFont has been significantly improved.
-Note that it now requires raqm 0.7 or greater however.
+Drawing text in the 'ttb' direction with ImageFont has been significantly improved
+and requires Raqm 0.7 or greater.
