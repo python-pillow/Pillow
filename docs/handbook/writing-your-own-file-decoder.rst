@@ -201,7 +201,8 @@ table describes some commonly used **raw modes**:
 +-----------+-----------------------------------------------------------------+
 | ``BGR``   | 24-bit true colour, stored as (blue, green, red).               |
 +-----------+-----------------------------------------------------------------+
-| ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad).          |
+| ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
+|           | pixels may vary.                                                |
 +-----------+-----------------------------------------------------------------+
 | ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
 |           | all green pixels, finally all blue pixels).                     |
