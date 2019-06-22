@@ -76,11 +76,13 @@ class TestFeatures(PillowTestCase):
         self.assertEqual(lines[5], "-" * 68)
         self.assertTrue(lines[6].startswith("Python "))
         jpeg = (
-            "\n" +
-            "-" * 68 + "\n" +
-            "JPEG image/jpeg\n" +
-            "Extensions: .jfif, .jpe, .jpeg, .jpg\n" +
-            "Features: open, save\n" +
-            "-" * 68 + "\n"
+            "\n"
+            + "-" * 68
+            + "\n"
+            + "JPEG image/jpeg\n"
+            + "Extensions: .jfif, .jpe, .jpeg, .jpg\n"
+            + "Features: open, save\n"
+            + "-" * 68
+            + "\n"
         )
         self.assertIn(jpeg, out)

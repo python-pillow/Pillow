@@ -18,11 +18,16 @@ class TestMain(TestCase):
         self.assertEqual(lines[5], "-" * 68)
         self.assertTrue(lines[6].startswith("Python "))
         jpeg = (
-            os.linesep +
-            "-" * 68 + os.linesep +
-            "JPEG image/jpeg" + os.linesep +
-            "Extensions: .jfif, .jpe, .jpeg, .jpg" + os.linesep +
-            "Features: open, save" + os.linesep +
-            "-" * 68 + os.linesep
+            os.linesep
+            + "-" * 68
+            + os.linesep
+            + "JPEG image/jpeg"
+            + os.linesep
+            + "Extensions: .jfif, .jpe, .jpeg, .jpg"
+            + os.linesep
+            + "Features: open, save"
+            + os.linesep
+            + "-" * 68
+            + os.linesep
         )
         self.assertIn(jpeg, out)
