@@ -593,7 +593,7 @@ class TestImageFont(PillowTestCase):
         font = self.get_font()
 
         freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < '2.9.1':
+        if freetype < "2.9.1":
             self.assertRaises(NotImplementedError, font.get_variation_names)
             self.assertRaises(NotImplementedError, font.get_variation_axes)
             return
@@ -604,27 +604,58 @@ class TestImageFont(PillowTestCase):
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
         self.assertEqual(
             font.get_variation_names(),
-            [b'ExtraLight', b'Light', b'Regular', b'Semibold', b'Bold',
-             b'Black', b'Black Medium Contrast', b'Black High Contrast', b'Default'])
+            [
+                b"ExtraLight",
+                b"Light",
+                b"Regular",
+                b"Semibold",
+                b"Bold",
+                b"Black",
+                b"Black Medium Contrast",
+                b"Black High Contrast",
+                b"Default",
+            ],
+        )
         self.assertEqual(
             font.get_variation_axes(),
-            [{'name': b'Weight', 'minimum': 200, 'maximum': 900, 'default': 389},
-             {'name': b'Contrast', 'minimum': 0, 'maximum': 100, 'default': 0}])
+            [
+                {"name": b"Weight", "minimum": 200, "maximum": 900, "default": 389},
+                {"name": b"Contrast", "minimum": 0, "maximum": 100, "default": 0},
+            ],
+        )
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf")
         self.assertEqual(
             font.get_variation_names(),
-            [b'20', b'40', b'60', b'80', b'100', b'120', b'140', b'160', b'180',
-             b'200', b'220', b'240', b'260', b'280', b'300', b'Regular'])
+            [
+                b"20",
+                b"40",
+                b"60",
+                b"80",
+                b"100",
+                b"120",
+                b"140",
+                b"160",
+                b"180",
+                b"200",
+                b"220",
+                b"240",
+                b"260",
+                b"280",
+                b"300",
+                b"Regular",
+            ],
+        )
         self.assertEqual(
             font.get_variation_axes(),
-            [{'name': b'Size', 'minimum': 0, 'maximum': 300, 'default': 0}])
+            [{"name": b"Size", "minimum": 0, "maximum": 300, "default": 0}],
+        )
 
     def test_variation_set_by_name(self):
         font = self.get_font()
 
         freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < '2.9.1':
+        if freetype < "2.9.1":
             self.assertRaises(NotImplementedError, font.set_variation_by_name, "Bold")
             return
 
@@ -637,6 +668,7 @@ class TestImageFont(PillowTestCase):
 
             expected = Image.open(path)
             self.assert_image_similar(im, expected, epsilon)
+
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         _check_text(font, "Tests/images/variation_adobe.png", 11)
         for name in ["Bold", b"Bold"]:
@@ -653,7 +685,7 @@ class TestImageFont(PillowTestCase):
         font = self.get_font()
 
         freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < '2.9.1':
+        if freetype < "2.9.1":
             self.assertRaises(NotImplementedError, font.set_variation_by_axes, [100])
             return
 
@@ -666,6 +698,7 @@ class TestImageFont(PillowTestCase):
 
             expected = Image.open(path)
             self.assert_image_similar(im, expected, epsilon)
+
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
         _check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
