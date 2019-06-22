@@ -5,11 +5,10 @@ import io
 
 
 class TestFileBmp(PillowTestCase):
-
     def roundtrip(self, im):
         outfile = self.tempfile("temp.bmp")
 
-        im.save(outfile, 'BMP')
+        im.save(outfile, "BMP")
 
         reloaded = Image.open(outfile)
         reloaded.load()
@@ -28,8 +27,7 @@ class TestFileBmp(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError,
-                              BmpImagePlugin.BmpImageFile, fp)
+            self.assertRaises(SyntaxError, BmpImagePlugin.BmpImageFile, fp)
 
     def test_save_to_bytes(self):
         output = io.BytesIO()
@@ -62,27 +60,27 @@ class TestFileBmp(PillowTestCase):
         im = Image.open("Tests/images/hopper.bmp")
 
         # Act
-        im.save(outfile, 'JPEG', dpi=im.info['dpi'])
+        im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
         # Assert
         reloaded = Image.open(outfile)
         reloaded.load()
-        self.assertEqual(im.info['dpi'], reloaded.info['dpi'])
+        self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
         self.assertEqual(im.size, reloaded.size)
         self.assertEqual(reloaded.format, "JPEG")
 
     def test_load_dpi_rounding(self):
         # Round up
-        im = Image.open('Tests/images/hopper.bmp')
+        im = Image.open("Tests/images/hopper.bmp")
         self.assertEqual(im.info["dpi"], (96, 96))
 
         # Round down
-        im = Image.open('Tests/images/hopper_roundDown.bmp')
+        im = Image.open("Tests/images/hopper_roundDown.bmp")
         self.assertEqual(im.info["dpi"], (72, 72))
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.bmp")
-        im = Image.open('Tests/images/hopper.bmp')
+        im = Image.open("Tests/images/hopper.bmp")
 
         im.save(outfile, dpi=(72.2, 72.2))
         reloaded = Image.open(outfile)
@@ -94,17 +92,17 @@ class TestFileBmp(PillowTestCase):
 
     def test_load_dib(self):
         # test for #1293, Imagegrab returning Unsupported Bitfields Format
-        im = Image.open('Tests/images/clipboard.dib')
+        im = Image.open("Tests/images/clipboard.dib")
         self.assertEqual(im.format, "DIB")
         self.assertEqual(im.get_format_mimetype(), "image/bmp")
 
-        target = Image.open('Tests/images/clipboard_target.png')
+        target = Image.open("Tests/images/clipboard_target.png")
         self.assert_image_equal(im, target)
 
     def test_save_dib(self):
         outfile = self.tempfile("temp.dib")
 
-        im = Image.open('Tests/images/clipboard.dib')
+        im = Image.open("Tests/images/clipboard.dib")
         im.save(outfile)
 
         reloaded = Image.open(outfile)

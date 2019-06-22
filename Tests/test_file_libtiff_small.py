@@ -17,7 +17,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
         """Testing the open file load path"""
 
         test_file = "Tests/images/hopper_g4.tif"
-        with open(test_file, 'rb') as f:
+        with open(test_file, "rb") as f:
             im = Image.open(f)
 
             self.assertEqual(im.size, (128, 128))
@@ -26,9 +26,10 @@ class TestFileLibTiffSmall(LibTiffTestCase):
     def test_g4_hopper_bytesio(self):
         """Testing the bytesio loading code path"""
         from io import BytesIO
+
         test_file = "Tests/images/hopper_g4.tif"
         s = BytesIO()
-        with open(test_file, 'rb') as f:
+        with open(test_file, "rb") as f:
             s.write(f.read())
             s.seek(0)
         im = Image.open(s)

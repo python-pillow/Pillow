@@ -10,30 +10,30 @@ if ImageQt.qt_is_installed:
     try:
         from PyQt5 import QtGui
         from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+
         QT_VERSION = 5
     except (ImportError, RuntimeError):
         try:
             from PySide2 import QtGui
-            from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, \
-                QApplication
+            from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+
             QT_VERSION = 5
         except (ImportError, RuntimeError):
             try:
                 from PyQt4 import QtGui
-                from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, \
-                    QApplication
+                from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
+
                 QT_VERSION = 4
             except (ImportError, RuntimeError):
                 from PySide import QtGui
-                from PySide.QtGui import QWidget, QHBoxLayout, QLabel, \
-                    QApplication
+                from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QApplication
+
                 QT_VERSION = 4
 
 
 class TestToQImage(PillowQtTestCase, PillowTestCase):
-
     def test_sanity(self):
-        for mode in ('RGB', 'RGBA', 'L', 'P', '1'):
+        for mode in ("RGB", "RGBA", "L", "P", "1"):
             src = hopper(mode)
             data = ImageQt.toqimage(src)
 
@@ -42,12 +42,12 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
 
             # reload directly from the qimage
             rt = ImageQt.fromqimage(data)
-            if mode in ('L', 'P', '1'):
-                self.assert_image_equal(rt, src.convert('RGB'))
+            if mode in ("L", "P", "1"):
+                self.assert_image_equal(rt, src.convert("RGB"))
             else:
                 self.assert_image_equal(rt, src)
 
-            if mode == '1':
+            if mode == "1":
                 # BW appears to not save correctly on QT4 and QT5
                 # kicks out errors on console:
                 #     libpng warning: Invalid color type/bit depth combination
@@ -56,15 +56,15 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
                 continue
 
             # Test saving the file
-            tempfile = self.tempfile('temp_{}.png'.format(mode))
+            tempfile = self.tempfile("temp_{}.png".format(mode))
             data.save(tempfile)
 
             # Check that it actually worked.
             reloaded = Image.open(tempfile)
             # Gray images appear to come back in palette mode.
             # They're roughly equivalent
-            if QT_VERSION == 4 and mode == 'L':
-                src = src.convert('P')
+            if QT_VERSION == 4 and mode == "L":
+                src = src.convert("P")
             self.assert_image_equal(reloaded, src)
 
     def test_segfault(self):
@@ -75,8 +75,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
 
 
 if ImageQt.qt_is_installed:
-    class Example(QWidget):
 
+    class Example(QWidget):
         def __init__(self):
             super(Example, self).__init__()
 

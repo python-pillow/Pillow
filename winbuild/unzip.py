@@ -7,5 +7,5 @@ def unzip(src, dest):
         zf.extractall(dest)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unzip(sys.argv[1], sys.argv[2])

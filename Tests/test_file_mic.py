@@ -13,9 +13,8 @@ TEST_FILE = "Tests/images/hopper.mic"
 
 
 @unittest.skipUnless(olefile_installed, "olefile package not installed")
-@unittest.skipUnless(features.check('libtiff'), "libtiff not installed")
+@unittest.skipUnless(features.check("libtiff"), "libtiff not installed")
 class TestFileMic(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(TEST_FILE)
         im.load()
@@ -24,8 +23,8 @@ class TestFileMic(PillowTestCase):
         self.assertEqual(im.format, "MIC")
 
         # Adjust for the gamma of 2.2 encoded into the file
-        lut = ImagePalette.make_gamma_lut(1/2.2)
-        im = Image.merge('RGBA', [chan.point(lut) for chan in im.split()])
+        lut = ImagePalette.make_gamma_lut(1 / 2.2)
+        im = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
 
         im2 = hopper("RGBA")
         self.assert_image_similar(im, im2, 10)
@@ -57,10 +56,8 @@ class TestFileMic(PillowTestCase):
     def test_invalid_file(self):
         # Test an invalid OLE file
         invalid_file = "Tests/images/flower.jpg"
-        self.assertRaises(SyntaxError,
-                          MicImagePlugin.MicImageFile, invalid_file)
+        self.assertRaises(SyntaxError, MicImagePlugin.MicImageFile, invalid_file)
 
         # Test a valid OLE file, but not a MIC file
         ole_file = "Tests/images/test-ole-file.doc"
-        self.assertRaises(SyntaxError,
-                          MicImagePlugin.MicImageFile, ole_file)
+        self.assertRaises(SyntaxError, MicImagePlugin.MicImageFile, ole_file)

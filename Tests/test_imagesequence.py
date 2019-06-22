@@ -4,7 +4,6 @@ from PIL import Image, ImageSequence, TiffImagePlugin
 
 
 class TestImageSequence(PillowTestCase):
-
     def test_sanity(self):
 
         test_file = self.tempfile("temp.im")
@@ -25,25 +24,25 @@ class TestImageSequence(PillowTestCase):
         self.assertRaises(AttributeError, ImageSequence.Iterator, 0)
 
     def test_iterator(self):
-        im = Image.open('Tests/images/multipage.tiff')
+        im = Image.open("Tests/images/multipage.tiff")
         i = ImageSequence.Iterator(im)
         for index in range(0, im.n_frames):
             self.assertEqual(i[index], next(i))
-        self.assertRaises(IndexError, lambda: i[index+1])
+        self.assertRaises(IndexError, lambda: i[index + 1])
         self.assertRaises(StopIteration, next, i)
 
     def test_iterator_min_frame(self):
-        im = Image.open('Tests/images/hopper.psd')
+        im = Image.open("Tests/images/hopper.psd")
         i = ImageSequence.Iterator(im)
         for index in range(1, im.n_frames):
             self.assertEqual(i[index], next(i))
 
     def _test_multipage_tiff(self):
-        im = Image.open('Tests/images/multipage.tiff')
+        im = Image.open("Tests/images/multipage.tiff")
         for index, frame in enumerate(ImageSequence.Iterator(im)):
             frame.load()
             self.assertEqual(index, im.tell())
-            frame.convert('RGB')
+            frame.convert("RGB")
 
     def test_tiff(self):
         self._test_multipage_tiff()
@@ -59,7 +58,7 @@ class TestImageSequence(PillowTestCase):
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test_consecutive(self):
-        im = Image.open('Tests/images/multipage.tiff')
+        im = Image.open("Tests/images/multipage.tiff")
         firstFrame = None
         for frame in ImageSequence.Iterator(im):
             if firstFrame is None:
@@ -70,7 +69,7 @@ class TestImageSequence(PillowTestCase):
 
     def test_palette_mmap(self):
         # Using mmap in ImageFile can require to reload the palette.
-        im = Image.open('Tests/images/multipage-mmap.tiff')
+        im = Image.open("Tests/images/multipage-mmap.tiff")
         color1 = im.getpalette()[0:3]
         im.seek(0)
         color2 = im.getpalette()[0:3]

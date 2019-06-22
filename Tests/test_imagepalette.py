@@ -4,12 +4,12 @@ from PIL import ImagePalette, Image
 
 
 class TestImagePalette(PillowTestCase):
-
     def test_sanity(self):
 
-        ImagePalette.ImagePalette("RGB", list(range(256))*3)
-        self.assertRaises(ValueError,
-                          ImagePalette.ImagePalette, "RGB", list(range(256))*2)
+        ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+        self.assertRaises(
+            ValueError, ImagePalette.ImagePalette, "RGB", list(range(256)) * 2
+        )
 
     def test_getcolor(self):
 
@@ -27,7 +27,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_file(self):
 
-        palette = ImagePalette.ImagePalette("RGB", list(range(256))*3)
+        palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
         f = self.tempfile("temp.lut")
 
@@ -65,8 +65,9 @@ class TestImagePalette(PillowTestCase):
         white = 255
 
         # Act
-        self.assertRaises(NotImplementedError,
-                          ImagePalette.make_linear_lut, black, white)
+        self.assertRaises(
+            NotImplementedError, ImagePalette.make_linear_lut, black, white
+        )
 
     def test_make_gamma_lut(self):
         # Arrange
@@ -87,7 +88,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_rawmode_valueerrors(self):
         # Arrange
-        palette = ImagePalette.raw("RGB", list(range(256))*3)
+        palette = ImagePalette.raw("RGB", list(range(256)) * 3)
 
         # Act / Assert
         self.assertRaises(ValueError, palette.tobytes)
@@ -97,7 +98,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_getdata(self):
         # Arrange
-        data_in = list(range(256))*3
+        data_in = list(range(256)) * 3
         palette = ImagePalette.ImagePalette("RGB", data_in)
 
         # Act
@@ -108,7 +109,7 @@ class TestImagePalette(PillowTestCase):
 
     def test_rawmode_getdata(self):
         # Arrange
-        data_in = list(range(256))*3
+        data_in = list(range(256)) * 3
         palette = ImagePalette.raw("RGB", data_in)
 
         # Act
@@ -120,17 +121,16 @@ class TestImagePalette(PillowTestCase):
 
     def test_2bit_palette(self):
         # issue #2258, 2 bit palettes are corrupted.
-        outfile = self.tempfile('temp.png')
+        outfile = self.tempfile("temp.png")
 
-        rgb = b'\x00' * 2 + b'\x01' * 2 + b'\x02' * 2
-        img = Image.frombytes('P', (6, 1), rgb)
-        img.putpalette(b'\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF')  # RGB
-        img.save(outfile, format='PNG')
+        rgb = b"\x00" * 2 + b"\x01" * 2 + b"\x02" * 2
+        img = Image.frombytes("P", (6, 1), rgb)
+        img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
+        img.save(outfile, format="PNG")
 
         reloaded = Image.open(outfile)
 
         self.assert_image_equal(img, reloaded)
 
     def test_invalid_palette(self):
-        self.assertRaises(IOError,
-                          ImagePalette.load, "Tests/images/hopper.jpg")
+        self.assertRaises(IOError, ImagePalette.load, "Tests/images/hopper.jpg")

@@ -2,9 +2,7 @@ from .helper import PillowTestCase, hopper
 
 
 class TestImageGetColors(PillowTestCase):
-
     def test_getcolors(self):
-
         def getcolors(mode, limit=None):
             im = hopper(mode)
             if limit:
@@ -43,9 +41,11 @@ class TestImageGetColors(PillowTestCase):
 
         im = hopper().quantize(3).convert("RGB")
 
-        expected = [(4039, (172, 166, 181)),
-                    (4385, (124, 113, 134)),
-                    (7960, (31, 20, 33))]
+        expected = [
+            (4039, (172, 166, 181)),
+            (4385, (124, 113, 134)),
+            (7960, (31, 20, 33)),
+        ]
 
         A = im.getcolors(maxcolors=2)
         self.assertIsNone(A)

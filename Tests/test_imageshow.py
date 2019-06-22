@@ -5,7 +5,6 @@ from PIL import ImageShow
 
 
 class TestImageShow(PillowTestCase):
-
     def test_sanity(self):
         dir(Image)
         dir(ImageShow)
@@ -24,6 +23,7 @@ class TestImageShow(PillowTestCase):
             def show_image(self, image, **options):
                 self.methodCalled = True
                 return True
+
         viewer = TestViewer()
         ImageShow.register(viewer, -1)
 
@@ -44,4 +44,4 @@ class TestImageShow(PillowTestCase):
 
     def test_viewers(self):
         for viewer in ImageShow._viewers:
-            viewer.get_command('test.jpg')
+            viewer.get_command("test.jpg")

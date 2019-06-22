@@ -6,7 +6,6 @@ import os
 
 
 class TestImageLoad(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper()

@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImageFromBytes(PillowTestCase):
-
     def test_sanity(self):
         im1 = hopper()
         im2 = Image.frombytes(im1.mode, im1.size, im1.tobytes())

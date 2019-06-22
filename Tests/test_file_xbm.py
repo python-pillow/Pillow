@@ -27,14 +27,13 @@ static char basic_bits[] = {
 
 
 class TestFileXbm(PillowTestCase):
-
     def test_pil151(self):
         from io import BytesIO
 
         im = Image.open(BytesIO(PIL151))
 
         im.load()
-        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (32, 32))
 
     def test_open(self):
@@ -46,7 +45,7 @@ class TestFileXbm(PillowTestCase):
         im = Image.open(filename)
 
         # Assert
-        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (128, 128))
 
     def test_open_filename_with_underscore(self):
@@ -58,5 +57,5 @@ class TestFileXbm(PillowTestCase):
         im = Image.open(filename)
 
         # Assert
-        self.assertEqual(im.mode, '1')
+        self.assertEqual(im.mode, "1")
         self.assertEqual(im.size, (128, 128))

@@ -5,6 +5,7 @@ from PIL._util import py3
 
 try:
     from PIL import ImageTk
+
     if py3:
         import tkinter as tk
     else:
@@ -15,12 +16,11 @@ except (OSError, ImportError):
     # Skipped via setUp()
     HAS_TK = False
 
-TK_MODES = ('1', 'L', 'P', 'RGB', 'RGBA')
+TK_MODES = ("1", "L", "P", "RGB", "RGBA")
 
 
 @unittest.skipIf(not HAS_TK, "Tk not installed")
 class TestImageTk(PillowTestCase):
-
     def setUp(self):
         try:
             # setup tk
@@ -34,7 +34,7 @@ class TestImageTk(PillowTestCase):
         TEST_PNG = "Tests/images/hopper.png"
         im1 = Image.open(TEST_JPG)
         im2 = Image.open(TEST_PNG)
-        with open(TEST_PNG, 'rb') as fp:
+        with open(TEST_PNG, "rb") as fp:
             data = fp.read()
         kw = {"file": TEST_JPG, "data": data}
 
@@ -76,7 +76,7 @@ class TestImageTk(PillowTestCase):
             # self.assert_image_equal(reloaded, im)
 
     def test_bitmapimage(self):
-        im = hopper('1')
+        im = hopper("1")
 
         # this should not crash
         im_tk = ImageTk.BitmapImage(im)

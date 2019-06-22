@@ -6,7 +6,6 @@ test_file = "Tests/images/hopper.psd"
 
 
 class TestImagePsd(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(test_file)
         im.load()
@@ -21,13 +20,13 @@ class TestImagePsd(PillowTestCase):
         def open():
             im = Image.open(test_file)
             im.load()
+
         self.assert_warning(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          PsdImagePlugin.PsdImageFile, invalid_file)
+        self.assertRaises(SyntaxError, PsdImagePlugin.PsdImageFile, invalid_file)
 
     def test_n_frames(self):
         im = Image.open("Tests/images/hopper_merged.psd")
@@ -41,14 +40,14 @@ class TestImagePsd(PillowTestCase):
     def test_eoferror(self):
         im = Image.open(test_file)
         # PSD seek index starts at 1 rather than 0
-        n_frames = im.n_frames+1
+        n_frames = im.n_frames + 1
 
         # Test seeking past the last frame
         self.assertRaises(EOFError, im.seek, n_frames)
         self.assertLess(im.tell(), n_frames)
 
         # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames-1)
+        im.seek(n_frames - 1)
 
     def test_seek_tell(self):
         im = Image.open(test_file)
@@ -74,7 +73,7 @@ class TestImagePsd(PillowTestCase):
     def test_open_after_exclusive_load(self):
         im = Image.open(test_file)
         im.load()
-        im.seek(im.tell()+1)
+        im.seek(im.tell() + 1)
         im.load()
 
     def test_icc_profile(self):

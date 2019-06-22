@@ -15,7 +15,6 @@ GREY = 128
 
 
 class TestImageChops(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper("L")
@@ -264,11 +263,12 @@ class TestImageChops(PillowTestCase):
         # Assert
         self.assertEqual(new.getbbox(), (0, 45, 100, 96))
         self.assertEqual(new.getpixel((50, 50)), BLACK)
-        self.assertEqual(new.getpixel((50+xoffset, 50+yoffset)), DARK_GREEN)
+        self.assertEqual(new.getpixel((50 + xoffset, 50 + yoffset)), DARK_GREEN)
 
         # Test no yoffset
-        self.assertEqual(ImageChops.offset(im, xoffset),
-                         ImageChops.offset(im, xoffset, xoffset))
+        self.assertEqual(
+            ImageChops.offset(im, xoffset), ImageChops.offset(im, xoffset, xoffset)
+        )
 
     def test_screen(self):
         # Arrange
@@ -343,7 +343,6 @@ class TestImageChops(PillowTestCase):
         self.assertEqual(new.getpixel((50, 50)), (241, 167, 127))
 
     def test_logical(self):
-
         def table(op, a, b):
             out = []
             for x in (a, b):
@@ -353,23 +352,14 @@ class TestImageChops(PillowTestCase):
                     out.append(op(imx, imy).getpixel((0, 0)))
             return tuple(out)
 
-        self.assertEqual(
-            table(ImageChops.logical_and, 0, 1), (0, 0, 0, 255))
-        self.assertEqual(
-            table(ImageChops.logical_or, 0, 1), (0, 255, 255, 255))
-        self.assertEqual(
-            table(ImageChops.logical_xor, 0, 1), (0, 255, 255, 0))
+        self.assertEqual(table(ImageChops.logical_and, 0, 1), (0, 0, 0, 255))
+        self.assertEqual(table(ImageChops.logical_or, 0, 1), (0, 255, 255, 255))
+        self.assertEqual(table(ImageChops.logical_xor, 0, 1), (0, 255, 255, 0))
 
-        self.assertEqual(
-            table(ImageChops.logical_and, 0, 128), (0, 0, 0, 255))
-        self.assertEqual(
-            table(ImageChops.logical_or, 0, 128), (0, 255, 255, 255))
-        self.assertEqual(
-            table(ImageChops.logical_xor, 0, 128), (0, 255, 255, 0))
+        self.assertEqual(table(ImageChops.logical_and, 0, 128), (0, 0, 0, 255))
+        self.assertEqual(table(ImageChops.logical_or, 0, 128), (0, 255, 255, 255))
+        self.assertEqual(table(ImageChops.logical_xor, 0, 128), (0, 255, 255, 0))
 
-        self.assertEqual(
-            table(ImageChops.logical_and, 0, 255), (0, 0, 0, 255))
-        self.assertEqual(
-            table(ImageChops.logical_or, 0, 255), (0, 255, 255, 255))
-        self.assertEqual(
-            table(ImageChops.logical_xor, 0, 255), (0, 255, 255, 0))
+        self.assertEqual(table(ImageChops.logical_and, 0, 255), (0, 0, 0, 255))
+        self.assertEqual(table(ImageChops.logical_or, 0, 255), (0, 255, 255, 255))
+        self.assertEqual(table(ImageChops.logical_xor, 0, 255), (0, 255, 255, 0))

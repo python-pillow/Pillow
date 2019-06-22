@@ -2,7 +2,6 @@ from .helper import PillowTestCase, hopper
 
 
 class TestImageGetData(PillowTestCase):
-
     def test_sanity(self):
 
         data = hopper().getdata()
@@ -13,7 +12,6 @@ class TestImageGetData(PillowTestCase):
         self.assertEqual(data[0], (20, 20, 70))
 
     def test_roundtrip(self):
-
         def getdata(mode):
             im = hopper(mode).resize((32, 30))
             data = im.getdata()
