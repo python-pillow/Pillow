@@ -644,10 +644,10 @@ class TestFileLibTiff(LibTiffTestCase):
             im.tile,
             [
                 (
-                    "tiff_adobe_deflate",
+                    "libtiff",
                     (0, 0, 100, 40),
                     0,
-                    ("RGB;16N", "tiff_adobe_deflate", False),
+                    ("RGB;16N", "tiff_adobe_deflate", False, 8),
                 )
             ],
         )
