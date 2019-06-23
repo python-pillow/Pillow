@@ -315,6 +315,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
+            self->font_bytes = NULL;
         }
         Py_DECREF(self);
         return geterror(error);
