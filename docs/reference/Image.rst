@@ -126,14 +126,14 @@ The following script crops the input image with the provided coordinates:
 
 .. code-block:: python
 
-    from PIL import Image 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    im = Image.open('cat.jpg')
 
     # crop method from Image module takes four coordinates as input.
     # The right can also be represented as (left+width)
     # and lower can be represented as (upper+height)
     (left, upper, right, lower) = (200, 20, 520, 260)
-    
+
     # Here the image "im" is cropped and assiged to new variable im_crop
     im_crop = im.crop((left, upper, right, lower))
 
@@ -145,9 +145,9 @@ The following script blurs the input image using a filter from ImageFilter modul
 
 .. code-block:: python
 
-    from PIL import Image 
-    from PIL import ImageFilter 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    from PIL import ImageFilter
+    im = Image.open('cat.jpg')
 
     # Blur the input image using the filter ImageFilter.BLUR.
     im_blurred = im.filter(filter=ImageFilter.BLUR)
@@ -158,7 +158,7 @@ The following script helps to get the bands of the input image:
 
 .. code-block:: python
 
-    from PIL import Image 
+    from PIL import Image
     im = Image.open('cat.jpg')
     print (im.getbands()) # Returns ('R', 'G', 'B')
 
@@ -168,11 +168,11 @@ The following script helps to get the bounding box coordinates of the input imag
 
 .. code-block:: python
 
-    from PIL import Image 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    im = Image.open('cat.jpg')
     print (im.getbbox())
     # Returns four coordinates in the format (left, upper, right, lower)
-    
+
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
 .. automethod:: PIL.Image.Image.getextrema
@@ -193,8 +193,8 @@ The following script resizes the given image from (width, height) to (width/2, h
 
 .. code-block:: python
 
-    from PIL import Image 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    im = Image.open('cat.jpg')
 
     # Provide the target width and height of the image
     (width, height) = (width//2, height//2)
@@ -207,13 +207,13 @@ The following script rotates the input image by `theta` degrees counter clockwis
 
 .. code-block:: python
 
-    from PIL import Image 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    im = Image.open('cat.jpg')
 
     # Rotate the image by 60 degrees counter clockwise.
     theta = 60
     # Angle is in degrees counter clockwise.
-    im_rotated = im.rotate(angle=theta) 
+    im_rotated = im.rotate(angle=theta)
 
 .. automethod:: PIL.Image.Image.save
 .. automethod:: PIL.Image.Image.seek
@@ -232,14 +232,14 @@ The following script flips the input image by using the method "Image.FLIP_LEFT_
 
 .. code-block:: python
 
-    from PIL import Image 
-    im = Image.open('cat.jpg') 
+    from PIL import Image
+    im = Image.open('cat.jpg')
 
     # Flip the image from left to right
-    im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT) 
+    im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
     # To flip the image from top to bottom,
     # use the method "Image.FLIP_TOP_BOTTOM"
-   
+
 
 .. automethod:: PIL.Image.Image.verify
 
