@@ -127,7 +127,7 @@ The following script crops the input image with the provided coordinates:
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
 
     # crop method from Image module takes four coordinates as input.
     # The right can also be represented as (left+width)
@@ -147,7 +147,7 @@ The following script blurs the input image using a filter from ImageFilter modul
 
     from PIL import Image
     from PIL import ImageFilter
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
 
     # Blur the input image using the filter ImageFilter.BLUR.
     im_blurred = im.filter(filter=ImageFilter.BLUR)
@@ -159,7 +159,7 @@ The following script helps to get the bands of the input image:
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
     print (im.getbands()) # Returns ('R', 'G', 'B')
 
 .. automethod:: PIL.Image.Image.getbbox
@@ -169,7 +169,7 @@ The following script helps to get the bounding box coordinates of the input imag
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
     print (im.getbbox())
     # Returns four coordinates in the format (left, upper, right, lower)
 
@@ -194,7 +194,7 @@ The following script resizes the given image from (width, height) to (width/2, h
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
 
     # Provide the target width and height of the image
     (width, height) = (width//2, height//2)
@@ -208,7 +208,7 @@ The following script rotates the input image by `theta` degrees counter clockwis
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
 
     # Rotate the image by 60 degrees counter clockwise.
     theta = 60
@@ -233,7 +233,7 @@ The following script flips the input image by using the method "Image.FLIP_LEFT_
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open('cat.jpg')
+    im = Image.open("hopper.jpg")
 
     # Flip the image from left to right
     im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
