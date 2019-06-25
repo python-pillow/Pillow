@@ -606,7 +606,7 @@ def applyTransform(im, transform, inPlace=False):
     If inPlace is True and transform.inMode != transform.outMode, a
     PyCMSError is raised.
 
-    If im.mode, transfer.inMode, or transfer.outMode is not supported by
+    If im.mode, transform.inMode, or transform.outMode is not supported by
     pyCMSdll or the profiles you used for the transform, a PyCMSError is
     raised.
 
