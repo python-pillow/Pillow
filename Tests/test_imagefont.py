@@ -459,20 +459,25 @@ class TestImageFont(PillowTestCase):
         with self.assertRaises(UnicodeEncodeError):
             font.getsize(u"’")
 
-    @unittest.skipIf(sys.platform.startswith('win32') and sys.version.startswith('2'),
-                     "requires Python 3.x on Windows")
+    @unittest.skipIf(
+        sys.platform.startswith("win32") and sys.version.startswith("2"),
+        "requires Python 3.x on Windows",
+    )
     def test_unicode_extended(self):
         # issue #3777
         text = u"A\u278A\U0001F12B"
         target = "Tests/images/unicode_extended.png"
 
-        ttf = ImageFont.truetype("Tests/fonts/NotoSansSymbols-Regular.ttf",
-                                 FONT_SIZE, layout_engine=self.LAYOUT_ENGINE)
+        ttf = ImageFont.truetype(
+            "Tests/fonts/NotoSansSymbols-Regular.ttf",
+            FONT_SIZE,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
         img = Image.new("RGB", (100, 60))
         d = ImageDraw.Draw(img)
         d.text((10, 10), text, font=ttf)
 
-        self.assert_image_similar_tofile(img, target, self.metrics['multiline'])
+        self.assert_image_similar_tofile(img, target, self.metrics["multiline"])
 
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
