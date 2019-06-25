@@ -705,6 +705,14 @@ class TestLibUnpack(PillowTestCase):
             self.assert_unpack("I;16B", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16L", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
+    def test_CMYK16(self):
+        self.assert_unpack("CMYK", "CMYK;16L", 8, (2, 4, 6, 8), (10, 12, 14, 16))
+        self.assert_unpack("CMYK", "CMYK;16B", 8, (1, 3, 5, 7), (9, 11, 13, 15))
+        if sys.byteorder == "little":
+            self.assert_unpack("CMYK", "CMYK;16N", 8, (2, 4, 6, 8), (10, 12, 14, 16))
+        else:
+            self.assert_unpack("CMYK", "CMYK;16N", 8, (1, 3, 5, 7), (9, 11, 13, 15))
+
     def test_value_error(self):
         self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
         self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)

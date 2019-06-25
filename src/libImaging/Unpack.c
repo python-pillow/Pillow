@@ -1418,6 +1418,7 @@ static struct {
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
     {"CMYK",    "CMYK;16L",     64,     unpackRGBA16L},
+    {"CMYK",    "CMYK;16B",     64,     unpackRGBA16B},
     {"CMYK",    "C",            8,      band0},
     {"CMYK",    "M",            8,      band1},
     {"CMYK",    "Y",            8,      band2},
@@ -1426,6 +1427,12 @@ static struct {
     {"CMYK",    "M;I",          8,      band1I},
     {"CMYK",    "Y;I",          8,      band2I},
     {"CMYK",    "K;I",          8,      band3I},
+
+#ifdef WORDS_BIGENDIAN
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16B},
+#else
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16L},
+#endif
 
     /* video (YCbCr) */
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},
