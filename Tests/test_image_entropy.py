@@ -2,9 +2,7 @@ from .helper import PillowTestCase, hopper
 
 
 class TestImageEntropy(PillowTestCase):
-
     def test_entropy(self):
-
         def entropy(mode):
             return hopper(mode).entropy()
 
