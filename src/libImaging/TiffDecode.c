@@ -194,6 +194,9 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
         }
 
         swap_line = (UINT32*)malloc(swap_line_size);
+        if (swap_line == NULL) {
+            return -1;
+        }
         /*
          * For some reason the TIFFReadRGBATile() function chooses the
          * lower left corner as the origin.  Vertically mirror scanlines.
