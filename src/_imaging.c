@@ -3625,6 +3625,12 @@ _set_blocks_max(PyObject* self, PyObject* args)
             "blocks_max should be greater than 0");
         return NULL;
     }
+    else if ( blocks_max > SIZE_MAX/sizeof(ImagingDefaultArena.blocks_pool[0])) {
+        PyErr_SetString(PyExc_ValueError,
+            "blocks_max is too large");
+        return NULL;
+    }
+
 
     if ( ! ImagingMemorySetBlocksMax(&ImagingDefaultArena, blocks_max)) {
         ImagingError_MemoryError();
