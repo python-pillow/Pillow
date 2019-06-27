@@ -251,6 +251,15 @@ ImagingPackRGB(UINT8* out, const UINT8* in, int pixels)
 {
     int i = 0;
     /* RGB triplets */
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (; i < pixels; i++) {
+        out[0] = in[R];
+        out[1] = in[G];
+        out[2] = in[B];
+        out += 3; in += 4;
+    }
+#else
     for (; i < pixels-1; i++) {
         ((UINT32*)out)[0] = ((UINT32*)in)[i];
         out += 3;
@@ -261,6 +270,7 @@ ImagingPackRGB(UINT8* out, const UINT8* in, int pixels)
         out[2] = in[i*4+B];
         out += 3;
     }
+#endif
 }
 
 void
