@@ -420,6 +420,10 @@ class TestImageFont(PillowTestCase):
         self.assertRaises(IOError, ImageFont.load_path, filename)
         self.assertRaises(IOError, ImageFont.truetype, filename)
 
+    def test_load_non_font_bytes(self):
+        with open("Tests/images/hopper.jpg", "rb") as f:
+            self.assertRaises(IOError, ImageFont.truetype, f)
+
     def test_default_font(self):
         # Arrange
         txt = 'This is a "better than nothing" default font.'
