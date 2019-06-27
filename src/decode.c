@@ -503,9 +503,9 @@ PyImaging_LibTiffDecoderNew(PyObject* self, PyObject* args)
     char* rawmode;
     char* compname;
     int fp;
-    int ifdoffset;
+    uint32 ifdoffset;
 
-    if (! PyArg_ParseTuple(args, "sssii", &mode, &rawmode, &compname, &fp, &ifdoffset))
+    if (! PyArg_ParseTuple(args, "sssiI", &mode, &rawmode, &compname, &fp, &ifdoffset))
         return NULL;
 
     TRACE(("new tiff decoder %s\n", compname));
