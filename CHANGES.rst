@@ -5,6 +5,15 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Fixed crash when loading non-font bytes #3912
+  [radarhere]
+
+- Fix SPARC memory alignment issues in Pack/Unpack functions #3858
+  [kulikjak]
+
+- Added CMYK;16B and CMYK;16N unpackers #3913
+  [radarhere]
+
 - Fixed bugs in calculating text size #3864
   [radarhere]
 
