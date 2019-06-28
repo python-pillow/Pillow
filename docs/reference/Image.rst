@@ -173,7 +173,7 @@ This helps to get the bounding box coordinates of the input image:
     from PIL import Image
 
     im = Image.open("hopper.jpg")
-    prin (im.getbbox())
+    print(im.getbbox())
     # Returns four coordinates in the format (left, upper, right, lower)
 
 .. automethod:: PIL.Image.Image.getcolors
