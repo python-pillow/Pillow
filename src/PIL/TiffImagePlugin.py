@@ -1540,7 +1540,7 @@ def _save(im, fp, filename):
 
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
-        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS]
+        blocklist = [STRIPOFFSETS, STRIPBYTECOUNTS, SAMPLEFORMAT]
         atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
         atts[BITSPERSAMPLE] = bits[0]
