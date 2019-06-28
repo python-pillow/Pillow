@@ -265,7 +265,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i",
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "etn|ns"PY_ARG_BYTES_LENGTH"n",
                                      kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
