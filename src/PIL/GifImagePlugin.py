@@ -580,9 +580,6 @@ def _write_local_header(fp, im, offset, flags):
     include_color_table = im.encoderinfo.get("include_color_table")
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
-        # If needed, expand palette to minimum size
-        while(len(palette_bytes) < 9):
-            palette_bytes = palette_bytes*2
         color_table_size = _get_color_table_size(palette_bytes)
         if color_table_size:
             flags = flags | 128  # local color table flag
@@ -693,10 +690,12 @@ def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
     import math
 
-    color_table_size = int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
-    if color_table_size < 0:
-        color_table_size = 0
-    return color_table_size
+    if not palette_bytes:
+        return 0
+    elif len(palette_bytes) < 9:
+        return 1
+    else:
+        return int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
 
 
 def _get_header_palette(palette_bytes):

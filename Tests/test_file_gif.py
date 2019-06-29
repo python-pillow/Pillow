@@ -59,7 +59,7 @@ class TestFileGif(PillowTestCase):
             return len(test_file.getvalue())
 
         self.assertEqual(test_grayscale(0), 800)
-        self.assertEqual(test_grayscale(1), 38)
+        self.assertEqual(test_grayscale(1), 44)
         self.assertEqual(test_bilevel(0), 800)
         self.assertEqual(test_bilevel(1), 800)
 
