@@ -147,7 +147,7 @@ void _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
     (void) hdata; (void) base; (void) size;
 }
 
-int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset) {
+int ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
