@@ -121,7 +121,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (278, 374))
-        self.assertEqual(im.tile[0][:3], ("tiff_adobe_deflate", (0, 0, 278, 374), 0))
+        self.assertEqual(im.tile[0][:3], ("libtiff", (0, 0, 278, 374), 0))
         im.load()
 
         self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
@@ -644,10 +644,10 @@ class TestFileLibTiff(LibTiffTestCase):
             im.tile,
             [
                 (
-                    "tiff_adobe_deflate",
+                    "libtiff",
                     (0, 0, 100, 40),
                     0,
-                    ("RGB;16N", "tiff_adobe_deflate", False),
+                    ("RGB;16N", "tiff_adobe_deflate", False, 8),
                 )
             ],
         )
@@ -661,7 +661,8 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (100, 40))
         self.assertEqual(
-            im.tile, [("tiff_lzw", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False))]
+            im.tile,
+            [("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))],
         )
         im.load()
 
@@ -680,7 +681,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (256, 256))
         self.assertEqual(
-            im.tile, [("jpeg", (0, 0, 256, 256), 0, ("RGB", "jpeg", False))]
+            im.tile, [("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))]
         )
         im.load()
 

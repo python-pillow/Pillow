@@ -1121,7 +1121,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = list(self.tile[0][3]) + [self.tag_v2.offset]
+        args = list(self.tile[0][3])
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1328,8 +1328,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False)
-            self.tile.append((self._compression, (0, 0, xsize, ysize), 0, a))
+            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            self.tile.append(("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
