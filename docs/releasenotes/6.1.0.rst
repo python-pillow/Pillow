@@ -17,7 +17,7 @@ ImageSequence.all_frames
 A new method to facilitate applying a given function to all frames in an image, or to
 all frames in a list of images. The frames are returned as a list of separate images.
 For example, ``ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))``
-could used to return all frames from an image, each rotated 90 degrees.
+could be used to return all frames from an image, each rotated 90 degrees.
 
 Variation fonts
 ^^^^^^^^^^^^^^^
