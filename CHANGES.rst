@@ -9,7 +9,7 @@ Changelog (Pillow)
   [sircinnamon, radarhere]
 
 - Added ImageSequence all_frames #3778
-  [radargere]
+  [radarhere]
 
 - Use unsigned int to store TIFF IFD offsets #3923
   [cgohlke]
