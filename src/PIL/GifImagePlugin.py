@@ -426,9 +426,8 @@ def _write_multiple_frames(im, fp, palette):
 
     im_frames = []
     frame_count = 0
-    background = None
-    for imSequence in itertools.chain([im],
-                                      im.encoderinfo.get("append_images", [])):
+    background_im = None
+    for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
@@ -447,16 +446,23 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if disposal == 2:
-                    base_image = background
+                if encoderinfo.get("disposal") == 2:
+                    if background_im is None:
+                        background = _get_background(
+                            im,
+                            im.encoderinfo.get("background", im.info.get("background")),
+                        )
+                        background_im = Image.new("P", im_frame.size, background)
+                        background_im.putpalette(im_frames[0]["im"].palette)
+                    base_im = background_im
                 else:
-                    base_image = previous["im"]
-
-                if _get_palette_bytes(im_frame) == _get_palette_bytes(base_frame):
-                    delta = ImageChops.subtract_modulo(im_frame, base_image)
+                    base_im = previous["im"]
+                if _get_palette_bytes(im_frame) == _get_palette_bytes(base_im):
+                    delta = ImageChops.subtract_modulo(im_frame, base_im)
                 else:
                     delta = ImageChops.subtract_modulo(
-                        im_frame.convert("RGB"), base_image.convert("RGB"))
+                        im_frame.convert("RGB"), base_im.convert("RGB")
+                    )
                 bbox = delta.getbbox()
                 if not bbox:
                     # This frame is identical to the previous frame
@@ -465,7 +471,6 @@ def _write_multiple_frames(im, fp, palette):
                     continue
             else:
                 bbox = None
-                background = Image.new("P", im_frame.size, 0)
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
 
     if len(im_frames) > 1:
@@ -726,6 +731,18 @@ def _get_palette_bytes(im):
     return im.palette.palette
 
 
+def _get_background(im, infoBackground):
+    background = 0
+    if infoBackground:
+        background = infoBackground
+        if isinstance(background, tuple):
+            # WebPImagePlugin stores an RGBA value in info["background"]
+            # So it must be converted to the same format as GifImagePlugin's
+            # info["background"] - a global color table index
+            background = im.palette.getcolor(background)
+    return background
+
+
 def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
@@ -745,14 +762,7 @@ def _get_global_header(im, info):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
-    background = 0
-    if "background" in info:
-        background = info["background"]
-        if isinstance(background, tuple):
-            # WebPImagePlugin stores an RGBA value in info["background"]
-            # So it must be converted to the same format as GifImagePlugin's
-            # info["background"] - a global color table index
-            background = im.palette.getcolor(background)
+    background = _get_background(im, info.get("background"))
 
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
