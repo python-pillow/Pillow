@@ -5,13 +5,13 @@ from PIL import ImageOps
 
 try:
     from PIL import _webp
+
     HAVE_WEBP = True
 except ImportError:
     HAVE_WEBP = False
 
 
 class TestImageOps(PillowTestCase):
-
     class Deformer(object):
         def getmesh(self, im):
             x, y = im.size
@@ -91,15 +91,15 @@ class TestImageOps(PillowTestCase):
 
         for label, color, new_size in [
             ("h", None, (im.width * 4, im.height * 2)),
-            ("v", "#f00", (im.width * 2, im.height * 4))
+            ("v", "#f00", (im.width * 2, im.height * 4)),
         ]:
             for i, centering in enumerate([(0, 0), (0.5, 0.5), (1, 1)]):
-                new_im = ImageOps.pad(im, new_size,
-                                      color=color, centering=centering)
+                new_im = ImageOps.pad(im, new_size, color=color, centering=centering)
                 self.assertEqual(new_im.size, new_size)
 
                 target = Image.open(
-                    "Tests/images/imageops_pad_"+label+"_"+str(i)+".jpg")
+                    "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg"
+                )
                 self.assert_image_similar(new_im, target, 6)
 
     def test_pil163(self):
@@ -135,24 +135,30 @@ class TestImageOps(PillowTestCase):
         im = im.convert("L")
 
         # Create image with original 2-color functionality
-        im_test = ImageOps.colorize(im, 'red', 'green')
+        im_test = ImageOps.colorize(im, "red", "green")
 
         # Test output image (2-color)
         left = (0, 1)
         middle = (127, 1)
         right = (255, 1)
-        self.assert_tuple_approx_equal(im_test.getpixel(left),
-                                       (255, 0, 0),
-                                       threshold=1,
-                                       msg='black test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(middle),
-                                       (127, 63, 0),
-                                       threshold=1,
-                                       msg='mid test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(right),
-                                       (0, 127, 0),
-                                       threshold=1,
-                                       msg='white test pixel incorrect')
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(left),
+            (255, 0, 0),
+            threshold=1,
+            msg="black test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(middle),
+            (127, 63, 0),
+            threshold=1,
+            msg="mid test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(right),
+            (0, 127, 0),
+            threshold=1,
+            msg="white test pixel incorrect",
+        )
 
     def test_colorize_2color_offset(self):
         # Test the colorizing function with 2-color functionality and offset
@@ -162,28 +168,32 @@ class TestImageOps(PillowTestCase):
         im = im.convert("L")
 
         # Create image with original 2-color functionality with offsets
-        im_test = ImageOps.colorize(im,
-                                    black='red',
-                                    white='green',
-                                    blackpoint=50,
-                                    whitepoint=100)
+        im_test = ImageOps.colorize(
+            im, black="red", white="green", blackpoint=50, whitepoint=100
+        )
 
         # Test output image (2-color) with offsets
         left = (25, 1)
         middle = (75, 1)
         right = (125, 1)
-        self.assert_tuple_approx_equal(im_test.getpixel(left),
-                                       (255, 0, 0),
-                                       threshold=1,
-                                       msg='black test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(middle),
-                                       (127, 63, 0),
-                                       threshold=1,
-                                       msg='mid test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(right),
-                                       (0, 127, 0),
-                                       threshold=1,
-                                       msg='white test pixel incorrect')
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(left),
+            (255, 0, 0),
+            threshold=1,
+            msg="black test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(middle),
+            (127, 63, 0),
+            threshold=1,
+            msg="mid test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(right),
+            (0, 127, 0),
+            threshold=1,
+            msg="white test pixel incorrect",
+        )
 
     def test_colorize_3color_offset(self):
         # Test the colorizing function with 3-color functionality and offset
@@ -193,13 +203,15 @@ class TestImageOps(PillowTestCase):
         im = im.convert("L")
 
         # Create image with new three color functionality with offsets
-        im_test = ImageOps.colorize(im,
-                                    black='red',
-                                    white='green',
-                                    mid='blue',
-                                    blackpoint=50,
-                                    whitepoint=200,
-                                    midpoint=100)
+        im_test = ImageOps.colorize(
+            im,
+            black="red",
+            white="green",
+            mid="blue",
+            blackpoint=50,
+            whitepoint=200,
+            midpoint=100,
+        )
 
         # Test output image (3-color) with offsets
         left = (25, 1)
@@ -207,43 +219,47 @@ class TestImageOps(PillowTestCase):
         middle = (100, 1)
         right_middle = (150, 1)
         right = (225, 1)
-        self.assert_tuple_approx_equal(im_test.getpixel(left),
-                                       (255, 0, 0),
-                                       threshold=1,
-                                       msg='black test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(left_middle),
-                                       (127, 0, 127),
-                                       threshold=1,
-                                       msg='low-mid test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(middle),
-                                       (0, 0, 255),
-                                       threshold=1,
-                                       msg='mid incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(right_middle),
-                                       (0, 63, 127),
-                                       threshold=1,
-                                       msg='high-mid test pixel incorrect')
-        self.assert_tuple_approx_equal(im_test.getpixel(right),
-                                       (0, 127, 0),
-                                       threshold=1,
-                                       msg='white test pixel incorrect')
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(left),
+            (255, 0, 0),
+            threshold=1,
+            msg="black test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(left_middle),
+            (127, 0, 127),
+            threshold=1,
+            msg="low-mid test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(middle), (0, 0, 255), threshold=1, msg="mid incorrect"
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(right_middle),
+            (0, 63, 127),
+            threshold=1,
+            msg="high-mid test pixel incorrect",
+        )
+        self.assert_tuple_approx_equal(
+            im_test.getpixel(right),
+            (0, 127, 0),
+            threshold=1,
+            msg="white test pixel incorrect",
+        )
 
     def test_exif_transpose(self):
         exts = [".jpg"]
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
             exts.append(".webp")
         for ext in exts:
-            base_im = Image.open("Tests/images/hopper"+ext)
+            base_im = Image.open("Tests/images/hopper" + ext)
 
             orientations = [base_im]
             for i in range(2, 9):
-                im = Image.open("Tests/images/hopper_orientation_"+str(i)+ext)
+                im = Image.open("Tests/images/hopper_orientation_" + str(i) + ext)
                 orientations.append(im)
             for i, orientation_im in enumerate(orientations):
-                for im in [
-                    orientation_im,        # ImageFile
-                    orientation_im.copy()  # Image
-                ]:
+                for im in [orientation_im, orientation_im.copy()]:  # ImageFile  # Image
                     if i == 0:
                         self.assertNotIn("exif", im.info)
                     else:

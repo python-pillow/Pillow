@@ -33,7 +33,6 @@ FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
 
 class TestImageDraw(PillowTestCase):
-
     def test_sanity(self):
         im = hopper("RGB").copy()
 
@@ -74,11 +73,12 @@ class TestImageDraw(PillowTestCase):
         brush = ImageDraw2.Brush("white")
 
         # Act
-        draw.ellipse(((0, 0), (W-1, H)), brush)
+        draw.ellipse(((0, 0), (W - 1, H)), brush)
 
         # Assert
         self.assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1
+        )
 
     def helper_line(self, points):
         # Arrange
@@ -90,8 +90,7 @@ class TestImageDraw(PillowTestCase):
         draw.line(points, pen)
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_line.png"))
+        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
     def test_line1_pen(self):
         self.helper_line(POINTS1)
@@ -111,8 +110,7 @@ class TestImageDraw(PillowTestCase):
         draw.line(POINTS1, pen, brush)
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_line.png"))
+        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
     def helper_polygon(self, points):
         # Arrange
@@ -125,8 +123,7 @@ class TestImageDraw(PillowTestCase):
         draw.polygon(points, pen, brush)
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_polygon.png"))
+        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
 
     def test_polygon1(self):
         self.helper_polygon(POINTS1)
@@ -145,8 +142,7 @@ class TestImageDraw(PillowTestCase):
         draw.rectangle(bbox, pen, brush)
 
         # Assert
-        self.assert_image_equal(
-            im, Image.open("Tests/images/imagedraw_rectangle.png"))
+        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
 
     def test_rectangle1(self):
         self.helper_rectangle(BBOX1)

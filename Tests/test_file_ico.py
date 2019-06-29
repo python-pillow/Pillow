@@ -1,13 +1,12 @@
 from .helper import PillowTestCase, hopper
 
 import io
-from PIL import Image, IcoImagePlugin
+from PIL import Image, ImageDraw, IcoImagePlugin
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
 
 class TestFileIco(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(TEST_ICO_FILE)
         im.load()
@@ -18,8 +17,7 @@ class TestFileIco(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError,
-                              IcoImagePlugin.IcoImageFile, fp)
+            self.assertRaises(SyntaxError, IcoImagePlugin.IcoImageFile, fp)
 
     def test_save_to_bytes(self):
         output = io.BytesIO()
@@ -29,13 +27,12 @@ class TestFileIco(PillowTestCase):
         # the default image
         output.seek(0)
         reloaded = Image.open(output)
-        self.assertEqual(reloaded.info['sizes'], {(32, 32), (64, 64)})
+        self.assertEqual(reloaded.info["sizes"], {(32, 32), (64, 64)})
 
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((64, 64), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded,
-                                hopper().resize((64, 64), Image.LANCZOS))
+        self.assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
 
         # the other one
         output.seek(0)
@@ -45,8 +42,7 @@ class TestFileIco(PillowTestCase):
         self.assertEqual(im.mode, reloaded.mode)
         self.assertEqual((32, 32), reloaded.size)
         self.assertEqual(reloaded.format, "ICO")
-        self.assert_image_equal(reloaded,
-                                hopper().resize((32, 32), Image.LANCZOS))
+        self.assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
 
     def test_incorrect_size(self):
         im = Image.open(TEST_ICO_FILE)
@@ -81,5 +77,26 @@ class TestFileIco(PillowTestCase):
 
         # Assert
         self.assertEqual(
-            im_saved.info['sizes'],
-            {(16, 16), (24, 24), (32, 32), (48, 48)})
+            im_saved.info["sizes"], {(16, 16), (24, 24), (32, 32), (48, 48)}
+        )
+
+    def test_unexpected_size(self):
+        # This image has been manually hexedited to state that it is 16x32
+        # while the image within is still 16x16
+        im = self.assert_warning(
+            UserWarning, Image.open, "Tests/images/hopper_unexpected.ico"
+        )
+        self.assertEqual(im.size, (16, 16))
+
+    def test_draw_reloaded(self):
+        im = Image.open(TEST_ICO_FILE)
+        outfile = self.tempfile("temp_saved_hopper_draw.ico")
+
+        draw = ImageDraw.Draw(im)
+        draw.line((0, 0) + im.size, "#f00")
+        im.save(outfile)
+
+        im = Image.open(outfile)
+        im.save("Tests/images/hopper_draw.ico")
+        reloaded = Image.open("Tests/images/hopper_draw.ico")
+        self.assert_image_equal(im, reloaded)

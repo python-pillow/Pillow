@@ -2,6 +2,7 @@
 -e .
 alabaster
 Babel
+black; python_version >= '3.6'
 check-manifest
 cov-core
 coverage

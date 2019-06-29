@@ -5,6 +5,7 @@ py3 = sys.version_info.major >= 3
 py36 = sys.version_info[0:2] >= (3, 6)
 
 if py3:
+
     def isStringType(t):
         return isinstance(t, str)
 
@@ -13,10 +14,15 @@ if py3:
 
         def isPath(f):
             return isinstance(f, (bytes, str, Path))
+
     else:
+
         def isPath(f):
             return isinstance(f, (bytes, str))
+
+
 else:
+
     def isStringType(t):
         return isinstance(t, basestring)  # noqa: F821
 

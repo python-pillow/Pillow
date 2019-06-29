@@ -7,7 +7,6 @@ test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
 
 class TestFileMpo(PillowTestCase):
-
     def setUp(self):
         codecs = dir(Image.core)
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
@@ -35,23 +34,25 @@ class TestFileMpo(PillowTestCase):
         def open():
             im = Image.open(test_files[0])
             im.load()
+
         self.assert_warning(None, open)
 
     def test_app(self):
         for test_file in test_files:
             # Test APP/COM reader (@PIL135)
             im = Image.open(test_file)
-            self.assertEqual(im.applist[0][0], 'APP1')
-            self.assertEqual(im.applist[1][0], 'APP2')
-            self.assertEqual(im.applist[1][1][:16],
-                             b'MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00')
+            self.assertEqual(im.applist[0][0], "APP1")
+            self.assertEqual(im.applist[1][0], "APP2")
+            self.assertEqual(
+                im.applist[1][1][:16], b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
+            )
             self.assertEqual(len(im.applist), 2)
 
     def test_exif(self):
         for test_file in test_files:
             im = Image.open(test_file)
             info = im._getexif()
-            self.assertEqual(info[272], 'Nintendo 3DS')
+            self.assertEqual(info[272], "Nintendo 3DS")
             self.assertEqual(info[296], 2)
             self.assertEqual(info[34665], 188)
 
@@ -68,19 +69,19 @@ class TestFileMpo(PillowTestCase):
         # Nintendo
         im = Image.open("Tests/images/sugarshack.mpo")
         exif = im.getexif()
-        self.assertEqual(exif.get_ifd(0x927c)[0x1101]["Parallax"], -44.798187255859375)
+        self.assertEqual(exif.get_ifd(0x927C)[0x1101]["Parallax"], -44.798187255859375)
 
         # Fujifilm
         im = Image.open("Tests/images/fujifilm.mpo")
         im.seek(1)
         exif = im.getexif()
-        self.assertEqual(exif.get_ifd(0x927c)[0xb211], -3.125)
+        self.assertEqual(exif.get_ifd(0x927C)[0xB211], -3.125)
 
     def test_mp(self):
         for test_file in test_files:
             im = Image.open(test_file)
             mpinfo = im._getmp()
-            self.assertEqual(mpinfo[45056], b'0100')
+            self.assertEqual(mpinfo[45056], b"0100")
             self.assertEqual(mpinfo[45057], 2)
 
     def test_mp_offset(self):
@@ -88,7 +89,7 @@ class TestFileMpo(PillowTestCase):
         # in APP2 data, in contrast to normal 8
         im = Image.open("Tests/images/sugarshack_ifd_offset.mpo")
         mpinfo = im._getmp()
-        self.assertEqual(mpinfo[45056], b'0100')
+        self.assertEqual(mpinfo[45056], b"0100")
         self.assertEqual(mpinfo[45057], 2)
 
     def test_mp_attribute(self):
@@ -97,17 +98,16 @@ class TestFileMpo(PillowTestCase):
             mpinfo = im._getmp()
             frameNumber = 0
             for mpentry in mpinfo[45058]:
-                mpattr = mpentry['Attribute']
+                mpattr = mpentry["Attribute"]
                 if frameNumber:
-                    self.assertFalse(mpattr['RepresentativeImageFlag'])
+                    self.assertFalse(mpattr["RepresentativeImageFlag"])
                 else:
-                    self.assertTrue(mpattr['RepresentativeImageFlag'])
-                self.assertFalse(mpattr['DependentParentImageFlag'])
-                self.assertFalse(mpattr['DependentChildImageFlag'])
-                self.assertEqual(mpattr['ImageDataFormat'], 'JPEG')
-                self.assertEqual(mpattr['MPType'],
-                                 'Multi-Frame Image: (Disparity)')
-                self.assertEqual(mpattr['Reserved'], 0)
+                    self.assertTrue(mpattr["RepresentativeImageFlag"])
+                self.assertFalse(mpattr["DependentParentImageFlag"])
+                self.assertFalse(mpattr["DependentChildImageFlag"])
+                self.assertEqual(mpattr["ImageDataFormat"], "JPEG")
+                self.assertEqual(mpattr["MPType"], "Multi-Frame Image: (Disparity)")
+                self.assertEqual(mpattr["Reserved"], 0)
                 frameNumber += 1
 
     def test_seek(self):
@@ -144,7 +144,7 @@ class TestFileMpo(PillowTestCase):
         self.assertLess(im.tell(), n_frames)
 
         # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames-1)
+        im.seek(n_frames - 1)
 
     def test_image_grab(self):
         for test_file in test_files:

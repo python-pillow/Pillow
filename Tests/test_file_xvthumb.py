@@ -6,7 +6,6 @@ TEST_FILE = "Tests/images/hopper.p7"
 
 
 class TestFileXVThumb(PillowTestCase):
-
     def test_open(self):
         # Act
         im = Image.open(TEST_FILE)
@@ -24,13 +23,13 @@ class TestFileXVThumb(PillowTestCase):
         bad_file = "Tests/images/hopper_bad.p7"
 
         # Act / Assert
-        self.assertRaises(SyntaxError,
-                          XVThumbImagePlugin.XVThumbImageFile, bad_file)
+        self.assertRaises(SyntaxError, XVThumbImagePlugin.XVThumbImageFile, bad_file)
 
     def test_invalid_file(self):
         # Arrange
         invalid_file = "Tests/images/flower.jpg"
 
         # Act / Assert
-        self.assertRaises(SyntaxError,
-                          XVThumbImagePlugin.XVThumbImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, XVThumbImagePlugin.XVThumbImageFile, invalid_file
+        )

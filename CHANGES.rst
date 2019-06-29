@@ -2,6 +2,96 @@
 Changelog (Pillow)
 ==================
 
+6.1.0 (unreleased)
+------------------
+
+- Fixed crash when loading non-font bytes #3912
+  [radarhere]
+
+- Fix SPARC memory alignment issues in Pack/Unpack functions #3858
+  [kulikjak]
+
+- Added CMYK;16B and CMYK;16N unpackers #3913
+  [radarhere]
+
+- Fixed bugs in calculating text size #3864
+  [radarhere]
+
+- Add __main__.py to output basic format and support information #3870
+  [jdufresne]
+
+- Added variation font support #3802
+  [radarhere]
+
+- Do not down-convert if image is LA when showing with PNG format #3869
+  [radarhere]
+
+- Improve handling of PSD frames #3759
+  [radarhere]
+
+- Improved ICO and ICNS loading #3897
+  [radarhere]
+
+- Changed Preview application path so that it is no longer static #3896
+  [radarhere]
+
+- Corrected ttb text positioning #3856
+  [radarhere]
+
+- Handle unexpected ICO image sizes #3836
+  [radarhere]
+
+- Fixed bits value for RGB;16N unpackers #3837
+  [kkopachev]
+
+- Travis CI: Add Fedora 30, remove Fedora 28 #3821
+  [hugovk]
+
+- Added reading of CMYK;16L TIFF images #3817
+  [radarhere]
+
+- Fixed dimensions of 1-bit PDFs #3827
+  [radarhere]
+
+- Fixed opening mmap image through Path on Windows #3825
+  [radarhere]
+
+- Fixed ImageDraw arc gaps #3824
+  [radarhere]
+
+- Expand GIF to include frames with extents outside the image size #3822
+  [radarhere]
+
+- Fixed ImageTk getimage #3814
+  [radarhere]
+
+- Fixed bug in decoding large images #3791
+  [radarhere]
+
+- Fixed reading APP13 marker without Photoshop data #3771
+  [radarhere]
+
+- Added option to include layered windows in ImageGrab.grab on Windows #3808
+  [radarhere]
+
+- Detect libimagequant when installed by pacman on MingW #3812
+  [radarhere]
+
+- Fixed raqm layout bug #3787
+  [radarhere]
+
+- Fixed loading font with non-Unicode path on Windows #3785
+  [radarhere]
+
+- Travis CI: Upgrade PyPy from 6.0.0 to 7.1.1 #3783
+  [hugovk, johnthagen]
+
+- Depends: Updated openjpeg to 2.3.1 #3794, raqm to 0.7.0 #3877, libimagequant to 2.12.3 #3889
+  [radarhere]
+
+- Fix numpy bool bug #3790
+  [radarhere]
+
 6.0.0 (2019-04-01)
 ------------------
 
@@ -1408,7 +1498,7 @@ Changelog (Pillow)
 - Test: Faster assert_image_similar #2279
   [homm]
 
-- Removed depreciated internal "stretch" method #2276
+- Removed deprecated internal "stretch" method #2276
   [homm]
 
 - Removed the handles_eof flag in decode.c #2223

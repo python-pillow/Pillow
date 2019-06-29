@@ -6,7 +6,6 @@ TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 
 
 class TestFileGribStub(PillowTestCase):
-
     def test_open(self):
         # Act
         im = Image.open(TEST_FILE)
@@ -23,8 +22,9 @@ class TestFileGribStub(PillowTestCase):
         invalid_file = "Tests/images/flower.jpg"
 
         # Act / Assert
-        self.assertRaises(SyntaxError,
-                          GribStubImagePlugin.GribStubImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, GribStubImagePlugin.GribStubImageFile, invalid_file
+        )
 
     def test_load(self):
         # Arrange

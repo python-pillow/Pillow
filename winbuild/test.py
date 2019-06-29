@@ -12,16 +12,14 @@ def test_one(params):
     python, architecture = params
     try:
         print("Running: %s, %s" % params)
-        command = [r'%s\%s%s\Scripts\python.exe' %
-                   (VIRT_BASE, python, architecture),
-                   'test-installed.py',
-                   '--processes=-0',
-                   '--process-timeout=30',
-                   ]
-        command.extend(glob.glob('Tests/test*.py'))
-        proc = subprocess.Popen(command,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
+        command = [
+            r"%s\%s%s\Scripts\python.exe" % (VIRT_BASE, python, architecture),
+            "test-installed.py",
+            "--processes=-0",
+            "--process-timeout=30",
+        ]
+        command.extend(glob.glob("Tests/test*.py"))
+        proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         (trace, stderr) = proc.communicate()
         status = proc.returncode
         print("Done with %s, %s -- %s" % (python, architecture, status))
@@ -31,16 +29,17 @@ def test_one(params):
         return (python, architecture, -1, str(msg))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    os.chdir('..')
-    matrix = [(python, architecture) for python in pythons
-              for architecture in ('', X64_EXT)]
+    os.chdir("..")
+    matrix = [
+        (python, architecture) for python in pythons for architecture in ("", X64_EXT)
+    ]
 
     results = map(test_one, matrix)
 
     for (python, architecture, status, trace) in results:
-        print("%s%s: %s" % (python, architecture, status and 'ERR' or 'PASS'))
+        print("%s%s: %s" % (python, architecture, status and "ERR" or "PASS"))
 
     res = all(status for (python, architecture, status, trace) in results)
     sys.exit(res)

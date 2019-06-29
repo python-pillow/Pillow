@@ -5,7 +5,6 @@ import PIL.Image
 
 
 class TestSanity(PillowTestCase):
-
     def test_sanity(self):
 
         # Make sure we have the binary extension
@@ -13,7 +12,7 @@ class TestSanity(PillowTestCase):
 
         # Create an image and do stuff with it.
         im = PIL.Image.new("1", (100, 100))
-        self.assertEqual((im.mode, im.size), ('1', (100, 100)))
+        self.assertEqual((im.mode, im.size), ("1", (100, 100)))
         self.assertEqual(len(im.tobytes()), 1300)
 
         # Create images in all remaining major modes.

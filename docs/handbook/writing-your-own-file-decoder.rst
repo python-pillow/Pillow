@@ -201,7 +201,8 @@ table describes some commonly used **raw modes**:
 +-----------+-----------------------------------------------------------------+
 | ``BGR``   | 24-bit true colour, stored as (blue, green, red).               |
 +-----------+-----------------------------------------------------------------+
-| ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad).          |
+| ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
+|           | pixels may vary.                                                |
 +-----------+-----------------------------------------------------------------+
 | ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
 |           | all green pixels, finally all blue pixels).                     |
@@ -255,9 +256,10 @@ If the raw decoder cannot handle your format, PIL also provides a special “bit
 decoder that can be used to read various packed formats into a floating point
 image memory.
 
-To use the bit decoder with the frombytes function, use the following syntax::
+To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
+the following syntax::
 
-    image = frombytes(
+    image = Image.frombytes(
         mode, size, data, "bit",
         bits, pad, fill, sign, orientation
         )

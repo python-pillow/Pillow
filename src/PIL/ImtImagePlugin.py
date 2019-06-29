@@ -33,6 +33,7 @@ field = re.compile(br"([a-z]*) ([^ \r\n]*)")
 ##
 # Image plugin for IM Tools images.
 
+
 class ImtImageFile(ImageFile.ImageFile):
 
     format = "IMT"
@@ -55,12 +56,12 @@ class ImtImageFile(ImageFile.ImageFile):
             if not s:
                 break
 
-            if s == b'\x0C':
+            if s == b"\x0C":
 
                 # image data begins
-                self.tile = [("raw", (0, 0)+self.size,
-                             self.fp.tell(),
-                             (self.mode, 0, 1))]
+                self.tile = [
+                    ("raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1))
+                ]
 
                 break
 

@@ -37,20 +37,28 @@ def getmode(mode):
         # initialize mode cache
 
         from . import Image
+
         modes = {}
         # core modes
         for m, (basemode, basetype, bands) in Image._MODEINFO.items():
             modes[m] = ModeDescriptor(m, bands, basemode, basetype)
         # extra experimental modes
-        modes["RGBa"] = ModeDescriptor("RGBa",
-                                       ("R", "G", "B", "a"), "RGB", "L")
+        modes["RGBa"] = ModeDescriptor("RGBa", ("R", "G", "B", "a"), "RGB", "L")
         modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
         modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
         modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
         # mapping modes
-        modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
-        modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
-        modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
+        for i16mode in (
+            "I;16",
+            "I;16S",
+            "I;16L",
+            "I;16LS",
+            "I;16B",
+            "I;16BS",
+            "I;16N",
+            "I;16NS",
+        ):
+            modes[i16mode] = ModeDescriptor(i16mode, ("I",), "L", "L")
         # set global mode cache atomically
         _modes = modes
     return _modes[mode]

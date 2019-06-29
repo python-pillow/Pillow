@@ -163,17 +163,17 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0** and **2.1.0**.
+  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0** and **2.3.1**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.12.2**
+  * Pillow has been tested with libimagequant **2.6-2.12.3**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
-  * Windows support: Libimagequant requires VS2013/MSVC 18 to compile,
+  * Windows support: Libimagequant requires VS2015/MSVC 19 to compile,
     so it is unlikely to work with Python 2.7 on Windows.
 
 * **libraqm** provides complex text layout support.
@@ -382,23 +382,25 @@ These platforms are built and tested for every change.
 +----------------------------------+-------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**     |**Tested Architecture**|
 +----------------------------------+-------------------------------+-----------------------+
-| Alpine                           | 2.7                           |x86-64                 |
+| Alpine                           | 2.7, 3.6                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Arch                             | 2.7                           |x86-64                 |
+| Arch                             | 2.7, 3.7                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Amazon                           | 2.7                           |x86-64                 |
+| Amazon Linux 1                   | 2.7, 3.6                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Centos 6                         | 2.7                           |x86-64                 |
+| Amazon Linux 2                   | 2.7, 3.6                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Centos 7                         | 2.7                           |x86-64                 |
+| CentOS 6                         | 2.7, 3.6                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Debian Stretch                   | 2.7                           |x86                    |
+| CentOS 7                         | 2.7, 3.6                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Fedora 28                        | 2.7                           |x86-64                 |
+| Debian 9 Stretch                 | 2.7, 3.5                      |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
-| Fedora 29                        | 2.7                           |x86-64                 |
+| Fedora 29                        | 2.7, 3.7                      |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
-| Mac OS X 10.10 Yosemite*         | 2.7, 3.5, 3.6, 3.7            |x86-64                 |
+| Fedora 30                        | 2.7, 3.7                      |x86-64                 |
++----------------------------------+-------------------------------+-----------------------+
+| macOS 10.13 High Sierra*         | 2.7, 3.5, 3.6, 3.7            |x86-64                 |
 +----------------------------------+-------------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 2.7, 3.5, 3.6, 3.7,           |x86-64                 |
 |                                  | PyPy, PyPy3                   |                       |
@@ -408,7 +410,7 @@ These platforms are built and tested for every change.
 |                                  | PyPy, 3.7/MinGW               |x86                    |
 +----------------------------------+-------------------------------+-----------------------+
 
-\* Mac OS X CI is not run for every commit, but is run for every release.
+\* macOS CI is not run for every commit, but is run for every release.
 
 Other Platforms
 ^^^^^^^^^^^^^^^
@@ -423,7 +425,9 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
-| macOS 10.14 Mojave               | 2.7, 3.4, 3.5, 3.6, 3.7      | 5.4.1                          |x86-64                 |
+| macOS 10.14 Mojave               | 2.7, 3.5, 3.6, 3.7           | 6.0.0                          |x86-64                 |
+|                                  +------------------------------+--------------------------------+                       +
+|                                  | 3.4                          | 5.4.1                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6           | 4.2.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+

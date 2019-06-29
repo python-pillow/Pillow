@@ -6,7 +6,6 @@ filename = "Tests/images/courB08.bdf"
 
 
 class TestFontBdf(PillowTestCase):
-
     def test_sanity(self):
 
         with open(filename, "rb") as test_file:

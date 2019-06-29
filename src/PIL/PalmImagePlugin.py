@@ -14,6 +14,7 @@ from ._binary import o8, o16be as o16b
 # PIL.__version__ instead.
 __version__ = "1.0"
 
+# fmt: off
 _Palm8BitColormapValues = (  # noqa: E131
     (255, 255, 255), (255, 204, 255), (255, 153, 255), (255, 102, 255),
     (255,  51, 255), (255,   0, 255), (255, 255, 204), (255, 204, 204),
@@ -79,6 +80,7 @@ _Palm8BitColormapValues = (  # noqa: E131
       (0,   0,   0),   (0,   0,   0),   (0,   0,   0),   (0,   0,   0),
       (0,   0,   0),   (0,   0,   0),   (0,   0,   0),   (0,   0,   0),
       (0,   0,   0),   (0,   0,   0),   (0,   0,   0),   (0,   0,   0))
+# fmt: on
 
 
 # so build a prototype image to be used for palette resampling
@@ -88,7 +90,7 @@ def build_prototype_image():
     palettedata = ()
     for colormapValue in _Palm8BitColormapValues:
         palettedata += colormapValue
-    palettedata += (0, 0, 0)*(256 - len(_Palm8BitColormapValues))
+    palettedata += (0, 0, 0) * (256 - len(_Palm8BitColormapValues))
     image.putpalette(palettedata)
     return image
 
@@ -100,17 +102,9 @@ Palm8BitColormapImage = build_prototype_image()
 #
 # --------------------------------------------------------------------
 
-_FLAGS = {
-    "custom-colormap": 0x4000,
-    "is-compressed":   0x8000,
-    "has-transparent": 0x2000,
-    }
+_FLAGS = {"custom-colormap": 0x4000, "is-compressed": 0x8000, "has-transparent": 0x2000}
 
-_COMPRESSION_TYPES = {
-    "none":     0xFF,
-    "rle":      0x01,
-    "scanline": 0x00,
-    }
+_COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 
 
 #
@@ -118,6 +112,7 @@ _COMPRESSION_TYPES = {
 
 ##
 # (Internal) Image save plugin for the Palm format.
+
 
 def _save(im, fp, filename):
 
@@ -130,28 +125,24 @@ def _save(im, fp, filename):
         bpp = 8
         version = 1
 
-    elif (im.mode == "L" and
-          "bpp" in im.encoderinfo and
-          im.encoderinfo["bpp"] in (1, 2, 4)):
+    elif im.mode == "L":
+        if im.encoderinfo.get("bpp") in (1, 2, 4):
+            # this is 8-bit grayscale, so we shift it to get the high-order bits,
+            # and invert it because
+            # Palm does greyscale from white (0) to black (1)
+            bpp = im.encoderinfo["bpp"]
+            im = im.point(
+                lambda x, shift=8 - bpp, maxval=(1 << bpp) - 1: maxval - (x >> shift)
+            )
+        elif im.info.get("bpp") in (1, 2, 4):
+            # here we assume that even though the inherent mode is 8-bit grayscale,
+            # only the lower bpp bits are significant.
+            # We invert them to match the Palm.
+            bpp = im.info["bpp"]
+            im = im.point(lambda x, maxval=(1 << bpp) - 1: maxval - (x & maxval))
+        else:
+            raise IOError("cannot write mode %s as Palm" % im.mode)
 
-        # this is 8-bit grayscale, so we shift it to get the high-order bits,
-        # and invert it because
-        # Palm does greyscale from white (0) to black (1)
-        bpp = im.encoderinfo["bpp"]
-        im = im.point(
-            lambda x, shift=8-bpp, maxval=(1 << bpp)-1: maxval - (x >> shift))
-        # we ignore the palette here
-        im.mode = "P"
-        rawmode = "P;" + str(bpp)
-        version = 1
-
-    elif im.mode == "L" and "bpp" in im.info and im.info["bpp"] in (1, 2, 4):
-
-        # here we assume that even though the inherent mode is 8-bit grayscale,
-        # only the lower bpp bits are significant.
-        # We invert them to match the Palm.
-        bpp = im.info["bpp"]
-        im = im.point(lambda x, maxval=(1 << bpp)-1: maxval - (x & maxval))
         # we ignore the palette here
         im.mode = "P"
         rawmode = "P;" + str(bpp)
@@ -177,7 +168,7 @@ def _save(im, fp, filename):
     cols = im.size[0]
     rows = im.size[1]
 
-    rowbytes = int((cols + (16//bpp - 1)) / (16 // bpp)) * 2
+    rowbytes = int((cols + (16 // bpp - 1)) / (16 // bpp)) * 2
     transparent_index = 0
     compression_type = _COMPRESSION_TYPES["none"]
 
@@ -201,7 +192,7 @@ def _save(im, fp, filename):
     fp.write(o16b(offset))
     fp.write(o8(transparent_index))
     fp.write(o8(compression_type))
-    fp.write(o16b(0))   # reserved by Palm
+    fp.write(o16b(0))  # reserved by Palm
 
     # now write colormap if necessary
 
@@ -209,20 +200,21 @@ def _save(im, fp, filename):
         fp.write(o16b(256))
         for i in range(256):
             fp.write(o8(i))
-            if colormapmode == 'RGB':
+            if colormapmode == "RGB":
                 fp.write(
-                    o8(colormap[3 * i]) +
-                    o8(colormap[3 * i + 1]) +
-                    o8(colormap[3 * i + 2]))
-            elif colormapmode == 'RGBA':
+                    o8(colormap[3 * i])
+                    + o8(colormap[3 * i + 1])
+                    + o8(colormap[3 * i + 2])
+                )
+            elif colormapmode == "RGBA":
                 fp.write(
-                    o8(colormap[4 * i]) +
-                    o8(colormap[4 * i + 1]) +
-                    o8(colormap[4 * i + 2]))
+                    o8(colormap[4 * i])
+                    + o8(colormap[4 * i + 1])
+                    + o8(colormap[4 * i + 2])
+                )
 
     # now convert data to raw form
-    ImageFile._save(
-        im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, rowbytes, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))])
 
     if hasattr(fp, "flush"):
         fp.flush()

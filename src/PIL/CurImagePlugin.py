@@ -36,6 +36,7 @@ def _accept(prefix):
 ##
 # Image plugin for Windows Cursor files.
 
+
 class CurImageFile(BmpImagePlugin.BmpImageFile):
 
     format = "CUR"
@@ -65,9 +66,9 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         self._bitmap(i32(m[12:]) + offset)
 
         # patch up the bitmap height
-        self._size = self.size[0], self.size[1]//2
+        self._size = self.size[0], self.size[1] // 2
         d, e, o, a = self.tile[0]
-        self.tile[0] = d, (0, 0)+self.size, o, a
+        self.tile[0] = d, (0, 0) + self.size, o, a
 
         return
 

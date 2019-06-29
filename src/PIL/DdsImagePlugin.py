@@ -61,8 +61,7 @@ DDS_LUMINANCEA = DDPF_LUMINANCE | DDPF_ALPHAPIXELS
 DDS_ALPHA = DDPF_ALPHA
 DDS_PAL8 = DDPF_PALETTEINDEXED8
 
-DDS_HEADER_FLAGS_TEXTURE = (DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH |
-                            DDSD_PIXELFORMAT)
+DDS_HEADER_FLAGS_TEXTURE = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT
 DDS_HEADER_FLAGS_MIPMAP = DDSD_MIPMAPCOUNT
 DDS_HEADER_FLAGS_VOLUME = DDSD_DEPTH
 DDS_HEADER_FLAGS_PITCH = DDSD_PITCH
@@ -130,8 +129,8 @@ class DdsImageFile(ImageFile.ImageFile):
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             rawmode = ""
             if bitcount == 32:
-                rawmode += masks[0xff000000]
-            rawmode += masks[0xff0000] + masks[0xff00] + masks[0xff]
+                rawmode += masks[0xFF000000]
+            rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode, 0, 1))]
         else:
@@ -151,24 +150,21 @@ class DdsImageFile(ImageFile.ImageFile):
                 # ignoring flags which pertain to volume textures and cubemaps
                 dxt10 = BytesIO(self.fp.read(20))
                 dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
-                if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS,
-                                   DXGI_FORMAT_BC7_UNORM):
+                if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
                     self.pixel_format = "BC7"
                     n = 7
                 elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
                     self.pixel_format = "BC7"
-                    self.im_info["gamma"] = 1/2.2
+                    self.im_info["gamma"] = 1 / 2.2
                     n = 7
                 else:
-                    raise NotImplementedError("Unimplemented DXGI format %d" %
-                                              (dxgi_format))
+                    raise NotImplementedError(
+                        "Unimplemented DXGI format %d" % (dxgi_format)
+                    )
             else:
-                raise NotImplementedError("Unimplemented pixel format %r" %
-                                          (fourcc))
+                raise NotImplementedError("Unimplemented pixel format %r" % (fourcc))
 
-            self.tile = [
-                ("bcn", (0, 0) + self.size, data_start, (n))
-            ]
+            self.tile = [("bcn", (0, 0) + self.size, data_start, (n))]
 
     def load_seek(self, pos):
         pass

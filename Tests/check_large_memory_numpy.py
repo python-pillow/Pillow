@@ -11,6 +11,7 @@ from .helper import unittest, PillowTestCase
 # Raspberry Pis).
 
 from PIL import Image
+
 try:
     import numpy as np
 except ImportError:
@@ -20,14 +21,13 @@ YDIM = 32769
 XDIM = 48000
 
 
-@unittest.skipIf(sys.maxsize <= 2**32, "requires 64-bit system")
+@unittest.skipIf(sys.maxsize <= 2 ** 32, "requires 64-bit system")
 class LargeMemoryNumpyTest(PillowTestCase):
-
     def _write_png(self, xdim, ydim):
         dtype = np.uint8
         a = np.zeros((xdim, ydim), dtype=dtype)
-        f = self.tempfile('temp.png')
-        im = Image.fromarray(a, 'L')
+        f = self.tempfile("temp.png")
+        im = Image.fromarray(a, "L")
         im.save(f)
 
     def test_large(self):
@@ -39,5 +39,5 @@ class LargeMemoryNumpyTest(PillowTestCase):
         self._write_png(XDIM, XDIM)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -20,7 +20,7 @@
 
 int
 ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
-		    UINT8* buf, int bytes)
+		    UINT8* buf, Py_ssize_t bytes)
 {
     int n, depth;
     UINT8* ptr;

@@ -3,7 +3,6 @@ from PIL import Image
 
 
 class TestImageThumbnail(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper()

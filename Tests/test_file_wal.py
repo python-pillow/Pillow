@@ -4,7 +4,6 @@ from PIL import WalImageFile
 
 
 class TestFileWal(PillowTestCase):
-
     def test_open(self):
         # Arrange
         TEST_FILE = "Tests/images/hopper.wal"

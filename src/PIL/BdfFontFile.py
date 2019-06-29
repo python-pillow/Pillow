@@ -32,14 +32,10 @@ bdf_slant = {
     "O": "Oblique",
     "RI": "Reverse Italic",
     "RO": "Reverse Oblique",
-    "OT": "Other"
+    "OT": "Other",
 }
 
-bdf_spacing = {
-    "P": "Proportional",
-    "M": "Monospaced",
-    "C": "Cell"
-}
+bdf_spacing = {"P": "Proportional", "M": "Monospaced", "C": "Cell"}
 
 
 def bdf_char(f):
@@ -50,7 +46,7 @@ def bdf_char(f):
             return None
         if s[:9] == b"STARTCHAR":
             break
-    id = s[9:].strip().decode('ascii')
+    id = s[9:].strip().decode("ascii")
 
     # load symbol properties
     props = {}
@@ -59,7 +55,7 @@ def bdf_char(f):
         if not s or s[:6] == b"BITMAP":
             break
         i = s.find(b" ")
-        props[s[:i].decode('ascii')] = s[i+1:-1].decode('ascii')
+        props[s[:i].decode("ascii")] = s[i + 1 : -1].decode("ascii")
 
     # load bitmap
     bitmap = []
@@ -73,7 +69,7 @@ def bdf_char(f):
     [x, y, l, d] = [int(p) for p in props["BBX"].split()]
     [dx, dy] = [int(p) for p in props["DWIDTH"].split()]
 
-    bbox = (dx, dy), (l, -d-y, x+l, -d), (0, 0, x, y)
+    bbox = (dx, dy), (l, -d - y, x + l, -d), (0, 0, x, y)
 
     try:
         im = Image.frombytes("1", (x, y), bitmap, "hex", "1")
@@ -87,8 +83,8 @@ def bdf_char(f):
 ##
 # Font file plugin for the X11 BDF format.
 
-class BdfFontFile(FontFile.FontFile):
 
+class BdfFontFile(FontFile.FontFile):
     def __init__(self, fp):
 
         FontFile.FontFile.__init__(self)
@@ -105,10 +101,10 @@ class BdfFontFile(FontFile.FontFile):
             if not s or s[:13] == b"ENDPROPERTIES":
                 break
             i = s.find(b" ")
-            props[s[:i].decode('ascii')] = s[i+1:-1].decode('ascii')
+            props[s[:i].decode("ascii")] = s[i + 1 : -1].decode("ascii")
             if s[:i] in [b"COMMENT", b"COPYRIGHT"]:
                 if s.find(b"LogicalFontDescription") < 0:
-                    comments.append(s[i+1:-1].decode('ascii'))
+                    comments.append(s[i + 1 : -1].decode("ascii"))
 
         while True:
             c = bdf_char(fp)

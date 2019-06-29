@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImageGetProjection(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper()

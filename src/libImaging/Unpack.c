@@ -480,6 +480,16 @@ void
 ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i = 0;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (; i < pixels; i++) {
+        _out[R] = in[0];
+        _out[G] = in[1];
+        _out[B] = in[2];
+        _out[A] = 255;
+        _out += 4; in += 3;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     /* RGB triplets */
     for (; i < pixels-1; i++) {
@@ -490,6 +500,7 @@ ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
         out[i] = MAKE_UINT32(in[0], in[1], in[2], 255);
         in += 3;
     }
+#endif
 }
 
 void
@@ -1085,22 +1096,44 @@ static void
 copy4skip1(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (i = 0; i < pixels; i++) {
+        _out[0] = in[0];
+        _out[1] = in[1];
+        _out[2] = in[2];
+        _out[3] = in[3];
+        _out += 4; in += 5;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
         out[i] = *(UINT32*)&in[0];
         in += 5;
     }
+#endif
 }
 
 static void
 copy4skip2(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (i = 0; i < pixels; i++) {
+        _out[0] = in[0];
+        _out[1] = in[1];
+        _out[2] = in[2];
+        _out[3] = in[3];
+        _out += 4; in += 6;
+    }
+#else
     UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
         out[i] = *(UINT32*)&in[0];
         in += 6;
     }
+#endif
 }
 
 
@@ -1280,7 +1313,7 @@ static struct {
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
-    {"1",       "1;8",          1,      unpack18},
+    {"1",       "1;8",          8,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
@@ -1333,7 +1366,7 @@ static struct {
     {"RGB",     "RGBX;L",       32,     unpackRGBAL},
     {"RGB",     "RGBA;L",       32,     unpackRGBAL},
     {"RGB",     "BGRX",         32,     ImagingUnpackBGRX},
-    {"RGB",     "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGB",     "XRGB",         32,     ImagingUnpackXRGB},
     {"RGB",     "XBGR",         32,     ImagingUnpackXBGR},
     {"RGB",     "YCC;P",        24,     ImagingUnpackYCC},
     {"RGB",     "R",            8,      band0},
@@ -1369,12 +1402,12 @@ static struct {
     {"RGBA",    "A",            8,      band3},
 
 #ifdef WORDS_BIGENDIAN
-    {"RGB",     "RGB;16N",      64,     unpackRGB16B},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16B},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16B},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16B},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #else
-    {"RGB",     "RGB;16N",      64,     unpackRGB16L},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16L},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16L},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
@@ -1403,7 +1436,7 @@ static struct {
     {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
     {"RGBX",    "BGRX",         32,     ImagingUnpackBGRX},
-    {"RGBX",    "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGBX",    "XRGB",         32,     ImagingUnpackXRGB},
     {"RGBX",    "XBGR",         32,     ImagingUnpackXBGR},
     {"RGBX",    "YCC;P",        24,     ImagingUnpackYCC},
     {"RGBX",    "R",            8,      band0},
@@ -1417,6 +1450,8 @@ static struct {
     {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
+    {"CMYK",    "CMYK;16L",     64,     unpackRGBA16L},
+    {"CMYK",    "CMYK;16B",     64,     unpackRGBA16B},
     {"CMYK",    "C",            8,      band0},
     {"CMYK",    "M",            8,      band1},
     {"CMYK",    "Y",            8,      band2},
@@ -1425,6 +1460,12 @@ static struct {
     {"CMYK",    "M;I",          8,      band1I},
     {"CMYK",    "Y;I",          8,      band2I},
     {"CMYK",    "K;I",          8,      band3I},
+
+#ifdef WORDS_BIGENDIAN
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16B},
+#else
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16L},
+#endif
 
     /* video (YCbCr) */
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},

@@ -4,9 +4,7 @@ from PIL import Image, ImageFilter
 
 
 class TestImageFilter(PillowTestCase):
-
     def test_sanity(self):
-
         def filter(filter):
             for mode in ["L", "RGB", "CMYK"]:
                 im = hopper(mode)
@@ -49,7 +47,6 @@ class TestImageFilter(PillowTestCase):
         im.filter(ImageFilter.SMOOTH)
 
     def test_modefilter(self):
-
         def modefilter(mode):
             im = Image.new(mode, (3, 3), None)
             im.putdata(list(range(9)))
@@ -68,7 +65,6 @@ class TestImageFilter(PillowTestCase):
         self.assertEqual(modefilter("RGB"), ((4, 0, 0), (0, 0, 0)))
 
     def test_rankfilter(self):
-
         def rankfilter(mode):
             im = Image.new(mode, (3, 3), None)
             im.putdata(list(range(9)))
@@ -100,39 +96,48 @@ class TestImageFilter(PillowTestCase):
         self.assertRaises(ValueError, builtinFilter.filter, hopper("P"))
 
     def test_kernel_not_enough_coefficients(self):
-        self.assertRaises(ValueError,
-                          lambda: ImageFilter.Kernel((3, 3), (0, 0)))
+        self.assertRaises(ValueError, lambda: ImageFilter.Kernel((3, 3), (0, 0)))
 
     def test_consistency_3x3(self):
         source = Image.open("Tests/images/hopper.bmp")
         reference = Image.open("Tests/images/hopper_emboss.bmp")
-        kernel = ImageFilter.Kernel((3, 3),  # noqa: E127
-                                    (-1, -1,  0,
-                                     -1,  0,  1,
-                                      0,  1,  1), .3)
+        kernel = ImageFilter.Kernel(  # noqa: E127
+            (3, 3),
+            # fmt: off
+            (-1, -1,  0,
+             -1,  0,  1,
+              0,  1,  1),
+            # fmt: on
+            0.3,
+        )
         source = source.split() * 2
         reference = reference.split() * 2
 
-        for mode in ['L', 'LA', 'RGB', 'CMYK']:
+        for mode in ["L", "LA", "RGB", "CMYK"]:
             self.assert_image_equal(
-                Image.merge(mode, source[:len(mode)]).filter(kernel),
-                Image.merge(mode, reference[:len(mode)]),
+                Image.merge(mode, source[: len(mode)]).filter(kernel),
+                Image.merge(mode, reference[: len(mode)]),
             )
 
     def test_consistency_5x5(self):
         source = Image.open("Tests/images/hopper.bmp")
         reference = Image.open("Tests/images/hopper_emboss_more.bmp")
-        kernel = ImageFilter.Kernel((5, 5),  # noqa: E127
-                                    (-1, -1, -1, -1,  0,
-                                     -1, -1, -1,  0,  1,
-                                     -1, -1,  0,  1,  1,
-                                     -1,  0,  1,  1,  1,
-                                      0,  1,  1,  1,  1), 0.3)
+        kernel = ImageFilter.Kernel(  # noqa: E127
+            (5, 5),
+            # fmt: off
+            (-1, -1, -1, -1,  0,
+             -1, -1, -1,  0,  1,
+             -1, -1,  0,  1,  1,
+             -1,  0,  1,  1,  1,
+              0,  1,  1,  1,  1),
+            # fmt: on
+            0.3,
+        )
         source = source.split() * 2
         reference = reference.split() * 2
 
-        for mode in ['L', 'LA', 'RGB', 'CMYK']:
+        for mode in ["L", "LA", "RGB", "CMYK"]:
             self.assert_image_equal(
-                Image.merge(mode, source[:len(mode)]).filter(kernel),
-                Image.merge(mode, reference[:len(mode)]),
+                Image.merge(mode, source[: len(mode)]).filter(kernel),
+                Image.merge(mode, reference[: len(mode)]),
             )

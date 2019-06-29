@@ -11,7 +11,7 @@ class TestImageDraft(PillowTestCase):
 
     def draft_roundtrip(self, in_mode, in_size, req_mode, req_size):
         im = Image.new(in_mode, in_size)
-        data = tostring(im, 'JPEG')
+        data = tostring(im, "JPEG")
         im = fromstring(data)
         im.draft(req_mode, req_size)
         return im
@@ -23,7 +23,6 @@ class TestImageDraft(PillowTestCase):
             ((128, 128), (64, 64), (64, 64)),
             ((128, 128), (32, 32), (32, 32)),
             ((128, 128), (16, 16), (16, 16)),
-
             # large requested width
             ((435, 361), (218, 128), (435, 361)),  # almost 2x
             ((435, 361), (217, 128), (218, 181)),  # more than 2x
@@ -32,7 +31,6 @@ class TestImageDraft(PillowTestCase):
             ((435, 361), (55, 32), (109, 91)),  # almost 8x
             ((435, 361), (54, 32), (55, 46)),  # more than 8x
             ((435, 361), (27, 16), (55, 46)),  # more than 16x
-
             # and vice versa
             ((435, 361), (128, 181), (435, 361)),  # almost 2x
             ((435, 361), (128, 180), (218, 181)),  # more than 2x
@@ -42,7 +40,7 @@ class TestImageDraft(PillowTestCase):
             ((435, 361), (32, 45), (55, 46)),  # more than 8x
             ((435, 361), (16, 22), (55, 46)),  # more than 16x
         ]:
-            im = self.draft_roundtrip('L', in_size, None, req_size)
+            im = self.draft_roundtrip("L", in_size, None, req_size)
             im.load()
             self.assertEqual(im.size, out_size)
 
@@ -66,6 +64,6 @@ class TestImageDraft(PillowTestCase):
             self.assertEqual(im.mode, out_mode)
 
     def test_several_drafts(self):
-        im = self.draft_roundtrip('L', (128, 128), None, (64, 64))
+        im = self.draft_roundtrip("L", (128, 128), None, (64, 64))
         im.draft(None, (64, 64))
         im.load()

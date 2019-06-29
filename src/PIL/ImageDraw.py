@@ -45,7 +45,6 @@ directly.
 
 
 class ImageDraw(object):
-
     def __init__(self, im, mode=None):
         """
         Create a drawing instance.
@@ -95,6 +94,7 @@ class ImageDraw(object):
         if not self.font:
             # FIXME: should add a font repository
             from . import ImageFont
+
             self.font = ImageFont.load_default()
         return self.font
 
@@ -156,13 +156,12 @@ class ImageDraw(object):
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                for i in range(1, len(xy)-1):
+                for i in range(1, len(xy) - 1):
                     point = xy[i]
                     angles = [
-                        math.degrees(math.atan2(
-                            end[0] - start[0], start[1] - end[1]
-                        )) % 360
-                        for start, end in ((xy[i-1], point), (point, xy[i+1]))
+                        math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
+                        % 360
+                        for start, end in ((xy[i - 1], point), (point, xy[i + 1]))
                     ]
                     if angles[0] == angles[1]:
                         # This is a straight line, so no joint is required
@@ -171,21 +170,23 @@ class ImageDraw(object):
                     def coord_at_angle(coord, angle):
                         x, y = coord
                         angle -= 90
-                        distance = width/2 - 1
-                        return tuple([
-                            p +
-                            (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                            for p, p_d in
-                            ((x, distance * math.cos(math.radians(angle))),
-                             (y, distance * math.sin(math.radians(angle))))
-                        ])
-                    flipped = ((angles[1] > angles[0] and
-                                angles[1] - 180 > angles[0]) or
-                               (angles[1] < angles[0] and
-                                angles[1] + 180 > angles[0]))
+                        distance = width / 2 - 1
+                        return tuple(
+                            [
+                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                                for p, p_d in (
+                                    (x, distance * math.cos(math.radians(angle))),
+                                    (y, distance * math.sin(math.radians(angle))),
+                                )
+                            ]
+                        )
+
+                    flipped = (
+                        angles[1] > angles[0] and angles[1] - 180 > angles[0]
+                    ) or (angles[1] < angles[0] and angles[1] + 180 > angles[0])
                     coords = [
-                        (point[0] - width/2 + 1, point[1] - width/2 + 1),
-                        (point[0] + width/2 - 1, point[1] + width/2 - 1)
+                        (point[0] - width / 2 + 1, point[1] - width / 2 + 1),
+                        (point[0] + width / 2 - 1, point[1] + width / 2 - 1),
                     ]
                     if flipped:
                         start, end = (angles[1] + 90, angles[0] + 90)
@@ -197,15 +198,15 @@ class ImageDraw(object):
                         # Cover potential gaps between the line and the joint
                         if flipped:
                             gapCoords = [
-                                coord_at_angle(point, angles[0]+90),
+                                coord_at_angle(point, angles[0] + 90),
                                 point,
-                                coord_at_angle(point, angles[1]+90)
+                                coord_at_angle(point, angles[1] + 90),
                             ]
                         else:
                             gapCoords = [
-                                coord_at_angle(point, angles[0]-90),
+                                coord_at_angle(point, angles[0] - 90),
                                 point,
-                                coord_at_angle(point, angles[1]-90)
+                                coord_at_angle(point, angles[1] - 90),
                             ]
                         self.line(gapCoords, fill, width=3)
 
@@ -259,11 +260,9 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None,
-             *args, **kwargs):
+    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
         if self._multiline_check(text):
-            return self.multiline_text(xy, text, fill, font, anchor,
-                                       *args, **kwargs)
+            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
         ink, fill = self._getink(fill)
         if font is None:
             font = self.getfont()
@@ -271,8 +270,7 @@ class ImageDraw(object):
             ink = fill
         if ink is not None:
             try:
-                mask, offset = font.getmask2(text, self.fontmode,
-                                             *args, **kwargs)
+                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
                 xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
                 try:
@@ -281,18 +279,27 @@ class ImageDraw(object):
                     mask = font.getmask(text)
             self.draw.draw_bitmap(xy, mask, ink)
 
-    def multiline_text(self, xy, text, fill=None, font=None, anchor=None,
-                       spacing=4, align="left", direction=None, features=None,
-                       language=None):
+    def multiline_text(
+        self,
+        xy,
+        text,
+        fill=None,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+    ):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.textsize('A', font=font)[1] + spacing
+        line_spacing = self.textsize("A", font=font)[1] + spacing
         for line in lines:
-            line_width, line_height = self.textsize(line, font,
-                                                    direction=direction,
-                                                    features=features,
-                                                    language=language)
+            line_width, line_height = self.textsize(
+                line, font, direction=direction, features=features, language=language
+            )
             widths.append(line_width)
             max_width = max(max_width, line_width)
         left, top = xy
@@ -302,36 +309,47 @@ class ImageDraw(object):
             elif align == "center":
                 left += (max_width - widths[idx]) / 2.0
             elif align == "right":
-                left += (max_width - widths[idx])
+                left += max_width - widths[idx]
             else:
                 raise ValueError('align must be "left", "center" or "right"')
-            self.text((left, top), line, fill, font, anchor,
-                      direction=direction, features=features, language=language)
+            self.text(
+                (left, top),
+                line,
+                fill,
+                font,
+                anchor,
+                direction=direction,
+                features=features,
+                language=language,
+            )
             top += line_spacing
             left = xy[0]
 
-    def textsize(self, text, font=None, spacing=4, direction=None,
-                 features=None, language=None):
+    def textsize(
+        self, text, font=None, spacing=4, direction=None, features=None, language=None
+    ):
         """Get the size of a given string, in pixels."""
         if self._multiline_check(text):
-            return self.multiline_textsize(text, font, spacing,
-                                           direction, features, language)
+            return self.multiline_textsize(
+                text, font, spacing, direction, features, language
+            )
 
         if font is None:
             font = self.getfont()
         return font.getsize(text, direction, features, language)
 
-    def multiline_textsize(self, text, font=None, spacing=4, direction=None,
-                           features=None, language=None):
+    def multiline_textsize(
+        self, text, font=None, spacing=4, direction=None, features=None, language=None
+    ):
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.textsize('A', font=font)[1] + spacing
+        line_spacing = self.textsize("A", font=font)[1] + spacing
         for line in lines:
-            line_width, line_height = self.textsize(line, font, spacing,
-                                                    direction, features,
-                                                    language)
+            line_width, line_height = self.textsize(
+                line, font, spacing, direction, features, language
+            )
             max_width = max(max_width, line_width)
-        return max_width, len(lines)*line_spacing - spacing
+        return max_width, len(lines) * line_spacing - spacing
 
 
 def Draw(im, mode=None):
@@ -417,7 +435,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
     while edge:
         new_edge = set()
         for (x, y) in edge:  # 4 adjacent method
-            for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+            for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                 if (s, t) in full_edge:
                     continue  # if already processed, skip
                 try:
@@ -442,6 +460,6 @@ def _color_diff(color1, color2):
     Uses 1-norm distance to calculate difference between two values.
     """
     if isinstance(color2, tuple):
-        return sum([abs(color1[i]-color2[i]) for i in range(0, len(color2))])
+        return sum([abs(color1[i] - color2[i]) for i in range(0, len(color2))])
     else:
-        return abs(color1-color2)
+        return abs(color1 - color2)

@@ -844,7 +844,7 @@ static int decode_bcn(Imaging im, ImagingCodecState state, const UINT8* src, int
 	return (int)(ptr - src);
 }
 
-int ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
+int ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes) {
 	int N = state->state & 0xf;
 	int width = state->xsize;
 	int height = state->ysize;

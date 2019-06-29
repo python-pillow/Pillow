@@ -5,6 +5,7 @@ import os
 import traceback
 
 import sys
+
 sys.path.insert(0, ".")
 
 for file in glob.glob("src/PIL/*.py"):

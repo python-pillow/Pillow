@@ -4,7 +4,6 @@ from PIL import Image
 
 
 class TestImageCrop(PillowTestCase):
-
     def test_crop(self):
         def crop(mode):
             im = hopper(mode)
@@ -13,11 +12,11 @@ class TestImageCrop(PillowTestCase):
             cropped = im.crop((50, 50, 100, 100))
             self.assertEqual(cropped.mode, mode)
             self.assertEqual(cropped.size, (50, 50))
+
         for mode in "1", "P", "L", "RGB", "I", "F":
             crop(mode)
 
     def test_wide_crop(self):
-
         def crop(*bbox):
             i = im.crop(bbox)
             h = i.histogram()
@@ -74,7 +73,7 @@ class TestImageCrop(PillowTestCase):
         # apparently a use after free on windows, see
         # https://github.com/python-pillow/Pillow/issues/1077
 
-        test_img = 'Tests/images/bmp/g/pal8-0.bmp'
+        test_img = "Tests/images/bmp/g/pal8-0.bmp"
         extents = (1, 1, 10, 10)
         # works prepatch
         img = Image.open(test_img)
@@ -88,7 +87,7 @@ class TestImageCrop(PillowTestCase):
 
     def test_crop_zero(self):
 
-        im = Image.new('RGB', (0, 0), 'white')
+        im = Image.new("RGB", (0, 0), "white")
 
         cropped = im.crop((0, 0, 0, 0))
         self.assertEqual(cropped.size, (0, 0))
@@ -97,7 +96,7 @@ class TestImageCrop(PillowTestCase):
         self.assertEqual(cropped.size, (10, 10))
         self.assertEqual(cropped.getdata()[0], (0, 0, 0))
 
-        im = Image.new('RGB', (0, 0))
+        im = Image.new("RGB", (0, 0))
 
         cropped = im.crop((10, 10, 20, 20))
         self.assertEqual(cropped.size, (10, 10))

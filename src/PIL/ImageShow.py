@@ -63,16 +63,12 @@ class Viewer(object):
     def show(self, image, **options):
 
         # save temporary image to disk
-        if image.mode[:4] == "I;16":
-            # @PIL88 @PIL101
-            # "I;16" isn't an 'official' mode, but we still want to
-            # provide a simple way to show 16-bit images.
-            base = "L"
-            # FIXME: auto-contrast if max() > 255?
-        else:
+        if not (
+            image.mode in ("1", "RGBA") or (self.format == "PNG" and image.mode == "LA")
+        ):
             base = Image.getmodebase(image.mode)
-        if base != image.mode and image.mode != "1" and image.mode != "RGBA":
-            image = image.convert(base)
+            if image.mode != base:
+                image = image.convert(base)
 
         return self.show_image(image, **options)
 
@@ -101,6 +97,7 @@ class Viewer(object):
         os.system(self.get_command(file, **options))
         return 1
 
+
 # --------------------------------------------------------------------
 
 
@@ -110,9 +107,11 @@ if sys.platform == "win32":
         format = "BMP"
 
         def get_command(self, file, **options):
-            return ('start "Pillow" /WAIT "%s" '
-                    '&& ping -n 2 127.0.0.1 >NUL '
-                    '&& del /f "%s"' % (file, file))
+            return (
+                'start "Pillow" /WAIT "%s" '
+                "&& ping -n 2 127.0.0.1 >NUL "
+                '&& del /f "%s"' % (file, file)
+            )
 
     register(WindowsViewer)
 
@@ -120,28 +119,30 @@ elif sys.platform == "darwin":
 
     class MacViewer(Viewer):
         format = "PNG"
-        options = {'compress_level': 1}
+        options = {"compress_level": 1}
 
         def get_command(self, file, **options):
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
-            command = "open -a /Applications/Preview.app"
-            command = "(%s %s; sleep 20; rm -f %s)&" % (command, quote(file),
-                                                        quote(file))
+            command = "open -a Preview.app"
+            command = "(%s %s; sleep 20; rm -f %s)&" % (
+                command,
+                quote(file),
+                quote(file),
+            )
             return command
 
         def show_file(self, file, **options):
             """Display given file"""
             fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, 'w') as f:
+            with os.fdopen(fd, "w") as f:
                 f.write(file)
             with open(path, "r") as f:
-                subprocess.Popen([
-                    'im=$(cat);'
-                    'open -a /Applications/Preview.app $im;'
-                    'sleep 20;'
-                    'rm -f $im'
-                ], shell=True, stdin=f)
+                subprocess.Popen(
+                    ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
+                    shell=True,
+                    stdin=f,
+                )
             os.remove(path)
             return 1
 
@@ -163,7 +164,7 @@ else:
 
     class UnixViewer(Viewer):
         format = "PNG"
-        options = {'compress_level': 1}
+        options = {"compress_level": 1}
 
         def get_command(self, file, **options):
             command = self.get_command_ex(file, **options)[0]
@@ -172,15 +173,13 @@ else:
         def show_file(self, file, **options):
             """Display given file"""
             fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, 'w') as f:
+            with os.fdopen(fd, "w") as f:
                 f.write(file)
             with open(path, "r") as f:
                 command = self.get_command_ex(file, **options)[0]
-                subprocess.Popen([
-                    'im=$(cat);' +
-                    command+' $im;'
-                    'rm -f $im'
-                ], shell=True, stdin=f)
+                subprocess.Popen(
+                    ["im=$(cat);" + command + " $im;" "rm -f $im"], shell=True, stdin=f
+                )
             os.remove(path)
             return 1
 

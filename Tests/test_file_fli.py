@@ -11,7 +11,6 @@ animated_test_file = "Tests/images/a.fli"
 
 
 class TestFileFli(PillowTestCase):
-
     def test_sanity(self):
         im = Image.open(static_test_file)
         im.load()
@@ -31,6 +30,7 @@ class TestFileFli(PillowTestCase):
         def open():
             im = Image.open(static_test_file)
             im.load()
+
         self.assert_warning(None, open)
 
     def test_tell(self):
@@ -46,8 +46,7 @@ class TestFileFli(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          FliImagePlugin.FliImageFile, invalid_file)
+        self.assertRaises(SyntaxError, FliImagePlugin.FliImageFile, invalid_file)
 
     def test_n_frames(self):
         im = Image.open(static_test_file)
@@ -67,7 +66,7 @@ class TestFileFli(PillowTestCase):
         self.assertLess(im.tell(), n_frames)
 
         # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames-1)
+        im.seek(n_frames - 1)
 
     def test_seek_tell(self):
         im = Image.open(animated_test_file)

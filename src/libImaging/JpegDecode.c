@@ -144,7 +144,7 @@ output(j_common_ptr cinfo)
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
+ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
     JPEGSTATE* context = (JPEGSTATE*) state->context;
     int ok;
