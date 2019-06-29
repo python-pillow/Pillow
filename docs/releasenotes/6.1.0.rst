@@ -11,6 +11,14 @@ An optional ``include_layered_windows`` parameter has been added to ``ImageGrab.
 defaulting to ``False``. If true, layered windows will be included in the resulting
 image on Windows.
 
+ImageSequence.all_frames
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method to facilitate applying a given function to all frames in an image, or to
+all frames in a list of images. The frames are returned as a list of separate images.
+For example, ``ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))``
+could used to return all frames from an image, each rotated 90 degrees.
+
 Variation fonts
 ^^^^^^^^^^^^^^^
 
