@@ -1,5 +1,5 @@
 
-NotoNastaliqUrdu-Regular.ttf, from https://github.com/googlei18n/noto-fonts
+NotoNastaliqUrdu-Regular.ttf and NotoSansSymbols-Regular.ttf, from https://github.com/googlei18n/noto-fonts
 NotoSansJP-Thin.otf, from https://www.google.com/get/noto/help/cjk/
 AdobeVFPrototype.ttf, from https://github.com/adobe-fonts/adobe-variable-font-prototype
 TINY5x3GX.ttf, from http://velvetyne.fr/fonts/tiny
