@@ -458,9 +458,9 @@ class TestFileLibTiff(LibTiffTestCase):
         im3 = Image.open(out)
         self.assert_image_similar(im2, im3, 30)
 
-        assert size_raw > size_compressed
-        assert size_compressed > size_jpeg
-        assert size_jpeg > size_jpeg_30
+        self.assertGreater(size_raw, size_compressed)
+        self.assertGreater(size_compressed, size_jpeg)
+        self.assertGreater(size_jpeg, size_jpeg_30)
 
     def test_quality(self):
         im = hopper("RGB")
