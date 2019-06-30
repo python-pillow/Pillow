@@ -5,6 +5,9 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Improve encoding of TIFF tags #3861
+  [olt]
+
 - Update Py_UNICODE to Py_UCS4 #3780
   [nulano]
 
