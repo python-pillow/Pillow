@@ -90,6 +90,8 @@ def testimage():
     2
     >>> len(im.histogram())
     768
+    >>> '%.7f' % im.entropy()
+    '8.8212866'
     >>> _info(im.point(list(range(256))*3))
     (None, 'RGB', (128, 128))
     >>> _info(im.resize((64, 64)))

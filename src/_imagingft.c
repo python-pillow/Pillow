@@ -265,7 +265,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "eti|is"PY_ARG_BYTES_LENGTH"i",
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "etn|ns"PY_ARG_BYTES_LENGTH"n",
                                      kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
@@ -315,6 +315,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
+            self->font_bytes = NULL;
         }
         Py_DECREF(self);
         return geterror(error);
@@ -1006,6 +1007,9 @@ font_render(FontObject* self, PyObject* args)
 
         num_coords = PyObject_Length(axes);
         coords = malloc(2 * sizeof(coords));
+        if (coords == NULL) {
+            return PyErr_NoMemory();
+        }
         for (i = 0; i < num_coords; i++) {
             item = PyList_GET_ITEM(axes, i);
             if (PyFloat_Check(item))
@@ -1015,6 +1019,7 @@ font_render(FontObject* self, PyObject* args)
             else if (PyNumber_Check(item))
                 coord = PyFloat_AsDouble(item);
             else {
+                free(coords);
                 PyErr_SetString(PyExc_TypeError, "list must contain numbers");
                 return NULL;
             }
@@ -1022,6 +1027,7 @@ font_render(FontObject* self, PyObject* args)
         }
 
         error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);
+        free(coords);
         if (error)
             return geterror(error);
 

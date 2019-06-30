@@ -74,3 +74,25 @@ class TestImageSequence(PillowTestCase):
         im.seek(0)
         color2 = im.getpalette()[0:3]
         self.assertEqual(color1, color2)
+
+    def test_all_frames(self):
+        # Test a single image
+        im = Image.open("Tests/images/iss634.gif")
+        ims = ImageSequence.all_frames(im)
+
+        self.assertEqual(len(ims), 42)
+        for i, im_frame in enumerate(ims):
+            self.assertFalse(im_frame is im)
+
+            im.seek(i)
+            self.assert_image_equal(im, im_frame)
+
+        # Test a series of images
+        ims = ImageSequence.all_frames([im, hopper(), im])
+        self.assertEqual(len(ims), 85)
+
+        # Test an operation
+        ims = ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))
+        for i, im_frame in enumerate(ims):
+            im.seek(i)
+            self.assert_image_equal(im.rotate(90), im_frame)

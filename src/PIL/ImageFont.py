@@ -545,6 +545,8 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except IOError:
+        if not isPath(font):
+            raise
         ttf_filename = os.path.basename(font)
 
         dirs = []

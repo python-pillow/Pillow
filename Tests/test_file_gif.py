@@ -1,6 +1,6 @@
 from .helper import unittest, PillowTestCase, hopper, netpbm_available
 
-from PIL import Image, ImagePalette, GifImagePlugin
+from PIL import Image, ImagePalette, GifImagePlugin, ImageDraw
 
 from io import BytesIO
 
@@ -59,7 +59,7 @@ class TestFileGif(PillowTestCase):
             return len(test_file.getvalue())
 
         self.assertEqual(test_grayscale(0), 800)
-        self.assertEqual(test_grayscale(1), 38)
+        self.assertEqual(test_grayscale(1), 44)
         self.assertEqual(test_bilevel(0), 800)
         self.assertEqual(test_bilevel(1), 800)
 
@@ -317,6 +317,103 @@ class TestFileGif(PillowTestCase):
         for i in range(2):
             img.seek(img.tell() + 1)
             self.assertEqual(img.disposal_method, i + 1)
+
+    def test_dispose2_palette(self):
+        out = self.tempfile("temp.gif")
+
+        # 4 backgrounds: White, Grey, Black, Red
+        circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
+
+        im_list = []
+        for circle in circles:
+            img = Image.new("RGB", (100, 100), (255, 0, 0))
+
+            # Red circle in center of each frame
+            d = ImageDraw.Draw(img)
+            d.ellipse([(40, 40), (60, 60)], fill=circle)
+
+            im_list.append(img)
+
+        im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=2)
+
+        img = Image.open(out)
+
+        for i, circle in enumerate(circles):
+            img.seek(i)
+            rgb_img = img.convert("RGB")
+
+            # Check top left pixel matches background
+            self.assertEqual(rgb_img.getpixel((0, 0)), (255, 0, 0))
+
+            # Center remains red every frame
+            self.assertEqual(rgb_img.getpixel((50, 50)), circle)
+
+    def test_dispose2_diff(self):
+        out = self.tempfile("temp.gif")
+
+        # 4 frames: red/blue, red/red, blue/blue, red/blue
+        circles = [
+            ((255, 0, 0, 255), (0, 0, 255, 255)),
+            ((255, 0, 0, 255), (255, 0, 0, 255)),
+            ((0, 0, 255, 255), (0, 0, 255, 255)),
+            ((255, 0, 0, 255), (0, 0, 255, 255)),
+        ]
+
+        im_list = []
+        for i in range(len(circles)):
+            # Transparent BG
+            img = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
+
+            # Two circles per frame
+            d = ImageDraw.Draw(img)
+            d.ellipse([(0, 30), (40, 70)], fill=circles[i][0])
+            d.ellipse([(60, 30), (100, 70)], fill=circles[i][1])
+
+            im_list.append(img)
+
+        im_list[0].save(
+            out, save_all=True, append_images=im_list[1:], disposal=2, transparency=0
+        )
+
+        img = Image.open(out)
+
+        for i, colours in enumerate(circles):
+            img.seek(i)
+            rgb_img = img.convert("RGBA")
+
+            # Check left circle is correct colour
+            self.assertEqual(rgb_img.getpixel((20, 50)), colours[0])
+
+            # Check right circle is correct colour
+            self.assertEqual(rgb_img.getpixel((80, 50)), colours[1])
+
+            # Check BG is correct colour
+            self.assertEqual(rgb_img.getpixel((1, 1)), (255, 255, 255, 0))
+
+    def test_dispose2_background(self):
+        out = self.tempfile("temp.gif")
+
+        im_list = []
+
+        im = Image.new("P", (100, 100))
+        d = ImageDraw.Draw(im)
+        d.rectangle([(50, 0), (100, 100)], fill="#f00")
+        d.rectangle([(0, 0), (50, 100)], fill="#0f0")
+        im_list.append(im)
+
+        im = Image.new("P", (100, 100))
+        d = ImageDraw.Draw(im)
+        d.rectangle([(0, 0), (100, 50)], fill="#f00")
+        d.rectangle([(0, 50), (100, 100)], fill="#0f0")
+        im_list.append(im)
+
+        im_list[0].save(
+            out, save_all=True, append_images=im_list[1:], disposal=[0, 2], background=1
+        )
+
+        im = Image.open(out)
+        im.seek(1)
+        self.assertEqual(im.getpixel((0, 0)), 0)
 
     def test_iss634(self):
         img = Image.open("Tests/images/iss634.gif")

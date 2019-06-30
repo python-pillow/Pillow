@@ -133,8 +133,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
         /* Assume the buffer contains floats */
         Py_buffer buffer;
         if (PyImaging_GetBuffer(data, &buffer) == 0) {
-            int n = buffer.len / (2 * sizeof(float));
             float *ptr = (float*) buffer.buf;
+            n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy)
                 return -1;

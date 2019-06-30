@@ -126,7 +126,7 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
 
     Py_ssize_t bufsize = 16384;
 
-    if (!PyArg_ParseTuple(args, "|i", &bufsize))
+    if (!PyArg_ParseTuple(args, "|n", &bufsize))
         return NULL;
 
     buf = PyBytes_FromStringAndSize(NULL, bufsize);
@@ -180,7 +180,7 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
     Py_ssize_t fh;
     Py_ssize_t bufsize = 16384;
 
-    if (!PyArg_ParseTuple(args, "i|i", &fh, &bufsize))
+    if (!PyArg_ParseTuple(args, "n|n", &fh, &bufsize))
         return NULL;
 
     /* Allocate an encoder buffer */
@@ -229,7 +229,7 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
     x0 = y0 = x1 = y1 = 0;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O|(iiii)", &op, &x0, &y0, &x1, &y1))
+    if (!PyArg_ParseTuple(args, "O|(nnnn)", &op, &x0, &y0, &x1, &y1))
         return NULL;
     im = PyImaging_AsImaging(op);
     if (!im)
@@ -409,7 +409,7 @@ PyImaging_GifEncoderNew(PyObject* self, PyObject* args)
     char *rawmode;
     Py_ssize_t bits = 8;
     Py_ssize_t interlace = 0;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &bits, &interlace))
+    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &bits, &interlace))
         return NULL;
 
     encoder = PyImaging_EncoderNew(sizeof(GIFENCODERSTATE));
@@ -441,7 +441,7 @@ PyImaging_PcxEncoderNew(PyObject* self, PyObject* args)
     char *rawmode;
     Py_ssize_t bits = 8;
 
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &bits)) {
+    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &bits)) {
         return NULL;
     }
 
@@ -474,7 +474,7 @@ PyImaging_RawEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t stride = 0;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &stride, &ystep))
+    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &stride, &ystep))
         return NULL;
 
     encoder = PyImaging_EncoderNew(0);
@@ -506,7 +506,7 @@ PyImaging_TgaRleEncoderNew(PyObject* self, PyObject* args)
     char *rawmode;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|i", &mode, &rawmode, &ystep))
+    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &ystep))
         return NULL;
 
     encoder = PyImaging_EncoderNew(0);
@@ -567,7 +567,7 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t compress_type = -1;
     char* dictionary = NULL;
     Py_ssize_t dictionary_size = 0;
-    if (!PyArg_ParseTuple(args, "ss|iii"PY_ARG_BYTES_LENGTH, &mode, &rawmode,
+    if (!PyArg_ParseTuple(args, "ss|nnn"PY_ARG_BYTES_LENGTH, &mode, &rawmode,
                           &optimize,
                           &compress_level, &compress_type,
                           &dictionary, &dictionary_size))
@@ -650,7 +650,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     PyObject *item;
 
 
-    if (! PyArg_ParseTuple(args, "sssisOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types)) {
+    if (! PyArg_ParseTuple(args, "sssnsOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types)) {
         return NULL;
     }
 
@@ -1025,7 +1025,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     char* rawExif = NULL;
     Py_ssize_t rawExifLen = 0;
 
-    if (!PyArg_ParseTuple(args, "ss|iiiiiiiiO"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
+    if (!PyArg_ParseTuple(args, "ss|nnnnnnnnO"PY_ARG_BYTES_LENGTH""PY_ARG_BYTES_LENGTH,
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
                           &xdpi, &ydpi, &subsampling, &qtables, &extra, &extra_size,
@@ -1095,7 +1095,6 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 #endif
 
-
 /* -------------------------------------------------------------------- */
 /* JPEG	2000								*/
 /* -------------------------------------------------------------------- */
@@ -1141,7 +1140,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
     OPJ_CINEMA_MODE cine_mode;
     Py_ssize_t fd = -1;
 
-    if (!PyArg_ParseTuple(args, "ss|OOOsOIOOOssi", &mode, &format,
+    if (!PyArg_ParseTuple(args, "ss|OOOsOnOOOssn", &mode, &format,
                           &offset, &tile_offset, &tile_size,
                           &quality_mode, &quality_layers, &num_resolutions,
                           &cblk_size, &precinct_size,

@@ -147,7 +147,7 @@ void _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
     (void) hdata; (void) base; (void) size;
 }
 
-int ImagingLibTiffInit(ImagingCodecState state, int fp, int offset) {
+int ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
@@ -194,6 +194,9 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
         }
 
         swap_line = (UINT32*)malloc(swap_line_size);
+        if (swap_line == NULL) {
+            return -1;
+        }
         /*
          * For some reason the TIFFReadRGBATile() function chooses the
          * lower left corner as the origin.  Vertically mirror scanlines.

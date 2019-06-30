@@ -386,8 +386,8 @@ class pil_build_ext(build_ext):
             _add_directory(library_dirs, lib_root)
             _add_directory(include_dirs, include_root)
 
-        # respect CFLAGS/LDFLAGS
-        for k in ("CFLAGS", "LDFLAGS"):
+        # respect CFLAGS/CPPFLAGS/LDFLAGS
+        for k in ("CFLAGS", "CPPFLAGS", "LDFLAGS"):
             if k in os.environ:
                 for match in re.finditer(r"-I([^\s]+)", os.environ[k]):
                     _add_directory(include_dirs, match.group(1))
