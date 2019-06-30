@@ -4,7 +4,7 @@ import sys
 
 from .helper import unittest, PillowTestCase, hopper
 
-from PIL import Image, TiffImagePlugin
+from PIL import Image, TiffImagePlugin, features
 from PIL._util import py3
 from PIL.TiffImagePlugin import X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT
 
@@ -587,6 +587,7 @@ class TestFileTiff(PillowTestCase):
             im.load()
             self.assertFalse(fp.closed)
 
+    @unittest.skipUnless(features.check("libtiff"), "libtiff not installed")
     def test_sampleformat_not_corrupted(self):
         # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
         # when saving to a new file.
