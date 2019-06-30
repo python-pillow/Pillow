@@ -592,19 +592,20 @@ class TestFileTiff(PillowTestCase):
         # when saving to a new file.
         # Pillow 6.0 fails with "OSError: cannot identify image file".
         import base64
+
         tiff = BytesIO(
             base64.b64decode(
-                b'SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA'
-                b'AAIBAwADAAAAwgAAAAMBAwABAAAACAAAAAYBAwABAAAAAgAAABEBBAABAAAA'
-                b'4AAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAACwAAABoBBQAB'
-                b'AAAAyAAAABsBBQABAAAA0AAAABwBAwABAAAAAQAAACgBAwABAAAAAQAAAFMB'
-                b'AwADAAAA2AAAAAAAAAAIAAgACAABAAAAAQAAAAEAAAABAAAAAQABAAEAAAB4'
-                b'nGNgYAAAAAMAAQ=='
+                b"SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA"
+                b"AAIBAwADAAAAwgAAAAMBAwABAAAACAAAAAYBAwABAAAAAgAAABEBBAABAAAA"
+                b"4AAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAACwAAABoBBQAB"
+                b"AAAAyAAAABsBBQABAAAA0AAAABwBAwABAAAAAQAAACgBAwABAAAAAQAAAFMB"
+                b"AwADAAAA2AAAAAAAAAAIAAgACAABAAAAAQAAAAEAAAABAAAAAQABAAEAAAB4"
+                b"nGNgYAAAAAMAAQ=="
             )
         )
         out = BytesIO()
         with Image.open(tiff) as im:
-            im.save(out, format='tiff')
+            im.save(out, format="tiff")
         out.seek(0)
         with Image.open(out) as im:
             im.load()
