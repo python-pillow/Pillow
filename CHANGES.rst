@@ -5,6 +5,36 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Update Py_UNICODE to Py_UCS4 #3780
+  [nulano]
+
+- Consider I;16 pixel size when drawing #3899
+  [radarhere]
+
+- Add TIFFTAG_SAMPLEFORMAT to blocklist #3926
+  [cgohlke, radarhere]
+
+- Create GIF deltas from background colour of GIF frames if disposal mode is 2 #3708
+  [sircinnamon, radarhere]
+
+- Added ImageSequence all_frames #3778
+  [radarhere]
+
+- Use unsigned int to store TIFF IFD offsets #3923
+  [cgohlke]
+
+- Include CPPFLAGS when searching for libraries #3819
+  [jefferyto]
+
+- Updated TIFF tile descriptors to match current decoding functionality #3795
+  [dmnisson]
+
+- Added an `image.entropy()` method (second revision) #3608
+  [fish2000]
+
+- Pass the correct types to PyArg_ParseTuple #3880
+  [QuLogic]
+
 - Fixed crash when loading non-font bytes #3912
   [radarhere]
 

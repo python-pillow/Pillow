@@ -479,6 +479,19 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_equal(im, Image.open(expected))
 
+    def test_rectangle_I16(self):
+        # Arrange
+        im = Image.new("I;16", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.rectangle(BBOX1, fill="black", outline="green")
+
+        # Assert
+        self.assert_image_equal(
+            im.convert("I"), Image.open("Tests/images/imagedraw_rectangle_I.png")
+        )
+
     def test_floodfill(self):
         red = ImageColor.getrgb("red")
 

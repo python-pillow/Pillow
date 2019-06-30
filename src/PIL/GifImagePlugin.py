@@ -426,6 +426,7 @@ def _write_multiple_frames(im, fp, palette):
 
     im_frames = []
     frame_count = 0
+    background_im = None
     for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
@@ -445,11 +446,22 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
-                if _get_palette_bytes(im_frame) == _get_palette_bytes(previous["im"]):
-                    delta = ImageChops.subtract_modulo(im_frame, previous["im"])
+                if encoderinfo.get("disposal") == 2:
+                    if background_im is None:
+                        background = _get_background(
+                            im,
+                            im.encoderinfo.get("background", im.info.get("background")),
+                        )
+                        background_im = Image.new("P", im_frame.size, background)
+                        background_im.putpalette(im_frames[0]["im"].palette)
+                    base_im = background_im
+                else:
+                    base_im = previous["im"]
+                if _get_palette_bytes(im_frame) == _get_palette_bytes(base_im):
+                    delta = ImageChops.subtract_modulo(im_frame, base_im)
                 else:
                     delta = ImageChops.subtract_modulo(
-                        im_frame.convert("RGB"), previous["im"].convert("RGB")
+                        im_frame.convert("RGB"), base_im.convert("RGB")
                     )
                 bbox = delta.getbbox()
                 if not bbox:
@@ -683,10 +695,12 @@ def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
     import math
 
-    color_table_size = int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
-    if color_table_size < 0:
-        color_table_size = 0
-    return color_table_size
+    if not palette_bytes:
+        return 0
+    elif len(palette_bytes) < 9:
+        return 1
+    else:
+        return int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
 
 
 def _get_header_palette(palette_bytes):
@@ -717,6 +731,18 @@ def _get_palette_bytes(im):
     return im.palette.palette
 
 
+def _get_background(im, infoBackground):
+    background = 0
+    if infoBackground:
+        background = infoBackground
+        if isinstance(background, tuple):
+            # WebPImagePlugin stores an RGBA value in info["background"]
+            # So it must be converted to the same format as GifImagePlugin's
+            # info["background"] - a global color table index
+            background = im.palette.getcolor(background)
+    return background
+
+
 def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
@@ -736,14 +762,7 @@ def _get_global_header(im, info):
         if im.info.get("version") == b"89a":
             version = b"89a"
 
-    background = 0
-    if "background" in info:
-        background = info["background"]
-        if isinstance(background, tuple):
-            # WebPImagePlugin stores an RGBA value in info["background"]
-            # So it must be converted to the same format as GifImagePlugin's
-            # info["background"] - a global color table index
-            background = im.palette.getcolor(background)
+    background = _get_background(im, info.get("background"))
 
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)

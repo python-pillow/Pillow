@@ -68,7 +68,12 @@ static inline void
 point8(Imaging im, int x, int y, int ink)
 {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize)
-        im->image8[y][x] = (UINT8) ink;
+        if (strncmp(im->mode, "I;16", 4) == 0) {
+            im->image8[y][x*2] = (UINT8) ink;
+            im->image8[y][x*2+1] = (UINT8) ink;
+        } else {
+            im->image8[y][x] = (UINT8) ink;
+        }
 }
 
 static inline void
@@ -95,7 +100,7 @@ point32rgba(Imaging im, int x, int y, int ink)
 static inline void
 hline8(Imaging im, int x0, int y0, int x1, int ink)
 {
-    int tmp;
+    int tmp, pixelwidth;
 
     if (y0 >= 0 && y0 < im->ysize) {
         if (x0 > x1)
@@ -108,8 +113,11 @@ hline8(Imaging im, int x0, int y0, int x1, int ink)
             return;
         else if (x1 >= im->xsize)
             x1 = im->xsize-1;
-        if (x0 <= x1)
-            memset(im->image8[y0] + x0, (UINT8) ink, x1 - x0 + 1);
+        if (x0 <= x1) {
+            pixelwidth = strncmp(im->mode, "I;16", 4) == 0 ? 2 : 1;
+            memset(im->image8[y0] + x0 * pixelwidth, (UINT8) ink,
+                   (x1 - x0 + 1) * pixelwidth);
+        }
     }
 }
 

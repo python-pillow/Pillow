@@ -327,6 +327,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
+#if PY_VERSION_HEX < 0x03000000
     if (PyUnicode_Check(string)) {
         Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
         int size = PyUnicode_GET_SIZE(string);
@@ -336,13 +337,19 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
         return 1;
     }
 
-#if PY_VERSION_HEX < 0x03000000
     if (PyString_Check(string)) {
         unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
         if (index >= size)
             return 0;
         *char_out = (unsigned char) p[index];
+        return 1;
+    }
+#else
+    if (PyUnicode_Check(string)) {
+        if (index >= PyUnicode_GET_LENGTH(string))
+            return 0;
+        *char_out = PyUnicode_READ_CHAR(string, index);
         return 1;
     }
 #endif
@@ -366,6 +373,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
+#if PY_VERSION_HEX < 0x03000000
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
@@ -385,9 +393,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             }
         }
 
-    }
-#if PY_VERSION_HEX < 0x03000000
-    else if (PyString_Check(string)) {
+    } else if (PyString_Check(string)) {
         char *text = PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
         if (! size) {
@@ -395,6 +401,28 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         }
         if (!(*p_raqm.set_text_utf8)(rq, text, size)) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
+            goto failed;
+        }
+        if (lang) {
+            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
+                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
+                goto failed;
+            }
+        }
+    }
+#else
+    if (PyUnicode_Check(string)) {
+        Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
+        Py_ssize_t size = PyUnicode_GET_LENGTH(string);
+        if (!text || !size) {
+            /* return 0 and clean up, no glyphs==no size,
+               and raqm fails with empty strings */
+            goto failed;
+        }
+        int set_text = (*p_raqm.set_text)(rq, (const uint32_t *)(text), size);
+        PyMem_Free(text);
+        if (!set_text) {
+            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
         }
         if (lang) {
