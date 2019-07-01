@@ -14,6 +14,9 @@ Changelog (Pillow)
 - Respect the PKG_CONFIG environment variable when building #3928
   [chewi]
 
+- Use explicit memcpy() to avoid unaligned memory accesses #3225
+  [DerDakon]
+
 - Improve encoding of TIFF tags #3861
   [olt]
 

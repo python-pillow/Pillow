@@ -432,6 +432,9 @@ TYPES = {}
 # 389: case TIFFTAG_REFERENCEBLACKWHITE:
 # 393: case TIFFTAG_INKNAMES:
 
+# Following pseudo-tags are also handled by default in libtiff:
+# TIFFTAG_JPEGQUALITY 65537
+
 # some of these are not in our TAGS_V2 dict and were included from tiff.h
 
 # This list also exists in encode.c
@@ -476,6 +479,7 @@ LIBTIFF_CORE = {
     333,
     # as above
     269,  # this has been in our tests forever, and works
+    65537,
 }
 
 LIBTIFF_CORE.remove(320)  # Array of short, crashes
