@@ -48,6 +48,17 @@ ImageTk.getimage
 This function is now supported. It returns the contents of an ``ImageTk.PhotoImage`` as
 an RGBA ``Image.Image`` instance.
 
+Image quality for JPEG compressed TIFF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TIFF encoder accepts a ``quality`` parameter for ``jpeg`` compressed TIFF files. A
+value from 0 (worst) to 100 (best) controls the image quality, similar to the JPEG
+encoder. The default is 75. For example:
+
+.. code-block:: python
+
+    im.save("out.tif", compression="jpeg", quality=85)
+
 Improve encoding of TIFF tags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
