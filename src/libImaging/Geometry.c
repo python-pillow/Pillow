@@ -428,7 +428,7 @@ nearest_filter16(void* out, Imaging im, double xin, double yin)
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
-    ((INT16*)out)[0] = ((INT16*)(im->image8[y]))[x];
+    memcpy(out, im->image8[y] + x * sizeof(INT16), sizeof(INT16));
     return 1;
 }
 
@@ -439,7 +439,7 @@ nearest_filter32(void* out, Imaging im, double xin, double yin)
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
-    ((INT32*)out)[0] = im->image32[y][x];
+    memcpy(out, &im->image32[y][x], sizeof(INT32));
     return 1;
 }
 
@@ -489,18 +489,22 @@ bilinear_filter8(void* out, Imaging im, double xin, double yin)
 static int
 bilinear_filter32I(void* out, Imaging im, double xin, double yin)
 {
+    INT32 k;
     BILINEAR_HEAD(INT32);
     BILINEAR_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = (INT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
 static int
 bilinear_filter32F(void* out, Imaging im, double xin, double yin)
 {
+    FLOAT32 k;
     BILINEAR_HEAD(FLOAT32);
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
@@ -601,18 +605,22 @@ bicubic_filter8(void* out, Imaging im, double xin, double yin)
 static int
 bicubic_filter32I(void* out, Imaging im, double xin, double yin)
 {
+    INT32 k;
     BICUBIC_HEAD(INT32);
     BICUBIC_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = (INT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
 static int
 bicubic_filter32F(void* out, Imaging im, double xin, double yin)
 {
+    FLOAT32 k;
     BICUBIC_HEAD(FLOAT32);
     BICUBIC_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 

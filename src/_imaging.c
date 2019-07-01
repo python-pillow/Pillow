@@ -382,7 +382,8 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
     Py_ssize_t i, n;
     int itemp;
     double dtemp;
-    void* list;
+    FLOAT32 ftemp;
+    UINT8* list;
     PyObject* seq;
     PyObject* op;
 
@@ -416,19 +417,19 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         switch (type) {
         case TYPE_UINT8:
             itemp = PyInt_AsLong(op);
-            ((UINT8*)list)[i] = CLIP8(itemp);
+            list[i] = CLIP8(itemp);
             break;
         case TYPE_INT32:
             itemp = PyInt_AsLong(op);
-            ((INT32*)list)[i] = itemp;
+            memcpy(list + i * sizeof(INT32), &itemp, sizeof(itemp));
             break;
         case TYPE_FLOAT32:
-            dtemp = PyFloat_AsDouble(op);
-            ((FLOAT32*)list)[i] = (FLOAT32) dtemp;
+            ftemp = (FLOAT32)PyFloat_AsDouble(op);
+            memcpy(list + i * sizeof(ftemp), &ftemp, sizeof(ftemp));
             break;
         case TYPE_DOUBLE:
             dtemp = PyFloat_AsDouble(op);
-            ((double*)list)[i] = (double) dtemp;
+            memcpy(list + i * sizeof(dtemp), &dtemp, sizeof(dtemp));
             break;
         }
     }
@@ -532,6 +533,8 @@ getink(PyObject* color, Imaging im, char* ink)
        to return it into a 32 bit C long
     */
     PY_LONG_LONG r = 0;
+    FLOAT32 ftmp;
+    INT32 itmp;
 
     /* fill ink buffer (four bytes) with something that can
        be cast to either UINT8 or INT32 */
@@ -597,14 +600,16 @@ getink(PyObject* color, Imaging im, char* ink)
         /* signed integer */
         if (rIsInt != 1)
             return NULL;
-        *(INT32*) ink = r;
+        itmp = r;
+        memcpy(ink, &itmp, sizeof(itmp));
         return ink;
     case IMAGING_TYPE_FLOAT32:
         /* floating point */
         f = PyFloat_AsDouble(color);
         if (f == -1.0 && PyErr_Occurred())
             return NULL;
-        *(FLOAT32*) ink = (FLOAT32) f;
+        ftmp = f;
+        memcpy(ink, &ftmp, sizeof(ftmp));
         return ink;
     case IMAGING_TYPE_SPECIAL:
         if (strncmp(im->mode, "I;16", 4) == 0) {
@@ -799,15 +804,19 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
     }
 
     for (i = 0; i < table_size; i++) {
+        FLOAT16 htmp;
+        double dtmp;
         switch (data_type) {
             case TYPE_FLOAT16:
-                item = float16tofloat32(((FLOAT16*) table_data)[i]);
+                memcpy(&htmp, ((char*) table_data) + i * sizeof(htmp), sizeof(htmp));
+                item = float16tofloat32(htmp);
                 break;
             case TYPE_FLOAT32:
-                item = ((FLOAT32*) table_data)[i];
+                memcpy(&item, ((char*) table_data) + i * sizeof(FLOAT32), sizeof(FLOAT32));
                 break;
             case TYPE_DOUBLE:
-                item = ((double*) table_data)[i];
+                memcpy(&dtmp, ((char*) table_data) + i * sizeof(dtmp), sizeof(dtmp));
+                item = (FLOAT32) dtmp;
                 break;
         }
         /* Max value for INT16 */

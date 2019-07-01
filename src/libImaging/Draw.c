@@ -40,7 +40,6 @@
 #define FLOOR(v) ((v) >= 0.0 ? (int) (v) : (int) floor(v))
 
 #define INK8(ink) (*(UINT8*)ink)
-#define INK32(ink) (*(INT32*)ink)
 
 /*
  * Rounds around zero (up=away from zero, down=torwards zero)
@@ -563,7 +562,7 @@ DRAW draw32rgba = { point32rgba, hline32rgba, line32rgba, polygon32rgba };
         ink = INK8(ink_);\
     } else {\
         draw = (op) ? &draw32rgba : &draw32;    \
-        ink = INK32(ink_);\
+        memcpy(&ink, ink_, sizeof(ink)); \
     }
 
 int

@@ -304,6 +304,7 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
         if (imIn->bands == 2) {
             for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     xmin = bounds[xx * 2 + 0];
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
@@ -312,13 +313,14 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                         ss0 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 0]) * k[x];
                         ss3 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 3]) * k[x];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), 0, 0, clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         } else if (imIn->bands == 3) {
             for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     xmin = bounds[xx * 2 + 0];
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
@@ -328,13 +330,14 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                         ss1 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 1]) * k[x];
                         ss2 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 2]) * k[x];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         } else {
             for (yy = 0; yy < imOut->ysize; yy++) {
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     xmin = bounds[xx * 2 + 0];
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
@@ -345,8 +348,8 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                         ss2 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 2]) * k[x];
                         ss3 += ((UINT8) imIn->image[yy + offset][(x + xmin)*4 + 3]) * k[x];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         }
@@ -388,13 +391,14 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                 ymin = bounds[yy * 2 + 0];
                 ymax = bounds[yy * 2 + 1];
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     ss0 = ss3 = 1 << (PRECISION_BITS -1);
                     for (y = 0; y < ymax; y++) {
                         ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
                         ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), 0, 0, clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         } else if (imIn->bands == 3) {
@@ -403,14 +407,15 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                 ymin = bounds[yy * 2 + 0];
                 ymax = bounds[yy * 2 + 1];
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     ss0 = ss1 = ss2 = 1 << (PRECISION_BITS -1);
                     for (y = 0; y < ymax; y++) {
                         ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
                         ss1 += ((UINT8) imIn->image[y + ymin][xx*4 + 1]) * k[y];
                         ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         } else {
@@ -419,6 +424,7 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                 ymin = bounds[yy * 2 + 0];
                 ymax = bounds[yy * 2 + 1];
                 for (xx = 0; xx < imOut->xsize; xx++) {
+                    UINT32 v;
                     ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS -1);
                     for (y = 0; y < ymax; y++) {
                         ss0 += ((UINT8) imIn->image[y + ymin][xx*4 + 0]) * k[y];
@@ -426,8 +432,8 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
                         ss2 += ((UINT8) imIn->image[y + ymin][xx*4 + 2]) * k[y];
                         ss3 += ((UINT8) imIn->image[y + ymin][xx*4 + 3]) * k[y];
                     }
-                    ((UINT32 *) imOut->image[yy])[xx] = MAKE_UINT32(
-                        clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
                 }
             }
         }
