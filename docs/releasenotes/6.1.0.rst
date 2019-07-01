@@ -61,8 +61,14 @@ GeoTIFF format which encodes geospatial information.
   must be passed as a tuple.
 * Add support for signed types eg. ``TIFFTypes.TIFF_SIGNED_SHORT``.
 
-Top To Bottom Complex Text Rendering
+Respect PKG_CONFIG environment variable when building
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This variable is commonly used by other build systems and using it can help with
+cross-compiling. Falls back to ``pkg-config`` as before.
+
+Top-to-bottom complex text rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Drawing text in the 'ttb' direction with ImageFont has been significantly improved
+Drawing text in the 'ttb' direction with ``ImageFont`` has been significantly improved
 and requires Raqm 0.7 or greater.

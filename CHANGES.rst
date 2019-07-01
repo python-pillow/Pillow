@@ -5,6 +5,12 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Deprecate Image.__del__ #3929
+  [jdufresne]
+
+- Respect the PKG_CONFIG environment variable when building #3928
+  [chewi]
+
 - Improve encoding of TIFF tags #3861
   [olt]
 
