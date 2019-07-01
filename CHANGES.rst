@@ -5,6 +5,12 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Deprecate Image.__del__ #3929
+  [jdufresne]
+
+- Tiff: Add support for JPEG quality #3886
+  [olt]
+
 - Respect the PKG_CONFIG environment variable when building #3928
   [chewi]
 
