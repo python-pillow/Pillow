@@ -435,17 +435,43 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal(im, im2)
 
     def test_compressions(self):
+        # Test various tiff compressions and assert similar image content but reduced
+        # file sizes.
         im = hopper("RGB")
         out = self.tempfile("temp.tif")
+        im.save(out)
+        size_raw = os.path.getsize(out)
 
         for compression in ("packbits", "tiff_lzw"):
             im.save(out, compression=compression)
+            size_compressed = os.path.getsize(out)
             im2 = Image.open(out)
             self.assert_image_equal(im, im2)
 
         im.save(out, compression="jpeg")
+        size_jpeg = os.path.getsize(out)
         im2 = Image.open(out)
         self.assert_image_similar(im, im2, 30)
+
+        im.save(out, compression="jpeg", quality=30)
+        size_jpeg_30 = os.path.getsize(out)
+        im3 = Image.open(out)
+        self.assert_image_similar(im2, im3, 30)
+
+        self.assertGreater(size_raw, size_compressed)
+        self.assertGreater(size_compressed, size_jpeg)
+        self.assertGreater(size_jpeg, size_jpeg_30)
+
+    def test_quality(self):
+        im = hopper("RGB")
+        out = self.tempfile("temp.tif")
+
+        self.assertRaises(ValueError, im.save, out, compression="tiff_lzw", quality=50)
+        self.assertRaises(ValueError, im.save, out, compression="jpeg", quality=-1)
+        self.assertRaises(ValueError, im.save, out, compression="jpeg", quality=101)
+        self.assertRaises(ValueError, im.save, out, compression="jpeg", quality="good")
+        im.save(out, compression="jpeg", quality=0)
+        im.save(out, compression="jpeg", quality=100)
 
     def test_cmyk_save(self):
         im = hopper("CMYK")

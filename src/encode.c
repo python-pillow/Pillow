@@ -643,27 +643,28 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     const int core_tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
         341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
-        339, 32997, 330, 531, 530
+        339, 32997, 330, 531, 530, 65537
     };
 
-    Py_ssize_t d_size;
-    PyObject *keys, *values;
-
+    Py_ssize_t tags_size;
+    PyObject *item;
 
     if (! PyArg_ParseTuple(args, "sssnsOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types)) {
         return NULL;
     }
 
-    if (!PyDict_Check(tags)) {
-        PyErr_SetString(PyExc_ValueError, "Invalid tags dictionary");
+    if (!PyList_Check(tags)) {
+        PyErr_SetString(PyExc_ValueError, "Invalid tags list");
         return NULL;
     } else {
-        d_size = PyDict_Size(tags);
-        TRACE(("dict size: %d\n", (int)d_size));
-        keys = PyDict_Keys(tags);
-        values = PyDict_Values(tags);
-        for (pos=0;pos<d_size;pos++){
-            TRACE(("  key: %d\n", (int)PyInt_AsLong(PyList_GetItem(keys,pos))));
+        tags_size = PyList_Size(tags);
+        TRACE(("tags size: %d\n", (int)tags_size));
+        for (pos=0;pos<tags_size;pos++){
+            item = PyList_GetItem(tags, pos);
+            if (!PyTuple_Check(item) || PyTuple_Size(item) != 2) {
+               PyErr_SetString(PyExc_ValueError, "Invalid tags list");
+               return NULL;
+            }
         }
         pos = 0;
     }
@@ -688,10 +689,12 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     }
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
-    for (pos = 0; pos < d_size; pos++) {
-        key = PyList_GetItem(keys, pos);
+    for (pos = 0; pos < tags_size; pos++) {
+        item = PyList_GetItem(tags, pos);
+        // We already checked that tags is a 2-tuple list.
+        key = PyTuple_GetItem(item, 0);
         key_int = (int)PyInt_AsLong(key);
-        value = PyList_GetItem(values, pos);
+        value = PyTuple_GetItem(item, 1);
         status = 0;
         is_core_tag = 0;
         is_var_length = 0;

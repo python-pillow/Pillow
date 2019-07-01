@@ -738,6 +738,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
     ``"tiff_sgilog24"``, ``"tiff_raw_16"``
 
+**quality**
+    The image quality for JPEG compression, on a scale from 0 (worst) to 100
+    (best). The default is 75.
+
+    .. versionadded:: 6.1.0
+
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
 
