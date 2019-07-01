@@ -649,7 +649,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t tags_size;
     PyObject *item;
 
-
     if (! PyArg_ParseTuple(args, "sssnsOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types)) {
         return NULL;
     }
@@ -1094,6 +1093,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 }
 
 #endif
+
 
 /* -------------------------------------------------------------------- */
 /* JPEG	2000								*/

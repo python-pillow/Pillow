@@ -242,8 +242,9 @@ LCMS_ROOT = None
 
 def _pkg_config(name):
     try:
-        command_libs = ["pkg-config", "--libs-only-L", name]
-        command_cflags = ["pkg-config", "--cflags-only-I", name]
+        command = os.environ.get("PKG_CONFIG", "pkg-config")
+        command_libs = [command, "--libs-only-L", name]
+        command_cflags = [command, "--cflags-only-I", name]
         if not DEBUG:
             command_libs.append("--silence-errors")
             command_cflags.append("--silence-errors")
@@ -347,7 +348,7 @@ class pil_build_ext(build_ext):
         _add_directory(include_dirs, "src/libImaging")
 
         pkg_config = None
-        if _cmd_exists("pkg-config"):
+        if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
             pkg_config = _pkg_config
 
         #

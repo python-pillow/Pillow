@@ -530,7 +530,7 @@ int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_typ
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
     // decoding, ignore readcount;
     int readcount = 0;
-    // we support writing single value, or a variable number of values
+    // we support writing a single value, or a variable number of values
     int writecount = 1;
     // whether the first value should encode the number of values.
     int passcount = 0;

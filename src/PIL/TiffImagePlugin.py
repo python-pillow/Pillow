@@ -1553,6 +1553,8 @@ def _save(im, fp, filename):
 
         # optional types for non core tags
         types = {}
+        # SAMPLEFORMAT is determined by the image format and should not be copied
+        # from legacy_ifd.
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
         # The other tags expect arrays with a certain length (fixed or depending on
@@ -1561,6 +1563,7 @@ def _save(im, fp, filename):
         blocklist = [
             COLORMAP,
             REFERENCEBLACKWHITE,
+            SAMPLEFORMAT,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,

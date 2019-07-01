@@ -5,6 +5,18 @@ Changelog (Pillow)
 6.1.0 (unreleased)
 ------------------
 
+- Improve encoding of TIFF tags #3861
+  [olt]
+
+- Update Py_UNICODE to Py_UCS4 #3780
+  [nulano]
+
+- Consider I;16 pixel size when drawing #3899
+  [radarhere]
+
+- Add TIFFTAG_SAMPLEFORMAT to blocklist #3926
+  [cgohlke, radarhere]
+
 - Create GIF deltas from background colour of GIF frames if disposal mode is 2 #3708
   [sircinnamon, radarhere]
 

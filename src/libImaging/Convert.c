@@ -229,42 +229,46 @@ static void
 rgb2i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
-        *out++ = L24(in) >> 16;
+    for (x = 0; x < xsize; x++, in += 4, out_ += 4) {
+        INT32 v = L24(in) >> 16;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 rgb2f(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
-        *out++ = (float) L(in) / 1000.0F;
+    for (x = 0; x < xsize; x++, in += 4, out_ += 4) {
+        FLOAT32 v = (float) L(in) / 1000.0F;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 rgb2bgr15(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    UINT16* out = (UINT16*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
-        *out++ =
+    for (x = 0; x < xsize; x++, in += 4, out_ += 2) {
+        UINT16 v =
             ((((UINT16)in[0])<<7)&0x7c00) +
             ((((UINT16)in[1])<<2)&0x03e0) +
             ((((UINT16)in[2])>>3)&0x001f);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 rgb2bgr16(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    UINT16* out = (UINT16*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
-        *out++ =
+    for (x = 0; x < xsize; x++, in += 4, out_ += 2) {
+        UINT16 v =
             ((((UINT16)in[0])<<8)&0xf800) +
             ((((UINT16)in[1])<<3)&0x07e0) +
             ((((UINT16)in[2])>>3)&0x001f);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
@@ -490,12 +494,13 @@ rgbT2rgba(UINT8* out, int xsize, int r, int g, int b)
     UINT32 repl = trns & 0x00ffffff;
 #endif
 
-    UINT32* tmp = (UINT32 *)out;
     int i;
 
-    for (i=0; i < xsize; i++ ,tmp++) {
-        if (tmp[0]==trns) {
-            tmp[0]=repl;
+    for (i=0; i < xsize; i++ ,out += sizeof(trns)) {
+        UINT32 v;
+        memcpy(&v, out, sizeof(v));
+        if (v==trns) {
+            memcpy(out, &repl, sizeof(repl));
         }
     }
 }
@@ -565,32 +570,35 @@ static void
 bit2i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (*in++ != 0) ? 255 : 0;
+    for (x = 0; x < xsize; x++, out_ += 4) {
+        INT32 v = (*in++ != 0) ? 255 : 0;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 l2i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (INT32) *in++;
+    for (x = 0; x < xsize; x++, out_ += 4) {
+        INT32 v = *in++;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 i2l(UINT8* out, const UINT8* in_, int xsize)
 {
     int x;
-    INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++, in++, out++) {
-        if (*in <= 0)
+    for (x = 0; x < xsize; x++, out++, in_ += 4) {
+        INT32 v;
+        memcpy(&v, in_, sizeof(v));
+        if (v <= 0)
             *out = 0;
-        else if (*in >= 255)
+        else if (v >= 255)
             *out = 255;
         else
-            *out = (UINT8) *in;
+            *out = (UINT8) v;
     }
 }
 
@@ -598,10 +606,13 @@ static void
 i2f(UINT8* out_, const UINT8* in_, int xsize)
 {
     int x;
-    INT32* in = (INT32*) in_;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (FLOAT32) *in++;
+    for (x = 0; x < xsize; x++, in_ += 4, out_ += 4) {
+        INT32 i;
+        FLOAT32 f;
+        memcpy(&i, in_, sizeof(i));
+        f = i;
+        memcpy(out_, &f, sizeof(f));
+    }
 }
 
 static void
@@ -628,32 +639,35 @@ static void
 bit2f(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (*in++ != 0) ? 255.0F : 0.0F;
+    for (x = 0; x < xsize; x++, out_ += 4) {
+        FLOAT32 f = (*in++ != 0) ? 255.0F : 0.0F;
+        memcpy(out_, &f, sizeof(f));
+    }
 }
 
 static void
 l2f(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (FLOAT32) *in++;
+    for (x = 0; x < xsize; x++, out_ += 4) {
+        FLOAT32 f = (FLOAT32) *in++;
+        memcpy(out_, &f, sizeof(f));
+    }
 }
 
 static void
 f2l(UINT8* out, const UINT8* in_, int xsize)
 {
     int x;
-    FLOAT32* in = (FLOAT32*) in_;
-    for (x = 0; x < xsize; x++, in++, out++) {
-        if (*in <= 0.0)
+    for (x = 0; x < xsize; x++, out++, in_ += 4) {
+        FLOAT32 v;
+        memcpy(&v, in_, sizeof(v));
+        if (v <= 0.0)
             *out = 0;
-        else if (*in >= 255.0)
+        else if (v >= 255.0)
             *out = 255;
         else
-            *out = (UINT8) *in;
+            *out = (UINT8) v;
     }
 }
 
@@ -661,10 +675,13 @@ static void
 f2i(UINT8* out_, const UINT8* in_, int xsize)
 {
     int x;
-    FLOAT32* in = (FLOAT32*) in_;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (INT32) *in++;
+    for (x = 0; x < xsize; x++, in_ += 4, out_ += 4) {
+        FLOAT32 f;
+        INT32 i;
+        memcpy(&f, in_, sizeof(f));
+        i = f;
+        memcpy(out_, &i, sizeof(i));
+    }
 }
 
 /* ----------------- */
@@ -723,9 +740,10 @@ static void
 I_I16L(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
-    INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++, in++) {
-        v = CLIP16(*in);
+    for (x = 0; x < xsize; x++, in_ += 4) {
+        INT32 i;
+        memcpy(&i, in_, sizeof(i));
+        v = CLIP16(i);
         *out++ = (UINT8) v;
         *out++ = (UINT8) (v >> 8);
     }
@@ -735,9 +753,10 @@ static void
 I_I16B(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
-    INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++, in++) {
-        v = CLIP16(*in);
+    for (x = 0; x < xsize; x++, in_ += 4) {
+        INT32 i;
+        memcpy(&i, in_, sizeof(i));
+        v = CLIP16(i);
         *out++ = (UINT8) (v >> 8);
         *out++ = (UINT8) v;
     }
@@ -748,9 +767,10 @@ static void
 I16L_I(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++, in += 2)
-        *out++ = in[0] + ((int) in[1] << 8);
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        INT32 v = in[0] + ((int) in[1] << 8);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 
@@ -758,18 +778,20 @@ static void
 I16B_I(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++, in += 2)
-        *out++ = in[1] + ((int) in[0] << 8);
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        INT32 v = in[1] + ((int) in[0] << 8);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
 I16L_F(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++, in += 2)
-        *out++ = (FLOAT32) (in[0] + ((int) in[1] << 8));
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        FLOAT32 v = in[0] + ((int) in[1] << 8);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 
@@ -777,9 +799,10 @@ static void
 I16B_F(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++, in += 2)
-        *out++ = (FLOAT32) (in[1] + ((int) in[0] << 8));
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        FLOAT32 v = in[1] + ((int) in[0] << 8);
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
@@ -1018,9 +1041,10 @@ static void
 p2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = L(&palette[in[x]*4]) / 1000;
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        INT32 v = L(&palette[in[x]*4]) / 1000;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
@@ -1036,9 +1060,10 @@ static void
 p2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
-    FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++)
-        *out++ = (float) L(&palette[in[x]*4]) / 1000.0F;
+    for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
+        FLOAT32 v = L(&palette[in[x]*4]) / 1000.0F;
+        memcpy(out_, &v, sizeof(v));
+    }
 }
 
 static void
