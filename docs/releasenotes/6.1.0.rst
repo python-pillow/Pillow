@@ -4,6 +4,14 @@
 API Additions
 =============
 
+Image.entropy
+^^^^^^^^^^^^^
+Calculates and returns the entropy for the image. A bilevel image (mode "1") is treated
+as a greyscale ("L") image by this method.  If a mask is provided, the method employs
+the histogram for those parts of the image where the mask image is non-zero. The mask
+image must have the same size as the image, and be either a bi-level image (mode "1") or
+a greyscale image ("L").
+
 ImageGrab.grab
 ^^^^^^^^^^^^^^
 
@@ -39,6 +47,19 @@ ImageTk.getimage
 
 This function is now supported. It returns the contents of an ``ImageTk.PhotoImage`` as
 an RGBA ``Image.Image`` instance.
+
+Improve encoding of TIFF tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TIFF encoder supports more types, especially arrays. This is required for the
+GeoTIFF format which encodes geospatial information.
+
+* Pass ``tagtype`` from v2 directory to libtiff encoder, instead of autodetecting type.
+* Use explicit types eg. ``uint32_t`` for ``TIFF_LONG`` to fix issues on platforms with
+  64-bit longs.
+* Add support for multiple values (arrays). Requires type in v2 directory and values
+  must be passed as a tuple.
+* Add support for signed types eg. ``TIFFTypes.TIFF_SIGNED_SHORT``.
 
 Top To Bottom Complex Text Rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
