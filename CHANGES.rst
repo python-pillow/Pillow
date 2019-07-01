@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-6.1.0 (unreleased)
+6.1.0 (2019-07-01)
 ------------------
 
 - Deprecate Image.__del__ #3929
