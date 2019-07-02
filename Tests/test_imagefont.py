@@ -465,9 +465,8 @@ class TestImageFont(PillowTestCase):
             font.getsize(u"’")
 
     @unittest.skipIf(
-        sys.platform.startswith("win32") and (
-            sys.version.startswith("2") or hasattr(sys, "pypy_translation_info")
-        ),
+        sys.platform.startswith("win32")
+        and (sys.version.startswith("2") or hasattr(sys, "pypy_translation_info")),
         "requires CPython 3.x on Windows",
     )
     def test_unicode_extended(self):
