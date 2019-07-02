@@ -327,7 +327,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if PY_VERSION_HEX < 0x03000000
+#if (PY_VERSION_HEX < 0x03030000) || (defined(PYPY_VERSION_NUM))
     if (PyUnicode_Check(string)) {
         Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
         int size = PyUnicode_GET_SIZE(string);
@@ -336,7 +336,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
         *char_out = p[index];
         return 1;
     }
-
+#if PY_VERSION_HEX < 0x03000000
     if (PyString_Check(string)) {
         unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
@@ -345,6 +345,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
         *char_out = (unsigned char) p[index];
         return 1;
     }
+#endif
 #else
     if (PyUnicode_Check(string)) {
         if (index >= PyUnicode_GET_LENGTH(string))
@@ -373,7 +374,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-#if PY_VERSION_HEX < 0x03000000
+#if (PY_VERSION_HEX < 0x03030000) || (defined(PYPY_VERSION_NUM))
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
@@ -392,8 +393,9 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
                 goto failed;
             }
         }
-
-    } else if (PyString_Check(string)) {
+    }
+#if PY_VERSION_HEX < 0x03000000
+    else if (PyString_Check(string)) {
         char *text = PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
         if (! size) {
@@ -410,6 +412,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             }
         }
     }
+#endif
 #else
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
