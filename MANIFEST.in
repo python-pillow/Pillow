@@ -1,4 +1,3 @@
-
 include *.c
 include *.h
 include *.in
@@ -21,7 +20,6 @@ exclude .appveyor.yml
 exclude .coveragerc
 exclude .codecov.yml
 exclude .editorconfig
-exclude .landscape.yaml
 exclude .readthedocs.yml
 exclude azure-pipelines.yml
 exclude tox.ini
