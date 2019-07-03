@@ -66,13 +66,14 @@ typedef void (*hline_handler)(Imaging, int, int, int, int);
 static inline void
 point8(Imaging im, int x, int y, int ink)
 {
-    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize)
+    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
         if (strncmp(im->mode, "I;16", 4) == 0) {
             im->image8[y][x*2] = (UINT8) ink;
             im->image8[y][x*2+1] = (UINT8) ink;
         } else {
             im->image8[y][x] = (UINT8) ink;
         }
+    }
 }
 
 static inline void
