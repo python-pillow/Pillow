@@ -6,7 +6,6 @@ coverage erase
 make clean
 make install-coverage
 
-python selftest.py
 python -m pytest -v -x --cov PIL --cov-report term Tests
 
 # Docs
