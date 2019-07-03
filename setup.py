@@ -841,8 +841,9 @@ try:
         version=PILLOW_VERSION,
         description="Python Imaging Library (Fork)",
         long_description=_read("README.rst").decode("utf-8"),
-        author="Alex Clark (Fork Author)",
-        author_email="aclark@aclark.net",
+        license="HPND",
+        author="Alex Clark (PIL Fork Author)",
+        author_email="aclark@python-pillow.org",
         url="http://python-pillow.org",
         classifiers=[
             "Development Status :: 6 - Mature",
