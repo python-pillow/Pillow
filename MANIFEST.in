@@ -21,7 +21,6 @@ exclude .appveyor.yml
 exclude .coveragerc
 exclude .codecov.yml
 exclude .editorconfig
-exclude .landscape.yaml
 exclude .readthedocs.yml
 exclude azure-pipelines.yml
 global-exclude .git*
