@@ -322,15 +322,15 @@ PyImaging_DisplayModeWin32(PyObject* self, PyObject* args)
 PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
-    int width, height;
-    int includeLayeredWindows = 0;
+    int x = 0, y = 0, width, height;
+    int includeLayeredWindows = 0, multimonitor = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
     DWORD rop;
     PyObject* buffer;
 
-    if (!PyArg_ParseTuple(args, "|i", &includeLayeredWindows))
+    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &multimonitor))
         return NULL;
 
     /* step 1: create a memory DC large enough to hold the
@@ -339,8 +339,15 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     screen = CreateDC("DISPLAY", NULL, NULL, NULL);
     screen_copy = CreateCompatibleDC(screen);
 
-    width = GetDeviceCaps(screen, HORZRES);
-    height = GetDeviceCaps(screen, VERTRES);
+    if (multimonitor) {
+        x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    } else {
+        width = GetSystemMetrics(SM_CXSCREEN);
+        height = GetSystemMetrics(SM_CYSCREEN);
+    }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap)
@@ -354,7 +361,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     rop = SRCCOPY;
     if (includeLayeredWindows)
         rop |= CAPTUREBLT;
-    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, rop))
+    if (!BitBlt(screen_copy, 0, 0, width, height, screen, x, y, rop))
         goto error;
 
     /* step 3: extract bits from bitmap */
@@ -376,7 +383,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     DeleteDC(screen_copy);
     DeleteDC(screen);
 
-    return Py_BuildValue("(ii)N", width, height, buffer);
+    return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
     PyErr_SetString(PyExc_IOError, "screen grab failed");

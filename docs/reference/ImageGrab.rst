@@ -11,7 +11,7 @@ or the clipboard to a PIL image memory.
 
 .. versionadded:: 1.1.3
 
-.. py:function:: PIL.ImageGrab.grab(bbox=None, include_layered_windows=False)
+.. py:function:: PIL.ImageGrab.grab(bbox=None, include_layered_windows=False, multimonitor=False)
 
     Take a snapshot of the screen. The pixels inside the bounding box are
     returned as an "RGB" image on Windows or "RGBA" on macOS.
@@ -21,6 +21,7 @@ or the clipboard to a PIL image memory.
 
     :param bbox: What region to copy. Default is the entire screen.
     :param include_layered_windows: Includes layered windows. Windows OS only.
+    :param multimonitor: Capture all monitors. Windows OS only.
     :return: An image
 
 .. py:function:: PIL.ImageGrab.grabclipboard()
