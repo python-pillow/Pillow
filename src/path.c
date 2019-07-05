@@ -124,7 +124,8 @@ get_one_item(PyObject *op, double *x)
 }
 
 static int
-get_two_item(PyObject *op, double *x, double *y) {
+get_two_item(PyObject *op, double *x, double *y)
+{
     PyObject *o;
     int success;
 
