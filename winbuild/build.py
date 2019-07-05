@@ -50,9 +50,9 @@ def run_script(params):
         (trace, stderr) = proc.communicate()
         status = proc.returncode
         print("-- stderr --")
-        print(stderr)
+        print(stderr.decode())
         print("-- stdout --")
-        print(trace)
+        print(trace.decode())
         print("Done with %s: %s" % (version, status))
         return (version, status, trace, stderr)
     except Exception as msg:

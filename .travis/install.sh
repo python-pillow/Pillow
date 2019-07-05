@@ -28,5 +28,8 @@ pushd depends && ./install_openjpeg.sh && popd
 # libimagequant
 pushd depends && ./install_imagequant.sh && popd
 
+# raqm
+pushd depends && ./install_raqm.sh && popd
+
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd

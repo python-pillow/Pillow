@@ -1,4 +1,3 @@
-
 include *.c
 include *.h
 include *.in
@@ -9,6 +8,7 @@ include *.sh
 include *.txt
 include LICENSE
 include Makefile
+include tox.ini
 graft Tests
 graft src
 graft depends
@@ -21,10 +21,8 @@ exclude .appveyor.yml
 exclude .coveragerc
 exclude .codecov.yml
 exclude .editorconfig
-exclude .landscape.yaml
 exclude .readthedocs.yml
 exclude azure-pipelines.yml
-exclude tox.ini
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
