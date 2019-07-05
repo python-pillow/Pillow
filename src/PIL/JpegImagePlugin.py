@@ -146,7 +146,7 @@ def APP(self, marker):
         # https://docs.oracle.com/javase/8/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html
         try:
             index2_offset = 5
-            adobe_transform = i8(s[index2_offset+3])  # Index2 3
+            adobe_transform = i8(s[index2_offset + 3])  # Index2 3
         except Exception:
             pass
         else:
@@ -210,9 +210,9 @@ def SOF(self, marker):
         self.mode = "L"
     elif self.layers == 3:
         try:
-            transform_flag = self.info['adobe_transform']
+            transform_flag = self.info["adobe_transform"]
             if transform_flag == 0:  # Unknown (RGB or CMYK)
-                self.mode = 'YCbCr'
+                self.mode = "YCbCr"
             elif transform_flag in (1, 2):  # YCbCr or YCCK
                 self.mode = "RGB"
             else:
