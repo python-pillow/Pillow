@@ -106,6 +106,63 @@ path_dealloc(PyPathObject* path)
     PyObject_Del(path);
 }
 
+static int
+get_one_item(PyObject *op, double *x)
+{
+    if (PyFloat_Check(op)) {
+        *x = PyFloat_AS_DOUBLE(op);
+        return 1;
+    } else if (PyInt_Check(op)) {
+        *x = (float) PyInt_AS_LONG(op);
+        return 1;
+    } else if (PyNumber_Check(op)) {
+        *x = PyFloat_AsDouble(op);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int
+get_two_item(PyObject *op, double *x, double *y) {
+    PyObject *o;
+    int success;
+
+    if (PySequence_Check(op) && PyObject_Length(op) > 1) {
+        if (PyList_Check(op)) {
+            o = PyList_GET_ITEM(op, 0);
+            if (!get_one_item(o, x))
+                return 0;
+            o = PyList_GET_ITEM(op, 1);
+            if (!get_one_item(o, y))
+                return 0;
+            return 1;
+        } else if (PyTuple_Check(op)) {
+            o = PyTuple_GET_ITEM(op, 0);
+            if (!get_one_item(o, x))
+                return 0;
+            o = PyTuple_GET_ITEM(op, 1);
+            if (!get_one_item(o, y))
+                return 0;
+            return 1;
+        } else {
+            o = PySequence_GetItem(op, 0);
+            success = get_one_item(o, x);
+            Py_DECREF(o);
+            if (!success)
+                return 0;
+            o = PySequence_GetItem(op, 1);
+            success = get_one_item(o, y);
+            Py_DECREF(o);
+            if (!success)
+                return 0;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 /* -------------------------------------------------------------------- */
 /* Helpers                                                              */
 /* -------------------------------------------------------------------- */
@@ -168,17 +225,14 @@ PyPath_Flatten(PyObject* data, double **pxy)
         for (i = 0; i < n; i++) {
             double x, y;
             PyObject *op = PyList_GET_ITEM(data, i);
-            if (PyFloat_Check(op))
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
-            else if (PyNumber_Check(op))
-                xy[j++] = PyFloat_AsDouble(op);
-            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+            if (get_one_item(op, &x)) {
+                xy[j++] = x;
+            } else if (get_two_item(op, &x, &y)) {
                 xy[j++] = x;
                 xy[j++] = y;
             } else {
                 free(xy);
+                PyErr_SetString(PyExc_TypeError, "wrong type of coordinates");
                 return -1;
             }
         }
@@ -186,17 +240,14 @@ PyPath_Flatten(PyObject* data, double **pxy)
         for (i = 0; i < n; i++) {
             double x, y;
             PyObject *op = PyTuple_GET_ITEM(data, i);
-            if (PyFloat_Check(op))
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
-            else if (PyNumber_Check(op))
-                xy[j++] = PyFloat_AsDouble(op);
-            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+            if (get_one_item(op, &x)) {
+                xy[j++] = x;
+            } else if (get_two_item(op, &x, &y)) {
                 xy[j++] = x;
                 xy[j++] = y;
             } else {
                 free(xy);
+                PyErr_SetString(PyExc_TypeError, "wrong type of coordinates");
                 return -1;
             }
         }
@@ -215,18 +266,15 @@ PyPath_Flatten(PyObject* data, double **pxy)
                     return -1;
                 }
             }
-            if (PyFloat_Check(op))
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
-            else if (PyNumber_Check(op))
-                xy[j++] = PyFloat_AsDouble(op);
-            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+            if (get_one_item(op, &x)) {
+                xy[j++] = x;
+            } else if (get_two_item(op, &x, &y)) {
                 xy[j++] = x;
                 xy[j++] = y;
             } else {
                 Py_DECREF(op);
                 free(xy);
+                PyErr_SetString(PyExc_TypeError, "wrong type of coordinates");
                 return -1;
             }
             Py_DECREF(op);

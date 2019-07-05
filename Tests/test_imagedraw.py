@@ -807,3 +807,26 @@ class TestImageDraw(PillowTestCase):
                         operation, mode
                     )
                     self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_xy(self):
+        im = hopper()
+        draw = ImageDraw.Draw(im)
+
+        xys = [
+            [X0, Y0, X1, Y1],
+            [[X0, Y0], [X1, Y1]],
+            [(X0, Y0), (X1, Y1)],
+            (X0, Y0, X1, Y1),
+            ([X0, Y0], [X1, Y1]),
+            ((X0, Y0), (X1, Y1)),
+        ]
+
+        for xy in xys:
+            draw.arc(xy, 0, 90)
+            draw.chord(xy, 0, 90)
+            draw.pieslice(xy, 0, 90)
+            draw.ellipse(xy)
+            draw.line(xy)
+            draw.point(xy)
+            draw.polygon(xy)
+            draw.rectangle(xy)
