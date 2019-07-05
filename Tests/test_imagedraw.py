@@ -812,13 +812,14 @@ class TestImageDraw(PillowTestCase):
         im = hopper()
         draw = ImageDraw.Draw(im)
 
+        x0, y0, x1, y1 = 20, 20, 30.0, 30.0
         xys = [
-            [X0, Y0, X1, Y1],
-            [[X0, Y0], [X1, Y1]],
-            [(X0, Y0), (X1, Y1)],
-            (X0, Y0, X1, Y1),
-            ([X0, Y0], [X1, Y1]),
-            ((X0, Y0), (X1, Y1)),
+            [x0, y0, x1, y1],
+            [[x0, y0], [x1, y1]],
+            [(x0, y0), (x1, y1)],
+            (x0, y0, x1, y1),
+            ([x0, y0], [x1, y1]),
+            ((x0, y0), (x1, y1)),
         ]
 
         for xy in xys:
