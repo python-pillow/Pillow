@@ -25,6 +25,7 @@
 # 2009-09-06 fl   Added icc_profile support (from Florian Hoech)
 # 2009-03-06 fl   Changed CMYK handling; always use Adobe polarity (0.6)
 # 2009-03-08 fl   Added subsampling support (from Justin Huff).
+# 2019-07-05 fl   Use Adobe APP14 marker ColorTransform tag.
 #
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
@@ -141,8 +142,11 @@ def APP(self, marker):
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
+        # https://sno.phy.queensu.ca/~phil/exiftool/TagNames/JPEG.html#Adobe
+        # https://docs.oracle.com/javase/8/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html
         try:
-            adobe_transform = i8(s[1])
+            index2_offset = 5
+            adobe_transform = i8(s[index2_offset+3])  # Index2 3
         except Exception:
             pass
         else:
@@ -205,7 +209,16 @@ def SOF(self, marker):
     if self.layers == 1:
         self.mode = "L"
     elif self.layers == 3:
-        self.mode = "RGB"
+        try:
+            transform_flag = self.info['adobe_transform']
+            if transform_flag == 0:  # Unknown (RGB or CMYK)
+                self.mode = 'YCbCr'
+            elif transform_flag in (1, 2):  # YCbCr or YCCK
+                self.mode = "RGB"
+            else:
+                raise SyntaxError("wrong Adobe APP14 marker transform flag")
+        except KeyError:
+            self.mode = "RGB"
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
