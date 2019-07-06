@@ -22,12 +22,12 @@
 #
 
 
-from . import Image, ImageFile
-from ._binary import i8, o8, i16be as i16
-from ._util import py3
-import struct
 import os
+import struct
 
+from . import Image, ImageFile
+from ._binary import i8, i16be as i16, o8
+from ._util import py3
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

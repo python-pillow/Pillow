@@ -1,6 +1,8 @@
 import sys
 
-from .helper import unittest, PillowTestCase
+from PIL import Image
+
+from .helper import PillowTestCase, unittest
 
 # This test is not run automatically.
 #
@@ -11,7 +13,6 @@ from .helper import unittest, PillowTestCase
 # Raspberry Pis). It does succeed on a 3gb Ubuntu 12.04x64 VM on Python
 # 2.7 and 3.2.
 
-from PIL import Image
 
 try:
     import numpy

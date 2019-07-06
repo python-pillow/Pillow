@@ -1,7 +1,6 @@
-from .helper import PillowTestCase, hopper
+from PIL import Image, ImageOps
 
-from PIL import Image
-from PIL import ImageOps
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import _webp

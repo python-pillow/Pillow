@@ -13,7 +13,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from math import pi, log, sin, sqrt
+from math import log, pi, sin, sqrt
+
 from ._binary import o8
 
 # --------------------------------------------------------------------

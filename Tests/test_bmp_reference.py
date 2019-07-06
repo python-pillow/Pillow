@@ -1,8 +1,10 @@
 from __future__ import print_function
-from .helper import PillowTestCase
+
+import os
 
 from PIL import Image
-import os
+
+from .helper import PillowTestCase
 
 base = os.path.join("Tests", "images", "bmp")
 

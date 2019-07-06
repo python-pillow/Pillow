@@ -25,7 +25,6 @@ import sys
 
 from cffi import FFI
 
-
 logger = logging.getLogger(__name__)
 
 

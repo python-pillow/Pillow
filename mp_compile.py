@@ -4,10 +4,11 @@
 # own newly-added support for parallel builds.
 
 from __future__ import print_function
-from multiprocessing import Pool, cpu_count
-from distutils.ccompiler import CCompiler
+
 import os
 import sys
+from distutils.ccompiler import CCompiler
+from multiprocessing import Pool, cpu_count
 
 try:
     MAX_PROCS = int(os.environ.get("MAX_CONCURRENCY", min(4, cpu_count())))

@@ -1,7 +1,8 @@
-from .helper import PillowTestCase
+from io import BytesIO
 
 from PIL import Image, Jpeg2KImagePlugin
-from io import BytesIO
+
+from .helper import PillowTestCase
 
 codecs = dir(Image.core)
 

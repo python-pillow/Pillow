@@ -1,4 +1,4 @@
-from .helper import PillowTestCase
+import time
 
 from PIL.PdfParser import (
     IndirectObjectDef,
@@ -13,7 +13,8 @@ from PIL.PdfParser import (
     encode_text,
     pdf_repr,
 )
-import time
+
+from .helper import PillowTestCase
 
 
 class TestPdfParser(PillowTestCase):

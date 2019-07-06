@@ -15,9 +15,10 @@
 # See the README file for information on usage and redistribution.
 #
 
+import sys
+
 from . import EpsImagePlugin
 from ._util import py3
-import sys
 
 ##
 # Simple Postscript graphics interface.

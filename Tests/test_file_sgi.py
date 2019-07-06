@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image, SgiImagePlugin
+
+from .helper import PillowTestCase, hopper
 
 
 class TestFileSgi(PillowTestCase):

@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import Image
+
+from .helper import PillowTestCase
 
 try:
     from PIL import _webp

@@ -1,8 +1,8 @@
-from .helper import PillowTestCase, hopper
+import copy
 
 from PIL import Image
 
-import copy
+from .helper import PillowTestCase, hopper
 
 
 class TestImageCopy(PillowTestCase):

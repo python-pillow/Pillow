@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from .helper import unittest, PillowTestCase
-
-from PIL import Image, ImageDraw, ImageFont, features
-from io import BytesIO
-import os
-import sys
 import copy
+import distutils.version
+import os
 import re
 import shutil
-import distutils.version
+import sys
+from io import BytesIO
+
+from PIL import Image, ImageDraw, ImageFont, features
+
+from .helper import PillowTestCase, unittest
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20

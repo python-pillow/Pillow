@@ -1,7 +1,8 @@
-from .helper import PillowTestCase
 from io import BytesIO
+
 from PIL import Image
 
+from .helper import PillowTestCase
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 

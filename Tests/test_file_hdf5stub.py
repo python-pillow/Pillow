@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import Hdf5StubImagePlugin, Image
+
+from .helper import PillowTestCase
 
 TEST_FILE = "Tests/images/hdf5.h5"
 

@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from . import Image, ImageFile
 
 try:
@@ -6,7 +8,6 @@ try:
     SUPPORTED = True
 except ImportError:
     SUPPORTED = False
-from io import BytesIO
 
 
 _VALID_WEBP_MODES = {"RGBX": True, "RGBA": True, "RGB": True}

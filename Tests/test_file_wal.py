@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import WalImageFile
+
+from .helper import PillowTestCase
 
 
 class TestFileWal(PillowTestCase):

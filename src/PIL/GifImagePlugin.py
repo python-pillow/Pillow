@@ -24,10 +24,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, ImagePalette, ImageChops, ImageSequence
-from ._binary import i8, i16le as i16, o8, o16le as o16
-
 import itertools
+
+from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
+from ._binary import i8, i16le as i16, o8, o16le as o16
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

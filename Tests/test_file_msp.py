@@ -1,8 +1,8 @@
-from .helper import unittest, PillowTestCase, hopper
+import os
 
 from PIL import Image, MspImagePlugin
 
-import os
+from .helper import PillowTestCase, hopper, unittest
 
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"

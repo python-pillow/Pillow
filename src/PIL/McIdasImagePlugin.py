@@ -17,6 +17,7 @@
 #
 
 import struct
+
 from . import Image, ImageFile
 
 # __version__ is deprecated and will be removed in a future version. Use

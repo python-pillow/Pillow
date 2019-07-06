@@ -2,11 +2,10 @@
 # minimal sanity check
 from __future__ import print_function
 
-import sys
 import os
+import sys
 
-from PIL import Image
-from PIL import features
+from PIL import Image, features
 
 try:
     Image.core.ping

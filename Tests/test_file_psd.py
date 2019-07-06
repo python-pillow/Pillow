@@ -1,6 +1,6 @@
-from .helper import hopper, PillowTestCase
-
 from PIL import Image, PsdImagePlugin
+
+from .helper import PillowTestCase, hopper
 
 test_file = "Tests/images/hopper.psd"
 

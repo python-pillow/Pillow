@@ -1,10 +1,10 @@
-from .helper import PillowTestCase, hopper
 import datetime
+import os
+from io import BytesIO
 
 from PIL import Image, ImageMode
 
-from io import BytesIO
-import os
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import ImageCms

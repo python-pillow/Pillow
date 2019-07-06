@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 
-from . import Image, BmpImagePlugin
+from . import BmpImagePlugin, Image
 from ._binary import i8, i16le as i16, i32le as i32
 
 # __version__ is deprecated and will be removed in a future version. Use

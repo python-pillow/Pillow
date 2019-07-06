@@ -27,11 +27,12 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
+import struct
+import sys
+
 from . import Image
 from ._util import isPath
-import io
-import sys
-import struct
 
 MAXBLOCK = 65536
 

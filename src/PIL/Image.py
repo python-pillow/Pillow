@@ -24,15 +24,22 @@
 # See the README file for information on usage and redistribution.
 #
 
+import atexit
+import io
+import logging
+import math
+import numbers
+import os
+import struct
+import sys
+import warnings
+
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import PILLOW_VERSION, __version__, _plugins
-from ._util import py3
-
-import logging
-import warnings
-import math
+from . import PILLOW_VERSION, ImageMode, TiffTags, __version__, _plugins
+from ._binary import i8, i32le
+from ._util import deferred_error, isPath, isStringType, py3
 
 try:
     import builtins
@@ -41,18 +48,6 @@ except ImportError:
 
     builtins = __builtin__
 
-from . import ImageMode, TiffTags
-from ._binary import i8, i32le
-from ._util import isPath, isStringType, deferred_error
-
-import os
-import sys
-import io
-import struct
-import atexit
-
-# type stuff
-import numbers
 
 try:
     # Python 3

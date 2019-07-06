@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, fromstring, tostring
-
 from PIL import Image
+
+from .helper import PillowTestCase, fromstring, tostring
 
 
 class TestImageDraft(PillowTestCase):

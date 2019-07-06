@@ -35,10 +35,11 @@
 
 from __future__ import print_function
 
-from PIL import Image, ImageFile
 import os
 import struct
 import sys
+
+from PIL import Image, ImageFile
 
 
 def isInt(f):

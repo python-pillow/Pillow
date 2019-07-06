@@ -2,15 +2,15 @@
 Helper functions.
 """
 from __future__ import print_function
+
+import logging
+import os
 import sys
 import tempfile
-import os
 import unittest
 
 from PIL import Image, ImageMath
 from PIL._util import py3
-
-import logging
 
 logger = logging.getLogger(__name__)
 

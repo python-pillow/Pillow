@@ -1,10 +1,10 @@
-from .helper import PillowTestCase, hopper
+import colorsys
+import itertools
 
 from PIL import Image
 from PIL._util import py3
 
-import colorsys
-import itertools
+from .helper import PillowTestCase, hopper
 
 
 class TestFormatHSV(PillowTestCase):

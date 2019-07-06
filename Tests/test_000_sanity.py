@@ -1,7 +1,7 @@
-from .helper import PillowTestCase
-
 import PIL
 import PIL.Image
+
+from .helper import PillowTestCase
 
 
 class TestSanity(PillowTestCase):

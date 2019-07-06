@@ -23,10 +23,11 @@
 #
 # See also: http://www.fileformat.info/format/mspaint/egff.htm
 
-from . import Image, ImageFile
-from ._binary import i16le as i16, o16le as o16, i8
-import struct
 import io
+import struct
+
+from . import Image, ImageFile
+from ._binary import i8, i16le as i16, o16le as o16
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

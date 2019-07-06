@@ -1,7 +1,7 @@
-from .helper import PillowTestCase
-
-import sys
 import subprocess
+import sys
+
+from .helper import PillowTestCase
 
 try:
     from PIL import ImageGrab

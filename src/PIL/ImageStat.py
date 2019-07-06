@@ -21,9 +21,9 @@
 # See the README file for information on usage and redistribution.
 #
 
+import functools
 import math
 import operator
-import functools
 
 
 class Stat(object):

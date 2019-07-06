@@ -2,10 +2,9 @@ import os
 from glob import glob
 from itertools import product
 
-from .helper import PillowTestCase
-
 from PIL import Image
 
+from .helper import PillowTestCase
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")

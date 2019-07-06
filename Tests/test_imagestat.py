@@ -1,7 +1,6 @@
-from .helper import PillowTestCase, hopper
+from PIL import Image, ImageStat
 
-from PIL import Image
-from PIL import ImageStat
+from .helper import PillowTestCase, hopper
 
 
 class TestImageStat(PillowTestCase):

@@ -1,7 +1,8 @@
-from .helper import unittest, PillowTestCase, hopper
+import sys
 
 from PIL import ImageWin
-import sys
+
+from .helper import PillowTestCase, hopper, unittest
 
 
 class TestImageWin(PillowTestCase):

@@ -11,7 +11,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from struct import unpack_from, pack
+from struct import pack, unpack_from
+
 from ._util import py3
 
 if py3:

@@ -1,6 +1,6 @@
-from .helper import unittest, PillowTestCase, hopper
-
 from PIL import Image, ImagePalette, features
+
+from .helper import PillowTestCase, hopper, unittest
 
 try:
     from PIL import MicImagePlugin

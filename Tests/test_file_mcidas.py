@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import Image, McIdasImagePlugin
+
+from .helper import PillowTestCase
 
 
 class TestFileMcIdas(PillowTestCase):

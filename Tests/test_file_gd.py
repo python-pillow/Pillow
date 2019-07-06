@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import GdImageFile
+
+from .helper import PillowTestCase
 
 TEST_GD_FILE = "Tests/images/hopper.gd"
 

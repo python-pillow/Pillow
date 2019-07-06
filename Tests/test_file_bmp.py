@@ -1,7 +1,8 @@
-from .helper import PillowTestCase, hopper
-
-from PIL import Image, BmpImagePlugin
 import io
+
+from PIL import BmpImagePlugin, Image
+
+from .helper import PillowTestCase, hopper
 
 
 class TestFileBmp(PillowTestCase):

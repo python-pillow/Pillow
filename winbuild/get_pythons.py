@@ -1,5 +1,6 @@
-from fetch import fetch
 import os
+
+from fetch import fetch
 
 if __name__ == "__main__":
     for version in ["2.7.15", "3.4.4"]:

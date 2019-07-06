@@ -20,10 +20,11 @@
 # Image plugin for PDF images (output only).
 ##
 
-from . import Image, ImageFile, ImageSequence, PdfParser
 import io
 import os
 import time
+
+from . import Image, ImageFile, ImageSequence, PdfParser
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

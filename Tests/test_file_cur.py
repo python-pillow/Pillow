@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
+from PIL import CurImagePlugin, Image
 
-from PIL import Image, CurImagePlugin
+from .helper import PillowTestCase
 
 TEST_FILE = "Tests/images/deerstalker.cur"
 

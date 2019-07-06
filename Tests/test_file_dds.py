@@ -1,7 +1,8 @@
 from io import BytesIO
 
+from PIL import DdsImagePlugin, Image
+
 from .helper import PillowTestCase
-from PIL import Image, DdsImagePlugin
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"

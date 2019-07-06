@@ -34,7 +34,6 @@ from io import BytesIO
 
 from . import Image, ImageFile
 
-
 BLP_FORMAT_JPEG = 0
 
 BLP_ENCODING_UNCOMPRESSED = 1

@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import ImagePalette
+
+from .helper import PillowTestCase, hopper
 
 
 class TestImagePutPalette(PillowTestCase):

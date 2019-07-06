@@ -1,10 +1,10 @@
-from .helper import unittest, PillowTestCase, hopper
-
-# Not running this test by default. No DOS against Travis CI.
+import time
 
 from PIL import PyAccess
 
-import time
+from .helper import PillowTestCase, hopper, unittest
+
+# Not running this test by default. No DOS against Travis CI.
 
 
 def iterate_get(size, access):

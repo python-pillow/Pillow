@@ -1,8 +1,7 @@
-from .helper import PillowTestCase
-
-from PIL import Image, FontFile, PcfFontFile
-from PIL import ImageFont, ImageDraw
+from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 from PIL._util import py3
+
+from .helper import PillowTestCase
 
 codecs = dir(Image.core)
 

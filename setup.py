@@ -24,7 +24,6 @@ from setuptools import Extension, setup
 # comment this out to disable multi threaded builds.
 import mp_compile
 
-
 if sys.platform == "win32" and sys.version_info >= (3, 8):
     warnings.warn(
         "Pillow does not yet support Python {}.{} and does not yet provide "

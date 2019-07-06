@@ -1,8 +1,9 @@
-from .helper import PillowTestCase
-
-from PIL import Image, PSDraw
 import os
 import sys
+
+from PIL import Image, PSDraw
+
+from .helper import PillowTestCase
 
 
 class TestPsDraw(PillowTestCase):

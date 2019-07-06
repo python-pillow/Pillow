@@ -1,7 +1,9 @@
-from .helper import unittest, PillowTestCase
-from PIL import Image, PngImagePlugin, ImageFile
-from io import BytesIO
 import zlib
+from io import BytesIO
+
+from PIL import Image, ImageFile, PngImagePlugin
+
+from .helper import PillowTestCase, unittest
 
 TEST_FILE = "Tests/images/png_decompression_dos.png"
 

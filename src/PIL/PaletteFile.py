@@ -15,7 +15,6 @@
 
 from ._binary import o8
 
-
 ##
 # File handler for Teragon-style palette files.
 

@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import GimpGradientFile
+
+from .helper import PillowTestCase
 
 
 class TestImage(PillowTestCase):

@@ -27,6 +27,7 @@
 
 import io
 import logging
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 

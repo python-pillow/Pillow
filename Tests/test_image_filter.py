@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image, ImageFilter
+
+from .helper import PillowTestCase, hopper
 
 
 class TestImageFilter(PillowTestCase):

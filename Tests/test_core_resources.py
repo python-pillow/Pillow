@@ -2,9 +2,9 @@ from __future__ import division, print_function
 
 import sys
 
-from .helper import unittest, PillowTestCase
 from PIL import Image
 
+from .helper import PillowTestCase, unittest
 
 is_pypy = hasattr(sys, "pypy_version_info")
 

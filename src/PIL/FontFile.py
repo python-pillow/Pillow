@@ -17,6 +17,7 @@
 from __future__ import print_function
 
 import os
+
 from . import Image, _binary
 
 WIDTH = 800

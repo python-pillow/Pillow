@@ -12,10 +12,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
-from . import Image, ImageFile
-import struct
-import os
 import io
+import os
+import struct
+
+from . import Image, ImageFile
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

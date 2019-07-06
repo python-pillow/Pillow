@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 TEST_FILE = "Tests/images/hopper.ppm"
 

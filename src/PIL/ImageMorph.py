@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-from . import Image, _imagingmorph
 import re
+
+from . import Image, _imagingmorph
 
 LUT_SIZE = 1 << 9
 

@@ -53,8 +53,8 @@ Note: All data is stored in little-Endian (Intel) byte order.
 
 import struct
 from io import BytesIO
-from . import Image, ImageFile
 
+from . import Image, ImageFile
 
 MAGIC = b"FTEX"
 FORMAT_DXT1 = 0

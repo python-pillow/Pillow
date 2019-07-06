@@ -1,5 +1,6 @@
 from PIL import Image
-from .helper import unittest, PillowTestCase
+
+from .helper import PillowTestCase, unittest
 
 
 class TestJ2kEncodeOverflow(PillowTestCase):

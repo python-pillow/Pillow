@@ -1,10 +1,11 @@
-from .helper import unittest, PillowTestCase, PillowLeakTestCase, hopper
+import sys
+import zlib
+from io import BytesIO
+
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 
-from io import BytesIO
-import zlib
-import sys
+from .helper import PillowLeakTestCase, PillowTestCase, hopper, unittest
 
 try:
     from PIL import _webp

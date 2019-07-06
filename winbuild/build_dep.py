@@ -1,10 +1,10 @@
-from unzip import unzip
-from untar import untar
 import os
 
-from fetch import fetch
-from config import compilers, all_compilers, compiler_from_env, bit_from_env, libs
 from build import vc_setup
+from config import all_compilers, bit_from_env, compiler_from_env, compilers, libs
+from fetch import fetch
+from untar import untar
+from unzip import unzip
 
 
 def _relpath(*args):

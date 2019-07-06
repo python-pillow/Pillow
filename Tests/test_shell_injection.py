@@ -1,10 +1,15 @@
-from .helper import unittest, PillowTestCase
-from .helper import djpeg_available, cjpeg_available, netpbm_available
-
-import sys
 import shutil
+import sys
 
-from PIL import Image, JpegImagePlugin, GifImagePlugin
+from PIL import GifImagePlugin, Image, JpegImagePlugin
+
+from .helper import (
+    PillowTestCase,
+    cjpeg_available,
+    djpeg_available,
+    netpbm_available,
+    unittest,
+)
 
 TEST_JPG = "Tests/images/hopper.jpg"
 TEST_GIF = "Tests/images/hopper.gif"

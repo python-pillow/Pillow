@@ -1,8 +1,9 @@
-from .helper import unittest, PillowTestCase, hopper, on_appveyor
+import os
+import sys
 
 from PIL import Image
-import sys
-import os
+
+from .helper import PillowTestCase, hopper, on_appveyor, unittest
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670

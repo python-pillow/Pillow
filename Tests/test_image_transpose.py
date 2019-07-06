@@ -1,6 +1,3 @@
-from . import helper
-from .helper import PillowTestCase
-
 from PIL.Image import (
     FLIP_LEFT_RIGHT,
     FLIP_TOP_BOTTOM,
@@ -10,6 +7,9 @@ from PIL.Image import (
     TRANSPOSE,
     TRANSVERSE,
 )
+
+from . import helper
+from .helper import PillowTestCase
 
 
 class TestImageTranspose(PillowTestCase):

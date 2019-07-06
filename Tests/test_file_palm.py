@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper, imagemagick_available
-
 import os.path
+
+from .helper import PillowTestCase, hopper, imagemagick_available
 
 
 class TestFilePalm(PillowTestCase):

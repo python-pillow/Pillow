@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import _binary
+
+from .helper import PillowTestCase
 
 
 class TestBinary(PillowTestCase):

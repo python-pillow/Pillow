@@ -12,8 +12,8 @@ Full text of the CC0 license:
 
 import struct
 from io import BytesIO
-from . import Image, ImageFile
 
+from . import Image, ImageFile
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444

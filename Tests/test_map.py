@@ -1,7 +1,8 @@
-from .helper import PillowTestCase, unittest
 import sys
 
 from PIL import Image
+
+from .helper import PillowTestCase, unittest
 
 
 @unittest.skipIf(sys.platform.startswith("win32"), "Win32 does not call map_buffer")
