@@ -53,8 +53,7 @@ class TestImageFont(PillowTestCase):
     # (and, other things, but first things first)
     METRICS = {
         (">=2.3", "<2.4"): {"multiline": 30, "textsize": 12, "getters": (13, 16)},
-        (">=2.7", "<2.10"): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
-        (">=2.10",): {"multiline": 14.8, "textsize": 2.5, "getters": (12, 16)},
+        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
         "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
     }
 
@@ -465,9 +464,8 @@ class TestImageFont(PillowTestCase):
             font.getsize(u"’")
 
     @unittest.skipIf(
-        sys.platform.startswith("win32")
-        and (sys.version.startswith("2") or hasattr(sys, "pypy_translation_info")),
-        "requires CPython 3.x on Windows",
+        sys.version.startswith("2") or hasattr(sys, "pypy_translation_info"),
+        "requires CPython 3.3+",
     )
     def test_unicode_extended(self):
         # issue #3777
