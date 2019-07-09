@@ -33,8 +33,13 @@ jobs:
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
-    docker: 'debian-stretch-x86'
-    name:   'debian_stretch_x86'
+    docker: 'debian-9-stretch-x86'
+    name:   'debian_9_stretch_x86'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
+    docker: 'debian-10-buster-x86'
+    name:   'debian_10_buster_x86'
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
