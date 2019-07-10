@@ -39,7 +39,8 @@ matrix:
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
     - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
     - env: DOCKER="ubuntu-18.04-bionic-amd64" DOCKER_TAG="master"
-    - env: DOCKER="debian-stretch-x86" DOCKER_TAG="master"
+    - env: DOCKER="debian-9-stretch-x86" DOCKER_TAG="master"
+    - env: DOCKER="debian-10-buster-x86" DOCKER_TAG="master"
     - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
     - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
     - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
