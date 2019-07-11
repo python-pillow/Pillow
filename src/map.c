@@ -339,7 +339,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
             stride = xsize * 4;
     }
 
-    if (stride > 0 && ysize > INT_MAX / stride) {
+    if (stride > 0 && ysize > PY_SSIZE_T_MAX / stride) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in ysize");
         return NULL;
     }
