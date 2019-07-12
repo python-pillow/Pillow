@@ -113,6 +113,10 @@ class TestImageFile(PillowTestCase):
         with self.assertRaises(IOError):
             im.load()
 
+        # Test that the error is raised if loaded a second time
+        with self.assertRaises(IOError):
+            im.load()
+
     def test_truncated_without_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")

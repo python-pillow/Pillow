@@ -612,7 +612,7 @@ class PngImageFile(ImageFile.ImageFile):
             rawmode, data = self.png.im_palette
             self.palette = ImagePalette.raw(rawmode, data)
 
-        self.__idat = length  # used by load_read()
+        self.__prepare_idat = length  # used by load_prepare()
 
     @property
     def text(self):
@@ -645,6 +645,7 @@ class PngImageFile(ImageFile.ImageFile):
         if self.info.get("interlace"):
             self.decoderconfig = self.decoderconfig + (1,)
 
+        self.__idat = self.__prepare_idat  # used by load_read()
         ImageFile.ImageFile.load_prepare(self)
 
     def load_read(self, read_bytes):
