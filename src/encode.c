@@ -1211,6 +1211,8 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
             PyErr_SetString(PyExc_ValueError,
                             "JPEG 2000 tile offset too small; top left tile must "
                             "intersect image area");
+            Py_DECREF(encoder);
+            return NULL;
         }
 
         if (context->tile_offset_x > context->offset_x
