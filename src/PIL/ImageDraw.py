@@ -75,9 +75,9 @@ class ImageDraw(object):
         self.draw = Image.core.draw(self.im, blend)
         self.mode = mode
         if mode in ("I", "F"):
-            self.ink = self.draw.draw_ink(1, mode)
+            self.ink = self.draw.draw_ink(1)
         else:
-            self.ink = self.draw.draw_ink(-1, mode)
+            self.ink = self.draw.draw_ink(-1)
         if mode in ("1", "P", "I", "F"):
             # FIXME: fix Fill2 to properly support matte for I+F images
             self.fontmode = "1"
@@ -110,13 +110,13 @@ class ImageDraw(object):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
-                ink = self.draw.draw_ink(ink, self.mode)
+                ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isStringType(fill):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)
-                fill = self.draw.draw_ink(fill, self.mode)
+                fill = self.draw.draw_ink(fill)
         return ink, fill
 
     def arc(self, xy, start, end, fill=None, width=0):
