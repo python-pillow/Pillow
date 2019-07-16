@@ -529,7 +529,8 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Possible
-                     encodings include:
+                     encodings include (see the FreeType documentation for more
+                     information):
 
                      * "unic" (Unicode)
                      * "symb" (Microsoft Symbol)
@@ -544,7 +545,8 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      * "joha" (Johab)
                      * "lat1" (Latin-1)
 
-                     See the FreeType documentation for more information.
+                     This specifies the character set to use. It does not alter the
+                     encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
     :return: A font object.
