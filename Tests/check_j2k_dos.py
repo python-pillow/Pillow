@@ -1,9 +1,10 @@
 # Tests potential DOS of Jpeg2kImagePlugin with 0 length block.
 # Run from anywhere that PIL is importable.
 
+from io import BytesIO
+
 from PIL import Image
 from PIL._util import py3
-from io import BytesIO
 
 if py3:
     Image.open(

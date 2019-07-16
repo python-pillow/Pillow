@@ -1,7 +1,8 @@
 import os.path
 
-from .helper import PillowTestCase, hopper
 from PIL import Image, ImageColor, ImageDraw
+
+from .helper import PillowTestCase, hopper
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)

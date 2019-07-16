@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import subprocess
-import os
 import glob
+import os
+import subprocess
 import sys
 
-from config import pythons, VIRT_BASE, X64_EXT
+from config import VIRT_BASE, X64_EXT, pythons
 
 
 def test_one(params):

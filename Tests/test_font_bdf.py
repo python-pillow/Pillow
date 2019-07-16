@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
+from PIL import BdfFontFile, FontFile
 
-from PIL import FontFile, BdfFontFile
+from .helper import PillowTestCase
 
 filename = "Tests/images/courB08.bdf"
 

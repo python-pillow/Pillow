@@ -1,6 +1,7 @@
-from .helper import unittest, PillowTestCase, hopper
-from io import BytesIO
 import sys
+from io import BytesIO
+
+from .helper import PillowTestCase, hopper, unittest
 
 iterations = 5000
 

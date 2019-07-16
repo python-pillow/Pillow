@@ -20,10 +20,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-import re
 import io
 import os
+import re
 import sys
+
 from . import Image, ImageFile
 from ._binary import i32le as i32
 

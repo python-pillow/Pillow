@@ -16,8 +16,8 @@
 
 import io
 import sys
-from . import ContainerIO
 
+from . import ContainerIO
 
 ##
 # A file object that provides read access to a given member of a TAR

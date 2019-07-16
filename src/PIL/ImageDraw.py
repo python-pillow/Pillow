@@ -36,6 +36,7 @@ import numbers
 from . import Image, ImageColor
 from ._util import isStringType
 
+
 """
 A simple 2D drawing interface for PIL images.
 <p>

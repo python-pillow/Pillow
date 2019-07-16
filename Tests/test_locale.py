@@ -1,9 +1,10 @@
 from __future__ import print_function
-from .helper import unittest, PillowTestCase
+
+import locale
 
 from PIL import Image
 
-import locale
+from .helper import PillowTestCase, unittest
 
 # ref https://github.com/python-pillow/Pillow/issues/272
 # on windows, in polish locale:

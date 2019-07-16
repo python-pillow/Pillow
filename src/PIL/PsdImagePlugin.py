@@ -21,6 +21,7 @@
 __version__ = "0.4"
 
 import io
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32
 

@@ -1,7 +1,7 @@
+from PIL import ImageQt
+
 from .helper import PillowTestCase, hopper
 from .test_imageqt import PillowQPixmapTestCase
-
-from PIL import ImageQt
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QPixmap

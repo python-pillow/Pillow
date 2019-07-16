@@ -1,9 +1,9 @@
-from .helper import unittest, PillowTestCase
-
-from PIL import Image, IcnsImagePlugin
-
 import io
 import sys
+
+from PIL import IcnsImagePlugin, Image
+
+from .helper import PillowTestCase, unittest
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"

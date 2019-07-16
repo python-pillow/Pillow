@@ -1,9 +1,8 @@
 import sys
 
-from .helper import PillowTestCase
-
 from PIL import Image
 
+from .helper import PillowTestCase
 
 X = 255
 

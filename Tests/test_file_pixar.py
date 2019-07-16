@@ -1,6 +1,6 @@
-from .helper import hopper, PillowTestCase
-
 from PIL import Image, PixarImagePlugin
+
+from .helper import PillowTestCase, hopper
 
 TEST_FILE = "Tests/images/hopper.pxr"
 

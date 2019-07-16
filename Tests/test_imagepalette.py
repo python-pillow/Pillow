@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
+from PIL import Image, ImagePalette
 
-from PIL import ImagePalette, Image
+from .helper import PillowTestCase
 
 
 class TestImagePalette(PillowTestCase):

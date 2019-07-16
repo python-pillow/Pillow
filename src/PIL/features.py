@@ -5,6 +5,7 @@ import os
 import sys
 
 import PIL
+
 from . import Image
 
 modules = {

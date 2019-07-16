@@ -1,10 +1,11 @@
-from .helper import unittest, PillowTestCase, hopper
+import os
+import shutil
+import sys
 
 from PIL import Image
 from PIL._util import py3
-import os
-import sys
-import shutil
+
+from .helper import PillowTestCase, hopper, unittest
 
 
 class TestImage(PillowTestCase):

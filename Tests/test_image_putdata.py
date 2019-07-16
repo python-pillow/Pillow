@@ -1,9 +1,9 @@
-from .helper import PillowTestCase, hopper
+import sys
 from array import array
 
-import sys
-
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 
 class TestImagePutData(PillowTestCase):

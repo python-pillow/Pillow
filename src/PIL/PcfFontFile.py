@@ -17,8 +17,9 @@
 #
 
 import io
-from . import Image, FontFile
-from ._binary import i8, i16le as l16, i32le as l32, i16be as b16, i32be as b32
+
+from . import FontFile, Image
+from ._binary import i8, i16be as b16, i16le as l16, i32be as b32, i32le as l32
 
 # --------------------------------------------------------------------
 # declarations

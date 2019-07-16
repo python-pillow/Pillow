@@ -1,6 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import Image
+
+from .helper import PillowTestCase
 
 PIL151 = b"""
 #define basic_width 32

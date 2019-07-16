@@ -1,7 +1,6 @@
-from .helper import PillowTestCase
+from PIL import Image, ImageFilter
 
-from PIL import Image
-from PIL import ImageFilter
+from .helper import PillowTestCase
 
 im = Image.open("Tests/images/hopper.ppm")
 snakes = Image.open("Tests/images/color_snakes.png")

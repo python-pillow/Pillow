@@ -1,7 +1,6 @@
-from .helper import PillowTestCase
-
 from PIL import Image, ImageFilter
 
+from .helper import PillowTestCase
 
 sample = Image.new("L", (7, 5))
 # fmt: off

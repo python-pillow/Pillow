@@ -25,10 +25,11 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
-from ._util import isDirectory, isPath, py3
 import os
 import sys
+
+from . import Image
+from ._util import isDirectory, isPath, py3
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1

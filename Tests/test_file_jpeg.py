@@ -1,13 +1,10 @@
-from .helper import unittest, PillowTestCase, hopper
-from .helper import djpeg_available, cjpeg_available
-
-from io import BytesIO
 import os
 import sys
+from io import BytesIO
 
-from PIL import Image
-from PIL import ImageFile
-from PIL import JpegImagePlugin
+from PIL import Image, ImageFile, JpegImagePlugin
+
+from .helper import PillowTestCase, cjpeg_available, djpeg_available, hopper, unittest
 
 codecs = dir(Image.core)
 

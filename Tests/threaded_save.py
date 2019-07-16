@@ -1,11 +1,12 @@
 from __future__ import print_function
-from PIL import Image
 
 import io
 import queue
 import sys
 import threading
 import time
+
+from PIL import Image
 
 test_format = sys.argv[1] if len(sys.argv) > 1 else "PNG"
 

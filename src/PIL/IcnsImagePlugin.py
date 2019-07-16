@@ -15,14 +15,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image, ImageFile, PngImagePlugin
-from PIL._binary import i8
 import io
 import os
 import shutil
 import struct
 import sys
 import tempfile
+
+from PIL import Image, ImageFile, PngImagePlugin
+from PIL._binary import i8
 
 enable_jpeg2k = hasattr(Image.core, "jp2klib_version")
 if enable_jpeg2k:

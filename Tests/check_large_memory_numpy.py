@@ -1,6 +1,8 @@
 import sys
 
-from .helper import unittest, PillowTestCase
+from PIL import Image
+
+from .helper import PillowTestCase, unittest
 
 # This test is not run automatically.
 #
@@ -10,7 +12,6 @@ from .helper import unittest, PillowTestCase
 # on any 32-bit machine, as well as any smallish things (like
 # Raspberry Pis).
 
-from PIL import Image
 
 try:
     import numpy as np

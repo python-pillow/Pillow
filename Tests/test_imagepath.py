@@ -1,10 +1,10 @@
-from .helper import PillowTestCase
-
-from PIL import ImagePath, Image
-from PIL._util import py3
-
 import array
 import struct
+
+from PIL import Image, ImagePath
+from PIL._util import py3
+
+from .helper import PillowTestCase
 
 
 class TestImagePath(PillowTestCase):

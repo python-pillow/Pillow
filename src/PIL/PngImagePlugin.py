@@ -33,8 +33,8 @@
 
 import logging
 import re
-import zlib
 import struct
+import zlib
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32

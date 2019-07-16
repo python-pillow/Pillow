@@ -15,9 +15,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
-
 import sys
+
+from . import Image
 
 if sys.platform == "win32":
     grabber = Image.core.grabscreen

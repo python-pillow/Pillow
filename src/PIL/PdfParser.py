@@ -6,6 +6,7 @@ import os
 import re
 import time
 import zlib
+
 from ._util import py3
 
 try:

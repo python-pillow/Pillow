@@ -16,6 +16,7 @@
 
 
 import re
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, o8
 

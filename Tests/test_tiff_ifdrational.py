@@ -1,9 +1,9 @@
-from .helper import PillowTestCase, hopper
+from fractions import Fraction
 
-from PIL import TiffImagePlugin, Image
+from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
-from fractions import Fraction
+from .helper import PillowTestCase, hopper
 
 
 class Test_IFDRational(PillowTestCase):

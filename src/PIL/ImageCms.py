@@ -16,9 +16,11 @@
 # below for the original description.
 
 from __future__ import print_function
+
 import sys
 
 from PIL import Image
+from PIL._util import isStringType
 
 try:
     from PIL import _imagingcms
@@ -28,7 +30,6 @@ except ImportError as ex:
     from ._util import deferred_error
 
     _imagingcms = deferred_error(ex)
-from PIL._util import isStringType
 
 DESCRIPTION = """
 pyCMS

@@ -14,11 +14,12 @@
 
 from __future__ import print_function
 
-from PIL import Image
 import os
-import sys
 import subprocess
+import sys
 import tempfile
+
+from PIL import Image
 
 if sys.version_info.major >= 3:
     from shlex import quote

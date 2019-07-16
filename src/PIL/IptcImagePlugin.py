@@ -17,10 +17,11 @@
 
 from __future__ import print_function
 
-from . import Image, ImageFile
-from ._binary import i8, i16be as i16, i32be as i32, o8
 import os
 import tempfile
+
+from . import Image, ImageFile
+from ._binary import i8, i16be as i16, i32be as i32, o8
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

@@ -1,9 +1,10 @@
-from .helper import PillowTestCase, hopper
+import ctypes
+import sys
+from io import BytesIO
+
 from PIL import Image, ImageWin
 
-import sys
-import ctypes
-from io import BytesIO
+from .helper import PillowTestCase, hopper
 
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 

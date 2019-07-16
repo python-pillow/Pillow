@@ -1,7 +1,7 @@
+from PIL import Image, ImageQt
+
 from .helper import PillowTestCase, hopper
 from .test_imageqt import PillowQtTestCase
-
-from PIL import ImageQt, Image
 
 
 class TestFromQImage(PillowQtTestCase, PillowTestCase):

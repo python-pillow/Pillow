@@ -17,7 +17,8 @@
 #
 
 import array
-from . import ImageColor, GimpPaletteFile, GimpGradientFile, PaletteFile
+
+from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
 
 class ImagePalette(object):

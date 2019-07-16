@@ -16,11 +16,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
-from ._util import isPath, py3
-from io import BytesIO
 import sys
 import warnings
+from io import BytesIO
+
+from . import Image
+from ._util import isPath, py3
 
 qt_versions = [["5", "PyQt5"], ["side2", "PySide2"], ["4", "PyQt4"], ["side", "PySide"]]
 

@@ -1,17 +1,17 @@
 from __future__ import print_function
-from .helper import PillowTestCase, hopper
-from PIL import features
-from PIL._util import py3
 
+import distutils.version
+import io
+import itertools
+import logging
+import os
 from collections import namedtuple
 from ctypes import c_float
-import io
-import logging
-import itertools
-import os
-import distutils.version
 
-from PIL import Image, TiffImagePlugin, TiffTags
+from PIL import Image, TiffImagePlugin, TiffTags, features
+from PIL._util import py3
+
+from .helper import PillowTestCase, hopper
 
 logger = logging.getLogger(__name__)
 

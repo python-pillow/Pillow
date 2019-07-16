@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 # sample ppm stream
 test_file = "Tests/images/hopper.ppm"

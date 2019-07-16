@@ -17,11 +17,11 @@
 # See the README file for information on usage and redistribution.
 #
 
+import functools
+import operator
+
 from . import Image
 from ._util import isStringType
-import operator
-import functools
-
 
 #
 # helpers

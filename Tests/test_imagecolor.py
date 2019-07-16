@@ -1,7 +1,6 @@
-from .helper import PillowTestCase
+from PIL import Image, ImageColor
 
-from PIL import Image
-from PIL import ImageColor
+from .helper import PillowTestCase
 
 
 class TestImageColor(PillowTestCase):

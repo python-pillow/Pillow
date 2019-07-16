@@ -19,8 +19,7 @@
 
 from __future__ import print_function
 
-from . import Image, FontFile
-
+from . import FontFile, Image
 
 # --------------------------------------------------------------------
 # parse X Bitmap Distribution Format (BDF)

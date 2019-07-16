@@ -1,6 +1,6 @@
-from .helper import unittest, PillowTestCase
-
 from PIL import Image
+
+from .helper import PillowTestCase, unittest
 
 
 class TestLibImage(PillowTestCase):

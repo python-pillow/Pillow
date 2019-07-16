@@ -1,10 +1,12 @@
-from .helper import PillowTestCase, hopper
-from PIL import Image, PdfParser
 import io
 import os
 import os.path
 import tempfile
 import time
+
+from PIL import Image, PdfParser
+
+from .helper import PillowTestCase, hopper
 
 
 class TestFilePdf(PillowTestCase):

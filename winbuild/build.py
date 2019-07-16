@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 
-import subprocess
-import shutil
-import sys
 import getopt
 import os
+import shutil
+import subprocess
+import sys
 
 from config import (
-    compilers,
-    compiler_from_env,
-    pythons,
-    pyversion_from_env,
-    bit_from_env,
     VIRT_BASE,
     X64_EXT,
+    bit_from_env,
+    compiler_from_env,
+    compilers,
+    pythons,
+    pyversion_from_env,
 )
 
 

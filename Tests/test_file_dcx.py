@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper
+from PIL import DcxImagePlugin, Image
 
-from PIL import Image, DcxImagePlugin
+from .helper import PillowTestCase, hopper
 
 # Created with ImageMagick: convert hopper.ppm hopper.dcx
 TEST_FILE = "Tests/images/hopper.dcx"

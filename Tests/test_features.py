@@ -2,9 +2,9 @@ from __future__ import unicode_literals
 
 import io
 
-from .helper import unittest, PillowTestCase
-
 from PIL import features
+
+from .helper import PillowTestCase, unittest
 
 try:
     from PIL import _webp

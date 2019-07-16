@@ -41,21 +41,19 @@
 
 from __future__ import division, print_function
 
-from . import Image, ImageFile, ImagePalette, TiffTags
-from ._binary import i8, o8
-from ._util import py3
-
-from fractions import Fraction
-from numbers import Number, Rational
-
+import distutils.version
 import io
 import itertools
 import os
 import struct
 import sys
 import warnings
-import distutils.version
+from fractions import Fraction
+from numbers import Number, Rational
 
+from . import Image, ImageFile, ImagePalette, TiffTags
+from ._binary import i8, o8
+from ._util import py3
 from .TiffTags import TYPES
 
 try:

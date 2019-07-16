@@ -1,8 +1,8 @@
-from .helper import PillowTestCase, hopper
+import os
 
 from PIL import Image
 
-import os
+from .helper import PillowTestCase, hopper
 
 
 class TestImageLoad(PillowTestCase):

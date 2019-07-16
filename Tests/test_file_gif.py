@@ -1,8 +1,8 @@
-from .helper import unittest, PillowTestCase, hopper, netpbm_available
-
-from PIL import Image, ImagePalette, GifImagePlugin, ImageDraw
-
 from io import BytesIO
+
+from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
+
+from .helper import PillowTestCase, hopper, netpbm_available, unittest
 
 try:
     from PIL import _webp

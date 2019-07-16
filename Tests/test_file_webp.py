@@ -1,6 +1,6 @@
-from .helper import unittest, PillowTestCase, hopper
-
 from PIL import Image, WebPImagePlugin
+
+from .helper import PillowTestCase, hopper, unittest
 
 try:
     from PIL import _webp

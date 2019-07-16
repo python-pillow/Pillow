@@ -25,10 +25,10 @@
 import struct
 import warnings
 from io import BytesIO
+from math import ceil, log
 
-from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
+from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i8, i16le as i16, i32le as i32
-from math import log, ceil
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.

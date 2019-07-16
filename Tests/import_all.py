@@ -2,9 +2,8 @@ from __future__ import print_function
 
 import glob
 import os
-import traceback
-
 import sys
+import traceback
 
 sys.path.insert(0, ".")
 
