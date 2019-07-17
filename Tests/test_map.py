@@ -4,6 +4,11 @@ from PIL import Image
 
 from .helper import PillowTestCase, unittest
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 @unittest.skipIf(sys.platform.startswith("win32"), "Win32 does not call map_buffer")
 class TestMap(PillowTestCase):
@@ -23,3 +28,10 @@ class TestMap(PillowTestCase):
             im.load()
 
         Image.MAX_IMAGE_PIXELS = max_pixels
+
+    @unittest.skipIf(sys.maxsize <= 2 ** 32, "requires 64-bit system")
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_ysize(self):
+        # Should not raise 'Integer overflow in ysize'
+        arr = numpy.zeros((46341, 46341), dtype=numpy.uint8)
+        Image.fromarray(arr)
