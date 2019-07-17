@@ -21,7 +21,6 @@ pytest
 pytest-cov
 pytz
 requests
-six
 snowballstemmer
 Sphinx
 sphinx-rtd-theme
