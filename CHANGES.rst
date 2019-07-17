@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Change overflow check to use PY_SSIZE_T_MAX #3964
+  [radarhere]
+
 6.1.0 (2019-07-01)
 ------------------
 
