@@ -332,19 +332,19 @@ Or for Python 3::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites are installed on **Ubuntu 14.04 LTS** with::
+Prerequisites are installed on **Ubuntu 16.04 LTS** with::
 
-    $ sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev \
-        tcl8.6-dev tk8.6-dev python-tk
+    $ sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk \
+        libharfbuzz-dev libfribidi-dev
 
 Then see ``depends/install_raqm.sh`` to install libraqm.
 
 Prerequisites are installed on recent **RedHat** **Centos** or **Fedora** with::
 
-    $ sudo dnf install libtiff-devel libjpeg-devel zlib-devel freetype-devel \
-        lcms2-devel libwebp-devel tcl-devel tk-devel libraqm-devel \
-        libimagequant-devel
+    $ sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
+        freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
+        harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel
 
 Note that the package manager may be yum or dnf, depending on the
 exact distribution.
