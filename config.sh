@@ -13,7 +13,7 @@ XZ_VERSION=5.2.4
 TIFF_VERSION=4.0.10
 LCMS2_VERSION=2.9
 GIFLIB_VERSION=5.1.4
-LIBWEBP_VERSION=1.0.2
+LIBWEBP_VERSION=1.0.3
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
