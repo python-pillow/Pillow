@@ -179,7 +179,7 @@ TAGS_V2 = {
     33432: ("Copyright", ASCII, 1),
     34377: ("PhotoshopInfo", BYTE, 1),
     # FIXME add more tags here
-    34665: ("ExifIFD", SHORT, 1),
+    34665: ("ExifIFD", LONG, 1),
     34675: ("ICCProfile", UNDEFINED, 1),
     34853: ("GPSInfoIFD", BYTE, 1),
     # MPInfo
