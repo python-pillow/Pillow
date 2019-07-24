@@ -24,61 +24,160 @@ matrix:
       # Exclude the default Python 3.5 build
       - python: 3.5
   include:
-    - os: osx
+    - name: "2.7 macOS"
+      os: osx
       language: generic
       env: MB_PYTHON_VERSION=2.7
-    - os: osx
+    - name: "3.5 macOS"
+      os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
 
-    - os: linux
+    - name: "2.7 Xenial"
+      os: linux
       env:
         - MB_PYTHON_VERSION=2.7
-    - os: linux
+    - name: "2.7 Xenial UNICODE_WIDTH=16"
+      os: linux
       env:
         - MB_PYTHON_VERSION=2.7
         - UNICODE_WIDTH=16
-    - os: linux
+    - name: "2.7 Xenial 32-bit"
+      os: linux
       env:
         - MB_PYTHON_VERSION=2.7
         - PLAT=i686
-    - os: linux
+    - name: "2.7 Xenial 32-bit UNICODE_WIDTH=16"
+      os: linux
       env:
         - MB_PYTHON_VERSION=2.7
         - PLAT=i686
         - UNICODE_WIDTH=16
-    - os: linux
+    - name: "3.5 Xenial"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.5
 
-    - os: osx
+    - name: "3.6 macOS"
+      os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
-    - os: osx
+    - name: "3.7 macOS"
+      os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.7
 
-    - os: linux
+    - name: "3.5 Xenial 32-bit"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.5
         - PLAT=i686
-    - os: linux
+    - name: "3.6 Xenial"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.6
-    - os: linux
+    - name: "3.6 Xenial 32-bit"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.6
         - PLAT=i686
-    - os: linux
+    - name: "3.7 Xenial"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.7
-    - os: linux
+    - name: "3.7 Xenial 32-bit"
+      os: linux
       env:
         - MB_PYTHON_VERSION=3.7
         - PLAT=i686
+
+    - name: "2.7 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - LATEST="true"
+    - name: "3.5 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.5
+        - LATEST="true"
+
+    - name: "2.7 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - LATEST="true"
+    - name: "2.7 Xenial UNICODE_WIDTH=16 latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - UNICODE_WIDTH=16
+        - LATEST="true"
+    - name: "2.7 Xenial 32-bit latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+        - LATEST="true"
+    - name: "2.7 Xenial 32-bit UNICODE_WIDTH=16 latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+        - UNICODE_WIDTH=16
+        - LATEST="true"
+    - name: "3.5 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+        - LATEST="true"
+
+    - name: "3.6 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.6
+        - LATEST="true"
+    - name: "3.7 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.7
+        - LATEST="true"
+
+    - name: "3.5 Xenial 32-bit latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+        - PLAT=i686
+        - LATEST="true"
+    - name: "3.6 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.6
+        - LATEST="true"
+    - name: "3.6 Xenial 32-bit latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.6
+        - PLAT=i686
+        - LATEST="true"
+    - name: "3.7 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.7
+        - LATEST="true"
+    - name: "3.7 Xenial 32-bit latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.7
+        - PLAT=i686
+        - LATEST="true"
 
 
 before_install:
@@ -89,6 +188,7 @@ before_install:
 install:
     # Maybe get and clean and patch source
     - clean_code $REPO_DIR $BUILD_COMMIT
+    - if [[ -n "$LATEST" ]]; then git submodule update --remote --merge $REPO_DIR; fi
     - build_wheel $REPO_DIR $PLAT
 
 script:
@@ -96,8 +196,10 @@ script:
 
 after_success:
     # Upload wheels to Rackspace container
-    - pip install wheelhouse-uploader
-    - python -m wheelhouse_uploader upload --local-folder
+    - if [[ -z "$LATEST" ]]; then
+        pip install wheelhouse-uploader;
+        python -m wheelhouse_uploader upload --local-folder
           ${TRAVIS_BUILD_DIR}/wheelhouse/
           --no-update-index
-          wheels
+          wheels;
+      fi
