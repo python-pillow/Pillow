@@ -319,6 +319,8 @@ PyImaging_DisplayModeWin32(PyObject* self, PyObject* args)
 /* -------------------------------------------------------------------- */
 /* Windows screen grabber */
 
+typedef HANDLE(__stdcall* Func_SetThreadDpiAwarenessContext)(HANDLE);
+
 PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
@@ -329,6 +331,9 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     HDC screen, screen_copy;
     DWORD rop;
     PyObject* buffer;
+    HANDLE dpiAwareness;
+	HMODULE user32 = LoadLibraryA("User32.dll");
+	Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
     if (!PyArg_ParseTuple(args, "|i", &includeLayeredWindows))
         return NULL;
@@ -339,8 +344,24 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     screen = CreateDC("DISPLAY", NULL, NULL, NULL);
     screen_copy = CreateCompatibleDC(screen);
 
+    // added in Windows 10 (1607)
+    // loaded dynamically to avoid link errors
+    SetThreadDpiAwarenessContext_function =
+            (Func_SetThreadDpiAwarenessContext)
+            GetProcAddress(user32, "SetThreadDpiAwarenessContext");
+    if (SetThreadDpiAwarenessContext_function != NULL) {
+        // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
+        dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE) -3);
+    }
+
     width = GetDeviceCaps(screen, HORZRES);
     height = GetDeviceCaps(screen, VERTRES);
+
+    if (SetThreadDpiAwarenessContext_function != NULL) {
+        dpiAwareness = SetThreadDpiAwarenessContext_function(dpiAwareness);
+    }
+
+    FreeLibrary(user32);
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap)
