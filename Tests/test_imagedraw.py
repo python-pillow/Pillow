@@ -1,8 +1,8 @@
 import os.path
 
-from PIL import Image, ImageColor, ImageDraw
+from PIL import Image, ImageColor, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, hopper, unittest
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -28,6 +28,8 @@ POINTS1 = [(10, 10), (20, 40), (30, 30)]
 POINTS2 = [10, 10, 20, 40, 30, 30]
 
 KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
+
+HAS_FREETYPE = features.check("freetype2")
 
 
 class TestImageDraw(PillowTestCase):
@@ -770,6 +772,54 @@ class TestImageDraw(PillowTestCase):
         draw.textsize("")
         draw.textsize("\n")
         draw.textsize("test\n")
+
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
+    def test_textsize_stroke(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
+
+        # Act / Assert
+        self.assertEqual(draw.textsize("A", font, stroke_width=2), (16, 20))
+        self.assertEqual(
+            draw.multiline_textsize("ABC\nAaaa", font, stroke_width=2), (52, 44)
+        )
+
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
+    def test_stroke(self):
+        for suffix, stroke_fill in {"same": None, "different": "#0f0"}.items():
+            # Arrange
+            im = Image.new("RGB", (120, 130))
+            draw = ImageDraw.Draw(im)
+            font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+            # Act
+            draw.text(
+                (10, 10), "A", "#f00", font, stroke_width=2, stroke_fill=stroke_fill
+            )
+
+            # Assert
+            self.assert_image_similar(
+                im, Image.open("Tests/images/imagedraw_stroke_" + suffix + ".png"), 2.8
+            )
+
+    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
+    def test_stroke_multiline(self):
+        # Arrange
+        im = Image.new("RGB", (100, 250))
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+        # Act
+        draw.multiline_text(
+            (10, 10), "A\nB", "#f00", font, stroke_width=2, stroke_fill="#0f0"
+        )
+
+        # Assert
+        self.assert_image_similar(
+            im, Image.open("Tests/images/imagedraw_stroke_multiline.png"), 3.3
+        )
 
     def test_same_color_outline(self):
         # Prepare shape
