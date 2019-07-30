@@ -1164,7 +1164,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if DEBUG:
                 print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
-        elif hasattr(self.fp, "fileno"):
+        elif fp:
             # we've got a actual file on disk, pass in the fp.
             if DEBUG:
                 print("have fileno, calling fileno version of the decoder.")
