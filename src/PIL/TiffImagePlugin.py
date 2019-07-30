@@ -1175,6 +1175,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # we have something else.
             if DEBUG:
                 print("don't have fileno or getvalue. just reading")
+            self.fp.seek(0)
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
