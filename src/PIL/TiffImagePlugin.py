@@ -771,7 +771,12 @@ class ImageFileDirectory_v2(MutableMapping):
                             "Tag Location: %s - Data Location: %s" % (here, offset),
                             end=" ",
                         )
-                    fp.seek(offset)
+                    try:
+                        fp.seek(offset)
+                    except OverflowError as e:
+                        if DEBUG:
+                            print("- offset value wrong. Possibly corrupt EXIF data. ", e)
+                        continue  # ignore corrupt EXIF data
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
                 else:
