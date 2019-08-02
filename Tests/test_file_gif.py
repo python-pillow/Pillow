@@ -514,10 +514,16 @@ class TestFileGif(PillowTestCase):
             frames.append(Image.alpha_composite(mask, image))
 
         # duration as list
-        frames[0].save(out,
-                       save_all=True, append_images=frames[1:], optimize=False, duration=duration_list, loop=0,
-                       transparency=0)
-
+        frames[0].save(
+            out,
+            save_all=True,
+            append_images=frames[1:],
+            optimize=False,
+            duration=duration_list,
+            loop=0,
+            transparency=0,
+        )
+        
         reread = Image.open(out)
 
         # Assert that the first three frames were combined
