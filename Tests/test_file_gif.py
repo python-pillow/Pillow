@@ -472,7 +472,7 @@ class TestFileGif(PillowTestCase):
             except EOFError:
                 pass
 
-    def test_identical_frames(self):
+    def test_partially_identical_frames(self):
         duration_list = [1000, 1500, 2000, 4000]
 
         out = self.tempfile("temp.gif")
@@ -494,6 +494,37 @@ class TestFileGif(PillowTestCase):
 
         # Assert that the new duration is the total of the identical frames
         self.assertEqual(reread.info["duration"], 4500)
+
+    def test_totally_identical_frames(self):
+        duration_list = [1000, 1500, 2000, 4000]
+
+        out = self.tempfile("temp.gif")
+
+        image_path = "Tests/images/bc7-argb-8bpp_MipMaps-1.png"
+        im_list = [
+            Image.open(image_path),
+            Image.open(image_path),
+            Image.open(image_path),
+            Image.open(image_path),
+        ]
+        mask = Image.new("RGBA", im_list[0].size, (255, 255, 255, 0))
+
+        frames = []
+        for image in im_list:
+            frames.append(Image.alpha_composite(mask, image))
+
+        # duration as list
+        frames[0].save(out,
+                       save_all=True, append_images=frames[1:], optimize=False, duration=duration_list, loop=0,
+                       transparency=0)
+
+        reread = Image.open(out)
+
+        # Assert that the first three frames were combined
+        self.assertEqual(reread.n_frames, 1)
+
+        # Assert that the new duration is the total of the identical frames
+        self.assertEqual(reread.info["duration"], 8500)
 
     def test_number_of_loops(self):
         number_of_loops = 2
