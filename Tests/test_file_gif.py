@@ -523,7 +523,6 @@ class TestFileGif(PillowTestCase):
             loop=0,
             transparency=0,
         )
-        
         reread = Image.open(out)
 
         # Assert that the first three frames were combined
