@@ -332,8 +332,8 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     DWORD rop;
     PyObject* buffer;
     HANDLE dpiAwareness;
-	HMODULE user32 = LoadLibraryA("User32.dll");
-	Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
+    HMODULE user32;
+    Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
     if (!PyArg_ParseTuple(args, "|i", &includeLayeredWindows))
         return NULL;
@@ -346,6 +346,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 
     // added in Windows 10 (1607)
     // loaded dynamically to avoid link errors
+    user32 = LoadLibraryA("User32.dll");
     SetThreadDpiAwarenessContext_function =
             (Func_SetThreadDpiAwarenessContext)
             GetProcAddress(user32, "SetThreadDpiAwarenessContext");
@@ -358,7 +359,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     height = GetDeviceCaps(screen, VERTRES);
 
     if (SetThreadDpiAwarenessContext_function != NULL) {
-        dpiAwareness = SetThreadDpiAwarenessContext_function(dpiAwareness);
+        SetThreadDpiAwarenessContext_function(dpiAwareness);
     }
 
     FreeLibrary(user32);
