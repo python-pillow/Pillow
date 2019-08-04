@@ -633,6 +633,11 @@ class TestFileJpeg(PillowTestCase):
         # Act / Assert
         self.assertEqual(im._getexif()[306], "2017:03:13 23:03:09")
 
+    def test_bad_exif_overflow_32(self):
+        # This image has some corrupt exif offsets that unpack to values greater
+        # than ssize_t on 32 bit systems
+        im = Image.open('Tests/images/corrupt_exif.jpg')
+
     def test_photoshop(self):
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
         self.assertEqual(

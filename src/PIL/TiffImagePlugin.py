@@ -776,7 +776,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     except OverflowError as e:
                         if DEBUG:
                             print(
-                                "- offset value wrong. Possibly corrupt EXIF data. ", e
+                                "Offset too large. Possibly corrupt EXIF data. ", e
                             )
                         continue  # ignore corrupt EXIF data
                     data = ImageFile._safe_read(fp, size)
