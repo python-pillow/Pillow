@@ -525,7 +525,7 @@ class TestFileGif(PillowTestCase):
         )
         reread = Image.open(out)
 
-        # Assert that the first three frames were combined
+        # Assert that all four frames were combined
         self.assertEqual(reread.n_frames, 1)
 
         # Assert that the new duration is the total of the identical frames
