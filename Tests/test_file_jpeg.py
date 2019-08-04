@@ -636,7 +636,7 @@ class TestFileJpeg(PillowTestCase):
     def test_bad_exif_overflow_32(self):
         # This image has some corrupt exif offsets that unpack to values greater
         # than ssize_t on 32 bit systems
-        im = Image.open('Tests/images/corrupt_exif.jpg')
+        im = Image.open("Tests/images/corrupt_exif.jpg")
 
     def test_photoshop(self):
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
