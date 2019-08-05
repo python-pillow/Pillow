@@ -213,10 +213,11 @@ build with newly installed external libraries.
 Build Options
 ^^^^^^^^^^^^^
 
-* Environment variable: ``MAX_CONCURRENCY=n``. By default, Pillow will
-  use multiprocessing to build the extension on all available CPUs,
-  but not more than 4. Setting ``MAX_CONCURRENCY`` to 1 will disable
-  parallel building.
+* Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
+  multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
+  sets the number of CPUs to use, or can disable parallel building by
+  using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
+  available, as many as are present.
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
   ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
