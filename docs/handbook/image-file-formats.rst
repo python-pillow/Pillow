@@ -759,18 +759,21 @@ using the general tags available through tiffinfo.
     Strings
 
 **resolution_unit**
-    A string of "inch", "centimeter" or "cm"
+    An integer. 1 for no unit, 2 for inches and 3 for centimeters.
 
 **resolution**
+    Either an integer or a float, used for both the x and y resolution.
 
 **x_resolution**
+    Either an integer or a float.
 
 **y_resolution**
+    Either an integer or a float.
 
 **dpi**
-    Either a Float, 2 tuple of (numerator, denominator) or a
-    :py:class:`~PIL.TiffImagePlugin.IFDRational`. Resolution implies
-    an equal x and y resolution, dpi also implies a unit of inches.
+    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    unit. For consistency with other image formats, the x and y resolutions
+    of the dpi will be rounded to the nearest integer.
 
 
 WebP
