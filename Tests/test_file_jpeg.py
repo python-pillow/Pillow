@@ -637,7 +637,9 @@ class TestFileJpeg(PillowTestCase):
         # This image has some corrupt exif offsets that unpack to values greater
         # than ssize_t on 32 bit systems
         im = Image.open("Tests/images/corrupt_exif.jpg")
-        assert im is not None  # if previous line fails, im will be undefined so assert fail
+        assert (
+            im is not None
+        )  # if previous line fails, im will be undefined and assertion fail
 
     def test_photoshop(self):
         im = Image.open("Tests/images/photoshop-200dpi.jpg")
