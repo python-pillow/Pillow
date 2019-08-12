@@ -549,8 +549,12 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     This function requires the _imagingft service.
 
     :param font: A filename or file-like object containing a TrueType font.
-                     Under Windows, if the file is not found in this filename,
-                     the loader also looks in Windows :file:`fonts/` directory.
+                 If the file is not found in this filename, the loader may also
+                 search in other directories, such as the :file:`fonts/`
+                 directory on Windows or :file:`/Library/Fonts/`,
+                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
+                 macOS.
+
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Common
