@@ -569,12 +569,24 @@ class ImageFileDirectory_v2(MutableMapping):
             else:
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = TiffTags.RATIONAL if all(v >= 0 for v in values) else TiffTags.SIGNED_RATIONAL
+                    self.tagtype[tag] = (
+                        TiffTags.RATIONAL
+                        if all(v >= 0 for v in values)
+                        else TiffTags.SIGNED_RATIONAL
+                    )
                 elif all(isinstance(v, int) for v in values):
                     if all(v < 2 ** 16 for v in values):
-                        self.tagtype[tag] = TiffTags.SHORT if all(v >= 0 for v in values) else TiffTags.SIGNED_SHORT
+                        self.tagtype[tag] = (
+                            TiffTags.SHORT
+                            if all(v >= 0 for v in values)
+                            else TiffTags.SIGNED_SHORT
+                        )
                     else:
-                        self.tagtype[tag] = TiffTags.LONG if all(v >= 0 for v in values) else TiffTags.SIGNED_LONG
+                        self.tagtype[tag] = (
+                            TiffTags.LONG
+                            if all(v >= 0 for v in values)
+                            else TiffTags.SIGNED_LONG
+                        )
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
                 else:
@@ -744,7 +756,8 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(10)
     def write_signed_rational(self, *values):
         return b"".join(
-            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -2 ** 31)) for frac in values
+            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -2 ** 31))
+            for frac in values
         )
 
     def _ensure_read(self, fp, size):
