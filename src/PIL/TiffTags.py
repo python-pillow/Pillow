@@ -120,7 +120,7 @@ TAGS_V2 = {
     277: ("SamplesPerPixel", SHORT, 1),
     278: ("RowsPerStrip", LONG, 1),
     279: ("StripByteCounts", LONG, 0),
-    280: ("MinSampleValue", LONG, 0),
+    280: ("MinSampleValue", SHORT, 0),
     281: ("MaxSampleValue", SHORT, 0),
     282: ("XResolution", RATIONAL, 1),
     283: ("YResolution", RATIONAL, 1),
@@ -182,7 +182,7 @@ TAGS_V2 = {
     # FIXME add more tags here
     34665: ("ExifIFD", LONG, 1),
     34675: ("ICCProfile", UNDEFINED, 1),
-    34853: ("GPSInfoIFD", BYTE, 1),
+    34853: ("GPSInfoIFD", LONG, 1),
     # MPInfo
     45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
