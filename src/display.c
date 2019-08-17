@@ -345,8 +345,8 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
         width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     } else {
-        width = GetSystemMetrics(SM_CXSCREEN);
-        height = GetSystemMetrics(SM_CYSCREEN);
+        width = GetDeviceCaps(screen, HORZRES);
+        height = GetDeviceCaps(screen, VERTRES);
     }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
