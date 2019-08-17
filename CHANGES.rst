@@ -13,7 +13,7 @@ Changelog (Pillow)
 - Remove indirect dependencies from requirements.txt #3976
   [hugovk]
 
-- Depends: Update libwebp to 1.0.3 #3983
+- Depends: Update libwebp to 1.0.3 #3983, libimagequant to 2.12.5 #3993
   [radarhere]
 
 - Change overflow check to use PY_SSIZE_T_MAX #3964
