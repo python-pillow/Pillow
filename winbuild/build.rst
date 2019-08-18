@@ -79,8 +79,8 @@ Building Pillow
 ---------------
 
 Once the dependencies are built, run `python build.py --clean` to
-build and install Pillow in virtualenvs for each python
-build. `build.py --dist` will build Windows installers instead of
+build and install Pillow in virtualenvs for each Python
+build. `build.py --wheel` will build wheels instead of
 installing into virtualenvs.
 
 UNDONE -- suppressed output, what about failures.
