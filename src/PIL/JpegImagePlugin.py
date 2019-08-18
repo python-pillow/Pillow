@@ -158,7 +158,7 @@ def APP(self, marker):
     # If DPI isn't in JPEG header, fetch from EXIF
     if "dpi" not in self.info and "exif" in self.info:
         try:
-            exif = self._getexif()
+            exif = self.getexif()
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:

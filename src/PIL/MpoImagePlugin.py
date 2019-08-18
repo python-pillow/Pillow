@@ -92,7 +92,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
 
-            exif = self._getexif()
+            exif = self.getexif()
             if 40962 in exif and 40963 in exif:
                 self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:
