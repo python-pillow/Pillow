@@ -82,7 +82,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self._assert_noerr(im)
 
     def test_g4_non_disk_file_object(self):
-        """Testing loading from non-disk non-bytesio file object"""
+        """Testing loading from non-disk non-BytesIO file object"""
         test_file = "Tests/images/hopper_g4_500.tif"
         s = io.BytesIO()
         with open(test_file, "rb") as f:
