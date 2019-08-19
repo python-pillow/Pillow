@@ -239,11 +239,13 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_PhotoshopInfo(self):
         im = Image.open("Tests/images/issue_2278.tif")
 
-        self.assertIsInstance(im.tag_v2[34377], bytes)
+        self.assertEqual(len(im.tag_v2[34377]), 1)
+        self.assertIsInstance(im.tag_v2[34377][0], bytes)
         out = self.tempfile("temp.tiff")
         im.save(out)
         reloaded = Image.open(out)
-        self.assertIsInstance(reloaded.tag_v2[34377], bytes)
+        self.assertEqual(len(reloaded.tag_v2[34377]), 1)
+        self.assertIsInstance(reloaded.tag_v2[34377][0], bytes)
 
     def test_too_many_entries(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()

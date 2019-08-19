@@ -175,9 +175,9 @@ TAGS_V2 = {
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", RATIONAL, 6),
-    700: ("XMP", BYTE, 1),
+    700: ("XMP", BYTE, 0),
     33432: ("Copyright", ASCII, 1),
-    34377: ("PhotoshopInfo", BYTE, 1),
+    34377: ("PhotoshopInfo", BYTE, 0),
     # FIXME add more tags here
     34665: ("ExifIFD", LONG, 1),
     34675: ("ICCProfile", UNDEFINED, 1),
