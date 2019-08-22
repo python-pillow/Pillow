@@ -485,19 +485,9 @@ def _fixup_dict(src_dict):
 
 
 def _getexif(self):
-    # Use the cached version if possible
-    try:
-        return self.info["parsed_exif"]
-    except KeyError:
-        pass
-
     if "exif" not in self.info:
         return None
-    exif = dict(self.getexif())
-
-    # Cache the result for future use
-    self.info["parsed_exif"] = exif
-    return exif
+    return dict(self.getexif())
 
 
 def _getmp(self):

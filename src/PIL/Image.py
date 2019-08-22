@@ -555,6 +555,7 @@ class Image(object):
         self.category = NORMAL
         self.readonly = 0
         self.pyaccess = None
+        self._exif = None
 
     @property
     def width(self):
@@ -1324,10 +1325,10 @@ class Image(object):
         return self.im.getextrema()
 
     def getexif(self):
-        exif = Exif()
-        if "exif" in self.info:
-            exif.load(self.info["exif"])
-        return exif
+        if self._exif is None:
+            self._exif = Exif()
+        self._exif.load(self.info.get("exif"))
+        return self._exif
 
     def getim(self):
         """
@@ -3137,7 +3138,8 @@ class Exif(MutableMapping):
     def __init__(self):
         self._data = {}
         self._ifds = {}
-        self.info = None
+        self._info = None
+        self._loaded_exif = None
 
     def _fixup(self, value):
         try:
@@ -3173,15 +3175,24 @@ class Exif(MutableMapping):
 
         # The EXIF record consists of a TIFF file embedded in a JPEG
         # application marker (!).
+        if data == self._loaded_exif:
+            return
+        self._loaded_exif = data
+        self._data.clear()
+        self._ifds.clear()
+        self._info = None
+        if not data:
+            return
+
         self.fp = io.BytesIO(data[6:])
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
 
-        self.info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
-        self.endian = self.info._endian
-        self.fp.seek(self.info.next)
-        self.info.load(self.fp)
+        self._info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+        self.endian = self._info._endian
+        self.fp.seek(self._info.next)
+        self._info.load(self.fp)
 
         # get EXIF extension
         ifd = self._get_ifd_dict(0x8769)
@@ -3286,29 +3297,29 @@ class Exif(MutableMapping):
         return self._ifds.get(tag, {})
 
     def __str__(self):
-        if self.info is not None:
+        if self._info is not None:
             # Load all keys into self._data
-            for tag in self.info.keys():
+            for tag in self._info.keys():
                 self[tag]
 
         return str(self._data)
 
     def __len__(self):
         keys = set(self._data)
-        if self.info is not None:
-            keys.update(self.info)
+        if self._info is not None:
+            keys.update(self._info)
         return len(keys)
 
     def __getitem__(self, tag):
-        if self.info is not None and tag not in self._data and tag in self.info:
-            self._data[tag] = self._fixup(self.info[tag])
+        if self._info is not None and tag not in self._data and tag in self._info:
+            self._data[tag] = self._fixup(self._info[tag])
             if tag == 0x8825:
                 self._data[tag] = self.get_ifd(tag)
-            del self.info[tag]
+            del self._info[tag]
         return self._data[tag]
 
     def __contains__(self, tag):
-        return tag in self._data or (self.info is not None and tag in self.info)
+        return tag in self._data or (self._info is not None and tag in self._info)
 
     if not py3:
 
@@ -3316,23 +3327,23 @@ class Exif(MutableMapping):
             return tag in self
 
     def __setitem__(self, tag, value):
-        if self.info is not None:
+        if self._info is not None:
             try:
-                del self.info[tag]
+                del self._info[tag]
             except KeyError:
                 pass
         self._data[tag] = value
 
     def __delitem__(self, tag):
-        if self.info is not None:
+        if self._info is not None:
             try:
-                del self.info[tag]
+                del self._info[tag]
             except KeyError:
                 pass
         del self._data[tag]
 
     def __iter__(self):
         keys = set(self._data)
-        if self.info is not None:
-            keys.update(self.info)
+        if self._info is not None:
+            keys.update(self._info)
         return iter(keys)
