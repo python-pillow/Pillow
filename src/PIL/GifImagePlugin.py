@@ -472,9 +472,6 @@ def _write_multiple_frames(im, fp, palette):
             else:
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
-    # see: https://github.com/python-pillow/Pillow/issues/4002
-    if len(im_frames) == 1 and "duration" in im_frames[0]["encoderinfo"]:
-        im.encoderinfo["duration"] = im_frames[0]["encoderinfo"]["duration"]
 
     if len(im_frames) > 1:
         for frame_data in im_frames:
@@ -492,6 +489,11 @@ def _write_multiple_frames(im, fp, palette):
                 offset = frame_data["bbox"][:2]
             _write_frame_data(fp, im_frame, offset, frame_data["encoderinfo"])
         return True
+    elif "duration" in im.encoderinfo and isinstance(
+        im.encoderinfo["duration"], (list, tuple)
+    ):
+        # Since multiple frames will not be written, add together the frame durations
+        im.encoderinfo["duration"] = sum(im.encoderinfo["duration"])
 
 
 def _save_all(im, fp, filename):
