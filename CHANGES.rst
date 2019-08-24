@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Fix bug in TIFF loading of BufferedReader #3998
+  [chadawagner]
+
 - Added fallback for finding ld on MinGW Cygwin #4019
   [radarhere]
 
