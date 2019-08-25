@@ -495,6 +495,26 @@ class TestFileGif(PillowTestCase):
         # Assert that the new duration is the total of the identical frames
         self.assertEqual(reread.info["duration"], 4500)
 
+    def test_identical_frames_to_single_frame(self):
+        for duration in ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500):
+            out = self.tempfile("temp.gif")
+            im_list = [
+                Image.new("L", (100, 100), "#000"),
+                Image.new("L", (100, 100), "#000"),
+                Image.new("L", (100, 100), "#000"),
+            ]
+
+            im_list[0].save(
+                out, save_all=True, append_images=im_list[1:], duration=duration
+            )
+            reread = Image.open(out)
+
+            # Assert that all frames were combined
+            self.assertEqual(reread.n_frames, 1)
+
+            # Assert that the new duration is the total of the identical frames
+            self.assertEqual(reread.info["duration"], 8500)
+
     def test_number_of_loops(self):
         number_of_loops = 2
 
