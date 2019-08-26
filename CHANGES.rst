@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Fix bug when merging identical images to GIF with a list of durations #4003
+  [djy0, radarhere]
+
 - Fix bug in TIFF loading of BufferedReader #3998
   [chadawagner]
 
