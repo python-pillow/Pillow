@@ -575,12 +575,10 @@ class ImageFileDirectory_v2(MutableMapping):
                         else TiffTags.SIGNED_RATIONAL
                     )
                 elif all(isinstance(v, int) for v in values):
-                    if all(v < 2 ** 16 for v in values):
-                        self.tagtype[tag] = (
-                            TiffTags.SHORT
-                            if all(v >= 0 for v in values)
-                            else TiffTags.SIGNED_SHORT
-                        )
+                    if all(0 <= v < 2 ** 16 for v in values):
+                        self.tagtype[tag] = TiffTags.SHORT
+                    elif all(-2 ** 15 < v < 2 ** 15 for v in values):
+                        self.tagtype[tag] = TiffTags.SIGNED_SHORT
                     else:
                         self.tagtype[tag] = (
                             TiffTags.LONG

@@ -274,6 +274,18 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
         self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
 
+    def test_ifd_signed_long(self):
+        im = hopper()
+        info = TiffImagePlugin.ImageFileDirectory_v2()
+
+        info[37000] = -60000
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(reloaded.tag_v2[37000], -60000)
+
     def test_expty_values(self):
         data = io.BytesIO(
             b"II*\x00\x08\x00\x00\x00\x03\x00\x1a\x01\x05\x00\x00\x00\x00\x00"
