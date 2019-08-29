@@ -222,7 +222,7 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(0, reloaded.tag_v2[41988].numerator)
         self.assertEqual(0, reloaded.tag_v2[41988].denominator)
 
-    def test_expty_values(self):
+    def test_empty_values(self):
         data = io.BytesIO(
             b"II*\x00\x08\x00\x00\x00\x03\x00\x1a\x01\x05\x00\x00\x00\x00\x00"
             b"\x00\x00\x00\x00\x1b\x01\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00"
