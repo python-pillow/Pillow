@@ -1191,7 +1191,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if DEBUG:
                 print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
-        elif hasattr(self.fp, "fileno"):
+        elif fp:
             # we've got a actual file on disk, pass in the fp.
             if DEBUG:
                 print("have fileno, calling fileno version of the decoder.")
@@ -1202,6 +1202,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # we have something else.
             if DEBUG:
                 print("don't have fileno or getvalue. just reading")
+            self.fp.seek(0)
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 

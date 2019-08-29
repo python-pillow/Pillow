@@ -7,11 +7,26 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
-- Depends: Update libwebp to 1.0.3 #3983
+- Fix bug when merging identical images to GIF with a list of durations #4003
+  [djy0, radarhere]
+
+- Fix bug in TIFF loading of BufferedReader #3998
+  [chadawagner]
+
+- Added fallback for finding ld on MinGW Cygwin #4019
+  [radarhere]
+
+- Remove indirect dependencies from requirements.txt #3976
+  [hugovk]
+
+- Depends: Update libwebp to 1.0.3 #3983, libimagequant to 2.12.5 #3993, freetype to 2.10.1 #3991
   [radarhere]
 
 - Change overflow check to use PY_SSIZE_T_MAX #3964
   [radarhere]
+
+- Report reason for pytest skips #3942
+  [hugovk]
 
 6.1.0 (2019-07-01)
 ------------------

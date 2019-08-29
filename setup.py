@@ -432,7 +432,9 @@ class pil_build_ext(build_ext):
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
             _add_directory(
                 library_dirs,
-                os.path.join("/usr/lib", "python%s" % sys.version[:3], "config"),
+                os.path.join(
+                    "/usr/lib", "python{}.{}".format(*sys.version_info), "config"
+                ),
             )
 
         elif sys.platform == "darwin":

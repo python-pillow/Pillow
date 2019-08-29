@@ -489,6 +489,11 @@ def _write_multiple_frames(im, fp, palette):
                 offset = frame_data["bbox"][:2]
             _write_frame_data(fp, im_frame, offset, frame_data["encoderinfo"])
         return True
+    elif "duration" in im.encoderinfo and isinstance(
+        im.encoderinfo["duration"], (list, tuple)
+    ):
+        # Since multiple frames will not be written, add together the frame durations
+        im.encoderinfo["duration"] = sum(im.encoderinfo["duration"])
 
 
 def _save_all(im, fp, filename):
