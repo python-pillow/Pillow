@@ -370,42 +370,37 @@ class IFDRational(Rational):
 
         return delegate
 
-    """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
-             'truediv', 'rtruediv', 'floordiv',
-             'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
-             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
-             'ceil', 'floor', 'round']
-        print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
-        """
-
-    __add__ = _delegate("__add__")
-    __radd__ = _delegate("__radd__")
-    __sub__ = _delegate("__sub__")
-    __rsub__ = _delegate("__rsub__")
-    __div__ = _delegate("__div__")
-    __rdiv__ = _delegate("__rdiv__")
-    __mul__ = _delegate("__mul__")
-    __rmul__ = _delegate("__rmul__")
-    __truediv__ = _delegate("__truediv__")
-    __rtruediv__ = _delegate("__rtruediv__")
-    __floordiv__ = _delegate("__floordiv__")
-    __rfloordiv__ = _delegate("__rfloordiv__")
-    __mod__ = _delegate("__mod__")
-    __rmod__ = _delegate("__rmod__")
-    __pow__ = _delegate("__pow__")
-    __rpow__ = _delegate("__rpow__")
-    __pos__ = _delegate("__pos__")
-    __neg__ = _delegate("__neg__")
-    __abs__ = _delegate("__abs__")
-    __trunc__ = _delegate("__trunc__")
-    __lt__ = _delegate("__lt__")
-    __gt__ = _delegate("__gt__")
-    __le__ = _delegate("__le__")
-    __ge__ = _delegate("__ge__")
-    __nonzero__ = _delegate("__nonzero__")
-    __ceil__ = _delegate("__ceil__")
-    __floor__ = _delegate("__floor__")
-    __round__ = _delegate("__round__")
+    for op in (
+        "add",
+        "radd",
+        "sub",
+        "rsub",
+        "div",
+        "rdiv",
+        "mul",
+        "rmul",
+        "truediv",
+        "rtruediv",
+        "floordiv",
+        "rfloordiv",
+        "mod",
+        "rmod",
+        "pow",
+        "rpow",
+        "pos",
+        "neg",
+        "abs",
+        "trunc",
+        "lt",
+        "gt",
+        "le",
+        "ge",
+        "nonzero",
+        "ceil",
+        "floor",
+        "round",
+    ):
+        vars()["__" + op + "__"] = _delegate("__" + op + "__")
 
 
 class ImageFileDirectory_v2(MutableMapping):
