@@ -400,6 +400,7 @@ class IFDRational(Rational):
         "floor",
         "round",
     ):
+        # Equivalent to __add__ = _delegate("__add__") etc.
         vars()["__" + op + "__"] = _delegate("__" + op + "__")
 
 
