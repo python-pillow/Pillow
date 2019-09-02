@@ -43,7 +43,9 @@ function pre_build {
         ORIGINAL_CPPFLAGS=$CPPFLAGS
         CPPFLAGS=""
     fi
+    CFLAGS="$CFLAGS -O3 -DNDEBUG"
     build_libwebp
+    CFLAGS=$ORIGINAL_CFLAGS
     if [ -n "$IS_OSX" ]; then
         CPPFLAGS=$ORIGINAL_CPPFLAGS
     fi
