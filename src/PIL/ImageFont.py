@@ -562,11 +562,25 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
-    :param encoding: Which font encoding to use (default is Unicode). Common
-                     encodings are "unic" (Unicode), "symb" (Microsoft
-                     Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
-                     and "armn" (Apple Roman). See the FreeType documentation
-                     for more information.
+    :param encoding: Which font encoding to use (default is Unicode). Possible
+                     encodings include (see the FreeType documentation for more
+                     information):
+
+                     * "unic" (Unicode)
+                     * "symb" (Microsoft Symbol)
+                     * "ADOB" (Adobe Standard)
+                     * "ADBE" (Adobe Expert)
+                     * "ADBC" (Adobe Custom)
+                     * "armn" (Apple Roman)
+                     * "sjis" (Shift JIS)
+                     * "gb  " (PRC)
+                     * "big5"
+                     * "wans" (Extended Wansung)
+                     * "joha" (Johab)
+                     * "lat1" (Latin-1)
+
+                     This specifies the character set to use. It does not alter the
+                     encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
     :return: A font object.
