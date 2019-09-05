@@ -60,7 +60,7 @@ PIL also provides limited support for a few special modes, including:
     * ``BGR;24`` (24-bit reversed true colour)
     * ``BGR;32`` (32-bit reversed true colour)
 
-However, PIL doesn’t support user-defined modes; if you need to handle band
+However, Pillow doesn’t support user-defined modes; if you need to handle band
 combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
