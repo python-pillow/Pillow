@@ -33,13 +33,13 @@ can be easily displayed in a chromaticity diagram, for example).
     .. py:attribute:: version
 
         The version number of the ICC standard that this profile follows
-        (e.g. `2.0`).
+        (e.g. ``2.0``).
 
         :type: :py:class:`float`
 
     .. py:attribute:: icc_version
 
-        Same as `version`, but in encoded format (see 7.2.4 of ICC.1:2010).
+        Same as ``version``, but in encoded format (see 7.2.4 of ICC.1:2010).
 
     .. py:attribute:: device_class
 
