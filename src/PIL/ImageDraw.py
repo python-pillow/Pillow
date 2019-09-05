@@ -303,7 +303,7 @@ class ImageDraw(object):
                 return fill
             return ink
 
-        def drawText(ink, stroke_width=0, stroke_offset=None):
+        def draw_text(ink, stroke_width=0, stroke_offset=None):
             coord = xy
             try:
                 mask, offset = font.getmask2(
@@ -343,13 +343,13 @@ class ImageDraw(object):
 
             if stroke_ink is not None:
                 # Draw stroked text
-                drawText(stroke_ink, stroke_width)
+                draw_text(stroke_ink, stroke_width)
 
                 # Draw normal text
-                drawText(ink, 0, (stroke_width, stroke_width))
+                draw_text(ink, 0, (stroke_width, stroke_width))
             else:
                 # Only draw normal text
-                drawText(ink)
+                draw_text(ink)
 
     def multiline_text(
         self,
