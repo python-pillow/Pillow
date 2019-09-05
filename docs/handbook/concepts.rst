@@ -44,7 +44,7 @@ supports the following standard modes:
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
-PIL also provides limited support for a few special modes, including:
+Pillow also provides limited support for a few special modes, including:
 
     * ``LA`` (L with alpha)
     * ``PA`` (P with alpha)
