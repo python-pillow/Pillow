@@ -44,11 +44,24 @@ supports the following standard modes:
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
-PIL also provides limited support for a few special modes, including ``LA`` (L
-with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
-premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
-need to handle band combinations that are not listed above, use a sequence of
-Image objects.
+PIL also provides limited support for a few special modes, including:
+
+    * ``LA`` (L with alpha)
+    * ``PA`` (P with alpha)
+    * ``RGBX`` (true color with padding)
+    * ``RGBa`` (true color with premultiplied alpha)
+    * ``La`` (L with premultiplied alpha)
+    * ``I;16`` (16-bit unsigned integer pixels)
+    * ``I;16L`` (16-bit little endian unsigned integer pixels)
+    * ``I;16B`` (16-bit big endian unsigned integer pixels)
+    * ``I;16N`` (16-bit native endian unsigned integer pixels)
+    * ``BGR;15`` (15-bit reversed true colour)
+    * ``BGR;16`` (16-bit reversed true colour)
+    * ``BGR;24`` (24-bit reversed true colour)
+    * ``BGR;32`` (32-bit reversed true colour)
+
+However, PIL doesn’t support user-defined modes; if you need to handle band
+combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
