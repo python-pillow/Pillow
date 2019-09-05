@@ -571,6 +571,24 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
 
+    def test_floodfill_not_negative(self):
+        # floodfill() is experimental
+        # Test that floodfill does not extend into negative coordinates
+
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        draw.line((W / 2, 0, W / 2, H / 2), fill="green")
+        draw.line((0, H / 2, W / 2, H / 2), fill="green")
+
+        # Act
+        ImageDraw.floodfill(im, (int(W / 4), int(H / 4)), ImageColor.getrgb("red"))
+
+        # Assert
+        self.assert_image_equal(
+            im, Image.open("Tests/images/imagedraw_floodfill_not_negative.png")
+        )
+
     def create_base_image_draw(
         self, size, mode=DEFAULT_MODE, background1=WHITE, background2=GRAY
     ):

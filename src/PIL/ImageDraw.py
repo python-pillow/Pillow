@@ -437,8 +437,9 @@ def floodfill(image, xy, value, border=None, thresh=0):
         new_edge = set()
         for (x, y) in edge:  # 4 adjacent method
             for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-                if (s, t) in full_edge:
-                    continue  # if already processed, skip
+                # If already processed, or if a coordinate is negative, skip
+                if (s, t) in full_edge or s < 0 or t < 0:
+                    continue
                 try:
                     p = pixel[s, t]
                 except (ValueError, IndexError):
