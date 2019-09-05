@@ -140,6 +140,18 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    def test_arc_width_non_whole_angle(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_arc_width_non_whole_angle.png"
+
+        # Act
+        draw.arc(BBOX1, 10, 259.5, width=5)
+
+        # Assert
+        self.assert_image_similar(im, Image.open(expected), 1)
+
     def test_bitmap(self):
         # Arrange
         small = Image.open("Tests/images/pil123rgba.png").resize((50, 50))
