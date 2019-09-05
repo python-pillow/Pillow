@@ -191,16 +191,14 @@ def run_one(op):
 
 
 if __name__ == "__main__":
-    opts, args = getopt.getopt(sys.argv[1:], "", ["clean", "dist", "wheel"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["clean", "wheel"])
     opts = dict(opts)
 
     if "--clean" in opts:
         clean()
 
     op = "install"
-    if "--dist" in opts:
-        op = "bdist_wininst --user-access-control=auto"
-    elif "--wheel" in opts:
+    if "--wheel" in opts:
         op = "bdist_wheel"
 
     if "PYTHON" in os.environ:
