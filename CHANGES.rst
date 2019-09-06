@@ -7,6 +7,18 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Added text stroking #3978
+  [radarhere, hugovk]
+
+- No more deprecated bdist_wininst .exe installers #4029
+  [hugovk]
+
+- Do not allow floodfill to extend into negative coordinates #4017
+  [radarhere]
+
+- Fixed arc drawing bug for a non-whole number of degrees #4014
+  [radarhere]
+
 - Fix bug when merging identical images to GIF with a list of durations #4003
   [djy0, radarhere]
 
