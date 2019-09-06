@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Improved HSV conversion #4004
+  [radarhere]
+
 - Added text stroking #3978
   [radarhere, hugovk]
 
