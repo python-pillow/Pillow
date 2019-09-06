@@ -23,6 +23,7 @@ class TestImageConvert(PillowTestCase):
             "RGBX",
             "CMYK",
             "YCbCr",
+            "HSV",
         )
 
         for mode in modes:
