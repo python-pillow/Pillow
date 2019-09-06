@@ -207,7 +207,9 @@ class FreeTypeFont(object):
         """
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text, direction=None, features=None, language=None):
+    def getsize(
+        self, text, direction=None, features=None, language=None, stroke_width=0
+    ):
         """
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
@@ -243,13 +245,26 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: (width, height)
         """
         size, offset = self.font.getsize(text, direction, features, language)
-        return (size[0] + offset[0], size[1] + offset[1])
+        return (
+            size[0] + stroke_width * 2 + offset[0],
+            size[1] + stroke_width * 2 + offset[1],
+        )
 
     def getsize_multiline(
-        self, text, direction=None, spacing=4, features=None, language=None
+        self,
+        text,
+        direction=None,
+        spacing=4,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         """
         Returns width and height (in pixels) of given text if rendered in font
@@ -285,13 +300,19 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: (width, height)
         """
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A")[1] + spacing
+        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
         for line in lines:
-            line_width, line_height = self.getsize(line, direction, features, language)
+            line_width, line_height = self.getsize(
+                line, direction, features, language, stroke_width
+            )
             max_width = max(max_width, line_width)
 
         return max_width, len(lines) * line_spacing - spacing
@@ -308,7 +329,15 @@ class FreeTypeFont(object):
         """
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode="", direction=None, features=None, language=None):
+    def getmask(
+        self,
+        text,
+        mode="",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+    ):
         """
         Create a bitmap for the text.
 
@@ -352,11 +381,20 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
         return self.getmask2(
-            text, mode, direction=direction, features=features, language=language
+            text,
+            mode,
+            direction=direction,
+            features=features,
+            language=language,
+            stroke_width=stroke_width,
         )[0]
 
     def getmask2(
@@ -367,6 +405,7 @@ class FreeTypeFont(object):
         direction=None,
         features=None,
         language=None,
+        stroke_width=0,
         *args,
         **kwargs
     ):
@@ -413,13 +452,20 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
         size, offset = self.font.getsize(text, direction, features, language)
+        size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1", direction, features, language)
+        self.font.render(
+            text, im.id, mode == "1", direction, features, language, stroke_width
+        )
         return im, offset
 
     def font_variant(

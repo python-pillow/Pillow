@@ -261,24 +261,95 @@ class ImageDraw(object):
 
         return text.split(split_character)
 
-    def text(self, xy, text, fill=None, font=None, anchor=None, *args, **kwargs):
+    def text(
+        self,
+        xy,
+        text,
+        fill=None,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        stroke_fill=None,
+        *args,
+        **kwargs
+    ):
         if self._multiline_check(text):
-            return self.multiline_text(xy, text, fill, font, anchor, *args, **kwargs)
-        ink, fill = self._getink(fill)
+            return self.multiline_text(
+                xy,
+                text,
+                fill,
+                font,
+                anchor,
+                spacing,
+                align,
+                direction,
+                features,
+                language,
+                stroke_width,
+                stroke_fill,
+            )
+
         if font is None:
             font = self.getfont()
-        if ink is None:
-            ink = fill
-        if ink is not None:
+
+        def getink(fill):
+            ink, fill = self._getink(fill)
+            if ink is None:
+                return fill
+            return ink
+
+        def draw_text(ink, stroke_width=0, stroke_offset=None):
+            coord = xy
             try:
-                mask, offset = font.getmask2(text, self.fontmode, *args, **kwargs)
-                xy = xy[0] + offset[0], xy[1] + offset[1]
+                mask, offset = font.getmask2(
+                    text,
+                    self.fontmode,
+                    direction=direction,
+                    features=features,
+                    language=language,
+                    stroke_width=stroke_width,
+                    *args,
+                    **kwargs
+                )
+                coord = coord[0] + offset[0], coord[1] + offset[1]
             except AttributeError:
                 try:
-                    mask = font.getmask(text, self.fontmode, *args, **kwargs)
+                    mask = font.getmask(
+                        text,
+                        self.fontmode,
+                        direction,
+                        features,
+                        language,
+                        stroke_width,
+                        *args,
+                        **kwargs
+                    )
                 except TypeError:
                     mask = font.getmask(text)
-            self.draw.draw_bitmap(xy, mask, ink)
+            if stroke_offset:
+                coord = coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]
+            self.draw.draw_bitmap(coord, mask, ink)
+
+        ink = getink(fill)
+        if ink is not None:
+            stroke_ink = None
+            if stroke_width:
+                stroke_ink = getink(stroke_fill) if stroke_fill is not None else ink
+
+            if stroke_ink is not None:
+                # Draw stroked text
+                draw_text(stroke_ink, stroke_width)
+
+                # Draw normal text
+                draw_text(ink, 0, (stroke_width, stroke_width))
+            else:
+                # Only draw normal text
+                draw_text(ink)
 
     def multiline_text(
         self,
@@ -292,14 +363,23 @@ class ImageDraw(object):
         direction=None,
         features=None,
         language=None,
+        stroke_width=0,
+        stroke_fill=None,
     ):
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.textsize("A", font=font)[1] + spacing
+        line_spacing = (
+            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
+        )
         for line in lines:
             line_width, line_height = self.textsize(
-                line, font, direction=direction, features=features, language=language
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                stroke_width=stroke_width,
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
@@ -322,32 +402,50 @@ class ImageDraw(object):
                 direction=direction,
                 features=features,
                 language=language,
+                stroke_width=stroke_width,
+                stroke_fill=stroke_fill,
             )
             top += line_spacing
             left = xy[0]
 
     def textsize(
-        self, text, font=None, spacing=4, direction=None, features=None, language=None
+        self,
+        text,
+        font=None,
+        spacing=4,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         """Get the size of a given string, in pixels."""
         if self._multiline_check(text):
             return self.multiline_textsize(
-                text, font, spacing, direction, features, language
+                text, font, spacing, direction, features, language, stroke_width
             )
 
         if font is None:
             font = self.getfont()
-        return font.getsize(text, direction, features, language)
+        return font.getsize(text, direction, features, language, stroke_width)
 
     def multiline_textsize(
-        self, text, font=None, spacing=4, direction=None, features=None, language=None
+        self,
+        text,
+        font=None,
+        spacing=4,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.textsize("A", font=font)[1] + spacing
+        line_spacing = (
+            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
+        )
         for line in lines:
             line_width, line_height = self.textsize(
-                line, font, spacing, direction, features, language
+                line, font, spacing, direction, features, language, stroke_width
             )
             max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
