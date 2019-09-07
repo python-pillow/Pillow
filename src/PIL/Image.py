@@ -3327,19 +3327,13 @@ class Exif(MutableMapping):
             return tag in self
 
     def __setitem__(self, tag, value):
-        if self._info is not None:
-            try:
-                del self._info[tag]
-            except KeyError:
-                pass
+        if self._info is not None and tag in self._info:
+            del self._info[tag]
         self._data[tag] = value
 
     def __delitem__(self, tag):
-        if self._info is not None:
-            try:
-                del self._info[tag]
-            except KeyError:
-                pass
+        if self._info is not None and tag in self._info:
+            del self._info[tag]
         del self._data[tag]
 
     def __iter__(self):
