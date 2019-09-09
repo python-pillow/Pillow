@@ -321,3 +321,13 @@ class TestPyDecoder(PillowTestCase):
         self.assertEqual(
             exif.get_ifd(0xA005), {1: "R98", 2: b"0100", 4097: 2272, 4098: 1704}
         )
+
+    def test_exif_shared(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im.getexif()
+        self.assertIs(im.getexif(), exif)
+
+    def test_exif_str(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im.getexif()
+        self.assertEqual(str(exif), "{274: 1}")
