@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Lazily use ImageFileDirectory_v1 values from Exif #4031
+  [radarhere]
+
 - Improved HSV conversion #4004
   [radarhere]
 
