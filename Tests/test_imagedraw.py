@@ -831,7 +831,7 @@ class TestImageDraw(PillowTestCase):
 
             # Assert
             self.assert_image_similar(
-                im, Image.open("Tests/images/imagedraw_stroke_" + suffix + ".png"), 2.8
+                im, Image.open("Tests/images/imagedraw_stroke_" + suffix + ".png"), 3.1
             )
 
     @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
