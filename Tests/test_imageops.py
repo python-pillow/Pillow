@@ -70,6 +70,9 @@ class TestImageOps(PillowTestCase):
         ImageOps.exif_transpose(hopper("L"))
         ImageOps.exif_transpose(hopper("RGB"))
 
+        ImageOps.auto_transpose(hopper("L"))
+        ImageOps.auto_transpose(hopper("RGB"))
+
     def test_1pxfit(self):
         # Division by zero in equalize if image is 1 pixel high
         newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))
@@ -250,28 +253,47 @@ class TestImageOps(PillowTestCase):
         exts = [".jpg"]
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
             exts.append(".webp")
-        for ext in exts:
-            base_im = Image.open("Tests/images/hopper" + ext)
+        for transpose in [ImageOps.exif_transpose, ImageOps.auto_transpose]:
+            for ext in exts:
+                base_im = Image.open("Tests/images/hopper" + ext)
 
-            orientations = [base_im]
-            for i in range(2, 9):
-                im = Image.open("Tests/images/hopper_orientation_" + str(i) + ext)
-                orientations.append(im)
-            for i, orientation_im in enumerate(orientations):
-                for im in [orientation_im, orientation_im.copy()]:  # ImageFile  # Image
-                    if i == 0:
-                        self.assertNotIn("exif", im.info)
-                    else:
-                        original_exif = im.info["exif"]
-                    transposed_im = ImageOps.exif_transpose(im)
-                    self.assert_image_similar(base_im, transposed_im, 17)
-                    if i == 0:
-                        self.assertNotIn("exif", im.info)
-                    else:
-                        self.assertNotEqual(transposed_im.info["exif"], original_exif)
+                orientations = [base_im]
+                for i in range(2, 9):
+                    im = Image.open("Tests/images/hopper_orientation_" + str(i) + ext)
+                    orientations.append(im)
+                for i, orientation_im in enumerate(orientations):
+                    for im in [
+                        orientation_im,
+                        orientation_im.copy(),
+                    ]:  # ImageFile  # Image
+                        if i == 0:
+                            self.assertNotIn("exif", im.info)
+                        else:
+                            original_exif = im.info["exif"]
+                        transposed_im = transpose(im)
+                        self.assert_image_similar(base_im, transposed_im, 17)
+                        if i == 0:
+                            self.assertNotIn("exif", im.info)
+                        else:
+                            self.assertNotEqual(
+                                transposed_im.info["exif"], original_exif
+                            )
 
-                        self.assertNotIn(0x0112, transposed_im.getexif())
+                            self.assertNotIn(0x0112, transposed_im.getexif())
 
-                    # Repeat the operation, to test that it does not keep transposing
-                    transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                    self.assert_image_equal(transposed_im2, transposed_im)
+                        # Repeat the operation,
+                        # to test that it does not keep transposing
+                        transposed_im2 = transpose(transposed_im)
+                        self.assert_image_equal(transposed_im2, transposed_im)
+
+    def test_auto_transpose(self):
+        base_im = Image.open("Tests/images/g4_orientation_1.tif")
+
+        for i in range(2, 9):
+            im = Image.open("Tests/images/g4_orientation_" + str(i) + ".tif")
+            transposed_im = ImageOps.auto_transpose(im)
+            self.assert_image_similar(base_im, transposed_im, 0.7)
+
+            # Repeat the operation, to test that it does not keep transposing
+            transposed_im2 = ImageOps.auto_transpose(transposed_im)
+            self.assert_image_equal(transposed_im2, transposed_im)

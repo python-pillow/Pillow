@@ -520,16 +520,7 @@ def solarize(image, threshold=128):
     return _lut(image, lut)
 
 
-def exif_transpose(image):
-    """
-    If an image has an EXIF Orientation tag, return a new image that is
-    transposed accordingly. Otherwise, return a copy of the image.
-
-    :param image: The image to transpose.
-    :return: An image.
-    """
-    exif = image.getexif()
-    orientation = exif.get(0x0112)
+def _transpose(image, orientation, exif=None):
     method = {
         2: Image.FLIP_LEFT_RIGHT,
         3: Image.ROTATE_180,
@@ -541,7 +532,40 @@ def exif_transpose(image):
     }.get(orientation)
     if method is not None:
         transposed_image = image.transpose(method)
-        del exif[0x0112]
-        transposed_image.info["exif"] = exif.tobytes()
+        if exif:
+            del exif[0x0112]
+            transposed_image.info["exif"] = exif.tobytes()
         return transposed_image
     return image.copy()
+
+
+def exif_transpose(image):
+    """
+    If an image has an EXIF Orientation tag, return a new image that is
+    transposed accordingly. Otherwise, return a copy of the image.
+
+    :param image: The image to transpose.
+    :return: An image.
+    """
+    exif = image.getexif()
+    orientation = exif.get(0x0112)
+    return _transpose(image, orientation, exif)
+
+
+def auto_transpose(image):
+    """
+    If an image has an EXIF or TIFF Orientation tag, return a new image that is
+    transposed accordingly. Otherwise, return a copy of the image.
+
+    :param image: The image to transpose.
+    :return: An image.
+    """
+    exif = image.getexif()
+    orientation = exif.get(0x0112)
+    if orientation and orientation != 1:
+        return _transpose(image, orientation, exif)
+    elif hasattr(image, "tag_v2"):
+        orientation = image.tag_v2.get(0x0112)
+        return _transpose(image, orientation)
+    else:
+        return image.copy()
