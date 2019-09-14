@@ -28,6 +28,22 @@ the ``fill`` parameter.
     draw.multiline_text((10, 10), "A\nB", "#f00", font,
                         stroke_width=2, stroke_fill="#0f0")
 
+For example,
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+    draw.text((10, 10), "A", "#f00", font, stroke_width=2, stroke_fill="#0f0")
+
+
+creates the following image:
+
+.. image:: ../../Tests/images/imagedraw_stroke_different.png
+
 API Changes
 ===========
 
