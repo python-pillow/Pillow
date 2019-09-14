@@ -389,12 +389,12 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     image will be saved without tiling.
 
 **quality_mode**
-    Either `"rates"` or `"dB"` depending on the units you want to use to
+    Either ``"rates"`` or ``"dB"`` depending on the units you want to use to
     specify image quality.
 
 **quality_layers**
     A sequence of numbers, each of which represents either an approximate size
-    reduction (if quality mode is `"rates"`) or a signal to noise ratio value
+    reduction (if quality mode is ``"rates"``) or a signal to noise ratio value
     in decibels.  If not specified, defaults to a single layer of full quality.
 
 **num_resolutions**
@@ -811,10 +811,10 @@ Saving sequences
 
     Support for animated WebP files will only be enabled if the system WebP
     library is v0.5.0 or later. You can check webp animation support at
-    runtime by calling `features.check("webp_anim")`.
+    runtime by calling ``features.check("webp_anim")``.
 
 When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available when the `save_all` argument is present and true.
+are available when the ``save_all`` argument is present and true.
 
 **append_images**
     A list of images to append as additional frames. Each of the

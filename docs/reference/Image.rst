@@ -52,7 +52,7 @@ Functions
     .. warning::
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
-        a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain
+        a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the image is over a certain
         limit. If desired, the warning can be turned into an error with
         ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or suppressed entirely with
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
@@ -262,10 +262,10 @@ Instances of the :py:class:`Image` class have the following attributes:
 .. py:attribute:: filename
 
     The filename or path of the source file. Only images created with the
-    factory function `open` have a filename attribute. If the input is a
+    factory function ``open`` have a filename attribute. If the input is a
     file like object, the filename attribute is set to an empty string.
 
-    :type: :py:class: `string`
+    :type: :py:class:`string`
 
 .. py:attribute:: format
 

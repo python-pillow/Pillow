@@ -27,7 +27,7 @@ Image resizing filters
 ----------------------
 
 Image resizing methods :py:meth:`~PIL.Image.Image.resize` and
-:py:meth:`~PIL.Image.Image.thumbnail` take a `resample` argument, which tells
+:py:meth:`~PIL.Image.Image.thumbnail` take a ``resample`` argument, which tells
 which filter should be used for resampling. Possible values are:
 :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
 :py:attr:`PIL.Image.BICUBIC` and :py:attr:`PIL.Image.ANTIALIAS`.
