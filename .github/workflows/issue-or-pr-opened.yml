@@ -1,0 +1,15 @@
+name: Issue or PR opened
+on: [issues, pull_request]
+
+jobs:
+  assign:
+    name: Add issue/PR to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue/PR to project
+        if: github.event.action == 'opened'
+        uses: alex-page/github-project-automation-plus@v0.0.3
+        with:
+          project: Pillow
+          column: New Issues
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
