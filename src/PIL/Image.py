@@ -2074,10 +2074,10 @@ class Image(object):
 
         if open_fp:
             if params.get("append", False):
-                fp = builtins.open(filename, "r+b")
-            else:
                 # Open also for reading ("+"), because TIFF save_all
                 # writer needs to go back and edit the written data.
+                fp = builtins.open(filename, "r+b")
+            else:
                 fp = builtins.open(filename, "w+b")
 
         try:
