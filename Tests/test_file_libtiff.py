@@ -818,3 +818,10 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal_tofile(
             im, "Tests/images/old-style-jpeg-compression.png"
         )
+
+    def test_no_rows_per_strip(self):
+        # This image does not have a RowsPerStrip TIFF tag
+        infile = "Tests/images/no_rows_per_strip.tif"
+        im = Image.open(infile)
+        im.load()
+        self.assertEqual(im.size, (950, 975))
