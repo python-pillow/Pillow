@@ -3781,6 +3781,9 @@ extern PyObject* PyImaging_ListWindowsWin32(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_EventLoopWin32(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_DrawWmf(PyObject* self, PyObject* args);
 #endif
+#ifdef HAVE_XCB
+extern PyObject* PyImaging_GrabScreenX11(PyObject* self, PyObject* args);
+#endif
 
 /* Experimental path stuff (in path.c) */
 extern PyObject* PyPath_Create(ImagingObject* self, PyObject* args);
@@ -3853,12 +3856,15 @@ static PyMethodDef functions[] = {
 #ifdef _WIN32
     {"display", (PyCFunction)PyImaging_DisplayWin32, 1},
     {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, 1},
-    {"grabscreen", (PyCFunction)PyImaging_GrabScreenWin32, 1},
-    {"grabclipboard", (PyCFunction)PyImaging_GrabClipboardWin32, 1},
+    {"grabscreen_win32", (PyCFunction)PyImaging_GrabScreenWin32, 1},
+    {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, 1},
     {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, 1},
     {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, 1},
     {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, 1},
     {"drawwmf", (PyCFunction)PyImaging_DrawWmf, 1},
+#endif
+#ifdef HAVE_XCB
+    {"grabscreen_x11", (PyCFunction)PyImaging_GrabScreenX11, 1},
 #endif
 
     /* Utilities */
@@ -3977,6 +3983,12 @@ setup_module(PyObject* m) {
 #endif
     PyDict_SetItemString(d, "libtiff_support_custom_tags", support_custom_tags);
   }
+#endif
+
+#ifdef HAVE_XCB
+    PyModule_AddObject(m, "HAVE_XCB", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_XCB", Py_False);
 #endif
 
     PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
