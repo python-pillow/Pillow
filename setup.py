@@ -823,6 +823,7 @@ class pil_build_ext(build_ext):
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
+            (feature.xcb, "XCB (X protocol)"),
         ]
 
         all = 1

@@ -22,12 +22,12 @@ import tempfile
 
 from . import Image
 
-if sys.platform == "win32":
-    pass
-elif sys.platform == "darwin":
+if sys.platform == "darwin":
     import os
     import tempfile
     import subprocess
+elif sys.platform == "win32":
+    pass
 elif not Image.core.HAVE_XCB:
     raise ImportError("ImageGrab requires Windows, macOS, or the XCB library")
 
@@ -65,17 +65,9 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:
-        raise OSError("XCB support not included")
+        raise AttributeError("XCB support not present")
     size, data = Image.core.grabscreen_x11(xdisplay)
-    im = Image.frombytes(
-        "RGB",
-        size,
-        data,
-        "raw",
-        "BGRX",
-        size[0] * 4,
-        1,
-    )
+    im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
     if bbox:
         im = im.crop(bbox)
     return im

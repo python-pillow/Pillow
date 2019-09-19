@@ -845,8 +845,8 @@ PyImaging_GrabScreenX11(PyObject* self, PyObject* args)
 
     connection = xcb_connect(display_name, &screen_number);
     if (xcb_connection_has_error(connection)) {
+        PyErr_Format(PyExc_IOError, "X connection failed: error %i", xcb_connection_has_error(connection));
         xcb_disconnect(connection);
-        PyErr_SetString(PyExc_IOError, "X connection failed");
         return NULL;
     }
 
@@ -857,7 +857,8 @@ PyImaging_GrabScreenX11(PyObject* self, PyObject* args)
             break;
         }
     }
-    if (screen == NULL) {
+    if (screen == NULL || screen->root == 0) {
+        // this case is usually caught with "X connection failed: error 6" above
         xcb_disconnect(connection);
         PyErr_SetString(PyExc_IOError, "X screen not found");
         return NULL;
@@ -873,16 +874,21 @@ PyImaging_GrabScreenX11(PyObject* self, PyObject* args)
                                               0, 0, width, height, 0x00ffffff),
                                 &error);
     if (reply == NULL) {
+        PyErr_Format(PyExc_IOError, "X get_image failed: error %i (%i, %i, %i)",
+                     error->error_code, error->major_code, error->minor_code, error->resource_id);
         free(error);
         xcb_disconnect(connection);
-        PyErr_SetString(PyExc_IOError, "X get_image failed");
         return NULL;
     }
 
     /* store data in Python buffer */
 
-    buffer = PyBytes_FromStringAndSize((char*)xcb_get_image_data(reply),
-                                       xcb_get_image_data_length(reply));
+    if (reply->depth == 24) {
+        buffer = PyBytes_FromStringAndSize((char*)xcb_get_image_data(reply),
+                                           xcb_get_image_data_length(reply));
+    } else {
+        PyErr_Format(PyExc_IOError, "usupported bit depth: %i", reply->depth);
+    }
 
     free(reply);
     xcb_disconnect(connection);

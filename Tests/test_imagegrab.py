@@ -2,67 +2,68 @@ import subprocess
 import sys
 
 import pytest
+from PIL import Image, ImageGrab
 
 from .helper import assert_image
 
-try:
-    from PIL import ImageGrab
 
-    class TestImageGrab:
-        def test_grab(self):
-            for im in [
-                ImageGrab.grab(),
-                ImageGrab.grab(include_layered_windows=True),
-                ImageGrab.grab(all_screens=True),
-            ]:
-                assert_image(im, im.mode, im.size)
-
-            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-            assert_image(im, im.mode, (40, 60))
-
-        def test_grabclipboard(self):
-            if sys.platform == "darwin":
-                subprocess.call(["screencapture", "-cx"])
-            else:
-                p = subprocess.Popen(
-                    ["powershell", "-command", "-"], stdin=subprocess.PIPE
-                )
-                p.stdin.write(
-                    b"""[Reflection.Assembly]::LoadWithPartialName("System.Drawing")
-[Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-$bmp = New-Object Drawing.Bitmap 200, 200
-[Windows.Forms.Clipboard]::SetImage($bmp)"""
-                )
-                p.communicate()
-
-            im = ImageGrab.grabclipboard()
+class TestImageGrab:
+    @pytest.mark.skipif(
+        sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
+    )
+    def test_grab(self):
+        for im in [
+            ImageGrab.grab(),
+            ImageGrab.grab(include_layered_windows=True),
+            ImageGrab.grab(all_screens=True),
+        ]:
             assert_image(im, im.mode, im.size)
 
+        im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+        assert_image(im, im.mode, (40, 60))
 
-except ImportError:
+    @pytest.mark.skipif(not Image.core.HAVE_XCB, reason="requires XCB")
+    def test_grab_x11(self):
+        try:
+            if sys.platform not in ("win32", "darwin"):
+                im = ImageGrab.grab()
+                assert_image(im, im.mode, im.size)
 
-    class TestImageGrab:
-        @pytest.mark.skip(reason="ImageGrab ImportError")
-        def test_skip(self):
-            pass
+            im2 = ImageGrab.grab(xdisplay="")
+            assert_image(im2, im2.mode, im2.size)
+        except IOError as e:
+            pytest.skip(str(e))
 
-
-class TestImageGrabImport:
-    def test_import(self):
-        # Arrange
+    @pytest.mark.skipif(not Image.core.HAVE_XCB, reason="requires XCB")
+    def test_grab_invalid_xdisplay(self):
         exception = None
 
-        # Act
         try:
-            from PIL import ImageGrab
-
-            ImageGrab.__name__  # dummy to prevent Pyflakes warning
+            ImageGrab.grab(xdisplay="error.test:0.0")
         except Exception as e:
             exception = e
 
-        # Assert
-        if sys.platform in ["win32", "darwin"]:
-            assert exception is None
+        assert isinstance(exception, IOError)
+        assert str(exception).startswith("X connection failed")
+
+    @pytest.mark.skipif(
+        sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
+    )
+    def test_grabclipboard(self):
+        if sys.platform == "darwin":
+            subprocess.call(["screencapture", "-cx"])
+        elif sys.platform == "win32":
+            p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+            p.stdin.write(
+                b"""[Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+[Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+$bmp = New-Object Drawing.Bitmap 200, 200
+[Windows.Forms.Clipboard]::SetImage($bmp)"""
+            )
+            p.communicate()
         else:
-            assert isinstance(exception, ImportError)
-            assert str(exception) == "ImageGrab is macOS and Windows only"
+            pytest.skip("ImageGrab.grabclipboard() is macOS and Windows only")
+            return
+
+        im = ImageGrab.grabclipboard()
+        assert_image(im, im.mode, im.size)
