@@ -323,14 +323,14 @@ PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
     int x = 0, y = 0, width, height;
-    int includeLayeredWindows = 0, multimonitor = 0;
+    int includeLayeredWindows = 0, all_screens = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
     DWORD rop;
     PyObject* buffer;
 
-    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &multimonitor))
+    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &all_screens))
         return NULL;
 
     /* step 1: create a memory DC large enough to hold the
@@ -339,7 +339,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     screen = CreateDC("DISPLAY", NULL, NULL, NULL);
     screen_copy = CreateCompatibleDC(screen);
 
-    if (multimonitor) {
+    if (all_screens) {
         x = GetSystemMetrics(SM_XVIRTUALSCREEN);
         y = GetSystemMetrics(SM_YVIRTUALSCREEN);
         width = GetSystemMetrics(SM_CXVIRTUALSCREEN);

@@ -29,7 +29,7 @@ else:
     raise ImportError("ImageGrab is macOS and Windows only")
 
 
-def grab(bbox=None, include_layered_windows=False, multimonitor=False):
+def grab(bbox=None, include_layered_windows=False, all_screens=False):
     if sys.platform == "darwin":
         fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)
@@ -40,7 +40,7 @@ def grab(bbox=None, include_layered_windows=False, multimonitor=False):
         if bbox:
             im = im.crop(bbox)
     else:
-        offset, size, data = grabber(include_layered_windows, multimonitor)
+        offset, size, data = grabber(include_layered_windows, all_screens)
         im = Image.frombytes(
             "RGB",
             size,

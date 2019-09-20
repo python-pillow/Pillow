@@ -11,7 +11,7 @@ try:
             for im in [
                 ImageGrab.grab(),
                 ImageGrab.grab(include_layered_windows=True),
-                ImageGrab.grab(multimonitor=True),
+                ImageGrab.grab(all_screens=True),
             ]:
                 self.assert_image(im, im.mode, im.size)
 
