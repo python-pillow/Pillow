@@ -167,7 +167,7 @@ setlocal
 cd /D %%JPEG%%
 nmake -nologo -f makefile.vc setup-vc6
 nmake -nologo -f makefile.vc clean
-nmake -nologo -f makefile.vc libjpeg.lib
+nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B j*.h %%INCLIB%%
