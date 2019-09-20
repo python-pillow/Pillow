@@ -14,7 +14,7 @@ environment:
   DEPLOY: YES
   matrix:
   - PYTHON: C:/vp/pypy3
-    EXECUTABLE: bin/pypy3.exe
+    EXECUTABLE: bin/pypy.exe
     PIP_DIR: bin
     VENV: YES
   - PYTHON: C:/vp/pypy2
