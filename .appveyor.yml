@@ -13,6 +13,10 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
+  - PYTHON: C:/vp/pypy3
+    EXECUTABLE: bin/pypy3.exe
+    PIP_DIR: bin
+    VENV: YES
   - PYTHON: C:/vp/pypy2
     EXECUTABLE: bin/pypy.exe
     PIP_DIR: bin
@@ -43,7 +47,12 @@ install:
 - ps: |
       if ($env:PYTHON -eq "c:/vp/pypy2")
       {
-        c:\pillow\winbuild\appveyor_install_pypy.cmd
+        c:\pillow\winbuild\appveyor_install_pypy2.cmd
+      }
+- ps: |
+      if ($env:PYTHON -eq "c:/vp/pypy3")
+      {
+        c:\pillow\winbuild\appveyor_install_pypy3.cmd
       }
 - ps: |
       if ($env:PYTHON -eq "c:/msys64/mingw32")
