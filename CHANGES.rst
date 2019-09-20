@@ -7,6 +7,12 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Use TIFF orientation #4063
+  [radarhere]
+
+- Raise the same error if a truncated image is loaded a second time #3965
+  [radarhere]
+
 - Lazily use ImageFileDirectory_v1 values from Exif #4031
   [radarhere]
 
