@@ -244,7 +244,6 @@ class ImageFile(Image.Image):
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    self.tile = []
                                     raise IOError(
                                         "image file is truncated "
                                         "(%d bytes not processed)" % len(b)

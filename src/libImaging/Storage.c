@@ -132,7 +132,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
-        /* 15-bit true colour */
+        /* 15-bit reversed true colour */
         im->bands = 1;
         im->pixelsize = 2;
         im->linesize = (xsize*2 + 3) & -4;

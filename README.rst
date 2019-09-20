@@ -67,7 +67,7 @@ To report a security vulnerability, please follow the procedure described in the
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
-.. |tidelift| image:: https://tidelift.com/badges/github/python-pillow/Pillow?style=flat
+.. |tidelift| image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=referral&utm_campaign=readme
 
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg

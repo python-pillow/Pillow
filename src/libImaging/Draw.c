@@ -834,7 +834,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
         // Build edge list
         // malloc check UNDONE, FLOAT?
-        maxEdgeCount = end - start;
+        maxEdgeCount = ceil(end - start);
         if (inner) {
             maxEdgeCount *= 2;
         }

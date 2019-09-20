@@ -111,6 +111,10 @@ class TestImageFile(PillowTestCase):
         with self.assertRaises(IOError):
             im.load()
 
+        # Test that the error is raised if loaded a second time
+        with self.assertRaises(IOError):
+            im.load()
+
     def test_truncated_without_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
@@ -321,3 +325,13 @@ class TestPyDecoder(PillowTestCase):
         self.assertEqual(
             exif.get_ifd(0xA005), {1: "R98", 2: b"0100", 4097: 2272, 4098: 1704}
         )
+
+    def test_exif_shared(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im.getexif()
+        self.assertIs(im.getexif(), exif)
+
+    def test_exif_str(self):
+        im = Image.open("Tests/images/exif.png")
+        exif = im.getexif()
+        self.assertEqual(str(exif), "{274: 1}")

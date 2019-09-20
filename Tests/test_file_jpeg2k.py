@@ -91,6 +91,12 @@ class TestFileJpeg2k(PillowTestCase):
         )
         self.assert_image_equal(im, test_card)
 
+    def test_tiled_offset_too_small(self):
+        with self.assertRaises(ValueError):
+            self.roundtrip(
+                test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32)
+            )
+
     def test_irreversible_rt(self):
         im = self.roundtrip(test_card, irreversible=True, quality_layers=[20])
         self.assert_image_similar(im, test_card, 2.0)

@@ -605,6 +605,21 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize_multiline("ABC\nA"), (36, 36))
         self.assertEqual(t.getsize_multiline("ABC\nAaaa"), (48, 36))
 
+    def test_getsize_stroke(self):
+        # Arrange
+        t = self.get_font()
+
+        # Act / Assert
+        for stroke_width in [0, 2]:
+            self.assertEqual(
+                t.getsize("A", stroke_width=stroke_width),
+                (12 + stroke_width * 2, 16 + stroke_width * 2),
+            )
+            self.assertEqual(
+                t.getsize_multiline("ABC\nAaaa", stroke_width=stroke_width),
+                (48 + stroke_width * 2, 36 + stroke_width * 4),
+            )
+
     def test_complex_font_settings(self):
         # Arrange
         t = self.get_font()

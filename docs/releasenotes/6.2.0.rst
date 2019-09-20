@@ -1,0 +1,83 @@
+6.2.0
+-----
+
+API Additions
+=============
+
+Text stroking
+^^^^^^^^^^^^^
+
+``stroke_width`` and ``stroke_fill`` arguments have been added to text drawing
+operations. They allow text to be outlined, setting the width of the stroke and
+and the color respectively. If not provided, ``stroke_fill`` will default to
+the ``fill`` parameter.
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 40)
+    font.getsize_multiline("A", stroke_width=2)
+    font.getsize("ABC\nAaaa", stroke_width=2)
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.textsize("A", font, stroke_width=2)
+    draw.multiline_textsize("ABC\nAaaa", font, stroke_width=2)
+    draw.text((10, 10), "A", "#f00", font, stroke_width=2, stroke_fill="#0f0")
+    draw.multiline_text((10, 10), "A\nB", "#f00", font,
+                        stroke_width=2, stroke_fill="#0f0")
+
+For example,
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+    draw.text((10, 10), "A", "#f00", font, stroke_width=2, stroke_fill="#0f0")
+
+
+creates the following image:
+
+.. image:: ../../Tests/images/imagedraw_stroke_different.png
+
+API Changes
+===========
+
+Image.getexif
+^^^^^^^^^^^^^
+
+To allow for lazy loading of Exif data, ``Image.getexif()`` now returns a
+shared instance of ``Image.Exif``.
+
+Deprecations
+^^^^^^^^^^^^
+
+Python 2.7
+~~~~~~~~~~
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python
+2.7, making Pillow 6.2.x the last release series to support Python 2.
+
+Other Changes
+=============
+
+Removed bdist_wininst .exe installers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.exe installers fell out of favour with PEP 527, and will be deprecated in
+Python 3.8. Pillow will no longer be distributing them. Wheels should be used
+instead.
+
+Flags for libwebp in wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building libwebp for inclusion in wheels, Pillow now adds the -O3 and
+-DNDEBUG CFLAGS. These flags would be used by default if building libwebp
+without debugging, and using them fixes a significant decrease in speed when
+a wheel-installed copy of Pillow performs libwebp operations.

@@ -1098,6 +1098,20 @@ class TiffImageFile(ImageFile.ImageFile):
         return super(TiffImageFile, self).load()
 
     def load_end(self):
+        if self._tile_orientation:
+            method = {
+                2: Image.FLIP_LEFT_RIGHT,
+                3: Image.ROTATE_180,
+                4: Image.FLIP_TOP_BOTTOM,
+                5: Image.TRANSPOSE,
+                6: Image.ROTATE_270,
+                7: Image.TRANSVERSE,
+                8: Image.ROTATE_90,
+            }.get(self._tile_orientation)
+            if method is not None:
+                self.im = self.im.transpose(method)
+                self._size = self.im.size
+
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
         if not self._is_animated:
@@ -1164,7 +1178,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if DEBUG:
                 print("have getvalue. just sending in a string from getvalue")
             n, err = decoder.decode(self.fp.getvalue())
-        elif hasattr(self.fp, "fileno"):
+        elif fp:
             # we've got a actual file on disk, pass in the fp.
             if DEBUG:
                 print("have fileno, calling fileno version of the decoder.")
@@ -1175,11 +1189,15 @@ class TiffImageFile(ImageFile.ImageFile):
             # we have something else.
             if DEBUG:
                 print("don't have fileno or getvalue. just reading")
+            self.fp.seek(0)
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
         self.tile = []
         self.readonly = 0
+
+        self.load_end()
+
         # libtiff closed the fp in a, we need to close self.fp, if possible
         if self._exclusive_fp and not self._is_animated:
             self.fp.close()
@@ -1386,6 +1404,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode in ["P", "PA"]:
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+
+        self._tile_orientation = self.tag_v2.get(0x0112)
 
     def _close__fp(self):
         try:
