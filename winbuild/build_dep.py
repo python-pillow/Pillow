@@ -114,6 +114,7 @@ def setup_compiler(compiler):
     return (
         r"""setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
+echo on
 set INCLIB=%%INCLIB%%\%(inc_dir)s
 """  # noqa: E501
         % compiler
