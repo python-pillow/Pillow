@@ -143,8 +143,8 @@ setlocal
 cd /D %%OPENJPEG%%%(inc_dir)s
 
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -G "NMake Makefiles" .
-nmake -f Makefile clean
-nmake -f Makefile
+nmake -nologo -f Makefile clean
+nmake -nologo -f Makefile
 copy /Y /B bin\* %%INCLIB%%
 mkdir %%INCLIB%%\openjpeg-%(op_ver)s
 copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
@@ -164,9 +164,9 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 cd /D %%JPEG%%
-nmake -f makefile.vc setup-vc6
-nmake -f makefile.vc clean
-nmake -f makefile.vc libjpeg.lib
+nmake -nologo -f makefile.vc setup-vc6
+nmake -nologo -f makefile.vc clean
+nmake -nologo -f makefile.vc libjpeg.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B j*.h %%INCLIB%%
@@ -175,8 +175,8 @@ endlocal
 rem Build zlib
 setlocal
 cd /D %%ZLIB%%
-nmake -f win32\Makefile.msc clean
-nmake -f win32\Makefile.msc zlib.lib
+nmake -nologo -f win32\Makefile.msc clean
+nmake -nologo -f win32\Makefile.msc zlib.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B zlib.lib %%INCLIB%%\z.lib
@@ -191,7 +191,7 @@ setlocal
         + r"""
 cd /D %%WEBP%%
 rd /S /Q %%WEBP%%\output\release-static
-nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
+nmake -nologo -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
 copy /Y /B output\release-static\%(webp_platform)s\lib\* %%INCLIB%%
 mkdir %%INCLIB%%\webp
 copy /Y /B src\webp\*.h %%INCLIB%%\\webp
@@ -206,8 +206,8 @@ rem do after building jpeg and zlib
 copy %%~dp0\nmake.opt %%TIFF%%
 
 cd /D %%TIFF%%
-nmake -f makefile.vc clean
-nmake -f makefile.vc lib
+nmake -nologo -f makefile.vc clean
+nmake -nologo -f makefile.vc lib
 copy /Y /B libtiff\*.dll %%INCLIB%%
 copy /Y /B libtiff\*.lib %%INCLIB%%
 copy /Y /B libtiff\tiff*.h %%INCLIB%%
@@ -320,7 +320,7 @@ cd /D %%GHOSTSCRIPT%%
 set WIN64=""
 """
     script += r"""
-nmake -f psi/msvc.mak
+nmake -nologo -f psi/msvc.mak
 copy /Y /B bin\ C:\Python27\
 endlocal
 """
