@@ -831,3 +831,12 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal_tofile(
             im, "Tests/images/old-style-jpeg-compression.png"
         )
+
+    def test_orientation(self):
+        base_im = Image.open("Tests/images/g4_orientation_1.tif")
+
+        for i in range(2, 9):
+            im = Image.open("Tests/images/g4_orientation_" + str(i) + ".tif")
+            im.load()
+
+            self.assert_image_similar(base_im, im, 0.7)
