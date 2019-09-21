@@ -143,7 +143,7 @@ setlocal
 @echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
 
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -G "NMake Makefiles" .
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
 nmake -nologo -f Makefile clean
 nmake -nologo -f Makefile
 copy /Y /B bin\* %%INCLIB%%
