@@ -13,10 +13,6 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/vp/pypy3
-    EXECUTABLE: bin/pypy.exe
-    PIP_DIR: bin
-    VENV: YES
   - PYTHON: C:/vp/pypy2
     EXECUTABLE: bin/pypy.exe
     PIP_DIR: bin
@@ -34,6 +30,10 @@ environment:
     PIP_DIR: bin
     TEST_OPTIONS: --processes=0
     DEPLOY: NO
+  - PYTHON: C:/vp/pypy3
+    EXECUTABLE: bin/pypy.exe
+    PIP_DIR: bin
+    VENV: YES
 
 
 install:
