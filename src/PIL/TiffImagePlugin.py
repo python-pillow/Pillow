@@ -1165,6 +1165,7 @@ class TiffImageFile(ImageFile.ImageFile):
         except ValueError:
             raise IOError("Couldn't set the image")
 
+        close_self_fp = self._exclusive_fp and not self._is_animated
         if hasattr(self.fp, "getvalue"):
             # We've got a stringio like thing passed in. Yay for all in memory.
             # The decoder needs the entire file in one shot, so there's not
@@ -1182,7 +1183,8 @@ class TiffImageFile(ImageFile.ImageFile):
             # we've got a actual file on disk, pass in the fp.
             if DEBUG:
                 print("have fileno, calling fileno version of the decoder.")
-            self.fp.seek(0)
+            if not close_self_fp:
+                self.fp.seek(0)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
         else:
@@ -1199,7 +1201,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.load_end()
 
         # libtiff closed the fp in a, we need to close self.fp, if possible
-        if self._exclusive_fp and not self._is_animated:
+        if close_self_fp:
             self.fp.close()
             self.fp = None  # might be shared
 
