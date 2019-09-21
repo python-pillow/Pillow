@@ -12,4 +12,4 @@ jobs:
         with:
           project: Pillow
           column: New Issues
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GH_PAT }}
