@@ -355,6 +355,12 @@ def on_appveyor():
     return "APPVEYOR" in os.environ
 
 
+def on_ci():
+    # Travis and AppVeyor have "CI"
+    # Azure Pipelines has "TF_BUILD"
+    return "CI" in os.environ or "TF_BUILD" in os.environ
+
+
 if sys.platform == "win32":
     IMCONVERT = os.environ.get("MAGICK_HOME", "")
     if IMCONVERT:
