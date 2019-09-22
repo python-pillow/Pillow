@@ -84,7 +84,8 @@ def vc_setup(compiler, bit):
         arch = "x86" if bit == 32 else "x86_amd64"
         script = (
             r"""
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s"""
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s
+echo on"""
             % arch
         )
     return script
