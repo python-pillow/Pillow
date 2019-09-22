@@ -67,7 +67,6 @@ def extract_openjpeg(compiler):
         r"""
 rem build openjpeg
 setlocal
-@echo on
 cd %%BUILD%%
 mkdir %%INCLIB%%\openjpeg-2.0
 copy /Y /B openjpeg-2.0.0-win32-x86\include\openjpeg-2.0  %%INCLIB%%\openjpeg-2.0
@@ -140,7 +139,6 @@ setlocal
 """
         + vc_setup(compiler, bit)
         + r"""
-@echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
 
 %%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
