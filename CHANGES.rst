@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Changed WindowsViewer format to PNG #4080
+  [radarhere]
+
 - Use TIFF orientation #4063
   [radarhere]
 
