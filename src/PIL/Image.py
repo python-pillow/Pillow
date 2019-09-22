@@ -2110,15 +2110,15 @@ class Image(object):
         Displays this image. This method is mainly intended for
         debugging purposes.
 
-        On Unix platforms, this method saves the image to a temporary
-        PNG file, and calls the **display**, **eog** or **xv**
-        utility, depending on which one can be found.
+        The image is first saved to a temporary file. By default, it will be in
+        PNG format.
 
-        On macOS, this method saves the image to a temporary PNG file, and
-        opens it with the native Preview application.
+        On Unix, the image is then opened using the **display**, **eog** or
+        **xv** utility, depending on which one can be found.
 
-        On Windows, it saves the image to a temporary BMP file, and uses
-        the standard BMP display utility to show it (usually Paint).
+        On macOS, the image is opened with the native Preview application.
+
+        On Windows, the image is opened with the standard PNG display utility.
 
         :param title: Optional title to use for the image window,
            where possible.

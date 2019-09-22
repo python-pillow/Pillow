@@ -105,7 +105,8 @@ class Viewer(object):
 if sys.platform == "win32":
 
     class WindowsViewer(Viewer):
-        format = "BMP"
+        format = "PNG"
+        options = {"compress_level": 1}
 
         def get_command(self, file, **options):
             return (
