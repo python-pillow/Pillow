@@ -100,16 +100,38 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
         set BLDOPT=install
         %PYTHON%\%EXECUTABLE% setup.py build_ext --add-imaging-libs=msvcrt install
+        %PYTHON%\%EXECUTABLE% selftest.py --installed
       env:
         PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
         EXECUTABLE: python.exe
+
+    - name: Install PyTest
+      run: '%PYTHON%\%PIP% install pytest pytest-cov'
+      env:
+        PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
+        PIP: Scripts\pip.exe
     
     - name: Test Pillow
-      run: '%PYTHON%\%EXECUTABLE% %GITHUB_WORKSPACE%\selftest.py --installed'
+      run: |
+        cd /D %GITHUB_WORKSPACE%
+        %PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
       env:
         PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
         EXECUTABLE: python.exe
+
+    - name: Install Codecov
+      run: '%PYTHON%\%PIP% install codecov'
+      env:
+        PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
+        PIP: Scripts\pip.exe
     
-    - name: After success
-      run: echo TODO 1>&2
+    - name: Upload coverage
+      run: |
+        cd /D %GITHUB_WORKSPACE%
+        codecov --file coverage.xml --name %PYTHON%
+        echo TODO upload coverage
+        exit /B 1
+      env:
+        PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
+        EXECUTABLE: python.exe
     
