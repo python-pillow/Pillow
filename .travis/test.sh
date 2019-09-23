@@ -2,10 +2,6 @@
 
 set -e
 
-coverage erase
-make clean
-make install-coverage
-
 python -m pytest -v -x --cov PIL --cov-report term Tests
 
 # Docs

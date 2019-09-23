@@ -45,9 +45,13 @@ jobs:
       run: |
         .github/workflows/macos-install.sh
 
+    - name: Build
+      run: |
+        .travis/build.sh
+
     - name: Test
       run: |
-        .travis/script.sh
+        .travis/test.sh
 
     - name: Docs
       if: matrix.python-version == 2.7
