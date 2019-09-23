@@ -4,11 +4,14 @@ SF_MIRROR = "http://iweb.dl.sourceforge.net"
 PILLOW_DEPENDS_DIR = "C:\\pillow-depends\\"
 
 pythons = {
+    # for AppVeyor
     "27": {"compiler": 7, "vc": 2010},
     "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
+    # for GitHub Actions
+    "3.6": {"compiler": 7.1, "vc": 2015},
 }
 
 VIRT_BASE = "c:/vp/"
