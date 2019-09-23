@@ -33,12 +33,12 @@ jobs:
 
     - name: Build dependencies / libjpeg
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
-        echo on
-        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include;%INCLUDE%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\jpeg-9c
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
+        echo on
         nmake -nologo -f makefile.vc setup-vc6
         nmake -nologo -f makefile.vc clean
         nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib
@@ -47,12 +47,12 @@ jobs:
 
     - name: Build dependencies / zlib
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
-        echo on
-        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include;%INCLUDE%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\zlib-1.2.11
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
+        echo on
         nmake -nologo -f win32\Makefile.msc clean
         nmake -nologo -f win32\Makefile.msc zlib.lib
         copy /Y /B z*.h %INCLIB%
@@ -61,12 +61,12 @@ jobs:
 
     - name: Build dependencies / libtiff
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
-        echo on
-        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include;%INCLUDE%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\tiff-4.0.10
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
+        echo on
         copy %GITHUB_WORKSPACE%\winbuild\nmake.opt nmake.opt
         nmake -nologo -f makefile.vc clean
         nmake -nologo -f makefile.vc lib
@@ -76,25 +76,35 @@ jobs:
 
     - name: Build dependencies / webp
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
-        echo on
-        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include;%INCLUDE%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\libwebp-1.0.3
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
+        echo on
         rmdir /S /Q output\release-static
         nmake -nologo -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output ARCH=x86 all
         mkdir %INCLIB%\webp
         copy /Y /B src\webp\*.h %INCLIB%\webp
         copy /Y /B output\release-static\x86\lib\* %INCLIB%
     
-    - name: Build
-      run: '%PYTHON%\%EXECUTABLE% %GITHUB_WORKSPACE%\winbuild\build.py'
+    - name: Build Pillow
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set MPLSRC=%GITHUB_WORKSPACE%
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        cd /D %GITHUB_WORKSPACE%
+        set DISTUTILS_USE_SDK=1
+        set LIB=%INCLIB%;%PYTHON%\tcl
+        set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86 8.1
+        set BLDOPT=install
+        %PYTHON%\%EXECUTABLE% setup.py build_ext --add-imaging-libs=msvcrt install
       env:
         PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
         EXECUTABLE: python.exe
     
-    - name: Test
+    - name: Test Pillow
       run: '%PYTHON%\%EXECUTABLE% %GITHUB_WORKSPACE%\selftest.py --installed'
       env:
         PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86\
