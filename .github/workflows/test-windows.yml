@@ -1,0 +1,32 @@
+name: Test Windows
+
+on: [push, pull_request]
+
+jobs:
+  build:
+  
+    runs-on: windows-2016
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+    
+    name: Python ${{ matrix.python-version }}
+    
+    steps:
+    - uses: actions/checkout@v1
+    
+    - name: Prepare dependencies
+      run: python.exe winbuild\build_dep.py
+    
+    - name: Build dependencies
+      run: winbuild\build_deps.cmd
+    
+    - name: Build
+      run: python.exe winbuild\build.py
+    
+    - name: Test
+      run: python.exe selftest.py --installed
+    
+    - name: After success
+      run: echo TODO
+    
