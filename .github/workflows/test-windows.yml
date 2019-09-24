@@ -142,10 +142,7 @@ jobs:
         copy /Y /B bin\*.lib %INCLIB%
 
     - name: Build dependencies / ghostscript
-      if: false
       run: |
-        REM only used for Python 2.7 in AppVeyor?
-
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
@@ -155,7 +152,8 @@ jobs:
         set MSVC_VERSION=14
         set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
         nmake -nologo -f psi\msvc.mak
-        copy /Y /B bin\ %PYTHON%
+        rem Add bin to PATH variable: Copy to INCLIB, then add INCLIB to PATH in Test step.
+        copy /Y /B bin\* %INCLIB%
       env:
         PYTHON: C:\hostedtoolcache\windows\Python\${{ matrix.python-version }}\x86
 
@@ -185,6 +183,9 @@ jobs:
     
     - name: Test Pillow
       run: |
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        rem Add GhostScript executables (copied to INCLIB) to PATH.
+        path %INCLIB%;%PATH%
         cd /D %GITHUB_WORKSPACE%
         %PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
       env:
