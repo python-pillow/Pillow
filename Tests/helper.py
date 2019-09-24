@@ -355,10 +355,17 @@ def on_appveyor():
     return "APPVEYOR" in os.environ
 
 
+def on_github_actions():
+    return "GITHUB_ACTIONS" in os.environ
+
+
 def on_ci():
     # Travis and AppVeyor have "CI"
     # Azure Pipelines has "TF_BUILD"
-    return "CI" in os.environ or "TF_BUILD" in os.environ
+    # GitHub Actions has "GITHUB_ACTIONS"
+    return (
+        "CI" in os.environ or "TF_BUILD" in os.environ or "GITHUB_ACTIONS" in os.environ
+    )
 
 
 if sys.platform == "win32":

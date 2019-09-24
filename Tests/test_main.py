@@ -5,8 +5,16 @@ import subprocess
 import sys
 from unittest import TestCase
 
+from .helper import on_github_actions, unittest
+
 
 class TestMain(TestCase):
+    @unittest.skipIf(
+        sys.platform == "win32"
+        and hasattr(sys, "pypy_translation_info")
+        and on_github_actions(),
+        "Failing on Windows on GitHub Actions running PyPy",
+    )
     def test_main(self):
         out = subprocess.check_output([sys.executable, "-m", "PIL"]).decode("utf-8")
         lines = out.splitlines()

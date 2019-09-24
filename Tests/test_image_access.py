@@ -3,7 +3,7 @@ import sys
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, on_appveyor, unittest
+from .helper import PillowTestCase, hopper, on_ci, unittest
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -333,8 +333,8 @@ class TestCffi(AccessTest):
 
 class TestEmbeddable(unittest.TestCase):
     @unittest.skipIf(
-        not sys.platform.startswith("win32") or on_appveyor(),
-        "Failing on AppVeyor when run from subprocess, not from shell",
+        not sys.platform.startswith("win32") or on_ci(),
+        "Failing on AppVeyor / GitHub Actions when run from subprocess, not from shell",
     )
     def test_embeddable(self):
         import subprocess
