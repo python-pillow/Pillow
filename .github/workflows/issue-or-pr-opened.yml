@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Add issue/PR to project
         if: github.event.action == 'opened'
-        uses: alex-page/github-project-automation-plus@v0.0.3
+        uses: alex-page/github-project-automation-plus@v0.1.0
         with:
           project: Pillow
           column: New Issues
