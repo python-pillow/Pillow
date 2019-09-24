@@ -11,7 +11,9 @@ pythons = {
     "36": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions
+    "3.5": {"compiler": 7.1, "vc": 2015},
     "3.6": {"compiler": 7.1, "vc": 2015},
+    "3.7": {"compiler": 7.1, "vc": 2015},
 }
 
 VIRT_BASE = "c:/vp/"
