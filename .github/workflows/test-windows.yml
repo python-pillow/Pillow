@@ -54,6 +54,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
+
+    - name: pip install wheel pytest pytest-cov codecov
+      run: |
+        "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
+        pip install codecov
     
     - name: Fetch dependencies
       run: |
@@ -207,17 +212,9 @@ jobs:
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
-        set BLDOPT=install
-        %PYTHON%\%EXECUTABLE% setup.py build_ext --add-imaging-libs=msvcrt install
-        %PYTHON%\%EXECUTABLE% -c "from PIL import _webp;import os, shutil;shutil.copy(r'%INCLIB%\freetype.dll', os.path.dirname(_webp.__file__));"
-        %PYTHON%\%EXECUTABLE% selftest.py --installed
-      env:
-        EXECUTABLE: python.exe
-
-    - name: pip install pytest pytest-cov codecov
-      run: |
-        "%pythonLocation%\python.exe" -m pip install pytest pytest-cov
-        pip install codecov
+        %PYTHON%\python.exe setup.py build_ext --add-imaging-libs=msvcrt install
+        %PYTHON%\python.exe -c "from PIL import _webp;import os, shutil;shutil.copy(r'%INCLIB%\freetype.dll', os.path.dirname(_webp.__file__));"
+        %PYTHON%\python.exe selftest.py --installed
     
     - name: Test Pillow
       run: |
@@ -232,4 +229,26 @@ jobs:
       run: 'codecov --file "%GITHUB_WORKSPACE%\coverage.xml" --name "%pythonLocation%"'
       env:
         CODECOV: Scripts\codecov.exe
-    
+
+    - name: Build wheel
+      id: wheel
+      if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
+      run: |
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ##[set-output name=dist;]dist-%%a
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
+        set PYTHON=%pythonLocation%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set MPLSRC=%GITHUB_WORKSPACE%
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        cd /D %GITHUB_WORKSPACE%
+        set DISTUTILS_USE_SDK=1
+        set LIB=%INCLIB%;%PYTHON%\tcl
+        set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        %PYTHON%\python.exe setup.py build_ext --add-imaging-libs=msvcrt bdist_wheel
+
+    - uses: actions/upload-artifact@v1
+      if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
+      with:
+        name: ${{ steps.wheel.outputs.dist }}
+        path: dist
