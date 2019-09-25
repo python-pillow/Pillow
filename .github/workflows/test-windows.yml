@@ -104,7 +104,7 @@ jobs:
         copy /Y /B *.lib %INCLIB%
         copy /Y /B zlib.lib %INCLIB%\z.lib
 
-    - name: Build dependencies / libtiff
+    - name: Build dependencies / LibTIFF
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -119,7 +119,7 @@ jobs:
         copy /Y /B libtiff\*.dll %INCLIB%
         copy /Y /B libtiff\*.lib %INCLIB%
 
-    - name: Build dependencies / webp
+    - name: Build dependencies / WebP
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -133,7 +133,7 @@ jobs:
         copy /Y /B src\webp\*.h %INCLIB%\webp
         copy /Y /B output\release-static\${{ matrix.architecture }}\lib\* %INCLIB%
 
-    - name: Build dependencies / freetype
+    - name: Build dependencies / FreeType
       run: |
         REM Toolkit v100 not available; missing VCTargetsPath; Clean fails
 
@@ -152,7 +152,7 @@ jobs:
         copy /Y /B objs\${{ matrix.platform-msbuild }}\Release\freetype.dll %INCLIB%
         copy /Y /B objs\${{ matrix.platform-msbuild }}\Release\freetype.lib %INCLIB%
 
-    - name: Build dependencies / lcms2
+    - name: Build dependencies / LCMS2
       if: false
       run: |
         REM Projects\VC2015\lcms2.sln is not available in lcms2-2.7
@@ -171,7 +171,7 @@ jobs:
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B Lib\MS\*.lib %INCLIB%
 
-    - name: Build dependencies / openjpeg
+    - name: Build dependencies / OpenJPEG
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
