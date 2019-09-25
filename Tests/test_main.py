@@ -5,14 +5,12 @@ import subprocess
 import sys
 from unittest import TestCase
 
-from .helper import on_github_actions, unittest
+from .helper import is_pypy, is_win32, on_github_actions, unittest
 
 
 class TestMain(TestCase):
     @unittest.skipIf(
-        sys.platform == "win32"
-        and hasattr(sys, "pypy_translation_info")
-        and on_github_actions(),
+        is_win32() and is_pypy() and on_github_actions(),
         "Failing on Windows on GitHub Actions running PyPy",
     )
     def test_main(self):

@@ -368,6 +368,14 @@ def on_ci():
     )
 
 
+def is_win32():
+    return sys.platform.startswith("win32")
+
+
+def is_pypy():
+    return hasattr(sys, "pypy_translation_info")
+
+
 if sys.platform == "win32":
     IMCONVERT = os.environ.get("MAGICK_HOME", "")
     if IMCONVERT:

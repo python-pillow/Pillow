@@ -2,7 +2,7 @@ import sys
 
 from PIL import Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_win32, unittest
 
 try:
     import numpy
@@ -10,7 +10,7 @@ except ImportError:
     numpy = None
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "Win32 does not call map_buffer")
+@unittest.skipIf(is_win32(), "Win32 does not call map_buffer")
 class TestMap(PillowTestCase):
     def test_overflow(self):
         # There is the potential to overflow comparisons in map.c

@@ -1,10 +1,16 @@
 import os
-import sys
 from io import BytesIO
 
 from PIL import Image, ImageFile, JpegImagePlugin
 
-from .helper import PillowTestCase, cjpeg_available, djpeg_available, hopper, unittest
+from .helper import (
+    PillowTestCase,
+    cjpeg_available,
+    djpeg_available,
+    hopper,
+    is_win32,
+    unittest,
+)
 
 codecs = dir(Image.core)
 
@@ -654,7 +660,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertNotIn("photoshop", im.info)
 
 
-@unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
+@unittest.skipUnless(is_win32(), "Windows only")
 class TestFileCloseW32(PillowTestCase):
     def setUp(self):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
