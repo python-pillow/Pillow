@@ -2593,7 +2593,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     if decoder_name == "raw":
         if args == ():
             warnings.warn(
-                "the frombuffer defaults may change in a future release; "
+                "the frombuffer defaults will change in Pillow 7.0.0; "
                 "for portability, change the call to read:\n"
                 "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
                 RuntimeWarning,
