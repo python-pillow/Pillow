@@ -202,7 +202,7 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 rem do after building jpeg and zlib
-copy %%~dp0\nmake.opt %%TIFF%%
+copy %%~dp0\tiff-md.opt %%TIFF%%\nmake.opt
 
 cd /D %%TIFF%%
 nmake -nologo -f makefile.vc clean

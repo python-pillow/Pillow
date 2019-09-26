@@ -99,7 +99,7 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         nmake -nologo -f win32\Makefile.msc clean
-        nmake -nologo -f win32\Makefile.msc zlib.lib
+        nmake -nologo -f win32\Makefile.msc LOC=-MT zlib.lib
         copy /Y /B z*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
         copy /Y /B zlib.lib %INCLIB%\z.lib
@@ -112,7 +112,7 @@ jobs:
         cd /D %BUILD%\tiff-4.0.10
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        copy %GITHUB_WORKSPACE%\winbuild\nmake.opt nmake.opt
+        copy %GITHUB_WORKSPACE%\winbuild\tiff-mt.opt nmake.opt
         nmake -nologo -f makefile.vc clean
         nmake -nologo -f makefile.vc lib
         copy /Y /B libtiff\tiff*.h %INCLIB%
@@ -176,7 +176,10 @@ jobs:
         cd /D %BUILD%\openjpeg-2.3.1msvcr10-x32
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        cmake.exe -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
+        set CMAKE=cmake.exe -DOPENJP2_COMPILE_OPTIONS=-MT
+        set CMAKE=%CMAKE% -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
+        %CMAKE% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
         nmake -nologo -f Makefile clean
         nmake -nologo -f Makefile
         mkdir %INCLIB%\openjpeg-2.3.1
@@ -209,8 +212,7 @@ jobs:
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
-        %PYTHON%\python.exe setup.py build_ext --add-imaging-libs=msvcrt install
-        %PYTHON%\python.exe -c "from PIL import _webp;import os, shutil;shutil.copy(r'%INCLIB%\freetype.dll', os.path.dirname(_webp.__file__));"
+        %PYTHON%\python.exe setup.py build_ext install
         %PYTHON%\python.exe selftest.py --installed
     
     - name: Test Pillow
@@ -242,7 +244,7 @@ jobs:
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
-        %PYTHON%\python.exe setup.py build_ext --add-imaging-libs=msvcrt bdist_wheel
+        %PYTHON%\python.exe setup.py bdist_wheel
 
     - uses: actions/upload-artifact@v1
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
