@@ -24,9 +24,6 @@ matrix:
       name: "3.7 Xenial"
     - python: '2.7'
       name: "2.7 Xenial"
-    - python:  "2.7_with_system_site_packages" # For PyQt4
-      name: "2.7_with_system_site_packages Xenial"
-      services: xvfb
     - python: '3.6'
       name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
