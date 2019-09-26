@@ -17,18 +17,12 @@
 #
 
 import sys
-import warnings
 from io import BytesIO
 
 from . import Image
 from ._util import isPath, py3
 
-qt_versions = [["5", "PyQt5"], ["side2", "PySide2"], ["4", "PyQt4"], ["side", "PySide"]]
-
-WARNING_TEXT = (
-    "Support for EOL {} is deprecated and will be removed in a future version. "
-    "Please upgrade to PyQt5 or PySide2."
-)
+qt_versions = [["5", "PyQt5"], ["side2", "PySide2"]]
 
 # If a version has already been imported, attempt it first
 qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
@@ -40,16 +34,6 @@ for qt_version, qt_module in qt_versions:
         elif qt_module == "PySide2":
             from PySide2.QtGui import QImage, qRgba, QPixmap
             from PySide2.QtCore import QBuffer, QIODevice
-        elif qt_module == "PyQt4":
-            from PyQt4.QtGui import QImage, qRgba, QPixmap
-            from PyQt4.QtCore import QBuffer, QIODevice
-
-            warnings.warn(WARNING_TEXT.format(qt_module), DeprecationWarning)
-        elif qt_module == "PySide":
-            from PySide.QtGui import QImage, qRgba, QPixmap
-            from PySide.QtCore import QBuffer, QIODevice
-
-            warnings.warn(WARNING_TEXT.format(qt_module), DeprecationWarning)
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True

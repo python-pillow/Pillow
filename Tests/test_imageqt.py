@@ -35,10 +35,6 @@ class PillowQPixmapTestCase(PillowQtTestCase):
         try:
             if ImageQt.qt_version == "5":
                 from PyQt5.QtGui import QGuiApplication
-            elif ImageQt.qt_version == "4":
-                from PyQt4.QtGui import QGuiApplication
-            elif ImageQt.qt_version == "side":
-                from PySide.QtGui import QGuiApplication
             elif ImageQt.qt_version == "side2":
                 from PySide2.QtGui import QGuiApplication
         except ImportError:
@@ -59,10 +55,6 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         # equivalent to an unsigned int.
         if ImageQt.qt_version == "5":
             from PyQt5.QtGui import qRgb
-        elif ImageQt.qt_version == "4":
-            from PyQt4.QtGui import qRgb
-        elif ImageQt.qt_version == "side":
-            from PySide.QtGui import qRgb
         elif ImageQt.qt_version == "side2":
             from PySide2.QtGui import qRgb
 
