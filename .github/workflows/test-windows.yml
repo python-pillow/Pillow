@@ -147,26 +147,23 @@ jobs:
         set DefaultPlatformToolset=v140
         set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
         set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
-        %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
+        %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release Static" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
-        copy /Y /B objs\${{ matrix.platform-msbuild }}\Release\freetype.dll %INCLIB%
-        copy /Y /B objs\${{ matrix.platform-msbuild }}\Release\freetype.lib %INCLIB%
+        copy /Y /B "objs\${{ matrix.platform-msbuild }}\Release Static\freetype.lib" %INCLIB%
 
     - name: Build dependencies / LCMS2
-      if: false
       run: |
-        REM Projects\VC2015\lcms2.sln is not available in lcms2-2.7
-
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        cd /D %BUILD%\lcms2-2.7
+        cd /D %BUILD%\lcms2-2.8
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         rmdir /S /Q Lib
         rmdir /S /Q Projects\VC2015\Release
         set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
         set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
+        powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreadedDLL', 'MultiThreaded' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
         %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B Lib\MS\*.lib %INCLIB%

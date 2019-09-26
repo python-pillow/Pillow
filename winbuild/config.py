@@ -44,10 +44,15 @@ libs = {
         "filename": PILLOW_DEPENDS_DIR + "freetype-2.10.1.tar.gz",
         "dir": "freetype-2.10.1",
     },
-    "lcms": {
+    "lcms-2.7": {
         "url": SF_MIRROR + "/project/lcms/lcms/2.7/lcms2-2.7.zip",
         "filename": PILLOW_DEPENDS_DIR + "lcms2-2.7.zip",
         "dir": "lcms2-2.7",
+    },
+    "lcms-2.8": {
+        "url": SF_MIRROR + "/project/lcms/lcms/2.8/lcms2-2.8.zip",
+        "filename": PILLOW_DEPENDS_DIR + "lcms2-2.8.zip",
+        "dir": "lcms2-2.8",
     },
     "ghostscript": {
         "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostscript-9.27.tar.gz",  # noqa: E501
