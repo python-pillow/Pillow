@@ -56,6 +56,7 @@ features = {
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
     "raqm": ("PIL._imagingft", "HAVE_RAQM"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO"),
+    "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT"),
 }
 
 
@@ -94,7 +95,7 @@ def get_supported():
     return ret
 
 
-def pilinfo(out=None):
+def pilinfo(out=None, brief=False):
     if out is None:
         out = sys.stdout
 
@@ -113,11 +114,12 @@ def pilinfo(out=None):
     )
     print("-" * 68, file=out)
 
-    v = sys.version.splitlines()
-    print("Python {}".format(v[0].strip()), file=out)
-    for v in v[1:]:
-        print("       {}".format(v.strip()), file=out)
-    print("-" * 68, file=out)
+    if not brief:
+        v = sys.version.splitlines()
+        print("Python {}".format(v[0].strip()), file=out)
+        for v in v[1:]:
+            print("       {}".format(v.strip()), file=out)
+        print("-" * 68, file=out)
 
     for name, feature in [
         ("pil", "PIL CORE"),
@@ -133,6 +135,7 @@ def pilinfo(out=None):
         ("zlib", "ZLIB (PNG/ZIP)"),
         ("libtiff", "LIBTIFF"),
         ("raqm", "RAQM (Bidirectional Text)"),
+        ("libimagequant", "LIBIMAGEQUANT (quantization method)"),
     ]:
         if check(name):
             print("---", feature, "support ok", file=out)
@@ -140,30 +143,33 @@ def pilinfo(out=None):
             print("***", feature, "support not installed", file=out)
     print("-" * 68, file=out)
 
-    extensions = collections.defaultdict(list)
-    for ext, i in Image.EXTENSION.items():
-        extensions[i].append(ext)
+    if not brief:
+        extensions = collections.defaultdict(list)
+        for ext, i in Image.EXTENSION.items():
+            extensions[i].append(ext)
 
-    for i in sorted(Image.ID):
-        line = "{}".format(i)
-        if i in Image.MIME:
-            line = "{} {}".format(line, Image.MIME[i])
-        print(line, file=out)
+        for i in sorted(Image.ID):
+            line = "{}".format(i)
+            if i in Image.MIME:
+                line = "{} {}".format(line, Image.MIME[i])
+            print(line, file=out)
 
-        if i in extensions:
-            print("Extensions: {}".format(", ".join(sorted(extensions[i]))), file=out)
+            if i in extensions:
+                print(
+                    "Extensions: {}".format(", ".join(sorted(extensions[i]))), file=out
+                )
 
-        features = []
-        if i in Image.OPEN:
-            features.append("open")
-        if i in Image.SAVE:
-            features.append("save")
-        if i in Image.SAVE_ALL:
-            features.append("save_all")
-        if i in Image.DECODERS:
-            features.append("decode")
-        if i in Image.ENCODERS:
-            features.append("encode")
+            features = []
+            if i in Image.OPEN:
+                features.append("open")
+            if i in Image.SAVE:
+                features.append("save")
+            if i in Image.SAVE_ALL:
+                features.append("save_all")
+            if i in Image.DECODERS:
+                features.append("decode")
+            if i in Image.ENCODERS:
+                features.append("encode")
 
-        print("Features: {}".format(", ".join(features)), file=out)
-        print("-" * 68, file=out)
+            print("Features: {}".format(", ".join(features)), file=out)
+            print("-" * 68, file=out)
