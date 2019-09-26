@@ -84,8 +84,6 @@
 
 #include "Imaging.h"
 
-#include "py3.h"
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -237,45 +235,13 @@ void ImagingSectionLeave(ImagingSectionCookie* cookie)
 
 int PyImaging_CheckBuffer(PyObject* buffer)
 {
-#if PY_VERSION_HEX >= 0x03000000
     return PyObject_CheckBuffer(buffer);
-#else
-    return PyObject_CheckBuffer(buffer) || PyObject_CheckReadBuffer(buffer);
-#endif
 }
 
 int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view)
 {
     /* must call check_buffer first! */
-#if PY_VERSION_HEX >= 0x03000000
     return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
-#else
-    /* Use new buffer protocol if available
-       (mmap doesn't support this in 2.7, go figure) */
-    if (PyObject_CheckBuffer(buffer)) {
-        int success = PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
-        if (!success) { return success; }
-        PyErr_Clear();
-    }
-
-    /* Pretend we support the new protocol; PyBuffer_Release happily ignores
-       calling bf_releasebuffer on objects that don't support it */
-    view->buf = NULL;
-    view->len = 0;
-    view->readonly = 1;
-    view->format = NULL;
-    view->ndim = 0;
-    view->shape = NULL;
-    view->strides = NULL;
-    view->suboffsets = NULL;
-    view->itemsize = 0;
-    view->internal = NULL;
-
-    Py_INCREF(buffer);
-    view->obj = buffer;
-
-    return PyObject_AsReadBuffer(buffer, (void *) &view->buf, &view->len);
-#endif
 }
 
 /* -------------------------------------------------------------------- */
@@ -416,11 +382,11 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
         // on this switch. And 3 fewer loops to copy/paste.
         switch (type) {
         case TYPE_UINT8:
-            itemp = PyInt_AsLong(op);
+            itemp = PyLong_AsLong(op);
             list[i] = CLIP8(itemp);
             break;
         case TYPE_INT32:
-            itemp = PyInt_AsLong(op);
+            itemp = PyLong_AsLong(op);
             memcpy(list + i * sizeof(INT32), &itemp, sizeof(itemp));
             break;
         case TYPE_FLOAT32:
@@ -499,7 +465,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
     case IMAGING_TYPE_UINT8:
         switch (im->bands) {
         case 1:
-            return PyInt_FromLong(pixel.b[0]);
+            return PyLong_FromLong(pixel.b[0]);
         case 2:
             return Py_BuildValue("BB", pixel.b[0], pixel.b[1]);
         case 3:
@@ -509,12 +475,12 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
         }
         break;
     case IMAGING_TYPE_INT32:
-        return PyInt_FromLong(pixel.i);
+        return PyLong_FromLong(pixel.i);
     case IMAGING_TYPE_FLOAT32:
         return PyFloat_FromDouble(pixel.f);
     case IMAGING_TYPE_SPECIAL:
         if (strncmp(im->mode, "I;16", 4) == 0)
-            return PyInt_FromLong(pixel.h);
+            return PyLong_FromLong(pixel.h);
         break;
     }
 
@@ -543,16 +509,8 @@ getink(PyObject* color, Imaging im, char* ink)
     if (im->type == IMAGING_TYPE_UINT8 ||
         im->type == IMAGING_TYPE_INT32 ||
         im->type == IMAGING_TYPE_SPECIAL) {
-#if PY_VERSION_HEX >= 0x03000000
                 if (PyLong_Check(color)) {
                         r = PyLong_AsLongLong(color);
-#else
-                if (PyInt_Check(color) || PyLong_Check(color)) {
-                        if (PyInt_Check(color))
-                                r = PyInt_AS_LONG(color);
-                        else
-                                r = PyLong_AsLongLong(color);
-#endif
             rIsInt = 1;
                 }
                 if (r == -1 && PyErr_Occurred()) {
@@ -1129,16 +1087,16 @@ _getxy(PyObject* xy, int* x, int *y)
         goto badarg;
 
     value = PyTuple_GET_ITEM(xy, 0);
-    if (PyInt_Check(value))
-        *x = PyInt_AS_LONG(value);
+    if (PyLong_Check(value))
+        *x = PyLong_AS_LONG(value);
     else if (PyFloat_Check(value))
         *x = (int) PyFloat_AS_DOUBLE(value);
     else
         goto badval;
 
     value = PyTuple_GET_ITEM(xy, 1);
-    if (PyInt_Check(value))
-        *y = PyInt_AS_LONG(value);
+    if (PyLong_Check(value))
+        *y = PyLong_AS_LONG(value);
     else if (PyFloat_Check(value))
         *y = (int) PyFloat_AS_DOUBLE(value);
     else
@@ -1255,7 +1213,7 @@ _histogram(ImagingObject* self, PyObject* args)
     list = PyList_New(h->bands * 256);
     for (i = 0; i < h->bands * 256; i++) {
         PyObject* item;
-        item = PyInt_FromLong(h->histogram[i]);
+        item = PyLong_FromLong(h->histogram[i]);
         if (item == NULL) {
             Py_DECREF(list);
             list = NULL;
@@ -1524,7 +1482,7 @@ _putdata(ImagingObject* self, PyObject* args)
                /* Clipped data */
                for (i = x = y = 0; i < n; i++) {
                    op = PySequence_Fast_GET_ITEM(seq, i);
-                   image->image8[y][x] = (UINT8) CLIP8(PyInt_AsLong(op));
+                   image->image8[y][x] = (UINT8) CLIP8(PyLong_AsLong(op));
                    if (++x >= (int) image->xsize){
                        x = 0, y++;
                    }
@@ -1635,7 +1593,7 @@ _putpalette(ImagingObject* self, PyObject* args)
     char* rawmode;
     UINT8* palette;
     Py_ssize_t palettesize;
-    if (!PyArg_ParseTuple(args, "s"PY_ARG_BYTES_LENGTH, &rawmode, &palette, &palettesize))
+    if (!PyArg_ParseTuple(args, "sy#", &rawmode, &palette, &palettesize))
         return NULL;
 
     if (strcmp(self->image->mode, "L") && strcmp(self->image->mode, "LA") &&
@@ -1698,7 +1656,7 @@ _putpalettealphas(ImagingObject* self, PyObject* args)
     int i;
     UINT8 *values;
     Py_ssize_t length;
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &values, &length))
+    if (!PyArg_ParseTuple(args, "y#", &values, &length))
         return NULL;
 
     if (!self->image->palette) {
@@ -2136,7 +2094,7 @@ _getprojection(ImagingObject* self, PyObject* args)
 
     ImagingGetProjection(self->image, (unsigned char *)xprofile, (unsigned char *)yprofile);
 
-    result = Py_BuildValue(PY_ARG_BYTES_LENGTH PY_ARG_BYTES_LENGTH,
+    result = Py_BuildValue("y#y#",
                            xprofile, (Py_ssize_t)self->image->xsize,
                            yprofile, (Py_ssize_t)self->image->ysize);
 
@@ -2414,7 +2372,7 @@ _font_new(PyObject* self_, PyObject* args)
     ImagingObject* imagep;
     unsigned char* glyphdata;
     Py_ssize_t glyphdata_length;
-    if (!PyArg_ParseTuple(args, "O!"PY_ARG_BYTES_LENGTH,
+    if (!PyArg_ParseTuple(args, "O!y#",
                           &Imaging_Type, &imagep,
                           &glyphdata, &glyphdata_length))
         return NULL;
@@ -2648,7 +2606,7 @@ _draw_ink(ImagingDrawObject* self, PyObject* args)
     if (!getink(color, self->image->image, (char*) &ink))
         return NULL;
 
-    return PyInt_FromLong((int) ink);
+    return PyLong_FromLong((int) ink);
 }
 
 static PyObject*
@@ -3356,13 +3314,13 @@ _getattr_size(ImagingObject* self, void* closure)
 static PyObject*
 _getattr_bands(ImagingObject* self, void* closure)
 {
-    return PyInt_FromLong(self->image->bands);
+    return PyLong_FromLong(self->image->bands);
 }
 
 static PyObject*
 _getattr_id(ImagingObject* self, void* closure)
 {
-    return PyInt_FromSsize_t((Py_ssize_t) self->image);
+    return PyLong_FromSsize_t((Py_ssize_t) self->image);
 }
 
 static PyObject*
@@ -3575,17 +3533,17 @@ _get_stats(PyObject* self, PyObject* args)
     if ( ! d)
         return NULL;
     PyDict_SetItemString(d, "new_count",
-                         PyInt_FromLong(arena->stats_new_count));
+                         PyLong_FromLong(arena->stats_new_count));
     PyDict_SetItemString(d, "allocated_blocks",
-                         PyInt_FromLong(arena->stats_allocated_blocks));
+                         PyLong_FromLong(arena->stats_allocated_blocks));
     PyDict_SetItemString(d, "reused_blocks",
-                         PyInt_FromLong(arena->stats_reused_blocks));
+                         PyLong_FromLong(arena->stats_reused_blocks));
     PyDict_SetItemString(d, "reallocated_blocks",
-                         PyInt_FromLong(arena->stats_reallocated_blocks));
+                         PyLong_FromLong(arena->stats_reallocated_blocks));
     PyDict_SetItemString(d, "freed_blocks",
-                         PyInt_FromLong(arena->stats_freed_blocks));
+                         PyLong_FromLong(arena->stats_freed_blocks));
     PyDict_SetItemString(d, "blocks_cached",
-                         PyInt_FromLong(arena->blocks_cached));
+                         PyLong_FromLong(arena->blocks_cached));
     return d;
 }
 
@@ -3613,7 +3571,7 @@ _get_alignment(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, ":get_alignment"))
         return NULL;
 
-    return PyInt_FromLong(ImagingDefaultArena.alignment);
+    return PyLong_FromLong(ImagingDefaultArena.alignment);
 }
 
 static PyObject*
@@ -3622,7 +3580,7 @@ _get_block_size(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, ":get_block_size"))
         return NULL;
 
-    return PyInt_FromLong(ImagingDefaultArena.block_size);
+    return PyLong_FromLong(ImagingDefaultArena.block_size);
 }
 
 static PyObject*
@@ -3631,7 +3589,7 @@ _get_blocks_max(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, ":get_blocks_max"))
         return NULL;
 
-    return PyInt_FromLong(ImagingDefaultArena.blocks_max);
+    return PyLong_FromLong(ImagingDefaultArena.blocks_max);
 }
 
 static PyObject*
@@ -3959,7 +3917,6 @@ setup_module(PyObject* m) {
     return 0;
 }
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imaging(void) {
     PyObject* m;
@@ -3979,11 +3936,3 @@ PyInit__imaging(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_imaging(void)
-{
-    PyObject* m = Py_InitModule("_imaging", functions);
-    setup_module(m);
-}
-#endif

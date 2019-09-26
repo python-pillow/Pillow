@@ -42,15 +42,8 @@ gs_windows_binary = None
 if sys.platform.startswith("win"):
     import shutil
 
-    if hasattr(shutil, "which"):
-        which = shutil.which
-    else:
-        # Python 2
-        import distutils.spawn
-
-        which = distutils.spawn.find_executable
     for binary in ("gswin32c", "gswin64c", "gs"):
-        if which(binary) is not None:
+        if shutil.which(binary) is not None:
             gs_windows_binary = binary
             break
     else:
@@ -378,9 +371,8 @@ def _save(im, fp, filename, eps=1):
     base_fp = fp
     wrapped_fp = False
     if fp != sys.stdout:
-        if sys.version_info.major > 2:
-            fp = io.TextIOWrapper(fp, encoding="latin-1")
-            wrapped_fp = True
+        fp = io.TextIOWrapper(fp, encoding="latin-1")
+        wrapped_fp = True
 
     try:
         if eps:

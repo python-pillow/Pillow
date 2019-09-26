@@ -13,13 +13,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/vp/pypy2
-    EXECUTABLE: bin/pypy.exe
-    PIP_DIR: bin
-    VENV: YES
-  - PYTHON: C:/Python27-x64
   - PYTHON: C:/Python37
-  - PYTHON: C:/Python27
   - PYTHON: C:/Python37-x64
   - PYTHON: C:/Python36
   - PYTHON: C:/Python36-x64
@@ -44,11 +38,6 @@ install:
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
 - cd c:\pillow\winbuild\
-- ps: |
-      if ($env:PYTHON -eq "c:/vp/pypy2")
-      {
-        c:\pillow\winbuild\appveyor_install_pypy2.cmd
-      }
 - ps: |
       if ($env:PYTHON -eq "c:/vp/pypy3")
       {

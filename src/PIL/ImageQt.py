@@ -20,7 +20,7 @@ import sys
 from io import BytesIO
 
 from . import Image
-from ._util import isPath, py3
+from ._util import isPath
 
 qt_versions = [["5", "PyQt5"], ["side2", "PySide2"]]
 
@@ -125,10 +125,7 @@ def _toqclass_helper(im):
     # handle filename, if given instead of image name
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
-        if py3:
-            im = str(im.toUtf8(), "utf-8")
-        else:
-            im = unicode(im.toUtf8(), "utf-8")  # noqa: F821
+        im = str(im.toUtf8(), "utf-8")
     if isPath(im):
         im = Image.open(im)
 

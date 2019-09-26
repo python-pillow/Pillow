@@ -18,7 +18,6 @@
 import sys
 
 from . import EpsImagePlugin
-from ._util import py3
 
 ##
 # Simple Postscript graphics interface.
@@ -36,7 +35,7 @@ class PSDraw(object):
         self.fp = fp
 
     def _fp_write(self, to_write):
-        if not py3 or self.fp == sys.stdout:
+        if self.fp == sys.stdout:
             self.fp.write(to_write)
         else:
             self.fp.write(bytes(to_write, "UTF-8"))

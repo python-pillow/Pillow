@@ -38,7 +38,6 @@ import zlib
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32, o16be as o16, o32be as o32
-from ._util import py3
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -450,9 +449,8 @@ class PngStream(ChunkStream):
             k = s
             v = b""
         if k:
-            if py3:
-                k = k.decode("latin-1", "strict")
-                v = v.decode("latin-1", "replace")
+            k = k.decode("latin-1", "strict")
+            v = v.decode("latin-1", "replace")
 
             self.im_info[k] = self.im_text[k] = v
             self.check_text_memory(len(v))
@@ -487,9 +485,8 @@ class PngStream(ChunkStream):
             v = b""
 
         if k:
-            if py3:
-                k = k.decode("latin-1", "strict")
-                v = v.decode("latin-1", "replace")
+            k = k.decode("latin-1", "strict")
+            v = v.decode("latin-1", "replace")
 
             self.im_info[k] = self.im_text[k] = v
             self.check_text_memory(len(v))
@@ -524,14 +521,13 @@ class PngStream(ChunkStream):
                     return s
             else:
                 return s
-        if py3:
-            try:
-                k = k.decode("latin-1", "strict")
-                lang = lang.decode("utf-8", "strict")
-                tk = tk.decode("utf-8", "strict")
-                v = v.decode("utf-8", "strict")
-            except UnicodeError:
-                return s
+        try:
+            k = k.decode("latin-1", "strict")
+            lang = lang.decode("utf-8", "strict")
+            tk = tk.decode("utf-8", "strict")
+            v = v.decode("utf-8", "strict")
+        except UnicodeError:
+            return s
 
         self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
         self.check_text_memory(len(v))

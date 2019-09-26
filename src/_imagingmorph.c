@@ -13,7 +13,6 @@
 
 #include "Python.h"
 #include "Imaging.h"
-#include "py3.h"
 
 #define LUT_SIZE (1<<9)
 
@@ -273,7 +272,6 @@ static PyMethodDef functions[] = {
     {NULL, NULL, 0, NULL}
 };
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imagingmorph(void) {
     PyObject* m;
@@ -293,12 +291,3 @@ PyInit__imagingmorph(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_imagingmorph(void)
-{
-    PyObject* m = Py_InitModule("_imagingmorph", functions);
-    setup_module(m);
-}
-#endif
-

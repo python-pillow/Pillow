@@ -349,12 +349,8 @@ class TestEmbeddable(unittest.TestCase):
 int main(int argc, char* argv[])
 {
     char *home = "%s";
-#if PY_MAJOR_VERSION >= 3
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
-#else
-    Py_SetPythonHome(home);
-#endif
 
     Py_InitializeEx(0);
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
@@ -364,9 +360,7 @@ int main(int argc, char* argv[])
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3
     PyMem_RawFree(whome);
-#endif
 
     return 0;
 }

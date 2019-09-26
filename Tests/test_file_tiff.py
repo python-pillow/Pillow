@@ -3,7 +3,6 @@ import sys
 from io import BytesIO
 
 from PIL import Image, TiffImagePlugin
-from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import PillowTestCase, hopper, unittest
@@ -176,12 +175,8 @@ class TestFileTiff(PillowTestCase):
 
         b = im.tobytes()
         # Bytes are in image native order (little endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\xe0"))
-            self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
+        self.assertEqual(b[0], ord(b"\xe0"))
+        self.assertEqual(b[1], ord(b"\x01"))
 
     def test_big_endian(self):
         im = Image.open("Tests/images/16bit.MM.cropped.tif")
@@ -191,12 +186,8 @@ class TestFileTiff(PillowTestCase):
         b = im.tobytes()
 
         # Bytes are in image native order (big endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\x01"))
-            self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
+        self.assertEqual(b[0], ord(b"\x01"))
+        self.assertEqual(b[1], ord(b"\xe0"))
 
     def test_16bit_s(self):
         im = Image.open("Tests/images/16bit.s.tif")

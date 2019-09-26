@@ -16,7 +16,6 @@
 #include "Python.h"
 
 #include "Imaging.h"
-#include "py3.h"
 
 #include "math.h"
 #include "float.h"
@@ -215,7 +214,7 @@ static PyMethodDef _functions[] = {
 static void
 install(PyObject *d, char* name, void* value)
 {
-    PyObject *v = PyInt_FromSsize_t((Py_ssize_t) value);
+    PyObject *v = PyLong_FromSsize_t((Py_ssize_t) value);
     if (!v || PyDict_SetItemString(d, name, v))
         PyErr_Clear();
     Py_XDECREF(v);
@@ -273,7 +272,6 @@ setup_module(PyObject* m) {
     return 0;
 }
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imagingmath(void) {
     PyObject* m;
@@ -293,12 +291,3 @@ PyInit__imagingmath(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_imagingmath(void)
-{
-    PyObject* m = Py_InitModule("_imagingmath", _functions);
-    setup_module(m);
-}
-#endif
-

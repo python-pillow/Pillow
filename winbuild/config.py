@@ -4,8 +4,6 @@ SF_MIRROR = "http://iweb.dl.sourceforge.net"
 PILLOW_DEPENDS_DIR = "C:\\pillow-depends\\"
 
 pythons = {
-    "27": {"compiler": 7, "vc": 2010},
-    "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
@@ -131,7 +129,7 @@ compilers = {
 def pyversion_from_env():
     py = os.environ["PYTHON"]
 
-    py_version = "27"
+    py_version = "35"
     for k in pythons:
         if k in py:
             py_version = k

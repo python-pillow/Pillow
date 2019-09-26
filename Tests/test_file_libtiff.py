@@ -9,7 +9,6 @@ from collections import namedtuple
 from ctypes import c_float
 
 from PIL import Image, TiffImagePlugin, TiffTags, features
-from PIL._util import py3
 
 from .helper import PillowTestCase, hopper
 
@@ -361,12 +360,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
         b = im.tobytes()
         # Bytes are in image native order (little endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\xe0"))
-            self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
+        self.assertEqual(b[0], ord(b"\xe0"))
+        self.assertEqual(b[1], ord(b"\x01"))
 
         out = self.tempfile("temp.tif")
         # out = "temp.le.tif"
@@ -387,12 +382,8 @@ class TestFileLibTiff(LibTiffTestCase):
         b = im.tobytes()
 
         # Bytes are in image native order (big endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\x01"))
-            self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
+        self.assertEqual(b[0], ord(b"\x01"))
+        self.assertEqual(b[1], ord(b"\xe0"))
 
         out = self.tempfile("temp.tif")
         im.save(out)

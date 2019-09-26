@@ -29,7 +29,7 @@ import os
 import sys
 
 from . import Image
-from ._util import isDirectory, isPath, py3
+from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
@@ -695,10 +695,7 @@ def load_path(filename):
     for directory in sys.path:
         if isDirectory(directory):
             if not isinstance(filename, str):
-                if py3:
-                    filename = filename.decode("utf-8")
-                else:
-                    filename = filename.encode("utf-8")
+                filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(directory, filename))
             except IOError:

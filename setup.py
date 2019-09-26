@@ -20,10 +20,6 @@ from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
 
-# monkey patch import hook. Even though flake8 says it's not used, it is.
-# comment this out to disable multi threaded builds.
-import mp_compile
-
 if sys.platform == "win32" and sys.version_info >= (3, 8):
     warnings.warn(
         "Pillow does not yet support Python {}.{} and does not yet provide "
@@ -332,12 +328,6 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
-        if sys.version_info.major >= 3 and not self.parallel:
-            # For Python 2.7, we monkeypatch distutils to have parallel
-            # builds. If --parallel (or -j) wasn't specified, we want to
-            # reproduce the same behavior as before, that is, auto-detect the
-            # number of jobs.
-            self.parallel = mp_compile.MAX_PROCS
         for x in self.feature:
             if getattr(self, "disable_%s" % x):
                 setattr(self.feature, x, False)
@@ -861,12 +851,11 @@ try:
         classifiers=[
             "Development Status :: 6 - Mature",
             "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Topic :: Multimedia :: Graphics",
@@ -875,7 +864,7 @@ try:
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
         ],
-        python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+        python_requires=">=3.5",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
         include_package_data=True,

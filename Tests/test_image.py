@@ -3,7 +3,6 @@ import shutil
 import sys
 
 from PIL import Image
-from PIL._util import py3
 
 from .helper import PillowTestCase, hopper, unittest
 
@@ -80,20 +79,14 @@ class TestImage(PillowTestCase):
             im.size = (3, 4)
 
     def test_invalid_image(self):
-        if py3:
-            import io
+        import io
 
-            im = io.BytesIO(b"")
-        else:
-            import StringIO
-
-            im = StringIO.StringIO("")
+        im = io.BytesIO(b"")
         self.assertRaises(IOError, Image.open, im)
 
     def test_bad_mode(self):
         self.assertRaises(ValueError, Image.open, "filename", "bad mode")
 
-    @unittest.skipUnless(Image.HAS_PATHLIB, "requires pathlib/pathlib2")
     def test_pathlib(self):
         from PIL.Image import Path
 

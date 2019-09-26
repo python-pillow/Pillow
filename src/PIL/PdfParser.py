@@ -7,24 +7,14 @@ import re
 import time
 import zlib
 
-from ._util import py3
-
 try:
     from UserDict import UserDict  # Python 2.x
 except ImportError:
     UserDict = collections.UserDict  # Python 3.x
 
 
-if py3:  # Python 3.x
-
-    def make_bytes(s):
-        return s.encode("us-ascii")
-
-
-else:  # Python 2.x
-
-    def make_bytes(s):  # pragma: no cover
-        return s  # pragma: no cover
+def make_bytes(s):
+    return s.encode("us-ascii")
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
@@ -81,10 +71,8 @@ PDFDocEncoding = {
 def decode_text(b):
     if b[: len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
         return b[len(codecs.BOM_UTF16_BE) :].decode("utf_16_be")
-    elif py3:  # Python 3.x
+    else:
         return "".join(PDFDocEncoding.get(byte, chr(byte)) for byte in b)
-    else:  # Python 2.x
-        return u"".join(PDFDocEncoding.get(ord(byte), byte) for byte in b)
 
 
 class PdfFormatError(RuntimeError):
@@ -252,16 +240,10 @@ class PdfName:
     def __bytes__(self):
         result = bytearray(b"/")
         for b in self.name:
-            if py3:  # Python 3.x
-                if b in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(make_bytes("#%02X" % b))
-            else:  # Python 2.x
-                if ord(b) in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(b"#%02X" % ord(b))
+            if b in self.allowed_chars:
+                result.append(b)
+            else:
+                result.extend(make_bytes("#%02X" % b))
         return bytes(result)
 
     __str__ = __bytes__
@@ -324,23 +306,13 @@ class PdfDict(UserDict):
         out.extend(b"\n>>")
         return bytes(out)
 
-    if not py3:
-        __str__ = __bytes__
-
 
 class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    if py3:  # Python 3.x
-
-        def __bytes__(self):
-            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
-
-    else:  # Python 2.x
-
-        def __str__(self):
-            return "<%s>" % "".join("%02X" % ord(b) for b in self.data)
+    def __bytes__(self):
+        return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
 
 
 class PdfStream:
@@ -382,9 +354,7 @@ def pdf_repr(x):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
-    elif (py3 and isinstance(x, str)) or (
-        not py3 and isinstance(x, unicode)  # noqa: F821
-    ):
+    elif isinstance(x, str):
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage

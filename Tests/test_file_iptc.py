@@ -1,3 +1,6 @@
+import sys
+from io import StringIO
+
 from PIL import Image, IptcImagePlugin
 
 from .helper import PillowTestCase, hopper
@@ -52,12 +55,6 @@ class TestFileIptc(PillowTestCase):
         # Arrange
         c = b"abc"
         # Temporarily redirect stdout
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from io import StringIO
-        import sys
-
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
 

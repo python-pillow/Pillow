@@ -18,13 +18,9 @@ import os
 import subprocess
 import sys
 import tempfile
+from shlex import quote
 
 from PIL import Image
-
-if sys.version_info.major >= 3:
-    from shlex import quote
-else:
-    from pipes import quote
 
 _viewers = []
 

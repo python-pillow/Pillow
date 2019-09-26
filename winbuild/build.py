@@ -105,10 +105,7 @@ def build_one(py_ver, compiler, bit):
         args["executable"] = "%EXECUTABLE%"
 
     args["py_ver"] = py_ver
-    if "27" in py_ver:
-        args["tcl_ver"] = "85"
-    else:
-        args["tcl_ver"] = "86"
+    args["tcl_ver"] = "86"
 
     if compiler["vc_version"] == "2015":
         args["imaging_libs"] = " build_ext --add-imaging-libs=msvcrt"

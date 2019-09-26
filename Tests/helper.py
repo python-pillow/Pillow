@@ -10,7 +10,6 @@ import tempfile
 import unittest
 
 from PIL import Image, ImageMath
-from PIL._util import py3
 
 logger = logging.getLogger(__name__)
 
@@ -276,11 +275,6 @@ class PillowLeakTestCase(PillowTestCase):
 
 
 # helpers
-
-if not py3:
-    # Remove DeprecationWarning in Python 3
-    PillowTestCase.assertRaisesRegex = PillowTestCase.assertRaisesRegexp
-    PillowTestCase.assertRegex = PillowTestCase.assertRegexpMatches
 
 
 def fromstring(data):

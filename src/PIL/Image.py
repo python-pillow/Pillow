@@ -25,6 +25,7 @@
 #
 
 import atexit
+import builtins
 import io
 import logging
 import math
@@ -33,29 +34,15 @@ import os
 import struct
 import sys
 import warnings
+from collections.abc import Callable, MutableMapping
+from pathlib import Path
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
 from . import ImageMode, TiffTags, __version__, _plugins
 from ._binary import i8, i32le
-from ._util import deferred_error, isPath, isStringType, py3
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-
-    builtins = __builtin__
-
-
-try:
-    # Python 3
-    from collections.abc import Callable, MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import Callable, MutableMapping
-
+from ._util import deferred_error, isPath, isStringType
 
 logger = logging.getLogger(__name__)
 
@@ -133,18 +120,6 @@ try:
     import cffi
 except ImportError:
     cffi = None
-
-try:
-    from pathlib import Path
-
-    HAS_PATHLIB = True
-except ImportError:
-    try:
-        from pathlib2 import Path
-
-        HAS_PATHLIB = True
-    except ImportError:
-        HAS_PATHLIB = False
 
 
 def isImageType(t):
@@ -621,10 +596,8 @@ class Image(object):
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    if sys.version_info.major >= 3:
-
-        def __del__(self):
-            self.__exit__()
+    def __del__(self):
+        self.__exit__()
 
     def _copy(self):
         self.load()
@@ -1347,10 +1320,7 @@ class Image(object):
 
         self.load()
         try:
-            if py3:
-                return list(self.im.getpalette())
-            else:
-                return [i8(c) for c in self.im.getpalette()]
+            return list(self.im.getpalette())
         except ValueError:
             return None  # no palette
 
@@ -1701,10 +1671,7 @@ class Image(object):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
             if not isinstance(data, bytes):
-                if py3:
-                    data = bytes(data)
-                else:
-                    data = "".join(chr(x) for x in data)
+                data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
@@ -2036,7 +2003,7 @@ class Image(object):
         if isPath(fp):
             filename = fp
             open_fp = True
-        elif HAS_PATHLIB and isinstance(fp, Path):
+        elif isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
         if not filename and hasattr(fp, "name") and isPath(fp.name):
@@ -2747,7 +2714,7 @@ def open(fp, mode="r"):
 
     exclusive_fp = False
     filename = ""
-    if HAS_PATHLIB and isinstance(fp, Path):
+    if isinstance(fp, Path):
         filename = str(fp.resolve())
     elif isPath(fp):
         filename = fp
@@ -3310,11 +3277,6 @@ class Exif(MutableMapping):
 
     def __contains__(self, tag):
         return tag in self._data or (self._info is not None and tag in self._info)
-
-    if not py3:
-
-        def has_key(self, tag):
-            return tag in self
 
     def __setitem__(self, tag, value):
         if self._info is not None and tag in self._info:

@@ -27,7 +27,6 @@ import struct
 
 from . import Image, ImageFile
 from ._binary import i8, i16be as i16, o8
-from ._util import py3
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -173,8 +172,7 @@ def _save(im, fp, filename):
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
-    if py3:
-        imgName = imgName.encode("ascii", "ignore")
+    imgName = imgName.encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
     fp.write(struct.pack(">h", magicNumber))

@@ -46,23 +46,14 @@ import io
 import itertools
 import os
 import struct
-import sys
 import warnings
+from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
 
 from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
-from ._util import py3
 from .TiffTags import TYPES
-
-try:
-    # Python 3
-    from collections.abc import MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import MutableMapping
-
 
 # __version__ is deprecated and will be removed in a future version. Use
 # PIL.__version__ instead.
@@ -531,18 +522,11 @@ class ImageFileDirectory_v2(MutableMapping):
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
-    if not py3:
-
-        def has_key(self, tag):
-            return tag in self
-
     def __setitem__(self, tag, value):
         self._setitem(tag, value, self.legacy_api)
 
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
-        if not py3:
-            basetypes += (unicode,)  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -562,14 +546,10 @@ class ImageFileDirectory_v2(MutableMapping):
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
                 else:
-                    if py3:
-                        if all(isinstance(v, str) for v in values):
-                            self.tagtype[tag] = TiffTags.ASCII
-                    else:
-                        # Never treat data as binary by default on Python 2.
+                    if all(isinstance(v, str) for v in values):
                         self.tagtype[tag] = TiffTags.ASCII
 
-        if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
+        if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
                 value.encode("ascii", "replace") if isinstance(value, str) else value
             ]
@@ -689,8 +669,6 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        if sys.version_info.major == 2:
-            value = value.decode("ascii", "replace")
         return b"" + value.encode("ascii", "replace") + b"\0"
 
     @_register_loader(5, 8)
@@ -1132,7 +1110,7 @@ class TiffImageFile(ImageFile.ImageFile):
         try:
             fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
             # flush the file descriptor, prevents error on pypy 2.4+
-            # should also eliminate the need for fp.tell for py3
+            # should also eliminate the need for fp.tell
             # in _seek
             if hasattr(self.fp, "flush"):
                 self.fp.flush()
@@ -1602,13 +1580,10 @@ def _save(im, fp, filename):
 
                 if tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
-                elif not (
-                    isinstance(value, (int, float, str, bytes))
-                    or (not py3 and isinstance(value, unicode))  # noqa: F821
-                ):
+                elif not (isinstance(value, (int, float, str, bytes))):
                     continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, str if py3 else unicode):  # noqa: F821
+                if isinstance(value, str):
                     atts[tag] = value.encode("ascii", "replace") + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
