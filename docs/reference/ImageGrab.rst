@@ -22,7 +22,11 @@ or the clipboard to a PIL image memory.
     :param bbox: What region to copy. Default is the entire screen.
                  Note that on Windows OS, the top-left point may be negative if ``all_screens=True`` is used.
     :param include_layered_windows: Includes layered windows. Windows OS only.
+
+        .. versionadded:: 6.1.0
     :param all_screens: Capture all monitors. Windows OS only.
+
+        .. versionadded:: 6.2.0
     :return: An image
 
 .. py:function:: PIL.ImageGrab.grabclipboard()
