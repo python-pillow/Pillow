@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Updated warning to specify when Image.frombuffer defaults will change #4086
+  [radarhere]
+
 - Changed WindowsViewer format to PNG #4080
   [radarhere]
 
