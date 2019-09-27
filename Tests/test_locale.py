@@ -31,4 +31,8 @@ class TestLocale(PillowTestCase):
             locale.setlocale(locale.LC_ALL, "polish")
         except locale.Error:
             unittest.skip("Polish locale not available")
-        Image.open(path)
+
+        try:
+            Image.open(path)
+        finally:
+            locale.setlocale(locale.LC_ALL, (None, None))

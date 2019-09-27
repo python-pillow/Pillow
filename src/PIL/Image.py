@@ -555,6 +555,7 @@ class Image(object):
         self.category = NORMAL
         self.readonly = 0
         self.pyaccess = None
+        self._exif = None
 
     @property
     def width(self):
@@ -1324,10 +1325,10 @@ class Image(object):
         return self.im.getextrema()
 
     def getexif(self):
-        exif = Exif()
-        if "exif" in self.info:
-            exif.load(self.info["exif"])
-        return exif
+        if self._exif is None:
+            self._exif = Exif()
+        self._exif.load(self.info.get("exif"))
+        return self._exif
 
     def getim(self):
         """
@@ -2073,10 +2074,10 @@ class Image(object):
 
         if open_fp:
             if params.get("append", False):
-                fp = builtins.open(filename, "r+b")
-            else:
                 # Open also for reading ("+"), because TIFF save_all
                 # writer needs to go back and edit the written data.
+                fp = builtins.open(filename, "r+b")
+            else:
                 fp = builtins.open(filename, "w+b")
 
         try:
@@ -2109,15 +2110,15 @@ class Image(object):
         Displays this image. This method is mainly intended for
         debugging purposes.
 
-        On Unix platforms, this method saves the image to a temporary
-        PPM file, and calls the **display**, **eog** or **xv**
-        utility, depending on which one can be found.
+        The image is first saved to a temporary file. By default, it will be in
+        PNG format.
 
-        On macOS, this method saves the image to a temporary PNG file, and
-        opens it with the native Preview application.
+        On Unix, the image is then opened using the **display**, **eog** or
+        **xv** utility, depending on which one can be found.
 
-        On Windows, it saves the image to a temporary BMP file, and uses
-        the standard BMP display utility to show it (usually Paint).
+        On macOS, the image is opened with the native Preview application.
+
+        On Windows, the image is opened with the standard PNG display utility.
 
         :param title: Optional title to use for the image window,
            where possible.
@@ -2592,7 +2593,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     if decoder_name == "raw":
         if args == ():
             warnings.warn(
-                "the frombuffer defaults may change in a future release; "
+                "the frombuffer defaults will change in Pillow 7.0.0; "
                 "for portability, change the call to read:\n"
                 "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
                 RuntimeWarning,
@@ -3137,25 +3138,27 @@ class Exif(MutableMapping):
     def __init__(self):
         self._data = {}
         self._ifds = {}
+        self._info = None
+        self._loaded_exif = None
+
+    def _fixup(self, value):
+        try:
+            if len(value) == 1 and not isinstance(value, dict):
+                return value[0]
+        except Exception:
+            pass
+        return value
 
     def _fixup_dict(self, src_dict):
         # Helper function for _getexif()
         # returns a dict with any single item tuples/lists as individual values
-        def _fixup(value):
-            try:
-                if len(value) == 1 and not isinstance(value, dict):
-                    return value[0]
-            except Exception:
-                pass
-            return value
-
-        return {k: _fixup(v) for k, v in src_dict.items()}
+        return {k: self._fixup(v) for k, v in src_dict.items()}
 
     def _get_ifd_dict(self, tag):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
-            self.fp.seek(self._data[tag])
+            self.fp.seek(self[tag])
         except (KeyError, TypeError):
             pass
         else:
@@ -3172,28 +3175,30 @@ class Exif(MutableMapping):
 
         # The EXIF record consists of a TIFF file embedded in a JPEG
         # application marker (!).
+        if data == self._loaded_exif:
+            return
+        self._loaded_exif = data
+        self._data.clear()
+        self._ifds.clear()
+        self._info = None
+        if not data:
+            return
+
         self.fp = io.BytesIO(data[6:])
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
 
-        info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
-        self.endian = info._endian
-        self.fp.seek(info.next)
-        info.load(self.fp)
-        self._data = dict(self._fixup_dict(info))
+        self._info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+        self.endian = self._info._endian
+        self.fp.seek(self._info.next)
+        self._info.load(self.fp)
 
         # get EXIF extension
         ifd = self._get_ifd_dict(0x8769)
         if ifd:
             self._data.update(ifd)
             self._ifds[0x8769] = ifd
-
-        # get gpsinfo extension
-        ifd = self._get_ifd_dict(0x8825)
-        if ifd:
-            self._data[0x8825] = ifd
-            self._ifds[0x8825] = ifd
 
     def tobytes(self, offset=0):
         from . import TiffImagePlugin
@@ -3203,19 +3208,20 @@ class Exif(MutableMapping):
         else:
             head = b"MM\x00\x2A\x00\x00\x00\x08"
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
-        for tag, value in self._data.items():
+        for tag, value in self.items():
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
     def get_ifd(self, tag):
-        if tag not in self._ifds and tag in self._data:
-            if tag == 0xA005:  # interop
+        if tag not in self._ifds and tag in self:
+            if tag in [0x8825, 0xA005]:
+                # gpsinfo, interop
                 self._ifds[tag] = self._get_ifd_dict(tag)
             elif tag == 0x927C:  # makernote
                 from .TiffImagePlugin import ImageFileDirectory_v2
 
-                if self._data[0x927C][:8] == b"FUJIFILM":
-                    exif_data = self._data[0x927C]
+                if self[0x927C][:8] == b"FUJIFILM":
+                    exif_data = self[0x927C]
                     ifd_offset = i32le(exif_data[8:12])
                     ifd_data = exif_data[ifd_offset:]
 
@@ -3252,8 +3258,8 @@ class Exif(MutableMapping):
                             ImageFileDirectory_v2(), data, False
                         )
                     self._ifds[0x927C] = dict(self._fixup_dict(makernote))
-                elif self._data.get(0x010F) == "Nintendo":
-                    ifd_data = self._data[0x927C]
+                elif self.get(0x010F) == "Nintendo":
+                    ifd_data = self[0x927C]
 
                     makernote = {}
                     for i in range(0, struct.unpack(">H", ifd_data[:2])[0]):
@@ -3291,16 +3297,29 @@ class Exif(MutableMapping):
         return self._ifds.get(tag, {})
 
     def __str__(self):
+        if self._info is not None:
+            # Load all keys into self._data
+            for tag in self._info.keys():
+                self[tag]
+
         return str(self._data)
 
     def __len__(self):
-        return len(self._data)
+        keys = set(self._data)
+        if self._info is not None:
+            keys.update(self._info)
+        return len(keys)
 
     def __getitem__(self, tag):
+        if self._info is not None and tag not in self._data and tag in self._info:
+            self._data[tag] = self._fixup(self._info[tag])
+            if tag == 0x8825:
+                self._data[tag] = self.get_ifd(tag)
+            del self._info[tag]
         return self._data[tag]
 
     def __contains__(self, tag):
-        return tag in self._data
+        return tag in self._data or (self._info is not None and tag in self._info)
 
     if not py3:
 
@@ -3308,10 +3327,17 @@ class Exif(MutableMapping):
             return tag in self
 
     def __setitem__(self, tag, value):
+        if self._info is not None and tag in self._info:
+            del self._info[tag]
         self._data[tag] = value
 
     def __delitem__(self, tag):
+        if self._info is not None and tag in self._info:
+            del self._info[tag]
         del self._data[tag]
 
     def __iter__(self):
-        return iter(set(self._data))
+        keys = set(self._data)
+        if self._info is not None:
+            keys.update(self._info)
+        return iter(keys)

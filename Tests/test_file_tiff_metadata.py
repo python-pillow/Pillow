@@ -222,7 +222,7 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(0, reloaded.tag_v2[41988].numerator)
         self.assertEqual(0, reloaded.tag_v2[41988].denominator)
 
-    def test_expty_values(self):
+    def test_empty_values(self):
         data = io.BytesIO(
             b"II*\x00\x08\x00\x00\x00\x03\x00\x1a\x01\x05\x00\x00\x00\x00\x00"
             b"\x00\x00\x00\x00\x1b\x01\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -239,11 +239,13 @@ class TestFileTiffMetadata(PillowTestCase):
     def test_PhotoshopInfo(self):
         im = Image.open("Tests/images/issue_2278.tif")
 
-        self.assertIsInstance(im.tag_v2[34377], bytes)
+        self.assertEqual(len(im.tag_v2[34377]), 1)
+        self.assertIsInstance(im.tag_v2[34377][0], bytes)
         out = self.tempfile("temp.tiff")
         im.save(out)
         reloaded = Image.open(out)
-        self.assertIsInstance(reloaded.tag_v2[34377], bytes)
+        self.assertEqual(len(reloaded.tag_v2[34377]), 1)
+        self.assertIsInstance(reloaded.tag_v2[34377][0], bytes)
 
     def test_too_many_entries(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()

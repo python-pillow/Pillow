@@ -158,7 +158,7 @@ def APP(self, marker):
     # If DPI isn't in JPEG header, fetch from EXIF
     if "dpi" not in self.info and "exif" in self.info:
         try:
-            exif = self._getexif()
+            exif = self.getexif()
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:
@@ -485,19 +485,9 @@ def _fixup_dict(src_dict):
 
 
 def _getexif(self):
-    # Use the cached version if possible
-    try:
-        return self.info["parsed_exif"]
-    except KeyError:
-        pass
-
     if "exif" not in self.info:
         return None
-    exif = dict(self.getexif())
-
-    # Cache the result for future use
-    self.info["parsed_exif"] = exif
-    return exif
+    return dict(self.getexif())
 
 
 def _getmp(self):

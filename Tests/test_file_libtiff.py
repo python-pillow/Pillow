@@ -81,6 +81,19 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.size, (500, 500))
         self._assert_noerr(im)
 
+    def test_g4_non_disk_file_object(self):
+        """Testing loading from non-disk non-BytesIO file object"""
+        test_file = "Tests/images/hopper_g4_500.tif"
+        s = io.BytesIO()
+        with open(test_file, "rb") as f:
+            s.write(f.read())
+            s.seek(0)
+        r = io.BufferedReader(s)
+        im = Image.open(r)
+
+        self.assertEqual(im.size, (500, 500))
+        self._assert_noerr(im)
+
     def test_g4_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
         png = Image.open("Tests/images/hopper_bw_500.png")
@@ -818,3 +831,12 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assert_image_equal_tofile(
             im, "Tests/images/old-style-jpeg-compression.png"
         )
+
+    def test_orientation(self):
+        base_im = Image.open("Tests/images/g4_orientation_1.tif")
+
+        for i in range(2, 9):
+            im = Image.open("Tests/images/g4_orientation_" + str(i) + ".tif")
+            im.load()
+
+            self.assert_image_similar(base_im, im, 0.7)

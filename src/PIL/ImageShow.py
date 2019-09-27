@@ -105,7 +105,8 @@ class Viewer(object):
 if sys.platform == "win32":
 
     class WindowsViewer(Viewer):
-        format = "BMP"
+        format = "PNG"
+        options = {"compress_level": 1}
 
         def get_command(self, file, **options):
             return (
@@ -179,7 +180,7 @@ else:
             with open(path, "r") as f:
                 command = self.get_command_ex(file, **options)[0]
                 subprocess.Popen(
-                    ["im=$(cat);" + command + " $im;" "rm -f $im"], shell=True, stdin=f
+                    ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
                 )
             os.remove(path)
             return 1

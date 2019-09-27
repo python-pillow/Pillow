@@ -115,6 +115,30 @@ class TestImagecomplextext(PillowTestCase):
 
         self.assert_image_similar(im, target_img, 1.15)
 
+    def test_text_direction_ttb_stroke(self):
+        ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", 50)
+
+        im = Image.new(mode="RGB", size=(100, 300))
+        draw = ImageDraw.Draw(im)
+        try:
+            draw.text(
+                (25, 25),
+                "あい",
+                font=ttf,
+                fill=500,
+                direction="ttb",
+                stroke_width=2,
+                stroke_fill="#0f0",
+            )
+        except ValueError as ex:
+            if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
+                self.skipTest("libraqm 0.7 or greater not available")
+
+        target = "Tests/images/test_direction_ttb_stroke.png"
+        target_img = Image.open(target)
+
+        self.assert_image_similar(im, target_img, 12.4)
+
     def test_ligature_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 

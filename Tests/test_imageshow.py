@@ -1,6 +1,6 @@
 from PIL import Image, ImageShow
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, hopper, on_ci, unittest
 
 
 class TestImageShow(PillowTestCase):
@@ -15,7 +15,7 @@ class TestImageShow(PillowTestCase):
         # Restore original state
         ImageShow._viewers.pop()
 
-    def test_show(self):
+    def test_viewer_show(self):
         class TestViewer(ImageShow.Viewer):
             methodCalled = False
 
@@ -33,6 +33,12 @@ class TestImageShow(PillowTestCase):
 
         # Restore original state
         ImageShow._viewers.pop(0)
+
+    @unittest.skipUnless(on_ci(), "Only run on CIs")
+    def test_show(self):
+        for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
+            im = hopper(mode)
+            self.assertTrue(ImageShow.show(im))
 
     def test_viewer(self):
         viewer = ImageShow.Viewer()

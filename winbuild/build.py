@@ -84,7 +84,8 @@ def vc_setup(compiler, bit):
         arch = "x86" if bit == 32 else "x86_amd64"
         script = (
             r"""
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s"""
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %s
+echo on"""
             % arch
         )
     return script
@@ -191,16 +192,14 @@ def run_one(op):
 
 
 if __name__ == "__main__":
-    opts, args = getopt.getopt(sys.argv[1:], "", ["clean", "dist", "wheel"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["clean", "wheel"])
     opts = dict(opts)
 
     if "--clean" in opts:
         clean()
 
     op = "install"
-    if "--dist" in opts:
-        op = "bdist_wininst --user-access-control=auto"
-    elif "--wheel" in opts:
+    if "--wheel" in opts:
         op = "bdist_wheel"
 
     if "PYTHON" in os.environ:

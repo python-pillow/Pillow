@@ -324,8 +324,8 @@ typedef HANDLE(__stdcall* Func_SetThreadDpiAwarenessContext)(HANDLE);
 PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
-    int width, height;
-    int includeLayeredWindows = 0;
+    int x = 0, y = 0, width, height;
+    int includeLayeredWindows = 0, all_screens = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
@@ -335,7 +335,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     HMODULE user32;
     Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
-    if (!PyArg_ParseTuple(args, "|i", &includeLayeredWindows))
+    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &all_screens))
         return NULL;
 
     /* step 1: create a memory DC large enough to hold the
@@ -355,8 +355,15 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
         dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE) -3);
     }
 
-    width = GetDeviceCaps(screen, HORZRES);
-    height = GetDeviceCaps(screen, VERTRES);
+    if (all_screens) {
+        x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    } else {
+        width = GetDeviceCaps(screen, HORZRES);
+        height = GetDeviceCaps(screen, VERTRES);
+    }
 
     if (SetThreadDpiAwarenessContext_function != NULL) {
         SetThreadDpiAwarenessContext_function(dpiAwareness);
@@ -376,7 +383,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     rop = SRCCOPY;
     if (includeLayeredWindows)
         rop |= CAPTUREBLT;
-    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, rop))
+    if (!BitBlt(screen_copy, 0, 0, width, height, screen, x, y, rop))
         goto error;
 
     /* step 3: extract bits from bitmap */
@@ -398,7 +405,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     DeleteDC(screen_copy);
     DeleteDC(screen);
 
-    return Py_BuildValue("(ii)N", width, height, buffer);
+    return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
     PyErr_SetString(PyExc_IOError, "screen grab failed");

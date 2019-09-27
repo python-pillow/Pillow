@@ -255,7 +255,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
 
     Draws the string at the given position.
 
@@ -297,6 +297,15 @@ Methods
 
                      .. versionadded:: 6.0.0
 
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
+
+    :param stroke_fill: Color to use for the text stroke. If not given, will default to
+                        the ``fill`` parameter.
+
+                     .. versionadded:: 6.2.0
+
 .. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None)
 
     Draws the string at the given position.
@@ -336,7 +345,7 @@ Methods
 
                      .. versionadded:: 6.0.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -372,7 +381,11 @@ Methods
 
                      .. versionadded:: 6.0.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None)
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -407,6 +420,10 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
+
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
 
 .. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
 

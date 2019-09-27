@@ -8,6 +8,7 @@ pythons = {
     "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
+    "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
 }
 
@@ -35,9 +36,9 @@ libs = {
         "dir": "tiff-4.0.10",
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.0.tar.gz",  # noqa: E501
-        "filename": PILLOW_DEPENDS_DIR + "freetype-2.10.0.tar.gz",
-        "dir": "freetype-2.10.0",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501
+        "filename": PILLOW_DEPENDS_DIR + "freetype-2.10.1.tar.gz",
+        "dir": "freetype-2.10.1",
     },
     "lcms": {
         "url": SF_MIRROR + "/project/lcms/lcms/2.7/lcms2-2.7.zip",

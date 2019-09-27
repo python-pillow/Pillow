@@ -101,6 +101,19 @@ bit2ycbcr(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+static void
+bit2hsv(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, out += 4) {
+        UINT8 v = (*in++ != 0) ? 255 : 0;
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = v;
+        out[3] = 255;
+    }
+}
+
 /* ----------------- */
 /* RGB/L conversions */
 /* ----------------- */
@@ -176,6 +189,19 @@ l2rgb(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+l2hsv(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, out += 4) {
+        UINT8 v = *in++;
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = v;
+        out[3] = 255;
+    }
+}
+
+static void
 la2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -193,6 +219,19 @@ la2rgb(UINT8* out, const UINT8* in, int xsize)
         *out++ = v;
         *out++ = v;
         *out++ = in[3];
+    }
+}
+
+static void
+la2hsv(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+        UINT8 v = in[0];
+        out[0] = 0;
+        out[1] = 0;
+        out[2] = v;
+        out[3] = in[3];
     }
 }
 
@@ -283,53 +322,57 @@ rgb2bgr24(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
-rgb2hsv(UINT8* out, const UINT8* in, int xsize)
+rgb2hsv_row(UINT8* out, const UINT8* in)
 { // following colorsys.py
     float h,s,rc,gc,bc,cr;
     UINT8 maxc,minc;
     UINT8 r, g, b;
     UINT8 uh,us,uv;
-    int x;
 
-    for (x = 0; x < xsize; x++, in += 4) {
-        r = in[0];
-        g = in[1];
-        b = in[2];
-
-        maxc = MAX(r,MAX(g,b));
-        minc = MIN(r,MIN(g,b));
-        uv = maxc;
-        if (minc == maxc){
-            *out++ = 0;
-            *out++ = 0;
-            *out++ = uv;
+    r = in[0];
+    g = in[1];
+    b = in[2];
+    maxc = MAX(r,MAX(g,b));
+    minc = MIN(r,MIN(g,b));
+    uv = maxc;
+    if (minc == maxc){
+        uh = 0;
+        us = 0;
+    } else {
+        cr = (float)(maxc-minc);
+        s = cr/(float)maxc;
+        rc = ((float)(maxc-r))/cr;
+        gc = ((float)(maxc-g))/cr;
+        bc = ((float)(maxc-b))/cr;
+        if (r == maxc) {
+            h = bc-gc;
+        } else if (g == maxc) {
+            h = 2.0 + rc-bc;
         } else {
-            cr = (float)(maxc-minc);
-            s = cr/(float)maxc;
-            rc = ((float)(maxc-r))/cr;
-            gc = ((float)(maxc-g))/cr;
-            bc = ((float)(maxc-b))/cr;
-            if (r == maxc) {
-                h = bc-gc;
-            } else if (g == maxc) {
-                h = 2.0 + rc-bc;
-            } else {
-                h = 4.0 + gc-rc;
-            }
-            // incorrect hue happens if h/6 is negative.
-            h = fmod((h/6.0 + 1.0), 1.0);
-
-            uh = (UINT8)CLIP8((int)(h*255.0));
-            us = (UINT8)CLIP8((int)(s*255.0));
-
-            *out++ = uh;
-            *out++ = us;
-            *out++ = uv;
-
+            h = 4.0 + gc-rc;
         }
-        *out++ = in[3];
+        // incorrect hue happens if h/6 is negative.
+        h = fmod((h/6.0 + 1.0), 1.0);
+
+        uh = (UINT8)CLIP8((int)(h*255.0));
+        us = (UINT8)CLIP8((int)(s*255.0));
+    }
+    out[0] = uh;
+    out[1] = us;
+    out[2] = uv;
+}
+
+static void
+rgb2hsv(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+        rgb2hsv_row(out, in);
+        out[3] = in[3];
     }
 }
+
+
 
 static void
 hsv2rgb(UINT8* out, const UINT8* in, int xsize)
@@ -562,6 +605,22 @@ cmyk2rgb(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
+static void
+cmyk2hsv(UINT8* out, const UINT8* in, int xsize)
+{
+    int x, nk, tmp;
+    for (x = 0; x < xsize; x++) {
+        nk = 255 - in[3];
+        out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
+        out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
+        out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
+        rgb2hsv_row(out, out);
+        out[3] = 255;
+        out += 4;
+        in += 4;
+    }
+}
+
 /* ------------- */
 /* I conversions */
 /* ------------- */
@@ -627,6 +686,25 @@ i2rgb(UINT8* out, const UINT8* in_, int xsize)
             out[0] = out[1] = out[2] = 255;
         else
             out[0] = out[1] = out[2] = (UINT8) *in;
+        out[3] = 255;
+    }
+}
+
+static void
+i2hsv(UINT8* out, const UINT8* in_, int xsize)
+{
+    int x;
+    INT32* in = (INT32*) in_;
+    for (x = 0; x < xsize; x++, in++, out+=4) {
+        out[0] = 0;
+        out[1] = 0;
+        if (*in <= 0) {
+            out[2] = 0;
+        } else if (*in >= 255) {
+            out[2] = 255;
+        } else {
+            out[2] = (UINT8) *in;
+        }
         out[3] = 255;
     }
 }
@@ -861,6 +939,7 @@ static struct {
     { "1", "RGBX", bit2rgb },
     { "1", "CMYK", bit2cmyk },
     { "1", "YCbCr", bit2ycbcr },
+    { "1", "HSV", bit2hsv },
 
     { "L", "1", l2bit },
     { "L", "LA", l2la },
@@ -871,6 +950,7 @@ static struct {
     { "L", "RGBX", l2rgb },
     { "L", "CMYK", l2cmyk },
     { "L", "YCbCr", l2ycbcr },
+    { "L", "HSV", l2hsv },
 
     { "LA", "L", la2l },
     { "LA", "La", lA2la },
@@ -879,6 +959,7 @@ static struct {
     { "LA", "RGBX", la2rgb },
     { "LA", "CMYK", la2cmyk },
     { "LA", "YCbCr", la2ycbcr },
+    { "LA", "HSV", la2hsv },
 
     { "La", "LA", la2lA },
 
@@ -887,6 +968,7 @@ static struct {
     { "I", "RGB", i2rgb },
     { "I", "RGBA", i2rgb },
     { "I", "RGBX", i2rgb },
+    { "I", "HSV", i2hsv },
 
     { "F", "L", f2l },
     { "F", "I", f2i },
@@ -915,6 +997,7 @@ static struct {
     { "RGBA", "RGBX", rgb2rgba },
     { "RGBA", "CMYK", rgb2cmyk },
     { "RGBA", "YCbCr", ImagingConvertRGB2YCbCr },
+    { "RGBA", "HSV", rgb2hsv },
 
     { "RGBa", "RGBA", rgba2rgbA },
 
@@ -926,10 +1009,12 @@ static struct {
     { "RGBX", "RGB", rgba2rgb },
     { "RGBX", "CMYK", rgb2cmyk },
     { "RGBX", "YCbCr", ImagingConvertRGB2YCbCr },
+    { "RGBX", "HSV", rgb2hsv },
 
     { "CMYK", "RGB",  cmyk2rgb },
     { "CMYK", "RGBA", cmyk2rgb },
     { "CMYK", "RGBX", cmyk2rgb },
+    { "CMYK", "HSV", cmyk2hsv },
 
     { "YCbCr", "L", ycbcr2l },
     { "YCbCr", "LA", ycbcr2la },
@@ -1102,6 +1187,28 @@ pa2rgb(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+p2hsv(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    for (x = 0; x < xsize; x++, out += 4) {
+        const UINT8* rgb = &palette[*in++ * 4];
+        rgb2hsv_row(out, rgb);
+        out[3] = 255;
+    }
+}
+
+static void
+pa2hsv(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+        const UINT8* rgb = &palette[in[0] * 4];
+        rgb2hsv_row(out, rgb);
+        out[3] = 255;
+    }
+}
+
+static void
 p2rgba(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
@@ -1192,6 +1299,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
         convert = alpha ? pa2cmyk : p2cmyk;
     else if (strcmp(mode, "YCbCr") == 0)
         convert = alpha ? pa2ycbcr : p2ycbcr;
+    else if (strcmp(mode, "HSV") == 0)
+        convert = alpha ? pa2hsv : p2hsv;
     else
         return (Imaging) ImagingError_ValueError("conversion not supported");
 

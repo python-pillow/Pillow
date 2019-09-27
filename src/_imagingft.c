@@ -25,6 +25,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
 
@@ -790,7 +791,13 @@ font_render(FontObject* self, PyObject* args)
     int index, error, ascender, horizontal_dir;
     int load_flags;
     unsigned char *source;
-    FT_GlyphSlot glyph;
+    FT_Glyph glyph;
+    FT_GlyphSlot glyph_slot;
+    FT_Bitmap bitmap;
+    FT_BitmapGlyph bitmap_glyph;
+    int stroke_width = 0;
+    FT_Stroker stroker = NULL;
+    FT_Int left;
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
     PyObject* string;
@@ -806,7 +813,8 @@ font_render(FontObject* self, PyObject* args)
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
 
-    if (!PyArg_ParseTuple(args, "On|izOz:render", &string,  &id, &mask, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
+                                                   &stroke_width)) {
         return NULL;
     }
 
@@ -819,21 +827,37 @@ font_render(FontObject* self, PyObject* args)
         Py_RETURN_NONE;
     }
 
+    if (stroke_width) {
+        error = FT_Stroker_New(library, &stroker);
+        if (error) {
+            return geterror(error);
+        }
+
+        FT_Stroker_Set(stroker, (FT_Fixed)stroke_width*64, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+    }
+
     im = (Imaging) id;
     /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
-    load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
-    if (mask)
+    load_flags = FT_LOAD_NO_BITMAP;
+    if (stroker == NULL) {
+        load_flags |= FT_LOAD_RENDER;
+    }
+    if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
+    }
 
     ascender = 0;
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
-        glyph = self->face->glyph;
-        temp = glyph->bitmap.rows - glyph->bitmap_top;
+        glyph_slot = self->face->glyph;
+        bitmap = glyph_slot->bitmap;
+
+        temp = bitmap.rows - glyph_slot->bitmap_top;
         temp -= PIXEL(glyph_info[i].y_offset);
         if (temp > ascender)
             ascender = temp;
@@ -844,37 +868,62 @@ font_render(FontObject* self, PyObject* args)
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
         error = FT_Load_Glyph(self->face, index, load_flags);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
-        glyph = self->face->glyph;
-        if (horizontal_dir) {
-            if (i == 0 && self->face->glyph->metrics.horiBearingX < 0) {
-                x = -self->face->glyph->metrics.horiBearingX;
+        glyph_slot = self->face->glyph;
+        if (stroker != NULL) {
+            error = FT_Get_Glyph(glyph_slot, &glyph);
+            if (!error) {
+                error = FT_Glyph_Stroke(&glyph, stroker, 1);
             }
-            xx = PIXEL(x) + glyph->bitmap_left;
-            xx += PIXEL(glyph_info[i].x_offset);
+            if (!error) {
+                FT_Vector origin = {0, 0};
+                error = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, &origin, 1);
+            }
+            if (error) {
+                return geterror(error);
+            }
+
+            bitmap_glyph = (FT_BitmapGlyph)glyph;
+
+            bitmap = bitmap_glyph->bitmap;
+            left = bitmap_glyph->left;
+
+            FT_Done_Glyph(glyph);
         } else {
-            if (self->face->glyph->metrics.vertBearingX < 0) {
-                x = -self->face->glyph->metrics.vertBearingX;
+            bitmap = glyph_slot->bitmap;
+            left = glyph_slot->bitmap_left;
+        }
+
+        if (horizontal_dir) {
+            if (i == 0 && glyph_slot->metrics.horiBearingX < 0) {
+                x = -glyph_slot->metrics.horiBearingX;
             }
-            xx = im->xsize / 2 - glyph->bitmap.width / 2;
+            xx = PIXEL(x) + left;
+            xx += PIXEL(glyph_info[i].x_offset) + stroke_width;
+        } else {
+            if (glyph_slot->metrics.vertBearingX < 0) {
+                x = -glyph_slot->metrics.vertBearingX;
+            }
+            xx = im->xsize / 2 - bitmap.width / 2;
         }
 
         x0 = 0;
-        x1 = glyph->bitmap.width;
+        x1 = bitmap.width;
         if (xx < 0)
             x0 = -xx;
         if (xx + x1 > im->xsize)
             x1 = im->xsize - xx;
 
-        source = (unsigned char*) glyph->bitmap.buffer;
-        for (bitmap_y = 0; bitmap_y < glyph->bitmap.rows; bitmap_y++) {
+        source = (unsigned char*) bitmap.buffer;
+        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++) {
             if (horizontal_dir) {
-                yy = bitmap_y + im->ysize - (PIXEL(glyph->metrics.horiBearingY) + ascender);
-                yy -= PIXEL(glyph_info[i].y_offset);
+                yy = bitmap_y + im->ysize - (PIXEL(glyph_slot->metrics.horiBearingY) + ascender);
+                yy -= PIXEL(glyph_info[i].y_offset) + stroke_width * 2;
             } else {
-                yy = bitmap_y + PIXEL(y + glyph->metrics.vertBearingY) + ascender;
+                yy = bitmap_y + PIXEL(y + glyph_slot->metrics.vertBearingY) + ascender;
                 yy += PIXEL(glyph_info[i].y_offset);
             }
             if (yy >= 0 && yy < im->ysize) {
@@ -900,12 +949,13 @@ font_render(FontObject* self, PyObject* args)
                     }
                 }
             }
-            source += glyph->bitmap.pitch;
+            source += bitmap.pitch;
         }
         x += glyph_info[i].x_advance;
         y -= glyph_info[i].y_advance;
     }
 
+    FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
 }
