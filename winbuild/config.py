@@ -96,6 +96,13 @@ libs = {
         "filename": PILLOW_DEPENDS_DIR + "libjpeg-turbo-2.0.3.tar.gz",
         "dir": "libjpeg-turbo-2.0.3",
     },
+    # ba653c8: Merge tag '2.12.5' into msvc
+    "imagequant": {
+        "url": "https://github.com/ImageOptim/libimagequant/archive/ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",  # noqa: E501
+        "filename": PILLOW_DEPENDS_DIR
+        + "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",
+        "dir": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971",
+    },
 }
 
 compilers = {

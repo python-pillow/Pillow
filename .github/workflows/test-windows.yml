@@ -210,6 +210,28 @@ jobs:
         copy /Y /B src\lib\openjp2\*.h %INCLIB%\openjpeg-2.3.1
         copy /Y /B bin\*.lib %INCLIB%
 
+    # GPL licensed; skip if building wheels
+    - name: Build dependencies / libimagequant
+      if: "github.event_name != 'push' || contains(matrix.python-version, 'pypy')"
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        rem ba653c8: Merge tag '2.12.5' into msvc
+        cd /D %BUILD%\libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        echo on
+        echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-MT -openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
+        echo (gc CMakeLists.txt) -replace ' SHARED', ' STATIC' ^| Out-File -encoding ASCII CMakeLists.txt >> patch.ps1
+        powershell .\patch.ps1
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile
+        copy /Y /B *.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+
     - name: Build dependencies / ghostscript
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
