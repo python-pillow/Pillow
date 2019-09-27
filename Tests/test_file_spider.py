@@ -1,4 +1,5 @@
 import tempfile
+from io import BytesIO
 
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
@@ -117,3 +118,14 @@ class TestImageSpider(PillowTestCase):
         for i, frame in enumerate(ImageSequence.Iterator(im)):
             if i > 1:
                 self.fail("Non-stack DOS file test failed")
+
+    # for issue #4093
+    def test_odd_size(self):
+        data = BytesIO()
+        width = 100
+        im = Image.new("F", (width, 64))
+        im.save(data, format="SPIDER")
+
+        data.seek(0)
+        im2 = Image.open(data)
+        self.assert_image_equal(im, im2)

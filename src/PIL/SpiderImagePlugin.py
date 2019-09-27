@@ -236,7 +236,7 @@ def loadImageSeries(filelist=None):
 def makeSpiderHeader(im):
     nsam, nrow = im.size
     lenbyt = nsam * 4  # There are labrec records in the header
-    labrec = 1024 / lenbyt
+    labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
     labbyt = labrec * lenbyt
