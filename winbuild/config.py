@@ -1,6 +1,6 @@
 import os
 
-SF_MIRROR = "http://iweb.dl.sourceforge.net"
+SF_MIRROR = "https://iweb.dl.sourceforge.net"
 PILLOW_DEPENDS_DIR = "C:\\pillow-depends\\"
 
 pythons = {
@@ -90,6 +90,11 @@ libs = {
         "url": "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz",
         "filename": PILLOW_DEPENDS_DIR + "openjpeg-2.3.1.tar.gz",
         "dir": "openjpeg-2.3.1",
+    },
+    "jpeg-turbo": {
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
+        "filename": PILLOW_DEPENDS_DIR + "libjpeg-turbo-2.0.3.tar.gz",
+        "dir": "libjpeg-turbo-2.0.3",
     },
 }
 

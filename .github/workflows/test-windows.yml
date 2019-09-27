@@ -62,6 +62,11 @@ jobs:
     
     - name: Fetch dependencies
       run: |
+        curl -fsSL -o nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/win64/nasm-2.14.02-win64.zip
+        7z x nasm.zip "-o$env:RUNNER_WORKSPACE\"
+        Write-Host "`#`#[add-path]$env:RUNNER_WORKSPACE\nasm-2.14.02"
+        Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
+
         $env:PYTHON=$env:pythonLocation
         curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
         7z x pillow-depends.zip -oc:\
@@ -76,7 +81,9 @@ jobs:
         EXECUTABLE: bin\python.exe
       shell: pwsh
 
+    # libjpeg-turbo build is slow, pypy test is slow -> don't do both at once
     - name: Build dependencies / libjpeg
+      if: "contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -89,6 +96,23 @@ jobs:
         nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib
         copy /Y /B j*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
+
+    - name: Build dependencies / libjpeg-turbo
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\libjpeg-turbo-2.0.3
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        echo on
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DENABLE_SHARED:BOOL=OFF -DWITH_JPEG8:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile
+        copy /Y /B j*.h %INCLIB%
+        copy /Y /B jpeg-static.lib %INCLIB%\libjpeg.lib
 
     - name: Build dependencies / zlib
       run: |
@@ -176,10 +200,10 @@ jobs:
         cd /D %BUILD%\openjpeg-2.3.1msvcr10-x32
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        set CMAKE=cmake.exe -DOPENJP2_COMPILE_OPTIONS=-MT
-        set CMAKE=%CMAKE% -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
-        %CMAKE% -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
+        set CMAKE=%CMAKE% -DOPENJP2_COMPILE_OPTIONS=-MT -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
         nmake -nologo -f Makefile clean
         nmake -nologo -f Makefile
         mkdir %INCLIB%\openjpeg-2.3.1
