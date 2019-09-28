@@ -7,6 +7,9 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
+- Added argument to capture all screens on Windows #3950
+  [nulano, radarhere]
+
 - Updated warning to specify when Image.frombuffer defaults will change #4086
   [radarhere]
 
