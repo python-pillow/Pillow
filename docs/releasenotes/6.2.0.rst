@@ -44,6 +44,12 @@ creates the following image:
 
 .. image:: ../../Tests/images/imagedraw_stroke_different.png
 
+ImageGrab on multi-monitor Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An `all_screens` argument has been added to ``ImageGrab.grab``. If ``True``,
+all monitors will be included in the created image.
+
 API Changes
 ===========
 
