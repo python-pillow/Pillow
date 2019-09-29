@@ -103,6 +103,11 @@ libs = {
         + "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",
         "dir": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971",
     },
+    "harfbuzz": {
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.1.zip",
+        "filename": PILLOW_DEPENDS_DIR + "harfbuzz-2.6.1.zip",
+        "dir": "harfbuzz-2.6.1",
+    },
 }
 
 compilers = {

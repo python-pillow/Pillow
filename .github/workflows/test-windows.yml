@@ -232,7 +232,28 @@ jobs:
         copy /Y /B *.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
+    - name: Build dependencies / harfbuzz
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\harfbuzz-2.6.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        echo on
+        echo (gc CMakeLists.txt) -replace 'enable_testing', "add_compile_options(-MT)`r`nenable_testing" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
+        powershell .\patch.ps1
+        type CMakeLists.txt
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile harfbuzz
+        copy /Y /B src\*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+
+
     - name: Build dependencies / ghostscript
+      if: false
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
