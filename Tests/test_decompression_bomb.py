@@ -14,6 +14,7 @@ class TestDecompressionBomb(PillowTestCase):
     def test_no_warning_small_file(self):
         # Implicit assert: no warning.
         # A warning would cause a failure.
+        Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
         Image.open(TEST_FILE)
 
     def test_no_warning_no_limit(self):
@@ -40,6 +41,14 @@ class TestDecompressionBomb(PillowTestCase):
         self.assertEqual(Image.MAX_IMAGE_PIXELS, 64 * 128 - 1)
 
         self.assertRaises(Image.DecompressionBombError, lambda: Image.open(TEST_FILE))
+
+    def test_exception_ico(self):
+        with self.assertRaises(Image.DecompressionBombError):
+            Image.open("Tests/images/decompression_bomb.ico")
+
+    def test_exception_gif(self):
+        with self.assertRaises(Image.DecompressionBombError):
+            Image.open("Tests/images/decompression_bomb.gif")
 
 
 class TestDecompressionCrop(PillowTestCase):
