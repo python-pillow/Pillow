@@ -232,7 +232,7 @@ jobs:
         copy /Y /B *.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
-    - name: Build dependencies / harfbuzz
+    - name: Build dependencies / HarfBuzz
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -242,7 +242,6 @@ jobs:
         echo on
         echo (gc CMakeLists.txt) -replace 'enable_testing', "add_compile_options(-MT)`r`nenable_testing" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
         powershell .\patch.ps1
-        type CMakeLists.txt
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
         %CMAKE% -G "NMake Makefiles" .
@@ -251,6 +250,22 @@ jobs:
         copy /Y /B src\*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
+    - name: Build dependencies / FriBidi
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\fribidi-1.0.7
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        echo on
+        copy /Y /B %GITHUB_WORKSPACE%\winbuild\fribidi.cmake CMakeLists.txt
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile fribidi
+        copy /Y /B lib\*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
 
     - name: Build dependencies / ghostscript
       if: false

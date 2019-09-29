@@ -108,6 +108,11 @@ libs = {
         "filename": PILLOW_DEPENDS_DIR + "harfbuzz-2.6.1.zip",
         "dir": "harfbuzz-2.6.1",
     },
+    "fribidi": {
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.7.zip",
+        "filename": PILLOW_DEPENDS_DIR + "fribidi-1.0.7.zip",
+        "dir": "fribidi-1.0.7",
+    },
 }
 
 compilers = {
