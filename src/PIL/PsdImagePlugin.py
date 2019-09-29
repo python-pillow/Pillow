@@ -224,9 +224,11 @@ def _layerinfo(file):
         # skip over blend flags and extra information
         read(12)  # filler
         name = ""
-        size = i32(read(4))
+        size = i32(read(4))  # length of the extra data field
         combined = 0
         if size:
+            data_end = file.tell() + size
+
             length = i32(read(4))
             if length:
                 file.seek(length - 16, io.SEEK_CUR)
@@ -244,7 +246,7 @@ def _layerinfo(file):
                 name = read(length).decode("latin-1", "replace")
             combined += length + 1
 
-        file.seek(size - combined, io.SEEK_CUR)
+            file.seek(data_end)
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles
