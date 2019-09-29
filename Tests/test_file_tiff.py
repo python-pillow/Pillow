@@ -2,7 +2,7 @@ import logging
 import sys
 from io import BytesIO
 
-from PIL import Image, TiffImagePlugin, features
+from PIL import Image, TiffImagePlugin
 from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -586,30 +586,6 @@ class TestFileTiff(PillowTestCase):
             self.assertFalse(fp.closed)
             im.load()
             self.assertFalse(fp.closed)
-
-    @unittest.skipUnless(features.check("libtiff"), "libtiff not installed")
-    def test_sampleformat_not_corrupted(self):
-        # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
-        # when saving to a new file.
-        # Pillow 6.0 fails with "OSError: cannot identify image file".
-        import base64
-
-        tiff = BytesIO(
-            base64.b64decode(
-                b"SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA"
-                b"AAIBAwADAAAAwgAAAAMBAwABAAAACAAAAAYBAwABAAAAAgAAABEBBAABAAAA"
-                b"4AAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAACwAAABoBBQAB"
-                b"AAAAyAAAABsBBQABAAAA0AAAABwBAwABAAAAAQAAACgBAwABAAAAAQAAAFMB"
-                b"AwADAAAA2AAAAAAAAAAIAAgACAABAAAAAQAAAAEAAAABAAAAAQABAAEAAAB4"
-                b"nGNgYAAAAAMAAQ=="
-            )
-        )
-        out = BytesIO()
-        with Image.open(tiff) as im:
-            im.save(out, format="tiff")
-        out.seek(0)
-        with Image.open(out) as im:
-            im.load()
 
 
 @unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
