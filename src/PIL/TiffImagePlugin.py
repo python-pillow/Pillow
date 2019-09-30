@@ -327,8 +327,6 @@ class IFDRational(Rational):
 
         if denominator == 0:
             self._val = float("nan")
-            return
-
         elif denominator == 1:
             self._val = Fraction(value)
         else:
