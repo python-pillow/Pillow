@@ -180,6 +180,7 @@ class IcoFile(object):
         else:
             # XOR + AND mask bmp frame
             im = BmpImagePlugin.DibImageFile(self.buf)
+            Image._decompression_bomb_check(im.size)
 
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))

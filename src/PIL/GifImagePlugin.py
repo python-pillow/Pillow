@@ -265,6 +265,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.dispose = None
             elif self.disposal_method == 2:
                 # replace with background colour
+                Image._decompression_bomb_check(self.size)
                 self.dispose = Image.core.fill("P", self.size, self.info["background"])
             else:
                 # replace with previous contents
