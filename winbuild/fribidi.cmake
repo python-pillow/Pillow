@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(fribidi)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -MT)
+add_compile_options(-MT)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(lib)
@@ -29,7 +29,7 @@ function(fribidi_conf)
 	set(SIZEOF_INT 4)
 	set(FRIBIDI_MSVC_BUILD_PLACEHOLDER "#define FRIBIDI_BUILT_WITH_MSVC")
 	message("detected ${PACKAGE_NAME} version ${FRIBIDI_VERSION}")
-	configure_file(lib/fribidi-config.h.in fribidi-config.h @ONLY)
+	configure_file(lib/fribidi-config.h.in lib/fribidi-config.h @ONLY)
 endfunction()
 fribidi_conf()
 
@@ -57,7 +57,7 @@ macro(fribidi_definitions _TGT)
 endmacro()
 
 function(fribidi_gen _NAME _OUTNAME _PARAM)
-	set(_OUT ${CMAKE_CURRENT_BINARY_DIR}/${_OUTNAME})
+	set(_OUT lib/${_OUTNAME})
 	prepend(_DEP "${CMAKE_CURRENT_SOURCE_DIR}/gen.tab/" ${ARGN})
 	add_executable(gen-${_NAME}
 		gen.tab/gen-${_NAME}.c
@@ -80,7 +80,7 @@ fribidi_gen(unicode-version fribidi-unicode-version.h ""
 macro(fribidi_tab _NAME)
 	fribidi_gen(${_NAME}-tab ${_NAME}.tab.i 2 ${ARGN})
 	target_sources(gen-${_NAME}-tab
-		PRIVATE fribidi-unicode-version.h)
+		PRIVATE lib/fribidi-unicode-version.h)
 endmacro()
 
 fribidi_tab(bidi-type unidata/UnicodeData.txt)
@@ -97,7 +97,6 @@ file(GLOB FRIBIDI_HEADERS lib/*.h)
 add_library(fribidi STATIC
 	${FRIBIDI_SOURCES}
 	${FRIBIDI_HEADERS}
-	fribidi-config.h
 	${FRIBIDI_SOURCES_GENERATED})
 fribidi_definitions(fribidi)
 target_compile_definitions(fribidi

@@ -113,6 +113,11 @@ libs = {
         "filename": PILLOW_DEPENDS_DIR + "fribidi-1.0.7.zip",
         "dir": "fribidi-1.0.7",
     },
+    "libraqm": {
+        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
+        "filename": PILLOW_DEPENDS_DIR + "libraqm-0.7.0.zip",
+        "dir": "libraqm-0.7.0",
+    },
 }
 
 compilers = {

@@ -76,7 +76,6 @@ jobs:
         xcopy /s c:\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
         cd $env:GITHUB_WORKSPACE/winbuild/
         python.exe $env:GITHUB_WORKSPACE\winbuild\build_dep.py
-        # .\build_deps.cmd
       env:
         EXECUTABLE: bin\python.exe
       shell: pwsh
@@ -233,17 +232,20 @@ jobs:
         copy /Y /B *.lib %INCLIB%
 
     - name: Build dependencies / HarfBuzz
+      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        set INCLUDE=%INCLUDE%;%INCLIB%
+        set LIB=%LIB%;%INCLIB%
         cd /D %BUILD%\harfbuzz-2.6.1
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         echo (gc CMakeLists.txt) -replace 'enable_testing', "add_compile_options(-MT)`r`nenable_testing" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
         powershell .\patch.ps1
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
-        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        set CMAKE=%CMAKE% -DHB_HAVE_FREETYPE:BOOL=ON -DCMAKE_BUILD_TYPE=Release
         %CMAKE% -G "NMake Makefiles" .
         nmake -nologo -f Makefile clean
         nmake -nologo -f Makefile harfbuzz
@@ -251,6 +253,7 @@ jobs:
         copy /Y /B *.lib %INCLIB%
 
     - name: Build dependencies / FriBidi
+      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -267,8 +270,28 @@ jobs:
         copy /Y /B lib\*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
+    # failing with PyPy3
+    - name: Build dependencies / Raqm
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        set INCLUDE=%INCLUDE%;%INCLIB%
+        set LIB=%LIB%;%INCLIB%
+        cd /D %BUILD%\libraqm-0.7.0
+        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        echo on
+        copy /Y /B %GITHUB_WORKSPACE%\winbuild\raqm.cmake CMakeLists.txt
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile libraqm
+        copy /Y /B src\*.h %INCLIB%
+        copy /Y /B libraqm.dll %INCLIB%
+
     - name: Build dependencies / ghostscript
-      if: false
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -295,21 +318,21 @@ jobs:
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         %PYTHON%\python.exe setup.py build_ext install
+        rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
+        path %INCLIB%;%PATH%
         %PYTHON%\python.exe selftest.py --installed
     
     - name: Test Pillow
       run: |
         set PYTHON=%pythonLocation%
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
-        rem Add GhostScript executables (copied to INCLIB) to PATH.
+        rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
         cd /D %GITHUB_WORKSPACE%
         %PYTHON%\python.exe -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
     
     - name: Upload coverage
       run: 'codecov --file "%GITHUB_WORKSPACE%\coverage.xml" --name "%pythonLocation%"'
-      env:
-        CODECOV: Scripts\codecov.exe
 
     - name: Build wheel
       id: wheel
