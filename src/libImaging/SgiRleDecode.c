@@ -157,6 +157,11 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
             c->rlelength = c->lengthtab[c->rowno + c->channo * im->ysize];
             c->rleoffset -= SGI_HEADER_SIZE;
 
+            if (c->rleoffset + c->rlelength > c->bufsize) {
+                state->errcode = IMAGING_CODEC_OVERRUN;
+                return -1;
+            }
+
             /* row decompression */
             if (c->bpc ==1) {
                 if(expandrow(&state->buffer[c->channo], &ptr[c->rleoffset], c->rlelength, im->bands))
