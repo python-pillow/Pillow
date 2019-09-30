@@ -15,7 +15,7 @@ else:
         test_case.skipTest("Qt bindings are not installed")
 
 
-class PillowQtTestCase(object):
+class PillowQtTestCase:
     def setUp(self):
         skip_if_qt_is_not_installed(self)
 

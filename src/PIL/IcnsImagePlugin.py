@@ -128,7 +128,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         raise ValueError("Unsupported icon subimage format")
 
 
-class IcnsFile(object):
+class IcnsFile:
 
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],

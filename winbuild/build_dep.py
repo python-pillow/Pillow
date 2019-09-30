@@ -103,7 +103,7 @@ set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 """ + "\n".join(
-        r"set %s=%%BUILD%%\%s" % (k.upper(), v["dir"])
+        r"set {}=%BUILD%\{}".format(k.upper(), v["dir"])
         for (k, v) in libs.items()
         if v["dir"]
     )

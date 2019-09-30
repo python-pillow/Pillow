@@ -114,9 +114,9 @@ class TestFileWebpMetadata(PillowTestCase):
         if not _webp.HAVE_WEBPANIM:
             self.skipTest("WebP animation support not available")
 
-        iccp_data = "<iccp_data>".encode("utf-8")
-        exif_data = "<exif_data>".encode("utf-8")
-        xmp_data = "<xmp_data>".encode("utf-8")
+        iccp_data = b"<iccp_data>"
+        exif_data = b"<exif_data>"
+        xmp_data = b"<xmp_data>"
 
         temp_file = self.tempfile("temp.webp")
         frame1 = Image.open("Tests/images/anim_frame1.webp")

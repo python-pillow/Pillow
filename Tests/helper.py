@@ -1,7 +1,6 @@
 """
 Helper functions.
 """
-from __future__ import print_function
 
 import logging
 import os
@@ -77,10 +76,13 @@ class PillowTestCase(unittest.TestCase):
     def assert_deep_equal(self, a, b, msg=None):
         try:
             self.assertEqual(
-                len(a), len(b), msg or "got length %s, expected %s" % (len(a), len(b))
+                len(a),
+                len(b),
+                msg or "got length {}, expected {}".format(len(a), len(b)),
             )
             self.assertTrue(
-                all(x == y for x, y in zip(a, b)), msg or "got %s, expected %s" % (a, b)
+                all(x == y for x, y in zip(a, b)),
+                msg or "got {}, expected {}".format(a, b),
             )
         except Exception:
             self.assertEqual(a, b, msg)
@@ -88,20 +90,24 @@ class PillowTestCase(unittest.TestCase):
     def assert_image(self, im, mode, size, msg=None):
         if mode is not None:
             self.assertEqual(
-                im.mode, mode, msg or "got mode %r, expected %r" % (im.mode, mode)
+                im.mode,
+                mode,
+                msg or "got mode {!r}, expected {!r}".format(im.mode, mode),
             )
 
         if size is not None:
             self.assertEqual(
-                im.size, size, msg or "got size %r, expected %r" % (im.size, size)
+                im.size,
+                size,
+                msg or "got size {!r}, expected {!r}".format(im.size, size),
             )
 
     def assert_image_equal(self, a, b, msg=None):
         self.assertEqual(
-            a.mode, b.mode, msg or "got mode %r, expected %r" % (a.mode, b.mode)
+            a.mode, b.mode, msg or "got mode {!r}, expected {!r}".format(a.mode, b.mode)
         )
         self.assertEqual(
-            a.size, b.size, msg or "got size %r, expected %r" % (a.size, b.size)
+            a.size, b.size, msg or "got size {!r}, expected {!r}".format(a.size, b.size)
         )
         if a.tobytes() != b.tobytes():
             if HAS_UPLOADER:
@@ -122,10 +128,10 @@ class PillowTestCase(unittest.TestCase):
     def assert_image_similar(self, a, b, epsilon, msg=None):
         epsilon = float(epsilon)
         self.assertEqual(
-            a.mode, b.mode, msg or "got mode %r, expected %r" % (a.mode, b.mode)
+            a.mode, b.mode, msg or "got mode {!r}, expected {!r}".format(a.mode, b.mode)
         )
         self.assertEqual(
-            a.size, b.size, msg or "got size %r, expected %r" % (a.size, b.size)
+            a.size, b.size, msg or "got size {!r}, expected {!r}".format(a.size, b.size)
         )
 
         a, b = convert_to_comparable(a, b)
@@ -228,12 +234,12 @@ class PillowTestCase(unittest.TestCase):
 
     def open_withImagemagick(self, f):
         if not imagemagick_available():
-            raise IOError()
+            raise OSError()
 
         outfile = self.tempfile("temp.png")
         if command_succeeds([IMCONVERT, f, outfile]):
             return Image.open(outfile)
-        raise IOError()
+        raise OSError()
 
 
 @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
@@ -371,7 +377,7 @@ def distro():
                     return line.strip().split("=")[1]
 
 
-class cached_property(object):
+class cached_property:
     def __init__(self, func):
         self.func = func
 

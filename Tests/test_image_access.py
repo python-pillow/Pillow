@@ -122,7 +122,7 @@ class TestImageGetPixel(AccessTest):
         self.assertEqual(
             im.getpixel((0, 0)),
             c,
-            "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c),
+            "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c),
         )
 
         # check putpixel negative index
@@ -151,7 +151,7 @@ class TestImageGetPixel(AccessTest):
         self.assertEqual(
             im.getpixel((0, 0)),
             c,
-            "initial color failed for mode %s, color %s " % (mode, c),
+            "initial color failed for mode {}, color {} ".format(mode, c),
         )
         # check initial color negative index
         self.assertEqual(

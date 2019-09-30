@@ -101,7 +101,7 @@ def _crc32(data, seed=0):
 # Support classes.  Suitable for PNG and related formats like MNG etc.
 
 
-class ChunkStream(object):
+class ChunkStream:
     def __init__(self, fp):
 
         self.fp = fp
@@ -179,7 +179,7 @@ class ChunkStream(object):
             try:
                 cid, pos, length = self.read()
             except struct.error:
-                raise IOError("truncated PNG file")
+                raise OSError("truncated PNG file")
 
             if cid == endchunk:
                 break
@@ -211,7 +211,7 @@ class iTXt(str):
         return self
 
 
-class PngInfo(object):
+class PngInfo:
     """
     PNG chunk container (for use with save(pnginfo=))
 
@@ -742,7 +742,7 @@ def putchunk(fp, cid, *data):
     fp.write(o32(crc))
 
 
-class _idat(object):
+class _idat:
     # wrap output from the encoder in IDAT chunks
 
     def __init__(self, fp, chunk):
@@ -795,7 +795,7 @@ def _save(im, fp, filename, chunk=putchunk):
     try:
         rawmode, mode = _OUTMODES[mode]
     except KeyError:
-        raise IOError("cannot write mode %s as PNG" % mode)
+        raise OSError("cannot write mode %s as PNG" % mode)
 
     #
     # write minimal PNG file
@@ -870,7 +870,7 @@ def _save(im, fp, filename, chunk=putchunk):
             if "transparency" in im.encoderinfo:
                 # don't bother with transparency if it's an RGBA
                 # and it's in the info dict. It's probably just stale.
-                raise IOError("cannot use transparency for this mode")
+                raise OSError("cannot use transparency for this mode")
     else:
         if im.mode == "P" and im.im.getpalettemode() == "RGBA":
             alpha = im.im.getpalette("RGBA", "A")
@@ -918,7 +918,7 @@ def _save(im, fp, filename, chunk=putchunk):
 def getchunks(im, **params):
     """Return a list of PNG chunks representing this image."""
 
-    class collector(object):
+    class collector:
         data = []
 
         def write(self, data):

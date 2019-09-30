@@ -5,8 +5,6 @@
 #
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 
-from __future__ import print_function
-
 import re
 
 from . import Image, _imagingmorph
@@ -27,7 +25,7 @@ MIRROR_MATRIX = [
 # fmt: on
 
 
-class LutBuilder(object):
+class LutBuilder:
     """A class for building a MorphLut from a descriptive language
 
       The input patterns is a list of a strings sequences like these::
@@ -178,7 +176,7 @@ class LutBuilder(object):
         return self.lut
 
 
-class MorphOp(object):
+class MorphOp:
     """A class for binary morphological operators"""
 
     def __init__(self, lut=None, op_name=None, patterns=None):

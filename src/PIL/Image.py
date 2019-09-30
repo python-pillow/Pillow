@@ -55,7 +55,7 @@ class DecompressionBombError(Exception):
     pass
 
 
-class _imaging_not_installed(object):
+class _imaging_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imaging C module is not installed")
@@ -427,7 +427,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         decoder = getattr(core, decoder_name + "_decoder")
         return decoder(mode, *args + extra)
     except AttributeError:
-        raise IOError("decoder %s not available" % decoder_name)
+        raise OSError("decoder %s not available" % decoder_name)
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
@@ -448,7 +448,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
         encoder = getattr(core, encoder_name + "_encoder")
         return encoder(mode, *args + extra)
     except AttributeError:
-        raise IOError("encoder %s not available" % encoder_name)
+        raise OSError("encoder %s not available" % encoder_name)
 
 
 # --------------------------------------------------------------------
@@ -459,7 +459,7 @@ def coerce_e(value):
     return value if isinstance(value, _E) else _E(value)
 
 
-class _E(object):
+class _E:
     def __init__(self, data):
         self.data = data
 
@@ -500,7 +500,7 @@ def _getscaleoffset(expr):
 # Implementation wrapper
 
 
-class Image(object):
+class Image:
     """
     This class represents an image object.  To create
     :py:class:`~PIL.Image.Image` objects, use the appropriate factory
@@ -2389,12 +2389,12 @@ class Image(object):
 # Abstract handlers.
 
 
-class ImagePointHandler(object):
+class ImagePointHandler:
     # used as a mixin by point transforms (for use with im.point)
     pass
 
 
-class ImageTransformHandler(object):
+class ImageTransformHandler:
     # used as a mixin by geometry transforms (for use with im.transform)
     pass
 
@@ -2772,7 +2772,7 @@ def open(fp, mode="r"):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise IOError("cannot identify image file %r" % (filename if filename else fp))
+    raise OSError("cannot identify image file %r" % (filename if filename else fp))
 
 
 #

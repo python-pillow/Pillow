@@ -136,7 +136,7 @@ def pyversion_from_env():
             break
 
     if "64" in py:
-        py_version = "%s%s" % (py_version, X64_EXT)
+        py_version = "{}{}".format(py_version, X64_EXT)
 
     return py_version
 

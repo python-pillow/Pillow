@@ -11,9 +11,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import os
 import subprocess
 import sys
@@ -52,7 +49,7 @@ def show(image, title=None, **options):
     return 0
 
 
-class Viewer(object):
+class Viewer:
     """Base class for viewers."""
 
     # main api
@@ -123,10 +120,8 @@ elif sys.platform == "darwin":
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
             command = "open -a Preview.app"
-            command = "(%s %s; sleep 20; rm -f %s)&" % (
-                command,
-                quote(file),
-                quote(file),
+            command = "({} {}; sleep 20; rm -f {})&".format(
+                command, quote(file), quote(file)
             )
             return command
 
@@ -166,7 +161,7 @@ else:
 
         def get_command(self, file, **options):
             command = self.get_command_ex(file, **options)[0]
-            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+            return "({} {}; rm -f {})&".format(command, quote(file), quote(file))
 
         def show_file(self, file, **options):
             """Display given file"""

@@ -26,7 +26,7 @@ __version__ = "0.1"
 # Bitstream parser
 
 
-class BitStream(object):
+class BitStream:
     def __init__(self, fp):
         self.fp = fp
         self.bits = 0

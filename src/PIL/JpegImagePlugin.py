@@ -31,9 +31,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import array
 import io
 import struct
@@ -618,7 +615,7 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as JPEG" % im.mode)
+        raise OSError("cannot write mode %s as JPEG" % im.mode)
 
     info = im.encoderinfo
 

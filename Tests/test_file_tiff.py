@@ -518,8 +518,7 @@ class TestFileTiff(PillowTestCase):
 
         # Test appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         mp = io.BytesIO()
         im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))

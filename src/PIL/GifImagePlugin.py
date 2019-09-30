@@ -853,7 +853,7 @@ def getdata(im, offset=(0, 0), **params):
 
     """
 
-    class Collector(object):
+    class Collector:
         data = []
 
         def write(self, data):

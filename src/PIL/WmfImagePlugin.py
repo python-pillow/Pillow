@@ -19,8 +19,6 @@
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 
-from __future__ import print_function
-
 from . import Image, ImageFile
 from ._binary import i16le as word, i32le as dword, si16le as short, si32le as _long
 
@@ -44,7 +42,7 @@ def register_handler(handler):
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
-    class WmfHandler(object):
+    class WmfHandler:
         def open(self, im):
             im.mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
@@ -154,7 +152,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
-        raise IOError("WMF save handler not installed")
+        raise OSError("WMF save handler not installed")
     _handler.save(im, fp, filename)
 
 

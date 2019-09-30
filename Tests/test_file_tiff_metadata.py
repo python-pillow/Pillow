@@ -157,13 +157,13 @@ class TestFileTiffMetadata(PillowTestCase):
                 self.assert_deep_equal(
                     original[tag],
                     value,
-                    "%s didn't roundtrip, %s, %s" % (tag, original[tag], value),
+                    "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
                 )
             else:
                 self.assertEqual(
                     original[tag],
                     value,
-                    "%s didn't roundtrip, %s, %s" % (tag, original[tag], value),
+                    "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
                 )
 
         for tag, value in original.items():

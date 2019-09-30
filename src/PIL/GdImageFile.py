@@ -87,4 +87,4 @@ def open(fp, mode="r"):
     try:
         return GdImageFile(fp)
     except SyntaxError:
-        raise IOError("cannot identify this image file")
+        raise OSError("cannot identify this image file")

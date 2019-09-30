@@ -7,7 +7,6 @@
 # Final rating: 10/10
 # Your cheese is so fresh most people think it's a cream: Mascarpone
 # ------------------------------
-from __future__ import print_function
 
 import os
 import re
@@ -299,8 +298,7 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def __iter__(self):
-            for x in self.features:
-                yield x
+            yield from self.features
 
     feature = feature()
 
@@ -335,7 +333,7 @@ class pil_build_ext(build_ext):
                 _dbg("Disabling %s", x)
                 if getattr(self, "enable_%s" % x):
                     raise ValueError(
-                        "Conflicting options: --enable-%s and --disable-%s" % (x, x)
+                        "Conflicting options: --enable-{} and --disable-{}".format(x, x)
                     )
             if getattr(self, "enable_%s" % x):
                 _dbg("Requiring %s", x)
@@ -707,7 +705,7 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBTIFF", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
-        if struct.unpack("h", "\0\1".encode("ascii"))[0] == 1:
+        if struct.unpack("h", b"\0\1")[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
         if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
@@ -788,7 +786,7 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("version      Pillow %s" % PILLOW_VERSION)
         v = sys.version.split("[")
-        print("platform     %s %s" % (sys.platform, v[0].strip()))
+        print("platform     {} {}".format(sys.platform, v[0].strip()))
         for v in v[1:]:
             print("             [%s" % v.strip())
         print("-" * 68)
@@ -811,7 +809,7 @@ class pil_build_ext(build_ext):
                 version = ""
                 if len(option) >= 3 and option[2]:
                     version = " (%s)" % option[2]
-                print("--- %s support available%s" % (option[1], version))
+                print("--- {} support available{}".format(option[1], version))
             else:
                 print("*** %s support not available" % option[1])
                 all = 0

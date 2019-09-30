@@ -610,8 +610,7 @@ class TestFileGif(PillowTestCase):
 
         # Tests appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         im.save(out, save_all=True, append_images=imGenerator(ims))
 

@@ -106,7 +106,7 @@ class TestImage(PillowTestCase):
     def test_fp_name(self):
         temp_file = self.tempfile("temp.jpg")
 
-        class FP(object):
+        class FP:
             def write(a, b):
                 pass
 
@@ -588,11 +588,11 @@ class TestImage(PillowTestCase):
             try:
                 im.load()
                 self.assertFail()
-            except IOError as e:
+            except OSError as e:
                 self.assertEqual(str(e), "buffer overrun when reading image file")
 
 
-class MockEncoder(object):
+class MockEncoder:
     pass
 
 

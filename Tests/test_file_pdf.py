@@ -99,8 +99,7 @@ class TestFilePdf(PillowTestCase):
 
         # Test appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         im.save(outfile, save_all=True, append_images=imGenerator(ims))
 
@@ -207,7 +206,7 @@ class TestFilePdf(PillowTestCase):
             # append some info
             pdf.info.Title = "abc"
             pdf.info.Author = "def"
-            pdf.info.Subject = u"ghi\uABCD"
+            pdf.info.Subject = "ghi\uABCD"
             pdf.info.Keywords = "qw)e\\r(ty"
             pdf.info.Creator = "hopper()"
             pdf.start_writing()
@@ -235,7 +234,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Title, "abc")
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
-            self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+            self.assertEqual(pdf.info.Subject, "ghi\uABCD")
             self.assertIn(b"CreationDate", pdf.info)
             self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)

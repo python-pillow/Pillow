@@ -14,9 +14,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import os
 import tempfile
 
@@ -75,7 +72,7 @@ class IptcImageFile(ImageFile.ImageFile):
         # field size
         size = i8(s[3])
         if size > 132:
-            raise IOError("illegal field length in IPTC/NAA file")
+            raise OSError("illegal field length in IPTC/NAA file")
         elif size == 128:
             size = 0
         elif size > 128:
@@ -126,7 +123,7 @@ class IptcImageFile(ImageFile.ImageFile):
         try:
             compression = COMPRESSION[self.getint((3, 120))]
         except KeyError:
-            raise IOError("Unknown IPTC image compression")
+            raise OSError("Unknown IPTC image compression")
 
         # tile
         if tag == (8, 10):
@@ -215,7 +212,7 @@ def getiptcinfo(im):
         return None  # no properties
 
     # create an IptcImagePlugin object without initializing it
-    class FakeImage(object):
+    class FakeImage:
         pass
 
     im = FakeImage()

@@ -173,7 +173,7 @@ def _save(im, fp, filename):
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as TGA" % im.mode)
+        raise OSError("cannot write mode %s as TGA" % im.mode)
 
     if "rle" in im.encoderinfo:
         rle = im.encoderinfo["rle"]

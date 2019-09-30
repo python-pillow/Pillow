@@ -45,7 +45,7 @@ directly.
 """
 
 
-class ImageDraw(object):
+class ImageDraw:
     def __init__(self, im, mode=None):
         """
         Create a drawing instance.

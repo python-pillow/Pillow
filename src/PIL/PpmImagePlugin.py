@@ -139,7 +139,7 @@ def _save(im, fp, filename):
     elif im.mode == "RGBA":
         rawmode, head = "RGB", b"P6"
     else:
-        raise IOError("cannot write mode %s as PPM" % im.mode)
+        raise OSError("cannot write mode %s as PPM" % im.mode)
     fp.write(head + ("\n%d %d\n" % im.size).encode("ascii"))
     if head == b"P6":
         fp.write(b"255\n")

@@ -163,7 +163,9 @@ def _save(im, fp, filename):
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError(
-            "incorrect number of bands in SGI write: %s vs %s" % (z, len(im.getbands()))
+            "incorrect number of bands in SGI write: {} vs {}".format(
+                z, len(im.getbands())
+            )
         )
 
     # Minimum Byte value

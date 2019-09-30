@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 
 from PIL import Image
@@ -109,4 +107,4 @@ class TestBmpReference(PillowTestCase):
                     os.path.join(base, "g", "pal4rle.bmp"),
                 )
                 if f not in unsupported:
-                    self.fail("Unsupported Image %s: %s" % (f, msg))
+                    self.fail("Unsupported Image {}: {}".format(f, msg))

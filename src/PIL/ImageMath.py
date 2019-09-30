@@ -26,7 +26,7 @@ def _isconstant(v):
     return isinstance(v, (int, float))
 
 
-class _Operand(object):
+class _Operand:
     """Wraps an image operand, providing standard operators"""
 
     def __init__(self, im):

@@ -86,7 +86,7 @@ def _accept(prefix):
     return prefix[:4] == _MAGIC
 
 
-class IcoFile(object):
+class IcoFile:
     def __init__(self, buf):
         """
         Parse image from file-like object containing ico file data

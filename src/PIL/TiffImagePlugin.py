@@ -38,9 +38,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import division, print_function
-
 import distutils.version
 import io
 import itertools
@@ -712,7 +709,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _ensure_read(self, fp, size):
         ret = fp.read(size)
         if len(ret) != size:
-            raise IOError(
+            raise OSError(
                 "Corrupt EXIF data.  "
                 + "Expecting to read %d bytes but only got %d. " % (size, len(ret))
             )
@@ -746,7 +743,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     offset, = self._unpack("L", data)
                     if DEBUG:
                         print(
-                            "Tag Location: %s - Data Location: %s" % (here, offset),
+                            "Tag Location: {} - Data Location: {}".format(here, offset),
                             end=" ",
                         )
                     fp.seek(offset)
@@ -776,7 +773,7 @@ class ImageFileDirectory_v2(MutableMapping):
                         print("- value:", self[tag])
 
             self.next, = self._unpack("L", self._ensure_read(fp, 4))
-        except IOError as msg:
+        except OSError as msg:
             warnings.warn(str(msg))
             return
 
@@ -795,7 +792,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
             if DEBUG:
-                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                print("Tag {}, Type: {}, Value: {}".format(tag, typ, value))
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
             if DEBUG:
@@ -1060,7 +1057,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def load(self):
         if self.use_load_libtiff:
             return self._load_libtiff()
-        return super(TiffImageFile, self).load()
+        return super().load()
 
     def load_end(self):
         if self._tile_orientation:
@@ -1089,14 +1086,14 @@ class TiffImageFile(ImageFile.ImageFile):
         pixel = Image.Image.load(self)
 
         if self.tile is None:
-            raise IOError("cannot load this image")
+            raise OSError("cannot load this image")
         if not self.tile:
             return pixel
 
         self.load_prepare()
 
         if not len(self.tile) == 1:
-            raise IOError("Not exactly one tile")
+            raise OSError("Not exactly one tile")
 
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
@@ -1114,7 +1111,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # in _seek
             if hasattr(self.fp, "flush"):
                 self.fp.flush()
-        except IOError:
+        except OSError:
             # io.BytesIO have a fileno, but returns an IOError if
             # it doesn't use a file descriptor.
             fp = False
@@ -1128,7 +1125,7 @@ class TiffImageFile(ImageFile.ImageFile):
         try:
             decoder.setimage(self.im, extents)
         except ValueError:
-            raise IOError("Couldn't set the image")
+            raise OSError("Couldn't set the image")
 
         close_self_fp = self._exclusive_fp and not self._is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1171,7 +1168,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.fp = None  # might be shared
 
         if err < 0:
-            raise IOError(err)
+            raise OSError(err)
 
         return Image.Image.load(self)
 
@@ -1179,7 +1176,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
-            raise IOError("Windows Media Photo files not yet supported")
+            raise OSError("Windows Media Photo files not yet supported")
 
         # extract relevant tags
         self._compression = COMPRESSION_INFO[self.tag_v2.get(COMPRESSION, 1)]
@@ -1421,7 +1418,7 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as TIFF" % im.mode)
+        raise OSError("cannot write mode %s as TIFF" % im.mode)
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
@@ -1616,7 +1613,7 @@ def _save(im, fp, filename):
             if s:
                 break
         if s < 0:
-            raise IOError("encoder error %d when writing image file" % s)
+            raise OSError("encoder error %d when writing image file" % s)
 
     else:
         offset = ifd.save(fp)
@@ -1664,9 +1661,9 @@ class AppendingTiffWriter:
             self.name = fn
             self.close_fp = True
             try:
-                self.f = io.open(fn, "w+b" if new else "r+b")
-            except IOError:
-                self.f = io.open(fn, "w+b")
+                self.f = open(fn, "w+b" if new else "r+b")
+            except OSError:
+                self.f = open(fn, "w+b")
         self.beginning = self.f.tell()
         self.setup()
 

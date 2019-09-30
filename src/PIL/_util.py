@@ -26,7 +26,7 @@ def isDirectory(f):
     return isPath(f) and os.path.isdir(f)
 
 
-class deferred_error(object):
+class deferred_error:
     def __init__(self, ex):
         self.ex = ex
 
