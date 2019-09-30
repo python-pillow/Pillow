@@ -1239,8 +1239,8 @@ class TiffImageFile(ImageFile.ImageFile):
             print("- YCbCr subsampling:", self.tag.get(530))
 
         # size
-        xsize = self.tag_v2.get(IMAGEWIDTH)
-        ysize = self.tag_v2.get(IMAGELENGTH)
+        xsize = int(self.tag_v2.get(IMAGEWIDTH))
+        ysize = int(self.tag_v2.get(IMAGELENGTH))
         self._size = xsize, ysize
 
         if DEBUG:
