@@ -310,20 +310,18 @@ class IFDRational(Rational):
         float/rational/other number, or an IFDRational
         :param denominator: Optional integer denominator
         """
-        self._denominator = denominator
-        self._numerator = value
-        self._val = float(1)
+        if isinstance(value, IFDRational):
+            self._numerator = value.numerator
+            self._denominator = value.denominator
+            self._val = value._val
+            return
 
         if isinstance(value, Fraction):
             self._numerator = value.numerator
             self._denominator = value.denominator
-            self._val = value
-
-        if isinstance(value, IFDRational):
-            self._denominator = value.denominator
-            self._numerator = value.numerator
-            self._val = value._val
-            return
+        else:
+            self._numerator = value
+            self._denominator = denominator
 
         if denominator == 0:
             self._val = float("nan")
