@@ -832,6 +832,13 @@ class TestFileLibTiff(LibTiffTestCase):
             im, "Tests/images/old-style-jpeg-compression.png"
         )
 
+    def test_no_rows_per_strip(self):
+        # This image does not have a RowsPerStrip TIFF tag
+        infile = "Tests/images/no_rows_per_strip.tif"
+        im = Image.open(infile)
+        im.load()
+        self.assertEqual(im.size, (950, 975))
+
     def test_orientation(self):
         base_im = Image.open("Tests/images/g4_orientation_1.tif")
 

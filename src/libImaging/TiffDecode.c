@@ -405,8 +405,12 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         UINT32 strip_row, row_byte_size;
         UINT8 *new_data;
         UINT32 rows_per_strip;
+        int ret;
 
-        TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
+        ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
+        if (ret != 1) {
+            rows_per_strip = state->ysize;
+        }
         TRACE(("RowsPerStrip: %u \n", rows_per_strip));
 
         // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
