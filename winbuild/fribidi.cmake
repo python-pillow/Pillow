@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.13)
 project(fribidi)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-add_compile_options(-MT)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(lib)

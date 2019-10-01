@@ -80,10 +80,11 @@ jobs:
         EXECUTABLE: bin\python.exe
       shell: pwsh
 
-    # libjpeg-turbo build is slow, pypy test is slow -> don't do both at once
     - name: Build dependencies / libjpeg
-      if: "contains(matrix.python-version, 'pypy')"
+      if: false
       run: |
+        REM FIXME uses /MT not /MD, see makefile.vc and win32.mak for more info
+
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
@@ -92,12 +93,12 @@ jobs:
         echo on
         nmake -nologo -f makefile.vc setup-vc6
         nmake -nologo -f makefile.vc clean
-        nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib
+        nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib cjpeg.exe djpeg.exe
         copy /Y /B j*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
+        copy /Y /B *.exe %INCLIB%
 
     - name: Build dependencies / libjpeg-turbo
-      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -106,12 +107,14 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
-        set CMAKE=%CMAKE% -DENABLE_SHARED:BOOL=OFF -DWITH_JPEG8:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release
+        set CMAKE=%CMAKE% -DENABLE_SHARED:BOOL=OFF -DWITH_JPEG8:BOOL=TRUE -DWITH_CRT_DLL:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release
         %CMAKE% -G "NMake Makefiles" .
         nmake -nologo -f Makefile clean
-        nmake -nologo -f Makefile
+        nmake -nologo -f Makefile jpeg-static cjpeg-static djpeg-static
         copy /Y /B j*.h %INCLIB%
         copy /Y /B jpeg-static.lib %INCLIB%\libjpeg.lib
+        copy /Y /B cjpeg-static.exe %INCLIB%\cjpeg.exe
+        copy /Y /B djpeg-static.exe %INCLIB%\djpeg.exe
 
     - name: Build dependencies / zlib
       run: |
@@ -122,7 +125,7 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         nmake -nologo -f win32\Makefile.msc clean
-        nmake -nologo -f win32\Makefile.msc LOC=-MT zlib.lib
+        nmake -nologo -f win32\Makefile.msc zlib.lib
         copy /Y /B z*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
         copy /Y /B zlib.lib %INCLIB%\z.lib
@@ -135,7 +138,7 @@ jobs:
         cd /D %BUILD%\tiff-4.0.10
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        copy %GITHUB_WORKSPACE%\winbuild\tiff-mt.opt nmake.opt
+        copy %GITHUB_WORKSPACE%\winbuild\tiff.opt nmake.opt
         nmake -nologo -f makefile.vc clean
         nmake -nologo -f makefile.vc lib
         copy /Y /B libtiff\tiff*.h %INCLIB%
@@ -151,7 +154,7 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         rmdir /S /Q output\release-static
-        nmake -nologo -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output ARCH=${{ matrix.architecture }} all
+        nmake -nologo -f Makefile.vc CFG=release-static OBJDIR=output ARCH=${{ matrix.architecture }} all
         mkdir %INCLIB%\webp
         copy /Y /B src\webp\*.h %INCLIB%\webp
         copy /Y /B output\release-static\${{ matrix.architecture }}\lib\* %INCLIB%
@@ -170,6 +173,7 @@ jobs:
         set DefaultPlatformToolset=v140
         set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
         set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
+        powershell -Command "(gc builds\windows\vc2010\freetype.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII builds\windows\vc2010\freetype.vcxproj"
         %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release Static" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B "objs\${{ matrix.platform-msbuild }}\Release Static\freetype.lib" %INCLIB%
@@ -186,7 +190,7 @@ jobs:
         rmdir /S /Q Projects\VC2015\Release
         set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
         set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
-        powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreadedDLL', 'MultiThreaded' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
+        powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
         %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B Lib\MS\*.lib %INCLIB%
@@ -201,7 +205,7 @@ jobs:
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
-        set CMAKE=%CMAKE% -DOPENJP2_COMPILE_OPTIONS=-MT -DCMAKE_BUILD_TYPE=Release
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
         %CMAKE% -G "NMake Makefiles" .
         nmake -nologo -f Makefile clean
         nmake -nologo -f Makefile
@@ -220,7 +224,7 @@ jobs:
         cd /D %BUILD%\libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-MT -openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
+        echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
         echo (gc CMakeLists.txt) -replace ' SHARED', ' STATIC' ^| Out-File -encoding ASCII CMakeLists.txt >> patch.ps1
         powershell .\patch.ps1
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
@@ -231,6 +235,7 @@ jobs:
         copy /Y /B *.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
+    # for Raqm
     - name: Build dependencies / HarfBuzz
       if: "!contains(matrix.python-version, 'pypy')"
       run: |
@@ -242,8 +247,6 @@ jobs:
         cd /D %BUILD%\harfbuzz-2.6.1
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
-        echo (gc CMakeLists.txt) -replace 'enable_testing', "add_compile_options(-MT)`r`nenable_testing" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
-        powershell .\patch.ps1
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DHB_HAVE_FREETYPE:BOOL=ON -DCMAKE_BUILD_TYPE=Release
         %CMAKE% -G "NMake Makefiles" .
@@ -252,6 +255,7 @@ jobs:
         copy /Y /B src\*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
 
+    # for Raqm
     - name: Build dependencies / FriBidi
       if: "!contains(matrix.python-version, 'pypy')"
       run: |
@@ -313,7 +317,6 @@ jobs:
         set MPLSRC=%GITHUB_WORKSPACE%
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         cd /D %GITHUB_WORKSPACE%
-        set DISTUTILS_USE_SDK=1
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
@@ -345,7 +348,6 @@ jobs:
         set MPLSRC=%GITHUB_WORKSPACE%
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         cd /D %GITHUB_WORKSPACE%
-        set DISTUTILS_USE_SDK=1
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1

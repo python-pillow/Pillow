@@ -8,7 +8,6 @@ find_library(harfbuzz NAMES harfbuzz)
 find_library(freetype NAMES freetype)
 
 add_definitions(-DFRIBIDI_ENTRY=extern)
-add_compile_options(-MT)
 
 
 function(raqm_conf)
