@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-6.2.0 (unreleased)
+6.2.0 (2019-10-01)
 ------------------
 
 - This is the last Pillow release to support Python 2.7 #3642
