@@ -13,9 +13,7 @@ jobs:
         ]
         python-version: [
           "pypy3",
-          "pypy2",
           "3.7",
-          "2.7",
           "3.5",
           "3.6",
         ]
@@ -54,7 +52,7 @@ jobs:
         .travis/test.sh
 
     - name: Docs
-      if: matrix.python-version == 2.7
+      if: matrix.python-version == 3.7
       run: |
         pip install sphinx-rtd-theme
         make doccheck
