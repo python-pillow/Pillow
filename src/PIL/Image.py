@@ -35,9 +35,9 @@ import sys
 import warnings
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
+# PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import PILLOW_VERSION, ImageMode, TiffTags, __version__, _plugins
+from . import ImageMode, TiffTags, __version__, _plugins
 from ._binary import i8, i32le
 from ._util import deferred_error, isPath, isStringType, py3
 
@@ -56,9 +56,6 @@ except ImportError:
     # Python 2.7
     from collections import Callable, MutableMapping
 
-
-# Silence warning
-assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
 

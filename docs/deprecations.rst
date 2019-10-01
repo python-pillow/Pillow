@@ -94,14 +94,6 @@ a ``DeprecationWarning``:
     Setting the size of a TIFF image directly is deprecated, and will
     be removed in a future version. Use the resize method instead.
 
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.2.0
-
-``PILLOW_VERSION`` has been deprecated and will be removed in 7.0.0. Use ``__version__``
-instead.
-
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -127,6 +119,13 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
 
 VERSION constant
 ~~~~~~~~~~~~~~~~
