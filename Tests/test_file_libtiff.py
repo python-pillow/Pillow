@@ -260,7 +260,6 @@ class TestFileLibTiff(LibTiffTestCase):
                     tc(4.25, TiffTags.FLOAT, True),
                     tc(4.25, TiffTags.DOUBLE, True),
                     tc("custom tag value", TiffTags.ASCII, True),
-                    tc("custom tag value", TiffTags.ASCII, True),
                     tc(b"custom tag value", TiffTags.BYTE, True),
                     tc((4, 5, 6), TiffTags.SHORT, True),
                     tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
