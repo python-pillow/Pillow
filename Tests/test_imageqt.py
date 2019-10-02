@@ -1,12 +1,6 @@
-import sys
-import warnings
-
 from PIL import ImageQt
 
 from .helper import PillowTestCase, hopper
-
-if sys.version_info.major >= 3:
-    from importlib import reload
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
@@ -75,13 +69,3 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
     def test_image(self):
         for mode in ("1", "RGB", "RGBA", "L", "P"):
             ImageQt.ImageQt(hopper(mode))
-
-    def test_deprecated(self):
-        with warnings.catch_warnings(record=True) as w:
-            reload(ImageQt)
-        if ImageQt.qt_version in ["4", "side"]:
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
-        else:
-            # No warning.
-            self.assertEqual(w, [])
