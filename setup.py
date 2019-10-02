@@ -326,6 +326,15 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
+        if not self.parallel:
+            # If --parallel (or -j) wasn't specified, we want to reproduce the same
+            # behavior as before, that is, auto-detect the number of jobs.
+            try:
+                self.parallel = int(
+                    os.environ.get("MAX_CONCURRENCY", min(4, os.cpu_count()))
+                )
+            except TypeError:
+                self.parallel = None
         for x in self.feature:
             if getattr(self, "disable_%s" % x):
                 setattr(self.feature, x, False)
