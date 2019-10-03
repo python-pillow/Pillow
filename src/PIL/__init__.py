@@ -9,7 +9,6 @@ PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 Copyright (c) 1999 by Secret Labs AB.
 
 Use PIL.__version__ for this Pillow version.
-PIL.VERSION is the old PIL version and will be removed in the future.
 
 ;-)
 """
