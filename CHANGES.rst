@@ -2,10 +2,37 @@
 Changelog (Pillow)
 ==================
 
-6.2.0 (unreleased)
+7.0.0 (unreleased)
+------------------
+
+- Removed deprecated PILLOW_VERSION #4107
+  [hugovk]
+
+- Changed default frombuffer raw decoder args #1730
+  [radarhere]
+
+6.2.0 (2019-10-01)
 ------------------
 
 - This is the last Pillow release to support Python 2.7 #3642
+
+- Catch buffer overruns #4104
+  [radarhere]
+
+- Initialize rows_per_strip when RowsPerStrip tag is missing #4034
+  [cgohlke, radarhere]
+
+- Raise error if TIFF dimension is a string #4103
+  [radarhere]
+
+- Added decompression bomb checks #4102
+  [radarhere]
+
+- Fix ImageGrab.grab DPI scaling on Windows 10 version 1607+ #4000
+  [nulano, radarhere]
+
+- Corrected negative seeks #4101
+  [radarhere]
 
 - Added argument to capture all screens on Windows #3950
   [nulano, radarhere]

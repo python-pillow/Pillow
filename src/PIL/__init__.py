@@ -17,9 +17,9 @@ PIL.VERSION is the old PIL version and will be removed in the future.
 from . import _version
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
+# PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
-PILLOW_VERSION = __version__ = _version.__version__
+__version__ = _version.__version__
 
 del _version
 

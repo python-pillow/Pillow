@@ -35,9 +35,9 @@ import sys
 import warnings
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
+# PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import PILLOW_VERSION, ImageMode, TiffTags, __version__, _plugins
+from . import ImageMode, TiffTags, __version__, _plugins
 from ._binary import i8, i32le
 from ._util import deferred_error, isPath, isStringType, py3
 
@@ -56,9 +56,6 @@ except ImportError:
     # Python 2.7
     from collections import Callable, MutableMapping
 
-
-# Silence warning
-assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -2592,14 +2589,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            warnings.warn(
-                "the frombuffer defaults will change in Pillow 7.0.0; "
-                "for portability, change the call to read:\n"
-                "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-            args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
+            args = mode, 0, 1
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, None, 0, args))
