@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+7.0.0 (unreleased)
+------------------
+
+- Changed default frombuffer raw decoder args #1730
+  [radarhere]
+
 6.2.0 (2019-10-01)
 ------------------
 
