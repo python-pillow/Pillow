@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Removed deprecated PILLOW_VERSION #4107
+  [hugovk]
+
 - Changed default frombuffer raw decoder args #1730
   [radarhere]
 
