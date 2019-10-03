@@ -854,7 +854,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            if DEBUG > 1:
+            if DEBUG:
                 print(tag, typ, count, repr(value), repr(data))
             result += self._pack("HHL4s", tag, typ, count, value)
 
