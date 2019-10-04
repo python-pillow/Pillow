@@ -11,11 +11,15 @@ class TestImagingResampleVulnerability(PillowTestCase):
     # see https://github.com/python-pillow/Pillow/issues/1710
     def test_overflow(self):
         im = hopper("L")
-        xsize = 0x100000008 // 4
-        ysize = 1000  # unimportant
-        with self.assertRaises(MemoryError):
-            # any resampling filter will do here
-            im.im.resize((xsize, ysize), Image.BILINEAR)
+        size_too_large = 0x100000008 // 4
+        size_normal = 1000  # unimportant
+        for xsize, ysize in (
+            (size_too_large, size_normal),
+            (size_normal, size_too_large),
+        ):
+            with self.assertRaises(MemoryError):
+                # any resampling filter will do here
+                im.im.resize((xsize, ysize), Image.BILINEAR)
 
     def test_invalid_size(self):
         im = hopper()
