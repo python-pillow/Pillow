@@ -47,7 +47,7 @@ creates the following image:
 ImageGrab on multi-monitor Windows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An `all_screens` argument has been added to ``ImageGrab.grab``. If ``True``,
+An ``all_screens`` argument has been added to ``ImageGrab.grab``. If ``True``,
 all monitors will be included in the created image.
 
 API Changes
