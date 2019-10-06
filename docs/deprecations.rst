@@ -70,19 +70,6 @@ Deprecated                       Deprecated                         Deprecated
 ``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
 ===============================  =================================  ==================================
 
-Setting the size of TIFF images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.3.0
-
-Setting the image size of a TIFF image (eg. ``im.size = (256, 256)``) issues
-a ``DeprecationWarning``:
-
-.. code-block:: none
-
-    Setting the size of a TIFF image directly is deprecated, and will
-    be removed in a future version. Use the resize method instead.
-
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -126,6 +113,14 @@ Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 
 
 Support for PyQt4 and PySide has been removed  from ``ImageQt``. Please upgrade to PyQt5
 or PySide2.
+
+Setting the size of TIFF images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
+an error. Use ``Image.resize`` instead.
 
 VERSION constant
 ~~~~~~~~~~~~~~~~

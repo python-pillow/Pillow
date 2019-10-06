@@ -854,7 +854,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            if DEBUG > 1:
+            if DEBUG:
                 print(tag, typ, count, repr(value), repr(data))
             result += self._pack("HHL4s", tag, typ, count, value)
 
@@ -1078,19 +1078,6 @@ class TiffImageFile(ImageFile.ImageFile):
     def tell(self):
         """Return the current frame number"""
         return self.__frame
-
-    @property
-    def size(self):
-        return self._size
-
-    @size.setter
-    def size(self, value):
-        warnings.warn(
-            "Setting the size of a TIFF image directly is deprecated, and will"
-            " be removed in a future version. Use the resize method instead.",
-            DeprecationWarning,
-        )
-        self._size = value
 
     def load(self):
         if self.use_load_libtiff:

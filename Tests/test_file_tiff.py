@@ -73,15 +73,6 @@ class TestFileTiff(PillowTestCase):
             ifd.legacy_api = None
         self.assertEqual(str(e.exception), "Not allowing setting of legacy api")
 
-    def test_size(self):
-        filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
-
-        def set_size():
-            im.size = (256, 256)
-
-        self.assert_warning(DeprecationWarning, set_size)
-
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
         im = Image.open(filename)
