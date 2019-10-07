@@ -358,10 +358,10 @@ class IFDRational(Rational):
 
         return delegate
 
-    """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
-             'truediv', 'rtruediv', 'floordiv',
-             'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
-             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
+    """ a = ['add','radd', 'sub', 'rsub', 'mul', 'rmul',
+             'truediv', 'rtruediv', 'floordiv', 'rfloordiv',
+             'mod','rmod', 'pow','rpow', 'pos', 'neg',
+             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'bool',
              'ceil', 'floor', 'round']
         print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
         """
@@ -370,8 +370,6 @@ class IFDRational(Rational):
     __radd__ = _delegate("__radd__")
     __sub__ = _delegate("__sub__")
     __rsub__ = _delegate("__rsub__")
-    __div__ = _delegate("__div__")
-    __rdiv__ = _delegate("__rdiv__")
     __mul__ = _delegate("__mul__")
     __rmul__ = _delegate("__rmul__")
     __truediv__ = _delegate("__truediv__")
@@ -390,7 +388,7 @@ class IFDRational(Rational):
     __gt__ = _delegate("__gt__")
     __le__ = _delegate("__le__")
     __ge__ = _delegate("__ge__")
-    __nonzero__ = _delegate("__nonzero__")
+    __bool__ = _delegate("__bool__")
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
