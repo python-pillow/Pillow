@@ -65,11 +65,7 @@ def fromqimage(im):
         im.save(buffer, "ppm")
 
     b = BytesIO()
-    try:
-        b.write(buffer.data())
-    except TypeError:
-        # workaround for Python 2
-        b.write(str(buffer.data()))
+    b.write(buffer.data())
     buffer.close()
     b.seek(0)
 

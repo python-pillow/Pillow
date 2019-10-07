@@ -7,11 +7,6 @@ import re
 import time
 import zlib
 
-try:
-    from UserDict import UserDict  # Python 2.x
-except ImportError:
-    UserDict = collections.UserDict  # Python 3.x
-
 
 def make_bytes(s):
     return s.encode("us-ascii")
@@ -256,13 +251,10 @@ class PdfArray(list):
     __str__ = __bytes__
 
 
-class PdfDict(UserDict):
+class PdfDict(collections.UserDict):
     def __setattr__(self, key, value):
         if key == "data":
-            if hasattr(UserDict, "__setattr__"):
-                UserDict.__setattr__(self, key, value)
-            else:
-                self.__dict__[key] = value
+            collections.UserDict.__setattr__(self, key, value)
         else:
             self[key.encode("us-ascii")] = value
 

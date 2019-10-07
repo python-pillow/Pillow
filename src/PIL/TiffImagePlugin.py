@@ -1027,7 +1027,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     "Seeking to frame %s, on frame %s, __next %s, location: %s"
                     % (frame, self.__frame, self.__next, self.fp.tell())
                 )
-            # reset python3 buffered io handle in case fp
+            # reset buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
             self.fp.seek(self.__next)
