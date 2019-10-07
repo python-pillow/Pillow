@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -28,8 +30,6 @@ static char basic_bits[] = {
 
 class TestFileXbm(PillowTestCase):
     def test_pil151(self):
-        from io import BytesIO
-
         im = Image.open(BytesIO(PIL151))
 
         im.load()

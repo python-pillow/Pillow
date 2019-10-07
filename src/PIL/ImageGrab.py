@@ -15,17 +15,14 @@
 # See the README file for information on usage and redistribution.
 #
 
+import os
+import subprocess
 import sys
+import tempfile
 
 from . import Image
 
-if sys.platform == "win32":
-    grabber = Image.core.grabscreen
-elif sys.platform == "darwin":
-    import os
-    import tempfile
-    import subprocess
-else:
+if sys.platform not in ["win32", "darwin"]:
     raise ImportError("ImageGrab is macOS and Windows only")
 
 
@@ -40,7 +37,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
         if bbox:
             im = im.crop(bbox)
     else:
-        offset, size, data = grabber(include_layered_windows, all_screens)
+        offset, size, data = Image.core.grabscreen(include_layered_windows, all_screens)
         im = Image.frombytes(
             "RGB",
             size,

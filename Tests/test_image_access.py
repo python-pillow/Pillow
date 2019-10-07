@@ -1,5 +1,8 @@
+import ctypes
 import os
+import subprocess
 import sys
+from distutils import ccompiler, sysconfig
 
 from PIL import Image
 
@@ -337,10 +340,6 @@ class TestEmbeddable(unittest.TestCase):
         "Failing on AppVeyor when run from subprocess, not from shell",
     )
     def test_embeddable(self):
-        import subprocess
-        import ctypes
-        from distutils import ccompiler, sysconfig
-
         with open("embed_pil.c", "w") as fh:
             fh.write(
                 """

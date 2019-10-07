@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -39,8 +41,6 @@ class TestFileWebpMetadata(PillowTestCase):
         self.assertEqual(exif_data, expected_exif)
 
     def test_write_exif_metadata(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
         expected_exif = image.info["exif"]
@@ -73,8 +73,6 @@ class TestFileWebpMetadata(PillowTestCase):
         self.assertEqual(icc, expected_icc)
 
     def test_write_icc_metadata(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower2.jpg"
         image = Image.open(file_path)
         expected_icc_profile = image.info["icc_profile"]
@@ -95,8 +93,6 @@ class TestFileWebpMetadata(PillowTestCase):
             )
 
     def test_read_no_exif(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
         self.assertIn("exif", image.info)
