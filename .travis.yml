@@ -22,16 +22,20 @@ matrix:
       name: "PyPy3 Xenial"
     - python: '3.7'
       name: "3.7 Xenial"
+      services: xvfb
     - python: '2.7'
       name: "2.7 Xenial"
     - python: '3.6'
       name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
+      services: xvfb
     - python: '3.5'
       name: "3.5 Xenial PYTHONOPTIMIZE=2"
       env: PYTHONOPTIMIZE=2
+      services: xvfb
     - python: "3.8-dev"
       name: "3.8-dev Xenial"
+      services: xvfb
     - env: DOCKER="alpine" DOCKER_TAG="master"
     - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
     - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
