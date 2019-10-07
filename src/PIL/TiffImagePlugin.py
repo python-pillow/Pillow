@@ -1742,7 +1742,7 @@ class AppendingTiffWriter:
         # pad to 16 byte boundary
         padBytes = 16 - pos % 16
         if 0 < padBytes < 16:
-            self.f.write(bytes(bytearray(padBytes)))
+            self.f.write(bytes(padBytes))
         self.offsetOfNewPage = self.f.tell()
 
     def setEndian(self, endian):
