@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Drop support for EOL PyQt4 and PySide #4108
+  [hugovk, radarhere]
+
+- Removed deprecated setting of TIFF image sizes #4114
+  [radarhere]
+
 - Removed deprecated PILLOW_VERSION #4107
   [hugovk]
 
