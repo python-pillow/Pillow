@@ -45,17 +45,6 @@ Python 2.7 reaches end-of-life on 2020-01-01.
 Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
 Pillow 6.x the last series to support Python 2.
 
-PyQt4 and PySide
-~~~~~~~~~~~~~~~~
-
-.. deprecated:: 6.0.0
-
-Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
-2018-08-31 and PySide since 2015-10-14.
-
-Support for PyQt4 and PySide has been deprecated from ``ImageQt`` and will be removed in
-a future version. Please upgrade to PyQt5 or PySide2.
-
 PIL.*ImagePlugin.__version__ attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -113,6 +102,17 @@ PILLOW_VERSION constant
 *Removed in version 7.0.0.*
 
 ``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been removed  from ``ImageQt``. Please upgrade to PyQt5
+or PySide2.
 
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
