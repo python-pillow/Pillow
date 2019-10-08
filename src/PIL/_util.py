@@ -4,10 +4,6 @@ import sys
 py36 = sys.version_info[0:2] >= (3, 6)
 
 
-def isStringType(t):
-    return isinstance(t, str)
-
-
 if py36:
     from pathlib import Path
 

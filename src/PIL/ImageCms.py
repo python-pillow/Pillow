@@ -18,7 +18,6 @@
 import sys
 
 from PIL import Image
-from PIL._util import isStringType
 
 try:
     from PIL import _imagingcms
@@ -159,7 +158,7 @@ class ImageCmsProfile:
 
         """
 
-        if isStringType(profile):
+        if isinstance(profile, str):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))

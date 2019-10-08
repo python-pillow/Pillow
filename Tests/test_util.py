@@ -4,26 +4,6 @@ from .helper import PillowTestCase, unittest
 
 
 class TestUtil(PillowTestCase):
-    def test_is_string_type(self):
-        # Arrange
-        color = "red"
-
-        # Act
-        it_is = _util.isStringType(color)
-
-        # Assert
-        self.assertTrue(it_is)
-
-    def test_is_not_string_type(self):
-        # Arrange
-        color = (255, 0, 0)
-
-        # Act
-        it_is_not = _util.isStringType(color)
-
-        # Assert
-        self.assertFalse(it_is_not)
-
     def test_is_path(self):
         # Arrange
         fp = "filename.ext"

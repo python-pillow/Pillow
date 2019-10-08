@@ -43,7 +43,7 @@ from pathlib import Path
 # Use __version__ instead.
 from . import ImageMode, TiffTags, __version__, _plugins
 from ._binary import i8, i32le
-from ._util import deferred_error, isPath, isStringType
+from ._util import deferred_error, isPath
 
 logger = logging.getLogger(__name__)
 
@@ -1466,7 +1466,7 @@ class Image:
                 raise ValueError("cannot determine region size; use 4-item box")
             box += (box[0] + size[0], box[1] + size[1])
 
-        if isStringType(im):
+        if isinstance(im, str):
             from . import ImageColor
 
             im = ImageColor.getcolor(im, self.mode)
@@ -2120,7 +2120,7 @@ class Image:
         """
         self.load()
 
-        if isStringType(channel):
+        if isinstance(channel, str):
             try:
                 channel = self.getbands().index(channel)
             except ValueError:
@@ -2447,7 +2447,7 @@ def new(mode, size, color=0):
         # don't initialize
         return Image()._new(core.new(mode, size))
 
-    if isStringType(color):
+    if isinstance(color, str):
         # css3-style specifier
 
         from . import ImageColor

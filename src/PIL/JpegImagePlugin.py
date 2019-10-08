@@ -41,7 +41,6 @@ import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i8, i16be as i16, i32be as i32, o8
-from ._util import isStringType
 from .JpegPresets import presets
 
 # __version__ is deprecated and will be removed in a future version. Use
@@ -638,7 +637,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get("subsampling", -1)
-        if isStringType(qtables) and qtables in presets:
+        if isinstance(qtables, str) and qtables in presets:
             qtables = presets[qtables].get("quantization")
 
     if subsampling == "4:4:4":
@@ -659,7 +658,7 @@ def _save(im, fp, filename):
     def validate_qtables(qtables):
         if qtables is None:
             return qtables
-        if isStringType(qtables):
+        if isinstance(qtables, str):
             try:
                 lines = [
                     int(num)

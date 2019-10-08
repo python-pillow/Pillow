@@ -21,7 +21,6 @@ import functools
 import operator
 
 from . import Image
-from ._util import isStringType
 
 #
 # helpers
@@ -39,7 +38,7 @@ def _border(border):
 
 
 def _color(color, mode):
-    if isStringType(color):
+    if isinstance(color, str):
         from . import ImageColor
 
         color = ImageColor.getcolor(color, mode)

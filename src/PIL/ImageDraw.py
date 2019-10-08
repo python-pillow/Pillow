@@ -34,7 +34,6 @@ import math
 import numbers
 
 from . import Image, ImageColor
-from ._util import isStringType
 
 
 """
@@ -107,13 +106,13 @@ class ImageDraw:
                 ink = self.ink
         else:
             if ink is not None:
-                if isStringType(ink):
+                if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
                 ink = self.draw.draw_ink(ink)
             if fill is not None:
-                if isStringType(fill):
+                if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)
