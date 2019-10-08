@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import tempfile
 
 from PIL import Image
 from PIL._util import py3
@@ -126,8 +127,6 @@ class TestImage(PillowTestCase):
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
         # Will error out on save on 3.0.0
-        import tempfile
-
         im = hopper()
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")

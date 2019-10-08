@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from io import BytesIO
 
@@ -504,10 +505,7 @@ class TestFileTiff(PillowTestCase):
             self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_tiff_save_all(self):
-        import io
-        import os
-
-        mp = io.BytesIO()
+        mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
             im.save(mp, format="tiff", save_all=True)
 
@@ -516,7 +514,7 @@ class TestFileTiff(PillowTestCase):
             self.assertEqual(im.n_frames, 3)
 
         # Test appending images
-        mp = io.BytesIO()
+        mp = BytesIO()
         im = Image.new("RGB", (100, 100), "#f00")
         ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
         im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
@@ -530,7 +528,7 @@ class TestFileTiff(PillowTestCase):
             for im in ims:
                 yield im
 
-        mp = io.BytesIO()
+        mp = BytesIO()
         im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
@@ -588,7 +586,6 @@ class TestFileTiff(PillowTestCase):
 class TestFileTiffW32(PillowTestCase):
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.tif")
-        import os
 
         # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
