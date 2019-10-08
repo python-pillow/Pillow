@@ -162,13 +162,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_append_fails_on_nonexistent_file(self):
         im = hopper("RGB")
-        temp_dir = tempfile.mkdtemp()
-        try:
+        with tempfile.TemporaryDirectory() as temp_dir:
             self.assertRaises(
                 IOError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True
             )
-        finally:
-            os.rmdir(temp_dir)
 
     def check_pdf_pages_consistency(self, pdf):
         pages_info = pdf.read_indirect(pdf.pages_ref)
