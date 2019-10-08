@@ -4,9 +4,11 @@ Helper functions.
 
 import logging
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
+from io import BytesIO
 
 from PIL import Image, ImageMath
 
@@ -284,14 +286,10 @@ class PillowLeakTestCase(PillowTestCase):
 
 
 def fromstring(data):
-    from io import BytesIO
-
     return Image.open(BytesIO(data))
 
 
 def tostring(im, string_format, **options):
-    from io import BytesIO
-
     out = BytesIO()
     im.save(out, string_format, **options)
     return out.getvalue()
@@ -323,8 +321,6 @@ def command_succeeds(cmd):
     Runs the command, which must be a list of strings. Returns True if the
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
-    import subprocess
-
     with open(os.devnull, "wb") as f:
         try:
             subprocess.call(cmd, stdout=f, stderr=subprocess.STDOUT)

@@ -33,7 +33,10 @@
 #
 import array
 import io
+import os
 import struct
+import subprocess
+import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
@@ -441,10 +444,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
-        import subprocess
-        import tempfile
-        import os
-
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
@@ -769,9 +768,6 @@ def _save(im, fp, filename):
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    import os
-    import subprocess
-
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:

@@ -33,6 +33,7 @@ import numbers
 import os
 import struct
 import sys
+import tempfile
 import warnings
 from collections.abc import Callable, MutableMapping
 from pathlib import Path
@@ -612,8 +613,6 @@ class Image:
             self.load()
 
     def _dump(self, file=None, format=None, **options):
-        import tempfile
-
         suffix = ""
         if format:
             suffix = "." + format

@@ -25,8 +25,10 @@
 # See the README file for information on usage and redistribution.
 #
 
+import base64
 import os
 import sys
+from io import BytesIO
 
 from . import Image
 from ._util import isDirectory, isPath
@@ -710,9 +712,6 @@ def load_default():
 
     :return: A font object.
     """
-    from io import BytesIO
-    import base64
-
     f = ImageFont()
     f._load_pilfont_data(
         # courB08

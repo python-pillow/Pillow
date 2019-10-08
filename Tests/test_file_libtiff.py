@@ -1,3 +1,4 @@
+import base64
 import distutils.version
 import io
 import itertools
@@ -840,8 +841,6 @@ class TestFileLibTiff(LibTiffTestCase):
         # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
         # when saving to a new file.
         # Pillow 6.0 fails with "OSError: cannot identify image file".
-        import base64
-
         tiff = io.BytesIO(
             base64.b64decode(
                 b"SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA"
