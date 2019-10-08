@@ -23,7 +23,9 @@
 import io
 import os
 import re
+import subprocess
 import sys
+import tempfile
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
@@ -61,8 +63,6 @@ def has_ghostscript():
     if gs_windows_binary:
         return True
     if not sys.platform.startswith("win"):
-        import subprocess
-
         try:
             with open(os.devnull, "wb") as devnull:
                 subprocess.check_call(["gs", "--version"], stdout=devnull)
@@ -90,9 +90,6 @@ def Ghostscript(tile, size, fp, scale=1):
         float((72.0 * size[0]) / (bbox[2] - bbox[0])),
         float((72.0 * size[1]) / (bbox[3] - bbox[1])),
     )
-
-    import subprocess
-    import tempfile
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)

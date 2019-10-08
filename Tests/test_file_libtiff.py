@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import base64
 import distutils.version
 import io
 import itertools
@@ -832,6 +833,13 @@ class TestFileLibTiff(LibTiffTestCase):
             im, "Tests/images/old-style-jpeg-compression.png"
         )
 
+    def test_no_rows_per_strip(self):
+        # This image does not have a RowsPerStrip TIFF tag
+        infile = "Tests/images/no_rows_per_strip.tif"
+        im = Image.open(infile)
+        im.load()
+        self.assertEqual(im.size, (950, 975))
+
     def test_orientation(self):
         base_im = Image.open("Tests/images/g4_orientation_1.tif")
 
@@ -840,3 +848,24 @@ class TestFileLibTiff(LibTiffTestCase):
             im.load()
 
             self.assert_image_similar(base_im, im, 0.7)
+
+    def test_sampleformat_not_corrupted(self):
+        # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
+        # when saving to a new file.
+        # Pillow 6.0 fails with "OSError: cannot identify image file".
+        tiff = io.BytesIO(
+            base64.b64decode(
+                b"SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA"
+                b"AAIBAwADAAAAwgAAAAMBAwABAAAACAAAAAYBAwABAAAAAgAAABEBBAABAAAA"
+                b"4AAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAACwAAABoBBQAB"
+                b"AAAAyAAAABsBBQABAAAA0AAAABwBAwABAAAAAQAAACgBAwABAAAAAQAAAFMB"
+                b"AwADAAAA2AAAAAAAAAAIAAgACAABAAAAAQAAAAEAAAABAAAAAQABAAEAAAB4"
+                b"nGNgYAAAAAMAAQ=="
+            )
+        )
+        out = io.BytesIO()
+        with Image.open(tiff) as im:
+            im.save(out, format="tiff")
+        out.seek(0)
+        with Image.open(out) as im:
+            im.load()

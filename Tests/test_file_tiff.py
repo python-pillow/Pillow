@@ -1,7 +1,8 @@
 import logging
+import os
 from io import BytesIO
 
-from PIL import Image, TiffImagePlugin, features
+from PIL import Image, TiffImagePlugin
 from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -71,15 +72,6 @@ class TestFileTiff(PillowTestCase):
         with self.assertRaises(Exception) as e:
             ifd.legacy_api = None
         self.assertEqual(str(e.exception), "Not allowing setting of legacy api")
-
-    def test_size(self):
-        filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
-
-        def set_size():
-            im.size = (256, 256)
-
-        self.assert_warning(DeprecationWarning, set_size)
 
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
@@ -512,10 +504,7 @@ class TestFileTiff(PillowTestCase):
             self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_tiff_save_all(self):
-        import io
-        import os
-
-        mp = io.BytesIO()
+        mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
             im.save(mp, format="tiff", save_all=True)
 
@@ -524,7 +513,7 @@ class TestFileTiff(PillowTestCase):
             self.assertEqual(im.n_frames, 3)
 
         # Test appending images
-        mp = io.BytesIO()
+        mp = BytesIO()
         im = Image.new("RGB", (100, 100), "#f00")
         ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
         im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
@@ -538,7 +527,7 @@ class TestFileTiff(PillowTestCase):
             for im in ims:
                 yield im
 
-        mp = io.BytesIO()
+        mp = BytesIO()
         im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
@@ -586,36 +575,16 @@ class TestFileTiff(PillowTestCase):
             im.load()
             self.assertFalse(fp.closed)
 
-    @unittest.skipUnless(features.check("libtiff"), "libtiff not installed")
-    def test_sampleformat_not_corrupted(self):
-        # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
-        # when saving to a new file.
-        # Pillow 6.0 fails with "OSError: cannot identify image file".
-        import base64
-
-        tiff = BytesIO(
-            base64.b64decode(
-                b"SUkqAAgAAAAPAP4ABAABAAAAAAAAAAABBAABAAAAAQAAAAEBBAABAAAAAQAA"
-                b"AAIBAwADAAAAwgAAAAMBAwABAAAACAAAAAYBAwABAAAAAgAAABEBBAABAAAA"
-                b"4AAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAACwAAABoBBQAB"
-                b"AAAAyAAAABsBBQABAAAA0AAAABwBAwABAAAAAQAAACgBAwABAAAAAQAAAFMB"
-                b"AwADAAAA2AAAAAAAAAAIAAgACAABAAAAAQAAAAEAAAABAAAAAQABAAEAAAB4"
-                b"nGNgYAAAAAMAAQ=="
-            )
-        )
-        out = BytesIO()
-        with Image.open(tiff) as im:
-            im.save(out, format="tiff")
-        out.seek(0)
-        with Image.open(out) as im:
-            im.load()
+    def test_string_dimension(self):
+        # Assert that an error is raised if one of the dimensions is a string
+        with self.assertRaises(ValueError):
+            Image.open("Tests/images/string_dimension.tiff")
 
 
 @unittest.skipUnless(is_win32(), "Windows only")
 class TestFileTiffW32(PillowTestCase):
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.tif")
-        import os
 
         # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:

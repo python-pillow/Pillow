@@ -9,6 +9,7 @@ pythons = {
     "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
+    "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions
     "3.5": {"compiler": 7.1, "vc": 2015},

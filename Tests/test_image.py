@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 
 from PIL import Image
 from PIL._util import py3
@@ -125,8 +126,6 @@ class TestImage(PillowTestCase):
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
         # Will error out on save on 3.0.0
-        import tempfile
-
         im = hopper()
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
@@ -585,6 +584,15 @@ class TestImage(PillowTestCase):
                 im.load()
 
             self.assertFalse(fp.closed)
+
+    def test_overrun(self):
+        for file in ["fli_overrun.bin", "sgi_overrun.bin", "pcx_overrun.bin"]:
+            im = Image.open(os.path.join("Tests/images", file))
+            try:
+                im.load()
+                self.assertFail()
+            except IOError as e:
+                self.assertEqual(str(e), "buffer overrun when reading image file")
 
 
 class MockEncoder(object):

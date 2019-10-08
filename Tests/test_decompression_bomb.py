@@ -41,6 +41,14 @@ class TestDecompressionBomb(PillowTestCase):
 
         self.assertRaises(Image.DecompressionBombError, lambda: Image.open(TEST_FILE))
 
+    def test_exception_ico(self):
+        with self.assertRaises(Image.DecompressionBombError):
+            Image.open("Tests/images/decompression_bomb.ico")
+
+    def test_exception_gif(self):
+        with self.assertRaises(Image.DecompressionBombError):
+            Image.open("Tests/images/decompression_bomb.gif")
+
 
 class TestDecompressionCrop(PillowTestCase):
     def setUp(self):

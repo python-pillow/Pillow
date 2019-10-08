@@ -19,6 +19,7 @@ import io
 import os
 import shutil
 import struct
+import subprocess
 import sys
 import tempfile
 
@@ -333,11 +334,12 @@ def _save(im, fp, filename):
         last_w = w * 2
 
     # iconutil -c icns -o {} {}
-    from subprocess import Popen, PIPE, CalledProcessError
 
     convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
     with open(os.devnull, "wb") as devnull:
-        convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=devnull)
+        convert_proc = subprocess.Popen(
+            convert_cmd, stdout=subprocess.PIPE, stderr=devnull
+        )
 
     convert_proc.stdout.close()
 
@@ -347,7 +349,7 @@ def _save(im, fp, filename):
     shutil.rmtree(iconset)
 
     if retcode:
-        raise CalledProcessError(retcode, convert_cmd)
+        raise subprocess.CalledProcessError(retcode, convert_cmd)
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")

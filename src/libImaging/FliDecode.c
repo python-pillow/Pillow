@@ -30,7 +30,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 {
     UINT8* ptr;
     int framesize;
-    int c, chunks;
+    int c, chunks, advance;
     int l, lines;
     int i, j, x = 0, y, ymax;
 
@@ -59,10 +59,16 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     chunks = I16(ptr+6);
     ptr += 16;
+    bytes -= 16;
 
     /* Process subchunks */
     for (c = 0; c < chunks; c++) {
-	UINT8 *data = ptr + 6;
+	UINT8* data;
+	if (bytes < 10) {
+	    state->errcode = IMAGING_CODEC_OVERRUN;
+	    return -1;
+	}
+	data = ptr + 6;
 	switch (I16(ptr+4)) {
 	case 4: case 11:
 	    /* FLI COLOR chunk */
@@ -198,7 +204,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    state->errcode = IMAGING_CODEC_UNKNOWN;
 	    return -1;
 	}
-	ptr += I32(ptr);
+	advance = I32(ptr);
+	ptr += advance;
+	bytes -= advance;
     }
 
     return -1; /* end of frame */

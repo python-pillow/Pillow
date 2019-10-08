@@ -103,6 +103,14 @@ class TestImageFile(PillowTestCase):
             parser = ImageFile.Parser()
             parser.feed(1)
 
+    def test_negative_stride(self):
+        with open("Tests/images/raw_negative_stride.bin", "rb") as f:
+            input = f.read()
+        p = ImageFile.Parser()
+        p.feed(input)
+        with self.assertRaises(IOError):
+            p.close()
+
     def test_truncated_with_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
