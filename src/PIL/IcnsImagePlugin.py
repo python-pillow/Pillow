@@ -336,10 +336,9 @@ def _save(im, fp, filename):
     # iconutil -c icns -o {} {}
 
     convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-    with open(os.devnull, "wb") as devnull:
-        convert_proc = subprocess.Popen(
-            convert_cmd, stdout=subprocess.PIPE, stderr=devnull
-        )
+    convert_proc = subprocess.Popen(
+        convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+    )
 
     convert_proc.stdout.close()
 

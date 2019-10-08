@@ -321,11 +321,10 @@ def command_succeeds(cmd):
     Runs the command, which must be a list of strings. Returns True if the
     command succeeds, or False if an OSError was raised by subprocess.Popen.
     """
-    with open(os.devnull, "wb") as f:
-        try:
-            subprocess.call(cmd, stdout=f, stderr=subprocess.STDOUT)
-        except OSError:
-            return False
+    try:
+        subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    except OSError:
+        return False
     return True
 
 

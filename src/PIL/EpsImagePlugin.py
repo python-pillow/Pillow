@@ -57,8 +57,7 @@ def has_ghostscript():
         return True
     if not sys.platform.startswith("win"):
         try:
-            with open(os.devnull, "wb") as devnull:
-                subprocess.check_call(["gs", "--version"], stdout=devnull)
+            subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
             return True
         except OSError:
             # No Ghostscript

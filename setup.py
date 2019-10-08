@@ -164,10 +164,10 @@ def _find_library_dirs_ldconfig():
         expr = r".* => (.*)"
         env = {}
 
-    null = open(os.devnull, "wb")
     try:
-        with null:
-            p = subprocess.Popen(args, stderr=null, stdout=subprocess.PIPE, env=env)
+        p = subprocess.Popen(
+            args, stderr=subprocess.DEVNULL, stdout=subprocess.PIPE, env=env
+        )
     except OSError:  # E.g. command not found
         return []
     [data, _] = p.communicate()
