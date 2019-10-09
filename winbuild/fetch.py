@@ -13,6 +13,8 @@ def fetch(url):
             r = urllib.request.urlopen(url)
         except urllib.error.URLError:
             r = urllib.request.urlopen(url)
+        except urllib.error.HTTPError:
+            r = urllib.request.urlopen(urllib.request.Request(url, None, {'User-Agent': ''}))
         content = r.read()
         with open(name, "wb") as fd:
             fd.write(content)
