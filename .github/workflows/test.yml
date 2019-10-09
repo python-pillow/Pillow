@@ -34,12 +34,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Linux dependencies
-      if: matrix.os == 'ubuntu-18.04'
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
         .travis/install.sh
 
     - name: Install macOS dependencies
-      if: matrix.os == 'macOS-10.14'
+      if: startsWith(matrix.os, 'macOS')
       run: |
         .github/workflows/macos-install.sh
 
