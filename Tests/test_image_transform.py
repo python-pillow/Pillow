@@ -1,14 +1,12 @@
 import math
 
-from PIL import Image
+from PIL import Image, ImageTransform
 
 from .helper import PillowTestCase, hopper
 
 
 class TestImageTransform(PillowTestCase):
     def test_sanity(self):
-        from PIL import ImageTransform
-
         im = Image.new("L", (100, 100))
 
         seq = tuple(range(10))
@@ -21,6 +19,16 @@ class TestImageTransform(PillowTestCase):
         im.transform((100, 100), transform)
         transform = ImageTransform.MeshTransform([(seq[:4], seq[:8])])
         im.transform((100, 100), transform)
+
+    def test_info(self):
+        comment = b"File written by Adobe Photoshop\xa8 4.0"
+
+        im = Image.open("Tests/images/hopper.gif")
+        self.assertEqual(im.info["comment"], comment)
+
+        transform = ImageTransform.ExtentTransform((0, 0, 0, 0))
+        new_im = im.transform((100, 100), transform)
+        self.assertEqual(new_im.info["comment"], comment)
 
     def test_extent(self):
         im = hopper("RGB")
