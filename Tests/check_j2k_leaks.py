@@ -1,9 +1,8 @@
-import sys
 from io import BytesIO
 
 from PIL import Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_win32, unittest
 
 # Limits for testing the leak
 mem_limit = 1024 * 1048576
@@ -13,7 +12,7 @@ codecs = dir(Image.core)
 test_file = "Tests/images/rgb_trns_ycbc.jp2"
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestJpegLeaks(PillowTestCase):
     def setUp(self):
         if "jpeg2k_encoder" not in codecs or "jpeg2k_decoder" not in codecs:

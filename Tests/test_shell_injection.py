@@ -1,5 +1,4 @@
 import shutil
-import sys
 
 from PIL import GifImagePlugin, Image, JpegImagePlugin
 
@@ -7,6 +6,7 @@ from .helper import (
     PillowTestCase,
     cjpeg_available,
     djpeg_available,
+    is_win32,
     netpbm_available,
     unittest,
 )
@@ -17,7 +17,7 @@ TEST_GIF = "Tests/images/hopper.gif"
 test_filenames = ("temp_';", 'temp_";', "temp_'\"|", "temp_'\"||", "temp_'\"&&")
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestShellInjection(PillowTestCase):
     def assert_save_filename_check(self, src_img, save_func):
         for filename in test_filenames:

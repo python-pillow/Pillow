@@ -1,11 +1,10 @@
-import sys
 import zlib
 from io import BytesIO
 
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 
-from .helper import PillowLeakTestCase, PillowTestCase, hopper, unittest
+from .helper import PillowLeakTestCase, PillowTestCase, hopper, is_win32, unittest
 
 try:
     from PIL import _webp
@@ -650,7 +649,7 @@ class TestFilePng(PillowTestCase):
         self.assert_image_similar(im, expected, 0.23)
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2 * 1024  # max increase in K
     iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs

@@ -2,17 +2,15 @@
 
 from __future__ import division
 
-import sys
-
 from PIL import Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_win32, unittest
 
 min_iterations = 100
 max_iterations = 10000
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestImagingLeaks(PillowTestCase):
     def _get_mem_usage(self):
         from resource import getpagesize, getrusage, RUSAGE_SELF

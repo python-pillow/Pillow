@@ -1,12 +1,11 @@
 import os
 import shutil
-import sys
 import tempfile
 
 from PIL import Image
 from PIL._util import py3
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, is_win32, unittest
 
 
 class TestImage(PillowTestCase):
@@ -149,9 +148,7 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
 
-    @unittest.skipIf(
-        sys.platform.startswith("win32"), "Test requires opening tempfile twice"
-    )
+    @unittest.skipIf(is_win32(), "Test requires opening tempfile twice")
     def test_readonly_save(self):
         temp_file = self.tempfile("temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
