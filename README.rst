@@ -14,7 +14,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - |linux| |macos| |windows| |coverage|
+      - |linux| |macos| |windows| |gha_lint| |gha_docker| |coverage|
     * - package
       - |zenodo| |tidelift| |version| |downloads|
     * - social
@@ -59,6 +59,12 @@ To report a security vulnerability, please follow the procedure described in the
 .. |windows| image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
+
+.. |gha_lint| image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
+   :alt: GitHub Actions build status (Lint)
+
+.. |gha_docker| image:: https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg
+   :alt: GitHub Actions build status (Test Docker)
 
 .. |coverage| image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/python-pillow/Pillow
