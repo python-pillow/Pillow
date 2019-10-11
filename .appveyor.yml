@@ -13,13 +13,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/vp/pypy2
-    EXECUTABLE: bin/pypy.exe
-    PIP_DIR: bin
-    VENV: YES
-  - PYTHON: C:/Python27-x64
   - PYTHON: C:/Python37
-  - PYTHON: C:/Python27
   - PYTHON: C:/Python37-x64
   - PYTHON: C:/Python36
   - PYTHON: C:/Python36-x64
