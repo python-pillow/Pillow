@@ -1,0 +1,40 @@
+name: Test Docker
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker: [
+          alpine,
+          arch,
+          ubuntu-16.04-xenial-amd64,
+          ubuntu-18.04-bionic-amd64,
+          debian-9-stretch-x86,
+          debian-10-buster-x86,
+          centos-6-amd64,
+          centos-7-amd64,
+          amazon-1-amd64,
+          amazon-2-amd64,
+          fedora-29-amd64,
+          fedora-30-amd64,
+        ]
+        dockerTag: [master]
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Docker build
+      run: |
+        # The Pillow user in the docker container is UID 1000
+        sudo chown -R 1000 $GITHUB_WORKSPACE
+        docker run -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
