@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Added pypy3 to tox envlist #4137
+  [jdufresne]
+
 - Drop support for EOL PyQt4 and PySide #4108
   [hugovk, radarhere]
 
