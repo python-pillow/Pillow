@@ -16,15 +16,11 @@ matrix:
     - python: "3.6"
       name: "Lint"
       env: LINT="true"
-    - python: "pypy"
-      name: "PyPy2 Xenial"
     - python: "pypy3"
       name: "PyPy3 Xenial"
     - python: '3.7'
       name: "3.7 Xenial"
       services: xvfb
-    - python: '2.7'
-      name: "2.7 Xenial"
     - python: '3.6'
       name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
