@@ -53,29 +53,11 @@ def convert_to_comparable(a, b):
 
 
 class PillowTestCase(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
-        # holds last result object passed to run method:
-        self.currentResult = None
-
-    def run(self, result=None):
-        self.currentResult = result  # remember result for use later
-        unittest.TestCase.run(self, result)  # call superclass run method
-
     def delete_tempfile(self, path):
         try:
-            ok = self.currentResult.wasSuccessful()
-        except AttributeError:  # for pytest
-            ok = True
-
-        if ok:
-            # only clean out tempfiles if test passed
-            try:
-                os.remove(path)
-            except OSError:
-                pass  # report?
-        else:
-            print("=== orphaned temp file: %s" % path)
+            os.remove(path)
+        except OSError:
+            pass  # report?
 
     def assert_deep_equal(self, a, b, msg=None):
         try:
