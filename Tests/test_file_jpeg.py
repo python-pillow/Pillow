@@ -3,7 +3,7 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
+from PIL import ExifTags, Image, ImageFile, JpegImagePlugin, features
 
 from .helper import (
     assert_image,
@@ -41,7 +41,7 @@ class TestFileJpeg:
     def test_sanity(self):
 
         # internal version number
-        assert re.search(r"\d+\.\d+$", Image.core.jpeglib_version)
+        assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
 
         with Image.open(TEST_FILE) as im:
             im.load()

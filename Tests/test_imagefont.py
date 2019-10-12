@@ -7,7 +7,7 @@ import sys
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import (
     assert_image_equal,
@@ -40,7 +40,7 @@ class TestImageFont:
 
     @classmethod
     def setup_class(self):
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
 
         self.metrics = self.METRICS["Default"]
         for conditions, metrics in self.METRICS.items():
@@ -67,7 +67,7 @@ class TestImageFont:
         )
 
     def test_sanity(self):
-        assert re.search(r"\d+\.\d+\.\d+$", ImageFont.core.freetype2_version)
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("freetype2"))
 
     def test_font_properties(self):
         ttf = self.get_font()
@@ -619,7 +619,7 @@ class TestImageFont:
     def test_variation_get(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
         if freetype < "2.9.1":
             with pytest.raises(NotImplementedError):
                 font.get_variation_names()
@@ -691,7 +691,7 @@ class TestImageFont:
     def test_variation_set_by_name(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
         if freetype < "2.9.1":
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_name("Bold")
@@ -715,7 +715,7 @@ class TestImageFont:
     def test_variation_set_by_axes(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
         if freetype < "2.9.1":
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_axes([100])

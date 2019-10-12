@@ -8,11 +8,11 @@ import PIL
 from . import Image
 
 modules = {
-    "pil": "PIL._imaging",
-    "tkinter": "PIL._tkinter_finder",
-    "freetype2": "PIL._imagingft",
-    "littlecms2": "PIL._imagingcms",
-    "webp": "PIL._webp",
+    "pil": ("PIL._imaging", None),
+    "tkinter": ("PIL._tkinter_finder", None),
+    "freetype2": ("PIL._imagingft", "freetype2"),
+    "littlecms2": ("PIL._imagingcms", "littlecms"),
+    "webp": ("PIL._webp", None),
 }
 
 
@@ -27,13 +27,27 @@ def check_module(feature):
     if not (feature in modules):
         raise ValueError("Unknown module %s" % feature)
 
-    module = modules[feature]
+    module, lib = modules[feature]
 
     try:
         __import__(module)
         return True
     except ImportError:
         return False
+
+
+def version_module(feature):
+    if not check_module(feature):
+        return None
+
+    module, lib = modules[feature]
+
+    if lib is None:
+        return None
+
+    attr = lib + "_version"
+
+    return getattr(__import__(module, fromlist=[attr]), attr)
 
 
 def get_supported_modules():
@@ -43,7 +57,12 @@ def get_supported_modules():
     return [f for f in modules if check_module(f)]
 
 
-codecs = {"jpg": "jpeg", "jpg_2000": "jpeg2k", "zlib": "zip", "libtiff": "libtiff"}
+codecs = {
+    "jpg": ("jpeg", "jpeglib"),
+    "jpg_2000": ("jpeg2k", "jp2klib"),
+    "zlib": ("zip", "zlib"),
+    "libtiff": ("libtiff", "libtiff"),
+}
 
 
 def check_codec(feature):
@@ -57,9 +76,23 @@ def check_codec(feature):
     if feature not in codecs:
         raise ValueError("Unknown codec %s" % feature)
 
-    codec = codecs[feature]
+    codec, lib = codecs[feature]
 
     return codec + "_encoder" in dir(Image.core)
+
+
+def version_codec(feature):
+    if not check_codec(feature):
+        return None
+
+    codec, lib = codecs[feature]
+
+    version = getattr(Image.core, lib + "_version")
+
+    if feature == "libtiff":
+        return version.split("\n")[0].split("Version ")[1]
+
+    return version
 
 
 def get_supported_codecs():
@@ -125,6 +158,14 @@ def check(feature):
     return False
 
 
+def version(feature):
+    if feature in modules:
+        return version_module(feature)
+    if feature in codecs:
+        return version_codec(feature)
+    return None
+
+
 def get_supported():
     """
     :returns: A list of all supported modules, features, and codecs.
@@ -187,7 +228,12 @@ def pilinfo(out=None, supported_formats=True):
         ("xcb", "XCB (X protocol)"),
     ]:
         if check(name):
-            print("---", feature, "support ok", file=out)
+            v = version(name)
+            if v is not None:
+                support = "ok (version {})".format(v)
+            else:
+                support = "ok"
+            print("---", feature, "support", support, file=out)
         else:
             print("***", feature, "support not installed", file=out)
     print("-" * 68, file=out)
