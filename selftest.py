@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
     exit_status = 0
 
-    features.pilinfo(sys.stdout, True)
+    features.pilinfo(sys.stdout, False)
 
     # use doctest to make sure the test program behaves as documented!
     import doctest
