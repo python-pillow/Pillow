@@ -14,7 +14,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - |linux| |macos| |windows| |gha_lint| |gha_docker| |gha| |gha_windows| |coverage|
+      - |linux| |macos| |windows| |gha_lint| |gha| |gha_windows| |gha_docker| |coverage|
     * - package
       - |zenodo| |tidelift| |version| |downloads|
     * - social
