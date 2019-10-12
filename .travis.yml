@@ -64,7 +64,8 @@ script:
   if [ "$LINT" == "true" ]; then
     tox -e lint
   elif [ "$DOCKER" == "" ]; then
-    .travis/script.sh
+    .travis/build.sh
+    .travis/test.sh
   elif [ "$DOCKER" ]; then
     # the Pillow user in the docker container is UID 1000
     sudo chown -R 1000 $TRAVIS_BUILD_DIR

@@ -8,17 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.7]
+        python-version: ["3.7"]
 
-    name: Python ${{ matrix.python }}
+    name: Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@v1
 
-    - name: Set up Python ${{ matrix.python }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
-        python-version: ${{ matrix.python }}
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
