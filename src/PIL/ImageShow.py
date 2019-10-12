@@ -12,6 +12,7 @@
 # See the README file for information on usage and redistribution.
 #
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -145,16 +146,6 @@ else:
 
     # unixoids
 
-    def which(executable):
-        path = os.environ.get("PATH")
-        if not path:
-            return None
-        for dirname in path.split(os.pathsep):
-            filename = os.path.join(dirname, executable)
-            if os.path.isfile(filename) and os.access(filename, os.X_OK):
-                return filename
-        return None
-
     class UnixViewer(Viewer):
         format = "PNG"
         options = {"compress_level": 1}
@@ -183,7 +174,7 @@ else:
             command = executable = "display"
             return command, executable
 
-    if which("display"):
+    if shutil.which("display"):
         register(DisplayViewer)
 
     class EogViewer(UnixViewer):
@@ -191,7 +182,7 @@ else:
             command = executable = "eog"
             return command, executable
 
-    if which("eog"):
+    if shutil.which("eog"):
         register(EogViewer)
 
     class XVViewer(UnixViewer):
@@ -203,7 +194,7 @@ else:
                 command += " -name %s" % quote(title)
             return command, executable
 
-    if which("xv"):
+    if shutil.which("xv"):
         register(XVViewer)
 
 if __name__ == "__main__":
