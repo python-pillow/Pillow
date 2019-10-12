@@ -1,8 +1,6 @@
-import sys
-
 from PIL import ImageWin
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, is_win32, unittest
 
 
 class TestImageWin(PillowTestCase):
@@ -32,7 +30,7 @@ class TestImageWin(PillowTestCase):
         self.assertEqual(wnd2, 50)
 
 
-@unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
+@unittest.skipUnless(is_win32(), "Windows only")
 class TestImageWinDib(PillowTestCase):
     def test_dib_image(self):
         # Arrange

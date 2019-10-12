@@ -1,12 +1,11 @@
 import logging
 import os
-import sys
 from io import BytesIO
 
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, is_win32, unittest
 
 logger = logging.getLogger(__name__)
 
@@ -572,7 +571,7 @@ class TestFileTiff(PillowTestCase):
             Image.open("Tests/images/string_dimension.tiff")
 
 
-@unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
+@unittest.skipUnless(is_win32(), "Windows only")
 class TestFileTiffW32(PillowTestCase):
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.tif")

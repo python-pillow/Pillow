@@ -8,7 +8,7 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_pypy, is_win32, unittest
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -463,7 +463,7 @@ class TestImageFont(PillowTestCase):
         with self.assertRaises(UnicodeEncodeError):
             font.getsize("’")
 
-    @unittest.skipIf(hasattr(sys, "pypy_translation_info"), "requires CPython")
+    @unittest.skipIf(is_pypy(), "requires CPython")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"
@@ -500,7 +500,7 @@ class TestImageFont(PillowTestCase):
                 name = font.getname()
                 self.assertEqual(("FreeMono", "Regular"), name)
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -546,7 +546,7 @@ class TestImageFont(PillowTestCase):
                         font_directory + "/Duplicate.ttf", "Duplicate"
                     )
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.

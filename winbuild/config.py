@@ -1,13 +1,19 @@
 import os
 
-SF_MIRROR = "http://iweb.dl.sourceforge.net"
+SF_MIRROR = "https://iweb.dl.sourceforge.net"
 PILLOW_DEPENDS_DIR = "C:\\pillow-depends\\"
 
 pythons = {
+    # for AppVeyor
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
+    "38rc1-x64": {"compiler": 7.1, "vc": 2015},
+    # for GitHub Actions
+    "3.5": {"compiler": 7.1, "vc": 2015},
+    "3.6": {"compiler": 7.1, "vc": 2015},
+    "3.7": {"compiler": 7.1, "vc": 2015},
 }
 
 VIRT_BASE = "c:/vp/"
@@ -38,10 +44,15 @@ libs = {
         "filename": PILLOW_DEPENDS_DIR + "freetype-2.10.1.tar.gz",
         "dir": "freetype-2.10.1",
     },
-    "lcms": {
+    "lcms-2.7": {
         "url": SF_MIRROR + "/project/lcms/lcms/2.7/lcms2-2.7.zip",
         "filename": PILLOW_DEPENDS_DIR + "lcms2-2.7.zip",
         "dir": "lcms2-2.7",
+    },
+    "lcms-2.8": {
+        "url": SF_MIRROR + "/project/lcms/lcms/2.8/lcms2-2.8.zip",
+        "filename": PILLOW_DEPENDS_DIR + "lcms2-2.8.zip",
+        "dir": "lcms2-2.8",
     },
     "ghostscript": {
         "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostscript-9.27.tar.gz",  # noqa: E501
@@ -79,6 +90,33 @@ libs = {
         "url": "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz",
         "filename": PILLOW_DEPENDS_DIR + "openjpeg-2.3.1.tar.gz",
         "dir": "openjpeg-2.3.1",
+    },
+    "jpeg-turbo": {
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
+        "filename": PILLOW_DEPENDS_DIR + "libjpeg-turbo-2.0.3.tar.gz",
+        "dir": "libjpeg-turbo-2.0.3",
+    },
+    # ba653c8: Merge tag '2.12.5' into msvc
+    "imagequant": {
+        "url": "https://github.com/ImageOptim/libimagequant/archive/ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",  # noqa: E501
+        "filename": PILLOW_DEPENDS_DIR
+        + "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",
+        "dir": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971",
+    },
+    "harfbuzz": {
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.1.zip",
+        "filename": PILLOW_DEPENDS_DIR + "harfbuzz-2.6.1.zip",
+        "dir": "harfbuzz-2.6.1",
+    },
+    "fribidi": {
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.7.zip",
+        "filename": PILLOW_DEPENDS_DIR + "fribidi-1.0.7.zip",
+        "dir": "fribidi-1.0.7",
+    },
+    "libraqm": {
+        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
+        "filename": PILLOW_DEPENDS_DIR + "libraqm-0.7.0.zip",
+        "dir": "libraqm-0.7.0",
     },
 }
 

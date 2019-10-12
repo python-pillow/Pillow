@@ -202,7 +202,7 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 rem do after building jpeg and zlib
-copy %%~dp0\nmake.opt %%TIFF%%
+copy %%~dp0\tiff.opt %%TIFF%%\nmake.opt
 
 cd /D %%TIFF%%
 nmake -nologo -f makefile.vc clean
@@ -270,6 +270,7 @@ def build_lcms_70(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.7%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
@@ -287,8 +288,10 @@ def build_lcms_71(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.8%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
+powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreadedDLL', 'MultiThreaded' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%

@@ -1,14 +1,13 @@
 import ctypes
-import sys
 from io import BytesIO
 
 from PIL import Image, ImageWin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, hopper, is_win32
 
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 
-if sys.platform.startswith("win32"):
+if is_win32():
     import ctypes.wintypes
 
     class BITMAPFILEHEADER(ctypes.Structure):

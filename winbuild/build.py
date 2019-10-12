@@ -124,7 +124,7 @@ set INCLUDE=%%INCLUDE%%;%%INCLIB%%\%(inc_dir)s;%%INCLIB%%\tcl%(tcl_ver)s\include
 setlocal
 set LIB=%%LIB%%;C:\Python%(py_ver)s\tcl%(vc_setup)s
 call %(python_path)s\%(executable)s setup.py %(imaging_libs)s %%BLDOPT%%
-call %(python_path)s\%(executable)s -c "from PIL import _webp;import os, shutil;shutil.copy('%%INCLIB%%\\freetype.dll', os.path.dirname(_webp.__file__));"
+call %(python_path)s\%(executable)s -c "from PIL import _webp;import os, shutil;shutil.copy(r'%%INCLIB%%\freetype.dll', os.path.dirname(_webp.__file__));"
 endlocal
 
 endlocal
