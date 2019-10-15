@@ -380,7 +380,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
                and raqm fails with empty strings */
             goto failed;
         }
-        int set_text = (*p_raqm.set_text)(rq, (const uint32_t *)(text), size);
+        int set_text = (*p_raqm.set_text)(rq, text, size);
         PyMem_Free(text);
         if (!set_text) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
