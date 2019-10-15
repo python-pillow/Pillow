@@ -207,24 +207,13 @@ class PillowTestCase(unittest.TestCase):
 
         self.assertTrue(value, msg + ": " + repr(actuals) + " != " + repr(targets))
 
-    def skipKnownBadTest(self, msg=None, platform=None, travis=None, interpreter=None):
-        # Skip if platform/travis matches, and
-        # PILLOW_RUN_KNOWN_BAD is not true in the environment.
+    def skipKnownBadTest(self, msg=None):
+        # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
         if os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
             print(os.environ.get("PILLOW_RUN_KNOWN_BAD", False))
             return
 
-        skip = True
-        if platform is not None:
-            skip = sys.platform.startswith(platform)
-        if travis is not None:
-            skip = skip and (travis == bool(os.environ.get("TRAVIS", False)))
-        if interpreter is not None:
-            skip = skip and (
-                interpreter == "pypy" and hasattr(sys, "pypy_version_info")
-            )
-        if skip:
-            self.skipTest(msg or "Known Bad Test")
+        self.skipTest(msg or "Known Bad Test")
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
