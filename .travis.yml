@@ -18,8 +18,8 @@ matrix:
       env: LINT="true"
     - python: "pypy3"
       name: "PyPy3 Xenial"
-    - python: "3.8-dev"
-      name: "3.8-dev Xenial"
+    - python: "3.8"
+      name: "3.8 Xenial"
       services: xvfb
     - python: '3.7'
       name: "3.7 Xenial"
