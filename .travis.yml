@@ -69,6 +69,12 @@ matrix:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.7
+    - name: "3.8 macOS"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.8
+        - MB_PYTHON_OSX_VER=10.9
 
     - name: "3.5 Xenial 32-bit"
       os: linux
@@ -92,6 +98,15 @@ matrix:
       os: linux
       env:
         - MB_PYTHON_VERSION=3.7
+        - PLAT=i686
+    - name: "3.8 Xenial"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.8
+    - name: "3.8 Xenial 32-bit"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.8
         - PLAT=i686
 
     - name: "2.7 macOS latest"
@@ -149,6 +164,13 @@ matrix:
       env:
         - MB_PYTHON_VERSION=3.7
         - LATEST="true"
+    - name: "3.8 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.8
+        - MB_PYTHON_OSX_VER=10.9
+        - LATEST="true"
 
     - name: "3.5 Xenial 32-bit latest"
       os: linux
@@ -176,6 +198,17 @@ matrix:
       os: linux
       env:
         - MB_PYTHON_VERSION=3.7
+        - PLAT=i686
+        - LATEST="true"
+    - name: "3.8 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.8
+        - LATEST="true"
+    - name: "3.8 Xenial 32-bit latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.8
         - PLAT=i686
         - LATEST="true"
 
