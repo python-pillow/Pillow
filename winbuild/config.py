@@ -10,6 +10,7 @@ pythons = {
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
+    "38rc1-x64": {"compiler": 7.1, "vc": 2015},
 }
 
 VIRT_BASE = "c:/vp/"
