@@ -24,7 +24,7 @@ from setuptools import Extension, setup
 # comment this out to disable multi threaded builds.
 import mp_compile
 
-if sys.platform == "win32" and sys.version_info >= (3, 8):
+if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
         "Pillow does not yet support Python {}.{} and does not yet provide "
         "prebuilt Windows binaries. We do not recommend building from "
@@ -867,6 +867,7 @@ try:
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Topic :: Multimedia :: Graphics",

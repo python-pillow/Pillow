@@ -13,6 +13,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
+  - PYTHON: C:\Python38rc1-x64
   - PYTHON: C:/Python37
   - PYTHON: C:/Python37-x64
   - PYTHON: C:/Python36
@@ -28,7 +29,6 @@ environment:
     EXECUTABLE: bin/pypy.exe
     PIP_DIR: bin
     VENV: YES
-  - PYTHON: C:\Python38rc1-x64
 
 
 install:
