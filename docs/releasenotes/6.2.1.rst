@@ -1,0 +1,7 @@
+6.2.1
+-----
+
+Support added for Python 3.8
+============================
+
+Pillow 6.2.1 supports Python 3.8.
