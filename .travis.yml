@@ -220,8 +220,8 @@ before_install:
 
 install:
     # Maybe get and clean and patch source
+    - if [[ -n "$LATEST" ]]; then BUILD_COMMIT=master; fi
     - clean_code $REPO_DIR $BUILD_COMMIT
-    - if [[ -n "$LATEST" ]]; then git submodule update --remote --merge $REPO_DIR; fi
     - build_wheel $REPO_DIR $PLAT
 
 script:
