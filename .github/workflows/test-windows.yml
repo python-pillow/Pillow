@@ -346,7 +346,7 @@ jobs:
         rem Add libraqm.dll (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
         cd /D %GITHUB_WORKSPACE%
-        %PYTHON%\python.exe -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
+        %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
       shell: cmd
 
     - name: Upload errors
