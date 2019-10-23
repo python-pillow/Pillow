@@ -78,7 +78,7 @@ class ImageFile(Image.Image):
     "Base class for image file format handlers."
 
     def __init__(self, fp=None, filename=None):
-        Image.Image.__init__(self)
+        super().__init__()
 
         self._min_frame = 0
 

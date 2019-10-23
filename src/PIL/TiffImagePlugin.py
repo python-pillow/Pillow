@@ -911,7 +911,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     """
 
     def __init__(self, *args, **kwargs):
-        ImageFileDirectory_v2.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._legacy_api = True
 
     tags = property(lambda self: self._tags_v1)
