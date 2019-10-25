@@ -58,6 +58,7 @@ jobs:
       run: |
         "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
         pip install codecov
+      shell: cmd
 
     - name: Fetch dependencies
       run: |
@@ -96,6 +97,7 @@ jobs:
         copy /Y /B j*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
         copy /Y /B *.exe %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / libjpeg-turbo
       run: |
@@ -114,6 +116,7 @@ jobs:
         copy /Y /B jpeg-static.lib %INCLIB%\libjpeg.lib
         copy /Y /B cjpeg-static.exe %INCLIB%\cjpeg.exe
         copy /Y /B djpeg-static.exe %INCLIB%\djpeg.exe
+      shell: cmd
 
     - name: Build dependencies / zlib
       run: |
@@ -128,6 +131,7 @@ jobs:
         copy /Y /B z*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
         copy /Y /B zlib.lib %INCLIB%\z.lib
+      shell: cmd
 
     - name: Build dependencies / LibTIFF
       run: |
@@ -143,6 +147,7 @@ jobs:
         copy /Y /B libtiff\tiff*.h %INCLIB%
         copy /Y /B libtiff\*.dll %INCLIB%
         copy /Y /B libtiff\*.lib %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / WebP
       run: |
@@ -157,6 +162,7 @@ jobs:
         mkdir %INCLIB%\webp
         copy /Y /B src\webp\*.h %INCLIB%\webp
         copy /Y /B output\release-static\${{ matrix.architecture }}\lib\* %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / FreeType
       run: |
@@ -176,6 +182,7 @@ jobs:
         %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release Static" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B "objs\${{ matrix.platform-msbuild }}\Release Static\freetype.lib" %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / LCMS2
       run: |
@@ -193,6 +200,7 @@ jobs:
         %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B Lib\MS\*.lib %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / OpenJPEG
       run: |
@@ -211,6 +219,7 @@ jobs:
         mkdir %INCLIB%\openjpeg-2.3.1
         copy /Y /B src\lib\openjp2\*.h %INCLIB%\openjpeg-2.3.1
         copy /Y /B bin\*.lib %INCLIB%
+      shell: cmd
 
     # GPL licensed; skip if building wheels
     - name: Build dependencies / libimagequant
@@ -233,6 +242,7 @@ jobs:
         nmake -nologo -f Makefile
         copy /Y /B *.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
+      shell: cmd
 
     # for Raqm
     - name: Build dependencies / HarfBuzz
@@ -253,6 +263,7 @@ jobs:
         nmake -nologo -f Makefile harfbuzz
         copy /Y /B src\*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
+      shell: cmd
 
     # for Raqm
     - name: Build dependencies / FriBidi
@@ -272,6 +283,7 @@ jobs:
         nmake -nologo -f Makefile fribidi
         copy /Y /B lib\*.h %INCLIB%
         copy /Y /B *.lib %INCLIB%
+      shell: cmd
 
     # failing with PyPy3
     - name: Build dependencies / Raqm
@@ -293,6 +305,7 @@ jobs:
         nmake -nologo -f Makefile libraqm
         copy /Y /B src\*.h %INCLIB%
         copy /Y /B libraqm.dll %INCLIB%
+      shell: cmd
 
     - name: Build dependencies / ghostscript
       run: |
@@ -308,6 +321,7 @@ jobs:
         nmake -nologo -f psi\msvc.mak
         rem Add bin to PATH variable: Copy to INCLIB, then add INCLIB to PATH in Test step.
         copy /Y /B bin\* %INCLIB%
+      shell: cmd
 
     - name: Build Pillow
       run: |
@@ -323,6 +337,7 @@ jobs:
         rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
         %PYTHON%\python.exe selftest.py --installed
+      shell: cmd
 
     - name: Test Pillow
       run: |
@@ -332,9 +347,11 @@ jobs:
         path %INCLIB%;%PATH%
         cd /D %GITHUB_WORKSPACE%
         %PYTHON%\python.exe -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
+      shell: cmd
 
     - name: Upload coverage
       run: 'codecov --file "%GITHUB_WORKSPACE%\coverage.xml" --name "%pythonLocation%"'
+      shell: cmd
 
     - name: Build wheel
       id: wheel
@@ -351,6 +368,7 @@ jobs:
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         %PYTHON%\python.exe setup.py bdist_wheel
+      shell: cmd
 
     - uses: actions/upload-artifact@v1
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
