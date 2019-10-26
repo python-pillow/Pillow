@@ -2,7 +2,7 @@
 
 set -e
 
-brew install libtiff libjpeg webp little-cms2
+brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype
 
 PYTHONOPTIMIZE=0 pip install cffi
 pip install coverage
