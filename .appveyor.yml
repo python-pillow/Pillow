@@ -3,7 +3,7 @@ clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-# Uncomment previous line to get RDP access during the build.
+# Uncomment previous line to get RDP access during the build.   pillo wlibrary
 
 environment:
   X64_EXT: -x64
