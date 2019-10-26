@@ -51,6 +51,7 @@ Released as needed for security, installation or critical bug fixes.
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.1*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 
 ## Embargoed Release

@@ -290,7 +290,7 @@ def _show(image, title):
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            tkinter.Label.__init__(self, master, image=self.image, bg="black", bd=0)
+            super().__init__(master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
         raise OSError("tkinter not initialized")

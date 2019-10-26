@@ -20,10 +20,16 @@ Changelog (Pillow)
 - Changed default frombuffer raw decoder args #1730
   [radarhere]
 
-6.2.0 (2019-10-01)
+6.2.1 (2019-10-21)
 ------------------
 
 - This is the last Pillow release to support Python 2.7 #3642
+
+- Add support for Python 3.8 #4141
+  [hugovk]
+
+6.2.0 (2019-10-01)
+------------------
 
 - Catch buffer overruns #4104
   [radarhere]

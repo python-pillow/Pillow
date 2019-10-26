@@ -19,7 +19,7 @@ from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
 
-if sys.platform == "win32" and sys.version_info >= (3, 8):
+if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
         "Pillow does not yet support Python {}.{} and does not yet provide "
         "prebuilt Windows binaries. We do not recommend building from "
@@ -862,6 +862,7 @@ try:
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",

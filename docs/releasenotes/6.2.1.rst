@@ -1,0 +1,26 @@
+6.2.1
+-----
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+Python 2.7
+~~~~~~~~~~
+
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python
+2.7, making Pillow 6.2.x the last release series to support Python 2.
+
+Other Changes
+=============
+
+
+
+Support added for Python 3.8
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 6.2.1 supports Python 3.8.

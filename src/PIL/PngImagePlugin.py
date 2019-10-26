@@ -292,8 +292,7 @@ class PngInfo:
 
 class PngStream(ChunkStream):
     def __init__(self, fp):
-
-        ChunkStream.__init__(self, fp)
+        super().__init__(fp)
 
         # local copies of Image attributes
         self.im_info = {}

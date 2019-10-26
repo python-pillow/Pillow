@@ -54,7 +54,7 @@ class TarIO(ContainerIO.ContainerIO):
             self.fh.seek((size + 511) & (~511), io.SEEK_CUR)
 
         # Open region
-        ContainerIO.ContainerIO.__init__(self, self.fh, self.fh.tell(), size)
+        super().__init__(self.fh, self.fh.tell(), size)
 
     # Context manager support
     def __enter__(self):

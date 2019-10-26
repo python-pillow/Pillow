@@ -25,7 +25,7 @@ class PillowQtTestCase:
 
 class PillowQPixmapTestCase(PillowQtTestCase):
     def setUp(self):
-        PillowQtTestCase.setUp(self)
+        super().setUp()
         try:
             if ImageQt.qt_version == "5":
                 from PyQt5.QtGui import QGuiApplication
@@ -37,7 +37,7 @@ class PillowQPixmapTestCase(PillowQtTestCase):
         self.app = QGuiApplication([])
 
     def tearDown(self):
-        PillowQtTestCase.tearDown(self)
+        super().tearDown()
         self.app.quit()
 
 

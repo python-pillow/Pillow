@@ -173,8 +173,7 @@ if qt_is_installed:
             # buffer, so this buffer has to hang on for the life of the image.
             # Fixes https://github.com/python-pillow/Pillow/issues/1370
             self.__data = im_data["data"]
-            QImage.__init__(
-                self,
+            super().__init__(
                 self.__data,
                 im_data["im"].size[0],
                 im_data["im"].size[1],
