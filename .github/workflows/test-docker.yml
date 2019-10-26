@@ -19,7 +19,6 @@ jobs:
           centos-7-amd64,
           amazon-1-amd64,
           amazon-2-amd64,
-          fedora-29-amd64,
           fedora-30-amd64,
         ]
         dockerTag: [master]
