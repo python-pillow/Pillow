@@ -12,3 +12,7 @@ exclude_lines =
     # Don't complain about debug code
     if Image.DEBUG:
     if DEBUG:
+
+[run]
+omit =
+    Tests/check_*.py
