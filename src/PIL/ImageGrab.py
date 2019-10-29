@@ -15,15 +15,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-import os
-import subprocess
 import sys
+import os
 import tempfile
+import subprocess
 
 from . import Image
-
-if sys.platform not in ["win32", "darwin"]:
-    raise ImportError("ImageGrab is macOS and Windows only")
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False):
@@ -38,8 +35,9 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
             im_cropped = im.crop(bbox)
             im.close()
             return im_cropped
-    else:
-        offset, size, data = Image.core.grabscreen(include_layered_windows, all_screens)
+    elif sys.platform == "win32":
+        grabber = Image.core.grabscreen
+        offset, size, data = grabber(include_layered_windows, all_screens)
         im = Image.frombytes(
             "RGB",
             size,
@@ -54,6 +52,15 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
             x0, y0 = offset
             left, top, right, bottom = bbox
             im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
+    else:
+        fh, filepath = tempfile.mkstemp(".png")
+        os.close(fh)
+        subprocess.call(["import", "-window", "root", filepath])
+        im = Image.open(filepath)
+        im.load()
+        os.unlink(filepath)
+        if bbox:
+            im = im.crop(bbox)
     return im
 
 
@@ -81,7 +88,8 @@ def grabclipboard():
             im.load()
         os.unlink(filepath)
         return im
-    else:
+
+    elif sys.platform == "win32":
         data = Image.core.grabclipboard()
         if isinstance(data, bytes):
             from . import BmpImagePlugin
@@ -89,3 +97,4 @@ def grabclipboard():
 
             return BmpImagePlugin.DibImageFile(io.BytesIO(data))
         return data
+
