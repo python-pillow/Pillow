@@ -79,7 +79,7 @@ class FtexImageFile(ImageFile.ImageFile):
 
         format, where = struct.unpack("<2i", self.fp.read(8))
         self.fp.seek(where)
-        mipmap_size, = struct.unpack("<i", self.fp.read(4))
+        (mipmap_size,) = struct.unpack("<i", self.fp.read(4))
 
         data = self.fp.read(mipmap_size)
 

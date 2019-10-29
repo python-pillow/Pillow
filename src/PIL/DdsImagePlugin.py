@@ -122,7 +122,7 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
-        bitcount, = struct.unpack("<I", header.read(4))
+        (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
         if pfflags & 0x40:
             # DDPF_RGB - Texture contains uncompressed RGB data
