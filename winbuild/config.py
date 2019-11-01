@@ -1,7 +1,6 @@
 import os
 
 SF_MIRROR = "https://iweb.dl.sourceforge.net"
-PILLOW_DEPENDS_DIR = "C:\\pillow-depends\\"
 
 pythons = {
     # for AppVeyor
