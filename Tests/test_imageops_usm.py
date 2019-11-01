@@ -5,7 +5,7 @@ from .helper import PillowTestCase
 
 class TestImageOpsUsm(PillowTestCase):
     def setUp(self):
-        super(TestImageOpsUsm, self).setUp()
+        super().setUp()
         self.im = Image.open("Tests/images/hopper.ppm")
         self.addCleanup(self.im.close)
         self.snakes = Image.open("Tests/images/color_snakes.png")
