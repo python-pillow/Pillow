@@ -11,20 +11,20 @@ TEST_FILE = "Tests/images/iptc.jpg"
 class TestFileIptc(PillowTestCase):
     def test_getiptcinfo_jpg_none(self):
         # Arrange
-        im = hopper()
+        with hopper() as im:
 
-        # Act
-        iptc = IptcImagePlugin.getiptcinfo(im)
+            # Act
+            iptc = IptcImagePlugin.getiptcinfo(im)
 
         # Assert
         self.assertIsNone(iptc)
 
     def test_getiptcinfo_jpg_found(self):
         # Arrange
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Act
-        iptc = IptcImagePlugin.getiptcinfo(im)
+            # Act
+            iptc = IptcImagePlugin.getiptcinfo(im)
 
         # Assert
         self.assertIsInstance(iptc, dict)
@@ -33,10 +33,10 @@ class TestFileIptc(PillowTestCase):
 
     def test_getiptcinfo_tiff_none(self):
         # Arrange
-        im = Image.open("Tests/images/hopper.tif")
+        with Image.open("Tests/images/hopper.tif") as im:
 
-        # Act
-        iptc = IptcImagePlugin.getiptcinfo(im)
+            # Act
+            iptc = IptcImagePlugin.getiptcinfo(im)
 
         # Assert
         self.assertIsNone(iptc)

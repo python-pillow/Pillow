@@ -25,30 +25,30 @@ class TestFileEps(PillowTestCase):
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_sanity(self):
         # Regular scale
-        image1 = Image.open(file1)
-        image1.load()
-        self.assertEqual(image1.mode, "RGB")
-        self.assertEqual(image1.size, (460, 352))
-        self.assertEqual(image1.format, "EPS")
+        with Image.open(file1) as image1:
+            image1.load()
+            self.assertEqual(image1.mode, "RGB")
+            self.assertEqual(image1.size, (460, 352))
+            self.assertEqual(image1.format, "EPS")
 
-        image2 = Image.open(file2)
-        image2.load()
-        self.assertEqual(image2.mode, "RGB")
-        self.assertEqual(image2.size, (360, 252))
-        self.assertEqual(image2.format, "EPS")
+        with Image.open(file2) as image2:
+            image2.load()
+            self.assertEqual(image2.mode, "RGB")
+            self.assertEqual(image2.size, (360, 252))
+            self.assertEqual(image2.format, "EPS")
 
         # Double scale
-        image1_scale2 = Image.open(file1)
-        image1_scale2.load(scale=2)
-        self.assertEqual(image1_scale2.mode, "RGB")
-        self.assertEqual(image1_scale2.size, (920, 704))
-        self.assertEqual(image1_scale2.format, "EPS")
+        with Image.open(file1) as image1_scale2:
+            image1_scale2.load(scale=2)
+            self.assertEqual(image1_scale2.mode, "RGB")
+            self.assertEqual(image1_scale2.size, (920, 704))
+            self.assertEqual(image1_scale2.format, "EPS")
 
-        image2_scale2 = Image.open(file2)
-        image2_scale2.load(scale=2)
-        self.assertEqual(image2_scale2.mode, "RGB")
-        self.assertEqual(image2_scale2.size, (720, 504))
-        self.assertEqual(image2_scale2.format, "EPS")
+        with Image.open(file2) as image2_scale2:
+            image2_scale2.load(scale=2)
+            self.assertEqual(image2_scale2.mode, "RGB")
+            self.assertEqual(image2_scale2.size, (720, 504))
+            self.assertEqual(image2_scale2.format, "EPS")
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -57,43 +57,42 @@ class TestFileEps(PillowTestCase):
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
-        cmyk_image = Image.open("Tests/images/pil_sample_cmyk.eps")
+        with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
 
-        self.assertEqual(cmyk_image.mode, "CMYK")
-        self.assertEqual(cmyk_image.size, (100, 100))
-        self.assertEqual(cmyk_image.format, "EPS")
+            self.assertEqual(cmyk_image.mode, "CMYK")
+            self.assertEqual(cmyk_image.size, (100, 100))
+            self.assertEqual(cmyk_image.format, "EPS")
 
-        cmyk_image.load()
-        self.assertEqual(cmyk_image.mode, "RGB")
+            cmyk_image.load()
+            self.assertEqual(cmyk_image.mode, "RGB")
 
-        if "jpeg_decoder" in dir(Image.core):
-            target = Image.open("Tests/images/pil_sample_rgb.jpg")
-            self.assert_image_similar(cmyk_image, target, 10)
+            if "jpeg_decoder" in dir(Image.core):
+                target = Image.open("Tests/images/pil_sample_rgb.jpg")
+                self.assert_image_similar(cmyk_image, target, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_showpage(self):
         # See https://github.com/python-pillow/Pillow/issues/2615
-        plot_image = Image.open("Tests/images/reqd_showpage.eps")
-        target = Image.open("Tests/images/reqd_showpage.png")
-
-        # should not crash/hang
-        plot_image.load()
-        #  fonts could be slightly different
-        self.assert_image_similar(plot_image, target, 6)
+        with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
+            with Image.open("Tests/images/reqd_showpage.png") as target:
+                # should not crash/hang
+                plot_image.load()
+                #  fonts could be slightly different
+                self.assert_image_similar(plot_image, target, 6)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_file_object(self):
         # issue 479
-        image1 = Image.open(file1)
-        with open(self.tempfile("temp_file.eps"), "wb") as fh:
-            image1.save(fh, "EPS")
+        with Image.open(file1) as image1:
+            with open(self.tempfile("temp_file.eps"), "wb") as fh:
+                image1.save(fh, "EPS")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_iobase_object(self):
         # issue 479
-        image1 = Image.open(file1)
-        with open(self.tempfile("temp_iobase.eps"), "wb") as fh:
-            image1.save(fh, "EPS")
+        with Image.open(file1) as image1:
+            with open(self.tempfile("temp_iobase.eps"), "wb") as fh:
+                image1.save(fh, "EPS")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_bytesio_object(self):
@@ -120,18 +119,18 @@ class TestFileEps(PillowTestCase):
             self.skipTest("zip/deflate support not available")
 
         # Zero bounding box
-        image1_scale1 = Image.open(file1)
-        image1_scale1.load()
-        image1_scale1_compare = Image.open(file1_compare).convert("RGB")
-        image1_scale1_compare.load()
-        self.assert_image_similar(image1_scale1, image1_scale1_compare, 5)
+        with Image.open(file1) as image1_scale1:
+            image1_scale1.load()
+            image1_scale1_compare = Image.open(file1_compare).convert("RGB")
+            image1_scale1_compare.load()
+            self.assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
         # Non-Zero bounding box
-        image2_scale1 = Image.open(file2)
-        image2_scale1.load()
-        image2_scale1_compare = Image.open(file2_compare).convert("RGB")
-        image2_scale1_compare.load()
-        self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
+        with Image.open(file2) as image2_scale1:
+            image2_scale1.load()
+            image2_scale1_compare = Image.open(file2_compare).convert("RGB")
+            image2_scale1_compare.load()
+            self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale2(self):
@@ -141,57 +140,44 @@ class TestFileEps(PillowTestCase):
             self.skipTest("zip/deflate support not available")
 
         # Zero bounding box
-        image1_scale2 = Image.open(file1)
-        image1_scale2.load(scale=2)
-        image1_scale2_compare = Image.open(file1_compare_scale2).convert("RGB")
-        image1_scale2_compare.load()
-        self.assert_image_similar(image1_scale2, image1_scale2_compare, 5)
+        with Image.open(file1) as image1_scale2:
+            image1_scale2.load(scale=2)
+            image1_scale2_compare = Image.open(file1_compare_scale2).convert("RGB")
+            image1_scale2_compare.load()
+            self.assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
         # Non-Zero bounding box
-        image2_scale2 = Image.open(file2)
-        image2_scale2.load(scale=2)
-        image2_scale2_compare = Image.open(file2_compare_scale2).convert("RGB")
-        image2_scale2_compare.load()
-        self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
+        with Image.open(file2) as image2_scale2:
+            image2_scale2.load(scale=2)
+            image2_scale2_compare = Image.open(file2_compare_scale2).convert("RGB")
+            image2_scale2_compare.load()
+            self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_resize(self):
-        # Arrange
-        image1 = Image.open(file1)
-        image2 = Image.open(file2)
-        image3 = Image.open("Tests/images/illu10_preview.eps")
-        new_size = (100, 100)
-
-        # Act
-        image1 = image1.resize(new_size)
-        image2 = image2.resize(new_size)
-        image3 = image3.resize(new_size)
-
-        # Assert
-        self.assertEqual(image1.size, new_size)
-        self.assertEqual(image2.size, new_size)
-        self.assertEqual(image3.size, new_size)
+        files = [file1, file2, "Tests/images/illu10_preview.eps"]
+        for fn in files:
+            with Image.open(fn) as im:
+                new_size = (100, 100)
+                im = im.resize(new_size)
+                self.assertEqual(im.size, new_size)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_thumbnail(self):
         # Issue #619
         # Arrange
-        image1 = Image.open(file1)
-        image2 = Image.open(file2)
-        new_size = (100, 100)
-
-        # Act
-        image1.thumbnail(new_size)
-        image2.thumbnail(new_size)
-
-        # Assert
-        self.assertEqual(max(image1.size), max(new_size))
-        self.assertEqual(max(image2.size), max(new_size))
+        files = [file1, file2]
+        for fn in files:
+            with Image.open(file1) as im:
+                new_size = (100, 100)
+                im.thumbnail(new_size)
+                self.assertEqual(max(im.size), max(new_size))
 
     def test_read_binary_preview(self):
         # Issue 302
         # open image with binary preview
-        Image.open(file3)
+        with Image.open(file3):
+            pass
 
     def _test_readline(self, t, ending):
         ending = "Failure with line ending: %s" % (
@@ -239,16 +225,16 @@ class TestFileEps(PillowTestCase):
 
         # Act / Assert
         for filename in FILES:
-            img = Image.open(filename)
-            self.assertEqual(img.mode, "RGB")
+            with Image.open(filename) as img:
+                self.assertEqual(img.mode, "RGB")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_emptyline(self):
         # Test file includes an empty line in the header data
         emptyline_file = "Tests/images/zero_bb_emptyline.eps"
 
-        image = Image.open(emptyline_file)
-        image.load()
+        with Image.open(emptyline_file) as image:
+            image.load()
         self.assertEqual(image.mode, "RGB")
         self.assertEqual(image.size, (460, 352))
         self.assertEqual(image.format, "EPS")

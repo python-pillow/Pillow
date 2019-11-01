@@ -76,20 +76,20 @@ class TestFileTga(PillowTestCase):
         test_file = "Tests/images/tga_id_field.tga"
 
         # Act
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
 
-        # Assert
-        self.assertEqual(im.size, (100, 100))
+            # Assert
+            self.assertEqual(im.size, (100, 100))
 
     def test_id_field_rle(self):
         # tga file with id field
         test_file = "Tests/images/rgb32rle.tga"
 
         # Act
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
 
-        # Assert
-        self.assertEqual(im.size, (199, 199))
+            # Assert
+            self.assertEqual(im.size, (199, 199))
 
     def test_save(self):
         test_file = "Tests/images/tga_id_field.tga"
@@ -99,14 +99,14 @@ class TestFileTga(PillowTestCase):
 
         # Save
         im.save(out)
-        test_im = Image.open(out)
-        self.assertEqual(test_im.size, (100, 100))
-        self.assertEqual(test_im.info["id_section"], im.info["id_section"])
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.size, (100, 100))
+            self.assertEqual(test_im.info["id_section"], im.info["id_section"])
 
         # RGBA save
         im.convert("RGBA").save(out)
-        test_im = Image.open(out)
-        self.assertEqual(test_im.size, (100, 100))
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.size, (100, 100))
 
     def test_save_id_section(self):
         test_file = "Tests/images/rgb32rle.tga"
@@ -116,27 +116,27 @@ class TestFileTga(PillowTestCase):
 
         # Check there is no id section
         im.save(out)
-        test_im = Image.open(out)
-        self.assertNotIn("id_section", test_im.info)
+        with Image.open(out) as test_im:
+            self.assertNotIn("id_section", test_im.info)
 
         # Save with custom id section
         im.save(out, id_section=b"Test content")
-        test_im = Image.open(out)
-        self.assertEqual(test_im.info["id_section"], b"Test content")
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.info["id_section"], b"Test content")
 
         # Save with custom id section greater than 255 characters
         id_section = b"Test content" * 25
         self.assert_warning(UserWarning, lambda: im.save(out, id_section=id_section))
-        test_im = Image.open(out)
-        self.assertEqual(test_im.info["id_section"], id_section[:255])
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.info["id_section"], id_section[:255])
 
         test_file = "Tests/images/tga_id_field.tga"
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
 
-        # Save with no id section
-        im.save(out, id_section="")
-        test_im = Image.open(out)
-        self.assertNotIn("id_section", test_im.info)
+            # Save with no id section
+            im.save(out, id_section="")
+        with Image.open(out) as test_im:
+            self.assertNotIn("id_section", test_im.info)
 
     def test_save_orientation(self):
         test_file = "Tests/images/rgb32rle.tga"
@@ -146,8 +146,8 @@ class TestFileTga(PillowTestCase):
         out = self.tempfile("temp.tga")
 
         im.save(out, orientation=1)
-        test_im = Image.open(out)
-        self.assertEqual(test_im.info["orientation"], 1)
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.info["orientation"], 1)
 
     def test_save_rle(self):
         test_file = "Tests/images/rgb32rle.tga"
@@ -158,19 +158,19 @@ class TestFileTga(PillowTestCase):
 
         # Save
         im.save(out)
-        test_im = Image.open(out)
-        self.assertEqual(test_im.size, (199, 199))
-        self.assertEqual(test_im.info["compression"], "tga_rle")
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.size, (199, 199))
+            self.assertEqual(test_im.info["compression"], "tga_rle")
 
         # Save without compression
         im.save(out, compression=None)
-        test_im = Image.open(out)
-        self.assertNotIn("compression", test_im.info)
+        with Image.open(out) as test_im:
+            self.assertNotIn("compression", test_im.info)
 
         # RGBA save
         im.convert("RGBA").save(out)
-        test_im = Image.open(out)
-        self.assertEqual(test_im.size, (199, 199))
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.size, (199, 199))
 
         test_file = "Tests/images/tga_id_field.tga"
         im = Image.open(test_file)
@@ -178,8 +178,8 @@ class TestFileTga(PillowTestCase):
 
         # Save with compression
         im.save(out, compression="tga_rle")
-        test_im = Image.open(out)
-        self.assertEqual(test_im.info["compression"], "tga_rle")
+        with Image.open(out) as test_im:
+            self.assertEqual(test_im.info["compression"], "tga_rle")
 
     def test_save_l_transparency(self):
         # There are 559 transparent pixels in la.tga.

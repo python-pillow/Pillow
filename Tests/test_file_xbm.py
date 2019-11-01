@@ -42,11 +42,11 @@ class TestFileXbm(PillowTestCase):
         filename = "Tests/images/hopper.xbm"
 
         # Act
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Assert
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (128, 128))
+            # Assert
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (128, 128))
 
     def test_open_filename_with_underscore(self):
         # Arrange
@@ -54,8 +54,8 @@ class TestFileXbm(PillowTestCase):
         filename = "Tests/images/hopper_underscore.xbm"
 
         # Act
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Assert
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (128, 128))
+            # Assert
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (128, 128))

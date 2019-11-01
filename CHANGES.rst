@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Removed CI testing of Fedora 29 #4165
+  [hugovk]
+
 - Added pypy3 to tox envlist #4137
   [jdufresne]
 

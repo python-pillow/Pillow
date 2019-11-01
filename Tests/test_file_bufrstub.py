@@ -8,14 +8,14 @@ TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 class TestFileBufrStub(PillowTestCase):
     def test_open(self):
         # Act
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Assert
-        self.assertEqual(im.format, "BUFR")
+            # Assert
+            self.assertEqual(im.format, "BUFR")
 
-        # Dummy data from the stub
-        self.assertEqual(im.mode, "F")
-        self.assertEqual(im.size, (1, 1))
+            # Dummy data from the stub
+            self.assertEqual(im.mode, "F")
+            self.assertEqual(im.size, (1, 1))
 
     def test_invalid_file(self):
         # Arrange
@@ -28,10 +28,10 @@ class TestFileBufrStub(PillowTestCase):
 
     def test_load(self):
         # Arrange
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Act / Assert: stub cannot load without an implemented handler
-        self.assertRaises(IOError, im.load)
+            # Act / Assert: stub cannot load without an implemented handler
+            self.assertRaises(IOError, im.load)
 
     def test_save(self):
         # Arrange

@@ -80,12 +80,12 @@ class TestFilePng(PillowTestCase):
 
         hopper("RGB").save(test_file)
 
-        im = Image.open(test_file)
-        im.load()
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "PNG")
-        self.assertEqual(im.get_format_mimetype(), "image/png")
+        with Image.open(test_file) as im:
+            im.load()
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.format, "PNG")
+            self.assertEqual(im.get_format_mimetype(), "image/png")
 
         for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
             im = hopper(mode)
@@ -392,12 +392,12 @@ class TestFilePng(PillowTestCase):
 
     def test_load_dpi_rounding(self):
         # Round up
-        im = Image.open(TEST_PNG_FILE)
-        self.assertEqual(im.info["dpi"], (96, 96))
+        with Image.open(TEST_PNG_FILE) as im:
+            self.assertEqual(im.info["dpi"], (96, 96))
 
         # Round down
-        im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertEqual(im.info["dpi"], (72, 72))
+        with Image.open("Tests/images/icc_profile_none.png") as im:
+            self.assertEqual(im.info["dpi"], (72, 72))
 
     def test_save_dpi_rounding(self):
         im = Image.open(TEST_PNG_FILE)
@@ -505,19 +505,19 @@ class TestFilePng(PillowTestCase):
     def test_trns_null(self):
         # Check reading images with null tRNS value, issue #1239
         test_file = "Tests/images/tRNS_null_1x1.png"
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
 
-        self.assertEqual(im.info["transparency"], 0)
+            self.assertEqual(im.info["transparency"], 0)
 
     def test_save_icc_profile(self):
-        im = Image.open("Tests/images/icc_profile_none.png")
-        self.assertIsNone(im.info["icc_profile"])
+        with Image.open("Tests/images/icc_profile_none.png") as im:
+            self.assertIsNone(im.info["icc_profile"])
 
-        with_icc = Image.open("Tests/images/icc_profile.png")
-        expected_icc = with_icc.info["icc_profile"]
+            with Image.open("Tests/images/icc_profile.png") as with_icc:
+                expected_icc = with_icc.info["icc_profile"]
 
-        im = roundtrip(im, icc_profile=expected_icc)
-        self.assertEqual(im.info["icc_profile"], expected_icc)
+                im = roundtrip(im, icc_profile=expected_icc)
+                self.assertEqual(im.info["icc_profile"], expected_icc)
 
     def test_discard_icc_profile(self):
         im = Image.open("Tests/images/icc_profile.png")
@@ -610,8 +610,8 @@ class TestFilePng(PillowTestCase):
         test_file = self.tempfile("temp.png")
         im.save(test_file)
 
-        reloaded = Image.open(test_file)
-        exif = reloaded._getexif()
+        with Image.open(test_file) as reloaded:
+            exif = reloaded._getexif()
         self.assertEqual(exif[274], 1)
 
     def test_exif_from_jpg(self):
@@ -620,8 +620,8 @@ class TestFilePng(PillowTestCase):
         test_file = self.tempfile("temp.png")
         im.save(test_file)
 
-        reloaded = Image.open(test_file)
-        exif = reloaded._getexif()
+        with Image.open(test_file) as reloaded:
+            exif = reloaded._getexif()
         self.assertEqual(exif[305], "Adobe Photoshop CS Macintosh")
 
     def test_exif_argument(self):
@@ -630,8 +630,8 @@ class TestFilePng(PillowTestCase):
         test_file = self.tempfile("temp.png")
         im.save(test_file, exif=b"exifstring")
 
-        reloaded = Image.open(test_file)
-        self.assertEqual(reloaded.info["exif"], b"Exif\x00\x00exifstring")
+        with Image.open(test_file) as reloaded:
+            self.assertEqual(reloaded.info["exif"], b"Exif\x00\x00exifstring")
 
     @unittest.skipUnless(
         HAVE_WEBP and _webp.HAVE_WEBPANIM, "WebP support not installed with animation"

@@ -63,8 +63,5 @@ class TarIO(ContainerIO.ContainerIO):
     def __exit__(self, *args):
         self.close()
 
-    def __del__(self):
-        self.close()
-
     def close(self):
         self.fh.close()

@@ -28,13 +28,13 @@ class TestFileWebpAnimation(PillowTestCase):
         attributes correctly.
         """
 
-        im = Image.open("Tests/images/hopper.webp")
-        self.assertEqual(im.n_frames, 1)
-        self.assertFalse(im.is_animated)
+        with Image.open("Tests/images/hopper.webp") as im:
+            self.assertEqual(im.n_frames, 1)
+            self.assertFalse(im.is_animated)
 
-        im = Image.open("Tests/images/iss634.webp")
-        self.assertEqual(im.n_frames, 42)
-        self.assertTrue(im.is_animated)
+        with Image.open("Tests/images/iss634.webp") as im:
+            self.assertEqual(im.n_frames, 42)
+            self.assertTrue(im.is_animated)
 
     def test_write_animation_L(self):
         """
@@ -43,23 +43,23 @@ class TestFileWebpAnimation(PillowTestCase):
         visually similar.
         """
 
-        orig = Image.open("Tests/images/iss634.gif")
-        self.assertGreater(orig.n_frames, 1)
+        with Image.open("Tests/images/iss634.gif") as orig:
+            self.assertGreater(orig.n_frames, 1)
 
-        temp_file = self.tempfile("temp.webp")
-        orig.save(temp_file, save_all=True)
-        im = Image.open(temp_file)
-        self.assertEqual(im.n_frames, orig.n_frames)
+            temp_file = self.tempfile("temp.webp")
+            orig.save(temp_file, save_all=True)
+            im = Image.open(temp_file)
+            self.assertEqual(im.n_frames, orig.n_frames)
 
-        # Compare first and last frames to the original animated GIF
-        orig.load()
-        im.load()
-        self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
-        orig.seek(orig.n_frames - 1)
-        im.seek(im.n_frames - 1)
-        orig.load()
-        im.load()
-        self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            # Compare first and last frames to the original animated GIF
+            orig.load()
+            im.load()
+            self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            orig.seek(orig.n_frames - 1)
+            im.seek(im.n_frames - 1)
+            orig.load()
+            im.load()
+            self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
 
     def test_write_animation_RGB(self):
         """

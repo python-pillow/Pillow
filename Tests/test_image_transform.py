@@ -156,21 +156,21 @@ class TestImageTransform(PillowTestCase):
         self.test_mesh()
 
     def test_missing_method_data(self):
-        im = hopper()
-        self.assertRaises(ValueError, im.transform, (100, 100), None)
+        with hopper() as im:
+            self.assertRaises(ValueError, im.transform, (100, 100), None)
 
     def test_unknown_resampling_filter(self):
-        im = hopper()
-        (w, h) = im.size
-        for resample in (Image.BOX, "unknown"):
-            self.assertRaises(
-                ValueError,
-                im.transform,
-                (100, 100),
-                Image.EXTENT,
-                (0, 0, w, h),
-                resample,
-            )
+        with hopper() as im:
+            (w, h) = im.size
+            for resample in (Image.BOX, "unknown"):
+                self.assertRaises(
+                    ValueError,
+                    im.transform,
+                    (100, 100),
+                    Image.EXTENT,
+                    (0, 0, w, h),
+                    resample,
+                )
 
 
 class TestImageTransformAffine(PillowTestCase):

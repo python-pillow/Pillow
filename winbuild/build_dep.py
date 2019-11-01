@@ -45,9 +45,7 @@ def extract(src, dest):
 
 def extract_libs():
     for name, lib in libs.items():
-        filename = lib["filename"]
-        if not os.path.exists(filename):
-            filename = fetch(lib["url"])
+        filename = fetch(lib["url"])
         if name == "openjpeg":
             for compiler in all_compilers():
                 if not os.path.exists(

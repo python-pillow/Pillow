@@ -42,8 +42,8 @@ matrix:
     - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
     - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
     - env: DOCKER="amazon-2-amd64" DOCKER_TAG="master"
-    - env: DOCKER="fedora-29-amd64" DOCKER_TAG="master"
     - env: DOCKER="fedora-30-amd64" DOCKER_TAG="master"
+    - env: DOCKER="fedora-31-amd64" DOCKER_TAG="master"
 
 services:
   - docker

@@ -46,13 +46,12 @@ class TestFileBmp(PillowTestCase):
         dpi = (72, 72)
 
         output = io.BytesIO()
-        im = hopper()
-        im.save(output, "BMP", dpi=dpi)
+        with hopper() as im:
+            im.save(output, "BMP", dpi=dpi)
 
         output.seek(0)
-        reloaded = Image.open(output)
-
-        self.assertEqual(reloaded.info["dpi"], dpi)
+        with Image.open(output) as reloaded:
+            self.assertEqual(reloaded.info["dpi"], dpi)
 
     def test_save_bmp_with_dpi(self):
         # Test for #1301
@@ -72,24 +71,24 @@ class TestFileBmp(PillowTestCase):
 
     def test_load_dpi_rounding(self):
         # Round up
-        im = Image.open("Tests/images/hopper.bmp")
-        self.assertEqual(im.info["dpi"], (96, 96))
+        with Image.open("Tests/images/hopper.bmp") as im:
+            self.assertEqual(im.info["dpi"], (96, 96))
 
         # Round down
-        im = Image.open("Tests/images/hopper_roundDown.bmp")
-        self.assertEqual(im.info["dpi"], (72, 72))
+        with Image.open("Tests/images/hopper_roundDown.bmp") as im:
+            self.assertEqual(im.info["dpi"], (72, 72))
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.bmp")
         im = Image.open("Tests/images/hopper.bmp")
 
         im.save(outfile, dpi=(72.2, 72.2))
-        reloaded = Image.open(outfile)
-        self.assertEqual(reloaded.info["dpi"], (72, 72))
+        with Image.open(outfile) as reloaded:
+            self.assertEqual(reloaded.info["dpi"], (72, 72))
 
-        im.save(outfile, dpi=(72.8, 72.8))
-        reloaded = Image.open(outfile)
-        self.assertEqual(reloaded.info["dpi"], (73, 73))
+            im.save(outfile, dpi=(72.8, 72.8))
+        with Image.open(outfile) as reloaded:
+            self.assertEqual(reloaded.info["dpi"], (73, 73))
 
     def test_load_dib(self):
         # test for #1293, Imagegrab returning Unsupported Bitfields Format

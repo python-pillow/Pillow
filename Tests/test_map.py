@@ -23,9 +23,9 @@ class TestMap(PillowTestCase):
         Image.MAX_IMAGE_PIXELS = None
 
         # This image hits the offset test.
-        im = Image.open("Tests/images/l2rgb_read.bmp")
-        with self.assertRaises((ValueError, MemoryError, IOError)):
-            im.load()
+        with Image.open("Tests/images/l2rgb_read.bmp") as im:
+            with self.assertRaises((ValueError, MemoryError, IOError)):
+                im.load()
 
         Image.MAX_IMAGE_PIXELS = max_pixels
 

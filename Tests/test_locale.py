@@ -24,13 +24,15 @@ path = "Tests/images/hopper.jpg"
 
 class TestLocale(PillowTestCase):
     def test_sanity(self):
-        Image.open(path)
+        with Image.open(path):
+            pass
         try:
             locale.setlocale(locale.LC_ALL, "polish")
         except locale.Error:
             unittest.skip("Polish locale not available")
 
         try:
-            Image.open(path)
+            with Image.open(path):
+                pass
         finally:
             locale.setlocale(locale.LC_ALL, (None, None))

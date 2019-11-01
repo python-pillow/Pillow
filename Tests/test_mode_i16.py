@@ -47,10 +47,10 @@ class TestModeI16(PillowTestCase):
             filename = self.tempfile("temp.im")
             imIn.save(filename)
 
-            imOut = Image.open(filename)
+            with Image.open(filename) as imOut:
 
-            self.verify(imIn)
-            self.verify(imOut)
+                self.verify(imIn)
+                self.verify(imOut)
 
             imOut = imIn.crop((0, 0, w, h))
             self.verify(imOut)

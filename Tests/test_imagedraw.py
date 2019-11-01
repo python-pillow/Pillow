@@ -45,10 +45,10 @@ class TestImageDraw(PillowTestCase):
         draw.rectangle(list(range(4)))
 
     def test_valueerror(self):
-        im = Image.open("Tests/images/chi.gif")
+        with Image.open("Tests/images/chi.gif") as im:
 
-        draw = ImageDraw.Draw(im)
-        draw.line((0, 0), fill=(0, 0, 0))
+            draw = ImageDraw.Draw(im)
+            draw.line((0, 0), fill=(0, 0, 0))
 
     def test_mode_mismatch(self):
         im = hopper("RGB").copy()

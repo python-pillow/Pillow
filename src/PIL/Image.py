@@ -597,9 +597,6 @@ class Image:
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    def __del__(self):
-        self.__exit__()
-
     def _copy(self):
         self.load()
         self.im = self.im.copy()
@@ -3190,7 +3187,7 @@ class Exif(MutableMapping):
                             continue
                         size = count * unit_size
                         if size > 4:
-                            offset, = struct.unpack("<L", data)
+                            (offset,) = struct.unpack("<L", data)
                             data = ifd_data[offset - 12 : offset + size - 12]
                         else:
                             data = data[:size]
@@ -3220,7 +3217,7 @@ class Exif(MutableMapping):
                         )
                         if ifd_tag == 0x1101:
                             # CameraInfo
-                            offset, = struct.unpack(">L", data)
+                            (offset,) = struct.unpack(">L", data)
                             self.fp.seek(offset)
 
                             camerainfo = {"ModelID": self.fp.read(4)}

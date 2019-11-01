@@ -66,10 +66,10 @@ class TestFilePpm(PillowTestCase):
 
         with open(path, "w") as f:
             f.write("P4\n128 128\n255")
-        im = Image.open(path)
-        self.assertEqual(im.get_format_mimetype(), "image/x-portable-bitmap")
+        with Image.open(path) as im:
+            self.assertEqual(im.get_format_mimetype(), "image/x-portable-bitmap")
 
         with open(path, "w") as f:
             f.write("PyCMYK\n128 128\n255")
-        im = Image.open(path)
-        self.assertEqual(im.get_format_mimetype(), "image/x-portable-anymap")
+        with Image.open(path) as im:
+            self.assertEqual(im.get_format_mimetype(), "image/x-portable-anymap")

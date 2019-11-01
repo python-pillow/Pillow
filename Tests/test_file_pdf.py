@@ -82,26 +82,26 @@ class TestFilePdf(PillowTestCase):
         self.helper_save_as_pdf("RGB", save_all=True)
 
         # Multiframe image
-        im = Image.open("Tests/images/dispose_bgnd.gif")
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
 
-        outfile = self.tempfile("temp.pdf")
-        im.save(outfile, save_all=True)
+            outfile = self.tempfile("temp.pdf")
+            im.save(outfile, save_all=True)
 
-        self.assertTrue(os.path.isfile(outfile))
-        self.assertGreater(os.path.getsize(outfile), 0)
+            self.assertTrue(os.path.isfile(outfile))
+            self.assertGreater(os.path.getsize(outfile), 0)
 
-        # Append images
-        ims = [hopper()]
-        im.copy().save(outfile, save_all=True, append_images=ims)
+            # Append images
+            ims = [hopper()]
+            im.copy().save(outfile, save_all=True, append_images=ims)
 
-        self.assertTrue(os.path.isfile(outfile))
-        self.assertGreater(os.path.getsize(outfile), 0)
+            self.assertTrue(os.path.isfile(outfile))
+            self.assertGreater(os.path.getsize(outfile), 0)
 
-        # Test appending using a generator
-        def imGenerator(ims):
-            yield from ims
+            # Test appending using a generator
+            def imGenerator(ims):
+                yield from ims
 
-        im.save(outfile, save_all=True, append_images=imGenerator(ims))
+            im.save(outfile, save_all=True, append_images=imGenerator(ims))
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
@@ -115,10 +115,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_multiframe_normal_save(self):
         # Test saving a multiframe image without save_all
-        im = Image.open("Tests/images/dispose_bgnd.gif")
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
 
-        outfile = self.tempfile("temp.pdf")
-        im.save(outfile)
+            outfile = self.tempfile("temp.pdf")
+            im.save(outfile)
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)

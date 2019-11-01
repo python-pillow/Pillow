@@ -470,7 +470,7 @@ class ImageFileDirectory_v2(MutableMapping):
         else:
             raise SyntaxError("not a TIFF IFD")
         self.reset()
-        self.next, = self._unpack("L", ifh[4:])
+        (self.next,) = self._unpack("L", ifh[4:])
         self._legacy_api = False
 
     prefix = property(lambda self: self._prefix)
@@ -570,7 +570,7 @@ class ImageFileDirectory_v2(MutableMapping):
             ]:  # rationals
                 values = (values,)
             try:
-                dest[tag], = values
+                (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
@@ -738,7 +738,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 size = count * unit_size
                 if size > 4:
                     here = fp.tell()
-                    offset, = self._unpack("L", data)
+                    (offset,) = self._unpack("L", data)
                     if DEBUG:
                         print(
                             "Tag Location: {} - Data Location: {}".format(here, offset),
@@ -770,7 +770,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     else:
                         print("- value:", self[tag])
 
-            self.next, = self._unpack("L", self._ensure_read(fp, 4))
+            (self.next,) = self._unpack("L", self._ensure_read(fp, 4))
         except OSError as msg:
             warnings.warn(str(msg))
             return
@@ -1766,11 +1766,11 @@ class AppendingTiffWriter:
         return self.f.write(data)
 
     def readShort(self):
-        value, = struct.unpack(self.shortFmt, self.f.read(2))
+        (value,) = struct.unpack(self.shortFmt, self.f.read(2))
         return value
 
     def readLong(self):
-        value, = struct.unpack(self.longFmt, self.f.read(4))
+        (value,) = struct.unpack(self.longFmt, self.f.read(4))
         return value
 
     def rewriteLastShortToLong(self, value):
