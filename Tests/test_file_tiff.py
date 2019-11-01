@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from io import BytesIO
 
 from PIL import Image, TiffImagePlugin
@@ -578,7 +579,11 @@ class TestFileTiff(PillowTestCase):
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with self.assertRaises(ValueError):
-            Image.open("Tests/images/string_dimension.tiff")
+            # Ignore this UserWarning which triggers for four tags:
+            # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
+                Image.open("Tests/images/string_dimension.tiff")
 
 
 @unittest.skipUnless(is_win32(), "Windows only")
