@@ -791,7 +791,7 @@ font_render(FontObject* self, PyObject* args)
     int index, error, ascender, horizontal_dir;
     int load_flags;
     unsigned char *source;
-    FT_Glyph glyph = NULL;
+    FT_Glyph glyph;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_BitmapGlyph bitmap_glyph;
@@ -951,9 +951,8 @@ font_render(FontObject* self, PyObject* args)
         }
         x += glyph_info[i].x_advance;
         y -= glyph_info[i].y_advance;
-        if (glyph != NULL) {
+        if (stroker != NULL) {
             FT_Done_Glyph(glyph);
-            glyph = NULL;
         }
     }
 
