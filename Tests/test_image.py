@@ -97,9 +97,9 @@ class TestImage(PillowTestCase):
     def test_pathlib(self):
         from PIL.Image import Path
 
-        im = Image.open(Path("Tests/images/multipage-mmap.tiff"))
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (10, 10))
+        with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
+            self.assertEqual(im.mode, "P")
+            self.assertEqual(im.size, (10, 10))
 
         im = Image.open(Path("Tests/images/hopper.jpg"))
         self.assertEqual(im.mode, "RGB")
@@ -346,7 +346,8 @@ class TestImage(PillowTestCase):
     def test_registered_extensions(self):
         # Arrange
         # Open an image to trigger plugin registration
-        Image.open("Tests/images/rgb.jpg")
+        with Image.open("Tests/images/rgb.jpg"):
+            pass
 
         # Act
         extensions = Image.registered_extensions()
@@ -448,10 +449,10 @@ class TestImage(PillowTestCase):
 
     def test_offset_not_implemented(self):
         # Arrange
-        im = hopper()
+        with hopper() as im:
 
-        # Act / Assert
-        self.assertRaises(NotImplementedError, im.offset, None)
+            # Act / Assert
+            self.assertRaises(NotImplementedError, im.offset, None)
 
     def test_fromstring(self):
         self.assertRaises(NotImplementedError, Image.fromstring)
@@ -522,8 +523,8 @@ class TestImage(PillowTestCase):
 
     def test_remap_palette(self):
         # Test illegal image mode
-        im = hopper()
-        self.assertRaises(ValueError, im.remap_palette, None)
+        with hopper() as im:
+            self.assertRaises(ValueError, im.remap_palette, None)
 
     def test__new(self):
         from PIL import ImagePalette
@@ -587,12 +588,12 @@ class TestImage(PillowTestCase):
 
     def test_overrun(self):
         for file in ["fli_overrun.bin", "sgi_overrun.bin", "pcx_overrun.bin"]:
-            im = Image.open(os.path.join("Tests/images", file))
-            try:
-                im.load()
-                self.assertFail()
-            except IOError as e:
-                self.assertEqual(str(e), "buffer overrun when reading image file")
+            with Image.open(os.path.join("Tests/images", file)) as im:
+                try:
+                    im.load()
+                    self.assertFail()
+                except IOError as e:
+                    self.assertEqual(str(e), "buffer overrun when reading image file")
 
 
 class MockEncoder(object):

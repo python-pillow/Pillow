@@ -103,21 +103,24 @@ class ImageFile(Image.Image):
             self._exclusive_fp = None
 
         try:
-            self._open()
-        except (
-            IndexError,  # end of data
-            TypeError,  # end of data (ord)
-            KeyError,  # unsupported mode
-            EOFError,  # got header but not the first frame
-            struct.error,
-        ) as v:
+            try:
+                self._open()
+            except (
+                IndexError,  # end of data
+                TypeError,  # end of data (ord)
+                KeyError,  # unsupported mode
+                EOFError,  # got header but not the first frame
+                struct.error,
+            ) as v:
+                raise SyntaxError(v)
+
+            if not self.mode or self.size[0] <= 0:
+                raise SyntaxError("not identified by this driver")
+        except BaseException:
             # close the file only if we have opened it this constructor
             if self._exclusive_fp:
                 self.fp.close()
-            raise SyntaxError(v)
-
-        if not self.mode or self.size[0] <= 0:
-            raise SyntaxError("not identified by this driver")
+            raise
 
     def draft(self, mode, size):
         """Set draft mode"""

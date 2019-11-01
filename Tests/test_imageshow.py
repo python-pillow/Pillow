@@ -27,8 +27,8 @@ class TestImageShow(PillowTestCase):
         ImageShow.register(viewer, -1)
 
         for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
-            im = hopper(mode)
-            self.assertTrue(ImageShow.show(im))
+            with hopper() as im:
+                self.assertTrue(ImageShow.show(im))
             self.assertTrue(viewer.methodCalled)
 
         # Restore original state

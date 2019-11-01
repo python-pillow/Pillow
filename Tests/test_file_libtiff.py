@@ -144,15 +144,14 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
         for legacy_api in [False, True]:
-            img = Image.open("Tests/images/hopper_g4.tif")
             f = self.tempfile("temp.tiff")
+            with Image.open("Tests/images/hopper_g4.tif") as img:
+                img.save(f, tiffinfo=img.tag)
 
-            img.save(f, tiffinfo=img.tag)
-
-            if legacy_api:
-                original = img.tag.named()
-            else:
-                original = img.tag_v2.named()
+                if legacy_api:
+                    original = img.tag.named()
+                else:
+                    original = img.tag_v2.named()
 
             # PhotometricInterpretation is set from SAVE_INFO,
             # not the original image.
@@ -163,11 +162,11 @@ class TestFileLibTiff(LibTiffTestCase):
                 "PhotometricInterpretation",
             ]
 
-            loaded = Image.open(f)
-            if legacy_api:
-                reloaded = loaded.tag.named()
-            else:
-                reloaded = loaded.tag_v2.named()
+            with Image.open(f) as loaded:
+                if legacy_api:
+                    reloaded = loaded.tag.named()
+                else:
+                    reloaded = loaded.tag_v2.named()
 
             for tag, value in itertools.chain(reloaded.items(), original.items()):
                 if tag not in ignored:
@@ -302,21 +301,21 @@ class TestFileLibTiff(LibTiffTestCase):
                 out = self.tempfile("temp.tif")
                 im.save(out, tiffinfo=tiffinfo)
 
-                reloaded = Image.open(out)
-                for tag, value in tiffinfo.items():
-                    reloaded_value = reloaded.tag_v2[tag]
-                    if (
-                        isinstance(reloaded_value, TiffImagePlugin.IFDRational)
-                        and libtiff
-                    ):
-                        # libtiff does not support real RATIONALS
-                        self.assertAlmostEqual(float(reloaded_value), float(value))
-                        continue
+                with Image.open(out) as reloaded:
+                    for tag, value in tiffinfo.items():
+                        reloaded_value = reloaded.tag_v2[tag]
+                        if (
+                            isinstance(reloaded_value, TiffImagePlugin.IFDRational)
+                            and libtiff
+                        ):
+                            # libtiff does not support real RATIONALS
+                            self.assertAlmostEqual(float(reloaded_value), float(value))
+                            continue
 
-                    if libtiff and isinstance(value, bytes):
-                        value = value.decode()
+                        if libtiff and isinstance(value, bytes):
+                            value = value.decode()
 
-                    self.assertEqual(reloaded_value, value)
+                        self.assertEqual(reloaded_value, value)
 
             # Test with types
             ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -343,8 +342,8 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = True
         im.save(out, dpi=(72, 72))
         TiffImagePlugin.WRITE_LIBTIFF = False
-        reloaded = Image.open(out)
-        self.assertEqual(reloaded.info["dpi"], (72.0, 72.0))
+        with Image.open(out) as reloaded:
+            self.assertEqual(reloaded.info["dpi"], (72.0, 72.0))
 
     def test_g3_compression(self):
         i = Image.open("Tests/images/hopper_g4_500.tif")
@@ -412,9 +411,9 @@ class TestFileLibTiff(LibTiffTestCase):
         orig.tag[269] = "temp.tif"
         orig.save(out)
 
-        reread = Image.open(out)
-        self.assertEqual("temp.tif", reread.tag_v2[269])
-        self.assertEqual("temp.tif", reread.tag[269][0])
+        with Image.open(out) as reread:
+            self.assertEqual("temp.tif", reread.tag_v2[269])
+            self.assertEqual("temp.tif", reread.tag[269][0])
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
@@ -521,36 +520,36 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_multipage(self):
         # issue #862
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open("Tests/images/multipage.tiff")
-        # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
+        with Image.open("Tests/images/multipage.tiff") as im:
+            # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
-        im.seek(0)
-        self.assertEqual(im.size, (10, 10))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
-        self.assertTrue(im.tag.next)
+            im.seek(0)
+            self.assertEqual(im.size, (10, 10))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
+            self.assertTrue(im.tag.next)
 
-        im.seek(1)
-        self.assertEqual(im.size, (10, 10))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
-        self.assertTrue(im.tag.next)
+            im.seek(1)
+            self.assertEqual(im.size, (10, 10))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+            self.assertTrue(im.tag.next)
 
-        im.seek(2)
-        self.assertFalse(im.tag.next)
-        self.assertEqual(im.size, (20, 20))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
+            im.seek(2)
+            self.assertFalse(im.tag.next)
+            self.assertEqual(im.size, (20, 20))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
 
         TiffImagePlugin.READ_LIBTIFF = False
 
     def test_multipage_nframes(self):
         # issue #862
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open("Tests/images/multipage.tiff")
-        frames = im.n_frames
-        self.assertEqual(frames, 3)
-        for _ in range(frames):
-            im.seek(0)
-            # Should not raise ValueError: I/O operation on closed file
-            im.load()
+        with Image.open("Tests/images/multipage.tiff") as im:
+            frames = im.n_frames
+            self.assertEqual(frames, 3)
+            for _ in range(frames):
+                im.seek(0)
+                # Should not raise ValueError: I/O operation on closed file
+                im.load()
 
         TiffImagePlugin.READ_LIBTIFF = False
 
@@ -656,9 +655,9 @@ class TestFileLibTiff(LibTiffTestCase):
         # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
         # -dNOPAUSE /tmp/test.pdf -c quit
         infile = "Tests/images/total-pages-zero.tif"
-        im = Image.open(infile)
-        # Should not divide by zero
-        im.save(outfile)
+        with Image.open(infile) as im:
+            # Should not divide by zero
+            im.save(outfile)
 
     def test_fd_duplication(self):
         # https://github.com/python-pillow/Pillow/issues/1651
@@ -686,21 +685,21 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(icc, icc_libtiff)
 
     def test_multipage_compression(self):
-        im = Image.open("Tests/images/compression.tif")
+        with Image.open("Tests/images/compression.tif") as im:
 
-        im.seek(0)
-        self.assertEqual(im._compression, "tiff_ccitt")
-        self.assertEqual(im.size, (10, 10))
+            im.seek(0)
+            self.assertEqual(im._compression, "tiff_ccitt")
+            self.assertEqual(im.size, (10, 10))
 
-        im.seek(1)
-        self.assertEqual(im._compression, "packbits")
-        self.assertEqual(im.size, (10, 10))
-        im.load()
+            im.seek(1)
+            self.assertEqual(im._compression, "packbits")
+            self.assertEqual(im.size, (10, 10))
+            im.load()
 
-        im.seek(0)
-        self.assertEqual(im._compression, "tiff_ccitt")
-        self.assertEqual(im.size, (10, 10))
-        im.load()
+            im.seek(0)
+            self.assertEqual(im._compression, "tiff_ccitt")
+            self.assertEqual(im.size, (10, 10))
+            im.load()
 
     def test_save_tiff_with_jpegtables(self):
         # Arrange
@@ -836,8 +835,8 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_no_rows_per_strip(self):
         # This image does not have a RowsPerStrip TIFF tag
         infile = "Tests/images/no_rows_per_strip.tif"
-        im = Image.open(infile)
-        im.load()
+        with Image.open(infile) as im:
+            im.load()
         self.assertEqual(im.size, (950, 975))
 
     def test_orientation(self):

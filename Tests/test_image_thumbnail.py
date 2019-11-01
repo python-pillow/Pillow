@@ -39,11 +39,11 @@ class TestImageThumbnail(PillowTestCase):
 
     def test_no_resize(self):
         # Check that draft() can resize the image to the destination size
-        im = Image.open("Tests/images/hopper.jpg")
-        im.draft(None, (64, 64))
-        self.assertEqual(im.size, (64, 64))
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.draft(None, (64, 64))
+            self.assertEqual(im.size, (64, 64))
 
         # Test thumbnail(), where only draft() is necessary to resize the image
-        im = Image.open("Tests/images/hopper.jpg")
-        im.thumbnail((64, 64))
-        self.assert_image(im, im.mode, (64, 64))
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.thumbnail((64, 64))
+            self.assert_image(im, im.mode, (64, 64))

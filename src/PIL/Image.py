@@ -622,11 +622,6 @@ class Image(object):
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    if sys.version_info.major >= 3:
-
-        def __del__(self):
-            self.__exit__()
-
     def _copy(self):
         self.load()
         self.im = self.im.copy()

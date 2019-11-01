@@ -23,11 +23,11 @@ class TestFileXpm(PillowTestCase):
 
     def test_load_read(self):
         # Arrange
-        im = Image.open(TEST_FILE)
-        dummy_bytes = 1
+        with Image.open(TEST_FILE) as im:
+            dummy_bytes = 1
 
-        # Act
-        data = im.load_read(dummy_bytes)
+            # Act
+            data = im.load_read(dummy_bytes)
 
         # Assert
         self.assertEqual(len(data), 16384)

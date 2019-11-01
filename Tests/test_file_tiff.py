@@ -6,7 +6,7 @@ from PIL import Image, TiffImagePlugin
 from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
-from .helper import PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_pypy, is_win32, unittest
 
 logger = logging.getLogger(__name__)
 
@@ -18,31 +18,52 @@ class TestFileTiff(PillowTestCase):
 
         hopper("RGB").save(filename)
 
-        im = Image.open(filename)
-        im.load()
+        with Image.open(filename) as im:
+            im.load()
         self.assertEqual(im.mode, "RGB")
         self.assertEqual(im.size, (128, 128))
         self.assertEqual(im.format, "TIFF")
 
         hopper("1").save(filename)
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
         hopper("L").save(filename)
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
         hopper("P").save(filename)
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
         hopper("RGB").save(filename)
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
         hopper("I").save(filename)
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
+    @unittest.skipIf(is_pypy(), "Requires CPython")
     def test_unclosed_file(self):
         def open():
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
+
+        self.assert_warning(ResourceWarning, open)
+
+    def test_closed_file(self):
+        def open():
+            im = Image.open("Tests/images/multipage.tiff")
+            im.load()
+            im.close()
+
+        self.assert_warning(None, open)
+
+    def test_context_manager(self):
+        def open():
+            with Image.open("Tests/images/multipage.tiff") as im:
+                im.load()
 
         self.assert_warning(None, open)
 
@@ -75,55 +96,55 @@ class TestFileTiff(PillowTestCase):
 
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # legacy api
-        self.assertIsInstance(im.tag[X_RESOLUTION][0], tuple)
-        self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
+            # legacy api
+            self.assertIsInstance(im.tag[X_RESOLUTION][0], tuple)
+            self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
 
-        # v2 api
-        self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
+            # v2 api
+            self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
+            self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
 
-        self.assertEqual(im.info["dpi"], (72.0, 72.0))
+            self.assertEqual(im.info["dpi"], (72.0, 72.0))
 
     def test_xyres_fallback_tiff(self):
         filename = "Tests/images/compression.tif"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # v2 api
-        self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertRaises(KeyError, lambda: im.tag_v2[RESOLUTION_UNIT])
+            # v2 api
+            self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
+            self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
+            self.assertRaises(KeyError, lambda: im.tag_v2[RESOLUTION_UNIT])
 
-        # Legacy.
-        self.assertEqual(im.info["resolution"], (100.0, 100.0))
-        # Fallback "inch".
-        self.assertEqual(im.info["dpi"], (100.0, 100.0))
+            # Legacy.
+            self.assertEqual(im.info["resolution"], (100.0, 100.0))
+            # Fallback "inch".
+            self.assertEqual(im.info["dpi"], (100.0, 100.0))
 
     def test_int_resolution(self):
         filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Try to read a file where X,Y_RESOLUTION are ints
-        im.tag_v2[X_RESOLUTION] = 71
-        im.tag_v2[Y_RESOLUTION] = 71
-        im._setup()
-        self.assertEqual(im.info["dpi"], (71.0, 71.0))
+            # Try to read a file where X,Y_RESOLUTION are ints
+            im.tag_v2[X_RESOLUTION] = 71
+            im.tag_v2[Y_RESOLUTION] = 71
+            im._setup()
+            self.assertEqual(im.info["dpi"], (71.0, 71.0))
 
     def test_load_dpi_rounding(self):
         for resolutionUnit, dpi in ((None, (72, 73)), (2, (72, 73)), (3, (183, 185))):
-            im = Image.open(
+            with Image.open(
                 "Tests/images/hopper_roundDown_" + str(resolutionUnit) + ".tif"
-            )
-            self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
-            self.assertEqual(im.info["dpi"], (dpi[0], dpi[0]))
+            ) as im:
+                self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
+                self.assertEqual(im.info["dpi"], (dpi[0], dpi[0]))
 
-            im = Image.open(
+            with Image.open(
                 "Tests/images/hopper_roundUp_" + str(resolutionUnit) + ".tif"
-            )
-            self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
-            self.assertEqual(im.info["dpi"], (dpi[1], dpi[1]))
+            ) as im:
+                self.assertEqual(im.tag_v2.get(RESOLUTION_UNIT), resolutionUnit)
+                self.assertEqual(im.info["dpi"], (dpi[1], dpi[1]))
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.tif")
@@ -155,9 +176,9 @@ class TestFileTiff(PillowTestCase):
         TiffImagePlugin.PREFIXES.pop()
 
     def test_bad_exif(self):
-        i = Image.open("Tests/images/hopper_bad_exif.jpg")
-        # Should not raise struct.error.
-        self.assert_warning(UserWarning, i._getexif)
+        with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
+            # Should not raise struct.error.
+            self.assert_warning(UserWarning, i._getexif)
 
     def test_save_rgba(self):
         im = hopper("RGBA")
@@ -238,44 +259,44 @@ class TestFileTiff(PillowTestCase):
             ["Tests/images/multipage-lastframe.tif", 1],
             ["Tests/images/multipage.tiff", 3],
         ]:
-            im = Image.open(path)
-            self.assertEqual(im.n_frames, n_frames)
-            self.assertEqual(im.is_animated, n_frames != 1)
+            with Image.open(path) as im:
+                self.assertEqual(im.n_frames, n_frames)
+                self.assertEqual(im.is_animated, n_frames != 1)
 
     def test_eoferror(self):
-        im = Image.open("Tests/images/multipage-lastframe.tif")
-        n_frames = im.n_frames
+        with Image.open("Tests/images/multipage-lastframe.tif") as im:
+            n_frames = im.n_frames
 
-        # Test seeking past the last frame
-        self.assertRaises(EOFError, im.seek, n_frames)
-        self.assertLess(im.tell(), n_frames)
+            # Test seeking past the last frame
+            self.assertRaises(EOFError, im.seek, n_frames)
+            self.assertLess(im.tell(), n_frames)
 
-        # Test that seeking to the last frame does not raise an error
-        im.seek(n_frames - 1)
+            # Test that seeking to the last frame does not raise an error
+            im.seek(n_frames - 1)
 
     def test_multipage(self):
         # issue #862
-        im = Image.open("Tests/images/multipage.tiff")
-        # file is a multipage tiff: 10x10 green, 10x10 red, 20x20 blue
+        with Image.open("Tests/images/multipage.tiff") as im:
+            # file is a multipage tiff: 10x10 green, 10x10 red, 20x20 blue
 
-        im.seek(0)
-        self.assertEqual(im.size, (10, 10))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
+            im.seek(0)
+            self.assertEqual(im.size, (10, 10))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
 
-        im.seek(1)
-        im.load()
-        self.assertEqual(im.size, (10, 10))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+            im.seek(1)
+            im.load()
+            self.assertEqual(im.size, (10, 10))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
 
-        im.seek(0)
-        im.load()
-        self.assertEqual(im.size, (10, 10))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
+            im.seek(0)
+            im.load()
+            self.assertEqual(im.size, (10, 10))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 128, 0))
 
-        im.seek(2)
-        im.load()
-        self.assertEqual(im.size, (20, 20))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
+            im.seek(2)
+            im.load()
+            self.assertEqual(im.size, (20, 20))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
 
     def test_multipage_last_frame(self):
         im = Image.open("Tests/images/multipage-lastframe.tif")
@@ -285,62 +306,62 @@ class TestFileTiff(PillowTestCase):
 
     def test___str__(self):
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Act
-        ret = str(im.ifd)
+            # Act
+            ret = str(im.ifd)
 
-        # Assert
-        self.assertIsInstance(ret, str)
+            # Assert
+            self.assertIsInstance(ret, str)
 
     def test_dict(self):
         # Arrange
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # v2 interface
-        v2_tags = {
-            256: 55,
-            257: 43,
-            258: (8, 8, 8, 8),
-            259: 1,
-            262: 2,
-            296: 2,
-            273: (8,),
-            338: (1,),
-            277: 4,
-            279: (9460,),
-            282: 72.0,
-            283: 72.0,
-            284: 1,
-        }
-        self.assertEqual(dict(im.tag_v2), v2_tags)
+            # v2 interface
+            v2_tags = {
+                256: 55,
+                257: 43,
+                258: (8, 8, 8, 8),
+                259: 1,
+                262: 2,
+                296: 2,
+                273: (8,),
+                338: (1,),
+                277: 4,
+                279: (9460,),
+                282: 72.0,
+                283: 72.0,
+                284: 1,
+            }
+            self.assertEqual(dict(im.tag_v2), v2_tags)
 
-        # legacy interface
-        legacy_tags = {
-            256: (55,),
-            257: (43,),
-            258: (8, 8, 8, 8),
-            259: (1,),
-            262: (2,),
-            296: (2,),
-            273: (8,),
-            338: (1,),
-            277: (4,),
-            279: (9460,),
-            282: ((720000, 10000),),
-            283: ((720000, 10000),),
-            284: (1,),
-        }
-        self.assertEqual(dict(im.tag), legacy_tags)
+            # legacy interface
+            legacy_tags = {
+                256: (55,),
+                257: (43,),
+                258: (8, 8, 8, 8),
+                259: (1,),
+                262: (2,),
+                296: (2,),
+                273: (8,),
+                338: (1,),
+                277: (4,),
+                279: (9460,),
+                282: ((720000, 10000),),
+                283: ((720000, 10000),),
+                284: (1,),
+            }
+            self.assertEqual(dict(im.tag), legacy_tags)
 
     def test__delitem__(self):
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
-        len_before = len(dict(im.ifd))
-        del im.ifd[256]
-        len_after = len(dict(im.ifd))
-        self.assertEqual(len_before, len_after + 1)
+        with Image.open(filename) as im:
+            len_before = len(dict(im.ifd))
+            del im.ifd[256]
+            len_after = len(dict(im.ifd))
+            self.assertEqual(len_before, len_after + 1)
 
     def test_load_byte(self):
         for legacy_api in [False, True]:
@@ -369,16 +390,16 @@ class TestFileTiff(PillowTestCase):
 
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
-        im.seek(0)
-        self.assertEqual(im.tell(), 0)
+        with Image.open(filename) as im:
+            im.seek(0)
+            self.assertEqual(im.tell(), 0)
 
     def test_seek_eof(self):
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
-        self.assertEqual(im.tell(), 0)
-        self.assertRaises(EOFError, im.seek, -1)
-        self.assertRaises(EOFError, im.seek, 1)
+        with Image.open(filename) as im:
+            self.assertEqual(im.tell(), 0)
+            self.assertRaises(EOFError, im.seek, -1)
+            self.assertRaises(EOFError, im.seek, 1)
 
     def test__limit_rational_int(self):
         from PIL.TiffImagePlugin import _limit_rational
@@ -439,15 +460,15 @@ class TestFileTiff(PillowTestCase):
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
         filename = self.tempfile("temp.tif")
         hopper("RGB").save(filename, **kwargs)
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # legacy interface
-        self.assertEqual(im.tag[X_RESOLUTION][0][0], 72)
-        self.assertEqual(im.tag[Y_RESOLUTION][0][0], 36)
+            # legacy interface
+            self.assertEqual(im.tag[X_RESOLUTION][0][0], 72)
+            self.assertEqual(im.tag[Y_RESOLUTION][0][0], 36)
 
-        # v2 interface
-        self.assertEqual(im.tag_v2[X_RESOLUTION], 72)
-        self.assertEqual(im.tag_v2[Y_RESOLUTION], 36)
+            # v2 interface
+            self.assertEqual(im.tag_v2[X_RESOLUTION], 72)
+            self.assertEqual(im.tag_v2[Y_RESOLUTION], 36)
 
     def test_roundtrip_tiff_uint16(self):
         # Test an image of all '0' values
@@ -480,9 +501,8 @@ class TestFileTiff(PillowTestCase):
     def test_strip_planar_raw_with_overviews(self):
         # gdaladdo tiff_strip_planar_raw2.tif 2 4 8 16
         infile = "Tests/images/tiff_strip_planar_raw_with_overviews.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_tiled_planar_raw(self):
         # gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 \
@@ -545,9 +565,8 @@ class TestFileTiff(PillowTestCase):
         # Try save-load round trip to make sure both handle icc_profile.
         tmpfile = self.tempfile("temp.tif")
         im.save(tmpfile, "TIFF", compression="raw")
-        reloaded = Image.open(tmpfile)
-
-        self.assertEqual(b"Dummy value", reloaded.info["icc_profile"])
+        with Image.open(tmpfile) as reloaded:
+            self.assertEqual(b"Dummy value", reloaded.info["icc_profile"])
 
     def test_close_on_load_exclusive(self):
         # similar to test_fd_leak, but runs on unixlike os

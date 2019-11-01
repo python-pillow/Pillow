@@ -58,10 +58,10 @@ class TestImageCms(PillowTestCase):
         i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = hopper()
-        t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        ImageCms.applyTransform(hopper(), t, inPlace=True)
-        self.assert_image(i, "RGB", (128, 128))
+        with hopper() as i:
+            t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
+            ImageCms.applyTransform(hopper(), t, inPlace=True)
+            self.assert_image(i, "RGB", (128, 128))
 
         p = ImageCms.createProfile("sRGB")
         o = ImageCms.getOpenProfile(SRGB)
@@ -151,8 +151,8 @@ class TestImageCms(PillowTestCase):
     def test_extensions(self):
         # extensions
 
-        i = Image.open("Tests/images/rgb.jpg")
-        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+        with Image.open("Tests/images/rgb.jpg") as i:
+            p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
         self.assertEqual(
             ImageCms.getProfileName(p).strip(),
             "IEC 61966-2.1 Default RGB colour space - sRGB",
@@ -166,9 +166,10 @@ class TestImageCms(PillowTestCase):
         self.assertRaises(ValueError, t.apply_in_place, hopper("RGBA"))
 
         # the procedural pyCMS API uses PyCMSError for all sorts of errors
-        self.assertRaises(
-            ImageCms.PyCMSError, ImageCms.profileToProfile, hopper(), "foo", "bar"
-        )
+        with hopper() as im:
+            self.assertRaises(
+                ImageCms.PyCMSError, ImageCms.profileToProfile, im, "foo", "bar"
+            )
         self.assertRaises(
             ImageCms.PyCMSError, ImageCms.buildTransform, "foo", "bar", "RGB", "RGB"
         )
@@ -266,8 +267,8 @@ class TestImageCms(PillowTestCase):
         self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
-        i = Image.open("Tests/images/rgb.jpg")
-        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+        with Image.open("Tests/images/rgb.jpg") as i:
+            p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
 
         p2 = ImageCms.getOpenProfile(BytesIO(p.tobytes()))
 
