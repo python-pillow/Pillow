@@ -12,29 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Image.__del__
-~~~~~~~~~~~~~
-
-.. deprecated:: 6.1.0
-
-Implicitly closing the image's underlying file in ``Image.__del__`` has been deprecated.
-Use a context manager or call ``Image.close()`` instead to close the file in a
-deterministic way.
-
-Deprecated:
-
-.. code-block:: python
-
-    im = Image.open("hopper.png")
-    im.save("out.jpg")
-
-Use instead:
-
-.. code-block:: python
-
-    with Image.open("hopper.png") as im:
-        im.save("out.jpg")
-
 Python 2.7
 ~~~~~~~~~~
 
@@ -95,6 +72,29 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Image.__del__
+~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Implicitly closing the image's underlying file in ``Image.__del__`` has been removed.
+Use a context manager or call ``Image.close()`` instead to close the file in a
+deterministic way.
+
+Deprecated:
+
+.. code-block:: python
+
+    im = Image.open("hopper.png")
+    im.save("out.jpg")
+
+Use instead:
+
+.. code-block:: python
+
+    with Image.open("hopper.png") as im:
+        im.save("out.jpg")
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~
