@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: windows-2016
+    runs-on: windows-2019
     strategy:
       fail-fast: false
       matrix:
@@ -89,7 +89,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\jpeg-9c
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         nmake -nologo -f makefile.vc setup-vc6
         nmake -nologo -f makefile.vc clean
@@ -105,7 +105,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\libjpeg-turbo-2.0.3
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DENABLE_SHARED:BOOL=OFF -DWITH_JPEG8:BOOL=TRUE -DWITH_CRT_DLL:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release
@@ -124,7 +124,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\zlib-1.2.11
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         nmake -nologo -f win32\Makefile.msc clean
         nmake -nologo -f win32\Makefile.msc zlib.lib
@@ -139,7 +139,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\tiff-4.1.0
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         copy %GITHUB_WORKSPACE%\winbuild\tiff.opt nmake.opt
         nmake -nologo -f makefile.vc clean
@@ -155,7 +155,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\libwebp-1.0.3
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         rmdir /S /Q output\release-static
         nmake -nologo -f Makefile.vc CFG=release-static OBJDIR=output ARCH=${{ matrix.architecture }} all
@@ -172,12 +172,12 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\freetype-2.10.1
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         rmdir /S /Q objs
-        set DefaultPlatformToolset=v140
-        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
-        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
+        set DefaultPlatformToolset=v142
+        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\
+        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
         powershell -Command "(gc builds\windows\vc2010\freetype.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII builds\windows\vc2010\freetype.vcxproj"
         %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release Static" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
@@ -185,17 +185,18 @@ jobs:
       shell: cmd
 
     - name: Build dependencies / LCMS2
+      if: false
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\lcms2-2.8
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         rmdir /S /Q Lib
         rmdir /S /Q Projects\VC2015\Release
-        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets
-        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
+        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\
+        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
         powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
         %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
@@ -208,7 +209,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\openjpeg-2.3.1msvcr10-x32
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -230,7 +231,7 @@ jobs:
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         rem ba653c8: Merge tag '2.12.5' into msvc
         cd /D %BUILD%\libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
         echo (gc CMakeLists.txt) -replace ' SHARED', ' STATIC' ^| Out-File -encoding ASCII CMakeLists.txt >> patch.ps1
@@ -254,7 +255,7 @@ jobs:
         set INCLUDE=%INCLUDE%;%INCLIB%
         set LIB=%LIB%;%INCLIB%
         cd /D %BUILD%\harfbuzz-2.6.1
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
         set CMAKE=%CMAKE% -DHB_HAVE_FREETYPE:BOOL=ON -DCMAKE_BUILD_TYPE=Release
@@ -273,7 +274,7 @@ jobs:
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\fribidi-1.0.7
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         copy /Y /B %GITHUB_WORKSPACE%\winbuild\fribidi.cmake CMakeLists.txt
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
@@ -295,7 +296,7 @@ jobs:
         set INCLUDE=%INCLUDE%;%INCLIB%
         set LIB=%LIB%;%INCLIB%
         cd /D %BUILD%\libraqm-0.7.0
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         copy /Y /B %GITHUB_WORKSPACE%\winbuild\raqm.cmake CMakeLists.txt
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
@@ -308,12 +309,13 @@ jobs:
       shell: cmd
 
     - name: Build dependencies / ghostscript
+      if: false
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         cd /D %BUILD%\ghostscript-9.27
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         set MSVC_VERSION=14
         set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
@@ -332,7 +334,7 @@ jobs:
         cd /D %GITHUB_WORKSPACE%
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         %PYTHON%\python.exe setup.py build_ext install
         rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
@@ -373,7 +375,7 @@ jobs:
         cd /D %GITHUB_WORKSPACE%
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
-        call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         %PYTHON%\python.exe setup.py bdist_wheel
       shell: cmd
 
