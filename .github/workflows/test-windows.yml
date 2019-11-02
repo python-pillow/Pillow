@@ -346,6 +346,7 @@ jobs:
         rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
         cd /D %GITHUB_WORKSPACE%
+        c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\python.exe
         %PYTHON%\python.exe -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
       shell: cmd
 
