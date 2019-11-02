@@ -82,7 +82,7 @@ Implicitly closing the image's underlying file in ``Image.__del__`` has been rem
 Use a context manager or call ``Image.close()`` instead to close the file in a
 deterministic way.
 
-Deprecated:
+Previous method:
 
 .. code-block:: python
 
