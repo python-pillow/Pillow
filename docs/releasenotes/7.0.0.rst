@@ -1,0 +1,71 @@
+7.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+PyQt4 and PySide
+^^^^^^^^^^^^^^^^
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt5
+or PySide2.
+
+Setting the size of TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
+an error. Use ``Image.resize`` instead.
+
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+TODO
+~~~~
+
+TODO
+
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+
+Other Changes
+=============
+
+Image.__del__
+^^^^^^^^^^^^^
+
+Implicitly closing the image's underlying file in ``Image.__del__`` has been removed.
+Use a context manager or call ``Image.close()`` instead to close the file in a
+deterministic way.
+
+Previous method:
+
+.. code-block:: python
+
+    im = Image.open("hopper.png")
+    im.save("out.jpg")
+
+Use instead:
+
+.. code-block:: python
+
+    with Image.open("hopper.png") as im:
+        im.save("out.jpg")
