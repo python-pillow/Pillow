@@ -313,7 +313,7 @@ class ImageDraw:
                     language=language,
                     stroke_width=stroke_width,
                     *args,
-                    **kwargs
+                    **kwargs,
                 )
                 coord = coord[0] + offset[0], coord[1] + offset[1]
             except AttributeError:
@@ -326,7 +326,7 @@ class ImageDraw:
                         language,
                         stroke_width,
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
                 except TypeError:
                     mask = font.getmask(text)

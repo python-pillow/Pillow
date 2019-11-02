@@ -495,7 +495,7 @@ class Color3DLUT(MultibandFilter):
                             r / (size1D - 1),
                             g / (size2D - 1),
                             b / (size3D - 1),
-                            *values
+                            *values,
                         )
                     else:
                         values = callback(*values)
