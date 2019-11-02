@@ -890,8 +890,6 @@ font_render(FontObject* self, PyObject* args)
 
             bitmap = bitmap_glyph->bitmap;
             left = bitmap_glyph->left;
-
-            FT_Done_Glyph(glyph);
         } else {
             bitmap = glyph_slot->bitmap;
             left = glyph_slot->bitmap_left;
@@ -953,6 +951,9 @@ font_render(FontObject* self, PyObject* args)
         }
         x += glyph_info[i].x_advance;
         y -= glyph_info[i].y_advance;
+        if (stroker != NULL) {
+            FT_Done_Glyph(glyph);
+        }
     }
 
     FT_Stroker_Done(stroker);
