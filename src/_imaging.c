@@ -3934,6 +3934,12 @@ setup_module(PyObject* m) {
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
 #endif
 
+#ifdef HAVE_LIBIMAGEQUANT
+    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_True);
+#else
+    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_False);
+#endif
+
 #ifdef HAVE_LIBZ
   /* zip encoding strategies */
   PyModule_AddIntConstant(m, "DEFAULT_STRATEGY", Z_DEFAULT_STRATEGY);
