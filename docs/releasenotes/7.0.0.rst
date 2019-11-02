@@ -15,7 +15,7 @@ PyQt4 and PySide
 Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
 2018-08-31 and PySide since 2015-10-14.
 
-Support for PyQt4 and PySide has been removed  from ``ImageQt``. Please upgrade to PyQt5
+Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt5
 or PySide2.
 
 Setting the size of TIFF images
