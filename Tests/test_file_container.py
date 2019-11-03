@@ -19,7 +19,7 @@ class TestFileContainer(PillowTestCase):
     def test_seek_mode_0(self):
         # Arrange
         mode = 0
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -32,7 +32,7 @@ class TestFileContainer(PillowTestCase):
     def test_seek_mode_1(self):
         # Arrange
         mode = 1
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -45,7 +45,7 @@ class TestFileContainer(PillowTestCase):
     def test_seek_mode_2(self):
         # Arrange
         mode = 2
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -57,7 +57,7 @@ class TestFileContainer(PillowTestCase):
 
     def test_read_n0(self):
         # Arrange
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -65,11 +65,11 @@ class TestFileContainer(PillowTestCase):
             data = container.read()
 
             # Assert
-            self.assertEqual(data, "7\nThis is line 8\n")
+            self.assertEqual(data, b"7\nThis is line 8\n")
 
     def test_read_n(self):
         # Arrange
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -77,11 +77,11 @@ class TestFileContainer(PillowTestCase):
             data = container.read(3)
 
             # Assert
-            self.assertEqual(data, "7\nT")
+            self.assertEqual(data, b"7\nT")
 
     def test_read_eof(self):
         # Arrange
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -89,32 +89,32 @@ class TestFileContainer(PillowTestCase):
             data = container.read()
 
             # Assert
-            self.assertEqual(data, "")
+            self.assertEqual(data, b"")
 
     def test_readline(self):
         # Arrange
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 0, 120)
 
             # Act
             data = container.readline()
 
             # Assert
-            self.assertEqual(data, "This is line 1\n")
+            self.assertEqual(data, b"This is line 1\n")
 
     def test_readlines(self):
         # Arrange
         expected = [
-            "This is line 1\n",
-            "This is line 2\n",
-            "This is line 3\n",
-            "This is line 4\n",
-            "This is line 5\n",
-            "This is line 6\n",
-            "This is line 7\n",
-            "This is line 8\n",
+            b"This is line 1\n",
+            b"This is line 2\n",
+            b"This is line 3\n",
+            b"This is line 4\n",
+            b"This is line 5\n",
+            b"This is line 6\n",
+            b"This is line 7\n",
+            b"This is line 8\n",
         ]
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb") as fh:
             container = ContainerIO.ContainerIO(fh, 0, 120)
 
             # Act
