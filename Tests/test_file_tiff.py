@@ -2,6 +2,7 @@ import logging
 import os
 from io import BytesIO
 
+import pytest
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -584,6 +585,9 @@ class TestFileTiff(PillowTestCase):
             im.load()
             self.assertFalse(fp.closed)
 
+    # Ignore this UserWarning which triggers for four tags:
+    # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
+    @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with self.assertRaises(ValueError):

@@ -16,11 +16,14 @@ class TestMain(TestCase):
         lines = out.splitlines()
         self.assertEqual(lines[0], "-" * 68)
         self.assertTrue(lines[1].startswith("Pillow "))
-        self.assertEqual(lines[2], "-" * 68)
-        self.assertTrue(lines[3].startswith("Python modules loaded from "))
-        self.assertTrue(lines[4].startswith("Binary modules loaded from "))
-        self.assertEqual(lines[5], "-" * 68)
-        self.assertTrue(lines[6].startswith("Python "))
+        self.assertTrue(lines[2].startswith("Python "))
+        lines = lines[3:]
+        while lines[0].startswith("    "):
+            lines = lines[1:]
+        self.assertEqual(lines[0], "-" * 68)
+        self.assertTrue(lines[1].startswith("Python modules loaded from "))
+        self.assertTrue(lines[2].startswith("Binary modules loaded from "))
+        self.assertEqual(lines[3], "-" * 68)
         jpeg = (
             os.linesep
             + "-" * 68
