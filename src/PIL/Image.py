@@ -69,12 +69,6 @@ class DecompressionBombError(Exception):
     pass
 
 
-class _imaging_not_installed(object):
-    # module placeholder
-    def __getattr__(self, id):
-        raise ImportError("The _imaging C module is not installed")
-
-
 # Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
@@ -95,7 +89,7 @@ try:
         )
 
 except ImportError as v:
-    core = _imaging_not_installed()
+    core = deferred_error(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
