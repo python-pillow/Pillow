@@ -52,9 +52,6 @@ class Iterator:
         except EOFError:
             raise StopIteration
 
-    def next(self):
-        return self.__next__()
-
 
 def all_frames(im, func=None):
     """
