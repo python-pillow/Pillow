@@ -6,29 +6,29 @@ from PIL import Image
 from .helper import PillowTestCase, is_pypy
 
 
-class TestCoreStats(PillowTestCase):
-    def test_get_stats(self):
-        # Create at least one image
-        Image.new("RGB", (10, 10))
+def test_get_stats():
+    # Create at least one image
+    Image.new("RGB", (10, 10))
 
-        stats = Image.core.get_stats()
-        self.assertIn("new_count", stats)
-        self.assertIn("reused_blocks", stats)
-        self.assertIn("freed_blocks", stats)
-        self.assertIn("allocated_blocks", stats)
-        self.assertIn("reallocated_blocks", stats)
-        self.assertIn("blocks_cached", stats)
+    stats = Image.core.get_stats()
+    assert "new_count" in stats
+    assert "reused_blocks" in stats
+    assert "freed_blocks" in stats
+    assert "allocated_blocks" in stats
+    assert "reallocated_blocks" in stats
+    assert "blocks_cached" in stats
 
-    def test_reset_stats(self):
-        Image.core.reset_stats()
 
-        stats = Image.core.get_stats()
-        self.assertEqual(stats["new_count"], 0)
-        self.assertEqual(stats["reused_blocks"], 0)
-        self.assertEqual(stats["freed_blocks"], 0)
-        self.assertEqual(stats["allocated_blocks"], 0)
-        self.assertEqual(stats["reallocated_blocks"], 0)
-        self.assertEqual(stats["blocks_cached"], 0)
+def test_reset_stats():
+    Image.core.reset_stats()
+
+    stats = Image.core.get_stats()
+    assert stats["new_count"] == 0
+    assert stats["reused_blocks"] == 0
+    assert stats["freed_blocks"] == 0
+    assert stats["allocated_blocks"] == 0
+    assert stats["reallocated_blocks"] == 0
+    assert stats["blocks_cached"] == 0
 
 
 class TestCoreMemory(PillowTestCase):
