@@ -36,9 +36,9 @@ libs = {
         "dir": "jpeg-9c",
     },
     "tiff": {
-        "url": "ftp://download.osgeo.org/libtiff/tiff-4.0.10.tar.gz",
-        "filename": "tiff-4.0.10.tar.gz",
-        "dir": "tiff-4.0.10",
+        "url": "ftp://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
+        "filename": "tiff-4.1.0.tar.gz",
+        "dir": "tiff-4.1.0",
     },
     "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501

@@ -138,7 +138,7 @@ jobs:
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        cd /D %BUILD%\tiff-4.0.10
+        cd /D %BUILD%\tiff-4.1.0
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" ${{ matrix.platform-vcvars }} 8.1
         echo on
         copy %GITHUB_WORKSPACE%\winbuild\tiff.opt nmake.opt
