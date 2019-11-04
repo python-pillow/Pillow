@@ -30,6 +30,20 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Ubuntu cache
+      uses: actions/cache@preview
+      if: startsWith(matrix.os, 'ubuntu')
+      with:
+        path: ~/.cache/pip
+        key: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.python-version }}
+
+    - name: macOS cache
+      uses: actions/cache@preview
+      if: startsWith(matrix.os, 'macOS')
+      with:
+        path: ~/Library/Caches/pip
+        key: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.python-version }}
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
