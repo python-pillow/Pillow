@@ -31,11 +31,6 @@ import subprocess
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.9"
-
-
 # --------------------------------------------------------------------
 # Identify/read GIF files
 

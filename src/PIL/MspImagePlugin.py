@@ -29,11 +29,6 @@ import struct
 from . import Image, ImageFile
 from ._binary import i8, i16le as i16, o16le as o16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 #
 # read MSP files
 

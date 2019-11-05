@@ -26,11 +26,6 @@
 from . import ImageFile, ImagePalette
 from ._binary import i8, i16be as i16, i32be as i32
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
 # is not supported by the standard <b>Image.open</b> function.  To use

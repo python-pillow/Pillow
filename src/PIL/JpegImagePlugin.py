@@ -47,11 +47,6 @@ from ._binary import i8, i16be as i16, i32be as i32, o8
 from ._util import isStringType
 from .JpegPresets import presets
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
-
-
 #
 # Parser
 
