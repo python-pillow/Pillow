@@ -87,7 +87,7 @@ The version constants of individual plugins have been removed. Use ``PIL.__versi
 instead.
 
 ===============================  =================================  ==================================
-Deprecated                       Deprecated                         Deprecated
+Removed                          Removed                            Removed
 ===============================  =================================  ==================================
 ``BmpImagePlugin.__version__``   ``Jpeg2KImagePlugin.__version__``  ``PngImagePlugin.__version__``
 ``CurImagePlugin.__version__``   ``JpegImagePlugin.__version__``    ``PpmImagePlugin.__version__``
