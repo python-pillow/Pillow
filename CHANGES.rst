@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Improve handling of file resources #3577
+  [jdufresne]
+
 - Removed CI testing of Fedora 29 #4165
   [hugovk]
 
