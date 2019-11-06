@@ -339,6 +339,13 @@ jobs:
         %PYTHON%\python.exe selftest.py --installed
       shell: cmd
 
+    # failing with PyPy3
+    - name: Enable heap verification
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: |
+        c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\python.exe
+      shell: cmd
+
     - name: Test Pillow
       run: |
         set PYTHON=%pythonLocation%
