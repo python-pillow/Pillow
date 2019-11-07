@@ -335,6 +335,8 @@ jobs:
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        set DISTUTILS_USE_SDK=1
+        set py_vcruntime_redist=true
         %PYTHON%\python.exe setup.py build_ext install
         rem Add GhostScript and Raqm binaries (copied to INCLIB) to PATH.
         path %INCLIB%;%PATH%
