@@ -36,9 +36,8 @@ class TestImagePsd(PillowTestCase):
 
     def test_context_manager(self):
         def open():
-            im = Image.open(test_file)
-            im.load()
-            im.close()
+            with Image.open(test_file) as im:
+                im.load()
 
         self.assert_warning(None, open)
 
