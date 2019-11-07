@@ -185,7 +185,6 @@ jobs:
       shell: cmd
 
     - name: Build dependencies / LCMS2
-      if: false
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -197,7 +196,7 @@ jobs:
         rmdir /S /Q Projects\VC2015\Release
         set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\
         set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
-        powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
+        powershell %GITHUB_WORKSPACE%\winbuild\lcms2_patch.ps1
         %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
         xcopy /Y /E /Q include %INCLIB%
         copy /Y /B Lib\MS\*.lib %INCLIB%
