@@ -43,6 +43,7 @@ jobs:
         Write-Host "::set-env name=pythonLocation::$env:PYTHON" # new syntax https://github.com/actions/toolkit/blob/5bb77ec03fea98332e41f9347c8fbb1ce1e48f4a/docs/commands.md
         New-Item -ItemType SymbolicLink -Path "$env:PYTHON\python.exe" -Target "$env:PYTHON\pypy3.exe"
         curl -fsSL -o get-pip.py https://bootstrap.pypa.io/get-pip.py
+        $env:PATH = "$env:PYTHON\bin;$env:PATH"
         & $env:PYTHON\python.exe get-pip.py
       shell: pwsh
 
