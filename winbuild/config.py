@@ -10,7 +10,7 @@ pythons = {
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
-    "38rc1-x64": {"compiler": 7.1, "vc": 2015},
+    "38": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions
     "3.5": {"compiler": 7.1, "vc": 2015},
     "3.6": {"compiler": 7.1, "vc": 2015},
