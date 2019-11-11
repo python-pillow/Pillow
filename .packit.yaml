@@ -1,0 +1,14 @@
+downstream_package_name: python-pillow
+jobs:
+- job: copr_build
+  metadata:
+    targets:
+    - fedora-30-x86_64
+    - fedora-31-x86_64
+    - fedora-rawhide-x86_64
+  trigger: pull_request
+specfile_path: python-pillow.spec
+synced_files:
+- python-pillow.spec
+- .packit.yaml
+upstream_package_name: Pillow
