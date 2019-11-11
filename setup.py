@@ -45,7 +45,7 @@ ZLIB_ROOT = None
 
 if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
-        "Pillow {} does not yet support Python {}.{} and does not yet provide prebuilt"
+        "Pillow {} does not support Python {}.{} and does not provide prebuilt"
         "Windows binaries. We do not recommend building from source on Windows.".format(
             PILLOW_VERSION, sys.version_info.major, sys.version_info.minor
         ),
