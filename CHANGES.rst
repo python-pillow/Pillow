@@ -5,6 +5,18 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Fixed freeing unallocated pointer when resizing with height too large #4116
+  [radarhere]
+
+- Copy info in Image.transform #4128
+  [radarhere]
+
+- Corrected DdsImagePlugin setting info gamma #4171
+  [radarhere]
+
+- Depends: Update libtiff to 4.1.0 #4195
+  [radarhere]
+
 - Improve handling of file resources #3577
   [jdufresne]
 
