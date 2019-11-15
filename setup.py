@@ -24,11 +24,31 @@ from setuptools import Extension, setup
 # comment this out to disable multi threaded builds.
 import mp_compile
 
+
+def get_version():
+    version_file = "src/PIL/_version.py"
+    with open(version_file, "r") as f:
+        exec(compile(f.read(), version_file, "exec"))
+    return locals()["__version__"]
+
+
+NAME = "Pillow"
+PILLOW_VERSION = get_version()
+FREETYPE_ROOT = None
+IMAGEQUANT_ROOT = None
+JPEG2K_ROOT = None
+JPEG_ROOT = None
+LCMS_ROOT = None
+TIFF_ROOT = None
+ZLIB_ROOT = None
+
+
 if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
-        "Pillow does not yet support Python {}.{} and does not yet provide "
-        "prebuilt Windows binaries. We do not recommend building from "
-        "source on Windows.".format(sys.version_info.major, sys.version_info.minor),
+        "Pillow {} does not support Python {}.{} and does not provide prebuilt "
+        "Windows binaries. We do not recommend building from source on Windows.".format(
+            PILLOW_VERSION, sys.version_info.major, sys.version_info.minor
+        ),
         RuntimeWarning,
     )
 
@@ -231,24 +251,6 @@ def _cmd_exists(cmd):
 def _read(file):
     with open(file, "rb") as fp:
         return fp.read()
-
-
-def get_version():
-    version_file = "src/PIL/_version.py"
-    with open(version_file, "r") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
-
-
-NAME = "Pillow"
-PILLOW_VERSION = get_version()
-JPEG_ROOT = None
-JPEG2K_ROOT = None
-ZLIB_ROOT = None
-IMAGEQUANT_ROOT = None
-TIFF_ROOT = None
-FREETYPE_ROOT = None
-LCMS_ROOT = None
 
 
 def _pkg_config(name):
