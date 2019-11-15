@@ -859,10 +859,11 @@ try:
         license="HPND",
         author="Alex Clark (PIL Fork Author)",
         author_email="aclark@python-pillow.org",
-        url="https://python-pillow.org/",
+        url="https://python-pillow.org",
         project_urls={
             "Documentation": "https://pillow.readthedocs.io",
             "Source": "https://github.com/python-pillow/Pillow",
+            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow",
         },
         classifiers=[
             "Development Status :: 6 - Mature",
