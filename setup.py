@@ -861,8 +861,8 @@ try:
         author_email="aclark@python-pillow.org",
         url="https://python-pillow.org/",
         project_urls={
-            "Documentation": "https://pillow.readthedocs.io/en/stable/",
-            "Source Code": "https://github.com/python-pillow/Pillow",
+            "Documentation": "https://pillow.readthedocs.io",
+            "Source": "https://github.com/python-pillow/Pillow",
         },
         classifiers=[
             "Development Status :: 6 - Mature",
