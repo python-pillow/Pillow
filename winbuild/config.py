@@ -8,7 +8,7 @@ pythons = {
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
-    "38rc1-x64": {"compiler": 7.1, "vc": 2015},
+    "38": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions
     "3.5": {"compiler": 7.1, "vc": 2015},
     "3.6": {"compiler": 7.1, "vc": 2015},
@@ -34,9 +34,9 @@ libs = {
         "dir": "jpeg-9c",
     },
     "tiff": {
-        "url": "ftp://download.osgeo.org/libtiff/tiff-4.0.10.tar.gz",
-        "filename": "tiff-4.0.10.tar.gz",
-        "dir": "tiff-4.0.10",
+        "url": "ftp://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
+        "filename": "tiff-4.1.0.tar.gz",
+        "dir": "tiff-4.1.0",
     },
     "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501

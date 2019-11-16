@@ -155,7 +155,7 @@ class DdsImageFile(ImageFile.ImageFile):
                     n = 7
                 elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
                     self.pixel_format = "BC7"
-                    self.im_info["gamma"] = 1 / 2.2
+                    self.info["gamma"] = 1 / 2.2
                     n = 7
                 else:
                     raise NotImplementedError(

@@ -9,14 +9,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "ubuntu-18.04",
-          "macOS-10.14",
+          "ubuntu-latest",
+          "macOS-latest",
         ]
         python-version: [
           "pypy3",
+          "3.8",
           "3.7",
-          "3.5",
           "3.6",
+          "3.5",
         ]
         include:
         - python-version: "3.5"
@@ -53,7 +54,7 @@ jobs:
         .travis/test.sh
 
     - name: Docs
-      if: matrix.python-version == 3.7
+      if: matrix.python-version == 3.8
       run: |
         pip install sphinx-rtd-theme
         make doccheck
