@@ -24,58 +24,21 @@ matrix:
       # Exclude the default Python 3.5 build
       - python: 3.5
   include:
-    - name: "2.7 macOS"
-      os: osx
-      language: generic
-      env: MB_PYTHON_VERSION=2.7
     - name: "3.5 macOS"
       os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
-
-    - name: "2.7 Xenial"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-    - name: "2.7 Xenial UNICODE_WIDTH=16"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - UNICODE_WIDTH=16
-    - name: "2.7 Xenial 32-bit"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-    - name: "2.7 Xenial 32-bit UNICODE_WIDTH=16"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-        - UNICODE_WIDTH=16
-    - name: "3.5 Xenial"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-
     - name: "3.6 macOS"
       os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
-    - name: "3.7 macOS"
-      os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.7
-    - name: "3.8 macOS"
-      os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.8
-        - MB_PYTHON_OSX_VER=10.9
 
+    - name: "3.5 Xenial"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
     - name: "3.5 Xenial 32-bit"
       os: linux
       env:
@@ -90,6 +53,19 @@ matrix:
       env:
         - MB_PYTHON_VERSION=3.6
         - PLAT=i686
+
+    - name: "3.7 macOS"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.7
+    - name: "3.8 macOS"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.8
+        - MB_PYTHON_OSX_VER=10.9
+
     - name: "3.7 Xenial"
       os: linux
       env:
@@ -109,69 +85,24 @@ matrix:
         - MB_PYTHON_VERSION=3.8
         - PLAT=i686
 
-    - name: "2.7 macOS latest"
-      os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - LATEST="true"
     - name: "3.5 macOS latest"
       os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
         - LATEST="true"
-
-    - name: "2.7 Xenial latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - LATEST="true"
-    - name: "2.7 Xenial UNICODE_WIDTH=16 latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - UNICODE_WIDTH=16
-        - LATEST="true"
-    - name: "2.7 Xenial 32-bit latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-        - LATEST="true"
-    - name: "2.7 Xenial 32-bit UNICODE_WIDTH=16 latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=2.7
-        - PLAT=i686
-        - UNICODE_WIDTH=16
-        - LATEST="true"
-    - name: "3.5 Xenial latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - LATEST="true"
-
     - name: "3.6 macOS latest"
       os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
         - LATEST="true"
-    - name: "3.7 macOS latest"
-      os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.7
-        - LATEST="true"
-    - name: "3.8 macOS latest"
-      os: osx
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.8
-        - MB_PYTHON_OSX_VER=10.9
-        - LATEST="true"
 
+    - name: "3.5 Xenial latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.5
+        - LATEST="true"
     - name: "3.5 Xenial 32-bit latest"
       os: linux
       env:
@@ -189,6 +120,21 @@ matrix:
         - MB_PYTHON_VERSION=3.6
         - PLAT=i686
         - LATEST="true"
+
+    - name: "3.7 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.7
+        - LATEST="true"
+    - name: "3.8 macOS latest"
+      os: osx
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.8
+        - MB_PYTHON_OSX_VER=10.9
+        - LATEST="true"
+
     - name: "3.7 Xenial latest"
       os: linux
       env:
