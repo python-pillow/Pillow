@@ -53,6 +53,13 @@ jobs:
       run: |
         .travis/test.sh
 
+    - name: Upload errors
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
     - name: Docs
       if: matrix.python-version == 3.8
       run: |
