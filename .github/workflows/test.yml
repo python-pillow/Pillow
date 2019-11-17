@@ -31,18 +31,24 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Ubuntu cache
-      uses: actions/cache@preview
+      uses: actions/cache@v1
       if: startsWith(matrix.os, 'ubuntu')
       with:
         path: ~/.cache/pip
-        key: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.python-version }}
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: macOS cache
-      uses: actions/cache@preview
+      uses: actions/cache@v1
       if: startsWith(matrix.os, 'macOS')
       with:
         path: ~/Library/Caches/pip
-        key: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.python-version }}
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
