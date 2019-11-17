@@ -31,6 +31,15 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Cache
+      uses: actions/cache@v1
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key:
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.github/workflows/test-windows.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-
+
     - name: Install PyPy
       if: "contains(matrix.python-version, 'pypy')"
       run: |
