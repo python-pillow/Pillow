@@ -22,10 +22,24 @@ if os.environ.get("SHOW_ERRORS", None):
     HAS_UPLOADER = True
 
     class test_image_results:
-        @classmethod
-        def upload(self, a, b):
+        @staticmethod
+        def upload(a, b):
             a.show()
             b.show()
+
+
+elif "GITHUB_ACTIONS" in os.environ:
+    HAS_UPLOADER = True
+
+    class test_image_results:
+        @staticmethod
+        def upload(a, b):
+            dir_errors = os.path.join(os.path.dirname(__file__), "errors")
+            os.makedirs(dir_errors, exist_ok=True)
+            tmpdir = tempfile.mkdtemp(dir=dir_errors)
+            a.save(os.path.join(tmpdir, "a.png"))
+            b.save(os.path.join(tmpdir, "b.png"))
+            return tmpdir
 
 
 else:

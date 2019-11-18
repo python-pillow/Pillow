@@ -52,9 +52,6 @@ from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
 from .TiffTags import TYPES
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
 
 # Set these to true to force use of libtiff for reading or writing.

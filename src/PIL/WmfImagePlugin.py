@@ -22,10 +22,6 @@
 from . import Image, ImageFile
 from ._binary import i16le as word, i32le as dword, si16le as short, si32le as _long
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.2"
-
 _handler = None
 
 

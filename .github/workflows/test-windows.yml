@@ -349,6 +349,13 @@ jobs:
         %PYTHON%\python.exe -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests
       shell: cmd
 
+    - name: Upload errors
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
     - name: Upload coverage
       run: 'codecov --file "%GITHUB_WORKSPACE%\coverage.xml" --name "%pythonLocation%"'
       shell: cmd
