@@ -77,7 +77,7 @@ def _save(im, fp, filename, save_all=False):
 
     existing_pdf.start_writing()
     existing_pdf.write_header()
-    existing_pdf.write_comment("created by Pillow PDF driver " + __version__)
+    existing_pdf.write_comment("created by Pillow {} PDF driver".format(__version__))
 
     #
     # pages
