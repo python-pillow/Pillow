@@ -29,10 +29,6 @@ from . import Image, ImageFile
 from ._binary import i8, i16be as i16, o8
 from ._util import py3
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
-
 
 def _accept(prefix):
     return len(prefix) >= 2 and i16(prefix) == 474
