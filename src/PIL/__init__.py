@@ -70,3 +70,7 @@ _plugins = [
     "XpmImagePlugin",
     "XVThumbImagePlugin",
 ]
+
+
+class UnidentifiedImageError(IOError):
+    pass
