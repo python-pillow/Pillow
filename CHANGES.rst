@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Remove deprecated __version__ from plugins #4197
+  [hugovk, radarhere]
+
 - Fixed freeing unallocated pointer when resizing with height too large #4116
   [radarhere]
 
