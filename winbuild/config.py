@@ -3,10 +3,10 @@ import os
 SF_MIRROR = "https://iweb.dl.sourceforge.net"
 
 pythons = {
+    "pypy3": {"compiler": 7.1, "vc": 2015},
     # for AppVeyor
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
-    "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
     "38": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions

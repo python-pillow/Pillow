@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.5", "3.6", "3.7", "3.8"]
+        python-version: ["3.5", "3.6", "3.7", "3.8", "pypy3.6"]
         architecture: ["x86", "x64"]
         include:
           - architecture: "x86"
@@ -324,6 +324,7 @@ jobs:
         set LIB=%INCLIB%;%PYTHON%\tcl
         set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        set MSSdk=1
         set DISTUTILS_USE_SDK=1
         set py_vcruntime_redist=true
         %PYTHON%\python.exe setup.py build_ext install
