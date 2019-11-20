@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-from __future__ import division
-
 from PIL import Image
 
 from .helper import PillowTestCase, is_win32, unittest

@@ -105,7 +105,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
         if not _webp.HAVE_WEBPANIM:
-            return super(WebPImageFile, self).seek(frame)
+            return super().seek(frame)
 
         # Perform some simple checks first
         if frame >= self._n_frames:
@@ -168,11 +168,11 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.fp = BytesIO(data)
                 self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
-        return super(WebPImageFile, self).load()
+        return super().load()
 
     def tell(self):
         if not _webp.HAVE_WEBPANIM:
-            return super(WebPImageFile, self).tell()
+            return super().tell()
 
         return self.__logical_frame
 
@@ -233,7 +233,7 @@ def _save_all(im, fp, filename):
         or len(background) != 4
         or not all(v >= 0 and v < 256 for v in background)
     ):
-        raise IOError(
+        raise OSError(
             "Background color is not an RGBA tuple clamped to (0-255): %s"
             % str(background)
         )
@@ -312,7 +312,7 @@ def _save_all(im, fp, filename):
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
     if data is None:
-        raise IOError("cannot write file as WebP (encoder returned None)")
+        raise OSError("cannot write file as WebP (encoder returned None)")
 
     fp.write(data)
 
@@ -346,7 +346,7 @@ def _save(im, fp, filename):
         xmp,
     )
     if data is None:
-        raise IOError("cannot write file as WebP (encoder returned None)")
+        raise OSError("cannot write file as WebP (encoder returned None)")
 
     fp.write(data)
 

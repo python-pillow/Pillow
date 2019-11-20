@@ -40,15 +40,8 @@ gs_windows_binary = None
 if sys.platform.startswith("win"):
     import shutil
 
-    if hasattr(shutil, "which"):
-        which = shutil.which
-    else:
-        # Python 2
-        import distutils.spawn
-
-        which = distutils.spawn.find_executable
     for binary in ("gswin32c", "gswin64c", "gs"):
-        if which(binary) is not None:
+        if shutil.which(binary) is not None:
             gs_windows_binary = binary
             break
     else:
@@ -60,8 +53,7 @@ def has_ghostscript():
         return True
     if not sys.platform.startswith("win"):
         try:
-            with open(os.devnull, "wb") as devnull:
-                subprocess.check_call(["gs", "--version"], stdout=devnull)
+            subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
             return True
         except OSError:
             # No Ghostscript
@@ -139,7 +131,7 @@ def Ghostscript(tile, size, fp, scale=1):
 
     if gs_windows_binary is not None:
         if not gs_windows_binary:
-            raise WindowsError("Unable to locate Ghostscript on paths")
+            raise OSError("Unable to locate Ghostscript on paths")
         command[0] = gs_windows_binary
 
     # push data through Ghostscript
@@ -162,7 +154,7 @@ def Ghostscript(tile, size, fp, scale=1):
     return im.im.copy()
 
 
-class PSFile(object):
+class PSFile:
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
     """
@@ -272,7 +264,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # tools mistakenly put in the Comments section
                         pass
                     else:
-                        raise IOError("bad EPS header")
+                        raise OSError("bad EPS header")
 
             s_raw = fp.readline()
             s = s_raw.strip("\r\n")
@@ -307,7 +299,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 break
 
         if not box:
-            raise IOError("cannot determine EPS bounding box")
+            raise OSError("cannot determine EPS bounding box")
 
     def _find_offset(self, fp):
 
@@ -371,9 +363,8 @@ def _save(im, fp, filename, eps=1):
     base_fp = fp
     wrapped_fp = False
     if fp != sys.stdout:
-        if sys.version_info.major > 2:
-            fp = io.TextIOWrapper(fp, encoding="latin-1")
-            wrapped_fp = True
+        fp = io.TextIOWrapper(fp, encoding="latin-1")
+        wrapped_fp = True
 
     try:
         if eps:

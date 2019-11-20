@@ -2,7 +2,6 @@ import zlib
 from io import BytesIO
 
 from PIL import Image, ImageFile, PngImagePlugin
-from PIL._util import py3
 
 from .helper import PillowLeakTestCase, PillowTestCase, hopper, is_win32, unittest
 
@@ -448,9 +447,7 @@ class TestFilePng(PillowTestCase):
         self.assertIsInstance(im.info["Text"], str)
 
     def test_unicode_text(self):
-        # Check preservation of non-ASCII characters on Python 3
-        # This cannot really be meaningfully tested on Python 2,
-        # since it didn't preserve charsets to begin with.
+        # Check preservation of non-ASCII characters
 
         def rt_text(value):
             im = Image.new("RGB", (32, 32))
@@ -459,17 +456,11 @@ class TestFilePng(PillowTestCase):
             im = roundtrip(im, pnginfo=info)
             self.assertEqual(im.info, {"Text": value})
 
-        if py3:
-            rt_text(" Aa" + chr(0xA0) + chr(0xC4) + chr(0xFF))  # Latin1
-            rt_text(chr(0x400) + chr(0x472) + chr(0x4FF))  # Cyrillic
-            rt_text(
-                chr(0x4E00)
-                + chr(0x66F0)
-                + chr(0x9FBA)  # CJK
-                + chr(0x3042)
-                + chr(0xAC00)
-            )
-            rt_text("A" + chr(0xC4) + chr(0x472) + chr(0x3042))  # Combined
+        rt_text(" Aa" + chr(0xA0) + chr(0xC4) + chr(0xFF))  # Latin1
+        rt_text(chr(0x400) + chr(0x472) + chr(0x4FF))  # Cyrillic
+        # CJK:
+        rt_text(chr(0x4E00) + chr(0x66F0) + chr(0x9FBA) + chr(0x3042) + chr(0xAC00))
+        rt_text("A" + chr(0xC4) + chr(0x472) + chr(0x3042))  # Combined
 
     def test_scary(self):
         # Check reading of evil PNG file.  For information, see:

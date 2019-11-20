@@ -33,7 +33,6 @@
 #include "Python.h"
 
 #include "Imaging.h"
-#include "py3.h"
 
 #include "Gif.h"
 #include "Raw.h"
@@ -122,7 +121,7 @@ _decode(ImagingDecoderObject* decoder, PyObject* args)
     int status;
     ImagingSectionCookie cookie;
 
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH, &buffer, &bufsize))
+    if (!PyArg_ParseTuple(args, "y#", &buffer, &bufsize))
         return NULL;
 
     if (!decoder->pulls_fd) {

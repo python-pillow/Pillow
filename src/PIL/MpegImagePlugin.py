@@ -21,7 +21,7 @@ from ._binary import i8
 # Bitstream parser
 
 
-class BitStream(object):
+class BitStream:
     def __init__(self, fp):
         self.fp = fp
         self.bits = 0

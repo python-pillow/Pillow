@@ -4,7 +4,6 @@ from io import BytesIO
 
 import pytest
 from PIL import Image, TiffImagePlugin
-from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import PillowTestCase, hopper, is_pypy, is_win32, unittest
@@ -198,12 +197,8 @@ class TestFileTiff(PillowTestCase):
 
         b = im.tobytes()
         # Bytes are in image native order (little endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\xe0"))
-            self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
+        self.assertEqual(b[0], ord(b"\xe0"))
+        self.assertEqual(b[1], ord(b"\x01"))
 
     def test_big_endian(self):
         im = Image.open("Tests/images/16bit.MM.cropped.tif")
@@ -213,12 +208,8 @@ class TestFileTiff(PillowTestCase):
         b = im.tobytes()
 
         # Bytes are in image native order (big endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\x01"))
-            self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
+        self.assertEqual(b[0], ord(b"\x01"))
+        self.assertEqual(b[1], ord(b"\xe0"))
 
     def test_16bit_s(self):
         im = Image.open("Tests/images/16bit.s.tif")
@@ -545,8 +536,7 @@ class TestFileTiff(PillowTestCase):
 
         # Test appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         mp = BytesIO()
         im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))

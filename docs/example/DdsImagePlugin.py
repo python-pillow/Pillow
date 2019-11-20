@@ -212,10 +212,10 @@ class DdsImageFile(ImageFile.ImageFile):
     def _open(self):
         magic, header_size = struct.unpack("<II", self.fp.read(8))
         if header_size != 124:
-            raise IOError("Unsupported header size %r" % (header_size))
+            raise OSError("Unsupported header size %r" % (header_size))
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise IOError("Incomplete header: %s bytes" % len(header_bytes))
+            raise OSError("Incomplete header: %s bytes" % len(header_bytes))
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -250,7 +250,7 @@ class DXT1Decoder(ImageFile.PyDecoder):
         try:
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error:
-            raise IOError("Truncated DDS file")
+            raise OSError("Truncated DDS file")
         return 0, 0
 
 
@@ -261,7 +261,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
         try:
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error:
-            raise IOError("Truncated DDS file")
+            raise OSError("Truncated DDS file")
         return 0, 0
 
 

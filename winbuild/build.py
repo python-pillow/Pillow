@@ -53,10 +53,10 @@ def run_script(params):
         print(stderr.decode())
         print("-- stdout --")
         print(trace.decode())
-        print("Done with %s: %s" % (version, status))
+        print("Done with {}: {}".format(version, status))
         return (version, status, trace, stderr)
     except Exception as msg:
-        print("Error with %s: %s" % (version, str(msg)))
+        print("Error with {}: {}".format(version, str(msg)))
         return (version, -1, "", str(msg))
 
 
@@ -98,17 +98,14 @@ def build_one(py_ver, compiler, bit):
     if "PYTHON" in os.environ:
         args["python_path"] = "%PYTHON%"
     else:
-        args["python_path"] = "%s%s\\Scripts" % (VIRT_BASE, py_ver)
+        args["python_path"] = "{}{}\\Scripts".format(VIRT_BASE, py_ver)
 
     args["executable"] = "python.exe"
     if "EXECUTABLE" in os.environ:
         args["executable"] = "%EXECUTABLE%"
 
     args["py_ver"] = py_ver
-    if "27" in py_ver:
-        args["tcl_ver"] = "85"
-    else:
-        args["tcl_ver"] = "86"
+    args["tcl_ver"] = "86"
 
     if compiler["vc_version"] == "2015":
         args["imaging_libs"] = " build_ext --add-imaging-libs=msvcrt"
@@ -160,7 +157,7 @@ def main(op):
 
         scripts.append(
             (
-                "%s%s" % (py_version, X64_EXT),
+                "{}{}".format(py_version, X64_EXT),
                 "\n".join(
                     [
                         header(op),
@@ -174,7 +171,7 @@ def main(op):
     results = map(run_script, scripts)
 
     for (version, status, trace, err) in results:
-        print("Compiled %s: %s" % (version, status and "ERR" or "OK"))
+        print("Compiled {}: {}".format(version, status and "ERR" or "OK"))
 
 
 def run_one(op):

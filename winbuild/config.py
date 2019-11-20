@@ -4,8 +4,6 @@ SF_MIRROR = "https://iweb.dl.sourceforge.net"
 
 pythons = {
     # for AppVeyor
-    "27": {"compiler": 7, "vc": 2010},
-    "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
     "pypy3": {"compiler": 7.1, "vc": 2015},
@@ -167,14 +165,14 @@ compilers = {
 def pyversion_from_env():
     py = os.environ["PYTHON"]
 
-    py_version = "27"
+    py_version = "35"
     for k in pythons:
         if k in py:
             py_version = k
             break
 
     if "64" in py:
-        py_version = "%s%s" % (py_version, X64_EXT)
+        py_version = "{}{}".format(py_version, X64_EXT)
 
     return py_version
 

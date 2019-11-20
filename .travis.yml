@@ -6,8 +6,8 @@ notifications:
   irc: "chat.freenode.net#pil"
 
 # Run fast lint first to get fast feedback.
-# Run slow PyPy* next, to give them a headstart and reduce waiting time.
-# Run latest 3.x and 2.x next, to get quick compatibility results.
+# Run slow PyPy next, to give it a headstart and reduce waiting time.
+# Run latest 3.x next, to get quick compatibility results.
 # Then run the remainder, with fastest Docker jobs last.
 
 matrix:

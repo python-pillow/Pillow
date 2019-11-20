@@ -125,10 +125,9 @@ External Libraries
 
 .. note::
 
-   There are scripts to install the dependencies for some operating
-   systems included in the ``depends`` directory. Also see the
-   Dockerfiles in our `docker images repo
-   <https://github.com/python-pillow/docker-images>`_.
+   There are Dockerfiles in our `Docker images repo
+   <https://github.com/python-pillow/docker-images>`_ to install the
+   dependencies for some operating systems.
 
 Many of Pillow's features require external libraries:
 

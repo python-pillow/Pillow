@@ -41,11 +41,6 @@ install:
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
 - cd c:\pillow\winbuild\
 - ps: |
-      if ($env:PYTHON -eq "c:/vp/pypy2")
-      {
-        c:\pillow\winbuild\appveyor_install_pypy2.cmd
-      }
-- ps: |
       if ($env:PYTHON -eq "c:/vp/pypy3")
       {
         c:\pillow\winbuild\appveyor_install_pypy3.cmd

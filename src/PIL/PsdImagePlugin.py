@@ -71,7 +71,7 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise IOError("not enough channels")
+            raise OSError("not enough channels")
 
         self.mode = mode
         self._size = i32(s[18:]), i32(s[14:])

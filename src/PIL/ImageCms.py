@@ -15,12 +15,9 @@
 # See the README file for information on usage and redistribution.  See
 # below for the original description.
 
-from __future__ import print_function
-
 import sys
 
 from PIL import Image
-from PIL._util import isStringType
 
 try:
     from PIL import _imagingcms
@@ -152,7 +149,7 @@ for flag in FLAGS.values():
 # Profile.
 
 
-class ImageCmsProfile(object):
+class ImageCmsProfile:
     def __init__(self, profile):
         """
         :param profile: Either a string representing a filename,
@@ -161,7 +158,7 @@ class ImageCmsProfile(object):
 
         """
 
-        if isStringType(profile):
+        if isinstance(profile, str):
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))
@@ -374,7 +371,7 @@ def profileToProfile(
             imOut = None
         else:
             imOut = transform.apply(im)
-    except (IOError, TypeError, ValueError) as v:
+    except (OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
     return imOut
@@ -398,7 +395,7 @@ def getOpenProfile(profileFilename):
 
     try:
         return ImageCmsProfile(profileFilename)
-    except (IOError, TypeError, ValueError) as v:
+    except (OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -479,7 +476,7 @@ def buildTransform(
         return ImageCmsTransform(
             inputProfile, outputProfile, inMode, outMode, renderingIntent, flags=flags
         )
-    except (IOError, TypeError, ValueError) as v:
+    except (OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -590,7 +587,7 @@ def buildProofTransform(
             proofRenderingIntent,
             flags,
         )
-    except (IOError, TypeError, ValueError) as v:
+    except (OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -733,9 +730,9 @@ def getProfileName(profile):
             return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
-        return "%s - %s\n" % (model, manufacturer)
+        return "{} - {}\n".format(model, manufacturer)
 
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -775,7 +772,7 @@ def getProfileInfo(profile):
                 arr.append(elt)
         return "\r\n\r\n".join(arr) + "\r\n\r\n"
 
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -803,7 +800,7 @@ def getProfileCopyright(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.copyright or "") + "\n"
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -831,7 +828,7 @@ def getProfileManufacturer(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.manufacturer or "") + "\n"
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -860,7 +857,7 @@ def getProfileModel(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.model or "") + "\n"
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -889,7 +886,7 @@ def getProfileDescription(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.profile_description or "") + "\n"
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -928,7 +925,7 @@ def getDefaultIntent(profile):
         if not isinstance(profile, ImageCmsProfile):
             profile = ImageCmsProfile(profile)
         return profile.profile.rendering_intent
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 
@@ -979,7 +976,7 @@ def isIntentSupported(profile, intent, direction):
             return 1
         else:
             return -1
-    except (AttributeError, IOError, TypeError, ValueError) as v:
+    except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v)
 
 

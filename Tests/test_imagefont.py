@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import copy
 import distutils.version
 import os
@@ -20,7 +19,7 @@ HAS_FREETYPE = features.check("freetype2")
 HAS_RAQM = features.check("raqm")
 
 
-class SimplePatcher(object):
+class SimplePatcher:
     def __init__(self, parent_obj, attr_name, value):
         self._parent_obj = parent_obj
         self._attr_name = attr_name
@@ -462,12 +461,12 @@ class TestImageFont(PillowTestCase):
         # issue #2826
         font = ImageFont.load_default()
         with self.assertRaises(UnicodeEncodeError):
-            font.getsize(u"’")
+            font.getsize("’")
 
-    @unittest.skipIf(sys.version.startswith("2") or is_pypy(), "requires CPython 3.3+")
+    @unittest.skipIf(is_pypy(), "requires CPython")
     def test_unicode_extended(self):
         # issue #3777
-        text = u"A\u278A\U0001F12B"
+        text = "A\u278A\U0001F12B"
         target = "Tests/images/unicode_extended.png"
 
         ttf = ImageFont.truetype(

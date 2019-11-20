@@ -1,5 +1,3 @@
-from __future__ import division
-
 from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import PillowLeakTestCase, is_win32, unittest

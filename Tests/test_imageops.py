@@ -11,7 +11,7 @@ except ImportError:
 
 
 class TestImageOps(PillowTestCase):
-    class Deformer(object):
+    class Deformer:
         def getmesh(self, im):
             x, y = im.size
             return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]

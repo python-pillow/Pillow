@@ -6,7 +6,7 @@ from .test_imageqt import PillowQtTestCase
 
 class TestFromQImage(PillowQtTestCase, PillowTestCase):
     def setUp(self):
-        super(TestFromQImage, self).setUp()
+        super().setUp()
         self.files_to_test = [
             hopper(),
             Image.open("Tests/images/transparent.png"),

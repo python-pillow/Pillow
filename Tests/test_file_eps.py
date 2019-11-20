@@ -91,7 +91,7 @@ class TestFileEps(PillowTestCase):
     def test_iobase_object(self):
         # issue 479
         with Image.open(file1) as image1:
-            with io.open(self.tempfile("temp_iobase.eps"), "wb") as fh:
+            with open(self.tempfile("temp_iobase.eps"), "wb") as fh:
                 image1.save(fh, "EPS")
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")

@@ -32,9 +32,6 @@
 # Details about the Spider image format:
 # https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
-
-from __future__ import print_function
-
 import os
 import struct
 import sys
@@ -274,7 +271,7 @@ def _save(im, fp, filename):
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
-        raise IOError("Error creating Spider header")
+        raise OSError("Error creating Spider header")
 
     # write the SPIDER header
     fp.writelines(hdr)

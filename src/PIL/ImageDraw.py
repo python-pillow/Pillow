@@ -34,7 +34,6 @@ import math
 import numbers
 
 from . import Image, ImageColor
-from ._util import isStringType
 
 
 """
@@ -45,7 +44,7 @@ directly.
 """
 
 
-class ImageDraw(object):
+class ImageDraw:
     def __init__(self, im, mode=None):
         """
         Create a drawing instance.
@@ -107,13 +106,13 @@ class ImageDraw(object):
                 ink = self.ink
         else:
             if ink is not None:
-                if isStringType(ink):
+                if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
                     ink = self.palette.getcolor(ink)
                 ink = self.draw.draw_ink(ink)
             if fill is not None:
-                if isStringType(fill):
+                if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
                     fill = self.palette.getcolor(fill)
@@ -314,7 +313,7 @@ class ImageDraw(object):
                     language=language,
                     stroke_width=stroke_width,
                     *args,
-                    **kwargs
+                    **kwargs,
                 )
                 coord = coord[0] + offset[0], coord[1] + offset[1]
             except AttributeError:
@@ -327,7 +326,7 @@ class ImageDraw(object):
                         language,
                         stroke_width,
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
                 except TypeError:
                     mask = font.getmask(text)

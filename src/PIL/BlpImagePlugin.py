@@ -283,7 +283,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             self._read_blp_header()
             self._load()
         except struct.error:
-            raise IOError("Truncated Blp file")
+            raise OSError("Truncated Blp file")
         return 0, 0
 
     def _read_palette(self):

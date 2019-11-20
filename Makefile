@@ -3,7 +3,7 @@
 .DEFAULT_GOAL := release-test
 
 clean:
-	python setup.py clean
+	python3 setup.py clean
 	rm src/PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
@@ -15,8 +15,8 @@ co:
     done
 
 coverage:
-	python selftest.py
-	python setup.py test
+	python3 selftest.py
+	python3 setup.py test
 	rm -r htmlcov || true
 	coverage report
 
@@ -30,7 +30,7 @@ doccheck:
 	$(MAKE) -C docs linkcheck || true
 
 docserve:
-	cd docs/_build/html && python -mSimpleHTTPServer 2> /dev/null&
+	cd docs/_build/html && python3 -mSimpleHTTPServer 2> /dev/null&
 
 help:
 	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
@@ -50,22 +50,22 @@ help:
 	@echo "  upload-test        build and upload sdists to test.pythonpackages.com"
 
 inplace: clean
-	python setup.py develop build_ext --inplace
+	python3 setup.py develop build_ext --inplace
 
 install:
-	python setup.py install
-	python selftest.py
+	python3 setup.py install
+	python3 selftest.py
 
 install-coverage:
-	CFLAGS="-coverage" python setup.py build_ext install
-	python selftest.py
+	CFLAGS="-coverage" python3 setup.py build_ext install
+	python3 selftest.py
 
 debug:
 # make a debug version if we don't have a -dbg python. Leaves in symbols
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python setup.py build_ext install > /dev/null
+	CFLAGS='-g -O0' python3 setup.py build_ext install > /dev/null
 
 install-req:
 	pip install -r requirements.txt
@@ -76,17 +76,17 @@ install-venv:
 
 release-test:
 	$(MAKE) install-req
-	python setup.py develop
-	python selftest.py
-	python -m pytest Tests
-	python setup.py install
-	python -m pytest -qq
+	python3 setup.py develop
+	python3 selftest.py
+	python3 -m pytest Tests
+	python3 setup.py install
+	python3 -m pytest -qq
 	check-manifest
 	pyroma .
 	viewdoc
 
 sdist:
-	python setup.py sdist --format=gztar
+	python3 setup.py sdist --format=gztar
 
 test:
 	pytest -qq
@@ -97,10 +97,10 @@ upload-test:
 #       username:
 #       password:
 #       repository = http://test.pythonpackages.com
-	python setup.py sdist --format=gztar upload -r test
+	python3 setup.py sdist --format=gztar upload -r test
 
 upload:
-	python setup.py sdist --format=gztar upload
+	python3 setup.py sdist --format=gztar upload
 
 readme:
 	viewdoc

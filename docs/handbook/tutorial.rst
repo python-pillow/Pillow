@@ -18,7 +18,6 @@ in the :py:mod:`~PIL.Image` module::
 If successful, this function returns an :py:class:`~PIL.Image.Image` object.
 You can now use instance attributes to examine the file contents::
 
-    >>> from __future__ import print_function
     >>> print(im.format, im.size, im.mode)
     PPM (512, 512) RGB
 
@@ -67,7 +66,6 @@ Convert files to JPEG
 
 ::
 
-    from __future__ import print_function
     import os, sys
     from PIL import Image
 
@@ -89,7 +87,6 @@ Create JPEG thumbnails
 
 ::
 
-    from __future__ import print_function
     import os, sys
     from PIL import Image
 
@@ -120,7 +117,6 @@ Identify Image Files
 
 ::
 
-    from __future__ import print_function
     import sys
     from PIL import Image
 

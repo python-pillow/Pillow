@@ -1,4 +1,3 @@
-# encoding: utf-8
 #
 # The Python Imaging Library.
 # $Id$
@@ -21,15 +20,10 @@
 #    https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
 # and has been tested with a few sample files found using google.
 
+import builtins
+
 from . import Image
 from ._binary import i32le as i32
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-
-    builtins = __builtin__
 
 
 def open(filename):

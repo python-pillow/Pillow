@@ -1,7 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "Imaging.h"
-#include "py3.h"
 #include <webp/encode.h>
 #include <webp/decode.h>
 #include <webp/types.h>
@@ -557,7 +556,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t xmp_size;
     size_t ret_size;
 
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"iiifss#s#s#",
+    if (!PyArg_ParseTuple(args, "y#iiifss#s#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
                 &icc_bytes, &icc_size, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
         return NULL;
@@ -754,11 +753,7 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
                                           config.output.u.YUVA.y_size);
     }
 
-#if PY_VERSION_HEX >= 0x03000000
     pymode = PyUnicode_FromString(mode);
-#else
-    pymode = PyString_FromString(mode);
-#endif
     ret = Py_BuildValue("SiiSSS", bytes, config.output.width,
                         config.output.height, pymode,
                         NULL == icc_profile ? Py_None : icc_profile,
@@ -848,7 +843,6 @@ static int setup_module(PyObject* m) {
     return 0;
 }
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__webp(void) {
     PyObject* m;
@@ -867,11 +861,3 @@ PyInit__webp(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_webp(void)
-{
-    PyObject* m = Py_InitModule("_webp", webpMethods);
-    setup_module(m);
-}
-#endif
