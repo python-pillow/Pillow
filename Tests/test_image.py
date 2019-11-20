@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from PIL._util import py3
 
 from .helper import PillowTestCase, hopper, is_win32, unittest
@@ -48,6 +48,9 @@ class TestImage(PillowTestCase):
                 Image.new(mode, (1, 1))
             self.assertEqual(str(e.exception), "unrecognized image mode")
 
+    def test_exception_inheritance(self):
+        self.assertTrue(issubclass(UnidentifiedImageError, IOError))
+
     def test_sanity(self):
 
         im = Image.new("L", (100, 100))
@@ -88,7 +91,7 @@ class TestImage(PillowTestCase):
             import StringIO
 
             im = StringIO.StringIO("")
-        self.assertRaises(IOError, Image.open, im)
+        self.assertRaises(UnidentifiedImageError, Image.open, im)
 
     def test_bad_mode(self):
         self.assertRaises(ValueError, Image.open, "filename", "bad mode")

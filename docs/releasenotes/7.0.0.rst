@@ -63,11 +63,11 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Custom unidentified image error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
+Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
+identified. For backwards compatibility, this will inherit from ``IOError``.
 
 Other Changes
 =============
