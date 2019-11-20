@@ -1,4 +1,4 @@
-from PIL import GdImageFile
+from PIL import GdImageFile, UnidentifiedImageError
 
 from .helper import PillowTestCase
 
@@ -17,4 +17,4 @@ class TestFileGd(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(IOError, GdImageFile.open, invalid_file)
+        self.assertRaises(UnidentifiedImageError, GdImageFile.open, invalid_file)
