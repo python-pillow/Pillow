@@ -55,10 +55,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
 
-    - name: pip install wheel pytest pytest-cov codecov
+    - name: pip install wheel pytest pytest-cov
       run: |
         "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
-        pip install codecov
       shell: cmd
 
     - name: Fetch dependencies
@@ -357,8 +356,11 @@ jobs:
         path: Tests/errors
 
     - name: Upload coverage
-      run: 'codecov --file "%GITHUB_WORKSPACE%\coverage.xml" --name "%pythonLocation%"'
-      shell: cmd
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ runner.os }} Python ${{ matrix.python-version }}
 
     - name: Build wheel
       id: wheel

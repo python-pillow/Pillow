@@ -71,5 +71,13 @@ jobs:
       run: |
         .travis/after_success.sh
       env:
+        MATRIX_OS: ${{ matrix.os }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
