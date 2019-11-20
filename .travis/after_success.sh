@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # gather the coverage data
-sudo apt-get -qq install lcov
+if [[ "$MATRIX_OS" == "macOS-latest" ]]; then
+    brew install lcov
+else
+    sudo apt-get -qq install lcov
+fi
+
 lcov --capture --directory . -b . --output-file coverage.info
 #  filter to remove system headers
 lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
