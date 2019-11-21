@@ -1,8 +1,9 @@
 import sys
+import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, is_win32, unittest
+from .helper import PillowTestCase, is_win32
 
 try:
     import numpy

@@ -1,9 +1,10 @@
+import unittest
 import zlib
 from io import BytesIO
 
 from PIL import Image, ImageFile, PngImagePlugin
 
-from .helper import PillowLeakTestCase, PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowLeakTestCase, PillowTestCase, hopper, is_win32
 
 try:
     from PIL import _webp

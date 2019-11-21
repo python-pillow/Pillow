@@ -1,8 +1,9 @@
 import io
+import unittest
 
 from PIL import EpsImagePlugin, Image
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 

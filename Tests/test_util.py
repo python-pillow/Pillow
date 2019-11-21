@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import _util
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 
 class TestUtil(PillowTestCase):

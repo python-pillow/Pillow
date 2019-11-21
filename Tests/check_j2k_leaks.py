@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import Image
 
-from .helper import PillowTestCase, is_win32, unittest
+from .helper import PillowTestCase, is_win32
 
 # Limits for testing the leak
 mem_limit = 1024 * 1048576

@@ -4,11 +4,12 @@ import os
 import re
 import shutil
 import sys
+import unittest
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, is_pypy, is_win32, unittest
+from .helper import PillowTestCase, is_pypy, is_win32
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20

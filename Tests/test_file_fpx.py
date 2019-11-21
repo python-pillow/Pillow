@@ -1,4 +1,6 @@
-from .helper import PillowTestCase, unittest
+import unittest
+
+from .helper import PillowTestCase
 
 try:
     from PIL import FpxImagePlugin

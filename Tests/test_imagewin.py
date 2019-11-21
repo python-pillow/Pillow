@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import ImageWin
 
-from .helper import PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 
 class TestImageWin(PillowTestCase):

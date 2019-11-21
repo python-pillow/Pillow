@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowLeakTestCase, is_win32, unittest
+from .helper import PillowLeakTestCase, is_win32
 
 
 @unittest.skipIf(is_win32(), "requires Unix or macOS")
