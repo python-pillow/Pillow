@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Drop support for EOL Python 2.7 #4109
+  [hugovk, radarhere, jdufresne]
+
+- Added UnidentifiedImageError #4182
+  [radarhere, hugovk]
+
 - Remove deprecated __version__ from plugins #4197
   [hugovk, radarhere]
 
