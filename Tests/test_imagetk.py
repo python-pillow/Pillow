@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import ImageTk

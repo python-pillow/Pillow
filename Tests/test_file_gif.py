@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
 
-from .helper import PillowTestCase, hopper, is_pypy, netpbm_available, unittest
+from .helper import PillowTestCase, hopper, is_pypy, netpbm_available
 
 try:
     from PIL import _webp

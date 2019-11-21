@@ -1,8 +1,9 @@
 import locale
+import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 # ref https://github.com/python-pillow/Pillow/issues/272
 # on windows, in polish locale:

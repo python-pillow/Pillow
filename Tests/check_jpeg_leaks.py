@@ -1,6 +1,7 @@
+import unittest
 from io import BytesIO
 
-from .helper import PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 iterations = 5000
 

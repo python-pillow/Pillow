@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import EpsImagePlugin, Image, ImageFile
 
-from .helper import PillowTestCase, fromstring, hopper, tostring, unittest
+from .helper import PillowTestCase, fromstring, hopper, tostring
 
 try:
     from PIL import _webp

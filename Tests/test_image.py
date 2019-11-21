@@ -1,10 +1,11 @@
 import os
 import shutil
 import tempfile
+import unittest
 
 from PIL import Image, UnidentifiedImageError
 
-from .helper import PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 
 class TestImage(PillowTestCase):

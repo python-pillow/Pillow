@@ -1,8 +1,9 @@
+import unittest
 from contextlib import contextmanager
 
 from PIL import Image, ImageDraw
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 
 class TestImagingResampleVulnerability(PillowTestCase):

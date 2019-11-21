@@ -2,11 +2,12 @@ import ctypes
 import os
 import subprocess
 import sys
+import unittest
 from distutils import ccompiler, sysconfig
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, is_win32, on_ci, unittest
+from .helper import PillowTestCase, hopper, is_win32, on_ci
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670

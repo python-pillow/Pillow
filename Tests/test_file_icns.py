@@ -1,9 +1,10 @@
 import io
 import sys
+import unittest
 
 from PIL import IcnsImagePlugin, Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"

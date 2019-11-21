@@ -1,9 +1,10 @@
 import os
 import subprocess
 import sys
+import unittest
 from unittest import TestCase
 
-from .helper import is_pypy, is_win32, on_github_actions, unittest
+from .helper import is_pypy, is_win32, on_github_actions
 
 
 class TestMain(TestCase):

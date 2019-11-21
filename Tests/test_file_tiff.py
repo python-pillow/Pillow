@@ -1,12 +1,13 @@
 import logging
 import os
+import unittest
 from io import BytesIO
 
 import pytest
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
-from .helper import PillowTestCase, hopper, is_pypy, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_pypy, is_win32
 
 logger = logging.getLogger(__name__)
 
