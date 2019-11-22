@@ -38,6 +38,9 @@ def test_sanity():
     ImageChops.blend(im, im, 0.5)
     ImageChops.composite(im, im, im)
 
+    ImageChops.softlight(im, im)
+    ImageChops.hardlight(im, im)
+
     ImageChops.offset(im, 10)
     ImageChops.offset(im, 10, 20)
 
@@ -319,9 +322,9 @@ def test_subtract_scale_offset():
             # Act
             new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
 
-    # Assert
-    assert new.getbbox() == (0, 0, 100, 100)
-    assert new.getpixel((50, 50)) == (100, 202, 100)
+            # Assert
+            assert new.getbbox() == (0, 0, 100, 100)
+            assert new.getpixel((50, 50)) == (100, 202, 100)
 
 
 def test_subtract_clip():
@@ -332,8 +335,8 @@ def test_subtract_clip():
         # Act
         new = ImageChops.subtract(im1, im2)
 
-    # Assert
-    assert new.getpixel((50, 50)) == (0, 0, 127)
+        # Assert
+        assert new.getpixel((50, 50)) == (0, 0, 127)
 
 
 def test_subtract_modulo():
@@ -344,10 +347,10 @@ def test_subtract_modulo():
             # Act
             new = ImageChops.subtract_modulo(im1, im2)
 
-    # Assert
-    assert new.getbbox() == (25, 50, 76, 76)
-    assert new.getpixel((50, 50)) == GREEN
-    assert new.getpixel((50, 51)) == BLACK
+            # Assert
+            assert new.getbbox() == (25, 50, 76, 76)
+            assert new.getpixel((50, 50)) == GREEN
+            assert new.getpixel((50, 51)) == BLACK
 
 
 def test_subtract_modulo_no_clip():
@@ -358,8 +361,34 @@ def test_subtract_modulo_no_clip():
         # Act
         new = ImageChops.subtract_modulo(im1, im2)
 
+        # Assert
+        assert new.getpixel((50, 50)) == (241, 167, 127)
+
+
+def test_softlight(self):
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.softlight(im1, im2)
+
     # Assert
-    assert new.getpixel((50, 50)) == (241, 167, 127)
+    self.assertEqual(new.getpixel((64, 64)), (163, 54, 32))
+    self.assertEqual(new.getpixel((15, 100)), (1, 1, 3))
+
+
+def test_hardlight(self):
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.hardlight(im1, im2)
+
+    # Assert
+    self.assertEqual(new.getpixel((64, 64)), (144, 50, 27))
+    self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
 
 
 def test_logical():

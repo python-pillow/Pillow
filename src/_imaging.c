@@ -2406,6 +2406,27 @@ _chop_subtract_modulo(ImagingObject* self, PyObject* args)
     return PyImagingNew(ImagingChopSubtractModulo(self->image, imagep->image));
 }
 
+static PyObject*
+_chop_softlight(ImagingObject* self, PyObject* args)
+{
+    ImagingObject* imagep;
+
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep))
+        return NULL;
+
+    return PyImagingNew(ImagingChopSoftLight(self->image, imagep->image));
+}
+
+static PyObject*
+_chop_hardlight(ImagingObject* self, PyObject* args)
+{
+    ImagingObject* imagep;
+
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep))
+        return NULL;
+
+    return PyImagingNew(ImagingChopHardLight(self->image, imagep->image));
+}
 #endif
 
 
@@ -3325,6 +3346,9 @@ static struct PyMethodDef methods[] = {
     {"chop_and", (PyCFunction)_chop_and, 1},
     {"chop_or", (PyCFunction)_chop_or, 1},
     {"chop_xor", (PyCFunction)_chop_xor, 1},
+    {"chop_softlight", (PyCFunction)_chop_softlight, 1},
+    {"chop_hardlight", (PyCFunction)_chop_hardlight, 1},
+
 #endif
 
 #ifdef WITH_UNSHARPMASK
