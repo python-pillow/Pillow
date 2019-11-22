@@ -392,6 +392,19 @@ def test_hardlight(self):
     self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
 
 
+def test_overlay(self):
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.overlay(im1, im2)
+
+    # Assert
+    self.assertEqual(new.getpixel((64, 64)), (159, 50, 27))
+    self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
+
+
 def test_logical():
     def table(op, a, b):
         out = []
