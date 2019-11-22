@@ -23,7 +23,7 @@ Changelog (Pillow)
 - Corrected DdsImagePlugin setting info gamma #4171
   [radarhere]
 
-- Depends: Update libtiff to 4.1.0 #4195
+- Depends: Update libtiff to 4.1.0 #4195, Tk Tcl to 8.6.10 #4229
   [radarhere]
 
 - Improve handling of file resources #3577
