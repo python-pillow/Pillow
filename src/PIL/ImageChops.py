@@ -141,7 +141,7 @@ def screen(image1, image2):
 
 def softlight(image1, image2):
     """
-    Superimposes two images on top of each other using the Soft Light algorithm 
+    Superimposes two images on top of each other using the Soft Light algorithm
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
@@ -153,7 +153,7 @@ def softlight(image1, image2):
 
 def hardlight(image1, image2):
     """
-    Superimposes two images on top of each other using the Hard Light algorithm 
+    Superimposes two images on top of each other using the Hard Light algorithm
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
@@ -165,7 +165,7 @@ def hardlight(image1, image2):
 
 def overlay(image1, image2):
     """
-    Superimposes two images on top of each other using the Overlay algorithm 
+    Superimposes two images on top of each other using the Overlay algorithm
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
