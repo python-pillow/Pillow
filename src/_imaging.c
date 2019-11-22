@@ -2427,6 +2427,17 @@ _chop_hardlight(ImagingObject* self, PyObject* args)
 
     return PyImagingNew(ImagingChopHardLight(self->image, imagep->image));
 }
+
+static PyObject*
+_chop_overlay(ImagingObject* self, PyObject* args)
+{
+    ImagingObject* imagep;
+
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep))
+        return NULL;
+
+    return PyImagingNew(ImagingOverlay(self->image, imagep->image));
+}
 #endif
 
 
@@ -3348,6 +3359,7 @@ static struct PyMethodDef methods[] = {
     {"chop_xor", (PyCFunction)_chop_xor, 1},
     {"chop_softlight", (PyCFunction)_chop_softlight, 1},
     {"chop_hardlight", (PyCFunction)_chop_hardlight, 1},
+    {"chop_overlay", (PyCFunction)_chop_overlay, 1},
 
 #endif
 

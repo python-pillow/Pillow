@@ -164,3 +164,11 @@ ImagingChopHardLight(Imaging imIn1, Imaging imIn2)
                         : 255 - ( ((255-in2[x]) * (255-in1[x])) / 127)   
          , NULL);
 }
+
+Imaging
+ImagingOverlay(Imaging imIn1, Imaging imIn2) 
+{
+    CHOP2( (in1[x]<128) ? ( (in1[x]*in2[x])/127) 
+                        : 255 - ( ((255-in1[x]) * (255-in2[x])) / 127)   
+         , NULL);
+}

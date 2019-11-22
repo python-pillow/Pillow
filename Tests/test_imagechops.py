@@ -40,6 +40,7 @@ def test_sanity():
 
     ImageChops.softlight(im, im)
     ImageChops.hardlight(im, im)
+    ImageChops.overlay(im, im)
 
     ImageChops.offset(im, 10)
     ImageChops.offset(im, 10, 20)
@@ -388,6 +389,19 @@ def test_hardlight(self):
 
     # Assert
     self.assertEqual(new.getpixel((64, 64)), (144, 50, 27))
+    self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
+
+
+def test_overlay(self):
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.overlay(im1, im2)
+
+    # Assert
+    self.assertEqual(new.getpixel((64, 64)), (159, 50, 27))
     self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
 
 
