@@ -36,6 +36,8 @@ operations in this module).
 .. autofunction:: PIL.ImageChops.logical_or
 .. autofunction:: PIL.ImageChops.logical_xor
 .. autofunction:: PIL.ImageChops.multiply
+.. autofunction:: PIL.ImageChops.softlight
+.. autofunction:: PIL.ImageChops.hardlight
 .. py:method:: PIL.ImageChops.offset(image, xoffset, yoffset=None)
 
     Returns a copy of the image where data has been offset by the given
