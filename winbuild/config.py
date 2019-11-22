@@ -71,15 +71,15 @@ libs = {
         "version": "8.5.19",
     },
     "tcl-8.6": {
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tcl869-src.zip",
-        "filename": "tcl869-src.zip",
+        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.10/tcl8610-src.zip",
+        "filename": "tcl8610-src.zip",
         "dir": "",
     },
     "tk-8.6": {
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tk869-src.zip",
-        "filename": "tk869-src.zip",
+        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.10/tk8610-src.zip",
+        "filename": "tk8610-src.zip",
         "dir": "",
-        "version": "8.6.9",
+        "version": "8.6.10",
     },
     "webp": {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.0.3.tar.gz",
