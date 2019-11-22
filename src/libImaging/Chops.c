@@ -148,27 +148,27 @@ ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2)
 }
 
 Imaging
-ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) 
+ImagingChopSoftLight(Imaging imIn1, Imaging imIn2)
 {
     // CHOP2( ( ( (255-in1[x]) * (in1[x]*in2[x]) ) / 65536) +
     //          ((in1[x] * (255 - ((255 - in1[1]) * (255 - in2[x]) / 255 ) )) / 255), NULL );
-    CHOP2( (((255-in1[x]) * (in1[x]*in2[x]) ) / 65536) + 
+    CHOP2( (((255-in1[x]) * (in1[x]*in2[x]) ) / 65536) +
          (in1[x] * ( 255 - ( (255 - in1[x]) * (255 - in2[x] ) / 255) )) / 255
          , NULL );
 }
 
 Imaging
-ImagingChopHardLight(Imaging imIn1, Imaging imIn2) 
+ImagingChopHardLight(Imaging imIn1, Imaging imIn2)
 {
-    CHOP2( (in2[x]<128) ? ( (in1[x]*in2[x])/127) 
-                        : 255 - ( ((255-in2[x]) * (255-in1[x])) / 127)   
+    CHOP2( (in2[x]<128) ? ( (in1[x]*in2[x])/127)
+                        : 255 - ( ((255-in2[x]) * (255-in1[x])) / 127)
          , NULL);
 }
 
 Imaging
-ImagingOverlay(Imaging imIn1, Imaging imIn2) 
+ImagingOverlay(Imaging imIn1, Imaging imIn2)
 {
-    CHOP2( (in1[x]<128) ? ( (in1[x]*in2[x])/127) 
-                        : 255 - ( ((255-in1[x]) * (255-in2[x])) / 127)   
+    CHOP2( (in1[x]<128) ? ( (in1[x]*in2[x])/127)
+                        : 255 - ( ((255-in1[x]) * (255-in2[x])) / 127)
          , NULL);
 }
