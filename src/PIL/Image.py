@@ -1887,6 +1887,22 @@ class Image(object):
 
         return self._new(self.im.resize(size, resample, box))
 
+    def reduce(self, factor):
+        """
+        Returns reduced in `factor` times copy of the image.
+        If the size of the image is not dividable by the `factor`,
+        the resulting size will be rounded up.
+
+        :param factor: A greater than 0 integer or tuple of two integers
+            for width and height separately.
+        """
+        if not isinstance(factor, (list, tuple)):
+            factor = (factor, factor)
+
+        self.load()
+
+        return self._new(self.im.reduce(factor))
+
     def rotate(
         self,
         angle,

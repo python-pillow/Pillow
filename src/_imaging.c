@@ -1829,6 +1829,28 @@ _resize(ImagingObject* self, PyObject* args)
     return PyImagingNew(imOut);
 }
 
+static PyObject*
+_reduce(ImagingObject* self, PyObject* args)
+{
+    Imaging imIn;
+    Imaging imOut;
+
+    int xscale, yscale;
+
+    imIn = self->image;
+
+    if (!PyArg_ParseTuple(args, "(ii)", &xscale, &yscale))
+        return NULL;
+
+    if (xscale < 1 || yscale < 1) {
+        return ImagingError_ValueError("scale must be > 0");
+    }
+
+    imOut = ImagingReduce(imIn, xscale, yscale);
+
+    return PyImagingNew(imOut);
+}
+
 
 #define IS_RGB(mode)\
     (!strcmp(mode, "RGB") || !strcmp(mode, "RGBA") || !strcmp(mode, "RGBX"))
@@ -1843,7 +1865,7 @@ im_setmode(ImagingObject* self, PyObject* args)
     char* mode;
     Py_ssize_t modelen;
     if (!PyArg_ParseTuple(args, "s#:setmode", &mode, &modelen))
-    return NULL;
+        return NULL;
 
     im = self->image;
 
@@ -3277,6 +3299,7 @@ static struct PyMethodDef methods[] = {
     {"rankfilter", (PyCFunction)_rankfilter, 1},
 #endif
     {"resize", (PyCFunction)_resize, 1},
+    {"reduce", (PyCFunction)_reduce, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
