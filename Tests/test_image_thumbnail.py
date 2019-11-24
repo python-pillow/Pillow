@@ -50,11 +50,11 @@ class TestImageThumbnail(PillowTestCase):
 
     def test_DCT_scaling_edges(self):
         # Make an image with red borders and size (N * 8) + 1 to cross DCT grid
-        im = Image.new("RGB", (97, 97), "red")
-        im.paste(Image.new("RGB", (95, 95)), (1, 1))
+        im = Image.new("RGB", (257, 257), "red")
+        im.paste(Image.new("RGB", (255, 255)), (1, 1))
 
-        thumb = fromstring(tostring(im, "JPEG", quality=95))
-        thumb.thumbnail((24, 24), Image.BICUBIC)
+        thumb = fromstring(tostring(im, "JPEG", quality=99, subsampling=0))
+        thumb.thumbnail((32, 32), Image.BICUBIC)
 
-        ref = im.resize((24, 24), Image.BICUBIC)
+        ref = im.resize((32, 32), Image.BICUBIC)
         self.assert_image_similar(thumb, ref, 2)
