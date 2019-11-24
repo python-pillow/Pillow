@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 import copy
 import distutils.version
 import os
 import re
 import shutil
 import sys
+import unittest
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_pypy, is_win32
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -20,7 +20,7 @@ HAS_FREETYPE = features.check("freetype2")
 HAS_RAQM = features.check("raqm")
 
 
-class SimplePatcher(object):
+class SimplePatcher:
     def __init__(self, parent_obj, attr_name, value):
         self._parent_obj = parent_obj
         self._attr_name = attr_name
@@ -462,15 +462,12 @@ class TestImageFont(PillowTestCase):
         # issue #2826
         font = ImageFont.load_default()
         with self.assertRaises(UnicodeEncodeError):
-            font.getsize(u"’")
+            font.getsize("’")
 
-    @unittest.skipIf(
-        sys.version.startswith("2") or hasattr(sys, "pypy_translation_info"),
-        "requires CPython 3.3+",
-    )
+    @unittest.skipIf(is_pypy(), "requires CPython")
     def test_unicode_extended(self):
         # issue #3777
-        text = u"A\u278A\U0001F12B"
+        text = "A\u278A\U0001F12B"
         target = "Tests/images/unicode_extended.png"
 
         ttf = ImageFont.truetype(
@@ -504,7 +501,7 @@ class TestImageFont(PillowTestCase):
                 name = font.getname()
                 self.assertEqual(("FreeMono", "Regular"), name)
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -550,7 +547,7 @@ class TestImageFont(PillowTestCase):
                         font_directory + "/Duplicate.ttf", "Duplicate"
                     )
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.

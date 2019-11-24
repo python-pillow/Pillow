@@ -25,7 +25,7 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("RGBX"), (3, (100, 128, 4), "|u1", 51200))
 
     def test_fromarray(self):
-        class Wrapper(object):
+        class Wrapper:
             """ Class with API matching Image.fromarray """
 
             def __init__(self, img, arr_params):

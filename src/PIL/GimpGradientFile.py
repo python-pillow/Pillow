@@ -60,7 +60,7 @@ def sphere_decreasing(middle, pos):
 SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
-class GradientFile(object):
+class GradientFile:
 
     gradient = None
 
@@ -132,7 +132,7 @@ class GimpGradientFile(GradientFile):
             cspace = int(s[12])
 
             if cspace != 0:
-                raise IOError("cannot handle HSV colour space")
+                raise OSError("cannot handle HSV colour space")
 
             gradient.append((x0, x1, xm, rgb0, rgb1, segment))
 

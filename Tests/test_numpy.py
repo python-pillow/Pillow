@@ -1,8 +1,8 @@
-from __future__ import print_function
+import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 try:
     import numpy

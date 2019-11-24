@@ -104,6 +104,15 @@ the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
 
+Orientation
+-----------
+
+A common element of the :py:attr:`~PIL.Image.Image.info` attribute for JPG and
+TIFF images is the EXIF orientation tag. This is an instruction for how the
+image data should be oriented. For example, it may instruct an image to be
+rotated by 90 degrees, or to be mirrored. To apply this information to an
+image, :py:meth:`~PIL.ImageOps.exif_transpose` can be used.
+
 .. _concept-filters:
 
 Filters

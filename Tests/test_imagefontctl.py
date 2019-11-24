@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+import unittest
+
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"

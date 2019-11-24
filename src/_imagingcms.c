@@ -32,7 +32,6 @@ http://www.cazabon.com\n\
 
 #include "lcms2.h"
 #include "Imaging.h"
-#include "py3.h"
 
 #define PYCMSVERSION "1.0.0 pil"
 
@@ -122,13 +121,8 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
 
     char* pProfile;
     Py_ssize_t nProfile;
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, "y#:profile_frombytes", &pProfile, &nProfile))
         return NULL;
-#else
-    if (!PyArg_ParseTuple(args, "s#:profile_fromstring", &pProfile, &nProfile))
-        return NULL;
-#endif
 
     hProfile = cmsOpenProfileFromMem(pProfile, nProfile);
     if (!hProfile) {
@@ -172,11 +166,7 @@ cms_profile_tobytes(PyObject* self, PyObject* args)
         return NULL;
     }
 
-#if PY_VERSION_HEX >= 0x03000000
     ret = PyBytes_FromStringAndSize(pProfile, (Py_ssize_t)nProfile);
-#else
-    ret = PyString_FromStringAndSize(pProfile, (Py_ssize_t)nProfile);
-#endif
 
     free(pProfile);
     return ret;
@@ -592,7 +582,7 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args)
 
     /* printf("cmsIsIntentSupported(%p, %d, %d) => %d\n", self->profile, intent, direction, result); */
 
-    return PyInt_FromLong(result != 0);
+    return PyLong_FromLong(result != 0);
 }
 
 #ifdef _WIN32
@@ -691,11 +681,7 @@ _profile_read_int_as_string(cmsUInt32Number nr)
     buf[3] = (char) (nr & 0xff);
     buf[4] = 0;
 
-#if PY_VERSION_HEX >= 0x03000000
     ret = PyUnicode_DecodeASCII(buf, 4, NULL);
-#else
-    ret = PyString_FromStringAndSize(buf, 4);
-#endif
     return ret;
 }
 
@@ -898,7 +884,7 @@ _is_intent_supported(CmsProfileObject* self, int clut)
             || intent == INTENT_SATURATION || intent == INTENT_ABSOLUTE_COLORIMETRIC))
             continue;
 
-        id = PyInt_FromLong((long) intent);
+        id = PyLong_FromLong((long) intent);
         entry = Py_BuildValue("(OOO)",
             _check_intent(clut, self->profile, intent, LCMS_USED_AS_INPUT) ? Py_True : Py_False,
             _check_intent(clut, self->profile, intent, LCMS_USED_AS_OUTPUT) ? Py_True : Py_False,
@@ -1010,7 +996,7 @@ cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 {
-    return PyInt_FromLong(cmsGetHeaderRenderingIntent(self->profile));
+    return PyLong_FromLong(cmsGetHeaderRenderingIntent(self->profile));
 }
 
 static PyObject*
@@ -1098,7 +1084,7 @@ cms_profile_getattr_version(CmsProfileObject* self, void* closure)
 static PyObject*
 cms_profile_getattr_icc_version(CmsProfileObject* self, void* closure)
 {
-    return PyInt_FromLong((long) cmsGetEncodedICCversion(self->profile));
+    return PyLong_FromLong((long) cmsGetEncodedICCversion(self->profile));
 }
 
 static PyObject*
@@ -1115,7 +1101,7 @@ static PyObject*
 cms_profile_getattr_header_flags(CmsProfileObject* self, void* closure)
 {
     cmsUInt32Number flags = cmsGetHeaderFlags(self->profile);
-    return PyInt_FromLong(flags);
+    return PyLong_FromLong(flags);
 }
 
 static PyObject*
@@ -1611,7 +1597,6 @@ setup_module(PyObject* m) {
     return 0;
 }
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
     PyObject* m;
@@ -1633,12 +1618,3 @@ PyInit__imagingcms(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_imagingcms(void)
-{
-    PyObject *m = Py_InitModule("_imagingcms", pyCMSdll_methods);
-    setup_module(m);
-    PyDateTime_IMPORT;
-}
-#endif

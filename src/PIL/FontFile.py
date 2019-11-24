@@ -14,7 +14,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 
 import os
 
@@ -35,7 +34,7 @@ def puti16(fp, values):
 # Base class for raster font file handlers.
 
 
-class FontFile(object):
+class FontFile:
 
     bitmap = None
 

@@ -20,10 +20,6 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
-
 
 def _accept(prefix):
     return len(prefix) >= 4 and i32(prefix) == 0x59A66A95

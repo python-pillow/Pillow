@@ -54,5 +54,7 @@ class Test_IFDRational(PillowTestCase):
             res = IFDRational(301, 1)
             im.save(out, dpi=(res, res), compression="raw")
 
-            reloaded = Image.open(out)
-            self.assertEqual(float(IFDRational(301, 1)), float(reloaded.tag_v2[282]))
+            with Image.open(out) as reloaded:
+                self.assertEqual(
+                    float(IFDRational(301, 1)), float(reloaded.tag_v2[282])
+                )

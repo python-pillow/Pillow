@@ -1,7 +1,7 @@
-import sys
+import unittest
 from io import BytesIO
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 iterations = 5000
 
@@ -15,7 +15,7 @@ valgrind --tool=massif python test-installed.py -s -v Tests/check_jpeg_leaks.py
 """
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestJpegLeaks(PillowTestCase):
 
     """

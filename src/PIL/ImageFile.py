@@ -56,7 +56,7 @@ def raise_ioerror(error):
         message = ERRORS.get(error)
     if not message:
         message = "decoder error %d" % error
-    raise IOError(message + " when reading image file")
+    raise OSError(message + " when reading image file")
 
 
 #
@@ -78,7 +78,7 @@ class ImageFile(Image.Image):
     "Base class for image file format handlers."
 
     def __init__(self, fp=None, filename=None):
-        Image.Image.__init__(self)
+        super().__init__()
 
         self._min_frame = 0
 
@@ -103,21 +103,24 @@ class ImageFile(Image.Image):
             self._exclusive_fp = None
 
         try:
-            self._open()
-        except (
-            IndexError,  # end of data
-            TypeError,  # end of data (ord)
-            KeyError,  # unsupported mode
-            EOFError,  # got header but not the first frame
-            struct.error,
-        ) as v:
+            try:
+                self._open()
+            except (
+                IndexError,  # end of data
+                TypeError,  # end of data (ord)
+                KeyError,  # unsupported mode
+                EOFError,  # got header but not the first frame
+                struct.error,
+            ) as v:
+                raise SyntaxError(v)
+
+            if not self.mode or self.size[0] <= 0:
+                raise SyntaxError("not identified by this driver")
+        except BaseException:
             # close the file only if we have opened it this constructor
             if self._exclusive_fp:
                 self.fp.close()
-            raise SyntaxError(v)
-
-        if not self.mode or self.size[0] <= 0:
-            raise SyntaxError("not identified by this driver")
+            raise
 
     def get_format_mimetype(self):
         if self.custom_mimetype:
@@ -140,7 +143,7 @@ class ImageFile(Image.Image):
         pixel = Image.Image.load(self)
 
         if self.tile is None:
-            raise IOError("cannot load this image")
+            raise OSError("cannot load this image")
         if not self.tile:
             return pixel
 
@@ -198,7 +201,7 @@ class ImageFile(Image.Image):
                     # we might need to reload the palette data.
                     if self.palette:
                         self.palette.dirty = 1
-                except (AttributeError, EnvironmentError, ImportError):
+                except (AttributeError, OSError, ImportError):
                     self.map = None
 
         self.load_prepare()
@@ -233,13 +236,13 @@ class ImageFile(Image.Image):
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise IOError("image file is truncated")
+                                    raise OSError("image file is truncated")
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise IOError(
+                                    raise OSError(
                                         "image file is truncated "
                                         "(%d bytes not processed)" % len(b)
                                     )
@@ -317,7 +320,7 @@ class StubImageFile(ImageFile):
     def load(self):
         loader = self._load()
         if loader is None:
-            raise IOError("cannot find loader for this %s file" % self.format)
+            raise OSError("cannot find loader for this %s file" % self.format)
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
@@ -329,7 +332,7 @@ class StubImageFile(ImageFile):
         raise NotImplementedError("StubImageFile subclass must implement _load")
 
 
-class Parser(object):
+class Parser:
     """
     Incremental image parser.  This class implements the standard
     feed/close consumer interface.
@@ -406,7 +409,7 @@ class Parser(object):
             try:
                 with io.BytesIO(self.data) as fp:
                     im = Image.open(fp)
-            except IOError:
+            except OSError:
                 # traceback.print_exc()
                 pass  # not enough data
             else:
@@ -451,9 +454,9 @@ class Parser(object):
             self.feed(b"")
             self.data = self.decoder = None
             if not self.finished:
-                raise IOError("image was incomplete")
+                raise OSError("image was incomplete")
         if not self.image:
-            raise IOError("cannot parse this image")
+            raise OSError("cannot parse this image")
         if self.data:
             # incremental parsing not possible; reopen the file
             # not that we have all data
@@ -509,7 +512,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise IOError("encoder error %d when writing image file" % s)
+                raise OSError("encoder error %d when writing image file" % s)
             e.cleanup()
     else:
         # slight speedup: compress to real file object
@@ -524,7 +527,7 @@ def _save(im, fp, tile, bufsize=0):
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:
-                raise IOError("encoder error %d when writing image file" % s)
+                raise OSError("encoder error %d when writing image file" % s)
             e.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
@@ -554,7 +557,7 @@ def _safe_read(fp, size):
     return b"".join(data)
 
 
-class PyCodecState(object):
+class PyCodecState:
     def __init__(self):
         self.xsize = 0
         self.ysize = 0
@@ -565,7 +568,7 @@ class PyCodecState(object):
         return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
 
 
-class PyDecoder(object):
+class PyDecoder:
     """
     Python implementation of a format decoder. Override this class and
     add the decoding logic in the `decode` method.

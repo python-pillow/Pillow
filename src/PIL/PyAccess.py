@@ -40,7 +40,7 @@ ffi = FFI()
 ffi.cdef(defs)
 
 
-class PyAccess(object):
+class PyAccess:
     def __init__(self, img, readonly=False):
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly

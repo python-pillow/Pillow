@@ -21,10 +21,6 @@
 from . import Image, ImageFile, JpegImagePlugin
 from ._binary import i16be as i16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 
 def _accept(prefix):
     return JpegImagePlugin._accept(prefix)

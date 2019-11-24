@@ -20,7 +20,11 @@ class TestModeI16(PillowTestCase):
                 self.assertEqual(
                     p1,
                     p2,
-                    ("got %r from mode %s at %s, expected %r" % (p1, im1.mode, xy, p2)),
+                    (
+                        "got {!r} from mode {} at {}, expected {!r}".format(
+                            p1, im1.mode, xy, p2
+                        )
+                    ),
                 )
 
     def test_basic(self):
@@ -43,10 +47,10 @@ class TestModeI16(PillowTestCase):
             filename = self.tempfile("temp.im")
             imIn.save(filename)
 
-            imOut = Image.open(filename)
+            with Image.open(filename) as imOut:
 
-            self.verify(imIn)
-            self.verify(imOut)
+                self.verify(imIn)
+                self.verify(imOut)
 
             imOut = imIn.crop((0, 0, w, h))
             self.verify(imOut)

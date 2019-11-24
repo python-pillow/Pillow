@@ -8,6 +8,7 @@ TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
+TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/uncompressed_rgb.dds"
 
 
@@ -66,6 +67,21 @@ class TestFileDds(PillowTestCase):
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
+
+        self.assert_image_equal(target, im)
+
+    def test_dx10_bc7_unorm_srgb(self):
+        """Check DX10 unsigned normalized integer images can be opened"""
+
+        target = Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB.replace(".dds", ".png"))
+
+        im = Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB)
+        im.load()
+
+        self.assertEqual(im.format, "DDS")
+        self.assertEqual(im.mode, "RGBA")
+        self.assertEqual(im.size, (16, 16))
+        self.assertEqual(im.info["gamma"], 1 / 2.2)
 
         self.assert_image_equal(target, im)
 

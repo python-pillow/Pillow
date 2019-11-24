@@ -1,5 +1,6 @@
 import os
 import sys
+from io import StringIO
 
 from PIL import Image, PSDraw
 
@@ -47,10 +48,6 @@ class TestPsDraw(PillowTestCase):
 
     def test_stdout(self):
         # Temporarily redirect stdout
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from io import StringIO
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
 

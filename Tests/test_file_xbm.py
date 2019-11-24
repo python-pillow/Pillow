@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -28,8 +30,6 @@ static char basic_bits[] = {
 
 class TestFileXbm(PillowTestCase):
     def test_pil151(self):
-        from io import BytesIO
-
         im = Image.open(BytesIO(PIL151))
 
         im.load()
@@ -42,11 +42,11 @@ class TestFileXbm(PillowTestCase):
         filename = "Tests/images/hopper.xbm"
 
         # Act
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Assert
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (128, 128))
+            # Assert
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (128, 128))
 
     def test_open_filename_with_underscore(self):
         # Arrange
@@ -54,8 +54,8 @@ class TestFileXbm(PillowTestCase):
         filename = "Tests/images/hopper_underscore.xbm"
 
         # Act
-        im = Image.open(filename)
+        with Image.open(filename) as im:
 
-        # Assert
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (128, 128))
+            # Assert
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (128, 128))

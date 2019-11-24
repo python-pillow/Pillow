@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image, WebPImagePlugin
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import _webp
@@ -158,19 +160,19 @@ class TestFileWebp(PillowTestCase):
         HAVE_WEBP and _webp.HAVE_WEBPANIM, "WebP save all not available"
     )
     def test_background_from_gif(self):
-        im = Image.open("Tests/images/chi.gif")
-        original_value = im.convert("RGB").getpixel((1, 1))
+        with Image.open("Tests/images/chi.gif") as im:
+            original_value = im.convert("RGB").getpixel((1, 1))
 
-        # Save as WEBP
-        out_webp = self.tempfile("temp.webp")
-        im.save(out_webp, save_all=True)
+            # Save as WEBP
+            out_webp = self.tempfile("temp.webp")
+            im.save(out_webp, save_all=True)
 
         # Save as GIF
         out_gif = self.tempfile("temp.gif")
         Image.open(out_webp).save(out_gif)
 
-        reread = Image.open(out_gif)
-        reread_value = reread.convert("RGB").getpixel((1, 1))
+        with Image.open(out_gif) as reread:
+            reread_value = reread.convert("RGB").getpixel((1, 1))
         difference = sum(
             [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
         )

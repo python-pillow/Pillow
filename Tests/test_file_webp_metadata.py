@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -22,25 +24,23 @@ class TestFileWebpMetadata(PillowTestCase):
     def test_read_exif_metadata(self):
 
         file_path = "Tests/images/flower.webp"
-        image = Image.open(file_path)
+        with Image.open(file_path) as image:
 
-        self.assertEqual(image.format, "WEBP")
-        exif_data = image.info.get("exif", None)
-        self.assertTrue(exif_data)
+            self.assertEqual(image.format, "WEBP")
+            exif_data = image.info.get("exif", None)
+            self.assertTrue(exif_data)
 
-        exif = image._getexif()
+            exif = image._getexif()
 
-        # camera make
-        self.assertEqual(exif[271], "Canon")
+            # camera make
+            self.assertEqual(exif[271], "Canon")
 
-        jpeg_image = Image.open("Tests/images/flower.jpg")
-        expected_exif = jpeg_image.info["exif"]
+            with Image.open("Tests/images/flower.jpg") as jpeg_image:
+                expected_exif = jpeg_image.info["exif"]
 
-        self.assertEqual(exif_data, expected_exif)
+                self.assertEqual(exif_data, expected_exif)
 
     def test_write_exif_metadata(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
         expected_exif = image.info["exif"]
@@ -60,21 +60,19 @@ class TestFileWebpMetadata(PillowTestCase):
     def test_read_icc_profile(self):
 
         file_path = "Tests/images/flower2.webp"
-        image = Image.open(file_path)
+        with Image.open(file_path) as image:
 
-        self.assertEqual(image.format, "WEBP")
-        self.assertTrue(image.info.get("icc_profile", None))
+            self.assertEqual(image.format, "WEBP")
+            self.assertTrue(image.info.get("icc_profile", None))
 
-        icc = image.info["icc_profile"]
+            icc = image.info["icc_profile"]
 
-        jpeg_image = Image.open("Tests/images/flower2.jpg")
-        expected_icc = jpeg_image.info["icc_profile"]
+            with Image.open("Tests/images/flower2.jpg") as jpeg_image:
+                expected_icc = jpeg_image.info["icc_profile"]
 
-        self.assertEqual(icc, expected_icc)
+                self.assertEqual(icc, expected_icc)
 
     def test_write_icc_metadata(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower2.jpg"
         image = Image.open(file_path)
         expected_icc_profile = image.info["icc_profile"]
@@ -95,8 +93,6 @@ class TestFileWebpMetadata(PillowTestCase):
             )
 
     def test_read_no_exif(self):
-        from io import BytesIO
-
         file_path = "Tests/images/flower.jpg"
         image = Image.open(file_path)
         self.assertIn("exif", image.info)
@@ -114,9 +110,9 @@ class TestFileWebpMetadata(PillowTestCase):
         if not _webp.HAVE_WEBPANIM:
             self.skipTest("WebP animation support not available")
 
-        iccp_data = "<iccp_data>".encode("utf-8")
-        exif_data = "<exif_data>".encode("utf-8")
-        xmp_data = "<xmp_data>".encode("utf-8")
+        iccp_data = b"<iccp_data>"
+        exif_data = b"<exif_data>"
+        xmp_data = b"<xmp_data>"
 
         temp_file = self.tempfile("temp.webp")
         frame1 = Image.open("Tests/images/anim_frame1.webp")
@@ -130,10 +126,10 @@ class TestFileWebpMetadata(PillowTestCase):
             xmp=xmp_data,
         )
 
-        image = Image.open(temp_file)
-        self.assertIn("icc_profile", image.info)
-        self.assertIn("exif", image.info)
-        self.assertIn("xmp", image.info)
-        self.assertEqual(iccp_data, image.info.get("icc_profile", None))
-        self.assertEqual(exif_data, image.info.get("exif", None))
-        self.assertEqual(xmp_data, image.info.get("xmp", None))
+        with Image.open(temp_file) as image:
+            self.assertIn("icc_profile", image.info)
+            self.assertIn("exif", image.info)
+            self.assertIn("xmp", image.info)
+            self.assertEqual(iccp_data, image.info.get("icc_profile", None))
+            self.assertEqual(exif_data, image.info.get("exif", None))
+            self.assertEqual(xmp_data, image.info.get("xmp", None))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Pillow (PIL Fork) documentation build configuration file, created by
 # sphinx-quickstart on Sat Apr  4 07:54:11 2015.
@@ -42,9 +41,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"Pillow (PIL Fork)"
-copyright = u"1995-2011 Fredrik Lundh, 2010-2019 Alex Clark and Contributors"
-author = u"Fredrik Lundh, Alex Clark and Contributors"
+project = "Pillow (PIL Fork)"
+copyright = "1995-2011 Fredrik Lundh, 2010-2019 Alex Clark and Contributors"
+author = "Fredrik Lundh, Alex Clark and Contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -220,8 +219,8 @@ latex_documents = [
     (
         master_doc,
         "PillowPILFork.tex",
-        u"Pillow (PIL Fork) Documentation",
-        u"Alex Clark",
+        "Pillow (PIL Fork) Documentation",
+        "Alex Clark",
         "manual",
     )
 ]
@@ -252,7 +251,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, "pillowpilfork", u"Pillow (PIL Fork) Documentation", [author], 1)
+    (master_doc, "pillowpilfork", "Pillow (PIL Fork) Documentation", [author], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -268,7 +267,7 @@ texinfo_documents = [
     (
         master_doc,
         "PillowPILFork",
-        u"Pillow (PIL Fork) Documentation",
+        "Pillow (PIL Fork) Documentation",
         author,
         "PillowPILFork",
         "Pillow is the friendly PIL fork by Alex Clark and Contributors.",

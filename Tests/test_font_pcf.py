@@ -1,5 +1,4 @@
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
-from PIL._util import py3
 
 from .helper import PillowTestCase
 
@@ -74,6 +73,5 @@ class TestFontPcf(PillowTestCase):
     def test_high_characters(self):
         message = "".join(chr(i + 1) for i in range(140, 232))
         self._test_high_characters(message)
-        # accept bytes instances in Py3.
-        if py3:
-            self._test_high_characters(message.encode("latin1"))
+        # accept bytes instances.
+        self._test_high_characters(message.encode("latin1"))

@@ -9,7 +9,6 @@ PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 Copyright (c) 1999 by Secret Labs AB.
 
 Use PIL.__version__ for this Pillow version.
-PIL.VERSION is the old PIL version and will be removed in the future.
 
 ;-)
 """
@@ -17,9 +16,9 @@ PIL.VERSION is the old PIL version and will be removed in the future.
 from . import _version
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
+# PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
-PILLOW_VERSION = __version__ = _version.__version__
+__version__ = _version.__version__
 
 del _version
 
@@ -71,3 +70,7 @@ _plugins = [
     "XpmImagePlugin",
     "XVThumbImagePlugin",
 ]
+
+
+class UnidentifiedImageError(IOError):
+    pass

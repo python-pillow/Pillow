@@ -18,11 +18,6 @@
 from . import Image, ImageFile
 from ._binary import i8
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 ##
 # Image plugin for PhotoCD images.  This plugin only reads the 768x512
 # image from the file; higher resolutions are encoded in a proprietary

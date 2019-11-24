@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import EpsImagePlugin, Image, ImageFile
 
-from .helper import PillowTestCase, fromstring, hopper, tostring, unittest
+from .helper import PillowTestCase, fromstring, hopper, tostring
 
 try:
     from PIL import _webp
@@ -115,13 +116,13 @@ class TestImageFile(PillowTestCase):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
 
-        im = Image.open("Tests/images/truncated_image.png")
-        with self.assertRaises(IOError):
-            im.load()
+        with Image.open("Tests/images/truncated_image.png") as im:
+            with self.assertRaises(IOError):
+                im.load()
 
-        # Test that the error is raised if loaded a second time
-        with self.assertRaises(IOError):
-            im.load()
+            # Test that the error is raised if loaded a second time
+            with self.assertRaises(IOError):
+                im.load()
 
     def test_truncated_without_errors(self):
         if "zip_encoder" not in codecs:
@@ -258,12 +259,12 @@ class TestPyDecoder(PillowTestCase):
         exif[40963] = 455
         exif[11] = "Pillow test"
         im.save(out, exif=exif)
-        reloaded = Image.open(out)
-        reloaded_exif = reloaded.getexif()
-        self.assertEqual(reloaded_exif[258], 8)
-        self.assertNotIn(40960, exif)
-        self.assertEqual(reloaded_exif[40963], 455)
-        self.assertEqual(exif[11], "Pillow test")
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            self.assertEqual(reloaded_exif[258], 8)
+            self.assertNotIn(40960, exif)
+            self.assertEqual(reloaded_exif[40963], 455)
+            self.assertEqual(exif[11], "Pillow test")
 
         im = Image.open("Tests/images/no-dpi-in-exif.jpg")  # Big endian
         exif = im.getexif()
@@ -278,12 +279,12 @@ class TestPyDecoder(PillowTestCase):
         exif[40963] = 455
         exif[305] = "Pillow test"
         im.save(out, exif=exif)
-        reloaded = Image.open(out)
-        reloaded_exif = reloaded.getexif()
-        self.assertEqual(reloaded_exif[258], 8)
-        self.assertNotIn(40960, exif)
-        self.assertEqual(reloaded_exif[40963], 455)
-        self.assertEqual(exif[305], "Pillow test")
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            self.assertEqual(reloaded_exif[258], 8)
+            self.assertNotIn(40960, exif)
+            self.assertEqual(reloaded_exif[40963], 455)
+            self.assertEqual(exif[305], "Pillow test")
 
     @unittest.skipIf(
         not HAVE_WEBP or not _webp.HAVE_WEBPANIM,
@@ -300,11 +301,11 @@ class TestPyDecoder(PillowTestCase):
         exif[305] = "Pillow test"
 
         def check_exif():
-            reloaded = Image.open(out)
-            reloaded_exif = reloaded.getexif()
-            self.assertEqual(reloaded_exif[258], 8)
-            self.assertEqual(reloaded_exif[40963], 455)
-            self.assertEqual(exif[305], "Pillow test")
+            with Image.open(out) as reloaded:
+                reloaded_exif = reloaded.getexif()
+                self.assertEqual(reloaded_exif[258], 8)
+                self.assertEqual(reloaded_exif[40963], 455)
+                self.assertEqual(exif[305], "Pillow test")
 
         im.save(out, exif=exif)
         check_exif()
@@ -323,23 +324,13 @@ class TestPyDecoder(PillowTestCase):
         exif[305] = "Pillow test"
         im.save(out, exif=exif)
 
-        reloaded = Image.open(out)
-        reloaded_exif = reloaded.getexif()
-        self.assertEqual(reloaded_exif, {258: 8, 40963: 455, 305: "Pillow test"})
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            self.assertEqual(reloaded_exif, {258: 8, 40963: 455, 305: "Pillow test"})
 
     def test_exif_interop(self):
-        im = Image.open("Tests/images/flower.jpg")
-        exif = im.getexif()
-        self.assertEqual(
-            exif.get_ifd(0xA005), {1: "R98", 2: b"0100", 4097: 2272, 4098: 1704}
-        )
-
-    def test_exif_shared(self):
-        im = Image.open("Tests/images/exif.png")
-        exif = im.getexif()
-        self.assertIs(im.getexif(), exif)
-
-    def test_exif_str(self):
-        im = Image.open("Tests/images/exif.png")
-        exif = im.getexif()
-        self.assertEqual(str(exif), "{274: 1}")
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            self.assertEqual(
+                exif.get_ifd(0xA005), {1: "R98", 2: b"0100", 4097: 2272, 4098: 1704}
+            )

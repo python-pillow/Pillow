@@ -2,10 +2,61 @@
 Changelog (Pillow)
 ==================
 
-6.2.0 (2019-10-01)
+7.0.0 (unreleased)
+------------------
+
+- Drop support for EOL Python 2.7 #4109
+  [hugovk, radarhere, jdufresne]
+
+- Added UnidentifiedImageError #4182
+  [radarhere, hugovk]
+
+- Remove deprecated __version__ from plugins #4197
+  [hugovk, radarhere]
+
+- Fixed freeing unallocated pointer when resizing with height too large #4116
+  [radarhere]
+
+- Copy info in Image.transform #4128
+  [radarhere]
+
+- Corrected DdsImagePlugin setting info gamma #4171
+  [radarhere]
+
+- Depends: Update libtiff to 4.1.0 #4195, Tk Tcl to 8.6.10 #4229
+  [radarhere]
+
+- Improve handling of file resources #3577
+  [jdufresne]
+
+- Removed CI testing of Fedora 29 #4165
+  [hugovk]
+
+- Added pypy3 to tox envlist #4137
+  [jdufresne]
+
+- Drop support for EOL PyQt4 and PySide #4108
+  [hugovk, radarhere]
+
+- Removed deprecated setting of TIFF image sizes #4114
+  [radarhere]
+
+- Removed deprecated PILLOW_VERSION #4107
+  [hugovk]
+
+- Changed default frombuffer raw decoder args #1730
+  [radarhere]
+
+6.2.1 (2019-10-21)
 ------------------
 
 - This is the last Pillow release to support Python 2.7 #3642
+
+- Add support for Python 3.8 #4141
+  [hugovk]
+
+6.2.0 (2019-10-01)
+------------------
 
 - Catch buffer overruns #4104
   [radarhere]

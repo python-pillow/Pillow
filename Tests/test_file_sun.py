@@ -1,8 +1,9 @@
 import os
+import unittest
 
 from PIL import Image, SunImagePlugin
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 EXTRA_DIR = "Tests/images/sunraster"
 
