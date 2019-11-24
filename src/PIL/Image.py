@@ -1190,6 +1190,9 @@ class Image(object):
         JPEG to greyscale while loading it, or to extract a 128x192
         version from a PCD file.
 
+        If any changes are made, returns a tuple with the chosen `mode` and
+        `box` with coordinates of the original image within the altered one.
+
         Note that this method modifies the :py:class:`~PIL.Image.Image` object
         in place. If the image has already been loaded, this method has no
         effect.
