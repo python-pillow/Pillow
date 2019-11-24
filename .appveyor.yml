@@ -56,6 +56,9 @@ install:
         c:\pillow\winbuild\build_deps.cmd
         $host.SetShouldExit(0)
       }
+- curl -fsSL -o gs950.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs950/gs950w32.exe
+- gs950.exe /S
+- path %path%;C:\Program Files (x86)\gs\gs9.50\bin
 
 build_script:
 - ps: |
