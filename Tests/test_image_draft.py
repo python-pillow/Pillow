@@ -17,7 +17,7 @@ class TestImageDraft(PillowTestCase):
         scale, _ = im.decoderconfig
         self.assertEqual(box[:2], (0, 0))
         self.assertTrue((im.width - scale) < box[2] <= im.width)
-        self.assertTrue((im.height - scale)  < box[3] <= im.height)
+        self.assertTrue((im.height - scale) < box[3] <= im.height)
         return im
 
     def test_size(self):
