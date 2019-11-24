@@ -464,7 +464,7 @@ class TestImageFont(PillowTestCase):
         with self.assertRaises(UnicodeEncodeError):
             font.getsize("’")
 
-    @unittest.skipIf(is_pypy(), "requires CPython")
+    @unittest.skipIf(is_pypy(), "failing on PyPy")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"

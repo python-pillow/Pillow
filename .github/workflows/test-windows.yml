@@ -253,7 +253,6 @@ jobs:
 
     # for Raqm
     - name: Build dependencies / HarfBuzz
-      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -274,7 +273,6 @@ jobs:
 
     # for Raqm
     - name: Build dependencies / FriBidi
-      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
@@ -292,9 +290,7 @@ jobs:
         copy /Y /B *.lib %INCLIB%
       shell: cmd
 
-    # failing with PyPy3
     - name: Build dependencies / Raqm
-      if: "!contains(matrix.python-version, 'pypy')"
       run: |
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32

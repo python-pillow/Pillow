@@ -326,24 +326,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if (defined(PYPY_VERSION_NUM))
-    if (PyUnicode_Check(string)) {
-        Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
-        int size = PyUnicode_GET_SIZE(string);
-        if (index >= size)
-            return 0;
-        *char_out = p[index];
-        return 1;
-    }
-#else
     if (PyUnicode_Check(string)) {
         if (index >= PyUnicode_GET_LENGTH(string))
             return 0;
         *char_out = PyUnicode_READ_CHAR(string, index);
         return 1;
     }
-#endif
-
     return 0;
 }
 
@@ -363,7 +351,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-#if (defined(PYPY_VERSION_NUM))
+#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM < 0x07020000))
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
@@ -392,7 +380,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
                and raqm fails with empty strings */
             goto failed;
         }
-        int set_text = (*p_raqm.set_text)(rq, (const uint32_t *)(text), size);
+        int set_text = (*p_raqm.set_text)(rq, text, size);
         PyMem_Free(text);
         if (!set_text) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
