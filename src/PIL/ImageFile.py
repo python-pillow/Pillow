@@ -119,11 +119,6 @@ class ImageFile(Image.Image):
         if not self.mode or self.size[0] <= 0:
             raise SyntaxError("not identified by this driver")
 
-    def draft(self, mode, size):
-        """Set draft mode"""
-
-        pass
-
     def get_format_mimetype(self):
         if self.custom_mimetype:
             return self.custom_mimetype

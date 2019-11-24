@@ -415,7 +415,7 @@ class JpegImageFile(ImageFile.ImageFile):
             return
 
         d, e, o, a = self.tile[0]
-        scale = 0
+        scale = 1
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self.mode = mode
