@@ -2212,14 +2212,17 @@ class Image(object):
             x = int(max(x * size[1] / y, 1))
             y = int(size[1])
         size = x, y
+        box = None
 
         if size == self.size:
             return
 
-        self.draft(None, size)
+        res = self.draft(None, size)
+        if res is not None:
+            box = res[1]
 
         if self.size != size:
-            im = self.resize(size, resample)
+            im = self.resize(size, resample, box=box)
 
             self.im = im.im
             self._size = size
