@@ -1846,7 +1846,11 @@ _reduce(ImagingObject* self, PyObject* args)
         return ImagingError_ValueError("scale must be > 0");
     }
 
-    imOut = ImagingReduce(imIn, xscale, yscale);
+    if (xscale == 1 && yscale == 1) {
+        imOut = ImagingCopy(imIn);
+    } else {
+        imOut = ImagingReduce(imIn, xscale, yscale);
+    }
 
     return PyImagingNew(imOut);
 }
