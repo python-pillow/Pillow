@@ -26,18 +26,17 @@ class TestFileWebpAlpha(PillowTestCase):
 
         # Generated with `cwebp transparent.png -o transparent.webp`
         file_path = "Tests/images/transparent.webp"
-        image = Image.open(file_path)
+        with Image.open(file_path) as image:
+            self.assertEqual(image.mode, "RGBA")
+            self.assertEqual(image.size, (200, 150))
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        self.assertEqual(image.mode, "RGBA")
-        self.assertEqual(image.size, (200, 150))
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
+            image.tobytes()
 
-        image.tobytes()
-
-        target = Image.open("Tests/images/transparent.png")
-        self.assert_image_similar(image, target, 20.0)
+            with Image.open("Tests/images/transparent.png") as target:
+                self.assert_image_similar(image, target, 20.0)
 
     def test_write_lossless_rgb(self):
         """
@@ -56,16 +55,16 @@ class TestFileWebpAlpha(PillowTestCase):
 
         pil_image.save(temp_file, lossless=True)
 
-        image = Image.open(temp_file)
-        image.load()
+        with Image.open(temp_file) as image:
+            image.load()
 
-        self.assertEqual(image.mode, "RGBA")
-        self.assertEqual(image.size, pil_image.size)
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
+            self.assertEqual(image.mode, "RGBA")
+            self.assertEqual(image.size, pil_image.size)
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        self.assert_image_equal(image, pil_image)
+            self.assert_image_equal(image, pil_image)
 
     def test_write_rgba(self):
         """
@@ -81,21 +80,21 @@ class TestFileWebpAlpha(PillowTestCase):
         if _webp.WebPDecoderBuggyAlpha(self):
             return
 
-        image = Image.open(temp_file)
-        image.load()
+        with Image.open(temp_file) as image:
+            image.load()
 
-        self.assertEqual(image.mode, "RGBA")
-        self.assertEqual(image.size, (10, 10))
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
+            self.assertEqual(image.mode, "RGBA")
+            self.assertEqual(image.size, (10, 10))
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        # early versions of webp are known to produce higher deviations:
-        # deal with it
-        if _webp.WebPDecoderVersion(self) <= 0x201:
-            self.assert_image_similar(image, pil_image, 3.0)
-        else:
-            self.assert_image_similar(image, pil_image, 1.0)
+            # early versions of webp are known to produce higher deviations:
+            # deal with it
+            if _webp.WebPDecoderVersion(self) <= 0x201:
+                self.assert_image_similar(image, pil_image, 3.0)
+            else:
+                self.assert_image_similar(image, pil_image, 1.0)
 
     def test_write_unsupported_mode_PA(self):
         """
@@ -107,15 +106,14 @@ class TestFileWebpAlpha(PillowTestCase):
         file_path = "Tests/images/transparent.gif"
         with Image.open(file_path) as im:
             im.save(temp_file)
-        image = Image.open(temp_file)
+        with Image.open(temp_file) as image:
+            self.assertEqual(image.mode, "RGBA")
+            self.assertEqual(image.size, (200, 150))
+            self.assertEqual(image.format, "WEBP")
 
-        self.assertEqual(image.mode, "RGBA")
-        self.assertEqual(image.size, (200, 150))
-        self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
+            with Image.open(file_path) as im:
+                target = im.convert("RGBA")
 
-        image.load()
-        image.getdata()
-        with Image.open(file_path) as im:
-            target = im.convert("RGBA")
-
-        self.assert_image_similar(image, target, 25.0)
+            self.assert_image_similar(image, target, 25.0)

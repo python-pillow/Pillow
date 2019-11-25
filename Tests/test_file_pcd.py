@@ -5,8 +5,8 @@ from .helper import PillowTestCase
 
 class TestFilePcd(PillowTestCase):
     def test_load_raw(self):
-        im = Image.open("Tests/images/hopper.pcd")
-        im.load()  # should not segfault.
+        with Image.open("Tests/images/hopper.pcd") as im:
+            im.load()  # should not segfault.
 
         # Note that this image was created with a resized hopper
         # image, which was then converted to pcd with imagemagick

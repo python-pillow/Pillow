@@ -101,9 +101,9 @@ class TestNumpy(PillowTestCase):
                 self.assert_deep_equal(px[x, y], np[y, x])
 
     def test_16bit(self):
-        img = Image.open("Tests/images/16bit.cropped.tif")
-        np_img = numpy.array(img)
-        self._test_img_equals_nparray(img, np_img)
+        with Image.open("Tests/images/16bit.cropped.tif") as img:
+            np_img = numpy.array(img)
+            self._test_img_equals_nparray(img, np_img)
         self.assertEqual(np_img.dtype, numpy.dtype("<u2"))
 
     def test_1bit(self):
@@ -217,7 +217,7 @@ class TestNumpy(PillowTestCase):
         from numpy import array
 
         test_file = "Tests/images/hopper.png"
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
 
-        # Act/Assert
-        self.assert_warning(None, lambda: array(im))
+            # Act/Assert
+            self.assert_warning(None, lambda: array(im))

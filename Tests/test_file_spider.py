@@ -64,10 +64,10 @@ class TestImageSpider(PillowTestCase):
 
             # Assert
             fp.seek(0)
-            reloaded = Image.open(fp)
-            self.assertEqual(reloaded.mode, "F")
-            self.assertEqual(reloaded.size, (128, 128))
-            self.assertEqual(reloaded.format, "SPIDER")
+            with Image.open(fp) as reloaded:
+                self.assertEqual(reloaded.mode, "F")
+                self.assertEqual(reloaded.size, (128, 128))
+                self.assertEqual(reloaded.format, "SPIDER")
 
     def test_isSpiderImage(self):
         self.assertTrue(SpiderImagePlugin.isSpiderImage(TEST_FILE))
@@ -143,5 +143,5 @@ class TestImageSpider(PillowTestCase):
         im.save(data, format="SPIDER")
 
         data.seek(0)
-        im2 = Image.open(data)
-        self.assert_image_equal(im, im2)
+        with Image.open(data) as im2:
+            self.assert_image_equal(im, im2)

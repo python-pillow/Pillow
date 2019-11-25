@@ -99,45 +99,45 @@ class TestImageFilter(PillowTestCase):
         self.assertRaises(ValueError, lambda: ImageFilter.Kernel((3, 3), (0, 0)))
 
     def test_consistency_3x3(self):
-        source = Image.open("Tests/images/hopper.bmp")
-        reference = Image.open("Tests/images/hopper_emboss.bmp")
-        kernel = ImageFilter.Kernel(  # noqa: E127
-            (3, 3),
-            # fmt: off
-            (-1, -1,  0,
-             -1,  0,  1,
-              0,  1,  1),
-            # fmt: on
-            0.3,
-        )
-        source = source.split() * 2
-        reference = reference.split() * 2
+        with Image.open("Tests/images/hopper.bmp") as source:
+            with Image.open("Tests/images/hopper_emboss.bmp") as reference:
+                kernel = ImageFilter.Kernel(  # noqa: E127
+                    (3, 3),
+                    # fmt: off
+                    (-1, -1,  0,
+                     -1,  0,  1,
+                      0,  1,  1),
+                    # fmt: on
+                    0.3,
+                )
+                source = source.split() * 2
+                reference = reference.split() * 2
 
-        for mode in ["L", "LA", "RGB", "CMYK"]:
-            self.assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+                for mode in ["L", "LA", "RGB", "CMYK"]:
+                    self.assert_image_equal(
+                        Image.merge(mode, source[: len(mode)]).filter(kernel),
+                        Image.merge(mode, reference[: len(mode)]),
+                    )
 
     def test_consistency_5x5(self):
-        source = Image.open("Tests/images/hopper.bmp")
-        reference = Image.open("Tests/images/hopper_emboss_more.bmp")
-        kernel = ImageFilter.Kernel(  # noqa: E127
-            (5, 5),
-            # fmt: off
-            (-1, -1, -1, -1,  0,
-             -1, -1, -1,  0,  1,
-             -1, -1,  0,  1,  1,
-             -1,  0,  1,  1,  1,
-              0,  1,  1,  1,  1),
-            # fmt: on
-            0.3,
-        )
-        source = source.split() * 2
-        reference = reference.split() * 2
+        with Image.open("Tests/images/hopper.bmp") as source:
+            with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
+                kernel = ImageFilter.Kernel(  # noqa: E127
+                    (5, 5),
+                    # fmt: off
+                    (-1, -1, -1, -1,  0,
+                     -1, -1, -1,  0,  1,
+                     -1, -1,  0,  1,  1,
+                     -1,  0,  1,  1,  1,
+                      0,  1,  1,  1,  1),
+                    # fmt: on
+                    0.3,
+                )
+                source = source.split() * 2
+                reference = reference.split() * 2
 
-        for mode in ["L", "LA", "RGB", "CMYK"]:
-            self.assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+                for mode in ["L", "LA", "RGB", "CMYK"]:
+                    self.assert_image_equal(
+                        Image.merge(mode, source[: len(mode)]).filter(kernel),
+                        Image.merge(mode, reference[: len(mode)]),
+                    )

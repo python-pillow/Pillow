@@ -107,8 +107,8 @@ class TestFilePdf(PillowTestCase):
         self.assertGreater(os.path.getsize(outfile), 0)
 
         # Append JPEG images
-        jpeg = Image.open("Tests/images/flower.jpg")
-        jpeg.save(outfile, save_all=True, append_images=[jpeg.copy()])
+        with Image.open("Tests/images/flower.jpg") as jpeg:
+            jpeg.save(outfile, save_all=True, append_images=[jpeg.copy()])
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)

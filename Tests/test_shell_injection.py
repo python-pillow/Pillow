@@ -38,8 +38,8 @@ class TestShellInjection(PillowTestCase):
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg_filename(self):
-        im = Image.open(TEST_JPG)
-        self.assert_save_filename_check(im, JpegImagePlugin._save_cjpeg)
+        with Image.open(TEST_JPG) as im:
+            self.assert_save_filename_check(im, JpegImagePlugin._save_cjpeg)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self):
