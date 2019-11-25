@@ -31,6 +31,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - uses: actions/checkout@v1
+      with:
+        repository: python-pillow/pillow-depends
+        ref: master
+
     - name: Install PyPy
       if: "contains(matrix.python-version, 'pypy')"
       run: |
@@ -63,24 +68,18 @@ jobs:
 
     - name: Fetch dependencies
       run: |
-        curl -fsSL -o nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/win64/nasm-2.14.02-win64.zip
-        7z x nasm.zip "-o$env:RUNNER_WORKSPACE\"
+        7z x ..\pillow-depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         Write-Host "`#`#[add-path]$env:RUNNER_WORKSPACE\nasm-2.14.02"
         Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
 
-        # 32-bit should work on both platforms
-        curl -fsSL -o gs950.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs950/gs950w32.exe
-        ./gs950.exe /S
+        ..\pillow-depends\gs950w32.exe /S
         Write-Host "`#`#[add-path]C:\Program Files (x86)\gs\gs9.50\bin"
         Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.50\bin"
 
         $env:PYTHON=$env:pythonLocation
-        curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
-        7z x pillow-depends.zip -oc:\
-        mv c:\pillow-depends-master c:\pillow-depends
-        xcopy c:\pillow-depends\*.zip $env:GITHUB_WORKSPACE\winbuild\
-        xcopy c:\pillow-depends\*.tar.gz $env:GITHUB_WORKSPACE\winbuild\
-        xcopy /s c:\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
+        xcopy ..\pillow-depends\*.zip $env:GITHUB_WORKSPACE\winbuild\
+        xcopy ..\pillow-depends\*.tar.gz $env:GITHUB_WORKSPACE\winbuild\
+        xcopy /s ..\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
         cd $env:GITHUB_WORKSPACE/winbuild/
         python.exe $env:GITHUB_WORKSPACE\winbuild\build_dep.py
       env:
