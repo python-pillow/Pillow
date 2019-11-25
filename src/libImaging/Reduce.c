@@ -715,6 +715,8 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn)
 void
 ImagingReduceCorners(Imaging imOut, Imaging imIn, int xscale, int yscale)
 {
+    /* Fill the last row and the last column for any xscale and yscale.
+    */
     int x, y, xx, yy;
 
     if (imIn->image8) {
@@ -722,9 +724,10 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int xscale, int yscale)
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
-            if (imOut->xsize > imIn->xsize / xscale) {
-                UINT32 multiplier = division_UINT32(xscale * yscale, 8);
-                UINT32 amend = yscale;
+            if (imIn->xsize % xscale) {
+                int scale = (imIn->xsize % xscale) * yscale;
+                UINT32 multiplier = division_UINT32(scale, 8);
+                UINT32 amend = scale / 2;
                 for (y = 0; y < imIn->ysize / yscale; y++) {
                     UINT32 v;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
@@ -732,7 +735,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int xscale, int yscale)
 
                     for (yy = y*yscale; yy < y*yscale + yscale; yy++) {
                         UINT8 *line = (UINT8 *)imIn->image[yy];
-                        for (xx = x * xscale; xx < imIn->xsize; xx++) {
+                        for (xx = x*xscale; xx < imIn->xsize; xx++) {
                             ss0 += line[xx*4 + 0];
                             ss1 += line[xx*4 + 1];
                             ss2 += line[xx*4 + 2];
@@ -744,6 +747,51 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int xscale, int yscale)
                         (ss2 * multiplier) >> 24, (ss3 * multiplier) >> 24);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
+            }
+            if (imIn->ysize % yscale) {
+                int scale = xscale * (imIn->ysize % yscale);
+                UINT32 multiplier = division_UINT32(scale, 8);
+                UINT32 amend = scale / 2;
+                y = imIn->ysize / yscale;
+                for (x = 0; x < imIn->xsize / xscale; x++) {
+                    UINT32 v;
+                    UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
+                    for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        for (xx = x*xscale; xx < x*xscale + xscale; xx++) {
+                            ss0 += line[xx*4 + 0];
+                            ss1 += line[xx*4 + 1];
+                            ss2 += line[xx*4 + 2];
+                            ss3 += line[xx*4 + 3];
+                        }
+                    }
+                    v = MAKE_UINT32(
+                        (ss0 * multiplier) >> 24, (ss1 * multiplier) >> 24,
+                        (ss2 * multiplier) >> 24, (ss3 * multiplier) >> 24);
+                    memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
+                }
+            }
+            if (imIn->xsize % xscale && imIn->ysize % yscale) {
+                int scale = (imIn->xsize % xscale) * (imIn->ysize % yscale);
+                UINT32 multiplier = division_UINT32(scale, 8);
+                UINT32 amend = scale / 2;
+                UINT32 v;
+                UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
+                x = imIn->xsize / xscale;
+                y = imIn->ysize / yscale;
+                for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                    UINT8 *line = (UINT8 *)imIn->image[yy];
+                    for (xx = x*xscale; xx < imIn->xsize; xx++) {
+                        ss0 += line[xx*4 + 0];
+                        ss1 += line[xx*4 + 1];
+                        ss2 += line[xx*4 + 2];
+                        ss3 += line[xx*4 + 3];
+                    }
+                }
+                v = MAKE_UINT32(
+                    (ss0 * multiplier) >> 24, (ss1 * multiplier) >> 24,
+                    (ss2 * multiplier) >> 24, (ss3 * multiplier) >> 24);
+                memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
             }
             break;
 
