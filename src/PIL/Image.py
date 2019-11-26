@@ -1899,6 +1899,14 @@ class Image(object):
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
+        if factor == (1, 1):
+            return self.copy()
+
+        if self.mode in ["LA", "RGBA"]:
+            im = self.convert(self.mode[:-1] + "a")
+            im = im.reduce(factor)
+            return im.convert(self.mode)
+
         self.load()
 
         return self._new(self.im.reduce(factor))

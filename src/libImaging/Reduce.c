@@ -365,7 +365,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int xscale)
 void
 ImagingReduce2x2(Imaging imOut, Imaging imIn)
 {
-    /* Fast special case for xscale = 2 and yscale = 2.
+    /* Optimized implementation for xscale = 2 and yscale = 2.
     */
     int xscale = 2, yscale = 2;
     int x, y;
@@ -435,7 +435,7 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn)
 void
 ImagingReduce3x3(Imaging imOut, Imaging imIn)
 {
-    /* Fast special case for xscale = 3 and yscale = 3.
+    /* Optimized implementation for xscale = 3 and yscale = 3.
     */
     int xscale = 3, yscale = 3;
     int x, y;
@@ -519,7 +519,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn)
 void
 ImagingReduce4x4(Imaging imOut, Imaging imIn)
 {
-    /* Fast special case for xscale = 4 and yscale = 4.
+    /* Optimized implementation for xscale = 4 and yscale = 4.
     */
     int xscale = 4, yscale = 4;
     int x, y;
