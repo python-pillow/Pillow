@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
-
 import io
+import unittest
 
 from PIL import features
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 try:
     from PIL import _webp

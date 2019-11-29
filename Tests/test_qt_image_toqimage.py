@@ -57,7 +57,7 @@ if ImageQt.qt_is_installed:
 
     class Example(QWidget):
         def __init__(self):
-            super(Example, self).__init__()
+            super().__init__()
 
             img = hopper().resize((1000, 1000))
 

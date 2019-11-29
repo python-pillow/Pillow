@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import base64
 import distutils.version
 import io
@@ -10,7 +8,6 @@ from collections import namedtuple
 from ctypes import c_float
 
 from PIL import Image, TiffImagePlugin, TiffTags, features
-from PIL._util import py3
 
 from .helper import PillowTestCase, hopper
 
@@ -263,7 +260,6 @@ class TestFileLibTiff(LibTiffTestCase):
                     tc(4.25, TiffTags.FLOAT, True),
                     tc(4.25, TiffTags.DOUBLE, True),
                     tc("custom tag value", TiffTags.ASCII, True),
-                    tc(u"custom tag value", TiffTags.ASCII, True),
                     tc(b"custom tag value", TiffTags.BYTE, True),
                     tc((4, 5, 6), TiffTags.SHORT, True),
                     tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
@@ -361,12 +357,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
         b = im.tobytes()
         # Bytes are in image native order (little endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\xe0"))
-            self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
+        self.assertEqual(b[0], ord(b"\xe0"))
+        self.assertEqual(b[1], ord(b"\x01"))
 
         out = self.tempfile("temp.tif")
         # out = "temp.le.tif"
@@ -387,12 +379,8 @@ class TestFileLibTiff(LibTiffTestCase):
         b = im.tobytes()
 
         # Bytes are in image native order (big endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\x01"))
-            self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
+        self.assertEqual(b[0], ord(b"\x01"))
+        self.assertEqual(b[1], ord(b"\xe0"))
 
         out = self.tempfile("temp.tif")
         im.save(out)

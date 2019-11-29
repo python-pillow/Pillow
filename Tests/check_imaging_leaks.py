@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-
-from __future__ import division
+import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, is_win32, unittest
+from .helper import PillowTestCase, is_win32
 
 min_iterations = 100
 max_iterations = 10000

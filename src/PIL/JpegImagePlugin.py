@@ -31,9 +31,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import array
 import io
 import os
@@ -44,13 +41,7 @@ import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i8, i16be as i16, i32be as i32, o8
-from ._util import isStringType
 from .JpegPresets import presets
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
-
 
 #
 # Parser
@@ -617,7 +608,7 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as JPEG" % im.mode)
+        raise OSError("cannot write mode %s as JPEG" % im.mode)
 
     info = im.encoderinfo
 
@@ -641,7 +632,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get("subsampling", -1)
-        if isStringType(qtables) and qtables in presets:
+        if isinstance(qtables, str) and qtables in presets:
             qtables = presets[qtables].get("quantization")
 
     if subsampling == "4:4:4":
@@ -662,7 +653,7 @@ def _save(im, fp, filename):
     def validate_qtables(qtables):
         if qtables is None:
             return qtables
-        if isStringType(qtables):
+        if isinstance(qtables, str):
             try:
                 lines = [
                     int(num)

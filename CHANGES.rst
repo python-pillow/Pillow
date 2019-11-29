@@ -5,6 +5,15 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Drop support for EOL Python 2.7 #4109
+  [hugovk, radarhere, jdufresne]
+
+- Added UnidentifiedImageError #4182
+  [radarhere, hugovk]
+
+- Remove deprecated __version__ from plugins #4197
+  [hugovk, radarhere]
+
 - Fixed freeing unallocated pointer when resizing with height too large #4116
   [radarhere]
 
@@ -14,7 +23,7 @@ Changelog (Pillow)
 - Corrected DdsImagePlugin setting info gamma #4171
   [radarhere]
 
-- Depends: Update libtiff to 4.1.0 #4195
+- Depends: Update libtiff to 4.1.0 #4195, Tk Tcl to 8.6.10 #4229
   [radarhere]
 
 - Improve handling of file resources #3577

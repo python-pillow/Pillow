@@ -1,11 +1,11 @@
 import os
 import shutil
 import tempfile
+import unittest
 
-from PIL import Image
-from PIL._util import py3
+from PIL import Image, UnidentifiedImageError
 
-from .helper import PillowTestCase, hopper, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 
 class TestImage(PillowTestCase):
@@ -48,6 +48,9 @@ class TestImage(PillowTestCase):
                 Image.new(mode, (1, 1))
             self.assertEqual(str(e.exception), "unrecognized image mode")
 
+    def test_exception_inheritance(self):
+        self.assertTrue(issubclass(UnidentifiedImageError, IOError))
+
     def test_sanity(self):
 
         im = Image.new("L", (100, 100))
@@ -80,20 +83,14 @@ class TestImage(PillowTestCase):
             im.size = (3, 4)
 
     def test_invalid_image(self):
-        if py3:
-            import io
+        import io
 
-            im = io.BytesIO(b"")
-        else:
-            import StringIO
-
-            im = StringIO.StringIO("")
-        self.assertRaises(IOError, Image.open, im)
+        im = io.BytesIO(b"")
+        self.assertRaises(UnidentifiedImageError, Image.open, im)
 
     def test_bad_mode(self):
         self.assertRaises(ValueError, Image.open, "filename", "bad mode")
 
-    @unittest.skipUnless(Image.HAS_PATHLIB, "requires pathlib/pathlib2")
     def test_pathlib(self):
         from PIL.Image import Path
 
@@ -113,7 +110,7 @@ class TestImage(PillowTestCase):
     def test_fp_name(self):
         temp_file = self.tempfile("temp.jpg")
 
-        class FP(object):
+        class FP:
             def write(a, b):
                 pass
 
@@ -592,11 +589,11 @@ class TestImage(PillowTestCase):
                 try:
                     im.load()
                     self.assertFail()
-                except IOError as e:
+                except OSError as e:
                     self.assertEqual(str(e), "buffer overrun when reading image file")
 
 
-class MockEncoder(object):
+class MockEncoder:
     pass
 
 

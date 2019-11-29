@@ -24,12 +24,7 @@ import io
 import os
 import time
 
-from . import Image, ImageFile, ImageSequence, PdfParser
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.5"
-
+from . import Image, ImageFile, ImageSequence, PdfParser, __version__
 
 #
 # --------------------------------------------------------------------
@@ -82,7 +77,7 @@ def _save(im, fp, filename, save_all=False):
 
     existing_pdf.start_writing()
     existing_pdf.write_header()
-    existing_pdf.write_comment("created by PIL PDF driver " + __version__)
+    existing_pdf.write_comment("created by Pillow {} PDF driver".format(__version__))
 
     #
     # pages

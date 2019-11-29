@@ -184,7 +184,7 @@ class PcfFontFile(FontFile.FontFile):
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise IOError("Wrong number of bitmaps")
+            raise OSError("Wrong number of bitmaps")
 
         offsets = []
         for i in range(nbitmaps):

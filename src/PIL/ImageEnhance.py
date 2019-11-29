@@ -21,7 +21,7 @@
 from . import Image, ImageFilter, ImageStat
 
 
-class _Enhance(object):
+class _Enhance:
     def enhance(self, factor):
         """
         Returns an enhanced image.

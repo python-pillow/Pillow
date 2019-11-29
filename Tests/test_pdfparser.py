@@ -22,7 +22,7 @@ class TestPdfParser(PillowTestCase):
         self.assertEqual(encode_text("abc"), b"\xFE\xFF\x00a\x00b\x00c")
         self.assertEqual(decode_text(b"\xFE\xFF\x00a\x00b\x00c"), "abc")
         self.assertEqual(decode_text(b"abc"), "abc")
-        self.assertEqual(decode_text(b"\x1B a \x1C"), u"\u02D9 a \u02DD")
+        self.assertEqual(decode_text(b"\x1B a \x1C"), "\u02D9 a \u02DD")
 
     def test_indirect_refs(self):
         self.assertEqual(IndirectReference(1, 2), IndirectReference(1, 2))

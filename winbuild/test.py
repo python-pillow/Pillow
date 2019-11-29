@@ -13,7 +13,7 @@ def test_one(params):
     try:
         print("Running: %s, %s" % params)
         command = [
-            r"%s\%s%s\Scripts\python.exe" % (VIRT_BASE, python, architecture),
+            r"{}\{}{}\Scripts\python.exe".format(VIRT_BASE, python, architecture),
             "test-installed.py",
             "--processes=-0",
             "--process-timeout=30",
@@ -22,10 +22,10 @@ def test_one(params):
         proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         (trace, stderr) = proc.communicate()
         status = proc.returncode
-        print("Done with %s, %s -- %s" % (python, architecture, status))
+        print("Done with {}, {} -- {}".format(python, architecture, status))
         return (python, architecture, status, trace)
     except Exception as msg:
-        print("Error with %s, %s: %s" % (python, architecture, msg))
+        print("Error with {}, {}: {}".format(python, architecture, msg))
         return (python, architecture, -1, str(msg))
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     results = map(test_one, matrix)
 
     for (python, architecture, status, trace) in results:
-        print("%s%s: %s" % (python, architecture, status and "ERR" or "PASS"))
+        print("{}{}: {}".format(python, architecture, status and "ERR" or "PASS"))
 
     res = all(status for (python, architecture, status, trace) in results)
     sys.exit(res)

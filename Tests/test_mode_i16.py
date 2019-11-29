@@ -20,7 +20,11 @@ class TestModeI16(PillowTestCase):
                 self.assertEqual(
                     p1,
                     p2,
-                    ("got %r from mode %s at %s, expected %r" % (p1, im1.mode, xy, p2)),
+                    (
+                        "got {!r} from mode {} at {}, expected {!r}".format(
+                            p1, im1.mode, xy, p2
+                        )
+                    ),
                 )
 
     def test_basic(self):

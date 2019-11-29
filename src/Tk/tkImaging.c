@@ -225,11 +225,7 @@ TkImaging_Init(Tcl_Interp* interp)
 #include <psapi.h>
 /* Must be linked with 'psapi' library */
 
-#if PY_VERSION_HEX >= 0x03000000
 #define TKINTER_PKG "tkinter"
-#else
-#define TKINTER_PKG "Tkinter"
-#endif
 
 FARPROC _dfunc(HMODULE lib_handle, const char *func_name)
 {
@@ -354,7 +350,6 @@ int load_tkinter_funcs(void)
  */
 
 /* From module __file__ attribute to char *string for dlopen. */
-#if PY_VERSION_HEX >= 0x03000000
 char *fname2char(PyObject *fname)
 {
     PyObject* bytes;
@@ -364,9 +359,6 @@ char *fname2char(PyObject *fname)
     }
     return PyBytes_AsString(bytes);
 }
-#else
-#define fname2char(s) (PyString_AsString(s))
-#endif
 
 #include <dlfcn.h>
 

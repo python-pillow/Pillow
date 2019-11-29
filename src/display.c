@@ -26,7 +26,6 @@
 #include "Python.h"
 
 #include "Imaging.h"
-#include "py3.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support	*/
@@ -187,13 +186,8 @@ _frombytes(ImagingDisplayObject* display, PyObject* args)
     char* ptr;
     int bytes;
 
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes))
         return NULL;
-#else
-    if (!PyArg_ParseTuple(args, "s#:fromstring", &ptr, &bytes))
-        return NULL;
-#endif
 
     if (display->dib->ysize * display->dib->linesize != bytes) {
         PyErr_SetString(PyExc_ValueError, "wrong size");
@@ -209,13 +203,8 @@ _frombytes(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _tobytes(ImagingDisplayObject* display, PyObject* args)
 {
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, ":tobytes"))
         return NULL;
-#else
-    if (!PyArg_ParseTuple(args, ":tostring"))
-        return NULL;
-#endif
 
     return PyBytes_FromStringAndSize(
         display->dib->bits, display->dib->ysize * display->dib->linesize
@@ -741,7 +730,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
     int datasize;
     int width, height;
     int x0, y0, x1, y1;
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"(ii)(iiii):_load", &data, &datasize,
+    if (!PyArg_ParseTuple(args, "y#(ii)(iiii):_load", &data, &datasize,
                           &width, &height, &x0, &x1, &y0, &y1))
         return NULL;
 

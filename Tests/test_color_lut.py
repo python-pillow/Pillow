@@ -1,10 +1,9 @@
-from __future__ import division
-
+import unittest
 from array import array
 
 from PIL import Image, ImageFilter
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 try:
     import numpy

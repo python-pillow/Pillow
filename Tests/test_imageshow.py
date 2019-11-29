@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image, ImageShow
 
-from .helper import PillowTestCase, hopper, is_win32, on_ci, on_github_actions, unittest
+from .helper import PillowTestCase, hopper, is_win32, on_ci, on_github_actions
 
 
 class TestImageShow(PillowTestCase):

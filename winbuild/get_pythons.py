@@ -3,7 +3,7 @@ import os
 from fetch import fetch
 
 if __name__ == "__main__":
-    for version in ["2.7.15", "3.4.4"]:
+    for version in ["3.4.4"]:
         for platform in ["", ".amd64"]:
             for extension in ["", ".asc"]:
                 fetch(

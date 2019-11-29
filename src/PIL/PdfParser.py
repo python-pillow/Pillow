@@ -7,24 +7,9 @@ import re
 import time
 import zlib
 
-from ._util import py3
 
-try:
-    from UserDict import UserDict  # Python 2.x
-except ImportError:
-    UserDict = collections.UserDict  # Python 3.x
-
-
-if py3:  # Python 3.x
-
-    def make_bytes(s):
-        return s.encode("us-ascii")
-
-
-else:  # Python 2.x
-
-    def make_bytes(s):  # pragma: no cover
-        return s  # pragma: no cover
+def make_bytes(s):
+    return s.encode("us-ascii")
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
@@ -34,57 +19,55 @@ def encode_text(s):
 
 
 PDFDocEncoding = {
-    0x16: u"\u0017",
-    0x18: u"\u02D8",
-    0x19: u"\u02C7",
-    0x1A: u"\u02C6",
-    0x1B: u"\u02D9",
-    0x1C: u"\u02DD",
-    0x1D: u"\u02DB",
-    0x1E: u"\u02DA",
-    0x1F: u"\u02DC",
-    0x80: u"\u2022",
-    0x81: u"\u2020",
-    0x82: u"\u2021",
-    0x83: u"\u2026",
-    0x84: u"\u2014",
-    0x85: u"\u2013",
-    0x86: u"\u0192",
-    0x87: u"\u2044",
-    0x88: u"\u2039",
-    0x89: u"\u203A",
-    0x8A: u"\u2212",
-    0x8B: u"\u2030",
-    0x8C: u"\u201E",
-    0x8D: u"\u201C",
-    0x8E: u"\u201D",
-    0x8F: u"\u2018",
-    0x90: u"\u2019",
-    0x91: u"\u201A",
-    0x92: u"\u2122",
-    0x93: u"\uFB01",
-    0x94: u"\uFB02",
-    0x95: u"\u0141",
-    0x96: u"\u0152",
-    0x97: u"\u0160",
-    0x98: u"\u0178",
-    0x99: u"\u017D",
-    0x9A: u"\u0131",
-    0x9B: u"\u0142",
-    0x9C: u"\u0153",
-    0x9D: u"\u0161",
-    0x9E: u"\u017E",
-    0xA0: u"\u20AC",
+    0x16: "\u0017",
+    0x18: "\u02D8",
+    0x19: "\u02C7",
+    0x1A: "\u02C6",
+    0x1B: "\u02D9",
+    0x1C: "\u02DD",
+    0x1D: "\u02DB",
+    0x1E: "\u02DA",
+    0x1F: "\u02DC",
+    0x80: "\u2022",
+    0x81: "\u2020",
+    0x82: "\u2021",
+    0x83: "\u2026",
+    0x84: "\u2014",
+    0x85: "\u2013",
+    0x86: "\u0192",
+    0x87: "\u2044",
+    0x88: "\u2039",
+    0x89: "\u203A",
+    0x8A: "\u2212",
+    0x8B: "\u2030",
+    0x8C: "\u201E",
+    0x8D: "\u201C",
+    0x8E: "\u201D",
+    0x8F: "\u2018",
+    0x90: "\u2019",
+    0x91: "\u201A",
+    0x92: "\u2122",
+    0x93: "\uFB01",
+    0x94: "\uFB02",
+    0x95: "\u0141",
+    0x96: "\u0152",
+    0x97: "\u0160",
+    0x98: "\u0178",
+    0x99: "\u017D",
+    0x9A: "\u0131",
+    0x9B: "\u0142",
+    0x9C: "\u0153",
+    0x9D: "\u0161",
+    0x9E: "\u017E",
+    0xA0: "\u20AC",
 }
 
 
 def decode_text(b):
     if b[: len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
         return b[len(codecs.BOM_UTF16_BE) :].decode("utf_16_be")
-    elif py3:  # Python 3.x
+    else:
         return "".join(PDFDocEncoding.get(byte, chr(byte)) for byte in b)
-    else:  # Python 2.x
-        return u"".join(PDFDocEncoding.get(ord(byte), byte) for byte in b)
 
 
 class PdfFormatError(RuntimeError):
@@ -247,21 +230,15 @@ class PdfName:
     def from_pdf_stream(cls, data):
         return cls(PdfParser.interpret_name(data))
 
-    allowed_chars = set(range(33, 127)) - set(ord(c) for c in "#%/()<>[]{}")
+    allowed_chars = set(range(33, 127)) - {ord(c) for c in "#%/()<>[]{}"}
 
     def __bytes__(self):
         result = bytearray(b"/")
         for b in self.name:
-            if py3:  # Python 3.x
-                if b in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(make_bytes("#%02X" % b))
-            else:  # Python 2.x
-                if ord(b) in self.allowed_chars:
-                    result.append(b)
-                else:
-                    result.extend(b"#%02X" % ord(b))
+            if b in self.allowed_chars:
+                result.append(b)
+            else:
+                result.extend(make_bytes("#%02X" % b))
         return bytes(result)
 
     __str__ = __bytes__
@@ -274,13 +251,10 @@ class PdfArray(list):
     __str__ = __bytes__
 
 
-class PdfDict(UserDict):
+class PdfDict(collections.UserDict):
     def __setattr__(self, key, value):
         if key == "data":
-            if hasattr(UserDict, "__setattr__"):
-                UserDict.__setattr__(self, key, value)
-            else:
-                self.__dict__[key] = value
+            collections.UserDict.__setattr__(self, key, value)
         else:
             self[key.encode("us-ascii")] = value
 
@@ -324,23 +298,13 @@ class PdfDict(UserDict):
         out.extend(b"\n>>")
         return bytes(out)
 
-    if not py3:
-        __str__ = __bytes__
-
 
 class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    if py3:  # Python 3.x
-
-        def __bytes__(self):
-            return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
-
-    else:  # Python 2.x
-
-        def __str__(self):
-            return "<%s>" % "".join("%02X" % ord(b) for b in self.data)
+    def __bytes__(self):
+        return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
 
 
 class PdfStream:
@@ -382,9 +346,7 @@ def pdf_repr(x):
         return bytes(PdfDict(x))
     elif isinstance(x, list):
         return bytes(PdfArray(x))
-    elif (py3 and isinstance(x, str)) or (
-        not py3 and isinstance(x, unicode)  # noqa: F821
-    ):
+    elif isinstance(x, str):
         return pdf_repr(encode_text(x))
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
@@ -471,7 +433,7 @@ class PdfParser:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
-        self.f.write(("%% %s\n" % (s,)).encode("utf-8"))
+        self.f.write(("% {}\n".format(s)).encode("utf-8"))
 
     def write_catalog(self):
         self.del_root()

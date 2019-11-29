@@ -17,7 +17,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 
 from . import FontFile, Image
 

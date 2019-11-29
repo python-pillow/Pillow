@@ -26,7 +26,7 @@ import math
 import operator
 
 
-class Stat(object):
+class Stat:
     def __init__(self, image_or_list, mask=None):
         try:
             if mask:
