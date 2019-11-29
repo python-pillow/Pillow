@@ -362,8 +362,8 @@ Building on Android
 Basic Android support has been added for compilation within the Termux
 environment. The dependencies can be installed by::
 
-    $ pkg -y install python python-dev ndk-sysroot clang make \
-        libjpeg-turbo-dev
+    $ pkg install -y python ndk-sysroot clang make \
+        libjpeg-turbo
 
 This has been tested within the Termux app on ChromeOS, on x86.
 
