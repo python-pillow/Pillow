@@ -20,11 +20,8 @@
 #
 
 import re
-from . import Image, ImageFile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
+from . import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
@@ -45,6 +42,7 @@ def _accept(prefix):
 ##
 # Image plugin for X11 bitmaps.
 
+
 class XbmImageFile(ImageFile.ImageFile):
 
     format = "XBM"
@@ -60,32 +58,30 @@ class XbmImageFile(ImageFile.ImageFile):
             ysize = int(m.group("height"))
 
             if m.group("hotspot"):
-                self.info["hotspot"] = (
-                    int(m.group("xhot")), int(m.group("yhot"))
-                    )
+                self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
 
             self.mode = "1"
             self._size = xsize, ysize
 
-            self.tile = [("xbm", (0, 0)+self.size, m.end(), None)]
+            self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
 
 
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise IOError("cannot write mode %s as XBM" % im.mode)
+        raise OSError("cannot write mode %s as XBM" % im.mode)
 
-    fp.write(("#define im_width %d\n" % im.size[0]).encode('ascii'))
-    fp.write(("#define im_height %d\n" % im.size[1]).encode('ascii'))
+    fp.write(("#define im_width %d\n" % im.size[0]).encode("ascii"))
+    fp.write(("#define im_height %d\n" % im.size[1]).encode("ascii"))
 
     hotspot = im.encoderinfo.get("hotspot")
     if hotspot:
-        fp.write(("#define im_x_hot %d\n" % hotspot[0]).encode('ascii'))
-        fp.write(("#define im_y_hot %d\n" % hotspot[1]).encode('ascii'))
+        fp.write(("#define im_x_hot %d\n" % hotspot[0]).encode("ascii"))
+        fp.write(("#define im_y_hot %d\n" % hotspot[1]).encode("ascii"))
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [("xbm", (0, 0)+im.size, 0, None)])
+    ImageFile._save(im, fp, [("xbm", (0, 0) + im.size, 0, None)])
 
     fp.write(b"};\n")
 

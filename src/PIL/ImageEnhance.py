@@ -21,8 +21,7 @@
 from . import Image, ImageFilter, ImageStat
 
 
-class _Enhance(object):
-
+class _Enhance:
     def enhance(self, factor):
         """
         Returns an enhanced image.
@@ -45,14 +44,14 @@ class Color(_Enhance):
     factor of 0.0 gives a black and white image. A factor of 1.0 gives
     the original image.
     """
+
     def __init__(self, image):
         self.image = image
-        self.intermediate_mode = 'L'
-        if 'A' in image.getbands():
-            self.intermediate_mode = 'LA'
+        self.intermediate_mode = "L"
+        if "A" in image.getbands():
+            self.intermediate_mode = "LA"
 
-        self.degenerate = image.convert(
-            self.intermediate_mode).convert(image.mode)
+        self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
 
 
 class Contrast(_Enhance):
@@ -62,13 +61,14 @@ class Contrast(_Enhance):
     to the contrast control on a TV set. An enhancement factor of 0.0
     gives a solid grey image. A factor of 1.0 gives the original image.
     """
+
     def __init__(self, image):
         self.image = image
         mean = int(ImageStat.Stat(image.convert("L")).mean[0] + 0.5)
         self.degenerate = Image.new("L", image.size, mean).convert(image.mode)
 
-        if 'A' in image.getbands():
-            self.degenerate.putalpha(image.getchannel('A'))
+        if "A" in image.getbands():
+            self.degenerate.putalpha(image.getchannel("A"))
 
 
 class Brightness(_Enhance):
@@ -78,12 +78,13 @@ class Brightness(_Enhance):
     enhancement factor of 0.0 gives a black image. A factor of 1.0 gives the
     original image.
     """
+
     def __init__(self, image):
         self.image = image
         self.degenerate = Image.new(image.mode, image.size, 0)
 
-        if 'A' in image.getbands():
-            self.degenerate.putalpha(image.getchannel('A'))
+        if "A" in image.getbands():
+            self.degenerate.putalpha(image.getchannel("A"))
 
 
 class Sharpness(_Enhance):
@@ -93,9 +94,10 @@ class Sharpness(_Enhance):
     enhancement factor of 0.0 gives a blurred image, a factor of 1.0 gives the
     original image, and a factor of 2.0 gives a sharpened image.
     """
+
     def __init__(self, image):
         self.image = image
         self.degenerate = image.filter(ImageFilter.SMOOTH)
 
-        if 'A' in image.getbands():
-            self.degenerate.putalpha(image.getchannel('A'))
+        if "A" in image.getbands():
+            self.degenerate.putalpha(image.getchannel("A"))

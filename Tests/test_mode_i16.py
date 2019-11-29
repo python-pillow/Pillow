@@ -1,11 +1,11 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 
 class TestModeI16(PillowTestCase):
 
-    original = hopper().resize((32, 32)).convert('I')
+    original = hopper().resize((32, 32)).convert("I")
 
     def verify(self, im1):
         im2 = self.original.copy()
@@ -18,9 +18,14 @@ class TestModeI16(PillowTestCase):
                 p1 = pix1[xy]
                 p2 = pix2[xy]
                 self.assertEqual(
-                    p1, p2,
-                    ("got %r from mode %s at %s, expected %r" %
-                        (p1, im1.mode, xy, p2)))
+                    p1,
+                    p2,
+                    (
+                        "got {!r} from mode {} at {}, expected {!r}".format(
+                            p1, im1.mode, xy, p2
+                        )
+                    ),
+                )
 
     def test_basic(self):
         # PIL 1.1 has limited support for 16-bit image data.  Check that
@@ -42,17 +47,17 @@ class TestModeI16(PillowTestCase):
             filename = self.tempfile("temp.im")
             imIn.save(filename)
 
-            imOut = Image.open(filename)
+            with Image.open(filename) as imOut:
 
-            self.verify(imIn)
-            self.verify(imOut)
+                self.verify(imIn)
+                self.verify(imOut)
 
             imOut = imIn.crop((0, 0, w, h))
             self.verify(imOut)
 
             imOut = Image.new(mode, (w, h), None)
-            imOut.paste(imIn.crop((0, 0, w//2, h)), (0, 0))
-            imOut.paste(imIn.crop((w//2, 0, w, h)), (w//2, 0))
+            imOut.paste(imIn.crop((0, 0, w // 2, h)), (0, 0))
+            imOut.paste(imIn.crop((w // 2, 0, w, h)), (w // 2, 0))
 
             self.verify(imIn)
             self.verify(imOut)
@@ -83,11 +88,10 @@ class TestModeI16(PillowTestCase):
         basic("I")
 
     def test_tobytes(self):
-
         def tobytes(mode):
             return Image.new(mode, (1, 1), 1).tobytes()
 
-        order = 1 if Image._ENDIAN == '<' else -1
+        order = 1 if Image._ENDIAN == "<" else -1
 
         self.assertEqual(tobytes("L"), b"\x01")
         self.assertEqual(tobytes("I;16"), b"\x01\x00")

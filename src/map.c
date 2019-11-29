@@ -22,8 +22,6 @@
 
 #include "Imaging.h"
 
-#include "py3.h"
-
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
 extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
@@ -339,7 +337,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
             stride = xsize * 4;
     }
 
-    if (stride > 0 && ysize > INT_MAX / stride) {
+    if (stride > 0 && ysize > PY_SSIZE_T_MAX / stride) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in ysize");
         return NULL;
     }

@@ -1,14 +1,15 @@
-from .helper import PillowTestCase, hopper
-from PIL import Image, PdfParser
 import io
 import os
 import os.path
 import tempfile
 import time
 
+from PIL import Image, PdfParser
+
+from .helper import PillowTestCase, hopper
+
 
 class TestFilePdf(PillowTestCase):
-
     def helper_save_as_pdf(self, mode, **kwargs):
         # Arrange
         im = hopper(mode)
@@ -21,11 +22,17 @@ class TestFilePdf(PillowTestCase):
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
         with PdfParser.PdfParser(outfile) as pdf:
-            if kwargs.get("append_images", False) or \
-               kwargs.get("append", False):
+            if kwargs.get("append_images", False) or kwargs.get("append", False):
                 self.assertGreater(len(pdf.pages), 1)
             else:
                 self.assertGreater(len(pdf.pages), 0)
+        with open(outfile, "rb") as fp:
+            contents = fp.read()
+        size = tuple(
+            int(d)
+            for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        )
+        self.assertEqual(im.size, size)
 
         return outfile
 
@@ -75,26 +82,26 @@ class TestFilePdf(PillowTestCase):
         self.helper_save_as_pdf("RGB", save_all=True)
 
         # Multiframe image
-        im = Image.open("Tests/images/dispose_bgnd.gif")
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
 
-        outfile = self.tempfile('temp.pdf')
-        im.save(outfile, save_all=True)
+            outfile = self.tempfile("temp.pdf")
+            im.save(outfile, save_all=True)
 
-        self.assertTrue(os.path.isfile(outfile))
-        self.assertGreater(os.path.getsize(outfile), 0)
+            self.assertTrue(os.path.isfile(outfile))
+            self.assertGreater(os.path.getsize(outfile), 0)
 
-        # Append images
-        ims = [hopper()]
-        im.copy().save(outfile, save_all=True, append_images=ims)
+            # Append images
+            ims = [hopper()]
+            im.copy().save(outfile, save_all=True, append_images=ims)
 
-        self.assertTrue(os.path.isfile(outfile))
-        self.assertGreater(os.path.getsize(outfile), 0)
+            self.assertTrue(os.path.isfile(outfile))
+            self.assertGreater(os.path.getsize(outfile), 0)
 
-        # Test appending using a generator
-        def imGenerator(ims):
-            for im in ims:
-                yield im
-        im.save(outfile, save_all=True, append_images=imGenerator(ims))
+            # Test appending using a generator
+            def imGenerator(ims):
+                yield from ims
+
+            im.save(outfile, save_all=True, append_images=imGenerator(ims))
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
@@ -108,10 +115,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_multiframe_normal_save(self):
         # Test saving a multiframe image without save_all
-        im = Image.open("Tests/images/dispose_bgnd.gif")
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
 
-        outfile = self.tempfile('temp.pdf')
-        im.save(outfile)
+            outfile = self.tempfile("temp.pdf")
+            im.save(outfile)
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
@@ -119,8 +126,8 @@ class TestFilePdf(PillowTestCase):
     def test_pdf_open(self):
         # fail on a buffer full of null bytes
         self.assertRaises(
-            PdfParser.PdfFormatError,
-            PdfParser.PdfParser, buf=bytearray(65536))
+            PdfParser.PdfFormatError, PdfParser.PdfParser, buf=bytearray(65536)
+        )
 
         # make an empty PDF object
         with PdfParser.PdfParser() as empty_pdf:
@@ -155,14 +162,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_append_fails_on_nonexistent_file(self):
         im = hopper("RGB")
-        temp_dir = tempfile.mkdtemp()
-        try:
-            self.assertRaises(IOError,
-                              im.save,
-                              os.path.join(temp_dir, "nonexistent.pdf"),
-                              append=True)
-        finally:
-            os.rmdir(temp_dir)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.assertRaises(
+                IOError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True
+            )
 
     def check_pdf_pages_consistency(self, pdf):
         pages_info = pdf.read_indirect(pdf.pages_ref)
@@ -189,9 +192,9 @@ class TestFilePdf(PillowTestCase):
         with PdfParser.PdfParser(pdf_filename, mode="r+b") as pdf:
             self.assertEqual(len(pdf.pages), 1)
             self.assertEqual(len(pdf.info), 4)
-            self.assertEqual(pdf.info.Title, os.path.splitext(
-                                                os.path.basename(pdf_filename)
-                                             )[0])
+            self.assertEqual(
+                pdf.info.Title, os.path.splitext(os.path.basename(pdf_filename))[0]
+            )
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertIn(b"CreationDate", pdf.info)
             self.assertIn(b"ModDate", pdf.info)
@@ -200,7 +203,7 @@ class TestFilePdf(PillowTestCase):
             # append some info
             pdf.info.Title = "abc"
             pdf.info.Author = "def"
-            pdf.info.Subject = u"ghi\uABCD"
+            pdf.info.Subject = "ghi\uABCD"
             pdf.info.Keywords = "qw)e\\r(ty"
             pdf.info.Creator = "hopper()"
             pdf.start_writing()
@@ -218,8 +221,7 @@ class TestFilePdf(PillowTestCase):
         # append two images
         mode_CMYK = hopper("CMYK")
         mode_P = hopper("P")
-        mode_CMYK.save(pdf_filename,
-                       append=True, save_all=True, append_images=[mode_P])
+        mode_CMYK.save(pdf_filename, append=True, save_all=True, append_images=[mode_P])
 
         # open the PDF again, check pages and info again
         with PdfParser.PdfParser(pdf_filename) as pdf:
@@ -229,7 +231,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Title, "abc")
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
-            self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+            self.assertEqual(pdf.info.Subject, "ghi\uABCD")
             self.assertIn(b"CreationDate", pdf.info)
             self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)
@@ -237,10 +239,16 @@ class TestFilePdf(PillowTestCase):
     def test_pdf_info(self):
         # make a PDF file
         pdf_filename = self.helper_save_as_pdf(
-            "RGB", title="title", author="author", subject="subject",
-            keywords="keywords", creator="creator", producer="producer",
+            "RGB",
+            title="title",
+            author="author",
+            subject="subject",
+            keywords="keywords",
+            creator="creator",
+            producer="producer",
             creationDate=time.strptime("2000", "%Y"),
-            modDate=time.strptime("2001", "%Y"))
+            modDate=time.strptime("2001", "%Y"),
+        )
 
         # open it, check pages and info
         with PdfParser.PdfParser(pdf_filename) as pdf:
@@ -251,8 +259,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Keywords, "keywords")
             self.assertEqual(pdf.info.Creator, "creator")
             self.assertEqual(pdf.info.Producer, "producer")
-            self.assertEqual(pdf.info.CreationDate,
-                             time.strptime("2000", "%Y"))
+            self.assertEqual(pdf.info.CreationDate, time.strptime("2000", "%Y"))
             self.assertEqual(pdf.info.ModDate, time.strptime("2001", "%Y"))
             self.check_pdf_pages_consistency(pdf)
 

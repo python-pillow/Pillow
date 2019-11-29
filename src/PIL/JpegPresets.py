@@ -33,7 +33,10 @@ Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
 4:2:0.
 
 You can get the subsampling of a JPEG with the
-`JpegImagePlugin.get_subsampling(im)` function.
+`JpegImagePlugin.get_sampling(im)` function.
+
+In JPEG compressed data a JPEG marker is used instead of an EXIF tag.
+(ref.: https://www.exiv2.org/tags.html)
 
 
 Quantization tables
@@ -67,6 +70,7 @@ https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/li
 
 """
 
+# fmt: off
 presets = {  # noqa: E128
             'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
@@ -240,3 +244,4 @@ presets = {  # noqa: E128
                                 15, 12, 12, 12, 12, 12, 12, 12]
                              ]},
 }
+# fmt: on

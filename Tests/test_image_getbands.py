@@ -1,10 +1,9 @@
-from .helper import PillowTestCase
-
 from PIL import Image
+
+from .helper import PillowTestCase
 
 
 class TestImageGetBands(PillowTestCase):
-
     def test_getbands(self):
         self.assertEqual(Image.new("1", (1, 1)).getbands(), ("1",))
         self.assertEqual(Image.new("L", (1, 1)).getbands(), ("L",))
@@ -12,9 +11,6 @@ class TestImageGetBands(PillowTestCase):
         self.assertEqual(Image.new("F", (1, 1)).getbands(), ("F",))
         self.assertEqual(Image.new("P", (1, 1)).getbands(), ("P",))
         self.assertEqual(Image.new("RGB", (1, 1)).getbands(), ("R", "G", "B"))
-        self.assertEqual(
-            Image.new("RGBA", (1, 1)).getbands(), ("R", "G", "B", "A"))
-        self.assertEqual(
-            Image.new("CMYK", (1, 1)).getbands(), ("C", "M", "Y", "K"))
-        self.assertEqual(
-            Image.new("YCbCr", (1, 1)).getbands(), ("Y", "Cb", "Cr"))
+        self.assertEqual(Image.new("RGBA", (1, 1)).getbands(), ("R", "G", "B", "A"))
+        self.assertEqual(Image.new("CMYK", (1, 1)).getbands(), ("C", "M", "Y", "K"))
+        self.assertEqual(Image.new("YCbCr", (1, 1)).getbands(), ("Y", "Cb", "Cr"))

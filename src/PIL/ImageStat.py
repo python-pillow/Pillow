@@ -21,13 +21,12 @@
 # See the README file for information on usage and redistribution.
 #
 
+import functools
 import math
 import operator
-import functools
 
 
-class Stat(object):
-
+class Stat:
     def __init__(self, image_or_list, mask=None):
         try:
             if mask:
@@ -71,7 +70,7 @@ class Stat(object):
 
         v = []
         for i in range(0, len(self.h), 256):
-            v.append(functools.reduce(operator.add, self.h[i:i+256]))
+            v.append(functools.reduce(operator.add, self.h[i : i + 256]))
         return v
 
     def _getsum(self):
@@ -110,10 +109,10 @@ class Stat(object):
         v = []
         for i in self.bands:
             s = 0
-            half = self.count[i]//2
+            half = self.count[i] // 2
             b = i * 256
             for j in range(256):
-                s = s + self.h[b+j]
+                s = s + self.h[b + j]
                 if s > half:
                     break
             v.append(j)
@@ -133,7 +132,7 @@ class Stat(object):
         v = []
         for i in self.bands:
             n = self.count[i]
-            v.append((self.sum2[i]-(self.sum[i]**2.0)/n)/n)
+            v.append((self.sum2[i] - (self.sum[i] ** 2.0) / n) / n)
         return v
 
     def _getstddev(self):

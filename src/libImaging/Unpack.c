@@ -32,7 +32,6 @@
 
 #include "Imaging.h"
 
-
 #define R 0
 #define G 1
 #define B 2
@@ -327,11 +326,11 @@ static void
 unpackLA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* LA, pixel interleaved */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[1]);
-        in += 2;
+        UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 2; _out += 4;
     }
 }
 
@@ -339,10 +338,10 @@ static void
 unpackLAL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* LA, line interleaved */
-    for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[i], in[i], in[i], in[i+pixels]);
+    for (i = 0; i < pixels; i++, _out+=4) {
+        UINT32 iv = MAKE_UINT32(in[i], in[i], in[i], in[i+pixels]);
+        memcpy(_out, &iv, sizeof(iv));
     }
 }
 
@@ -480,15 +479,18 @@ void
 ImagingUnpackRGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i = 0;
-    UINT32* out = (UINT32*) _out;
     /* RGB triplets */
     for (; i < pixels-1; i++) {
-        out[i] = MASK_UINT32_CHANNEL_3 | *(UINT32*)&in[0];
-        in += 3;
+        UINT32 iv;
+        memcpy(&iv, in, sizeof(iv));
+        iv |= MASK_UINT32_CHANNEL_3;
+        memcpy(_out, &iv, sizeof(iv));
+        in += 3; _out += 4;
     }
     for (; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[1], in[2], 255);
-        in += 3;
+        UINT32 iv = MAKE_UINT32(in[0], in[1], in[2], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 3; _out += 4;
     }
 }
 
@@ -496,11 +498,11 @@ void
 unpackRGB16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* 16-bit RGB triplets, little-endian order */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[1], in[3], in[5], 255);
-        in += 6;
+        UINT32 iv = MAKE_UINT32(in[1], in[3], in[5], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 6; _out += 4;
     }
 }
 
@@ -508,11 +510,11 @@ void
 unpackRGB16B(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* 16-bit RGB triplets, big-endian order */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[2], in[4], 255);
-        in += 6;
+        UINT32 iv = MAKE_UINT32(in[0], in[2], in[4], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 6; _out += 4;
     }
 }
 
@@ -520,10 +522,10 @@ static void
 unpackRGBL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, line interleaved */
-    for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels], 255);
+    for (i = 0; i < pixels; i++, _out+=4) {
+        UINT32 iv = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels], 255);
+        memcpy(_out, &iv, sizeof(iv));
     }
 }
 
@@ -531,12 +533,12 @@ static void
 unpackRGBR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(BITFLIP[in[0]], BITFLIP[in[1]],
-                             BITFLIP[in[2]], 255);
-        in += 3;
+        UINT32 iv = MAKE_UINT32(BITFLIP[in[0]], BITFLIP[in[1]],
+                                BITFLIP[in[2]], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 3; _out += 4;
     }
 }
 
@@ -544,11 +546,11 @@ void
 ImagingUnpackBGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[2], in[1], in[0], 255);
-        in += 3;
+        UINT32 iv = MAKE_UINT32(in[2], in[1], in[0], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 3; _out += 4;
     }
 }
 
@@ -676,11 +678,11 @@ static void
 ImagingUnpackBGRX(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes with padding */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[2], in[1], in[0], 255);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[2], in[1], in[0], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -688,11 +690,11 @@ static void
 ImagingUnpackXRGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[1], in[2], in[3], 255);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[1], in[2], in[3], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -700,11 +702,11 @@ static void
 ImagingUnpackXBGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGB, reversed bytes, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[3], in[2], in[1], 255);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[3], in[2], in[1], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -714,11 +716,11 @@ static void
 unpackRGBALA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* greyscale with alpha */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[1]);
-        in += 2;
+        UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 2; _out += 4;
     }
 }
 
@@ -726,11 +728,11 @@ static void
 unpackRGBALA16B(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* 16-bit greyscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[0], in[0], in[2]);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[2]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -738,20 +740,21 @@ static void
 unpackRGBa16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* premultiplied 16-bit RGBA, little-endian */
     for (i = 0; i < pixels; i++) {
         int a = in[7];
+        UINT32 iv;
         if ( ! a) {
-            out[i] = 0;
+            iv = 0;
         } else if (a == 255) {
-            out[i] = MAKE_UINT32(in[1], in[3], in[5], a);
+            iv = MAKE_UINT32(in[1], in[3], in[5], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP8(in[1] * 255 / a),
-                                 CLIP8(in[3] * 255 / a),
-                                 CLIP8(in[5] * 255 / a), a);
+            iv = MAKE_UINT32(CLIP8(in[1] * 255 / a),
+                             CLIP8(in[3] * 255 / a),
+                             CLIP8(in[5] * 255 / a), a);
         }
-        in += 8;
+        memcpy(_out, &iv, sizeof(iv));
+        in += 8; _out += 4;
     }
 }
 
@@ -759,20 +762,21 @@ static void
 unpackRGBa16B(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* premultiplied 16-bit RGBA, big-endian */
     for (i = 0; i < pixels; i++) {
         int a = in[6];
+        UINT32 iv;
         if ( ! a) {
-            out[i] = 0;
+            iv = 0;
         } else if (a == 255) {
-            out[i] = MAKE_UINT32(in[0], in[2], in[4], a);
+            iv = MAKE_UINT32(in[0], in[2], in[4], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
-                                 CLIP8(in[2] * 255 / a),
-                                 CLIP8(in[4] * 255 / a), a);
+            iv = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                             CLIP8(in[2] * 255 / a),
+                             CLIP8(in[4] * 255 / a), a);
         }
-        in += 8;
+        memcpy(_out, &iv, sizeof(iv));
+        in += 8; _out += 4;
     }
 }
 
@@ -780,20 +784,21 @@ static void
 unpackRGBa(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* premultiplied RGBA */
     for (i = 0; i < pixels; i++) {
         int a = in[3];
+        UINT32 iv;
         if ( ! a) {
-            out[i] = 0;
+            iv = 0;
         } else if (a == 255) {
-            out[i] = MAKE_UINT32(in[0], in[1], in[2], a);
+            iv = MAKE_UINT32(in[0], in[1], in[2], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP8(in[0] * 255 / a),
-                                 CLIP8(in[1] * 255 / a),
-                                 CLIP8(in[2] * 255 / a), a);
+            iv = MAKE_UINT32(CLIP8(in[0] * 255 / a),
+                             CLIP8(in[1] * 255 / a),
+                             CLIP8(in[2] * 255 / a), a);
         }
-        in += 4;
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -843,20 +848,21 @@ static void
 unpackBGRa(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* premultiplied BGRA */
     for (i = 0; i < pixels; i++) {
         int a = in[3];
+        UINT32 iv;
         if ( ! a) {
-            out[i] = 0;
+            iv = 0;
         } else if (a == 255) {
-            out[i] = MAKE_UINT32(in[2], in[1], in[0], a);
+            iv = MAKE_UINT32(in[2], in[1], in[0], a);
         } else {
-            out[i] = MAKE_UINT32(CLIP8(in[2] * 255 / a),
-                                 CLIP8(in[1] * 255 / a),
-                                 CLIP8(in[0] * 255 / a), a);
+            iv = MAKE_UINT32(CLIP8(in[2] * 255 / a),
+                             CLIP8(in[1] * 255 / a),
+                             CLIP8(in[0] * 255 / a), a);
         }
-        in += 4;
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -878,11 +884,11 @@ static void
 unpackRGBAL(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGBA, line interleaved */
-    for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels],
-                             in[i+pixels+pixels+pixels]);
+    for (i = 0; i < pixels; i++, _out+=4) {
+        UINT32 iv = MAKE_UINT32(in[i], in[i+pixels], in[i+pixels+pixels],
+                                in[i+pixels+pixels+pixels]);
+        memcpy(_out, &iv, sizeof(iv));
     }
 }
 
@@ -890,10 +896,10 @@ void
 unpackRGBA16L(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* 16-bit RGBA, little-endian order */
-    for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[1], in[3], in[5], in[7]);
+    for (i = 0; i < pixels; i++, _out+=4) {
+        UINT32 iv = MAKE_UINT32(in[1], in[3], in[5], in[7]);
+        memcpy(_out, &iv, sizeof(iv));
         in += 8;
     }
 }
@@ -902,10 +908,10 @@ void
 unpackRGBA16B(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* 16-bit RGBA, big-endian order */
-    for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[0], in[2], in[4], in[6]);
+    for (i = 0; i < pixels; i++, _out+=4) {
+        UINT32 iv = MAKE_UINT32(in[0], in[2], in[4], in[6]);
+        memcpy(_out, &iv, sizeof(iv));
         in += 8;
     }
 }
@@ -914,11 +920,11 @@ static void
 unpackARGB(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGBA, leading pad */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[1], in[2], in[3], in[0]);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[1], in[2], in[3], in[0]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -926,11 +932,11 @@ static void
 unpackABGR(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[3], in[2], in[1], in[0]);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[3], in[2], in[1], in[0]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -938,11 +944,11 @@ static void
 unpackBGRA(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
-        out[i] = MAKE_UINT32(in[2], in[1], in[0], in[3]);
-        in += 4;
+        UINT32 iv = MAKE_UINT32(in[2], in[1], in[0], in[3]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -953,11 +959,11 @@ static void
 unpackCMYKI(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     /* CMYK, inverted bytes (Photoshop 2.5) */
     for (i = 0; i < pixels; i++) {
-        out[i] = ~MAKE_UINT32(in[0], in[1], in[2], in[3]);
-        in += 4;
+        UINT32 iv = ~MAKE_UINT32(in[0], in[1], in[2], in[3]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4; _out += 4;
     }
 }
 
@@ -1031,30 +1037,30 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
 #ifdef WORDS_BIGENDIAN
     UINT8* tmp = (UINT8 *)&pixel;
 #endif
-    UINT16* out16 = (UINT16 *)out;
     for (i = 0; i < pixels-1; i+=2) {
         pixel = (((UINT16) in[0]) << 4 ) + (in[1] >>4);
 #ifdef WORDS_BIGENDIAN
         out[0] = tmp[1];  out[1] = tmp[0];
 #else
-        out16[0] = pixel;
+        memcpy(out, &pixel, sizeof(pixel));
 #endif
 
+        out+=2;
         pixel = (((UINT16) (in[1] & 0x0F)) << 8) + in[2];
 #ifdef WORDS_BIGENDIAN
-        out[2] = tmp[1];  out[3] = tmp[0];
+        out[0] = tmp[1];  out[1] = tmp[0];
 #else
-        out16[1] = pixel;
+        memcpy(out, &pixel, sizeof(pixel));
 #endif
 
-		in += 3; out16 += 2; out+=4;
+		in += 3; out+=2;
     }
     if (i == pixels-1) {
         pixel = (((UINT16) in[0]) << 4 ) + (in[1] >>4);
 #ifdef WORDS_BIGENDIAN
         out[0] = tmp[1];  out[1] = tmp[0];
 #else
-        out16[0] = pixel;
+        memcpy(out, &pixel, sizeof(pixel));
 #endif
     }
 }
@@ -1085,10 +1091,9 @@ static void
 copy4skip1(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
-        out[i] = *(UINT32*)&in[0];
-        in += 5;
+        memcpy(_out, in, 4);
+        in += 5; _out += 4;
     }
 }
 
@@ -1096,10 +1101,9 @@ static void
 copy4skip2(UINT8* _out, const UINT8* in, int pixels)
 {
     int i;
-    UINT32* out = (UINT32*) _out;
     for (i = 0; i < pixels; i++) {
-        out[i] = *(UINT32*)&in[0];
-        in += 6;
+        memcpy(_out, in, 4);
+        in += 6; _out += 4;
     }
 }
 
@@ -1280,7 +1284,7 @@ static struct {
     {"1",       "1;I",          1,      unpack1I},
     {"1",       "1;R",          1,      unpack1R},
     {"1",       "1;IR",         1,      unpack1IR},
-    {"1",       "1;8",          1,      unpack18},
+    {"1",       "1;8",          8,      unpack18},
 
     /* greyscale */
     {"L",       "L;2",          2,      unpackL2},
@@ -1331,8 +1335,9 @@ static struct {
     {"RGB",     "BGR;5",        16,     ImagingUnpackBGR15}, /* compat */
     {"RGB",     "RGBX",         32,     copy4},
     {"RGB",     "RGBX;L",       32,     unpackRGBAL},
+    {"RGB",     "RGBA;L",       32,     unpackRGBAL},
     {"RGB",     "BGRX",         32,     ImagingUnpackBGRX},
-    {"RGB",     "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGB",     "XRGB",         32,     ImagingUnpackXRGB},
     {"RGB",     "XBGR",         32,     ImagingUnpackXBGR},
     {"RGB",     "YCC;P",        24,     ImagingUnpackYCC},
     {"RGB",     "R",            8,      band0},
@@ -1368,12 +1373,12 @@ static struct {
     {"RGBA",    "A",            8,      band3},
 
 #ifdef WORDS_BIGENDIAN
-    {"RGB",     "RGB;16N",      64,     unpackRGB16B},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16B},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16B},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16B},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #else
-    {"RGB",     "RGB;16N",      64,     unpackRGB16L},
+    {"RGB",     "RGB;16N",      48,     unpackRGB16L},
     {"RGBA",    "RGBa;16N",     64,     unpackRGBa16L},
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
@@ -1402,7 +1407,7 @@ static struct {
     {"RGBX",    "RGBX;16L",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16B",     64,     unpackRGBA16B},
     {"RGBX",    "BGRX",         32,     ImagingUnpackBGRX},
-    {"RGBX",    "XRGB",         24,     ImagingUnpackXRGB},
+    {"RGBX",    "XRGB",         32,     ImagingUnpackXRGB},
     {"RGBX",    "XBGR",         32,     ImagingUnpackXBGR},
     {"RGBX",    "YCC;P",        24,     ImagingUnpackYCC},
     {"RGBX",    "R",            8,      band0},
@@ -1416,6 +1421,8 @@ static struct {
     {"CMYK",    "CMYKXX",       48,     copy4skip2},
     {"CMYK",    "CMYK;I",       32,     unpackCMYKI},
     {"CMYK",    "CMYK;L",       32,     unpackRGBAL},
+    {"CMYK",    "CMYK;16L",     64,     unpackRGBA16L},
+    {"CMYK",    "CMYK;16B",     64,     unpackRGBA16B},
     {"CMYK",    "C",            8,      band0},
     {"CMYK",    "M",            8,      band1},
     {"CMYK",    "Y",            8,      band2},
@@ -1424,6 +1431,12 @@ static struct {
     {"CMYK",    "M;I",          8,      band1I},
     {"CMYK",    "Y;I",          8,      band2I},
     {"CMYK",    "K;I",          8,      band3I},
+
+#ifdef WORDS_BIGENDIAN
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16B},
+#else
+    {"CMYK",    "CMYK;16N",     64,     unpackRGBA16L},
+#endif
 
     /* video (YCbCr) */
     {"YCbCr",   "YCbCr",        24,     ImagingUnpackRGB},

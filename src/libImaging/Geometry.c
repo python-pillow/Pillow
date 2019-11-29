@@ -29,8 +29,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 
 #define FLIP_LEFT_RIGHT(INT, image) \
     for (y = 0; y < imIn->ysize; y++) { \
-        INT* in = imIn->image[y]; \
-        INT* out = imOut->image[y]; \
+        INT* in = (INT *)imIn->image[y]; \
+        INT* out = (INT *)imOut->image[y]; \
         xr = imIn->xsize-1; \
         for (x = 0; x < imIn->xsize; x++, xr--) \
             out[xr] = in[x]; \
@@ -39,7 +39,11 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        FLIP_LEFT_RIGHT(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            FLIP_LEFT_RIGHT(UINT16, image8)
+        } else {
+            FLIP_LEFT_RIGHT(UINT8, image8)
+        }
     } else {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
@@ -101,10 +105,11 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
                     yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     for (yyy = yy; yyy < yyysize; yyy++) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yyy] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xr]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -114,10 +119,15 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_90(UINT8, image8)
-    else
-        ROTATE_90(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_90(UINT16, image8);
+        } else {
+            ROTATE_90(UINT8, image8);
+        }
+    } else {
+        ROTATE_90(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -151,9 +161,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
                     yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize ? yy + ROTATE_SMALL_CHUNK : imIn->ysize; \
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     for (yyy = yy; yyy < yyysize; yyy++) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yyy] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xxx]; \
+                            out[yyy] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -163,10 +174,15 @@ ImagingTranspose(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSPOSE(UINT8, image8)
-    else
-        TRANSPOSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSPOSE(UINT16, image8);
+        } else {
+            TRANSPOSE(UINT8, image8);
+        }
+    } else {
+        TRANSPOSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -201,10 +217,11 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     yr = imIn->ysize - 1 - yy; \
                     for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         xr = imIn->xsize - 1 - xx; \
                         for (xxx = xx; xxx < xxxsize; xxx++, xr--) { \
-                            imOut->image[xr][yr] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xr]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -214,10 +231,15 @@ ImagingTransverse(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        TRANSVERSE(UINT8, image8)
-    else
-        TRANSVERSE(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            TRANSVERSE(UINT16, image8);
+        } else {
+            TRANSVERSE(UINT8, image8);
+        }
+    } else {
+        TRANSVERSE(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -242,8 +264,8 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
 #define ROTATE_180(INT, image) \
     for (y = 0; y < imIn->ysize; y++, yr--) { \
-        INT* in = imIn->image[y]; \
-        INT* out = imOut->image[yr]; \
+        INT* in = (INT *)imIn->image[y]; \
+        INT* out = (INT *)imOut->image[yr]; \
         xr = imIn->xsize-1; \
         for (x = 0; x < imIn->xsize; x++, xr--) \
             out[xr] = in[x]; \
@@ -253,7 +275,11 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 
     yr = imIn->ysize-1;
     if (imIn->image8) {
-        ROTATE_180(UINT8, image8)
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_180(UINT16, image8)
+        } else {
+            ROTATE_180(UINT8, image8)
+        }
     } else {
         ROTATE_180(INT32, image32)
     }
@@ -291,9 +317,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
                     xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize ? xx + ROTATE_SMALL_CHUNK : imIn->xsize; \
                     yr = imIn->ysize - 1 - yy; \
                     for (yyy = yy; yyy < yyysize; yyy++, yr--) { \
-                        INT* in = imIn->image[yyy]; \
+                        INT* in = (INT *)imIn->image[yyy]; \
                         for (xxx = xx; xxx < xxxsize; xxx++) { \
-                            imOut->image[xxx][yr] = in[xxx]; \
+                            INT* out = (INT *)imOut->image[xxx]; \
+                            out[yr] = in[xxx]; \
                         } \
                     } \
                 } \
@@ -303,10 +330,15 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8)
-        ROTATE_270(UINT8, image8)
-    else
-        ROTATE_270(INT32, image32)
+    if (imIn->image8) {
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ROTATE_270(UINT16, image8);
+        } else {
+            ROTATE_270(UINT8, image8);
+        }
+    } else {
+        ROTATE_270(INT32, image32);
+    }
 
     ImagingSectionLeave(&cookie);
 
@@ -396,7 +428,7 @@ nearest_filter16(void* out, Imaging im, double xin, double yin)
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
-    ((INT16*)out)[0] = ((INT16*)(im->image8[y]))[x];
+    memcpy(out, im->image8[y] + x * sizeof(INT16), sizeof(INT16));
     return 1;
 }
 
@@ -407,7 +439,7 @@ nearest_filter32(void* out, Imaging im, double xin, double yin)
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize)
         return 0;
-    ((INT32*)out)[0] = im->image32[y][x];
+    memcpy(out, &im->image32[y][x], sizeof(INT32));
     return 1;
 }
 
@@ -457,18 +489,22 @@ bilinear_filter8(void* out, Imaging im, double xin, double yin)
 static int
 bilinear_filter32I(void* out, Imaging im, double xin, double yin)
 {
+    INT32 k;
     BILINEAR_HEAD(INT32);
     BILINEAR_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = (INT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
 static int
 bilinear_filter32F(void* out, Imaging im, double xin, double yin)
 {
+    FLOAT32 k;
     BILINEAR_HEAD(FLOAT32);
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
@@ -569,18 +605,22 @@ bicubic_filter8(void* out, Imaging im, double xin, double yin)
 static int
 bicubic_filter32I(void* out, Imaging im, double xin, double yin)
 {
+    INT32 k;
     BICUBIC_HEAD(INT32);
     BICUBIC_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = (INT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 
 static int
 bicubic_filter32F(void* out, Imaging im, double xin, double yin)
 {
+    FLOAT32 k;
     BICUBIC_HEAD(FLOAT32);
     BICUBIC_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    k = v1;
+    memcpy(out, &k, sizeof(k));
     return 1;
 }
 

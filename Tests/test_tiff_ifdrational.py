@@ -1,13 +1,12 @@
-from .helper import PillowTestCase, hopper
+from fractions import Fraction
 
-from PIL import TiffImagePlugin, Image
+from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
-from fractions import Fraction
+from .helper import PillowTestCase, hopper
 
 
 class Test_IFDRational(PillowTestCase):
-
     def _test_equal(self, num, denom, target):
 
         t = IFDRational(num, denom)
@@ -44,17 +43,18 @@ class Test_IFDRational(PillowTestCase):
 
     def test_ifd_rational_save(self):
         methods = (True, False)
-        if 'libtiff_encoder' not in dir(Image.core):
+        if "libtiff_encoder" not in dir(Image.core):
             methods = (False,)
 
         for libtiff in methods:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
             im = hopper()
-            out = self.tempfile('temp.tiff')
+            out = self.tempfile("temp.tiff")
             res = IFDRational(301, 1)
-            im.save(out, dpi=(res, res), compression='raw')
+            im.save(out, dpi=(res, res), compression="raw")
 
-            reloaded = Image.open(out)
-            self.assertEqual(float(IFDRational(301, 1)),
-                             float(reloaded.tag_v2[282]))
+            with Image.open(out) as reloaded:
+                self.assertEqual(
+                    float(IFDRational(301, 1)), float(reloaded.tag_v2[282])
+                )

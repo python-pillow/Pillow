@@ -1,6 +1,9 @@
 import sys
+import unittest
 
-from .helper import unittest, PillowTestCase
+from PIL import Image
+
+from .helper import PillowTestCase
 
 # This test is not run automatically.
 #
@@ -10,7 +13,7 @@ from .helper import unittest, PillowTestCase
 # on any 32-bit machine, as well as any smallish things (like
 # Raspberry Pis).
 
-from PIL import Image
+
 try:
     import numpy as np
 except ImportError:
@@ -20,14 +23,13 @@ YDIM = 32769
 XDIM = 48000
 
 
-@unittest.skipIf(sys.maxsize <= 2**32, "requires 64-bit system")
+@unittest.skipIf(sys.maxsize <= 2 ** 32, "requires 64-bit system")
 class LargeMemoryNumpyTest(PillowTestCase):
-
     def _write_png(self, xdim, ydim):
         dtype = np.uint8
         a = np.zeros((xdim, ydim), dtype=dtype)
-        f = self.tempfile('temp.png')
-        im = Image.fromarray(a, 'L')
+        f = self.tempfile("temp.png")
+        im = Image.fromarray(a, "L")
         im.save(f)
 
     def test_large(self):
@@ -39,5 +41,5 @@ class LargeMemoryNumpyTest(PillowTestCase):
         self._write_png(XDIM, XDIM)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

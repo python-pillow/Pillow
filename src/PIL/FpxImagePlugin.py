@@ -14,36 +14,30 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
-from . import Image, ImageFile
-from ._binary import i32le as i32, i8
-
 import olefile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
+from . import Image, ImageFile
+from ._binary import i8, i32le as i32
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
     # opacity
-    (0x00007ffe): ("A", "L"),
+    (0x00007FFE): ("A", "L"),
     # monochrome
     (0x00010000,): ("L", "L"),
-    (0x00018000, 0x00017ffe): ("RGBA", "LA"),
+    (0x00018000, 0x00017FFE): ("RGBA", "LA"),
     # photo YCC
     (0x00020000, 0x00020001, 0x00020002): ("RGB", "YCC;P"),
-    (0x00028000, 0x00028001, 0x00028002, 0x00027ffe): ("RGBA", "YCCA;P"),
+    (0x00028000, 0x00028001, 0x00028002, 0x00027FFE): ("RGBA", "YCCA;P"),
     # standard RGB (NIFRGB)
     (0x00030000, 0x00030001, 0x00030002): ("RGB", "RGB"),
-    (0x00038000, 0x00038001, 0x00038002, 0x00037ffe): ("RGBA", "RGBA"),
+    (0x00038000, 0x00038001, 0x00038002, 0x00037FFE): ("RGBA", "RGBA"),
 }
 
 
 #
 # --------------------------------------------------------------------
+
 
 def _accept(prefix):
     return prefix[:8] == olefile.MAGIC
@@ -51,6 +45,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for the FlashPix images.
+
 
 class FpxImageFile(ImageFile.ImageFile):
 
@@ -64,7 +59,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except IOError:
+        except OSError:
             raise SyntaxError("not an FPX file; invalid OLE file")
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
@@ -76,10 +71,9 @@ class FpxImageFile(ImageFile.ImageFile):
         #
         # get the Image Contents Property Set
 
-        prop = self.ole.getproperties([
-            "Data Object Store %06d" % index,
-            "\005Image Contents"
-        ])
+        prop = self.ole.getproperties(
+            ["Data Object Store %06d" % index, "\005Image Contents"]
+        )
 
         # size (highest resolution)
 
@@ -105,7 +99,7 @@ class FpxImageFile(ImageFile.ImageFile):
         colors = []
         for i in range(i32(s, 4)):
             # note: for now, we ignore the "uncalibrated" flag
-            colors.append(i32(s, 8+i*4) & 0x7fffffff)
+            colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
 
         self.mode, self.rawmode = MODES[tuple(colors)]
 
@@ -125,7 +119,7 @@ class FpxImageFile(ImageFile.ImageFile):
         stream = [
             "Data Object Store %06d" % index,
             "Resolution %04d" % subimage,
-            "Subimage 0000 Header"
+            "Subimage 0000 Header",
         ]
 
         fp = self.ole.openstream(stream)
@@ -144,7 +138,7 @@ class FpxImageFile(ImageFile.ImageFile):
         length = i32(s, 32)
 
         if size != self.size:
-            raise IOError("subimage mismatch")
+            raise OSError("subimage mismatch")
 
         # get tile descriptors
         fp.seek(28 + offset)
@@ -157,17 +151,29 @@ class FpxImageFile(ImageFile.ImageFile):
 
         for i in range(0, len(s), length):
 
-            compression = i32(s, i+8)
+            compression = i32(s, i + 8)
 
             if compression == 0:
-                self.tile.append(("raw", (x, y, x+xtile, y+ytile),
-                                 i32(s, i) + 28, (self.rawmode)))
+                self.tile.append(
+                    (
+                        "raw",
+                        (x, y, x + xtile, y + ytile),
+                        i32(s, i) + 28,
+                        (self.rawmode),
+                    )
+                )
 
             elif compression == 1:
 
                 # FIXME: the fill decoder is not implemented
-                self.tile.append(("fill", (x, y, x+xtile, y+ytile),
-                                 i32(s, i) + 28, (self.rawmode, s[12:16])))
+                self.tile.append(
+                    (
+                        "fill",
+                        (x, y, x + xtile, y + ytile),
+                        i32(s, i) + 28,
+                        (self.rawmode, s[12:16]),
+                    )
+                )
 
             elif compression == 2:
 
@@ -189,8 +195,14 @@ class FpxImageFile(ImageFile.ImageFile):
                     # The image is stored as defined by rawmode
                     jpegmode = rawmode
 
-                self.tile.append(("jpeg", (x, y, x+xtile, y+ytile),
-                                 i32(s, i) + 28, (rawmode, jpegmode)))
+                self.tile.append(
+                    (
+                        "jpeg",
+                        (x, y, x + xtile, y + ytile),
+                        i32(s, i) + 28,
+                        (rawmode, jpegmode),
+                    )
+                )
 
                 # FIXME: jpeg tables are tile dependent; the prefix
                 # data must be placed in the tile descriptor itself!
@@ -199,7 +211,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     self.tile_prefix = self.jpeg[jpeg_tables]
 
             else:
-                raise IOError("unknown/invalid compression")
+                raise OSError("unknown/invalid compression")
 
             x = x + xtile
             if x >= xsize:
@@ -213,10 +225,10 @@ class FpxImageFile(ImageFile.ImageFile):
     def load(self):
 
         if not self.fp:
-            self.fp = self.ole.openstream(self.stream[:2] +
-                                          ["Subimage 0000 Data"])
+            self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
 
         return ImageFile.ImageFile.load(self)
+
 
 #
 # --------------------------------------------------------------------

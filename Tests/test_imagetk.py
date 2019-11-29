@@ -1,26 +1,25 @@
-from .helper import unittest, PillowTestCase, hopper
-from PIL import Image
-from PIL._util import py3
+import unittest
 
+from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import ImageTk
-    if py3:
-        import tkinter as tk
-    else:
-        import Tkinter as tk
+
+    import tkinter as tk
+
     dir(ImageTk)
     HAS_TK = True
 except (OSError, ImportError):
     # Skipped via setUp()
     HAS_TK = False
 
-TK_MODES = ('1', 'L', 'P', 'RGB', 'RGBA')
+TK_MODES = ("1", "L", "P", "RGB", "RGBA")
 
 
 @unittest.skipIf(not HAS_TK, "Tk not installed")
 class TestImageTk(PillowTestCase):
-
     def setUp(self):
         try:
             # setup tk
@@ -34,7 +33,7 @@ class TestImageTk(PillowTestCase):
         TEST_PNG = "Tests/images/hopper.png"
         im1 = Image.open(TEST_JPG)
         im2 = Image.open(TEST_PNG)
-        with open(TEST_PNG, 'rb') as fp:
+        with open(TEST_PNG, "rb") as fp:
             data = fp.read()
         kw = {"file": TEST_JPG, "data": data}
 
@@ -61,9 +60,8 @@ class TestImageTk(PillowTestCase):
             self.assertEqual(im_tk.width(), im.width)
             self.assertEqual(im_tk.height(), im.height)
 
-            # _tkinter.TclError: this function is not yet supported
-            # reloaded = ImageTk.getimage(im_tk)
-            # self.assert_image_equal(reloaded, im)
+            reloaded = ImageTk.getimage(im_tk)
+            self.assert_image_equal(reloaded, im.convert("RGBA"))
 
     def test_photoimage_blank(self):
         # test a image using mode/size:
@@ -77,7 +75,7 @@ class TestImageTk(PillowTestCase):
             # self.assert_image_equal(reloaded, im)
 
     def test_bitmapimage(self):
-        im = hopper('1')
+        im = hopper("1")
 
         # this should not crash
         im_tk = ImageTk.BitmapImage(im)

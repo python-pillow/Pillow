@@ -1,10 +1,9 @@
-from .helper import PillowTestCase, hopper
-
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 
 class TestImageFromBytes(PillowTestCase):
-
     def test_sanity(self):
         im1 = hopper()
         im2 = Image.frombytes(im1.mode, im1.size, im1.tobytes())

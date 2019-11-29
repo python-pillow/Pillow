@@ -1,6 +1,8 @@
-from .helper import unittest, PillowTestCase, hopper
+import unittest
 
 from PIL import Image
+
+from .helper import PillowTestCase, hopper
 
 try:
     from PIL import _webp
@@ -10,11 +12,11 @@ except ImportError:
 
 @unittest.skipIf(_webp is None, "WebP support not installed")
 class TestFileWebpAlpha(PillowTestCase):
-
     def setUp(self):
         if _webp.WebPDecoderBuggyAlpha(self):
-            self.skipTest("Buggy early version of WebP installed, "
-                          "not testing transparency")
+            self.skipTest(
+                "Buggy early version of WebP installed, not testing transparency"
+            )
 
     def test_read_rgba(self):
         """
@@ -34,7 +36,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
         image.tobytes()
 
-        target = Image.open('Tests/images/transparent.png')
+        target = Image.open("Tests/images/transparent.png")
         self.assert_image_similar(image, target, 20.0)
 
     def test_write_lossless_rgb(self):
@@ -46,7 +48,7 @@ class TestFileWebpAlpha(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
         # temp_file = "temp.webp"
 
-        pil_image = hopper('RGBA')
+        pil_image = hopper("RGBA")
 
         mask = Image.new("RGBA", (64, 64), (128, 128, 128, 128))
         # Add some partially transparent bits:
@@ -103,7 +105,8 @@ class TestFileWebpAlpha(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
         file_path = "Tests/images/transparent.gif"
-        Image.open(file_path).save(temp_file)
+        with Image.open(file_path) as im:
+            im.save(temp_file)
         image = Image.open(temp_file)
 
         self.assertEqual(image.mode, "RGBA")
@@ -112,6 +115,7 @@ class TestFileWebpAlpha(PillowTestCase):
 
         image.load()
         image.getdata()
-        target = Image.open(file_path).convert("RGBA")
+        with Image.open(file_path) as im:
+            target = im.convert("RGBA")
 
         self.assert_image_similar(image, target, 25.0)

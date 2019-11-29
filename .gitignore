@@ -73,6 +73,9 @@ pip-delete-this-directory.txt
 \#*#
 .#*
 
+#VS Code
+.vscode
+
 #Komodo
 *.komodoproject
 

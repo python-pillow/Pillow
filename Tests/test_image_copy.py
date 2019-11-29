@@ -1,12 +1,11 @@
-from .helper import PillowTestCase, hopper
+import copy
 
 from PIL import Image
 
-import copy
+from .helper import PillowTestCase, hopper
 
 
 class TestImageCopy(PillowTestCase):
-
     def test_copy(self):
         croppedCoordinates = (10, 10, 20, 20)
         croppedSize = (10, 10)
@@ -36,7 +35,7 @@ class TestImageCopy(PillowTestCase):
             self.assertEqual(out.size, croppedSize)
 
     def test_copy_zero(self):
-        im = Image.new('RGB', (0, 0))
+        im = Image.new("RGB", (0, 0))
         out = im.copy()
         self.assertEqual(out.mode, im.mode)
         self.assertEqual(out.size, im.size)

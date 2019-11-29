@@ -1,10 +1,9 @@
-from .helper import PillowTestCase
-
 from PIL import WalImageFile
+
+from .helper import PillowTestCase
 
 
 class TestFileWal(PillowTestCase):
-
     def test_open(self):
         # Arrange
         TEST_FILE = "Tests/images/hopper.wal"

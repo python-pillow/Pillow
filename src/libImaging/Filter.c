@@ -122,26 +122,29 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
             UINT8* in_1 = (UINT8*) im->image[y-1];
             UINT8* in0 = (UINT8*) im->image[y];
             UINT8* in1 = (UINT8*) im->image[y+1];
-            UINT32* out = (UINT32*) imOut->image[y];
+            UINT8* out = (UINT8*) imOut->image[y];
 
-            out[0] = ((UINT32*) in0)[0];
+            memcpy(out, in0, sizeof(UINT32));
             if (im->bands == 2) {
                 for (x = 1; x < im->xsize-1; x++) {
                     float ss0 = offset;
                     float ss3 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
                     ss3 += KERNEL1x3(in1, x*4+3, &kernel[0], 4);
                     ss0 += KERNEL1x3(in0, x*4+0, &kernel[3], 4);
                     ss3 += KERNEL1x3(in0, x*4+3, &kernel[3], 4);
                     ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
                     ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (im->bands == 3) {
                 for (x = 1; x < im->xsize-1; x++) {
                     float ss0 = offset;
                     float ss1 = offset;
                     float ss2 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
                     ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
                     ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
@@ -151,8 +154,9 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                     ss0 += KERNEL1x3(in_1, x*4+0, &kernel[6], 4);
                     ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
                     ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(
+                    v = MAKE_UINT32(
                         clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (im->bands == 4) {
                 for (x = 1; x < im->xsize-1; x++) {
@@ -160,6 +164,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                     float ss1 = offset;
                     float ss2 = offset;
                     float ss3 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x3(in1, x*4+0, &kernel[0], 4);
                     ss1 += KERNEL1x3(in1, x*4+1, &kernel[0], 4);
                     ss2 += KERNEL1x3(in1, x*4+2, &kernel[0], 4);
@@ -172,11 +177,12 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float* kernel,
                     ss1 += KERNEL1x3(in_1, x*4+1, &kernel[6], 4);
                     ss2 += KERNEL1x3(in_1, x*4+2, &kernel[6], 4);
                     ss3 += KERNEL1x3(in_1, x*4+3, &kernel[6], 4);
-                    out[x] = MAKE_UINT32(
+                    v = MAKE_UINT32(
                         clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             }
-            out[x] = ((UINT32*) in0)[x];
+            memcpy(out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32));
         }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);
@@ -232,14 +238,14 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
             UINT8* in0 = (UINT8*) im->image[y];
             UINT8* in1 = (UINT8*) im->image[y+1];
             UINT8* in2 = (UINT8*) im->image[y+2];
-            UINT32* out = (UINT32*) imOut->image[y];
+            UINT8* out = (UINT8*) imOut->image[y];
 
-            out[0] = ((UINT32*) in0)[0];
-            out[1] = ((UINT32*) in0)[1];
+            memcpy(out, in0, sizeof(UINT32) * 2);
             if (im->bands == 2) {
                 for (x = 2; x < im->xsize-2; x++) {
                     float ss0 = offset;
                     float ss3 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
                     ss3 += KERNEL1x5(in2, x*4+3, &kernel[0], 4);
                     ss0 += KERNEL1x5(in1, x*4+0, &kernel[5], 4);
@@ -250,13 +256,15 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                     ss3 += KERNEL1x5(in_1, x*4+3, &kernel[15], 4);
                     ss0 += KERNEL1x5(in_2, x*4+0, &kernel[20], 4);
                     ss3 += KERNEL1x5(in_2, x*4+3, &kernel[20], 4);
-                    out[x] = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (im->bands == 3) {
                 for (x = 2; x < im->xsize-2; x++) {
                     float ss0 = offset;
                     float ss1 = offset;
                     float ss2 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
                     ss1 += KERNEL1x5(in2, x*4+1, &kernel[0], 4);
                     ss2 += KERNEL1x5(in2, x*4+2, &kernel[0], 4);
@@ -272,8 +280,9 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                     ss0 += KERNEL1x5(in_2, x*4+0, &kernel[20], 4);
                     ss1 += KERNEL1x5(in_2, x*4+1, &kernel[20], 4);
                     ss2 += KERNEL1x5(in_2, x*4+2, &kernel[20], 4);
-                    out[x] = MAKE_UINT32(
+                    v = MAKE_UINT32(
                         clip8(ss0), clip8(ss1), clip8(ss2), 0);
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (im->bands == 4) {
                 for (x = 2; x < im->xsize-2; x++) {
@@ -281,6 +290,7 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                     float ss1 = offset;
                     float ss2 = offset;
                     float ss3 = offset;
+                    UINT32 v;
                     ss0 += KERNEL1x5(in2, x*4+0, &kernel[0], 4);
                     ss1 += KERNEL1x5(in2, x*4+1, &kernel[0], 4);
                     ss2 += KERNEL1x5(in2, x*4+2, &kernel[0], 4);
@@ -301,12 +311,12 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float* kernel,
                     ss1 += KERNEL1x5(in_2, x*4+1, &kernel[20], 4);
                     ss2 += KERNEL1x5(in_2, x*4+2, &kernel[20], 4);
                     ss3 += KERNEL1x5(in_2, x*4+3, &kernel[20], 4);
-                    out[x] = MAKE_UINT32(
+                    v = MAKE_UINT32(
                         clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
+                    memcpy(out + x * sizeof(v), &v, sizeof(v));
                 }
             }
-            out[x] = ((UINT32*) in0)[x];
-            out[x+1] = ((UINT32*) in0)[x+1];
+            memcpy(out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32) * 2);
         }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);

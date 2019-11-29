@@ -132,7 +132,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
 
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
-        /* 15-bit true colour */
+        /* 15-bit reversed true colour */
         im->bands = 1;
         im->pixelsize = 2;
         im->linesize = (xsize*2 + 3) & -4;
@@ -405,7 +405,7 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size)
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
     //        im->xsize, im->ysize, aligned_linesize, lines_per_block, blocks_count);
 
-    /* One extra ponter is always NULL */
+    /* One extra pointer is always NULL */
     im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
     if ( ! im->blocks) {
         return (Imaging) ImagingError_MemoryError();

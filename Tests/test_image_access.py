@@ -1,8 +1,13 @@
-from .helper import unittest, PillowTestCase, hopper, on_appveyor
+import ctypes
+import os
+import subprocess
+import sys
+import unittest
+from distutils import ccompiler, sysconfig
 
 from PIL import Image
-import sys
-import os
+
+from .helper import PillowTestCase, hopper, is_win32, on_ci
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -70,11 +75,10 @@ class TestImagePutPixel(AccessTest):
 
         width, height = im1.size
         self.assertEqual(im1.getpixel((0, 0)), im1.getpixel((-width, -height)))
-        self.assertEqual(im1.getpixel((-1, -1)),
-                         im1.getpixel((width-1, height-1)))
+        self.assertEqual(im1.getpixel((-1, -1)), im1.getpixel((width - 1, height - 1)))
 
-        for y in range(-1, -im1.size[1]-1, -1):
-            for x in range(-1, -im1.size[0]-1, -1):
+        for y in range(-1, -im1.size[1] - 1, -1):
+            for x in range(-1, -im1.size[0] - 1, -1):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
@@ -83,8 +87,8 @@ class TestImagePutPixel(AccessTest):
         im2 = Image.new(im1.mode, im1.size, 0)
         im2.readonly = 1
 
-        for y in range(-1, -im1.size[1]-1, -1):
-            for x in range(-1, -im1.size[0]-1, -1):
+        for y in range(-1, -im1.size[1] - 1, -1):
+            for x in range(-1, -im1.size[0] - 1, -1):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
@@ -96,8 +100,8 @@ class TestImagePutPixel(AccessTest):
         pix1 = im1.load()
         pix2 = im2.load()
 
-        for y in range(-1, -im1.size[1]-1, -1):
-            for x in range(-1, -im1.size[0]-1, -1):
+        for y in range(-1, -im1.size[1] - 1, -1):
+            for x in range(-1, -im1.size[0] - 1, -1):
                 pix2[x, y] = pix1[x, y]
 
         self.assert_image_equal(im1, im2)
@@ -120,15 +124,19 @@ class TestImageGetPixel(AccessTest):
         im = Image.new(mode, (1, 1), None)
         im.putpixel((0, 0), c)
         self.assertEqual(
-            im.getpixel((0, 0)), c,
-            "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c))
+            im.getpixel((0, 0)),
+            c,
+            "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c),
+        )
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
         self.assertEqual(
-            im.getpixel((-1, -1)), c,
+            im.getpixel((-1, -1)),
+            c,
             "put/getpixel roundtrip negative index failed"
-            " for mode %s, color %s" % (mode, c))
+            " for mode %s, color %s" % (mode, c),
+        )
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
@@ -145,13 +153,17 @@ class TestImageGetPixel(AccessTest):
         # check initial color
         im = Image.new(mode, (1, 1), c)
         self.assertEqual(
-            im.getpixel((0, 0)), c,
-            "initial color failed for mode %s, color %s " % (mode, c))
+            im.getpixel((0, 0)),
+            c,
+            "initial color failed for mode {}, color {} ".format(mode, c),
+        )
         # check initial color negative index
         self.assertEqual(
-            im.getpixel((-1, -1)), c,
+            im.getpixel((-1, -1)),
+            c,
             "initial color failed with negative index"
-            "for mode %s, color %s " % (mode, c))
+            "for mode %s, color %s " % (mode, c),
+        )
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
@@ -162,18 +174,32 @@ class TestImageGetPixel(AccessTest):
             im.getpixel((-1, -1))
 
     def test_basic(self):
-        for mode in ("1", "L", "LA", "I", "I;16", "I;16B", "F",
-                     "P", "PA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr"):
+        for mode in (
+            "1",
+            "L",
+            "LA",
+            "I",
+            "I;16",
+            "I;16B",
+            "F",
+            "P",
+            "PA",
+            "RGB",
+            "RGBA",
+            "RGBX",
+            "CMYK",
+            "YCbCr",
+        ):
             self.check(mode)
 
     def test_signedness(self):
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
         for mode in ("I;16", "I;16B"):
-            self.check(mode, 2**15-1)
-            self.check(mode, 2**15)
-            self.check(mode, 2**15+1)
-            self.check(mode, 2**16-1)
+            self.check(mode, 2 ** 15 - 1)
+            self.check(mode, 2 ** 15)
+            self.check(mode, 2 ** 15 + 1)
+            self.check(mode, 2 ** 16 - 1)
 
     def test_p_putpixel_rgb_rgba(self):
         for color in [(255, 0, 0), (255, 0, 0, 255)]:
@@ -210,29 +236,30 @@ class TestCffi(AccessTest):
                 self.assertEqual(access[(x, y)], caccess[(x, y)])
 
         # Access an out-of-range pixel
-        self.assertRaises(ValueError,
-                          lambda: access[(access.xsize+1, access.ysize+1)])
+        self.assertRaises(
+            ValueError, lambda: access[(access.xsize + 1, access.ysize + 1)]
+        )
 
     def test_get_vs_c(self):
-        rgb = hopper('RGB')
+        rgb = hopper("RGB")
         rgb.load()
         self._test_get_access(rgb)
-        self._test_get_access(hopper('RGBA'))
-        self._test_get_access(hopper('L'))
-        self._test_get_access(hopper('LA'))
-        self._test_get_access(hopper('1'))
-        self._test_get_access(hopper('P'))
+        self._test_get_access(hopper("RGBA"))
+        self._test_get_access(hopper("L"))
+        self._test_get_access(hopper("LA"))
+        self._test_get_access(hopper("1"))
+        self._test_get_access(hopper("P"))
         # self._test_get_access(hopper('PA')) # PA -- how do I make a PA image?
-        self._test_get_access(hopper('F'))
+        self._test_get_access(hopper("F"))
 
-        im = Image.new('I;16', (10, 10), 40000)
+        im = Image.new("I;16", (10, 10), 40000)
         self._test_get_access(im)
-        im = Image.new('I;16L', (10, 10), 40000)
+        im = Image.new("I;16L", (10, 10), 40000)
         self._test_get_access(im)
-        im = Image.new('I;16B', (10, 10), 40000)
+        im = Image.new("I;16B", (10, 10), 40000)
         self._test_get_access(im)
 
-        im = Image.new('I', (10, 10), 40000)
+        im = Image.new("I", (10, 10), 40000)
         self._test_get_access(im)
         # These don't actually appear to be modes that I can actually make,
         # as unpack sets them directly into the I mode.
@@ -261,25 +288,25 @@ class TestCffi(AccessTest):
             access[(0, 0)] = color
 
     def test_set_vs_c(self):
-        rgb = hopper('RGB')
+        rgb = hopper("RGB")
         rgb.load()
         self._test_set_access(rgb, (255, 128, 0))
-        self._test_set_access(hopper('RGBA'), (255, 192, 128, 0))
-        self._test_set_access(hopper('L'), 128)
-        self._test_set_access(hopper('LA'), (128, 128))
-        self._test_set_access(hopper('1'), 255)
-        self._test_set_access(hopper('P'), 128)
+        self._test_set_access(hopper("RGBA"), (255, 192, 128, 0))
+        self._test_set_access(hopper("L"), 128)
+        self._test_set_access(hopper("LA"), (128, 128))
+        self._test_set_access(hopper("1"), 255)
+        self._test_set_access(hopper("P"), 128)
         # self._test_set_access(i, (128, 128))  #PA  -- undone how to make
-        self._test_set_access(hopper('F'), 1024.0)
+        self._test_set_access(hopper("F"), 1024.0)
 
-        im = Image.new('I;16', (10, 10), 40000)
+        im = Image.new("I;16", (10, 10), 40000)
         self._test_set_access(im, 45000)
-        im = Image.new('I;16L', (10, 10), 40000)
+        im = Image.new("I;16L", (10, 10), 40000)
         self._test_set_access(im, 45000)
-        im = Image.new('I;16B', (10, 10), 40000)
+        im = Image.new("I;16B", (10, 10), 40000)
         self._test_set_access(im, 45000)
 
-        im = Image.new('I', (10, 10), 40000)
+        im = Image.new("I", (10, 10), 40000)
         self._test_set_access(im, 45000)
         # im = Image.new('I;32L', (10, 10), -(2**10))
         # self._test_set_access(im, -(2**13)+1)
@@ -295,7 +322,7 @@ class TestCffi(AccessTest):
 
         for _ in range(10):
             # Do not save references to the image, only to the access object
-            px = Image.new('L', (size, 1), 0).load()
+            px = Image.new("L", (size, 1), 0).load()
             for i in range(size):
                 # pixels can contain garbage if image is released
                 self.assertEqual(px[i, 0], 0)
@@ -309,27 +336,21 @@ class TestCffi(AccessTest):
 
 
 class TestEmbeddable(unittest.TestCase):
-    @unittest.skipIf(not sys.platform.startswith('win32') or
-                     on_appveyor(),
-                     "Failing on AppVeyor when run from subprocess, not from shell")
+    @unittest.skipIf(
+        not is_win32() or on_ci(),
+        "Failing on AppVeyor / GitHub Actions when run from subprocess, not from shell",
+    )
     def test_embeddable(self):
-        import subprocess
-        import ctypes
-        from distutils import ccompiler, sysconfig
-
-        with open('embed_pil.c', 'w') as fh:
-            fh.write("""
+        with open("embed_pil.c", "w") as fh:
+            fh.write(
+                """
 #include "Python.h"
 
 int main(int argc, char* argv[])
 {
     char *home = "%s";
-#if PY_MAJOR_VERSION >= 3
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
-#else
-    Py_SetPythonHome(home);
-#endif
 
     Py_InitializeEx(0);
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
@@ -339,30 +360,31 @@ int main(int argc, char* argv[])
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3
     PyMem_RawFree(whome);
-#endif
 
     return 0;
 }
-        """ % sys.prefix.replace('\\', '\\\\'))
+        """
+                % sys.prefix.replace("\\", "\\\\")
+            )
 
         compiler = ccompiler.new_compiler()
         compiler.add_include_dir(sysconfig.get_python_inc())
 
-        libdir = (sysconfig.get_config_var('LIBDIR') or
-                  sysconfig.get_python_inc().replace('include', 'libs'))
+        libdir = sysconfig.get_config_var(
+            "LIBDIR"
+        ) or sysconfig.get_python_inc().replace("include", "libs")
         print(libdir)
         compiler.add_library_dir(libdir)
-        objects = compiler.compile(['embed_pil.c'])
-        compiler.link_executable(objects, 'embed_pil')
+        objects = compiler.compile(["embed_pil.c"])
+        compiler.link_executable(objects, "embed_pil")
 
         env = os.environ.copy()
-        env["PATH"] = sys.prefix + ';' + env["PATH"]
+        env["PATH"] = sys.prefix + ";" + env["PATH"]
 
         # do not display the Windows Error Reporting dialog
         ctypes.windll.kernel32.SetErrorMode(0x0002)
 
-        process = subprocess.Popen(['embed_pil.exe'], env=env)
+        process = subprocess.Popen(["embed_pil.exe"], env=env)
         process.communicate()
         self.assertEqual(process.returncode, 0)

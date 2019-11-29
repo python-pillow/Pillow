@@ -1,11 +1,11 @@
-from .helper import PillowTestCase
 from PIL import Image
+
+from .helper import PillowTestCase
 
 
 class TestFilePcd(PillowTestCase):
-
     def test_load_raw(self):
-        im = Image.open('Tests/images/hopper.pcd')
+        im = Image.open("Tests/images/hopper.pcd")
         im.load()  # should not segfault.
 
         # Note that this image was created with a resized hopper

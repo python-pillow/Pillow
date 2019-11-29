@@ -25,15 +25,13 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import logging
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
 logger = logging.getLogger(__name__)
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
 
 
 def _accept(prefix):
@@ -42,6 +40,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for Paintbrush images.
+
 
 class PcxImageFile(ImageFile.ImageFile):
 
@@ -56,7 +55,7 @@ class PcxImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a PCX file")
 
         # image
-        bbox = i16(s, 4), i16(s, 6), i16(s, 8)+1, i16(s, 10)+1
+        bbox = i16(s, 4), i16(s, 6), i16(s, 8) + 1, i16(s, 10) + 1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise SyntaxError("bad PCX image size")
         logger.debug("BBox: %s %s %s %s", *bbox)
@@ -66,8 +65,13 @@ class PcxImageFile(ImageFile.ImageFile):
         bits = i8(s[3])
         planes = i8(s[65])
         stride = i16(s, 66)
-        logger.debug("PCX version %s, bits %s, planes %s, stride %s",
-                     version, bits, planes, stride)
+        logger.debug(
+            "PCX version %s, bits %s, planes %s, stride %s",
+            version,
+            bits,
+            planes,
+            stride,
+        )
 
         self.info["dpi"] = i16(s, 12), i16(s, 14)
 
@@ -82,12 +86,12 @@ class PcxImageFile(ImageFile.ImageFile):
         elif version == 5 and bits == 8 and planes == 1:
             mode = rawmode = "L"
             # FIXME: hey, this doesn't work with the incremental loader !!!
-            self.fp.seek(-769, 2)
+            self.fp.seek(-769, io.SEEK_END)
             s = self.fp.read(769)
             if len(s) == 769 and i8(s[0]) == 12:
                 # check if the palette is linear greyscale
                 for i in range(256):
-                    if s[i*3+1:i*3+4] != o8(i)*3:
+                    if s[i * 3 + 1 : i * 3 + 4] != o8(i) * 3:
                         mode = rawmode = "P"
                         break
                 if mode == "P":
@@ -99,15 +103,16 @@ class PcxImageFile(ImageFile.ImageFile):
             rawmode = "RGB;L"
 
         else:
-            raise IOError("unknown PCX mode")
+            raise OSError("unknown PCX mode")
 
         self.mode = mode
-        self._size = bbox[2]-bbox[0], bbox[3]-bbox[1]
+        self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
         self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
+
 
 # --------------------------------------------------------------------
 # save PCX files
@@ -137,8 +142,12 @@ def _save(im, fp, filename):
     # Ideally it should be passed in in the state, but the bytes value
     # gets overwritten.
 
-    logger.debug("PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d",
-                 im.size[0], bits, stride)
+    logger.debug(
+        "PcxImagePlugin._save: xwidth: %d, bits: %d, stride: %d",
+        im.size[0],
+        bits,
+        stride,
+    )
 
     # under windows, we could determine the current screen size with
     # "Image.core.display_mode()[1]", but I think that's overkill...
@@ -149,17 +158,30 @@ def _save(im, fp, filename):
 
     # PCX header
     fp.write(
-        o8(10) + o8(version) + o8(1) + o8(bits) + o16(0) +
-        o16(0) + o16(im.size[0]-1) + o16(im.size[1]-1) + o16(dpi[0]) +
-        o16(dpi[1]) + b"\0"*24 + b"\xFF"*24 + b"\0" + o8(planes) +
-        o16(stride) + o16(1) + o16(screen[0]) + o16(screen[1]) +
-        b"\0"*54
-        )
+        o8(10)
+        + o8(version)
+        + o8(1)
+        + o8(bits)
+        + o16(0)
+        + o16(0)
+        + o16(im.size[0] - 1)
+        + o16(im.size[1] - 1)
+        + o16(dpi[0])
+        + o16(dpi[1])
+        + b"\0" * 24
+        + b"\xFF" * 24
+        + b"\0"
+        + o8(planes)
+        + o16(stride)
+        + o16(1)
+        + o16(screen[0])
+        + o16(screen[1])
+        + b"\0" * 54
+    )
 
     assert fp.tell() == 128
 
-    ImageFile._save(im, fp, [("pcx", (0, 0)+im.size, 0,
-                              (rawmode, bits*planes))])
+    ImageFile._save(im, fp, [("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))])
 
     if im.mode == "P":
         # colour palette
@@ -169,7 +191,8 @@ def _save(im, fp, filename):
         # greyscale palette
         fp.write(o8(12))
         for i in range(256):
-            fp.write(o8(i)*3)
+            fp.write(o8(i) * 3)
+
 
 # --------------------------------------------------------------------
 # registry
@@ -179,3 +202,5 @@ Image.register_open(PcxImageFile.format, PcxImageFile, _accept)
 Image.register_save(PcxImageFile.format, _save)
 
 Image.register_extension(PcxImageFile.format, ".pcx")
+
+Image.register_mime(PcxImageFile.format, "image/x-pcx")

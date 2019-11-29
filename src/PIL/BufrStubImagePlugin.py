@@ -27,6 +27,7 @@ def register_handler(handler):
 # --------------------------------------------------------------------
 # Image adapter
 
+
 def _accept(prefix):
     return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
 
@@ -59,7 +60,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
-        raise IOError("BUFR save handler not installed")
+        raise OSError("BUFR save handler not installed")
     _handler.save(im, fp, filename)
 
 

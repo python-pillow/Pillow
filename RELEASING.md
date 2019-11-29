@@ -51,6 +51,7 @@ Released as needed for security, installation or critical bug fixes.
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.1*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 
 ## Embargoed Release
@@ -88,18 +89,11 @@ Released as needed privately to individual vendors for critical security-related
   ```bash
   git clone https://github.com/python-pillow/pillow-wheels
   cd pillow-wheels
-  git submodule init
-  git submodule update Pillow
-  cd Pillow
-  git fetch --all
-  git checkout [[release tag]]
-  cd ..
-  git commit -m "Pillow -> 5.2.0" Pillow
-  git push
+  ./update-pillow-tag.sh [[release tag]]
   ```
 * [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).
   ```bash
-  wget -m -A 'Pillow-<VERSION>*' \
+  wget -m -A 'Pillow-<VERSION>-*' \
   http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
   ```
 
@@ -109,4 +103,4 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Documentation
 
-* [ ] Make sure the default version for Read the Docs is the latest tagged release e.g. `d2d43879` (5.4.0)
+* [ ] Make sure the [default version for Read the Docs](https://pillow.readthedocs.io/en/stable/) is up-to-date with the release changes

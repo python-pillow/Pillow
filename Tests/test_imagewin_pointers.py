@@ -1,39 +1,39 @@
-from .helper import PillowTestCase, hopper
-from PIL import Image, ImageWin
-
-import sys
 import ctypes
 from io import BytesIO
 
+from PIL import Image, ImageWin
+
+from .helper import PillowTestCase, hopper, is_win32
+
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 
-if sys.platform.startswith('win32'):
+if is_win32():
     import ctypes.wintypes
 
     class BITMAPFILEHEADER(ctypes.Structure):
         _pack_ = 2
         _fields_ = [
-            ('bfType', ctypes.wintypes.WORD),
-            ('bfSize', ctypes.wintypes.DWORD),
-            ('bfReserved1', ctypes.wintypes.WORD),
-            ('bfReserved2', ctypes.wintypes.WORD),
-            ('bfOffBits', ctypes.wintypes.DWORD),
+            ("bfType", ctypes.wintypes.WORD),
+            ("bfSize", ctypes.wintypes.DWORD),
+            ("bfReserved1", ctypes.wintypes.WORD),
+            ("bfReserved2", ctypes.wintypes.WORD),
+            ("bfOffBits", ctypes.wintypes.DWORD),
         ]
 
     class BITMAPINFOHEADER(ctypes.Structure):
         _pack_ = 2
         _fields_ = [
-            ('biSize', ctypes.wintypes.DWORD),
-            ('biWidth', ctypes.wintypes.LONG),
-            ('biHeight', ctypes.wintypes.LONG),
-            ('biPlanes', ctypes.wintypes.WORD),
-            ('biBitCount', ctypes.wintypes.WORD),
-            ('biCompression', ctypes.wintypes.DWORD),
-            ('biSizeImage', ctypes.wintypes.DWORD),
-            ('biXPelsPerMeter', ctypes.wintypes.LONG),
-            ('biYPelsPerMeter', ctypes.wintypes.LONG),
-            ('biClrUsed', ctypes.wintypes.DWORD),
-            ('biClrImportant', ctypes.wintypes.DWORD),
+            ("biSize", ctypes.wintypes.DWORD),
+            ("biWidth", ctypes.wintypes.LONG),
+            ("biHeight", ctypes.wintypes.LONG),
+            ("biPlanes", ctypes.wintypes.WORD),
+            ("biBitCount", ctypes.wintypes.WORD),
+            ("biCompression", ctypes.wintypes.DWORD),
+            ("biSizeImage", ctypes.wintypes.DWORD),
+            ("biXPelsPerMeter", ctypes.wintypes.LONG),
+            ("biYPelsPerMeter", ctypes.wintypes.LONG),
+            ("biClrUsed", ctypes.wintypes.DWORD),
+            ("biClrImportant", ctypes.wintypes.DWORD),
         ]
 
     BI_RGB = 0
@@ -57,15 +57,19 @@ if sys.platform.startswith('win32'):
     DeleteObject.argtypes = [ctypes.wintypes.HGDIOBJ]
 
     CreateDIBSection = ctypes.windll.gdi32.CreateDIBSection
-    CreateDIBSection.argtypes = [ctypes.wintypes.HDC, ctypes.c_void_p,
-                                 ctypes.c_uint,
-                                 ctypes.POINTER(ctypes.c_void_p),
-                                 ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD]
+    CreateDIBSection.argtypes = [
+        ctypes.wintypes.HDC,
+        ctypes.c_void_p,
+        ctypes.c_uint,
+        ctypes.POINTER(ctypes.c_void_p),
+        ctypes.wintypes.HANDLE,
+        ctypes.wintypes.DWORD,
+    ]
     CreateDIBSection.restype = ctypes.wintypes.HBITMAP
 
     def serialize_dib(bi, pixels):
         bf = BITMAPFILEHEADER()
-        bf.bfType = 0x4d42
+        bf.bfType = 0x4D42
         bf.bfOffBits = ctypes.sizeof(bf) + bi.biSize
         bf.bfSize = bf.bfOffBits + bi.biSizeImage
         bf.bfReserved1 = bf.bfReserved2 = 0
@@ -81,7 +85,7 @@ if sys.platform.startswith('win32'):
         def test_pointer(self):
             im = hopper()
             (width, height) = im.size
-            opath = self.tempfile('temp.png')
+            opath = self.tempfile("temp.png")
             imdib = ImageWin.Dib(im)
 
             hdr = BITMAPINFOHEADER()
@@ -97,8 +101,9 @@ if sys.platform.startswith('win32'):
 
             hdc = CreateCompatibleDC(None)
             pixels = ctypes.c_void_p()
-            dib = CreateDIBSection(hdc, ctypes.byref(hdr), DIB_RGB_COLORS,
-                                   ctypes.byref(pixels), None, 0)
+            dib = CreateDIBSection(
+                hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0
+            )
             SelectObject(hdc, dib)
 
             imdib.expose(hdc)

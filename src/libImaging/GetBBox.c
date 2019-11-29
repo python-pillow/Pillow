@@ -146,8 +146,8 @@ ImagingGetExtrema(Imaging im, void *extrema)
                     imax = in[x];
             }
         }
-        ((INT32*) extrema)[0] = imin;
-        ((INT32*) extrema)[1] = imax;
+        memcpy(extrema, &imin, sizeof(imin));
+        memcpy(((char*)extrema) + sizeof(imin), &imax, sizeof(imax));
         break;
     case IMAGING_TYPE_FLOAT32:
         fmin = fmax = ((FLOAT32*) im->image32[0])[0];
@@ -160,23 +160,27 @@ ImagingGetExtrema(Imaging im, void *extrema)
                     fmax = in[x];
             }
         }
-        ((FLOAT32*) extrema)[0] = fmin;
-        ((FLOAT32*) extrema)[1] = fmax;
+        memcpy(extrema, &fmin, sizeof(fmin));
+        memcpy(((char*)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
         break;
     case IMAGING_TYPE_SPECIAL:
       if (strcmp(im->mode, "I;16") == 0) {
-          imin = imax = ((UINT16*) im->image8[0])[0];
+          UINT16 v;
+          memcpy(&v, *im->image8, sizeof(v));
+          imin = imax = v;
           for (y = 0; y < im->ysize; y++) {
-              UINT16* in = (UINT16 *) im->image[y];
               for (x = 0; x < im->xsize; x++) {
-                  if (imin > in[x])
-                      imin = in[x];
-                  else if (imax < in[x])
-                      imax = in[x];
+                  memcpy(&v, im->image[y] + x * sizeof(v), sizeof(v));
+                  if (imin > v)
+                      imin = v;
+                  else if (imax < v)
+                      imax = v;
               }
           }
-          ((UINT16*) extrema)[0] = (UINT16) imin;
-          ((UINT16*) extrema)[1] = (UINT16) imax;
+          v = (UINT16) imin;
+          memcpy(extrema, &v, sizeof(v));
+          v = (UINT16) imax;
+          memcpy(((char*)extrema) + sizeof(v), &v, sizeof(v));
 	  break;
       }
       /* FALL THROUGH */

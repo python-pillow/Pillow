@@ -16,15 +16,12 @@
 
 
 import re
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, o8
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.2"
-
 # XPM header
-xpm_head = re.compile(b"\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")
+xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
 def _accept(prefix):
@@ -33,6 +30,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for X11 pixel maps.
+
 
 class XpmImageFile(ImageFile.ImageFile):
 
@@ -69,9 +67,9 @@ class XpmImageFile(ImageFile.ImageFile):
         for i in range(pal):
 
             s = self.fp.readline()
-            if s[-2:] == b'\r\n':
+            if s[-2:] == b"\r\n":
                 s = s[:-2]
-            elif s[-1:] in b'\r\n':
+            elif s[-1:] in b"\r\n":
                 s = s[:-1]
 
             c = i8(s[1])
@@ -82,15 +80,15 @@ class XpmImageFile(ImageFile.ImageFile):
                 if s[i] == b"c":
 
                     # process colour key
-                    rgb = s[i+1]
+                    rgb = s[i + 1]
                     if rgb == b"None":
                         self.info["transparency"] = c
                     elif rgb[0:1] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
-                        palette[c] = (o8((rgb >> 16) & 255) +
-                                      o8((rgb >> 8) & 255) +
-                                      o8(rgb & 255))
+                        palette[c] = (
+                            o8((rgb >> 16) & 255) + o8((rgb >> 8) & 255) + o8(rgb & 255)
+                        )
                     else:
                         # unknown colour
                         raise ValueError("cannot read this XPM file")
@@ -104,7 +102,7 @@ class XpmImageFile(ImageFile.ImageFile):
         self.mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
-        self.tile = [("raw", (0, 0)+self.size, self.fp.tell(), ("P", 0, 1))]
+        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
 
     def load_read(self, bytes):
 
@@ -116,9 +114,10 @@ class XpmImageFile(ImageFile.ImageFile):
         s = [None] * ysize
 
         for i in range(ysize):
-            s[i] = self.fp.readline()[1:xsize+1].ljust(xsize)
+            s[i] = self.fp.readline()[1 : xsize + 1].ljust(xsize)
 
         return b"".join(s)
+
 
 #
 # Registry

@@ -23,19 +23,15 @@
 # purposes only.
 
 
-from . import ImageFile, ImagePalette
+from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i8, i16be as i16, i32be as i32
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
 # is not supported by the standard <b>Image.open</b> function.  To use
 # this plugin, you have to import the <b>GdImageFile</b> module and
 # use the <b>GdImageFile.open</b> function.
+
 
 class GdImageFile(ImageFile.ImageFile):
 
@@ -57,15 +53,17 @@ class GdImageFile(ImageFile.ImageFile):
         trueColorOffset = 2 if trueColor else 0
 
         # transparency index
-        tindex = i32(s[7+trueColorOffset:7+trueColorOffset+4])
+        tindex = i32(s[7 + trueColorOffset : 7 + trueColorOffset + 4])
         if tindex < 256:
             self.info["transparency"] = tindex
 
         self.palette = ImagePalette.raw(
-            "XBGR", s[7+trueColorOffset+4:7+trueColorOffset+4+256*4])
+            "XBGR", s[7 + trueColorOffset + 4 : 7 + trueColorOffset + 4 + 256 * 4]
+        )
 
-        self.tile = [("raw", (0, 0)+self.size, 7+trueColorOffset+4+256*4,
-                      ("L", 0, 1))]
+        self.tile = [
+            ("raw", (0, 0) + self.size, 7 + trueColorOffset + 4 + 256 * 4, ("L", 0, 1))
+        ]
 
 
 def open(fp, mode="r"):
@@ -84,4 +82,4 @@ def open(fp, mode="r"):
     try:
         return GdImageFile(fp)
     except SyntaxError:
-        raise IOError("cannot identify this image file")
+        raise UnidentifiedImageError("cannot identify this image file")

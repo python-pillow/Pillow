@@ -31,8 +31,6 @@
 
 #include <math.h>
 
-#include "py3.h"
-
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
 extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);
@@ -133,8 +131,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
         /* Assume the buffer contains floats */
         Py_buffer buffer;
         if (PyImaging_GetBuffer(data, &buffer) == 0) {
-            int n = buffer.len / (2 * sizeof(float));
             float *ptr = (float*) buffer.buf;
+            n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy)
                 return -1;
@@ -170,8 +168,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             PyObject *op = PyList_GET_ITEM(data, i);
             if (PyFloat_Check(op))
                 xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+                xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -188,8 +186,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             PyObject *op = PyTuple_GET_ITEM(data, i);
             if (PyFloat_Check(op))
                 xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+                xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -217,8 +215,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             }
             if (PyFloat_Check(op))
                 xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-                xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+                xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -552,13 +550,8 @@ path_subscript(PyPathObject* self, PyObject* item) {
         int len = 4;
         Py_ssize_t start, stop, step, slicelength;
 
-#if PY_VERSION_HEX >= 0x03020000
         if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0)
             return NULL;
-#else
-        if (PySlice_GetIndicesEx((PySliceObject*)item, len, &start, &stop, &step, &slicelength) < 0)
-            return NULL;
-#endif
 
         if (slicelength <= 0) {
             double *xy = alloc_array(0);

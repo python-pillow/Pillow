@@ -1,12 +1,11 @@
-from .helper import PillowTestCase, hopper
+import os
 
 from PIL import Image
 
-import os
+from .helper import PillowTestCase, hopper
 
 
 class TestImageLoad(PillowTestCase):
-
     def test_sanity(self):
 
         im = hopper()
@@ -28,3 +27,10 @@ class TestImageLoad(PillowTestCase):
             os.fstat(fn)
 
         self.assertRaises(OSError, os.fstat, fn)
+
+    def test_contextmanager_non_exclusive_fp(self):
+        with open("Tests/images/hopper.gif", "rb") as fp:
+            with Image.open(fp):
+                pass
+
+            self.assertFalse(fp.closed)

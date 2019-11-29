@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # minimal sanity check
-from __future__ import print_function
 
 import sys
-import os
 
-from PIL import Image
-from PIL import features
+from PIL import Image, features
 
 try:
     Image.core.ping
@@ -43,8 +40,8 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open("Tests/images/hopper.gif")
-    >>> _info(im)
+    >>> with Image.open("Tests/images/hopper.gif") as im:
+    ...     _info(im)
     ('GIF', 'P', (128, 128))
     >>> _info(Image.open("Tests/images/hopper.ppm"))
     ('PPM', 'RGB', (128, 128))
@@ -90,6 +87,8 @@ def testimage():
     2
     >>> len(im.histogram())
     768
+    >>> '%.7f' % im.entropy()
+    '8.8212866'
     >>> _info(im.point(list(range(256))*3))
     (None, 'RGB', (128, 128))
     >>> _info(im.resize((64, 64)))
@@ -161,35 +160,11 @@ if __name__ == "__main__":
 
     exit_status = 0
 
-    print("-"*68)
-    print("Pillow", Image.__version__, "TEST SUMMARY ")
-    print("-"*68)
-    print("Python modules loaded from", os.path.dirname(Image.__file__))
-    print("Binary modules loaded from", os.path.dirname(Image.core.__file__))
-    print("-"*68)
-    for name, feature in [
-        ("pil", "PIL CORE"),
-        ("tkinter", "TKINTER"),
-        ("freetype2", "FREETYPE2"),
-        ("littlecms2", "LITTLECMS2"),
-        ("webp", "WEBP"),
-        ("transp_webp", "WEBP Transparency"),
-        ("webp_mux", "WEBPMUX"),
-        ("webp_anim", "WEBP Animation"),
-        ("jpg", "JPEG"),
-        ("jpg_2000", "OPENJPEG (JPEG2000)"),
-        ("zlib", "ZLIB (PNG/ZIP)"),
-        ("libtiff", "LIBTIFF"),
-        ("raqm", "RAQM (Bidirectional Text)")
-    ]:
-        if features.check(name):
-            print("---", feature, "support ok")
-        else:
-            print("***", feature, "support not installed")
-    print("-"*68)
+    features.pilinfo(sys.stdout, False)
 
     # use doctest to make sure the test program behaves as documented!
     import doctest
+
     print("Running selftest:")
     status = doctest.testmod(sys.modules[__name__])
     if status[0]:

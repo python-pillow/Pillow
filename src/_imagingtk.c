@@ -64,7 +64,6 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imagingtk(void) {
     static PyModuleDef module_def = {
@@ -78,12 +77,3 @@ PyInit__imagingtk(void) {
     m = PyModule_Create(&module_def);
     return (load_tkinter_funcs() == 0) ? m : NULL;
 }
-#else
-PyMODINIT_FUNC
-init_imagingtk(void)
-{
-    Py_InitModule("_imagingtk", functions);
-    load_tkinter_funcs();
-}
-#endif
-

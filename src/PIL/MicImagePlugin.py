@@ -17,14 +17,9 @@
 #
 
 
-from . import Image, TiffImagePlugin
-
 import olefile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
+from . import Image, TiffImagePlugin
 
 #
 # --------------------------------------------------------------------
@@ -36,6 +31,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for Microsoft's Image Composer file format.
+
 
 class MicImageFile(TiffImagePlugin.TiffImageFile):
 
@@ -50,7 +46,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except IOError:
+        except OSError:
             raise SyntaxError("not an MIC file; invalid OLE file")
 
         # find ACI subfiles with Image members (maybe not the

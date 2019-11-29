@@ -27,6 +27,7 @@ def register_handler(handler):
 # --------------------------------------------------------------------
 # Image adapter
 
+
 def _accept(prefix):
     return prefix[:8] == b"\x89HDF\r\n\x1a\n"
 
@@ -59,7 +60,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
-        raise IOError("HDF5 save handler not installed")
+        raise OSError("HDF5 save handler not installed")
     _handler.save(im, fp, filename)
 
 

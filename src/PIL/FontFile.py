@@ -14,9 +14,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 
 import os
+
 from . import Image, _binary
 
 WIDTH = 800
@@ -33,7 +33,8 @@ def puti16(fp, values):
 ##
 # Base class for raster font file handlers.
 
-class FontFile(object):
+
+class FontFile:
 
     bitmap = None
 
@@ -61,7 +62,7 @@ class FontFile(object):
                 w = w + (src[2] - src[0])
                 if w > WIDTH:
                     lines += 1
-                    w = (src[2] - src[0])
+                    w = src[2] - src[0]
                 maxwidth = max(maxwidth, w)
 
         xsize = maxwidth
@@ -103,7 +104,7 @@ class FontFile(object):
         # font metrics
         with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
             fp.write(b"PILfont\n")
-            fp.write((";;;;;;%d;\n" % self.ysize).encode('ascii'))  # HACK!!!
+            fp.write((";;;;;;%d;\n" % self.ysize).encode("ascii"))  # HACK!!!
             fp.write(b"DATA\n")
             for id in range(256):
                 m = self.metrics[id]

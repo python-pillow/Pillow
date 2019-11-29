@@ -1,9 +1,9 @@
-from __future__ import print_function
-from .helper import unittest, PillowTestCase
+import locale
+import unittest
 
 from PIL import Image
 
-import locale
+from .helper import PillowTestCase
 
 # ref https://github.com/python-pillow/Pillow/issues/272
 # on windows, in polish locale:
@@ -24,11 +24,16 @@ path = "Tests/images/hopper.jpg"
 
 
 class TestLocale(PillowTestCase):
-
     def test_sanity(self):
-        Image.open(path)
+        with Image.open(path):
+            pass
         try:
             locale.setlocale(locale.LC_ALL, "polish")
         except locale.Error:
-            unittest.skip('Polish locale not available')
-        Image.open(path)
+            unittest.skip("Polish locale not available")
+
+        try:
+            with Image.open(path):
+                pass
+        finally:
+            locale.setlocale(locale.LC_ALL, (None, None))

@@ -5,8 +5,8 @@
 Saving Multipage Images
 -----------------------
 
-There is now support for saving multipage images in the `GIF` and
-`PDF` formats. To enable this functionality, pass in `save_all=True`
+There is now support for saving multipage images in the ``GIF`` and
+``PDF`` formats. To enable this functionality, pass in ``save_all=True``
 as a keyword argument to the save::
 
     im.save('test.pdf', save_all=True)
@@ -37,7 +37,7 @@ have been removed in this release::
     ImageDraw.setink()
     ImageDraw.setfill()
     The ImageFileIO module
-    The ImageFont.FreeTypeFont and ImageFont.truetype `file` keyword arg
+    The ImageFont.FreeTypeFont and ImageFont.truetype ``file`` keyword arg
     The ImagePalette private _make functions
     ImageWin.fromstring()
     ImageWin.tostring()

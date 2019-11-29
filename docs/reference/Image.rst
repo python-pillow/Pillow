@@ -16,7 +16,7 @@ Open, rotate, and display an image (using the default viewer)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following script loads an image, rotates it 45 degrees, and displays it
-using an external viewer (usually xv on Unix, and the paint program on
+using an external viewer (usually xv on Unix, and the Paint program on
 Windows).
 
 .. code-block:: python
@@ -52,7 +52,7 @@ Functions
     .. warning::
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
-        a lot of memory), Pillow will issue a `DecompressionBombWarning` if the image is over a certain
+        a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the image is over a certain
         limit. If desired, the warning can be turned into an error with
         ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or suppressed entirely with
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
@@ -116,15 +116,66 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
     rgb2xyz = (
         0.412453, 0.357580, 0.180423, 0,
         0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0 )
+        0.019334, 0.119193, 0.950227, 0)
     out = im.convert("RGB", rgb2xyz)
 
 .. automethod:: PIL.Image.Image.copy
 .. automethod:: PIL.Image.Image.crop
+
+This crops the input image with the provided coordinates:
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+
+    # The crop method from the Image module takes four coordinates as input.
+    # The right can also be represented as (left+width)
+    # and lower can be represented as (upper+height).
+    (left, upper, right, lower) = (20, 20, 100, 100)
+
+    # Here the image "im" is cropped and assigned to new variable im_crop
+    im_crop = im.crop((left, upper, right, lower))
+
+
 .. automethod:: PIL.Image.Image.draft
 .. automethod:: PIL.Image.Image.filter
+
+This blurs the input image using a filter from the ``ImageFilter`` module:
+
+.. code-block:: python
+
+    from PIL import Image, ImageFilter
+
+    im = Image.open("hopper.jpg")
+
+    # Blur the input image using the filter ImageFilter.BLUR
+    im_blurred = im.filter(filter=ImageFilter.BLUR)
+
 .. automethod:: PIL.Image.Image.getbands
+
+This helps to get the bands of the input image:
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+    print(im.getbands())  # Returns ('R', 'G', 'B')
+
 .. automethod:: PIL.Image.Image.getbbox
+
+This helps to get the bounding box coordinates of the input image:
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+    print(im.getbbox())
+    # Returns four coordinates in the format (left, upper, right, lower)
+
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
 .. automethod:: PIL.Image.Image.getextrema
@@ -140,8 +191,35 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.putpixel
 .. automethod:: PIL.Image.Image.quantize
 .. automethod:: PIL.Image.Image.resize
+
+This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``:
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+
+    # Provide the target width and height of the image
+    (width, height) = (im.width // 2, im.height // 2)
+    im_resized = im.resize((width, height))
+
 .. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.rotate
+
+This rotates the input image by ``theta`` degrees counter clockwise:
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+
+    # Rotate the image by 60 degrees counter clockwise
+    theta = 60
+    # Angle is in degrees counter clockwise
+    im_rotated = im.rotate(angle=theta)
+
 .. automethod:: PIL.Image.Image.save
 .. automethod:: PIL.Image.Image.seek
 .. automethod:: PIL.Image.Image.show
@@ -154,6 +232,21 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.tostring
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
+
+This flips the input image by using the ``Image.FLIP_LEFT_RIGHT`` method.
+
+.. code-block:: python
+
+    from PIL import Image
+
+    im = Image.open("hopper.jpg")
+
+    # Flip the image from left to right
+    im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
+    # To flip the image from top to bottom,
+    # use the method "Image.FLIP_TOP_BOTTOM"
+
+
 .. automethod:: PIL.Image.Image.verify
 
 .. automethod:: PIL.Image.Image.fromstring
@@ -169,10 +262,10 @@ Instances of the :py:class:`Image` class have the following attributes:
 .. py:attribute:: filename
 
     The filename or path of the source file. Only images created with the
-    factory function `open` have a filename attribute. If the input is a
+    factory function ``open`` have a filename attribute. If the input is a
     file like object, the filename attribute is set to an empty string.
 
-    :type: :py:class: `string`
+    :type: :py:class:`string`
 
 .. py:attribute:: format
 
@@ -210,9 +303,9 @@ Instances of the :py:class:`Image` class have the following attributes:
 
 .. py:attribute:: palette
 
-    Colour palette table, if any. If mode is “P”, this should be an instance of
-    the :py:class:`~PIL.ImagePalette.ImagePalette` class. Otherwise, it should
-    be set to ``None``.
+    Colour palette table, if any. If mode is "P" or "PA", this should be an
+    instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
+    Otherwise, it should be set to ``None``.
 
     :type: :py:class:`~PIL.ImagePalette.ImagePalette` or ``None``
 

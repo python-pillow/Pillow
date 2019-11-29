@@ -251,8 +251,17 @@ ImagingPackRGB(UINT8* out, const UINT8* in, int pixels)
 {
     int i = 0;
     /* RGB triplets */
+#ifdef __sparc
+    /* SPARC CPUs cannot read integers from nonaligned addresses. */
+    for (; i < pixels; i++) {
+        out[0] = in[R];
+        out[1] = in[G];
+        out[2] = in[B];
+        out += 3; in += 4;
+    }
+#else
     for (; i < pixels-1; i++) {
-        ((UINT32*)out)[0] = ((UINT32*)in)[i];
+        memcpy(out, in + i * 4, 4);
         out += 3;
     }
     for (; i < pixels; i++) {
@@ -261,6 +270,7 @@ ImagingPackRGB(UINT8* out, const UINT8* in, int pixels)
         out[2] = in[i*4+B];
         out += 3;
     }
+#endif
 }
 
 void
@@ -392,18 +402,19 @@ static void
 packI16B(UINT8* out, const UINT8* in_, int pixels)
 {
     int i;
-    INT32* in = (INT32*) in_;
     UINT16 tmp_;
     UINT8* tmp = (UINT8*) &tmp_;
     for (i = 0; i < pixels; i++) {
-        if (in[0] <= 0)
+        INT32 in;
+        memcpy(&in, in_, sizeof(in));
+        if (in <= 0)
             tmp_ = 0;
-        else if (in[0] > 65535)
+        else if (in > 65535)
             tmp_ = 65535;
         else
-            tmp_ = in[0];
+            tmp_ = in;
         C16B;
-        out += 2; in++;
+        out += 2; in_ += sizeof(in);
     }
 }
 
@@ -639,6 +650,7 @@ static struct {
 
     /* storage modes */
     {"I;16",    "I;16",         16,     copy2},
+    {"I;16",    "I;16B",        16,     packI16N_I16B},
     {"I;16B",   "I;16B",        16,     copy2},
     {"I;16L",   "I;16L",        16,     copy2},
     {"I;16",    "I;16N",        16,     packI16N_I16}, // LibTiff native->image endian.

@@ -20,6 +20,16 @@ for a region of an image.
 
         Min/max values for each band in the image.
 
+        .. note::
+
+            This relies on the :py:meth:`~PIL.Image.histogram` method, and
+            simply returns the low and high bins used. This is correct for
+            images with 8 bits per channel, but fails for other modes such as
+            ``I`` or ``F``. Instead, use :py:meth:`~PIL.Image.getextrema` to
+            return per-band extrema for the image. This is more correct and
+            efficient because, for non-8-bit modes, the histogram method uses
+            :py:meth:`~PIL.Image.getextrema` to determine the bins used.
+
     .. py:attribute:: count
 
         Total number of pixels for each band in the image.

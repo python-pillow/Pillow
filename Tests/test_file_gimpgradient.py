@@ -1,10 +1,9 @@
-from .helper import PillowTestCase
-
 from PIL import GimpGradientFile
+
+from .helper import PillowTestCase
 
 
 class TestImage(PillowTestCase):
-
     def test_linear_pos_le_middle(self):
         # Arrange
         middle = 0.5
@@ -96,6 +95,7 @@ class TestImage(PillowTestCase):
     def test_load_via_imagepalette(self):
         # Arrange
         from PIL import ImagePalette
+
         test_file = "Tests/images/gimp_gradient.ggr"
 
         # Act
@@ -109,6 +109,7 @@ class TestImage(PillowTestCase):
     def test_load_1_3_via_imagepalette(self):
         # Arrange
         from PIL import ImagePalette
+
         # GIMP 1.3 gradient files contain a name field
         test_file = "Tests/images/gimp_gradient_with_name.ggr"
 

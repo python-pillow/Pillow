@@ -194,7 +194,7 @@ static void
 j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params)
 {
     float rate;
-    unsigned n;
+    int n;
 
     /* These settings have been copied from opj_compress in the OpenJPEG
        sources. */
@@ -522,7 +522,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
 
     tile_ndx = 0;
     for (y = 0; y < tiles_y; ++y) {
-        unsigned ty0 = params.cp_ty0 + y * tile_height;
+        int ty0 = params.cp_ty0 + y * tile_height;
         unsigned ty1 = ty0 + tile_height;
         unsigned pixy, pixh;
 
@@ -535,7 +535,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         pixh = ty1 - ty0;
 
         for (x = 0; x < tiles_x; ++x) {
-            unsigned tx0 = params.cp_tx0 + x * tile_width;
+            int tx0 = params.cp_tx0 + x * tile_width;
             unsigned tx1 = tx0 + tile_width;
             unsigned pixx, pixw;
             unsigned data_size;

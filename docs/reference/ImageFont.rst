@@ -47,43 +47,11 @@ Functions
 Methods
 -------
 
-.. py:method:: PIL.ImageFont.ImageFont.getsize(text)
+.. autoclass:: PIL.ImageFont.ImageFont
+    :members:
 
-    :return: (width, height)
+.. autoclass:: PIL.ImageFont.FreeTypeFont
+    :members:
 
-.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
-
-    Create a bitmap for the text.
-
-    If the font uses antialiasing, the bitmap should have mode “L” and use a
-    maximum value of 255. Otherwise, it should have mode “1”.
-
-    :param text: Text to render.
-    :param mode: Used by some graphics drivers to indicate what mode the
-                 driver prefers; if empty, the renderer may return either
-                 mode. Note that the mode is always a string, to simplify
-                 C-level implementations.
-
-                 .. versionadded:: 1.1.5
-
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                      Requires libraqm.
-
-                      .. versionadded:: 4.2.0
-
-    :param features: A list of OpenType font features to be used during text
-                     layout. This is usually used to turn on optional
-                     font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
-                     to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
-                     Requires libraqm.
-
-                     .. versionadded:: 4.2.0
-
-    :return: An internal PIL storage memory instance as defined by the
-             :py:mod:`PIL.Image.core` interface module.
+.. autoclass:: PIL.ImageFont.TransposedFont
+    :members:

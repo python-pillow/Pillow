@@ -1,9 +1,12 @@
-from .helper import unittest, PillowTestCase, hopper
+import unittest
 
 from PIL import Image, WebPImagePlugin
 
+from .helper import PillowTestCase, hopper
+
 try:
     from PIL import _webp
+
     HAVE_WEBP = True
 except ImportError:
     HAVE_WEBP = False
@@ -16,8 +19,7 @@ class TestUnsupportedWebp(PillowTestCase):
 
         file_path = "Tests/images/hopper.webp"
         self.assert_warning(
-            UserWarning,
-            lambda: self.assertRaises(IOError, Image.open, file_path)
+            UserWarning, lambda: self.assertRaises(IOError, Image.open, file_path)
         )
 
         if HAVE_WEBP:
@@ -26,7 +28,6 @@ class TestUnsupportedWebp(PillowTestCase):
 
 @unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
 class TestFileWebp(PillowTestCase):
-
     def setUp(self):
         self.rgb_mode = "RGB"
 
@@ -51,7 +52,8 @@ class TestFileWebp(PillowTestCase):
         # generated with:
         # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
         self.assert_image_similar_tofile(
-            image, 'Tests/images/hopper_webp_bits.ppm', 1.0)
+            image, "Tests/images/hopper_webp_bits.ppm", 1.0
+        )
 
     def test_write_rgb(self):
         """
@@ -72,7 +74,8 @@ class TestFileWebp(PillowTestCase):
 
         # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
         self.assert_image_similar_tofile(
-            image, 'Tests/images/hopper_webp_write.ppm', 12.0)
+            image, "Tests/images/hopper_webp_write.ppm", 12.0
+        )
 
         # This test asserts that the images are similar. If the average pixel
         # difference between the two images is less than the epsilon value,
@@ -149,26 +152,28 @@ class TestFileWebp(PillowTestCase):
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"
-        with open(file_path, 'rb') as blob:
+        with open(file_path, "rb") as blob:
             Image.open(blob).load()
             Image.open(blob).load()
 
-    @unittest.skipUnless(HAVE_WEBP and _webp.HAVE_WEBPANIM,
-                         "WebP save all not available")
+    @unittest.skipUnless(
+        HAVE_WEBP and _webp.HAVE_WEBPANIM, "WebP save all not available"
+    )
     def test_background_from_gif(self):
-        im = Image.open("Tests/images/chi.gif")
-        original_value = im.convert("RGB").getpixel((1, 1))
+        with Image.open("Tests/images/chi.gif") as im:
+            original_value = im.convert("RGB").getpixel((1, 1))
 
-        # Save as WEBP
-        out_webp = self.tempfile("temp.webp")
-        im.save(out_webp, save_all=True)
+            # Save as WEBP
+            out_webp = self.tempfile("temp.webp")
+            im.save(out_webp, save_all=True)
 
         # Save as GIF
         out_gif = self.tempfile("temp.gif")
         Image.open(out_webp).save(out_gif)
 
-        reread = Image.open(out_gif)
-        reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum([abs(original_value[i] - reread_value[i])
-                          for i in range(0, 3)])
+        with Image.open(out_gif) as reread:
+            reread_value = reread.convert("RGB").getpixel((1, 1))
+        difference = sum(
+            [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
+        )
         self.assertLess(difference, 5)

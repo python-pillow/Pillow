@@ -15,15 +15,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import EpsImagePlugin
-from ._util import py3
 import sys
+
+from . import EpsImagePlugin
 
 ##
 # Simple Postscript graphics interface.
 
 
-class PSDraw(object):
+class PSDraw:
     """
     Sets up printing to the given file. If **fp** is omitted,
     :py:attr:`sys.stdout` is assumed.
@@ -35,19 +35,21 @@ class PSDraw(object):
         self.fp = fp
 
     def _fp_write(self, to_write):
-        if not py3 or self.fp == sys.stdout:
+        if self.fp == sys.stdout:
             self.fp.write(to_write)
         else:
-            self.fp.write(bytes(to_write, 'UTF-8'))
+            self.fp.write(bytes(to_write, "UTF-8"))
 
     def begin_document(self, id=None):
         """Set up printing of a document. (Write Postscript DSC header.)"""
         # FIXME: incomplete
-        self._fp_write("%!PS-Adobe-3.0\n"
-                       "save\n"
-                       "/showpage { } def\n"
-                       "%%EndComments\n"
-                       "%%BeginDocument\n")
+        self._fp_write(
+            "%!PS-Adobe-3.0\n"
+            "save\n"
+            "/showpage { } def\n"
+            "%%EndComments\n"
+            "%%BeginDocument\n"
+        )
         # self._fp_write(ERROR_PS)  # debugging!
         self._fp_write(EDROFF_PS)
         self._fp_write(VDI_PS)
@@ -56,9 +58,7 @@ class PSDraw(object):
 
     def end_document(self):
         """Ends printing. (Write Postscript DSC footer.)"""
-        self._fp_write("%%EndDocument\n"
-                       "restore showpage\n"
-                       "%%End\n")
+        self._fp_write("%%EndDocument\nrestore showpage\n%%End\n")
         if hasattr(self.fp, "flush"):
             self.fp.flush()
 
@@ -71,8 +71,7 @@ class PSDraw(object):
         """
         if font not in self.isofont:
             # reencode font
-            self._fp_write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %
-                           (font, font))
+            self._fp_write("/PSDraw-{} ISOLatin1Encoding /{} E\n".format(font, font))
             self.isofont[font] = 1
         # rough
         self._fp_write("/F0 %d /PSDraw-%s F\n" % (size, font))
@@ -133,14 +132,15 @@ class PSDraw(object):
             y = ymax
         dx = (xmax - x) / 2 + box[0]
         dy = (ymax - y) / 2 + box[1]
-        self._fp_write("gsave\n%f %f translate\n" % (dx, dy))
+        self._fp_write("gsave\n{:f} {:f} translate\n".format(dx, dy))
         if (x, y) != im.size:
             # EpsImagePlugin._save prints the image at (0,0,xsize,ysize)
             sx = x / im.size[0]
             sy = y / im.size[1]
-            self._fp_write("%f %f scale\n" % (sx, sy))
+            self._fp_write("{:f} {:f} scale\n".format(sx, sy))
         EpsImagePlugin._save(im, self.fp, None, 0)
         self._fp_write("\ngrestore\n")
+
 
 # --------------------------------------------------------------------
 # Postscript driver

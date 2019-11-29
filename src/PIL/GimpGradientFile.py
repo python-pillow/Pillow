@@ -13,7 +13,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from math import pi, log, sin, sqrt
+from math import log, pi, sin, sqrt
+
 from ._binary import o8
 
 # --------------------------------------------------------------------
@@ -59,7 +60,7 @@ def sphere_decreasing(middle, pos):
 SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
-class GradientFile(object):
+class GradientFile:
 
     gradient = None
 
@@ -72,7 +73,7 @@ class GradientFile(object):
 
         for i in range(entries):
 
-            x = i / float(entries-1)
+            x = i / float(entries - 1)
 
             while x1 < x:
                 ix += 1
@@ -100,8 +101,8 @@ class GradientFile(object):
 ##
 # File handler for GIMP's gradient format.
 
-class GimpGradientFile(GradientFile):
 
+class GimpGradientFile(GradientFile):
     def __init__(self, fp):
 
         if fp.readline()[:13] != b"GIMP Gradient":
@@ -131,7 +132,7 @@ class GimpGradientFile(GradientFile):
             cspace = int(s[12])
 
             if cspace != 0:
-                raise IOError("cannot handle HSV colour space")
+                raise OSError("cannot handle HSV colour space")
 
             gradient.append((x0, x1, xm, rgb0, rgb1, segment))
 

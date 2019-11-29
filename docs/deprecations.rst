@@ -12,16 +12,82 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-PIL.*ImagePlugin.__version__ attributes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Python 2.7
+~~~~~~~~~~
 
 .. deprecated:: 6.0.0
 
-The version constants of individual plugins have been deprecated and will be removed in
-a future version. Use ``PIL.__version__`` instead.
+Python 2.7 reaches end-of-life on 2020-01-01.
+
+Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
+Pillow 6.x the last series to support Python 2.
+
+ImageCms.CmsProfile attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 3.2.0
+
+Some attributes in ``ImageCms.CmsProfile`` are deprecated. From 6.0.0, they issue a
+``DeprecationWarning``:
+
+========================  ===============================
+Deprecated                Use instead
+========================  ===============================
+``color_space``           Padded ``xcolor_space``
+``pcs``                   Padded ``connection_space``
+``product_copyright``     Unicode ``copyright``
+``product_desc``          Unicode ``profile_description``
+``product_description``   Unicode ``profile_description``
+``product_manufacturer``  Unicode ``manufacturer``
+``product_model``         Unicode ``model``
+========================  ===============================
+
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
+Image.__del__
+~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Implicitly closing the image's underlying file in ``Image.__del__`` has been removed.
+Use a context manager or call ``Image.close()`` instead to close the file in a
+deterministic way.
+
+Previous method:
+
+.. code-block:: python
+
+    im = Image.open("hopper.png")
+    im.save("out.jpg")
+
+Use instead:
+
+.. code-block:: python
+
+    with Image.open("hopper.png") as im:
+        im.save("out.jpg")
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+PIL.*ImagePlugin.__version__ attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+The version constants of individual plugins have been removed. Use ``PIL.__version__``
+instead.
 
 ===============================  =================================  ==================================
-Deprecated                       Deprecated                         Deprecated
+Removed                          Removed                            Removed
 ===============================  =================================  ==================================
 ``BmpImagePlugin.__version__``   ``Jpeg2KImagePlugin.__version__``  ``PngImagePlugin.__version__``
 ``CurImagePlugin.__version__``   ``JpegImagePlugin.__version__``    ``PpmImagePlugin.__version__``
@@ -37,33 +103,32 @@ Deprecated                       Deprecated                         Deprecated
 ``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
 ===============================  =================================  ==================================
 
+PyQt4 and PySide
+~~~~~~~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been removed  from ``ImageQt``. Please upgrade to PyQt5
+or PySide2.
+
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. deprecated:: 5.3.0
+*Removed in version 7.0.0.*
 
-Setting the image size of a TIFF image (eg. ``im.size = (256, 256)``) issues
-a ``DeprecationWarning``:
+Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
+an error. Use ``Image.resize`` instead.
 
-.. code-block:: none
+VERSION constant
+~~~~~~~~~~~~~~~~
 
-    Setting the size of a TIFF image directly is deprecated, and will
-    be removed in a future version. Use the resize method instead.
+*Removed in version 6.0.0.*
 
-PILLOW_VERSION and VERSION constants
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.2.0
-
-Two version constants – ``VERSION`` (the old PIL version, always 1.1.7) and
-``PILLOW_VERSION`` – have been deprecated and will be removed in the next
-major release. Use ``__version__`` instead.
-
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
+``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use
+``__version__`` instead.
 
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

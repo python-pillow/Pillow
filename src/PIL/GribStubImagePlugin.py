@@ -28,6 +28,7 @@ def register_handler(handler):
 # --------------------------------------------------------------------
 # Image adapter
 
+
 def _accept(prefix):
     return prefix[0:4] == b"GRIB" and i8(prefix[7]) == 1
 
@@ -60,7 +61,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
-        raise IOError("GRIB save handler not installed")
+        raise OSError("GRIB save handler not installed")
     _handler.save(im, fp, filename)
 
 

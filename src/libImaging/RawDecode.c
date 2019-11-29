@@ -20,7 +20,7 @@
 
 
 int
-ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
+ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
     enum { LINE = 1, SKIP };
     RAWSTATE* rawstate = state->context;
@@ -33,8 +33,15 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 	/* get size of image data and padding */
 	state->bytes = (state->xsize * state->bits + 7) / 8;
-	rawstate->skip = (rawstate->stride) ?
-	    rawstate->stride - state->bytes : 0;
+	if (rawstate->stride) {
+	    rawstate->skip = rawstate->stride - state->bytes;
+	    if (rawstate->skip < 0) {
+	        state->errcode = IMAGING_CODEC_CONFIG;
+	        return -1;
+	    }
+	} else {
+	    rawstate->skip = 0;
+	}
 
 	/* check image orientation */
 	if (state->ystep < 0) {

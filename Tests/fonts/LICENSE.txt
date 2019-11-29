@@ -1,13 +1,13 @@
 
-NotoNastaliqUrdu-Regular.ttf:
+NotoNastaliqUrdu-Regular.ttf and NotoSansSymbols-Regular.ttf, from https://github.com/googlei18n/noto-fonts
+NotoSansJP-Thin.otf, from https://www.google.com/get/noto/help/cjk/
+AdobeVFPrototype.ttf, from https://github.com/adobe-fonts/adobe-variable-font-prototype
+TINY5x3GX.ttf, from http://velvetyne.fr/fonts/tiny
+ArefRuqaa-Regular.ttf, from https://github.com/google/fonts/tree/master/ofl/arefruqaa
 
-(from https://github.com/googlei18n/noto-fonts)
-
-All Noto fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
+All of the above fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
 
 
-10x20-ISO8859-1.pcf
-
-(from https://packages.ubuntu.com/xenial/xfonts-base)
+10x20-ISO8859-1.pcf, from https://packages.ubuntu.com/xenial/xfonts-base
 
 "Public domain font.  Share and enjoy."

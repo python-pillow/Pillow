@@ -1,7 +1,8 @@
-from . import helper
+import sys
 import timeit
 
-import sys
+from . import helper
+
 sys.path.insert(0, ".")
 
 

@@ -26,7 +26,6 @@
 #include "Python.h"
 
 #include "Imaging.h"
-#include "py3.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support	*/
@@ -187,13 +186,8 @@ _frombytes(ImagingDisplayObject* display, PyObject* args)
     char* ptr;
     int bytes;
 
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes))
         return NULL;
-#else
-    if (!PyArg_ParseTuple(args, "s#:fromstring", &ptr, &bytes))
-        return NULL;
-#endif
 
     if (display->dib->ysize * display->dib->linesize != bytes) {
         PyErr_SetString(PyExc_ValueError, "wrong size");
@@ -209,13 +203,8 @@ _frombytes(ImagingDisplayObject* display, PyObject* args)
 static PyObject*
 _tobytes(ImagingDisplayObject* display, PyObject* args)
 {
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyArg_ParseTuple(args, ":tobytes"))
         return NULL;
-#else
-    if (!PyArg_ParseTuple(args, ":tostring"))
-        return NULL;
-#endif
 
     return PyBytes_FromStringAndSize(
         display->dib->bits, display->dib->ysize * display->dib->linesize
@@ -319,14 +308,24 @@ PyImaging_DisplayModeWin32(PyObject* self, PyObject* args)
 /* -------------------------------------------------------------------- */
 /* Windows screen grabber */
 
+typedef HANDLE(__stdcall* Func_SetThreadDpiAwarenessContext)(HANDLE);
+
 PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
-    int width, height;
+    int x = 0, y = 0, width, height;
+    int includeLayeredWindows = 0, all_screens = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
+    DWORD rop;
     PyObject* buffer;
+    HANDLE dpiAwareness;
+    HMODULE user32;
+    Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
+
+    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &all_screens))
+        return NULL;
 
     /* step 1: create a memory DC large enough to hold the
        entire screen */
@@ -334,8 +333,32 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     screen = CreateDC("DISPLAY", NULL, NULL, NULL);
     screen_copy = CreateCompatibleDC(screen);
 
-    width = GetDeviceCaps(screen, HORZRES);
-    height = GetDeviceCaps(screen, VERTRES);
+    // added in Windows 10 (1607)
+    // loaded dynamically to avoid link errors
+    user32 = LoadLibraryA("User32.dll");
+    SetThreadDpiAwarenessContext_function =
+            (Func_SetThreadDpiAwarenessContext)
+            GetProcAddress(user32, "SetThreadDpiAwarenessContext");
+    if (SetThreadDpiAwarenessContext_function != NULL) {
+        // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
+        dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE) -3);
+    }
+
+    if (all_screens) {
+        x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    } else {
+        width = GetDeviceCaps(screen, HORZRES);
+        height = GetDeviceCaps(screen, VERTRES);
+    }
+
+    if (SetThreadDpiAwarenessContext_function != NULL) {
+        SetThreadDpiAwarenessContext_function(dpiAwareness);
+    }
+
+    FreeLibrary(user32);
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap)
@@ -346,7 +369,10 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 
     /* step 2: copy bits into memory DC bitmap */
 
-    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, SRCCOPY))
+    rop = SRCCOPY;
+    if (includeLayeredWindows)
+        rop |= CAPTUREBLT;
+    if (!BitBlt(screen_copy, 0, 0, width, height, screen, x, y, rop))
         goto error;
 
     /* step 3: extract bits from bitmap */
@@ -368,7 +394,7 @@ PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
     DeleteDC(screen_copy);
     DeleteDC(screen);
 
-    return Py_BuildValue("(ii)N", width, height, buffer);
+    return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
     PyErr_SetString(PyExc_IOError, "screen grab failed");
@@ -704,7 +730,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
     int datasize;
     int width, height;
     int x0, y0, x1, y1;
-    if (!PyArg_ParseTuple(args, PY_ARG_BYTES_LENGTH"(ii)(iiii):_load", &data, &datasize,
+    if (!PyArg_ParseTuple(args, "y#(ii)(iiii):_load", &data, &datasize,
                           &width, &height, &x0, &x1, &y0, &y1))
         return NULL;
 

@@ -1,0 +1,22 @@
+parameters:
+  docker: ''  # defaults for any parameters that aren't specified
+  dockerTag: 'master'
+  name: ''
+  vmImage: 'Ubuntu-16.04'
+
+jobs:
+
+- job:  ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+
+  steps:
+  - script: |
+      docker pull pythonpillow/${{ parameters.docker }}:${{ parameters.dockerTag }}
+    displayName: 'Docker pull'
+
+  - script: |
+      # The Pillow user in the docker container is UID 1000
+      sudo chown -R 1000 $(Build.SourcesDirectory)
+      docker run -v $(Build.SourcesDirectory):/Pillow pythonpillow/${{ parameters.docker }}:${{ parameters.dockerTag }}
+    displayName: 'Docker build'

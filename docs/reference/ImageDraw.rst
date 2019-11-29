@@ -132,11 +132,11 @@ Methods
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
 
-    :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
-             where ``x1 >= x0`` and ``y1 >= y0``.
-    :param start: Starting angle, in degrees. Angles are measured from
-            3 o'clock, increasing clockwise.
+    :param xy: Two points to define the bounding box. Sequence of ``[(x0, y0),
+        (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and ``y1 >=
+        y0``.
+    :param start: Starting angle, in degrees. Angles are measured from 3
+        o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the arc.
     :param width: The line width, in pixels.
@@ -159,9 +159,9 @@ Methods
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
 
-    :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
-             where ``x1 >= x0`` and ``y1 >= y0``.
+    :param xy: Two points to define the bounding box. Sequence of ``[(x0, y0),
+        (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and ``y1 >=
+        y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
@@ -173,8 +173,8 @@ Methods
     Draws an ellipse inside the given bounding box.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
-             where ``x1 >= x0`` and ``y1 >= y0``.
+        ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0``
+        and ``y1 >= y0``.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
@@ -203,11 +203,11 @@ Methods
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
 
-    :param xy: Two points to define the bounding box. Sequence of
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``,
-             where ``x1 >= x0`` and ``y1 >= y0``.
-    :param start: Starting angle, in degrees. Angles are measured from
-            3 o'clock, increasing clockwise.
+    :param xy: Two points to define the bounding box. Sequence of ``[(x0, y0),
+        (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and ``y1 >=
+        y0``.
+    :param start: Starting angle, in degrees. Angles are measured from 3
+        o'clock, increasing clockwise.
     :param end: Ending angle, in degrees.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
@@ -255,7 +255,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
 
     Draws the string at the given position.
 
@@ -287,7 +287,26 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None)
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
+
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
+
+    :param stroke_fill: Color to use for the text stroke. If not given, will default to
+                        the ``fill`` parameter.
+
+                     .. versionadded:: 6.2.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None)
 
     Draws the string at the given position.
 
@@ -316,7 +335,17 @@ Methods
 
                      .. versionadded:: 4.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None)
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -330,7 +359,6 @@ Methods
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
-
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,
@@ -343,8 +371,21 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None)
+                     .. versionadded:: 6.0.0
+
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
+
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -369,6 +410,20 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
+
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code
+                     <https://www.w3.org/International/articles/language-tags/>`
+                     Requires libraqm.
+
+                     .. versionadded:: 6.0.0
+
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
 
 .. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
 

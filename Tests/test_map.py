@@ -1,11 +1,17 @@
-from .helper import PillowTestCase, unittest
 import sys
+import unittest
 
 from PIL import Image
 
+from .helper import PillowTestCase, is_win32
 
-@unittest.skipIf(sys.platform.startswith('win32'),
-                 "Win32 does not call map_buffer")
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
+
+@unittest.skipIf(is_win32(), "Win32 does not call map_buffer")
 class TestMap(PillowTestCase):
     def test_overflow(self):
         # There is the potential to overflow comparisons in map.c
@@ -18,8 +24,15 @@ class TestMap(PillowTestCase):
         Image.MAX_IMAGE_PIXELS = None
 
         # This image hits the offset test.
-        im = Image.open('Tests/images/l2rgb_read.bmp')
-        with self.assertRaises((ValueError, MemoryError, IOError)):
-            im.load()
+        with Image.open("Tests/images/l2rgb_read.bmp") as im:
+            with self.assertRaises((ValueError, MemoryError, IOError)):
+                im.load()
 
         Image.MAX_IMAGE_PIXELS = max_pixels
+
+    @unittest.skipIf(sys.maxsize <= 2 ** 32, "requires 64-bit system")
+    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    def test_ysize(self):
+        # Should not raise 'Integer overflow in ysize'
+        arr = numpy.zeros((46341, 46341), dtype=numpy.uint8)
+        Image.fromarray(arr)

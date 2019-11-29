@@ -1,0 +1,111 @@
+6.1.0
+-----
+
+Deprecations
+============
+
+Image.__del__
+^^^^^^^^^^^^^
+
+.. deprecated:: 6.1.0
+
+Implicitly closing the image's underlying file in ``Image.__del__`` has been deprecated.
+Use a context manager or call ``Image.close()`` instead to close the file in a
+deterministic way.
+
+Deprecated:
+
+.. code-block:: python
+
+    im = Image.open("hopper.png")
+    im.save("out.jpg")
+
+Use instead:
+
+.. code-block:: python
+
+    with Image.open("hopper.png") as im:
+        im.save("out.jpg")
+
+API Additions
+=============
+
+Image.entropy
+^^^^^^^^^^^^^
+Calculates and returns the entropy for the image. A bilevel image (mode "1") is treated
+as a greyscale ("L") image by this method.  If a mask is provided, the method employs
+the histogram for those parts of the image where the mask image is non-zero. The mask
+image must have the same size as the image, and be either a bi-level image (mode "1") or
+a greyscale image ("L").
+
+ImageGrab.grab
+^^^^^^^^^^^^^^
+
+An optional ``include_layered_windows`` parameter has been added to ``ImageGrab.grab``,
+defaulting to ``False``. If true, layered windows will be included in the resulting
+image on Windows.
+
+ImageSequence.all_frames
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method to facilitate applying a given function to all frames in an image, or to
+all frames in a list of images. The frames are returned as a list of separate images.
+For example, ``ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))``
+could be used to return all frames from an image, each rotated 90 degrees.
+
+Variation fonts
+^^^^^^^^^^^^^^^
+
+Variation fonts are now supported, allowing for different styles from the same font
+file. ``ImageFont.FreeTypeFont`` has four new methods,
+:py:meth:`PIL.ImageFont.FreeTypeFont.get_variation_names` and
+:py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_name` for using named styles, and
+:py:meth:`PIL.ImageFont.FreeTypeFont.get_variation_axes` and
+:py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_axes` for using font axes
+instead. An ``IOError`` will be raised if the font is not a variation font. FreeType
+2.9.1 or greater is required.
+
+Other Changes
+=============
+
+ImageTk.getimage
+^^^^^^^^^^^^^^^^
+
+This function is now supported. It returns the contents of an ``ImageTk.PhotoImage`` as
+an RGBA ``Image.Image`` instance.
+
+Image quality for JPEG compressed TIFF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TIFF encoder accepts a ``quality`` parameter for ``jpeg`` compressed TIFF files. A
+value from 0 (worst) to 100 (best) controls the image quality, similar to the JPEG
+encoder. The default is 75. For example:
+
+.. code-block:: python
+
+    im.save("out.tif", compression="jpeg", quality=85)
+
+Improve encoding of TIFF tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TIFF encoder supports more types, especially arrays. This is required for the
+GeoTIFF format which encodes geospatial information.
+
+* Pass ``tagtype`` from v2 directory to libtiff encoder, instead of autodetecting type.
+* Use explicit types eg. ``uint32_t`` for ``TIFF_LONG`` to fix issues on platforms with
+  64-bit longs.
+* Add support for multiple values (arrays). Requires type in v2 directory and values
+  must be passed as a tuple.
+* Add support for signed types eg. ``TIFFTypes.TIFF_SIGNED_SHORT``.
+
+Respect PKG_CONFIG environment variable when building
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This variable is commonly used by other build systems and using it can help with
+cross-compiling. Falls back to ``pkg-config`` as before.
+
+Top-to-bottom complex text rendering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Drawing text in the 'ttb' direction with ``ImageFont`` has been significantly improved
+and requires Raqm 0.7 or greater.

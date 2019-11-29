@@ -1,6 +1,6 @@
-from .helper import PillowTestCase, hopper, imagemagick_available
-
 import os.path
+
+from .helper import PillowTestCase, hopper, imagemagick_available
 
 
 class TestFilePalm(PillowTestCase):
@@ -45,6 +45,13 @@ class TestFilePalm(PillowTestCase):
         self.helper_save_as_palm(mode)
         self.skipKnownBadTest("Palm P image is wrong")
         self.roundtrip(mode)
+
+    def test_l_ioerror(self):
+        # Arrange
+        mode = "L"
+
+        # Act / Assert
+        self.assertRaises(IOError, self.helper_save_as_palm, mode)
 
     def test_rgb_ioerror(self):
         # Arrange

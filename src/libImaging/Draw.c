@@ -40,7 +40,6 @@
 #define FLOOR(v) ((v) >= 0.0 ? (int) (v) : (int) floor(v))
 
 #define INK8(ink) (*(UINT8*)ink)
-#define INK32(ink) (*(INT32*)ink)
 
 /*
  * Rounds around zero (up=away from zero, down=torwards zero)
@@ -67,8 +66,14 @@ typedef void (*hline_handler)(Imaging, int, int, int, int);
 static inline void
 point8(Imaging im, int x, int y, int ink)
 {
-    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize)
-        im->image8[y][x] = (UINT8) ink;
+    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
+        if (strncmp(im->mode, "I;16", 4) == 0) {
+            im->image8[y][x*2] = (UINT8) ink;
+            im->image8[y][x*2+1] = (UINT8) ink;
+        } else {
+            im->image8[y][x] = (UINT8) ink;
+        }
+    }
 }
 
 static inline void
@@ -95,7 +100,7 @@ point32rgba(Imaging im, int x, int y, int ink)
 static inline void
 hline8(Imaging im, int x0, int y0, int x1, int ink)
 {
-    int tmp;
+    int tmp, pixelwidth;
 
     if (y0 >= 0 && y0 < im->ysize) {
         if (x0 > x1)
@@ -108,8 +113,11 @@ hline8(Imaging im, int x0, int y0, int x1, int ink)
             return;
         else if (x1 >= im->xsize)
             x1 = im->xsize-1;
-        if (x0 <= x1)
-            memset(im->image8[y0] + x0, (UINT8) ink, x1 - x0 + 1);
+        if (x0 <= x1) {
+            pixelwidth = strncmp(im->mode, "I;16", 4) == 0 ? 2 : 1;
+            memset(im->image8[y0] + x0 * pixelwidth, (UINT8) ink,
+                   (x1 - x0 + 1) * pixelwidth);
+        }
     }
 }
 
@@ -555,7 +563,7 @@ DRAW draw32rgba = { point32rgba, hline32rgba, line32rgba, polygon32rgba };
         ink = INK8(ink_);\
     } else {\
         draw = (op) ? &draw32rgba : &draw32;    \
-        ink = INK32(ink_);\
+        memcpy(&ink, ink_, sizeof(ink)); \
     }
 
 int
@@ -765,115 +773,150 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
         int width, int mode, int op)
 {
     float i;
-    int j;
+    int inner;
     int n;
-    int cx, cy;
+    int maxEdgeCount;
     int w, h;
-    int x = 0, y = 0;
+    int x, y;
+    int cx, cy;
     int lx = 0, ly = 0;
     int sx = 0, sy = 0;
+    int lx_inner = 0, ly_inner = 0;
+    int sx_inner = 0, sy_inner = 0;
     DRAW* draw;
     INT32 ink;
+    Edge* e;
 
     DRAWINIT();
 
-    if (width == 0) {
-        width = 1;
+    while (end < start)
+        end += 360;
+
+    if (end - start > 360) {
+        // no need to go in loops
+        end = start + 361;
     }
 
-    for (j = 0; j < width; j++) {
+    w = x1 - x0;
+    h = y1 - y0;
+    if (w <= 0 || h <= 0)
+        return 0;
 
-        w = x1 - x0;
-        h = y1 - y0;
-        if (w < 0 || h < 0)
+    cx = (x0 + x1) / 2;
+    cy = (y0 + y1) / 2;
+
+    if (!fill && width <= 1) {
+        for (i = start; i < end+1; i++) {
+            if (i > end) {
+                i = end;
+            }
+            ellipsePoint(cx, cy, w, h, i, &x, &y);
+            if (i != start)
+                draw->line(im, lx, ly, x, y, ink);
+            else
+                sx = x, sy = y;
+            lx = x, ly = y;
+        }
+
+        if (i != start) {
+            if (mode == PIESLICE) {
+                if (x != cx || y != cy) {
+                    draw->line(im, x, y, cx, cy, ink);
+                    draw->line(im, cx, cy, sx, sy, ink);
+                }
+            } else if (mode == CHORD) {
+                if (x != sx || y != sy)
+                    draw->line(im, x, y, sx, sy, ink);
+            }
+        }
+    } else {
+        inner = (mode == ARC || !fill) ? 1 : 0;
+
+        // Build edge list
+        // malloc check UNDONE, FLOAT?
+        maxEdgeCount = ceil(end - start);
+        if (inner) {
+            maxEdgeCount *= 2;
+        }
+        maxEdgeCount += 3;
+        e = calloc(maxEdgeCount, sizeof(Edge));
+        if (!e) {
+            ImagingError_MemoryError();
+            return -1;
+        }
+
+        // Outer circle
+        n = 0;
+        for (i = start; i < end+1; i++) {
+            if (i > end) {
+                i = end;
+            }
+            ellipsePoint(cx, cy, w, h, i, &x, &y);
+            if (i == start) {
+                sx = x, sy = y;
+            } else {
+                add_edge(&e[n++], lx, ly, x, y);
+            }
+            lx = x, ly = y;
+        }
+        if (n == 0)
             return 0;
 
-        cx = (x0 + x1) / 2;
-        cy = (y0 + y1) / 2;
+        if (inner) {
+            // Inner circle
+            x0 += width - 1;
+            y0 += width - 1;
+            x1 -= width - 1;
+            y1 -= width - 1;
 
-        while (end < start)
-            end += 360;
-
-        if (end - start > 360) {
-            /* no need to go in loops */
-            end = start + 361;
-        }
-
-        if (mode != ARC && fill) {
-
-            /* Build edge list */
-            /* malloc check UNDONE, FLOAT? */
-            Edge* e = calloc((end - start + 3), sizeof(Edge));
-            if (!e) {
-                ImagingError_MemoryError();
-                return -1;
-            }
-            n = 0;
-
-            for (i = start; i < end+1; i++) {
-                if (i > end) {
-                    i = end;
-                }
-                ellipsePoint(cx, cy, w, h, i, &x, &y);
-                if (i != start)
-                    add_edge(&e[n++], lx, ly, x, y);
-                else
-                    sx = x, sy = y;
-                lx = x, ly = y;
-            }
-
-            if (n > 0) {
-                /* close and draw polygon */
-                if (mode == PIESLICE) {
-                    if (x != cx || y != cy) {
-                        add_edge(&e[n++], x, y, cx, cy);
-                        add_edge(&e[n++], cx, cy, sx, sy);
+            w = x1 - x0;
+            h = y1 - y0;
+            if (w <= 0 || h <= 0) {
+                // ARC with no gap in the middle is a PIESLICE
+                mode = PIESLICE;
+                inner = 0;
+            } else {
+                for (i = start; i < end+1; i++) {
+                    if (i > end) {
+                        i = end;
                     }
-                } else {
-                    if (x != sx || y != sy)
-                        add_edge(&e[n++], x, y, sx, sy);
-                }
-                draw->polygon(im, n, e, ink, 0);
-            }
-
-            free(e);
-
-        } else {
-
-            for (i = start; i < end+1; i++) {
-                if (i > end) {
-                    i = end;
-                }
-                ellipsePoint(cx, cy, w, h, i, &x, &y);
-                if (i != start)
-                    draw->line(im, lx, ly, x, y, ink);
-                else
-                    sx = x, sy = y;
-                lx = x, ly = y;
-            }
-
-            if (i != start) {
-                if (mode == PIESLICE) {
-                    if (j == 0 && (x != cx || y != cy)) {
-                        if (width == 1) {
-                            draw->line(im, x, y, cx, cy, ink);
-                            draw->line(im, cx, cy, sx, sy, ink);
-                        } else {
-                            ImagingDrawWideLine(im, x, y, cx, cy, &ink, width, op);
-                            ImagingDrawWideLine(im, cx, cy, sx, sy, &ink, width, op);
-                        }
-                    }
-                } else if (mode == CHORD) {
-                    if (x != sx || y != sy)
-                        draw->line(im, x, y, sx, sy, ink);
+                    ellipsePoint(cx, cy, w, h, i, &x, &y);
+                    if (i == start)
+                        sx_inner = x, sy_inner = y;
+                    else
+                        add_edge(&e[n++], lx_inner, ly_inner, x, y);
+                    lx_inner = x, ly_inner = y;
                 }
             }
         }
-        x0++;
-        y0++;
-        x1--;
-        y1--;
+
+        if (end - start < 360) {
+            // Close polygon
+            if (mode == PIESLICE) {
+                if (x != cx || y != cy) {
+                    add_edge(&e[n++], sx, sy, cx, cy);
+                    add_edge(&e[n++], cx, cy, lx, ly);
+                    if (inner) {
+                        ImagingDrawWideLine(im, sx, sy, cx, cy, &ink, width, op);
+                        ImagingDrawWideLine(im, cx, cy, lx, ly, &ink, width, op);
+                    }
+                }
+            } else if (mode == CHORD) {
+                add_edge(&e[n++], sx, sy, lx, ly);
+                if (inner) {
+                    add_edge(&e[n++], sx_inner, sy_inner, lx_inner, ly_inner);
+                }
+            } else if (mode == ARC) {
+                add_edge(&e[n++], sx, sy, sx_inner, sy_inner);
+                add_edge(&e[n++], lx, ly, lx_inner, ly_inner);
+            }
+        }
+
+        draw->polygon(im, n, e, ink, 0);
+
+        free(e);
     }
+
     return 0;
 }
 

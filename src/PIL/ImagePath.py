@@ -16,5 +16,4 @@
 
 from . import Image
 
-
 Path = Image.core.path

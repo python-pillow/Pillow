@@ -1,15 +1,13 @@
-from .helper import PillowTestCase
-
 from PIL import Image, McIdasImagePlugin
+
+from .helper import PillowTestCase
 
 
 class TestFileMcIdas(PillowTestCase):
-
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          McIdasImagePlugin.McIdasImageFile, invalid_file)
+        self.assertRaises(SyntaxError, McIdasImagePlugin.McIdasImageFile, invalid_file)
 
     def test_valid_file(self):
         # Arrange

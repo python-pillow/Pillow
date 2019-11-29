@@ -24,8 +24,10 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The ``mode`` of an image defines the type and depth of a pixel in the
-image. The current release supports the following standard modes:
+The ``mode`` of an image defines the type and depth of a pixel in the image.
+Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
+of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
+supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
     * ``L`` (8-bit pixels, black and white)
@@ -42,11 +44,24 @@ image. The current release supports the following standard modes:
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
-PIL also provides limited support for a few special modes, including ``LA`` (L
-with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
-premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
-need to handle band combinations that are not listed above, use a sequence of
-Image objects.
+Pillow also provides limited support for a few special modes, including:
+
+    * ``LA`` (L with alpha)
+    * ``PA`` (P with alpha)
+    * ``RGBX`` (true color with padding)
+    * ``RGBa`` (true color with premultiplied alpha)
+    * ``La`` (L with premultiplied alpha)
+    * ``I;16`` (16-bit unsigned integer pixels)
+    * ``I;16L`` (16-bit little endian unsigned integer pixels)
+    * ``I;16B`` (16-bit big endian unsigned integer pixels)
+    * ``I;16N`` (16-bit native endian unsigned integer pixels)
+    * ``BGR;15`` (15-bit reversed true colour)
+    * ``BGR;16`` (16-bit reversed true colour)
+    * ``BGR;24`` (24-bit reversed true colour)
+    * ``BGR;32`` (32-bit reversed true colour)
+
+However, Pillow doesn’t support user-defined modes; if you need to handle band
+combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
@@ -88,6 +103,15 @@ How such information is handled when loading and saving image files is up to
 the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
+
+Orientation
+-----------
+
+A common element of the :py:attr:`~PIL.Image.Image.info` attribute for JPG and
+TIFF images is the EXIF orientation tag. This is an instruction for how the
+image data should be oriented. For example, it may instruct an image to be
+rotated by 90 degrees, or to be mirrored. To apply this information to an
+image, :py:meth:`~PIL.ImageOps.exif_transpose` can be used.
 
 .. _concept-filters:
 

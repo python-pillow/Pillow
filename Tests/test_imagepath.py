@@ -1,14 +1,12 @@
-from .helper import PillowTestCase
-
-from PIL import ImagePath, Image
-from PIL._util import py3
-
 import array
 import struct
 
+from PIL import Image, ImagePath
+
+from .helper import PillowTestCase
+
 
 class TestImagePath(PillowTestCase):
-
     def test_path(self):
 
         p = ImagePath.Path(list(range(10)))
@@ -19,21 +17,19 @@ class TestImagePath(PillowTestCase):
         self.assertEqual(p[-1], (8.0, 9.0))
         self.assertEqual(list(p[:1]), [(0.0, 1.0)])
         with self.assertRaises(TypeError) as cm:
-            p['foo']
+            p["foo"]
+        self.assertEqual(str(cm.exception), "Path indices must be integers, not str")
         self.assertEqual(
-            str(cm.exception),
-            "Path indices must be integers, not str")
-        self.assertEqual(
-            list(p),
-            [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)])
+            list(p), [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)]
+        )
 
         # method sanity check
         self.assertEqual(
-            p.tolist(),
-            [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)])
+            p.tolist(), [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)]
+        )
         self.assertEqual(
-            p.tolist(1),
-            [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
+            p.tolist(1), [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+        )
 
         self.assertEqual(p.getbbox(), (0.0, 1.0, 8.0, 9.0))
 
@@ -62,7 +58,7 @@ class TestImagePath(PillowTestCase):
         self.assertEqual(list(p), [(0.0, 1.0)])
 
         arr = array.array("f", [0, 1])
-        if hasattr(arr, 'tobytes'):
+        if hasattr(arr, "tobytes"):
             p = ImagePath.Path(arr.tobytes())
         else:
             p = ImagePath.Path(arr.tostring())
@@ -78,10 +74,7 @@ class TestImagePath(PillowTestCase):
             # This fails due to the invalid malloc above,
             # and segfaults
             for i in range(200000):
-                if py3:
-                    x[i] = b'0'*16
-                else:
-                    x[i] = "0"*16
+                x[i] = b"0" * 16
 
 
 class evil:
