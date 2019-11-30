@@ -47,6 +47,20 @@ Setting the size of TIFF images
 Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
 an error. Use ``Image.resize`` instead.
 
+Image.draft() return value
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``Image.draft()`` method used to return ``None`` or the image itself.
+Unlike other `chain methods`_, ``draft()`` modifies the image in-place
+rather than returning a modified version.
+
+In the new version, ``draft()`` returns ``None`` if it has no effect or
+a tuple of new image mode and the box of original coordinates in the
+bounds of resulting image otherwise
+(the box could be useful in subsequent ``resize()`` call).
+
+.. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
+
 
 API Changes
 ===========
