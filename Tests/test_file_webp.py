@@ -41,19 +41,18 @@ class TestFileWebp(PillowTestCase):
         Does it have the bits we expect?
         """
 
-        image = Image.open("Tests/images/hopper.webp")
+        with Image.open("Tests/images/hopper.webp") as image:
+            self.assertEqual(image.mode, self.rgb_mode)
+            self.assertEqual(image.size, (128, 128))
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        self.assertEqual(image.mode, self.rgb_mode)
-        self.assertEqual(image.size, (128, 128))
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
-
-        # generated with:
-        # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-        self.assert_image_similar_tofile(
-            image, "Tests/images/hopper_webp_bits.ppm", 1.0
-        )
+            # generated with:
+            # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
+            self.assert_image_similar_tofile(
+                image, "Tests/images/hopper_webp_bits.ppm", 1.0
+            )
 
     def test_write_rgb(self):
         """
@@ -64,26 +63,25 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
 
         hopper(self.rgb_mode).save(temp_file)
-        image = Image.open(temp_file)
+        with Image.open(temp_file) as image:
+            self.assertEqual(image.mode, self.rgb_mode)
+            self.assertEqual(image.size, (128, 128))
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        self.assertEqual(image.mode, self.rgb_mode)
-        self.assertEqual(image.size, (128, 128))
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
+            # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
+            self.assert_image_similar_tofile(
+                image, "Tests/images/hopper_webp_write.ppm", 12.0
+            )
 
-        # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
-        self.assert_image_similar_tofile(
-            image, "Tests/images/hopper_webp_write.ppm", 12.0
-        )
-
-        # This test asserts that the images are similar. If the average pixel
-        # difference between the two images is less than the epsilon value,
-        # then we're going to accept that it's a reasonable lossy version of
-        # the image. The old lena images for WebP are showing ~16 on
-        # Ubuntu, the jpegs are showing ~18.
-        target = hopper(self.rgb_mode)
-        self.assert_image_similar(image, target, 12.0)
+            # This test asserts that the images are similar. If the average pixel
+            # difference between the two images is less than the epsilon value,
+            # then we're going to accept that it's a reasonable lossy version of
+            # the image. The old lena images for WebP are showing ~16 on
+            # Ubuntu, the jpegs are showing ~18.
+            target = hopper(self.rgb_mode)
+            self.assert_image_similar(image, target, 12.0)
 
     def test_write_unsupported_mode_L(self):
         """
@@ -93,17 +91,16 @@ class TestFileWebp(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
         hopper("L").save(temp_file)
-        image = Image.open(temp_file)
+        with Image.open(temp_file) as image:
+            self.assertEqual(image.mode, self.rgb_mode)
+            self.assertEqual(image.size, (128, 128))
+            self.assertEqual(image.format, "WEBP")
 
-        self.assertEqual(image.mode, self.rgb_mode)
-        self.assertEqual(image.size, (128, 128))
-        self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
+            target = hopper("L").convert(self.rgb_mode)
 
-        image.load()
-        image.getdata()
-        target = hopper("L").convert(self.rgb_mode)
-
-        self.assert_image_similar(image, target, 10.0)
+            self.assert_image_similar(image, target, 10.0)
 
     def test_write_unsupported_mode_P(self):
         """
@@ -113,17 +110,16 @@ class TestFileWebp(PillowTestCase):
 
         temp_file = self.tempfile("temp.webp")
         hopper("P").save(temp_file)
-        image = Image.open(temp_file)
+        with Image.open(temp_file) as image:
+            self.assertEqual(image.mode, self.rgb_mode)
+            self.assertEqual(image.size, (128, 128))
+            self.assertEqual(image.format, "WEBP")
 
-        self.assertEqual(image.mode, self.rgb_mode)
-        self.assertEqual(image.size, (128, 128))
-        self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
+            target = hopper("P").convert(self.rgb_mode)
 
-        image.load()
-        image.getdata()
-        target = hopper("P").convert(self.rgb_mode)
-
-        self.assert_image_similar(image, target, 50.0)
+            self.assert_image_similar(image, target, 50.0)
 
     def test_WebPEncode_with_invalid_args(self):
         """
@@ -145,10 +141,9 @@ class TestFileWebp(PillowTestCase):
 
     def test_no_resource_warning(self):
         file_path = "Tests/images/hopper.webp"
-        image = Image.open(file_path)
-
-        temp_file = self.tempfile("temp.webp")
-        self.assert_warning(None, image.save, temp_file)
+        with Image.open(file_path) as image:
+            temp_file = self.tempfile("temp.webp")
+            self.assert_warning(None, image.save, temp_file)
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"

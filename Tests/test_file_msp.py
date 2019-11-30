@@ -16,11 +16,11 @@ class TestFileMsp(PillowTestCase):
 
         hopper("1").save(test_file)
 
-        im = Image.open(test_file)
-        im.load()
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "MSP")
+        with Image.open(test_file) as im:
+            im.load()
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.format, "MSP")
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -38,16 +38,16 @@ class TestFileMsp(PillowTestCase):
     def test_open_windows_v1(self):
         # Arrange
         # Act
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Assert
-        self.assert_image_equal(im, hopper("1"))
-        self.assertIsInstance(im, MspImagePlugin.MspImageFile)
+            # Assert
+            self.assert_image_equal(im, hopper("1"))
+            self.assertIsInstance(im, MspImagePlugin.MspImageFile)
 
     def _assert_file_image_equal(self, source_path, target_path):
         with Image.open(source_path) as im:
-            target = Image.open(target_path)
-            self.assert_image_equal(im, target)
+            with Image.open(target_path) as target:
+                self.assert_image_equal(im, target)
 
     @unittest.skipIf(not os.path.exists(EXTRA_DIR), "Extra image files not installed")
     def test_open_windows_v2(self):

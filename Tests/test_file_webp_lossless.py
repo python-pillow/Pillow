@@ -26,13 +26,13 @@ class TestFileWebpLossless(PillowTestCase):
 
         hopper(self.rgb_mode).save(temp_file, lossless=True)
 
-        image = Image.open(temp_file)
-        image.load()
+        with Image.open(temp_file) as image:
+            image.load()
 
-        self.assertEqual(image.mode, self.rgb_mode)
-        self.assertEqual(image.size, (128, 128))
-        self.assertEqual(image.format, "WEBP")
-        image.load()
-        image.getdata()
+            self.assertEqual(image.mode, self.rgb_mode)
+            self.assertEqual(image.size, (128, 128))
+            self.assertEqual(image.format, "WEBP")
+            image.load()
+            image.getdata()
 
-        self.assert_image_equal(image, hopper(self.rgb_mode))
+            self.assert_image_equal(image, hopper(self.rgb_mode))

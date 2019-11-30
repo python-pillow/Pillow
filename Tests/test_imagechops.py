@@ -45,11 +45,11 @@ class TestImageChops(PillowTestCase):
 
     def test_add(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.add(im1, im2)
+                # Act
+                new = ImageChops.add(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -57,11 +57,11 @@ class TestImageChops(PillowTestCase):
 
     def test_add_scale_offset(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.add(im1, im2, scale=2.5, offset=100)
+                # Act
+                new = ImageChops.add(im1, im2, scale=2.5, offset=100)
 
         # Assert
         self.assertEqual(new.getbbox(), (0, 0, 100, 100))
@@ -79,11 +79,11 @@ class TestImageChops(PillowTestCase):
 
     def test_add_modulo(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.add_modulo(im1, im2)
+                # Act
+                new = ImageChops.add_modulo(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -101,11 +101,11 @@ class TestImageChops(PillowTestCase):
 
     def test_blend(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.blend(im1, im2, 0.5)
+                # Act
+                new = ImageChops.blend(im1, im2, 0.5)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -125,33 +125,33 @@ class TestImageChops(PillowTestCase):
 
     def test_darker_image(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.darker(im1, im2)
+                # Act
+                new = ImageChops.darker(im1, im2)
 
-        # Assert
-        self.assert_image_equal(new, im2)
+                # Assert
+                self.assert_image_equal(new, im2)
 
     def test_darker_pixel(self):
         # Arrange
         im1 = hopper()
-        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.darker(im1, im2)
+            # Act
+            new = ImageChops.darker(im1, im2)
 
         # Assert
         self.assertEqual(new.getpixel((50, 50)), (240, 166, 0))
 
     def test_difference(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_arc_end_le_start.png")
-        im2 = Image.open("Tests/images/imagedraw_arc_no_loops.png")
+        with Image.open("Tests/images/imagedraw_arc_end_le_start.png") as im1:
+            with Image.open("Tests/images/imagedraw_arc_no_loops.png") as im2:
 
-        # Act
-        new = ImageChops.difference(im1, im2)
+                # Act
+                new = ImageChops.difference(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -159,10 +159,10 @@ class TestImageChops(PillowTestCase):
     def test_difference_pixel(self):
         # Arrange
         im1 = hopper()
-        im2 = Image.open("Tests/images/imagedraw_polygon_kite_RGB.png")
+        with Image.open("Tests/images/imagedraw_polygon_kite_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.difference(im1, im2)
+            # Act
+            new = ImageChops.difference(im1, im2)
 
         # Assert
         self.assertEqual(new.getpixel((50, 50)), (240, 166, 128))
@@ -179,10 +179,10 @@ class TestImageChops(PillowTestCase):
 
     def test_invert(self):
         # Arrange
-        im = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im:
 
-        # Act
-        new = ImageChops.invert(im)
+            # Act
+            new = ImageChops.invert(im)
 
         # Assert
         self.assertEqual(new.getbbox(), (0, 0, 100, 100))
@@ -191,11 +191,11 @@ class TestImageChops(PillowTestCase):
 
     def test_lighter_image(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.lighter(im1, im2)
+                # Act
+                new = ImageChops.lighter(im1, im2)
 
         # Assert
         self.assert_image_equal(new, im1)
@@ -203,10 +203,10 @@ class TestImageChops(PillowTestCase):
     def test_lighter_pixel(self):
         # Arrange
         im1 = hopper()
-        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.lighter(im1, im2)
+            # Act
+            new = ImageChops.lighter(im1, im2)
 
         # Assert
         self.assertEqual(new.getpixel((50, 50)), (255, 255, 127))
@@ -226,11 +226,11 @@ class TestImageChops(PillowTestCase):
 
     def test_multiply_green(self):
         # Arrange
-        im = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
-        green = Image.new("RGB", im.size, "green")
+        with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im:
+            green = Image.new("RGB", im.size, "green")
 
-        # Act
-        new = ImageChops.multiply(im, green)
+            # Act
+            new = ImageChops.multiply(im, green)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -252,12 +252,12 @@ class TestImageChops(PillowTestCase):
 
     def test_offset(self):
         # Arrange
-        im = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
         xoffset = 45
         yoffset = 20
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im:
 
-        # Act
-        new = ImageChops.offset(im, xoffset, yoffset)
+            # Act
+            new = ImageChops.offset(im, xoffset, yoffset)
 
         # Assert
         self.assertEqual(new.getbbox(), (0, 45, 100, 96))
@@ -271,11 +271,11 @@ class TestImageChops(PillowTestCase):
 
     def test_screen(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_ellipse_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_floodfill_RGB.png")
+        with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.screen(im1, im2)
+                # Act
+                new = ImageChops.screen(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 25, 76, 76))
@@ -283,11 +283,11 @@ class TestImageChops(PillowTestCase):
 
     def test_subtract(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.subtract(im1, im2)
+                # Act
+                new = ImageChops.subtract(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 50, 76, 76))
@@ -296,11 +296,11 @@ class TestImageChops(PillowTestCase):
 
     def test_subtract_scale_offset(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
+                # Act
+                new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
 
         # Assert
         self.assertEqual(new.getbbox(), (0, 0, 100, 100))
@@ -309,21 +309,21 @@ class TestImageChops(PillowTestCase):
     def test_subtract_clip(self):
         # Arrange
         im1 = hopper()
-        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.subtract(im1, im2)
+            # Act
+            new = ImageChops.subtract(im1, im2)
 
         # Assert
         self.assertEqual(new.getpixel((50, 50)), (0, 0, 127))
 
     def test_subtract_modulo(self):
         # Arrange
-        im1 = Image.open("Tests/images/imagedraw_chord_RGB.png")
-        im2 = Image.open("Tests/images/imagedraw_outline_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
+            with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.subtract_modulo(im1, im2)
+                # Act
+                new = ImageChops.subtract_modulo(im1, im2)
 
         # Assert
         self.assertEqual(new.getbbox(), (25, 50, 76, 76))
@@ -333,10 +333,10 @@ class TestImageChops(PillowTestCase):
     def test_subtract_modulo_no_clip(self):
         # Arrange
         im1 = hopper()
-        im2 = Image.open("Tests/images/imagedraw_chord_RGB.png")
+        with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
 
-        # Act
-        new = ImageChops.subtract_modulo(im1, im2)
+            # Act
+            new = ImageChops.subtract_modulo(im1, im2)
 
         # Assert
         self.assertEqual(new.getpixel((50, 50)), (241, 167, 127))

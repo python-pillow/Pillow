@@ -12,9 +12,9 @@ class TestFileWmf(PillowTestCase):
                 # Currently, support for WMF/EMF is Windows-only
                 im.load()
                 # Compare to reference rendering
-                imref = Image.open("Tests/images/drawing_emf_ref.png")
-                imref.load()
-                self.assert_image_similar(im, imref, 0)
+                with Image.open("Tests/images/drawing_emf_ref.png") as imref:
+                    imref.load()
+                    self.assert_image_similar(im, imref, 0)
 
         # Test basic WMF open and rendering
         with Image.open("Tests/images/drawing.wmf") as im:
@@ -22,9 +22,9 @@ class TestFileWmf(PillowTestCase):
                 # Currently, support for WMF/EMF is Windows-only
                 im.load()
                 # Compare to reference rendering
-                imref = Image.open("Tests/images/drawing_wmf_ref.png")
-                imref.load()
-                self.assert_image_similar(im, imref, 2.0)
+                with Image.open("Tests/images/drawing_wmf_ref.png") as imref:
+                    imref.load()
+                    self.assert_image_similar(im, imref, 2.0)
 
     def test_register_handler(self):
         class TestHandler:

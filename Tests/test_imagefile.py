@@ -128,33 +128,31 @@ class TestImageFile(PillowTestCase):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
 
-        im = Image.open("Tests/images/truncated_image.png")
-
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            im.load()
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        with Image.open("Tests/images/truncated_image.png") as im:
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            try:
+                im.load()
+            finally:
+                ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_broken_datastream_with_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
 
-        im = Image.open("Tests/images/broken_data_stream.png")
-        with self.assertRaises(IOError):
-            im.load()
+        with Image.open("Tests/images/broken_data_stream.png") as im:
+            with self.assertRaises(IOError):
+                im.load()
 
     def test_broken_datastream_without_errors(self):
         if "zip_encoder" not in codecs:
             self.skipTest("PNG (zlib) encoder not available")
 
-        im = Image.open("Tests/images/broken_data_stream.png")
-
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            im.load()
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        with Image.open("Tests/images/broken_data_stream.png") as im:
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            try:
+                im.load()
+            finally:
+                ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 class MockPyDecoder(ImageFile.PyDecoder):
@@ -246,19 +244,19 @@ class TestPyDecoder(PillowTestCase):
         self.assertIsNone(im.get_format_mimetype())
 
     def test_exif_jpeg(self):
-        im = Image.open("Tests/images/exif-72dpi-int.jpg")  # Little endian
-        exif = im.getexif()
-        self.assertNotIn(258, exif)
-        self.assertIn(40960, exif)
-        self.assertEqual(exif[40963], 450)
-        self.assertEqual(exif[11], "gThumb 3.0.1")
+        with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
+            exif = im.getexif()
+            self.assertNotIn(258, exif)
+            self.assertIn(40960, exif)
+            self.assertEqual(exif[40963], 450)
+            self.assertEqual(exif[11], "gThumb 3.0.1")
 
-        out = self.tempfile("temp.jpg")
-        exif[258] = 8
-        del exif[40960]
-        exif[40963] = 455
-        exif[11] = "Pillow test"
-        im.save(out, exif=exif)
+            out = self.tempfile("temp.jpg")
+            exif[258] = 8
+            del exif[40960]
+            exif[40963] = 455
+            exif[11] = "Pillow test"
+            im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             self.assertEqual(reloaded_exif[258], 8)
@@ -266,19 +264,19 @@ class TestPyDecoder(PillowTestCase):
             self.assertEqual(reloaded_exif[40963], 455)
             self.assertEqual(exif[11], "Pillow test")
 
-        im = Image.open("Tests/images/no-dpi-in-exif.jpg")  # Big endian
-        exif = im.getexif()
-        self.assertNotIn(258, exif)
-        self.assertIn(40962, exif)
-        self.assertEqual(exif[40963], 200)
-        self.assertEqual(exif[305], "Adobe Photoshop CC 2017 (Macintosh)")
+        with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
+            exif = im.getexif()
+            self.assertNotIn(258, exif)
+            self.assertIn(40962, exif)
+            self.assertEqual(exif[40963], 200)
+            self.assertEqual(exif[305], "Adobe Photoshop CC 2017 (Macintosh)")
 
-        out = self.tempfile("temp.jpg")
-        exif[258] = 8
-        del exif[34665]
-        exif[40963] = 455
-        exif[305] = "Pillow test"
-        im.save(out, exif=exif)
+            out = self.tempfile("temp.jpg")
+            exif[258] = 8
+            del exif[34665]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             self.assertEqual(reloaded_exif[258], 8)
@@ -291,38 +289,38 @@ class TestPyDecoder(PillowTestCase):
         "WebP support not installed with animation",
     )
     def test_exif_webp(self):
-        im = Image.open("Tests/images/hopper.webp")
-        exif = im.getexif()
-        self.assertEqual(exif, {})
+        with Image.open("Tests/images/hopper.webp") as im:
+            exif = im.getexif()
+            self.assertEqual(exif, {})
 
-        out = self.tempfile("temp.webp")
-        exif[258] = 8
-        exif[40963] = 455
-        exif[305] = "Pillow test"
+            out = self.tempfile("temp.webp")
+            exif[258] = 8
+            exif[40963] = 455
+            exif[305] = "Pillow test"
 
-        def check_exif():
-            with Image.open(out) as reloaded:
-                reloaded_exif = reloaded.getexif()
-                self.assertEqual(reloaded_exif[258], 8)
-                self.assertEqual(reloaded_exif[40963], 455)
-                self.assertEqual(exif[305], "Pillow test")
+            def check_exif():
+                with Image.open(out) as reloaded:
+                    reloaded_exif = reloaded.getexif()
+                    self.assertEqual(reloaded_exif[258], 8)
+                    self.assertEqual(reloaded_exif[40963], 455)
+                    self.assertEqual(exif[305], "Pillow test")
 
-        im.save(out, exif=exif)
-        check_exif()
-        im.save(out, exif=exif, save_all=True)
-        check_exif()
+            im.save(out, exif=exif)
+            check_exif()
+            im.save(out, exif=exif, save_all=True)
+            check_exif()
 
     def test_exif_png(self):
-        im = Image.open("Tests/images/exif.png")
-        exif = im.getexif()
-        self.assertEqual(exif, {274: 1})
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+            self.assertEqual(exif, {274: 1})
 
-        out = self.tempfile("temp.png")
-        exif[258] = 8
-        del exif[274]
-        exif[40963] = 455
-        exif[305] = "Pillow test"
-        im.save(out, exif=exif)
+            out = self.tempfile("temp.png")
+            exif[258] = 8
+            del exif[274]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()

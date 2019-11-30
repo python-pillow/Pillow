@@ -11,12 +11,12 @@ class TestFileBmp(PillowTestCase):
 
         im.save(outfile, "BMP")
 
-        reloaded = Image.open(outfile)
-        reloaded.load()
-        self.assertEqual(im.mode, reloaded.mode)
-        self.assertEqual(im.size, reloaded.size)
-        self.assertEqual(reloaded.format, "BMP")
-        self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
+        with Image.open(outfile) as reloaded:
+            reloaded.load()
+            self.assertEqual(im.mode, reloaded.mode)
+            self.assertEqual(im.size, reloaded.size)
+            self.assertEqual(reloaded.format, "BMP")
+            self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
 
     def test_sanity(self):
         self.roundtrip(hopper())
@@ -36,11 +36,10 @@ class TestFileBmp(PillowTestCase):
         im.save(output, "BMP")
 
         output.seek(0)
-        reloaded = Image.open(output)
-
-        self.assertEqual(im.mode, reloaded.mode)
-        self.assertEqual(im.size, reloaded.size)
-        self.assertEqual(reloaded.format, "BMP")
+        with Image.open(output) as reloaded:
+            self.assertEqual(im.mode, reloaded.mode)
+            self.assertEqual(im.size, reloaded.size)
+            self.assertEqual(reloaded.format, "BMP")
 
     def test_dpi(self):
         dpi = (72, 72)
@@ -57,17 +56,17 @@ class TestFileBmp(PillowTestCase):
         # Test for #1301
         # Arrange
         outfile = self.tempfile("temp.jpg")
-        im = Image.open("Tests/images/hopper.bmp")
+        with Image.open("Tests/images/hopper.bmp") as im:
 
-        # Act
-        im.save(outfile, "JPEG", dpi=im.info["dpi"])
+            # Act
+            im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
-        # Assert
-        reloaded = Image.open(outfile)
-        reloaded.load()
-        self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
-        self.assertEqual(im.size, reloaded.size)
-        self.assertEqual(reloaded.format, "JPEG")
+            # Assert
+            with Image.open(outfile) as reloaded:
+                reloaded.load()
+                self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
+                self.assertEqual(im.size, reloaded.size)
+                self.assertEqual(reloaded.format, "JPEG")
 
     def test_load_dpi_rounding(self):
         # Round up
@@ -80,11 +79,10 @@ class TestFileBmp(PillowTestCase):
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.bmp")
-        im = Image.open("Tests/images/hopper.bmp")
-
-        im.save(outfile, dpi=(72.2, 72.2))
-        with Image.open(outfile) as reloaded:
-            self.assertEqual(reloaded.info["dpi"], (72, 72))
+        with Image.open("Tests/images/hopper.bmp") as im:
+            im.save(outfile, dpi=(72.2, 72.2))
+            with Image.open(outfile) as reloaded:
+                self.assertEqual(reloaded.info["dpi"], (72, 72))
 
             im.save(outfile, dpi=(72.8, 72.8))
         with Image.open(outfile) as reloaded:
@@ -92,32 +90,32 @@ class TestFileBmp(PillowTestCase):
 
     def test_load_dib(self):
         # test for #1293, Imagegrab returning Unsupported Bitfields Format
-        im = Image.open("Tests/images/clipboard.dib")
-        self.assertEqual(im.format, "DIB")
-        self.assertEqual(im.get_format_mimetype(), "image/bmp")
+        with Image.open("Tests/images/clipboard.dib") as im:
+            self.assertEqual(im.format, "DIB")
+            self.assertEqual(im.get_format_mimetype(), "image/bmp")
 
-        target = Image.open("Tests/images/clipboard_target.png")
-        self.assert_image_equal(im, target)
+            with Image.open("Tests/images/clipboard_target.png") as target:
+                self.assert_image_equal(im, target)
 
     def test_save_dib(self):
         outfile = self.tempfile("temp.dib")
 
-        im = Image.open("Tests/images/clipboard.dib")
-        im.save(outfile)
+        with Image.open("Tests/images/clipboard.dib") as im:
+            im.save(outfile)
 
-        reloaded = Image.open(outfile)
-        self.assertEqual(reloaded.format, "DIB")
-        self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
-        self.assert_image_equal(im, reloaded)
+            with Image.open(outfile) as reloaded:
+                self.assertEqual(reloaded.format, "DIB")
+                self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
+                self.assert_image_equal(im, reloaded)
 
     def test_rgba_bitfields(self):
         # This test image has been manually hexedited
         # to change the bitfield compression in the header from XBGR to RGBA
-        im = Image.open("Tests/images/rgb32bf-rgba.bmp")
+        with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
 
-        # So before the comparing the image, swap the channels
-        b, g, r = im.split()[1:]
-        im = Image.merge("RGB", (r, g, b))
+            # So before the comparing the image, swap the channels
+            b, g, r = im.split()[1:]
+            im = Image.merge("RGB", (r, g, b))
 
-        target = Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp")
-        self.assert_image_equal(im, target)
+        with Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp") as target:
+            self.assert_image_equal(im, target)

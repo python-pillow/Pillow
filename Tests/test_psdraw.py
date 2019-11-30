@@ -9,7 +9,6 @@ from .helper import PillowTestCase
 
 class TestPsDraw(PillowTestCase):
     def _create_document(self, ps):
-        im = Image.open("Tests/images/hopper.ppm")
         title = "hopper"
         box = (1 * 72, 2 * 72, 7 * 72, 10 * 72)  # in points
 
@@ -20,7 +19,8 @@ class TestPsDraw(PillowTestCase):
         ps.line((7 * 72, 2 * 72), (1 * 72, 10 * 72))
 
         # draw the image (75 dpi)
-        ps.image(box, im, 75)
+        with Image.open("Tests/images/hopper.ppm") as im:
+            ps.image(box, im, 75)
         ps.rectangle(box)
 
         # draw title
