@@ -15,10 +15,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-import sys
 import os
-import tempfile
 import subprocess
+import sys
+import tempfile
 
 from . import Image
 
@@ -97,4 +97,3 @@ def grabclipboard():
 
             return BmpImagePlugin.DibImageFile(io.BytesIO(data))
         return data
-
