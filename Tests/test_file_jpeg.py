@@ -659,6 +659,11 @@ class TestFileJpeg(PillowTestCase):
                 },
             )
 
+            # Test that the image can still load, even with broken Photoshop data
+            # This image had the APP13 length hexedited to be smaller
+            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
+                self.assert_image_equal(im_broken, im)
+
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:
             self.assertNotIn("photoshop", im.info)

@@ -109,7 +109,10 @@ def APP(self, marker):
             while blocks[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
-                code = i16(blocks, offset)
+                try:
+                    code = i16(blocks, offset)
+                except struct.error:
+                    break
                 offset += 2
                 # resource name (usually empty)
                 name_len = i8(blocks[offset])
