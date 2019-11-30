@@ -113,6 +113,13 @@ class TestFileMpo(PillowTestCase):
             self.assertEqual(mpinfo[45056], b"0100")
             self.assertEqual(mpinfo[45057], 2)
 
+    def test_mp_no_data(self):
+        # This image has been manually hexedited to have the second frame
+        # beyond the end of the file
+        with Image.open("Tests/images/sugarshack_no_data.mpo") as im:
+            with self.assertRaises(ValueError):
+                im.seek(1)
+
     def test_mp_attribute(self):
         for test_file in test_files:
             with Image.open(test_file) as im:
