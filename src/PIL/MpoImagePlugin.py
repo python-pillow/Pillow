@@ -82,7 +82,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.offset = self.__mpoffsets[frame]
 
         self.fp.seek(self.offset + 2)  # skip SOI marker
-        if i16(self.fp.read(2)) == 0xFFE1:  # APP1
+        segment = self.fp.read(2)
+        if not segment:
+            raise ValueError("No data found for frame")
+        if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
 
