@@ -8,6 +8,7 @@ include *.sh
 include *.txt
 include LICENSE
 include Makefile
+include python-pillow.spec
 include tox.ini
 graft Tests
 graft src
@@ -20,6 +21,7 @@ exclude .appveyor.yml
 exclude .coveragerc
 exclude .codecov.yml
 exclude .editorconfig
+exclude .packit.yaml
 exclude .readthedocs.yml
 exclude azure-pipelines.yml
 global-exclude .git*
