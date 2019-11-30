@@ -2570,9 +2570,12 @@ def fromarray(obj, mode=None):
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
-            mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
             raise TypeError("Cannot handle this data type")
+        try:
+            mode, rawmode = _fromarray_typemap[typekey]
+        except KeyError:
+            raise TypeError("Cannot handle this data type: %s, %s" % typekey)
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
