@@ -64,7 +64,6 @@ matrix:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.8
-        - MB_PYTHON_OSX_VER=10.9
 
     - name: "3.7 Xenial"
       os: linux
@@ -132,7 +131,6 @@ matrix:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.8
-        - MB_PYTHON_OSX_VER=10.9
         - LATEST="true"
 
     - name: "3.7 Xenial latest"
