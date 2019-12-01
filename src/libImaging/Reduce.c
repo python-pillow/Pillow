@@ -43,20 +43,20 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss3 += line0[xx*4 + 3] + line0[xx*4 + 7] +
                                        line1[xx*4 + 3] + line1[xx*4 + 7];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line0[xx*4 + 0] + line1[xx*4 + 0];
                                 ss3 += line0[xx*4 + 3] + line1[xx*4 + 3];
                             }
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             for (xi = 0; xi < xscale - 1; xi += 2) {
                                 xx = x*xscale + xi;
                                 ss0 += line[xx*4 + 0] + line[xx*4 + 4];
                                 ss3 += line[xx*4 + 3] + line[xx*4 + 7];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line[xx*4 + 0];
                                 ss3 += line[xx*4 + 3];
@@ -83,14 +83,14 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss2 += line0[xx*4 + 2] + line0[xx*4 + 6] +
                                        line1[xx*4 + 2] + line1[xx*4 + 6];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line0[xx*4 + 0] + line1[xx*4 + 0];
                                 ss1 += line0[xx*4 + 1] + line1[xx*4 + 1];
                                 ss2 += line0[xx*4 + 2] + line1[xx*4 + 2];
                             }
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             for (xi = 0; xi < xscale - 1; xi += 2) {
                                 xx = x*xscale + xi;
@@ -98,7 +98,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss1 += line[xx*4 + 1] + line[xx*4 + 5];
                                 ss2 += line[xx*4 + 2] + line[xx*4 + 6];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line[xx*4 + 0];
                                 ss1 += line[xx*4 + 1];
@@ -128,7 +128,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss3 += line0[xx*4 + 3] + line0[xx*4 + 7] +
                                        line1[xx*4 + 3] + line1[xx*4 + 7];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line0[xx*4 + 0] + line1[xx*4 + 0];
                                 ss1 += line0[xx*4 + 1] + line1[xx*4 + 1];
@@ -136,7 +136,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss3 += line0[xx*4 + 3] + line1[xx*4 + 3];
                             }
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             for (xi = 0; xi < xscale - 1; xi += 2) {
                                 xx = x*xscale + xi;
@@ -145,7 +145,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
                                 ss2 += line[xx*4 + 2] + line[xx*4 + 6];
                                 ss3 += line[xx*4 + 3] + line[xx*4 + 7];
                             }
-                            for (; xi < xscale; xi++) {
+                            if (xscale & 0x01) {
                                 xx = x*xscale + xi;
                                 ss0 += line[xx*4 + 0];
                                 ss1 += line[xx*4 + 1];
@@ -198,7 +198,7 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int yscale)
                             ss0 += line0[x*4 + 0] + line1[x*4 + 0];
                             ss3 += line0[x*4 + 3] + line1[x*4 + 3];
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             ss0 += line[x*4 + 0];
                             ss3 += line[x*4 + 3];
@@ -219,7 +219,7 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int yscale)
                             ss1 += line0[x*4 + 1] + line1[x*4 + 1];
                             ss2 += line0[x*4 + 2] + line1[x*4 + 2];
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             ss0 += line[x*4 + 0];
                             ss1 += line[x*4 + 1];
@@ -242,7 +242,7 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int yscale)
                             ss2 += line0[x*4 + 2] + line1[x*4 + 2];
                             ss3 += line0[x*4 + 3] + line1[x*4 + 3];
                         }
-                        for (; yy < y*yscale + yscale; yy ++) {
+                        if (yscale & 0x01) {
                             UINT8 *line = (UINT8 *)imIn->image[yy];
                             ss0 += line[x*4 + 0];
                             ss1 += line[x*4 + 1];
@@ -294,7 +294,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int xscale)
                             ss0 += line[xx*4 + 0] + line[xx*4 + 4];
                             ss3 += line[xx*4 + 3] + line[xx*4 + 7];
                         }
-                        for (; xi < xscale; xi++) {
+                        if (xscale & 0x01) {
                             xx = x*xscale + xi;
                             ss0 += line[xx*4 + 0];
                             ss3 += line[xx*4 + 3];
@@ -314,7 +314,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int xscale)
                             ss1 += line[xx*4 + 1] + line[xx*4 + 5];
                             ss2 += line[xx*4 + 2] + line[xx*4 + 6];
                         }
-                        for (; xi < xscale; xi++) {
+                        if (xscale & 0x01) {
                             xx = x*xscale + xi;
                             ss0 += line[xx*4 + 0];
                             ss1 += line[xx*4 + 1];
@@ -336,7 +336,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int xscale)
                             ss2 += line[xx*4 + 2] + line[xx*4 + 6];
                             ss3 += line[xx*4 + 3] + line[xx*4 + 7];
                         }
-                        for (; xi < xscale; xi++) {
+                        if (xscale & 0x01) {
                             xx = x*xscale + xi;
                             ss0 += line[xx*4 + 0];
                             ss1 += line[xx*4 + 1];
@@ -820,26 +820,22 @@ ImagingReduce(Imaging imIn, int xscale, int yscale)
 
     ImagingSectionEnter(&cookie);
 
-    if (xscale == yscale) {
+    if (xscale == 1) {
+        ImagingReduce1xN(imOut, imIn, yscale);
+    } else if (yscale == 1) {
+        ImagingReduceNx1(imOut, imIn, xscale);
+    } else if (xscale == yscale && xscale <= 5) {
         if (xscale == 2) {
             ImagingReduce2x2(imOut, imIn);
         } else if (xscale == 3) {
             ImagingReduce3x3(imOut, imIn);
         } else if (xscale == 4) {
             ImagingReduce4x4(imOut, imIn);
-        } else if (xscale == 5) {
-            ImagingReduce5x5(imOut, imIn);
         } else {
-            ImagingReduceNxN(imOut, imIn, xscale, yscale);
+            ImagingReduce5x5(imOut, imIn);
         }
     } else {
-        if (xscale == 1) {
-            ImagingReduce1xN(imOut, imIn, yscale);
-        } else if (yscale == 1) {
-            ImagingReduceNx1(imOut, imIn, xscale);
-        } else {
-            ImagingReduceNxN(imOut, imIn, xscale, yscale);
-        }
+        ImagingReduceNxN(imOut, imIn, xscale, yscale);
     }
 
     ImagingReduceCorners(imOut, imIn, xscale, yscale);
