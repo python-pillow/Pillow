@@ -757,6 +757,8 @@ class PngImageFile(ImageFile.ImageFile):
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
                 self.im = None
+                if self.pyaccess:
+                    self.pyaccess = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self.__fp
@@ -920,6 +922,8 @@ class PngImageFile(ImageFile.ImageFile):
                     updated, self.dispose_extent, updated.convert("RGBA")
                 )
                 self.im = self._prev_im
+                if self.pyaccess:
+                    self.pyaccess = None
             self._prev_im = self.im.copy()
 
             if dispose:
