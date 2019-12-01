@@ -384,9 +384,7 @@ class PngStream(ChunkStream):
 
         # image data
         if "bbox" in self.im_info:
-            tile = [(
-                "zip", self.im_info["bbox"], pos, self.im_rawmode
-            )]
+            tile = [("zip", self.im_info["bbox"], pos, self.im_rawmode)]
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
@@ -588,8 +586,9 @@ class PngStream(ChunkStream):
     def chunk_fcTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
         seq = i32(s)
-        if (self._seq_num is None and seq != 0) or \
-                (self._seq_num is not None and self._seq_num != seq - 1):
+        if (self._seq_num is None and seq != 0) or (
+            self._seq_num is not None and self._seq_num != seq - 1
+        ):
             raise SyntaxError("APNG contains frame sequence errors")
         self._seq_num = seq
         width, height = i32(s[4:]), i32(s[8:])
@@ -684,7 +683,7 @@ class PngImageFile(ImageFile.ImageFile):
         if cid == b"fdAT":
             self.__prepare_idat = length - 4
         else:
-            self.__prepare_idat = length    # used by load_prepare()
+            self.__prepare_idat = length  # used by load_prepare()
 
         if self._n_frames is not None:
             self._close_exclusive_fp_after_loading = False
@@ -854,9 +853,9 @@ class PngImageFile(ImageFile.ImageFile):
                     self.png.call(cid, pos, length)
                 except EOFError:
                     pass
-                self.__idat = length - 4    # sequence_num has already been read
+                self.__idat = length - 4  # sequence_num has already been read
             else:
-                self.__idat = length    # empty chunks are allowed
+                self.__idat = length  # empty chunks are allowed
 
         # read more data from this chunk
         if read_bytes <= 0:
@@ -918,7 +917,8 @@ class PngImageFile(ImageFile.ImageFile):
             if self._prev_im and self.blend_op == APNG_BLEND_OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
                 self._prev_im.paste(
-                    updated, self.dispose_extent, updated.convert("RGBA"))
+                    updated, self.dispose_extent, updated.convert("RGBA")
+                )
                 self.im = self._prev_im
             self._prev_im = self.im.copy()
 
@@ -1056,8 +1056,11 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                     base_im = previous["im"]
                 delta = ImageChops.subtract_modulo(im_frame, base_im)
                 bbox = delta.getbbox()
-                if (not bbox and prev_disposal == encoderinfo.get("disposal")
-                        and prev_blend == encoderinfo.get("blend")):
+                if (
+                    not bbox
+                    and prev_disposal == encoderinfo.get("disposal")
+                    and prev_blend == encoderinfo.get("blend")
+                ):
                     duration = encoderinfo.get("duration", 0)
                     if duration:
                         if "duration" in previous["encoderinfo"]:
@@ -1071,10 +1074,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
 
     # animation control
     chunk(
-        fp,
-        b"acTL",
-        o32(len(im_frames)),    # 0: num_frames
-        o32(loop),              # 4: num_plays
+        fp, b"acTL", o32(len(im_frames)), o32(loop),  # 0: num_frames  # 4: num_plays
     )
 
     # default image IDAT (if it exists)
@@ -1097,25 +1097,31 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
         chunk(
             fp,
             b"fcTL",
-            o32(seq_num),   # sequence_number
-            o32(size[0]),   # width
-            o32(size[1]),   # height
-            o32(bbox[0]),   # x_offset
-            o32(bbox[1]),   # y_offset
+            o32(seq_num),  # sequence_number
+            o32(size[0]),  # width
+            o32(size[1]),  # height
+            o32(bbox[0]),  # x_offset
+            o32(bbox[1]),  # y_offset
             o16(duration),  # delay_numerator
-            o16(1000),      # delay_denominator
-            o8(disposal),   # dispose_op
-            o8(blend),      # blend_op
+            o16(1000),  # delay_denominator
+            o8(disposal),  # dispose_op
+            o8(blend),  # blend_op
         )
         seq_num += 1
         # frame data
         if frame == 0 and not default_image:
             # first frame must be in IDAT chunks for backwards compatibility
-            ImageFile._save(im_frame, _idat(fp, chunk),
-                            [("zip", (0, 0) + im_frame.size, 0, rawmode)])
+            ImageFile._save(
+                im_frame,
+                _idat(fp, chunk),
+                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+            )
         else:
-            ImageFile._save(im_frame, _fdat(fp, chunk, seq_num),
-                            [("zip", (0, 0) + im_frame.size, 0, rawmode)])
+            ImageFile._save(
+                im_frame,
+                _fdat(fp, chunk, seq_num),
+                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+            )
             seq_num += 1
 
 
