@@ -5,6 +5,15 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Handle broken Photoshop data #4239
+  [radarhere]
+
+- Raise a specific exception if no data is found for an MPO frame #4240
+  [radarhere]
+
+- Fix Unicode support for PyPy #4145
+  [nulano]
+
 - Drop support for EOL Python 2.7 #4109
   [hugovk, radarhere, jdufresne]
 
