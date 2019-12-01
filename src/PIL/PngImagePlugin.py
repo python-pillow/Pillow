@@ -638,8 +638,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
 
         #
-        # Parse headers up to the first IDAT chunk (or last fdAT chunk for
-        # APNG)
+        # Parse headers up to the first IDAT or fDAT chunk
 
         self.png = PngStream(self.fp)
 
