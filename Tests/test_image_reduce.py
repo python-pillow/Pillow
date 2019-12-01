@@ -102,12 +102,7 @@ class TestImageReduce(PillowTestCase):
             last_pixel = im.resize((1, 1), Image.BOX, last_pixel_box)
             reference.paste(last_pixel, area_size)
 
-        try:
-            self.assert_compare_images(reduced, reference, average_diff, max_diff)
-        except Exception:
-            reduced.save("_out.{}.{}x{}.reduced.png".format(im.mode, *factor))
-            reference.save("_out.{}.{}x{}.reference.png".format(im.mode, *factor))
-            raise
+        self.assert_compare_images(reduced, reference, average_diff, max_diff)
 
     def assert_compare_images(self, a, b, max_average_diff, max_diff=255):
         self.assertEqual(
@@ -177,7 +172,12 @@ class TestImageReduce(PillowTestCase):
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
 
+    def test_mode_I(self):
+        im = self.get_image("I")
+        for factor in self.remarkable_factors:
+            self.compare_reduce_with_reference(im, factor)
+
     def test_mode_F(self):
         im = self.get_image("F")
         for factor in self.remarkable_factors:
-            self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_reference(im, factor, 0, 0)

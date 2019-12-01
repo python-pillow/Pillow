@@ -1164,15 +1164,12 @@ ImagingReduceNxN_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
 
     switch(imIn->type) {
     case IMAGING_TYPE_INT32:
-        break;
-
-    case IMAGING_TYPE_FLOAT32:
         for (y = 0; y < imIn->ysize / yscale; y++) {
             for (x = 0; x < imIn->xsize / xscale; x++) {
                 double ss = 0;
                 for (yy = y*yscale; yy < y*yscale + yscale - 1; yy += 2) {
-                    float *line0 = (float *)imIn->image[yy];
-                    float *line1 = (float *)imIn->image[yy + 1];
+                    INT32 *line0 = (INT32 *)imIn->image32[yy];
+                    INT32 *line1 = (INT32 *)imIn->image32[yy + 1];
                     for (xi = 0; xi < xscale - 1; xi += 2) {
                         xx = x*xscale + xi;
                         ss += line0[xx + 0] + line0[xx + 1] +
@@ -1184,7 +1181,40 @@ ImagingReduceNxN_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
                     }
                 }
                 if (yscale & 0x01) {
-                    float *line = (float *)imIn->image[yy];
+                    INT32 *line = (INT32 *)imIn->image32[yy];
+                    for (xi = 0; xi < xscale - 1; xi += 2) {
+                        xx = x*xscale + xi;
+                        ss += line[xx + 0] + line[xx + 1];
+                    }
+                    if (xscale & 0x01) {
+                        xx = x*xscale + xi;
+                        ss += line[xx + 0];
+                    }
+                }
+                IMAGING_PIXEL_I(imOut, x, y) = ROUND_UP(ss * multiplier);
+            }
+        }
+        break;
+
+    case IMAGING_TYPE_FLOAT32:
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                double ss = 0;
+                for (yy = y*yscale; yy < y*yscale + yscale - 1; yy += 2) {
+                    FLOAT32 *line0 = (FLOAT32 *)imIn->image32[yy];
+                    FLOAT32 *line1 = (FLOAT32 *)imIn->image32[yy + 1];
+                    for (xi = 0; xi < xscale - 1; xi += 2) {
+                        xx = x*xscale + xi;
+                        ss += line0[xx + 0] + line0[xx + 1] +
+                              line1[xx + 0] + line1[xx + 1];
+                    }
+                    if (xscale & 0x01) {
+                        xx = x*xscale + xi;
+                        ss += line0[xx + 0] + line1[xx + 0];
+                    }
+                }
+                if (yscale & 0x01) {
+                    FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
                     for (xi = 0; xi < xscale - 1; xi += 2) {
                         xx = x*xscale + xi;
                         ss += line[xx + 0] + line[xx + 1];
@@ -1211,6 +1241,47 @@ ImagingReduceCorners_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
 
     switch(imIn->type) {
     case IMAGING_TYPE_INT32:
+        if (imIn->xsize % xscale) {
+            double multiplier = 1.0 / ((imIn->xsize % xscale) * yscale);
+            for (y = 0; y < imIn->ysize / yscale; y++) {
+                double ss = 0;
+                x = imIn->xsize / xscale;
+                for (yy = y*yscale; yy < y*yscale + yscale; yy++) {
+                    INT32 *line = (INT32 *)imIn->image32[yy];
+                    for (xx = x*xscale; xx < imIn->xsize; xx++) {
+                        ss += line[xx + 0];
+                    }
+                }
+                IMAGING_PIXEL_I(imOut, x, y) = ROUND_UP(ss * multiplier);
+            }
+        }
+        if (imIn->ysize % yscale) {
+            double multiplier = 1.0 / (xscale * (imIn->ysize % yscale));
+            y = imIn->ysize / yscale;
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                double ss = 0;
+                for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                    INT32 *line = (INT32 *)imIn->image32[yy];
+                    for (xx = x*xscale; xx < x*xscale + xscale; xx++) {
+                        ss += line[xx + 0];
+                    }
+                }
+                IMAGING_PIXEL_I(imOut, x, y) = ROUND_UP(ss * multiplier);
+            }
+        }
+        if (imIn->xsize % xscale && imIn->ysize % yscale) {
+            double multiplier = 1.0 / ((imIn->xsize % xscale) * (imIn->ysize % yscale));
+            double ss = 0;
+            x = imIn->xsize / xscale;
+            y = imIn->ysize / yscale;
+            for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                INT32 *line = (INT32 *)imIn->image32[yy];
+                for (xx = x*xscale; xx < imIn->xsize; xx++) {
+                    ss += line[xx + 0];
+                }
+            }
+            IMAGING_PIXEL_I(imOut, x, y) = ROUND_UP(ss * multiplier);
+        }
         break;
 
     case IMAGING_TYPE_FLOAT32:
@@ -1220,7 +1291,7 @@ ImagingReduceCorners_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
                 double ss = 0;
                 x = imIn->xsize / xscale;
                 for (yy = y*yscale; yy < y*yscale + yscale; yy++) {
-                    float *line = (float *)imIn->image[yy];
+                    FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
                     for (xx = x*xscale; xx < imIn->xsize; xx++) {
                         ss += line[xx + 0];
                     }
@@ -1234,7 +1305,7 @@ ImagingReduceCorners_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
             for (x = 0; x < imIn->xsize / xscale; x++) {
                 double ss = 0;
                 for (yy = y*yscale; yy < imIn->ysize; yy++) {
-                    float *line = (float *)imIn->image[yy];
+                    FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
                     for (xx = x*xscale; xx < x*xscale + xscale; xx++) {
                         ss += line[xx + 0];
                     }
@@ -1248,7 +1319,7 @@ ImagingReduceCorners_32bpc(Imaging imOut, Imaging imIn, int xscale, int yscale)
             x = imIn->xsize / xscale;
             y = imIn->ysize / yscale;
             for (yy = y*yscale; yy < imIn->ysize; yy++) {
-                float *line = (float *)imIn->image[yy];
+                FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
                 for (xx = x*xscale; xx < imIn->xsize; xx++) {
                     ss += line[xx + 0];
                 }
