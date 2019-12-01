@@ -46,16 +46,21 @@ class TestImageReduce(PillowTestCase):
             im.reduce(3)
 
     def get_image(self, mode):
-        bands = [self.gradients_image]
-        for _ in ImageMode.getmode(mode).bands[1:]:
-            # rotate previous image
-            band = bands[-1].transpose(Image.ROTATE_90)
-            bands.append(band)
-        # Correct alpha channel to exclude completely transparent pixels.
-        # Low alpha values also emphasize error after alpha multiplication.
-        if mode.endswith('A'):
-            bands[-1] = bands[-1].point(lambda x: int(85 + x / 1.5))
-        return Image.merge(mode, bands)
+        mode_info = ImageMode.getmode(mode)
+        if mode_info.basetype == 'L':
+            bands = [self.gradients_image]
+            for _ in mode_info.bands[1:]:
+                # rotate previous image
+                band = bands[-1].transpose(Image.ROTATE_90)
+                bands.append(band)
+            # Correct alpha channel to exclude completely transparent pixels.
+            # Low alpha values also emphasize error after alpha multiplication.
+            if mode.endswith('A'):
+                bands[-1] = bands[-1].point(lambda x: int(85 + x / 1.5))
+            return Image.merge(mode, bands)
+        else:
+            assert len(mode_info.bands) == 1
+            return self.gradients_image.convert(mode)
 
     def compare_reduce_with_reference(self, im, factor, average_diff=0.4, max_diff=1):
         """Image.reduce() should look very similar to Image.resize(BOX).
@@ -172,7 +177,7 @@ class TestImageReduce(PillowTestCase):
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
 
-    def test_mode_CMYK(self):
-        im = self.get_image("CMYK")
+    def test_mode_F(self):
+        im = self.get_image("F")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
