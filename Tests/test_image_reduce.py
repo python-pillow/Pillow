@@ -79,12 +79,17 @@ class TestImageReduce(PillowTestCase):
             last_row = im.resize((area_size[0], 1), Image.BOX, last_row_box)
             reference.paste(last_row, (0, area_size[1]))
 
-            if area_size[0] < reduced.size[0]:
-                last_pixel_box = (area_box[2], area_box[3], im.size[0], im.size[1])
-                last_pixel = im.resize((1, 1), Image.BOX, last_pixel_box)
-                reference.paste(last_pixel, area_size)
+        if area_size[0] < reduced.size[0] and area_size[1] < reduced.size[1]:
+            last_pixel_box = (area_box[2], area_box[3], im.size[0], im.size[1])
+            last_pixel = im.resize((1, 1), Image.BOX, last_pixel_box)
+            reference.paste(last_pixel, area_size)
 
-        self.assert_compare_images(reduced, reference, average_diff, max_diff)
+        try:
+            self.assert_compare_images(reduced, reference, average_diff, max_diff)
+        except Exception:
+            reduced.save("_out.{}.{}x{}.reduced.png".format(im.mode, *factor))
+            reference.save("_out.{}.{}x{}.reference.png".format(im.mode, *factor))
+            raise
 
     def assert_compare_images(self, a, b, max_average_diff, max_diff=255):
         self.assertEqual(
@@ -114,6 +119,11 @@ class TestImageReduce(PillowTestCase):
                     .format(last_diff, max_diff, band),
             )
 
+    def test_mode_L(self):
+        im = self.get_image("L")
+        for factor in self.remarkable_factors:
+            self.compare_reduce_with_reference(im, factor)
+
     def test_mode_LA(self):
         im = self.get_image("LA")
         for factor in self.remarkable_factors:
@@ -121,6 +131,11 @@ class TestImageReduce(PillowTestCase):
         
         # With opaque alpha, error should be way smaller
         im.putalpha(Image.new('L', im.size, 255))
+        for factor in self.remarkable_factors:
+            self.compare_reduce_with_reference(im, factor)
+
+    def test_mode_La(self):
+        im = self.get_image("La")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
 
@@ -136,6 +151,11 @@ class TestImageReduce(PillowTestCase):
 
         # With opaque alpha, error should be way smaller
         im.putalpha(Image.new('L', im.size, 255))
+        for factor in self.remarkable_factors:
+            self.compare_reduce_with_reference(im, factor)
+
+    def test_mode_RGBa(self):
+        im = self.get_image("RGBa")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
 

@@ -24,7 +24,36 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int xscale, int yscale)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss = amend;
+                for (yy = y*yscale; yy < y*yscale + yscale - 1; yy += 2) {
+                    UINT8 *line0 = (UINT8 *)imIn->image8[yy];
+                    UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+                    for (xi = 0; xi < xscale - 1; xi += 2) {
+                        xx = x*xscale + xi;
+                        ss += line0[xx + 0] + line0[xx + 1] +
+                              line1[xx + 0] + line1[xx + 1];
+                    }
+                    if (xscale & 0x01) {
+                        xx = x*xscale + xi;
+                        ss += line0[xx + 0] + line1[xx + 0];
+                    }
+                }
+                if (yscale & 0x01) {
+                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    for (xi = 0; xi < xscale - 1; xi += 2) {
+                        xx = x*xscale + xi;
+                        ss += line[xx + 0] + line[xx + 1];
+                    }
+                    if (xscale & 0x01) {
+                        xx = x*xscale + xi;
+                        ss += line[xx + 0];
+                    }
+                }
+                imOut->image8[y][x] = (ss * multiplier) >> 24;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -183,7 +212,21 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int yscale)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss = amend;
+                for (yy = y*yscale; yy < y*yscale + yscale - 1; yy += 2) {
+                    UINT8 *line0 = (UINT8 *)imIn->image8[yy];
+                    UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+                    ss += line0[x + 0] + line1[x + 0];
+                }
+                if (yscale & 0x01) {
+                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    ss += line[x + 0];
+                }
+                imOut->image8[y][x] = (ss * multiplier) >> 24;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -279,7 +322,21 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int xscale)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss = amend;
+                UINT8 *line = (UINT8 *)imIn->image8[y];
+                for (xi = 0; xi < xscale - 1; xi += 2) {
+                    xx = x*xscale + xi;
+                    ss += line[xx + 0] + line[xx + 1];
+                }
+                if (xscale & 0x01) {
+                    xx = x*xscale + xi;
+                    ss += line[xx + 0];
+                }
+                imOut->image8[y][x] = (ss * multiplier) >> 24;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -373,7 +430,16 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            UINT8 *line0 = (UINT8 *)imIn->image8[y*yscale + 0];
+            UINT8 *line1 = (UINT8 *)imIn->image8[y*yscale + 1];
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss;
+                ss = line0[x*xscale + 0] + line0[x*xscale + 1] +
+                     line1[x*xscale + 0] + line1[x*xscale + 1];
+                imOut->image8[y][x] = (ss + amend) >> 2;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -444,7 +510,18 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            UINT8 *line0 = (UINT8 *)imIn->image8[y*yscale + 0];
+            UINT8 *line1 = (UINT8 *)imIn->image8[y*yscale + 1];
+            UINT8 *line2 = (UINT8 *)imIn->image8[y*yscale + 2];
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss;
+                ss = line0[x*xscale + 0] + line0[x*xscale + 1] + line0[x*xscale + 2] +
+                     line1[x*xscale + 0] + line1[x*xscale + 1] + line1[x*xscale + 2] +
+                     line2[x*xscale + 0] + line2[x*xscale + 1] + line2[x*xscale + 2];
+                imOut->image8[y][x] = ((ss + amend) * multiplier) >> 24;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -527,7 +604,20 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            UINT8 *line0 = (UINT8 *)imIn->image8[y*yscale + 0];
+            UINT8 *line1 = (UINT8 *)imIn->image8[y*yscale + 1];
+            UINT8 *line2 = (UINT8 *)imIn->image8[y*yscale + 2];
+            UINT8 *line3 = (UINT8 *)imIn->image8[y*yscale + 3];
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss;
+                ss = line0[x*xscale + 0] + line0[x*xscale + 1] + line0[x*xscale + 2] + line0[x*xscale + 3] +
+                     line1[x*xscale + 0] + line1[x*xscale + 1] + line1[x*xscale + 2] + line1[x*xscale + 3] +
+                     line2[x*xscale + 0] + line2[x*xscale + 1] + line2[x*xscale + 2] + line2[x*xscale + 3] +
+                     line3[x*xscale + 0] + line3[x*xscale + 1] + line3[x*xscale + 2] + line3[x*xscale + 3];
+                imOut->image8[y][x] = (ss + amend) >> 4;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -619,7 +709,22 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn)
     UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
-
+        for (y = 0; y < imIn->ysize / yscale; y++) {
+            UINT8 *line0 = (UINT8 *)imIn->image8[y*yscale + 0];
+            UINT8 *line1 = (UINT8 *)imIn->image8[y*yscale + 1];
+            UINT8 *line2 = (UINT8 *)imIn->image8[y*yscale + 2];
+            UINT8 *line3 = (UINT8 *)imIn->image8[y*yscale + 3];
+            UINT8 *line4 = (UINT8 *)imIn->image8[y*yscale + 4];
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss;
+                ss = line0[x*xscale + 0] + line0[x*xscale + 1] + line0[x*xscale + 2] + line0[x*xscale + 3] + line0[x*xscale + 4] +
+                     line1[x*xscale + 0] + line1[x*xscale + 1] + line1[x*xscale + 2] + line1[x*xscale + 3] + line1[x*xscale + 4] +
+                     line2[x*xscale + 0] + line2[x*xscale + 1] + line2[x*xscale + 2] + line2[x*xscale + 3] + line2[x*xscale + 4] +
+                     line3[x*xscale + 0] + line3[x*xscale + 1] + line3[x*xscale + 2] + line3[x*xscale + 3] + line3[x*xscale + 4] +
+                     line4[x*xscale + 0] + line4[x*xscale + 1] + line4[x*xscale + 2] + line4[x*xscale + 3] + line4[x*xscale + 4];
+                imOut->image8[y][x] = ((ss + amend) * multiplier) >> 24;
+            }
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
@@ -720,7 +825,54 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int xscale, int yscale)
     int x, y, xx, yy;
 
     if (imIn->image8) {
+        if (imIn->xsize % xscale) {
+            int scale = (imIn->xsize % xscale) * yscale;
+            UINT32 multiplier = division_UINT32(scale, 8);
+            UINT32 amend = scale / 2;
+            for (y = 0; y < imIn->ysize / yscale; y++) {
+                UINT32 ss = amend;
+                x = imIn->xsize / xscale;
 
+                for (yy = y*yscale; yy < y*yscale + yscale; yy++) {
+                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    for (xx = x*xscale; xx < imIn->xsize; xx++) {
+                        ss += line[xx + 0];
+                    }
+                }
+                imOut->image8[y][x] = (ss * multiplier) >> 24;
+            }
+        }
+        if (imIn->ysize % yscale) {
+            int scale = xscale * (imIn->ysize % yscale);
+            UINT32 multiplier = division_UINT32(scale, 8);
+            UINT32 amend = scale / 2;
+            y = imIn->ysize / yscale;
+            for (x = 0; x < imIn->xsize / xscale; x++) {
+                UINT32 ss = amend;
+                for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    for (xx = x*xscale; xx < x*xscale + xscale; xx++) {
+                        ss += line[xx + 0];
+                    }
+                }
+                imOut->image8[y][x] = (ss * multiplier) >> 24;
+            }
+        }
+        if (imIn->xsize % xscale && imIn->ysize % yscale) {
+            int scale = (imIn->xsize % xscale) * (imIn->ysize % yscale);
+            UINT32 multiplier = division_UINT32(scale, 8);
+            UINT32 amend = scale / 2;
+            UINT32 ss = amend;
+            x = imIn->xsize / xscale;
+            y = imIn->ysize / yscale;
+            for (yy = y*yscale; yy < imIn->ysize; yy++) {
+                UINT8 *line = (UINT8 *)imIn->image8[yy];
+                for (xx = x*xscale; xx < imIn->xsize; xx++) {
+                    ss += line[xx + 0];
+                }
+            }
+            imOut->image8[y][x] = (ss * multiplier) >> 24;
+        }
     } else {
         switch(imIn->type) {
         case IMAGING_TYPE_UINT8:
