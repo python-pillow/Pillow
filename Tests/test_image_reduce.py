@@ -32,6 +32,19 @@ class TestImageReduce(PillowTestCase):
         with self.assertRaises(ValueError):
             im.reduce((0, 10))
 
+    def test_unsupported_modes(self):
+        im = Image.new("P", (10, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(3)
+
+        im = Image.new("1", (10, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(3)
+
+        im = Image.new("I;16", (10, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(3)
+
     def get_image(self, mode):
         bands = [self.gradients_image]
         for _ in ImageMode.getmode(mode).bands[1:]:

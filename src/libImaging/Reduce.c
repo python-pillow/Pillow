@@ -963,6 +963,12 @@ ImagingReduce(Imaging imIn, int xscale, int yscale)
     ImagingSectionCookie cookie;
     Imaging imOut = NULL;
 
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+        return (Imaging) ImagingError_ModeError();
+
+    if (imIn->type == IMAGING_TYPE_SPECIAL)
+        return (Imaging) ImagingError_ModeError();
+
     imOut = ImagingNewDirty(imIn->mode,
                             (imIn->xsize + xscale - 1) / xscale,
                             (imIn->ysize + yscale - 1) / yscale);
