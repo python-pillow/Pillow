@@ -258,8 +258,9 @@ def _accept(prefix):
 
 
 def _limit_rational(val, max_val):
-    inv = abs(val) > 1
-    n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
+    ifd_val = IFDRational(val[0], val[1]) if isinstance(val, tuple) else val
+    inv = abs(ifd_val) > 1
+    n_d = IFDRational(1 / ifd_val if inv else ifd_val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
 

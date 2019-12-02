@@ -307,3 +307,10 @@ def test_exif_transpose():
                     "Tests/images/hopper_orientation_" + str(i) + ext
                 ) as orientation_im:
                     check(orientation_im)
+
+
+def test_exif_transpose_metadata_error():
+    with Image.open("Tests/images/exif_transpose_rational_mismatch.jpg") as img:
+        transposed = ImageOps.exif_transpose(img)
+        parsed_exif = transposed.getexif()
+        assert parsed_exif[318] == [(313, 1000), (329, 1000)]
