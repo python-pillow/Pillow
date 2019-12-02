@@ -1123,9 +1123,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
-                im_frame,
-                fdat_chunks,
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                im_frame, fdat_chunks, [("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
 
