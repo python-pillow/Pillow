@@ -948,6 +948,29 @@ class TestFilePng(PillowTestCase):
             self.assertEqual(im.getpixel((0, 0)), (0, 255, 0, 255))
             self.assertEqual(im.getpixel((64, 32)), (0, 255, 0, 255))
 
+    def test_apng_save_split_fdat(self):
+        # test to make sure we do not generate sequence errors when writing
+        # frames with image data spanning multiple fdAT chunks (in this case
+        # both the default image and first animation frame will span multiple
+        # data chunks)
+        test_file = self.tempfile("temp.png")
+        with Image.open("Tests/images/old-style-jpeg-compression.png") as im:
+            frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
+            im.save(
+                test_file,
+                save_all=True,
+                default_image=True,
+                append_images=frames,
+            )
+        with Image.open(test_file) as im:
+            exception = None
+            try:
+                im.seek(im.n_frames - 1)
+                im.load()
+            except Exception as e:
+                exception = e
+            self.assertIsNone(exception)
+
     def test_apng_save_duration_loop(self):
         test_file = self.tempfile("temp.png")
         im = Image.open("Tests/images/apng/delay.png")
