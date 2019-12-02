@@ -36,6 +36,16 @@ jobs:
         repository: python-pillow/pillow-depends
         ref: master
 
+    - name: Cache
+      uses: actions/cache@v1
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key:
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-${{ hashFiles('**/.github/workflows/test-windows.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-
+          ${{ runner.os }}-${{ matrix.python-version }}-
+
     - name: Install PyPy
       if: "contains(matrix.python-version, 'pypy')"
       run: |
