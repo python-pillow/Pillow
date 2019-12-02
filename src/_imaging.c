@@ -1836,20 +1836,39 @@ _reduce(ImagingObject* self, PyObject* args)
     Imaging imOut;
 
     int xscale, yscale;
+    int box[4] = {0, 0, 0, 0};
 
     imIn = self->image;
+    box[2] = imIn->xsize;
+    box[3] = imIn->ysize;
 
-    if (!PyArg_ParseTuple(args, "(ii)", &xscale, &yscale))
+    if (!PyArg_ParseTuple(args, "(ii)|(iiii)", &xscale, &yscale,
+                          &box[0], &box[1], &box[2], &box[3]))
         return NULL;
 
     if (xscale < 1 || yscale < 1) {
         return ImagingError_ValueError("scale must be > 0");
     }
 
+    if (box[0] < 0 || box[1] < 0) {
+        return ImagingError_ValueError("box offset can't be negative");
+    }
+
+    if (box[2] > imIn->xsize || box[3] > imIn->ysize) {
+        return ImagingError_ValueError("box can't exceed original image size");
+    }
+
+    if (box[2] < box[0] || box[3] < box[1]) {
+        return ImagingError_ValueError("box can't be empty");
+    }
+
     if (xscale == 1 && yscale == 1) {
-        imOut = ImagingCopy(imIn);
+        imOut = ImagingCrop(imIn, box[0], box[1], box[2], box[3]);
     } else {
-        imOut = ImagingReduce(imIn, xscale, yscale);
+        // Change box format: (left, top, width, height)
+        box[2] -= box[0];
+        box[3] -= box[1];
+        imOut = ImagingReduce(imIn, xscale, yscale, box);
     }
 
     return PyImagingNew(imOut);

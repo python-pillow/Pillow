@@ -18,7 +18,7 @@ class TestImageReduce(PillowTestCase):
         cls.gradients_image = Image.open("Tests/images/radial_gradients.png")
         cls.gradients_image.load()
 
-    def test_args(self):
+    def test_args_factor(self):
         im = Image.new("L", (10, 10))
         
         self.assertEqual((4, 4), im.reduce(3).size)
@@ -61,6 +61,12 @@ class TestImageReduce(PillowTestCase):
         else:
             assert len(mode_info.bands) == 1
             return self.gradients_image.convert(mode)
+
+    def compare_reduce_with_box(self, im, factor):
+        box = (11, 13, 146, 164)
+        reduced = im.reduce(factor, box=box)
+        reference = im.crop(box).reduce(factor)
+        self.assertEqual(reduced, reference)
 
     def compare_reduce_with_reference(self, im, factor, average_diff=0.4, max_diff=1):
         """Image.reduce() should look very similar to Image.resize(BOX).
@@ -136,6 +142,7 @@ class TestImageReduce(PillowTestCase):
         im = self.get_image("L")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_LA(self):
         im = self.get_image("LA")
@@ -146,16 +153,19 @@ class TestImageReduce(PillowTestCase):
         im.putalpha(Image.new('L', im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_La(self):
         im = self.get_image("La")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_RGB(self):
         im = self.get_image("RGB")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_RGBA(self):
         im = self.get_image("RGBA")
@@ -166,18 +176,22 @@ class TestImageReduce(PillowTestCase):
         im.putalpha(Image.new('L', im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_RGBa(self):
         im = self.get_image("RGBa")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_I(self):
         im = self.get_image("I")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
+            self.compare_reduce_with_box(im, factor)
 
     def test_mode_F(self):
         im = self.get_image("F")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor, 0, 0)
+            self.compare_reduce_with_box(im, factor)

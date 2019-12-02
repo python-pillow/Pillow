@@ -313,7 +313,7 @@ extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
-extern Imaging ImagingReduce(Imaging imIn, int xscale, int yscale);
+extern Imaging ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
 extern Imaging ImagingTransform(
     Imaging imOut, Imaging imIn, int method, int x0, int y0, int x1, int y1,
     double *a, int filter, int fill);
