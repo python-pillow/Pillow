@@ -18,7 +18,9 @@ coverage report
 pip install codecov
 pip install coveralls-merge
 coveralls-merge coverage.c.json
-codecov
+if [[ $TRAVIS ]]; then
+    codecov
+fi
 
 if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ] && [ "$DOCKER" == "" ]; then
     # Coverage and quality reports on just the latest diff.
