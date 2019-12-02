@@ -1004,6 +1004,7 @@ class _fdat:
 
     def write(self, data):
         self.chunk(self.fp, b"fdAT", o32(self.seq_num), data)
+        self.seq_num += 1
 
 
 def _write_multiple_frames(im, fp, chunk, rawmode):
@@ -1120,12 +1121,13 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                 [("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
+            fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                _fdat(fp, chunk, seq_num),
+                fdat_chunks,
                 [("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
-            seq_num += 1
+            seq_num = fdat_chunks.seq_num
 
 
 def _save_all(im, fp, filename):
