@@ -12,3 +12,10 @@ exclude_lines =
     # Don't complain about debug code
     if Image.DEBUG:
     if DEBUG:
+
+[run]
+omit =
+    Tests/32bit_segfault_check.py
+    Tests/bench_cffi_access.py
+    Tests/check_*.py
+    Tests/createfontdatachunk.py

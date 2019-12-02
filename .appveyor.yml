@@ -80,7 +80,7 @@ test_script:
 - cd c:\pillow
 - '%PYTHON%\%PIP_DIR%\pip.exe install pytest pytest-cov'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
-- '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov-report term --cov-report xml Tests'
+- '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
