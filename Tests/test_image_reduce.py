@@ -80,10 +80,12 @@ class TestImageReduce(PillowTestCase):
             # Low alpha values also emphasize error after alpha multiplication.
             if mode.endswith('A'):
                 bands[-1] = bands[-1].point(lambda x: int(85 + x / 1.5))
-            return Image.merge(mode, bands)
+            im = Image.merge(mode, bands)
         else:
             assert len(mode_info.bands) == 1
-            return self.gradients_image.convert(mode)
+            im = self.gradients_image.convert(mode)
+        # change the height to make a not square image
+        return im.crop((0, 0, im.width, im.height - 5))
 
     def compare_reduce_with_box(self, im, factor):
         box = (11, 13, 146, 164)
