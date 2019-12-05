@@ -31,23 +31,17 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import array
 import io
+import os
 import struct
+import subprocess
+import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i8, i16be as i16, i32be as i32, o8
-from ._util import isStringType
 from .JpegPresets import presets
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
-
 
 #
 # Parser
@@ -115,7 +109,10 @@ def APP(self, marker):
             while blocks[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
-                code = i16(blocks, offset)
+                try:
+                    code = i16(blocks, offset)
+                except struct.error:
+                    break
                 offset += 2
                 # resource name (usually empty)
                 name_len = i8(blocks[offset])
@@ -444,10 +441,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
-        import subprocess
-        import tempfile
-        import os
-
         f, path = tempfile.mkstemp()
         os.close(f)
         if os.path.exists(self.filename):
@@ -618,7 +611,7 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as JPEG" % im.mode)
+        raise OSError("cannot write mode %s as JPEG" % im.mode)
 
     info = im.encoderinfo
 
@@ -642,7 +635,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get("subsampling", -1)
-        if isStringType(qtables) and qtables in presets:
+        if isinstance(qtables, str) and qtables in presets:
             qtables = presets[qtables].get("quantization")
 
     if subsampling == "4:4:4":
@@ -663,7 +656,7 @@ def _save(im, fp, filename):
     def validate_qtables(qtables):
         if qtables is None:
             return qtables
-        if isStringType(qtables):
+        if isinstance(qtables, str):
             try:
                 lines = [
                     int(num)
@@ -772,9 +765,6 @@ def _save(im, fp, filename):
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    import os
-    import subprocess
-
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:

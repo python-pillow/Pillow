@@ -17,7 +17,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
 
 from . import FontFile, Image
 
@@ -85,8 +84,7 @@ def bdf_char(f):
 
 class BdfFontFile(FontFile.FontFile):
     def __init__(self, fp):
-
-        FontFile.FontFile.__init__(self)
+        super().__init__()
 
         s = fp.readline()
         if s[:13] != b"STARTFONT 2.1":

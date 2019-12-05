@@ -11,8 +11,8 @@ class TestFileContainer(PillowTestCase):
         dir(ContainerIO)
 
     def test_isatty(self):
-        im = hopper()
-        container = ContainerIO.ContainerIO(im, 0, 0)
+        with hopper() as im:
+            container = ContainerIO.ContainerIO(im, 0, 0)
 
         self.assertFalse(container.isatty())
 

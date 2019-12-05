@@ -1,11 +1,11 @@
 import os
 import shutil
-import sys
+import tempfile
+import unittest
 
-from PIL import Image
-from PIL._util import py3
+from PIL import Image, UnidentifiedImageError
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper, is_win32
 
 
 class TestImage(PillowTestCase):
@@ -48,6 +48,9 @@ class TestImage(PillowTestCase):
                 Image.new(mode, (1, 1))
             self.assertEqual(str(e.exception), "unrecognized image mode")
 
+    def test_exception_inheritance(self):
+        self.assertTrue(issubclass(UnidentifiedImageError, IOError))
+
     def test_sanity(self):
 
         im = Image.new("L", (100, 100))
@@ -80,40 +83,34 @@ class TestImage(PillowTestCase):
             im.size = (3, 4)
 
     def test_invalid_image(self):
-        if py3:
-            import io
+        import io
 
-            im = io.BytesIO(b"")
-        else:
-            import StringIO
-
-            im = StringIO.StringIO("")
-        self.assertRaises(IOError, Image.open, im)
+        im = io.BytesIO(b"")
+        self.assertRaises(UnidentifiedImageError, Image.open, im)
 
     def test_bad_mode(self):
         self.assertRaises(ValueError, Image.open, "filename", "bad mode")
 
-    @unittest.skipUnless(Image.HAS_PATHLIB, "requires pathlib/pathlib2")
     def test_pathlib(self):
         from PIL.Image import Path
 
-        im = Image.open(Path("Tests/images/multipage-mmap.tiff"))
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (10, 10))
+        with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
+            self.assertEqual(im.mode, "P")
+            self.assertEqual(im.size, (10, 10))
 
-        im = Image.open(Path("Tests/images/hopper.jpg"))
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (128, 128))
+        with Image.open(Path("Tests/images/hopper.jpg")) as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (128, 128))
 
-        temp_file = self.tempfile("temp.jpg")
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        im.save(Path(temp_file))
+            temp_file = self.tempfile("temp.jpg")
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            im.save(Path(temp_file))
 
     def test_fp_name(self):
         temp_file = self.tempfile("temp.jpg")
 
-        class FP(object):
+        class FP:
             def write(a, b):
                 pass
 
@@ -126,14 +123,12 @@ class TestImage(PillowTestCase):
     def test_tempfile(self):
         # see #1460, pathlib support breaks tempfile.TemporaryFile on py27
         # Will error out on save on 3.0.0
-        import tempfile
-
         im = hopper()
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            reloaded = Image.open(fp)
-            self.assert_image_similar(im, reloaded, 20)
+            with Image.open(fp) as reloaded:
+                self.assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self):
         im = hopper()
@@ -150,16 +145,14 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         self.assertFalse(im.readonly)
 
-    @unittest.skipIf(
-        sys.platform.startswith("win32"), "Test requires opening tempfile twice"
-    )
+    @unittest.skipIf(is_win32(), "Test requires opening tempfile twice")
     def test_readonly_save(self):
         temp_file = self.tempfile("temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
-        im = Image.open(temp_file)
-        self.assertTrue(im.readonly)
-        im.save(temp_file)
+        with Image.open(temp_file) as im:
+            self.assertTrue(im.readonly)
+            im.save(temp_file)
 
     def test_dump(self):
         im = Image.new("L", (10, 10))
@@ -350,7 +343,8 @@ class TestImage(PillowTestCase):
     def test_registered_extensions(self):
         # Arrange
         # Open an image to trigger plugin registration
-        Image.open("Tests/images/rgb.jpg")
+        with Image.open("Tests/images/rgb.jpg"):
+            pass
 
         # Act
         extensions = Image.registered_extensions()
@@ -371,8 +365,8 @@ class TestImage(PillowTestCase):
 
         # Assert
         self.assertEqual(im.size, (512, 512))
-        im2 = Image.open("Tests/images/effect_mandelbrot.png")
-        self.assert_image_equal(im, im2)
+        with Image.open("Tests/images/effect_mandelbrot.png") as im2:
+            self.assert_image_equal(im, im2)
 
     def test_effect_mandelbrot_bad_arguments(self):
         # Arrange
@@ -413,8 +407,8 @@ class TestImage(PillowTestCase):
 
         # Assert
         self.assertEqual(im.size, (128, 128))
-        im3 = Image.open("Tests/images/effect_spread.png")
-        self.assert_image_similar(im2, im3, 110)
+        with Image.open("Tests/images/effect_spread.png") as im3:
+            self.assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
         # Checking that the _check_size function throws value errors
@@ -452,10 +446,10 @@ class TestImage(PillowTestCase):
 
     def test_offset_not_implemented(self):
         # Arrange
-        im = hopper()
+        with hopper() as im:
 
-        # Act / Assert
-        self.assertRaises(NotImplementedError, im.offset, None)
+            # Act / Assert
+            self.assertRaises(NotImplementedError, im.offset, None)
 
     def test_fromstring(self):
         self.assertRaises(NotImplementedError, Image.fromstring)
@@ -481,7 +475,8 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.mode, mode)
             self.assertEqual(im.getpixel((0, 0)), 0)
             self.assertEqual(im.getpixel((255, 255)), 255)
-            target = Image.open(target_file).convert(mode)
+            with Image.open(target_file) as target:
+                target = target.convert(mode)
             self.assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
@@ -505,7 +500,8 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.mode, mode)
             self.assertEqual(im.getpixel((0, 0)), 255)
             self.assertEqual(im.getpixel((128, 128)), 0)
-            target = Image.open(target_file).convert(mode)
+            with Image.open(target_file) as target:
+                target = target.convert(mode)
             self.assert_image_equal(im, target)
 
     def test_register_extensions(self):
@@ -526,8 +522,8 @@ class TestImage(PillowTestCase):
 
     def test_remap_palette(self):
         # Test illegal image mode
-        im = hopper()
-        self.assertRaises(ValueError, im.remap_palette, None)
+        with hopper() as im:
+            self.assertRaises(ValueError, im.remap_palette, None)
 
     def test__new(self):
         from PIL import ImagePalette
@@ -591,15 +587,15 @@ class TestImage(PillowTestCase):
 
     def test_overrun(self):
         for file in ["fli_overrun.bin", "sgi_overrun.bin", "pcx_overrun.bin"]:
-            im = Image.open(os.path.join("Tests/images", file))
-            try:
-                im.load()
-                self.assertFail()
-            except IOError as e:
-                self.assertEqual(str(e), "buffer overrun when reading image file")
+            with Image.open(os.path.join("Tests/images", file)) as im:
+                try:
+                    im.load()
+                    self.assertFail()
+                except OSError as e:
+                    self.assertEqual(str(e), "buffer overrun when reading image file")
 
 
-class MockEncoder(object):
+class MockEncoder:
     pass
 
 

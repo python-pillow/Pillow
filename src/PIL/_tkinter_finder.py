@@ -1,11 +1,7 @@
 """ Find compiled module linking to Tcl / Tk libraries
 """
 import sys
-
-if sys.version_info.major > 2:
-    from tkinter import _tkinter as tk
-else:
-    from Tkinter import tkinter as tk
+from tkinter import _tkinter as tk
 
 if hasattr(sys, "pypy_find_executable"):
     # Tested with packages at https://bitbucket.org/pypy/pypy/downloads.

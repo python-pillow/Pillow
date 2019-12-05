@@ -25,17 +25,19 @@
 # See the README file for information on usage and redistribution.
 #
 
+import base64
 import os
 import sys
+from io import BytesIO
 
 from . import Image
-from ._util import isDirectory, isPath, py3
+from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
 
 
-class _imagingft_not_installed(object):
+class _imagingft_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -63,7 +65,7 @@ except ImportError:
 # --------------------------------------------------------------------
 
 
-class ImageFont(object):
+class ImageFont:
     "PIL font wrapper"
 
     def _load_pilfont(self, filename):
@@ -79,7 +81,7 @@ class ImageFont(object):
                     if image and image.mode in ("1", "L"):
                         break
             else:
-                raise IOError("cannot find glyph data file")
+                raise OSError("cannot find glyph data file")
 
             self.file = fullname
 
@@ -145,7 +147,7 @@ class ImageFont(object):
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont(object):
+class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
     def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
@@ -542,7 +544,7 @@ class FreeTypeFont(object):
             raise NotImplementedError("FreeType 2.9.1 or greater is required")
 
 
-class TransposedFont(object):
+class TransposedFont:
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
@@ -638,7 +640,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     try:
         return freetype(font)
-    except IOError:
+    except OSError:
         if not isPath(font):
             raise
         ttf_filename = os.path.basename(font)
@@ -695,15 +697,12 @@ def load_path(filename):
     for directory in sys.path:
         if isDirectory(directory):
             if not isinstance(filename, str):
-                if py3:
-                    filename = filename.decode("utf-8")
-                else:
-                    filename = filename.encode("utf-8")
+                filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(directory, filename))
-            except IOError:
+            except OSError:
                 pass
-    raise IOError("cannot find font file")
+    raise OSError("cannot find font file")
 
 
 def load_default():
@@ -713,9 +712,6 @@ def load_default():
 
     :return: A font object.
     """
-    from io import BytesIO
-    import base64
-
     f = ImageFont()
     f._load_pilfont_data(
         # courB08

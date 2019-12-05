@@ -33,18 +33,18 @@ class TestFileJpeg2k(PillowTestCase):
         # Internal version number
         self.assertRegex(Image.core.jp2klib_version, r"\d+\.\d+\.\d+$")
 
-        im = Image.open("Tests/images/test-card-lossless.jp2")
-        px = im.load()
-        self.assertEqual(px[0, 0], (0, 0, 0))
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (640, 480))
-        self.assertEqual(im.format, "JPEG2000")
-        self.assertEqual(im.get_format_mimetype(), "image/jp2")
+        with Image.open("Tests/images/test-card-lossless.jp2") as im:
+            px = im.load()
+            self.assertEqual(px[0, 0], (0, 0, 0))
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (640, 480))
+            self.assertEqual(im.format, "JPEG2000")
+            self.assertEqual(im.get_format_mimetype(), "image/jp2")
 
     def test_jpf(self):
-        im = Image.open("Tests/images/balloon.jpf")
-        self.assertEqual(im.format, "JPEG2000")
-        self.assertEqual(im.get_format_mimetype(), "image/jpx")
+        with Image.open("Tests/images/balloon.jpf") as im:
+            self.assertEqual(im.format, "JPEG2000")
+            self.assertEqual(im.get_format_mimetype(), "image/jpx")
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -54,24 +54,24 @@ class TestFileJpeg2k(PillowTestCase):
     def test_bytesio(self):
         with open("Tests/images/test-card-lossless.jp2", "rb") as f:
             data = BytesIO(f.read())
-        im = Image.open(data)
-        im.load()
-        self.assert_image_similar(im, test_card, 1.0e-3)
+        with Image.open(data) as im:
+            im.load()
+            self.assert_image_similar(im, test_card, 1.0e-3)
 
     # These two test pre-written JPEG 2000 files that were not written with
     # PIL (they were made using Adobe Photoshop)
 
     def test_lossless(self):
-        im = Image.open("Tests/images/test-card-lossless.jp2")
-        im.load()
-        outfile = self.tempfile("temp_test-card.png")
-        im.save(outfile)
+        with Image.open("Tests/images/test-card-lossless.jp2") as im:
+            im.load()
+            outfile = self.tempfile("temp_test-card.png")
+            im.save(outfile)
         self.assert_image_similar(im, test_card, 1.0e-3)
 
     def test_lossy_tiled(self):
-        im = Image.open("Tests/images/test-card-lossy-tiled.jp2")
-        im.load()
-        self.assert_image_similar(im, test_card, 2.0)
+        with Image.open("Tests/images/test-card-lossy-tiled.jp2") as im:
+            im.load()
+            self.assert_image_similar(im, test_card, 2.0)
 
     def test_lossless_rt(self):
         im = self.roundtrip(test_card)
@@ -110,10 +110,10 @@ class TestFileJpeg2k(PillowTestCase):
         self.assert_image_equal(im, test_card)
 
     def test_reduce(self):
-        im = Image.open("Tests/images/test-card-lossless.jp2")
-        im.reduce = 2
-        im.load()
-        self.assertEqual(im.size, (160, 120))
+        with Image.open("Tests/images/test-card-lossless.jp2") as im:
+            im.reduce = 2
+            im.load()
+            self.assertEqual(im.size, (160, 120))
 
     def test_layers_type(self):
         outfile = self.tempfile("temp_layers.jp2")
@@ -132,64 +132,58 @@ class TestFileJpeg2k(PillowTestCase):
         )
         out.seek(0)
 
-        im = Image.open(out)
-        im.layers = 1
-        im.load()
-        self.assert_image_similar(im, test_card, 13)
+        with Image.open(out) as im:
+            im.layers = 1
+            im.load()
+            self.assert_image_similar(im, test_card, 13)
 
         out.seek(0)
-        im = Image.open(out)
-        im.layers = 3
-        im.load()
-        self.assert_image_similar(im, test_card, 0.4)
+        with Image.open(out) as im:
+            im.layers = 3
+            im.load()
+            self.assert_image_similar(im, test_card, 0.4)
 
     def test_rgba(self):
         # Arrange
-        j2k = Image.open("Tests/images/rgb_trns_ycbc.j2k")
-        jp2 = Image.open("Tests/images/rgb_trns_ycbc.jp2")
+        with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
+            with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
 
-        # Act
-        j2k.load()
-        jp2.load()
+                # Act
+                j2k.load()
+                jp2.load()
 
-        # Assert
-        self.assertEqual(j2k.mode, "RGBA")
-        self.assertEqual(jp2.mode, "RGBA")
+                # Assert
+                self.assertEqual(j2k.mode, "RGBA")
+                self.assertEqual(jp2.mode, "RGBA")
 
     def test_16bit_monochrome_has_correct_mode(self):
+        with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
+            j2k.load()
+            self.assertEqual(j2k.mode, "I;16")
 
-        j2k = Image.open("Tests/images/16bit.cropped.j2k")
-        jp2 = Image.open("Tests/images/16bit.cropped.jp2")
-
-        j2k.load()
-        jp2.load()
-
-        self.assertEqual(j2k.mode, "I;16")
-        self.assertEqual(jp2.mode, "I;16")
+        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
+            jp2.load()
+            self.assertEqual(jp2.mode, "I;16")
 
     def test_16bit_monochrome_jp2_like_tiff(self):
-
-        tiff_16bit = Image.open("Tests/images/16bit.cropped.tif")
-        jp2 = Image.open("Tests/images/16bit.cropped.jp2")
-        self.assert_image_similar(jp2, tiff_16bit, 1e-3)
+        with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
+            with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
+                self.assert_image_similar(jp2, tiff_16bit, 1e-3)
 
     def test_16bit_monochrome_j2k_like_tiff(self):
-
-        tiff_16bit = Image.open("Tests/images/16bit.cropped.tif")
-        j2k = Image.open("Tests/images/16bit.cropped.j2k")
-        self.assert_image_similar(j2k, tiff_16bit, 1e-3)
+        with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
+            with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
+                self.assert_image_similar(j2k, tiff_16bit, 1e-3)
 
     def test_16bit_j2k_roundtrips(self):
-
-        j2k = Image.open("Tests/images/16bit.cropped.j2k")
-        im = self.roundtrip(j2k)
-        self.assert_image_equal(im, j2k)
+        with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
+            im = self.roundtrip(j2k)
+            self.assert_image_equal(im, j2k)
 
     def test_16bit_jp2_roundtrips(self):
-
-        jp2 = Image.open("Tests/images/16bit.cropped.jp2")
-        im = self.roundtrip(jp2)
-        self.assert_image_equal(im, jp2)
+        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
+            im = self.roundtrip(jp2)
+            self.assert_image_equal(im, jp2)
 
     def test_unbound_local(self):
         # prepatch, a malformed jp2 file could cause an UnboundLocalError

@@ -106,10 +106,10 @@ class DdsImageFile(ImageFile.ImageFile):
     def _open(self):
         magic, header_size = struct.unpack("<II", self.fp.read(8))
         if header_size != 124:
-            raise IOError("Unsupported header size %r" % (header_size))
+            raise OSError("Unsupported header size %r" % (header_size))
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise IOError("Incomplete header: %s bytes" % len(header_bytes))
+            raise OSError("Incomplete header: %s bytes" % len(header_bytes))
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -122,7 +122,7 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
-        bitcount, = struct.unpack("<I", header.read(4))
+        (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
         if pfflags & 0x40:
             # DDPF_RGB - Texture contains uncompressed RGB data
@@ -155,7 +155,7 @@ class DdsImageFile(ImageFile.ImageFile):
                     n = 7
                 elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
                     self.pixel_format = "BC7"
-                    self.im_info["gamma"] = 1 / 2.2
+                    self.info["gamma"] = 1 / 2.2
                     n = 7
                 else:
                     raise NotImplementedError(

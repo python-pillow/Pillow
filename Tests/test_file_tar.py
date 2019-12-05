@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image, TarIO
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, is_pypy
 
 codecs = dir(Image.core)
 
@@ -19,17 +21,30 @@ class TestFileTar(PillowTestCase):
             ["jpeg_decoder", "hopper.jpg", "JPEG"],
         ]:
             if codec in codecs:
-                tar = TarIO.TarIO(TEST_TAR_FILE, test_path)
-                im = Image.open(tar)
-                im.load()
-                self.assertEqual(im.mode, "RGB")
-                self.assertEqual(im.size, (128, 128))
-                self.assertEqual(im.format, format)
+                with TarIO.TarIO(TEST_TAR_FILE, test_path) as tar:
+                    with Image.open(tar) as im:
+                        im.load()
+                        self.assertEqual(im.mode, "RGB")
+                        self.assertEqual(im.size, (128, 128))
+                        self.assertEqual(im.format, format)
+
+    @unittest.skipIf(is_pypy(), "Requires CPython")
+    def test_unclosed_file(self):
+        def open():
+            TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
+
+        self.assert_warning(ResourceWarning, open)
 
     def test_close(self):
-        tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
-        tar.close()
+        def open():
+            tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
+            tar.close()
+
+        self.assert_warning(None, open)
 
     def test_contextmanager(self):
-        with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
-            pass
+        def open():
+            with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
+                pass
+
+        self.assert_warning(None, open)

@@ -22,8 +22,6 @@
 
 #include "Imaging.h"
 
-#include "py3.h"
-
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);
 extern int PyImaging_GetBuffer(PyObject* buffer, Py_buffer *view);

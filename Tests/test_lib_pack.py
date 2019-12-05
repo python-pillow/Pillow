@@ -18,7 +18,7 @@ class TestLibPack(PillowTestCase):
 
         if isinstance(data, int):
             data_len = data * len(pixels)
-            data = bytes(bytearray(range(1, data_len + 1)))
+            data = bytes(range(1, data_len + 1))
 
         self.assertEqual(data, im.tobytes("raw", rawmode))
 
@@ -229,7 +229,7 @@ class TestLibUnpack(PillowTestCase):
         """
         if isinstance(data, int):
             data_len = data * len(pixels)
-            data = bytes(bytearray(range(1, data_len + 1)))
+            data = bytes(range(1, data_len + 1))
 
         im = Image.frombytes(mode, (len(pixels), 1), data, "raw", rawmode, 0, 1)
 

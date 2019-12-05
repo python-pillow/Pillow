@@ -3,7 +3,7 @@
 set -e
 
 sudo apt-get update
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk python-qt4\
+sudo apt-get -qq install libfreetype6-dev liblcms2-dev python-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
@@ -15,9 +15,13 @@ pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
 pip install numpy
+if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
+    sudo apt-get -qq install pyqt5-dev-tools
+    pip install pyqt5
+fi
 
-# docs only on Python 2.7
-if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then pip install -r requirements.txt ; fi
+# docs only on Python 3.7
+if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then pip install -r requirements.txt ; fi
 
 # webp
 pushd depends && ./install_webp.sh && popd

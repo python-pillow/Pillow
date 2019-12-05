@@ -25,16 +25,10 @@
 # See the README file for information on usage and redistribution.
 #
 
-import sys
+import tkinter
 from io import BytesIO
 
 from . import Image
-
-if sys.version_info.major > 2:
-    import tkinter
-else:
-    import Tkinter as tkinter
-
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -68,7 +62,7 @@ def _get_image_from_kw(kw):
 # PhotoImage
 
 
-class PhotoImage(object):
+class PhotoImage:
     """
     A Tkinter-compatible photo image.  This can be used
     everywhere Tkinter expects an image object.  If the image is an RGBA
@@ -209,7 +203,7 @@ class PhotoImage(object):
 # BitmapImage
 
 
-class BitmapImage(object):
+class BitmapImage:
     """
     A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter
     expects an image object.
@@ -296,10 +290,10 @@ def _show(image, title):
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            tkinter.Label.__init__(self, master, image=self.image, bg="black", bd=0)
+            super().__init__(master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
-        raise IOError("tkinter not initialized")
+        raise OSError("tkinter not initialized")
     top = tkinter.Toplevel()
     if title:
         top.title(title)

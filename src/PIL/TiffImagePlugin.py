@@ -38,35 +38,20 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import division, print_function
-
 import distutils.version
 import io
 import itertools
 import os
 import struct
-import sys
 import warnings
+from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
 
 from . import Image, ImageFile, ImagePalette, TiffTags
 from ._binary import i8, o8
-from ._util import py3
 from .TiffTags import TYPES
 
-try:
-    # Python 3
-    from collections.abc import MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import MutableMapping
-
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "1.3.5"
 DEBUG = False  # Needs to be merged with the new logging approach.
 
 # Set these to true to force use of libtiff for reading or writing.
@@ -310,25 +295,21 @@ class IFDRational(Rational):
         float/rational/other number, or an IFDRational
         :param denominator: Optional integer denominator
         """
-        self._denominator = denominator
-        self._numerator = value
-        self._val = float(1)
+        if isinstance(value, IFDRational):
+            self._numerator = value.numerator
+            self._denominator = value.denominator
+            self._val = value._val
+            return
 
         if isinstance(value, Fraction):
             self._numerator = value.numerator
             self._denominator = value.denominator
-            self._val = value
-
-        if isinstance(value, IFDRational):
-            self._denominator = value.denominator
-            self._numerator = value.numerator
-            self._val = value._val
-            return
+        else:
+            self._numerator = value
+            self._denominator = denominator
 
         if denominator == 0:
             self._val = float("nan")
-            return
-
         elif denominator == 1:
             self._val = Fraction(value)
         else:
@@ -370,10 +351,10 @@ class IFDRational(Rational):
 
         return delegate
 
-    """ a = ['add','radd', 'sub', 'rsub','div', 'rdiv', 'mul', 'rmul',
-             'truediv', 'rtruediv', 'floordiv',
-             'rfloordiv','mod','rmod', 'pow','rpow', 'pos', 'neg',
-             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'nonzero',
+    """ a = ['add','radd', 'sub', 'rsub', 'mul', 'rmul',
+             'truediv', 'rtruediv', 'floordiv', 'rfloordiv',
+             'mod','rmod', 'pow','rpow', 'pos', 'neg',
+             'abs', 'trunc', 'lt', 'gt', 'le', 'ge', 'bool',
              'ceil', 'floor', 'round']
         print("\n".join("__%s__ = _delegate('__%s__')" % (s,s) for s in a))
         """
@@ -382,8 +363,6 @@ class IFDRational(Rational):
     __radd__ = _delegate("__radd__")
     __sub__ = _delegate("__sub__")
     __rsub__ = _delegate("__rsub__")
-    __div__ = _delegate("__div__")
-    __rdiv__ = _delegate("__rdiv__")
     __mul__ = _delegate("__mul__")
     __rmul__ = _delegate("__rmul__")
     __truediv__ = _delegate("__truediv__")
@@ -402,7 +381,7 @@ class IFDRational(Rational):
     __gt__ = _delegate("__gt__")
     __le__ = _delegate("__le__")
     __ge__ = _delegate("__ge__")
-    __nonzero__ = _delegate("__nonzero__")
+    __bool__ = _delegate("__bool__")
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
@@ -484,7 +463,7 @@ class ImageFileDirectory_v2(MutableMapping):
         else:
             raise SyntaxError("not a TIFF IFD")
         self.reset()
-        self.next, = self._unpack("L", ifh[4:])
+        (self.next,) = self._unpack("L", ifh[4:])
         self._legacy_api = False
 
     prefix = property(lambda self: self._prefix)
@@ -531,18 +510,11 @@ class ImageFileDirectory_v2(MutableMapping):
     def __contains__(self, tag):
         return tag in self._tags_v2 or tag in self._tagdata
 
-    if not py3:
-
-        def has_key(self, tag):
-            return tag in self
-
     def __setitem__(self, tag, value):
         self._setitem(tag, value, self.legacy_api)
 
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
-        if not py3:
-            basetypes += (unicode,)  # noqa: F821
 
         info = TiffTags.lookup(tag)
         values = [value] if isinstance(value, basetypes) else value
@@ -562,14 +534,10 @@ class ImageFileDirectory_v2(MutableMapping):
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
                 else:
-                    if py3:
-                        if all(isinstance(v, str) for v in values):
-                            self.tagtype[tag] = TiffTags.ASCII
-                    else:
-                        # Never treat data as binary by default on Python 2.
+                    if all(isinstance(v, str) for v in values):
                         self.tagtype[tag] = TiffTags.ASCII
 
-        if self.tagtype[tag] == TiffTags.UNDEFINED and py3:
+        if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
                 value.encode("ascii", "replace") if isinstance(value, str) else value
             ]
@@ -595,7 +563,7 @@ class ImageFileDirectory_v2(MutableMapping):
             ]:  # rationals
                 values = (values,)
             try:
-                dest[tag], = values
+                (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
@@ -689,8 +657,6 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        if sys.version_info.major == 2:
-            value = value.decode("ascii", "replace")
         return b"" + value.encode("ascii", "replace") + b"\0"
 
     @_register_loader(5, 8)
@@ -734,7 +700,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _ensure_read(self, fp, size):
         ret = fp.read(size)
         if len(ret) != size:
-            raise IOError(
+            raise OSError(
                 "Corrupt EXIF data.  "
                 + "Expecting to read %d bytes but only got %d. " % (size, len(ret))
             )
@@ -765,10 +731,10 @@ class ImageFileDirectory_v2(MutableMapping):
                 size = count * unit_size
                 if size > 4:
                     here = fp.tell()
-                    offset, = self._unpack("L", data)
+                    (offset,) = self._unpack("L", data)
                     if DEBUG:
                         print(
-                            "Tag Location: %s - Data Location: %s" % (here, offset),
+                            "Tag Location: {} - Data Location: {}".format(here, offset),
                             end=" ",
                         )
                     fp.seek(offset)
@@ -797,8 +763,8 @@ class ImageFileDirectory_v2(MutableMapping):
                     else:
                         print("- value:", self[tag])
 
-            self.next, = self._unpack("L", self._ensure_read(fp, 4))
-        except IOError as msg:
+            (self.next,) = self._unpack("L", self._ensure_read(fp, 4))
+        except OSError as msg:
             warnings.warn(str(msg))
             return
 
@@ -817,7 +783,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
             if DEBUG:
-                print("Tag %s, Type: %s, Value: %s" % (tag, typ, value))
+                print("Tag {}, Type: {}, Value: {}".format(tag, typ, value))
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
             if DEBUG:
@@ -854,7 +820,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            if DEBUG > 1:
+            if DEBUG:
                 print(tag, typ, count, repr(value), repr(data))
             result += self._pack("HHL4s", tag, typ, count, value)
 
@@ -911,7 +877,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     """
 
     def __init__(self, *args, **kwargs):
-        ImageFileDirectory_v2.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._legacy_api = True
 
     tags = property(lambda self: self._tags_v1)
@@ -1054,7 +1020,7 @@ class TiffImageFile(ImageFile.ImageFile):
                     "Seeking to frame %s, on frame %s, __next %s, location: %s"
                     % (frame, self.__frame, self.__next, self.fp.tell())
                 )
-            # reset python3 buffered io handle in case fp
+            # reset buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
             self.fp.tell()
             self.fp.seek(self.__next)
@@ -1079,23 +1045,10 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
-    @property
-    def size(self):
-        return self._size
-
-    @size.setter
-    def size(self, value):
-        warnings.warn(
-            "Setting the size of a TIFF image directly is deprecated, and will"
-            " be removed in a future version. Use the resize method instead.",
-            DeprecationWarning,
-        )
-        self._size = value
-
     def load(self):
         if self.use_load_libtiff:
             return self._load_libtiff()
-        return super(TiffImageFile, self).load()
+        return super().load()
 
     def load_end(self):
         if self._tile_orientation:
@@ -1124,14 +1077,14 @@ class TiffImageFile(ImageFile.ImageFile):
         pixel = Image.Image.load(self)
 
         if self.tile is None:
-            raise IOError("cannot load this image")
+            raise OSError("cannot load this image")
         if not self.tile:
             return pixel
 
         self.load_prepare()
 
         if not len(self.tile) == 1:
-            raise IOError("Not exactly one tile")
+            raise OSError("Not exactly one tile")
 
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
@@ -1145,11 +1098,11 @@ class TiffImageFile(ImageFile.ImageFile):
         try:
             fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
             # flush the file descriptor, prevents error on pypy 2.4+
-            # should also eliminate the need for fp.tell for py3
+            # should also eliminate the need for fp.tell
             # in _seek
             if hasattr(self.fp, "flush"):
                 self.fp.flush()
-        except IOError:
+        except OSError:
             # io.BytesIO have a fileno, but returns an IOError if
             # it doesn't use a file descriptor.
             fp = False
@@ -1163,7 +1116,7 @@ class TiffImageFile(ImageFile.ImageFile):
         try:
             decoder.setimage(self.im, extents)
         except ValueError:
-            raise IOError("Couldn't set the image")
+            raise OSError("Couldn't set the image")
 
         close_self_fp = self._exclusive_fp and not self._is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1206,7 +1159,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.fp = None  # might be shared
 
         if err < 0:
-            raise IOError(err)
+            raise OSError(err)
 
         return Image.Image.load(self)
 
@@ -1214,7 +1167,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
-            raise IOError("Windows Media Photo files not yet supported")
+            raise OSError("Windows Media Photo files not yet supported")
 
         # extract relevant tags
         self._compression = COMPRESSION_INFO[self.tag_v2.get(COMPRESSION, 1)]
@@ -1456,7 +1409,7 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as TIFF" % im.mode)
+        raise OSError("cannot write mode %s as TIFF" % im.mode)
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
@@ -1615,13 +1568,10 @@ def _save(im, fp, filename):
 
                 if tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
-                elif not (
-                    isinstance(value, (int, float, str, bytes))
-                    or (not py3 and isinstance(value, unicode))  # noqa: F821
-                ):
+                elif not (isinstance(value, (int, float, str, bytes))):
                     continue
             if tag not in atts and tag not in blocklist:
-                if isinstance(value, str if py3 else unicode):  # noqa: F821
+                if isinstance(value, str):
                     atts[tag] = value.encode("ascii", "replace") + b"\0"
                 elif isinstance(value, IFDRational):
                     atts[tag] = float(value)
@@ -1654,7 +1604,7 @@ def _save(im, fp, filename):
             if s:
                 break
         if s < 0:
-            raise IOError("encoder error %d when writing image file" % s)
+            raise OSError("encoder error %d when writing image file" % s)
 
     else:
         offset = ifd.save(fp)
@@ -1702,9 +1652,9 @@ class AppendingTiffWriter:
             self.name = fn
             self.close_fp = True
             try:
-                self.f = io.open(fn, "w+b" if new else "r+b")
-            except IOError:
-                self.f = io.open(fn, "w+b")
+                self.f = open(fn, "w+b" if new else "r+b")
+            except OSError:
+                self.f = open(fn, "w+b")
         self.beginning = self.f.tell()
         self.setup()
 
@@ -1785,7 +1735,7 @@ class AppendingTiffWriter:
         # pad to 16 byte boundary
         padBytes = 16 - pos % 16
         if 0 < padBytes < 16:
-            self.f.write(bytes(bytearray(padBytes)))
+            self.f.write(bytes(padBytes))
         self.offsetOfNewPage = self.f.tell()
 
     def setEndian(self, endian):
@@ -1809,11 +1759,11 @@ class AppendingTiffWriter:
         return self.f.write(data)
 
     def readShort(self):
-        value, = struct.unpack(self.shortFmt, self.f.read(2))
+        (value,) = struct.unpack(self.shortFmt, self.f.read(2))
         return value
 
     def readLong(self):
-        value, = struct.unpack(self.longFmt, self.f.read(4))
+        (value,) = struct.unpack(self.longFmt, self.f.read(4))
         return value
 
     def rewriteLastShortToLong(self, value):

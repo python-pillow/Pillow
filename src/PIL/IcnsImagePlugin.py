@@ -19,6 +19,7 @@ import io
 import os
 import shutil
 import struct
+import subprocess
 import sys
 import tempfile
 
@@ -128,7 +129,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         raise ValueError("Unsupported icon subimage format")
 
 
-class IcnsFile(object):
+class IcnsFile:
 
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],
@@ -313,41 +314,40 @@ def _save(im, fp, filename):
         fp.flush()
 
     # create the temporary set of pngs
-    iconset = tempfile.mkdtemp(".iconset")
-    provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
-    last_w = None
-    second_path = None
-    for w in [16, 32, 128, 256, 512]:
-        prefix = "icon_{}x{}".format(w, w)
+    with tempfile.TemporaryDirectory(".iconset") as iconset:
+        provided_images = {
+            im.width: im for im in im.encoderinfo.get("append_images", [])
+        }
+        last_w = None
+        second_path = None
+        for w in [16, 32, 128, 256, 512]:
+            prefix = "icon_{}x{}".format(w, w)
 
-        first_path = os.path.join(iconset, prefix + ".png")
-        if last_w == w:
-            shutil.copyfile(second_path, first_path)
-        else:
-            im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
-            im_w.save(first_path)
+            first_path = os.path.join(iconset, prefix + ".png")
+            if last_w == w:
+                shutil.copyfile(second_path, first_path)
+            else:
+                im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
+                im_w.save(first_path)
 
-        second_path = os.path.join(iconset, prefix + "@2x.png")
-        im_w2 = provided_images.get(w * 2, im.resize((w * 2, w * 2), Image.LANCZOS))
-        im_w2.save(second_path)
-        last_w = w * 2
+            second_path = os.path.join(iconset, prefix + "@2x.png")
+            im_w2 = provided_images.get(w * 2, im.resize((w * 2, w * 2), Image.LANCZOS))
+            im_w2.save(second_path)
+            last_w = w * 2
 
-    # iconutil -c icns -o {} {}
-    from subprocess import Popen, PIPE, CalledProcessError
+        # iconutil -c icns -o {} {}
 
-    convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-    with open(os.devnull, "wb") as devnull:
-        convert_proc = Popen(convert_cmd, stdout=PIPE, stderr=devnull)
+        convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
+        convert_proc = subprocess.Popen(
+            convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        )
 
-    convert_proc.stdout.close()
+        convert_proc.stdout.close()
 
-    retcode = convert_proc.wait()
+        retcode = convert_proc.wait()
 
-    # remove the temporary files
-    shutil.rmtree(iconset)
-
-    if retcode:
-        raise CalledProcessError(retcode, convert_cmd)
+        if retcode:
+            raise subprocess.CalledProcessError(retcode, convert_cmd)
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")

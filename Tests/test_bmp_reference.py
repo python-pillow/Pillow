@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 
 from PIL import Image
@@ -24,8 +22,8 @@ class TestBmpReference(PillowTestCase):
 
             def open(f):
                 try:
-                    im = Image.open(f)
-                    im.load()
+                    with Image.open(f) as im:
+                        im.load()
                 except Exception:  # as msg:
                     pass
 
@@ -48,8 +46,8 @@ class TestBmpReference(PillowTestCase):
         ]
         for f in self.get_files("q"):
             try:
-                im = Image.open(f)
-                im.load()
+                with Image.open(f) as im:
+                    im.load()
                 if os.path.basename(f) not in supported:
                     print("Please add %s to the partially supported bmp specs." % f)
             except Exception:  # as msg:
@@ -89,17 +87,17 @@ class TestBmpReference(PillowTestCase):
 
         for f in self.get_files("g"):
             try:
-                im = Image.open(f)
-                im.load()
-                compare = Image.open(get_compare(f))
-                compare.load()
-                if im.mode == "P":
-                    # assert image similar doesn't really work
-                    # with paletized image, since the palette might
-                    # be differently ordered for an equivalent image.
-                    im = im.convert("RGBA")
-                    compare = im.convert("RGBA")
-                self.assert_image_similar(im, compare, 5)
+                with Image.open(f) as im:
+                    im.load()
+                    with Image.open(get_compare(f)) as compare:
+                        compare.load()
+                        if im.mode == "P":
+                            # assert image similar doesn't really work
+                            # with paletized image, since the palette might
+                            # be differently ordered for an equivalent image.
+                            im = im.convert("RGBA")
+                            compare = im.convert("RGBA")
+                        self.assert_image_similar(im, compare, 5)
 
             except Exception as msg:
                 # there are three here that are unsupported:
@@ -109,4 +107,4 @@ class TestBmpReference(PillowTestCase):
                     os.path.join(base, "g", "pal4rle.bmp"),
                 )
                 if f not in unsupported:
-                    self.fail("Unsupported Image %s: %s" % (f, msg))
+                    self.fail("Unsupported Image {}: {}".format(f, msg))

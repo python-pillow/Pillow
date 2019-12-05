@@ -1,19 +1,15 @@
 #!/bin/bash
 # install extra test images
 
-rm -rf test_images
-
 # Use SVN to just fetch a single Git subdirectory
-svn_checkout()
+svn_export()
 {
 	if [ ! -z $1 ]; then
 		echo ""
-		echo "Retrying svn checkout..."
+		echo "Retrying svn export..."
 		echo ""
 	fi
 
-	svn checkout https://github.com/python-pillow/pillow-depends/trunk/test_images
+	svn export --force https://github.com/python-pillow/pillow-depends/trunk/test_images ../Tests/images
 }
-svn_checkout || svn_checkout retry || svn_checkout retry || svn_checkout retry
-
-cp -r test_images/* ../Tests/images
+svn_export || svn_export retry || svn_export retry || svn_export retry

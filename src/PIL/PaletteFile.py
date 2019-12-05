@@ -19,7 +19,7 @@ from ._binary import o8
 # File handler for Teragon-style palette files.
 
 
-class PaletteFile(object):
+class PaletteFile:
 
     rawmode = "RGB"
 

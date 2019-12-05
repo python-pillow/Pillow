@@ -1,10 +1,16 @@
 import os
-import sys
 from io import BytesIO
 
 from PIL import Image, ImageFile, JpegImagePlugin
 
-from .helper import PillowTestCase, cjpeg_available, djpeg_available, hopper, unittest
+from .helper import (
+    PillowTestCase,
+    cjpeg_available,
+    djpeg_available,
+    hopper,
+    is_win32,
+    unittest,
+)
 
 codecs = dir(Image.core)
 
@@ -38,52 +44,56 @@ class TestFileJpeg(PillowTestCase):
         # internal version number
         self.assertRegex(Image.core.jpeglib_version, r"\d+\.\d+$")
 
-        im = Image.open(TEST_FILE)
-        im.load()
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "JPEG")
-        self.assertEqual(im.get_format_mimetype(), "image/jpeg")
+        with Image.open(TEST_FILE) as im:
+            im.load()
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.format, "JPEG")
+            self.assertEqual(im.get_format_mimetype(), "image/jpeg")
 
     def test_app(self):
         # Test APP/COM reader (@PIL135)
-        im = Image.open(TEST_FILE)
-        self.assertEqual(
-            im.applist[0], ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
-        )
-        self.assertEqual(
-            im.applist[1], ("COM", b"File written by Adobe Photoshop\xa8 4.0\x00")
-        )
-        self.assertEqual(len(im.applist), 2)
+        with Image.open(TEST_FILE) as im:
+            self.assertEqual(
+                im.applist[0], ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
+            )
+            self.assertEqual(
+                im.applist[1], ("COM", b"File written by Adobe Photoshop\xa8 4.0\x00")
+            )
+            self.assertEqual(len(im.applist), 2)
 
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
         f = "Tests/images/pil_sample_cmyk.jpg"
-        im = Image.open(f)
-        # the source image has red pixels in the upper left corner.
-        c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
-        self.assertEqual(c, 0.0)
-        self.assertGreater(m, 0.8)
-        self.assertGreater(y, 0.8)
-        self.assertEqual(k, 0.0)
-        # the opposite corner is black
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))]
-        self.assertGreater(k, 0.9)
-        # roundtrip, and check again
-        im = self.roundtrip(im)
-        c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
-        self.assertEqual(c, 0.0)
-        self.assertGreater(m, 0.8)
-        self.assertGreater(y, 0.8)
-        self.assertEqual(k, 0.0)
-        c, m, y, k = [x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))]
-        self.assertGreater(k, 0.9)
+        with Image.open(f) as im:
+            # the source image has red pixels in the upper left corner.
+            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            self.assertEqual(c, 0.0)
+            self.assertGreater(m, 0.8)
+            self.assertGreater(y, 0.8)
+            self.assertEqual(k, 0.0)
+            # the opposite corner is black
+            c, m, y, k = [
+                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            ]
+            self.assertGreater(k, 0.9)
+            # roundtrip, and check again
+            im = self.roundtrip(im)
+            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            self.assertEqual(c, 0.0)
+            self.assertGreater(m, 0.8)
+            self.assertGreater(y, 0.8)
+            self.assertEqual(k, 0.0)
+            c, m, y, k = [
+                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            ]
+            self.assertGreater(k, 0.9)
 
     def test_dpi(self):
         def test(xdpi, ydpi=None):
-            im = Image.open(TEST_FILE)
-            im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
+            with Image.open(TEST_FILE) as im:
+                im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
 
         self.assertEqual(test(72), (72, 72))
@@ -93,20 +103,20 @@ class TestFileJpeg(PillowTestCase):
 
     def test_icc(self):
         # Test ICC support
-        im1 = Image.open("Tests/images/rgb.jpg")
-        icc_profile = im1.info["icc_profile"]
-        self.assertEqual(len(icc_profile), 3144)
-        # Roundtrip via physical file.
-        f = self.tempfile("temp.jpg")
-        im1.save(f, icc_profile=icc_profile)
-        im2 = Image.open(f)
-        self.assertEqual(im2.info.get("icc_profile"), icc_profile)
-        # Roundtrip via memory buffer.
-        im1 = self.roundtrip(hopper())
-        im2 = self.roundtrip(hopper(), icc_profile=icc_profile)
-        self.assert_image_equal(im1, im2)
-        self.assertFalse(im1.info.get("icc_profile"))
-        self.assertTrue(im2.info.get("icc_profile"))
+        with Image.open("Tests/images/rgb.jpg") as im1:
+            icc_profile = im1.info["icc_profile"]
+            self.assertEqual(len(icc_profile), 3144)
+            # Roundtrip via physical file.
+            f = self.tempfile("temp.jpg")
+            im1.save(f, icc_profile=icc_profile)
+        with Image.open(f) as im2:
+            self.assertEqual(im2.info.get("icc_profile"), icc_profile)
+            # Roundtrip via memory buffer.
+            im1 = self.roundtrip(hopper())
+            im2 = self.roundtrip(hopper(), icc_profile=icc_profile)
+            self.assert_image_equal(im1, im2)
+            self.assertFalse(im1.info.get("icc_profile"))
+            self.assertTrue(im2.info.get("icc_profile"))
 
     def test_icc_big(self):
         # Make sure that the "extra" support handles large blocks
@@ -134,18 +144,18 @@ class TestFileJpeg(PillowTestCase):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
-        im = Image.open("Tests/images/icc_profile_big.jpg")
-        f = self.tempfile("temp.jpg")
-        icc_profile = im.info["icc_profile"]
-        # Should not raise IOError for image with icc larger than image size.
-        im.save(
-            f,
-            format="JPEG",
-            progressive=True,
-            quality=95,
-            icc_profile=icc_profile,
-            optimize=True,
-        )
+        with Image.open("Tests/images/icc_profile_big.jpg") as im:
+            f = self.tempfile("temp.jpg")
+            icc_profile = im.info["icc_profile"]
+            # Should not raise IOError for image with icc larger than image size.
+            im.save(
+                f,
+                format="JPEG",
+                progressive=True,
+                quality=95,
+                icc_profile=icc_profile,
+                optimize=True,
+            )
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -199,24 +209,24 @@ class TestFileJpeg(PillowTestCase):
         im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
 
     def test_exif_typeerror(self):
-        im = Image.open("Tests/images/exif_typeerror.jpg")
-        # Should not raise a TypeError
-        im._getexif()
+        with Image.open("Tests/images/exif_typeerror.jpg") as im:
+            # Should not raise a TypeError
+            im._getexif()
 
     def test_exif_gps(self):
         # Arrange
-        im = Image.open("Tests/images/exif_gps.jpg")
-        gps_index = 34853
-        expected_exif_gps = {
-            0: b"\x00\x00\x00\x01",
-            2: (4294967295, 1),
-            5: b"\x01",
-            30: 65535,
-            29: "1999:99:99 99:99:99",
-        }
+        with Image.open("Tests/images/exif_gps.jpg") as im:
+            gps_index = 34853
+            expected_exif_gps = {
+                0: b"\x00\x00\x00\x01",
+                2: (4294967295, 1),
+                5: b"\x01",
+                30: 65535,
+                29: "1999:99:99 99:99:99",
+            }
 
-        # Act
-        exif = im._getexif()
+            # Act
+            exif = im._getexif()
 
         # Assert
         self.assertEqual(exif[gps_index], expected_exif_gps)
@@ -250,17 +260,17 @@ class TestFileJpeg(PillowTestCase):
             33434: (4294967295, 1),
         }
 
-        im = Image.open("Tests/images/exif_gps.jpg")
-        exif = im._getexif()
+        with Image.open("Tests/images/exif_gps.jpg") as im:
+            exif = im._getexif()
 
         for tag, value in expected_exif.items():
             self.assertEqual(value, exif[tag])
 
     def test_exif_gps_typeerror(self):
-        im = Image.open("Tests/images/exif_gps_typeerror.jpg")
+        with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
 
-        # Should not raise a TypeError
-        im._getexif()
+            # Should not raise a TypeError
+            im._getexif()
 
     def test_progressive_compat(self):
         im1 = self.roundtrip(hopper())
@@ -323,172 +333,172 @@ class TestFileJpeg(PillowTestCase):
         self.assertRaises(TypeError, self.roundtrip, hopper(), subsampling="1:1:1")
 
     def test_exif(self):
-        im = Image.open("Tests/images/pil_sample_rgb.jpg")
-        info = im._getexif()
-        self.assertEqual(info[305], "Adobe Photoshop CS Macintosh")
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            info = im._getexif()
+            self.assertEqual(info[305], "Adobe Photoshop CS Macintosh")
 
     def test_mp(self):
-        im = Image.open("Tests/images/pil_sample_rgb.jpg")
-        self.assertIsNone(im._getmp())
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            self.assertIsNone(im._getmp())
 
     def test_quality_keep(self):
         # RGB
-        im = Image.open("Tests/images/hopper.jpg")
-        f = self.tempfile("temp.jpg")
-        im.save(f, quality="keep")
+        with Image.open("Tests/images/hopper.jpg") as im:
+            f = self.tempfile("temp.jpg")
+            im.save(f, quality="keep")
         # Grayscale
-        im = Image.open("Tests/images/hopper_gray.jpg")
-        f = self.tempfile("temp.jpg")
-        im.save(f, quality="keep")
+        with Image.open("Tests/images/hopper_gray.jpg") as im:
+            f = self.tempfile("temp.jpg")
+            im.save(f, quality="keep")
         # CMYK
-        im = Image.open("Tests/images/pil_sample_cmyk.jpg")
-        f = self.tempfile("temp.jpg")
-        im.save(f, quality="keep")
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            f = self.tempfile("temp.jpg")
+            im.save(f, quality="keep")
 
     def test_junk_jpeg_header(self):
         # https://github.com/python-pillow/Pillow/issues/630
         filename = "Tests/images/junk_jpeg_header.jpg"
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
     def test_ff00_jpeg_header(self):
         filename = "Tests/images/jpeg_ff00_header.jpg"
-        Image.open(filename)
+        with Image.open(filename):
+            pass
 
     def test_truncated_jpeg_should_read_all_the_data(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         ImageFile.LOAD_TRUNCATED_IMAGES = True
-        im = Image.open(filename)
-        im.load()
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
-        self.assertIsNotNone(im.getbbox())
+        with Image.open(filename) as im:
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+            self.assertIsNotNone(im.getbbox())
 
     def test_truncated_jpeg_throws_IOError(self):
         filename = "Tests/images/truncated_jpeg.jpg"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
+            with self.assertRaises(IOError):
+                im.load()
 
-        with self.assertRaises(IOError):
-            im.load()
-
-        # Test that the error is raised if loaded a second time
-        with self.assertRaises(IOError):
-            im.load()
+            # Test that the error is raised if loaded a second time
+            with self.assertRaises(IOError):
+                im.load()
 
     def _n_qtables_helper(self, n, test_file):
-        im = Image.open(test_file)
-        f = self.tempfile("temp.jpg")
-        im.save(f, qtables=[[n] * 64] * n)
-        im = Image.open(f)
-        self.assertEqual(len(im.quantization), n)
-        reloaded = self.roundtrip(im, qtables="keep")
-        self.assertEqual(im.quantization, reloaded.quantization)
+        with Image.open(test_file) as im:
+            f = self.tempfile("temp.jpg")
+            im.save(f, qtables=[[n] * 64] * n)
+        with Image.open(f) as im:
+            self.assertEqual(len(im.quantization), n)
+            reloaded = self.roundtrip(im, qtables="keep")
+            self.assertEqual(im.quantization, reloaded.quantization)
 
     def test_qtables(self):
-        im = Image.open("Tests/images/hopper.jpg")
-        qtables = im.quantization
-        reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
-        self.assertEqual(im.quantization, reloaded.quantization)
-        self.assert_image_similar(im, self.roundtrip(im, qtables="web_low"), 30)
-        self.assert_image_similar(im, self.roundtrip(im, qtables="web_high"), 30)
-        self.assert_image_similar(im, self.roundtrip(im, qtables="keep"), 30)
+        with Image.open("Tests/images/hopper.jpg") as im:
+            qtables = im.quantization
+            reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
+            self.assertEqual(im.quantization, reloaded.quantization)
+            self.assert_image_similar(im, self.roundtrip(im, qtables="web_low"), 30)
+            self.assert_image_similar(im, self.roundtrip(im, qtables="web_high"), 30)
+            self.assert_image_similar(im, self.roundtrip(im, qtables="keep"), 30)
 
-        # valid bounds for baseline qtable
-        bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
-        self.roundtrip(im, qtables=[bounds_qtable])
+            # valid bounds for baseline qtable
+            bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
+            self.roundtrip(im, qtables=[bounds_qtable])
 
-        # values from wizard.txt in jpeg9-a src package.
-        standard_l_qtable = [
-            int(s)
-            for s in """
-            16  11  10  16  24  40  51  61
-            12  12  14  19  26  58  60  55
-            14  13  16  24  40  57  69  56
-            14  17  22  29  51  87  80  62
-            18  22  37  56  68 109 103  77
-            24  35  55  64  81 104 113  92
-            49  64  78  87 103 121 120 101
-            72  92  95  98 112 100 103  99
-            """.split(
-                None
+            # values from wizard.txt in jpeg9-a src package.
+            standard_l_qtable = [
+                int(s)
+                for s in """
+                16  11  10  16  24  40  51  61
+                12  12  14  19  26  58  60  55
+                14  13  16  24  40  57  69  56
+                14  17  22  29  51  87  80  62
+                18  22  37  56  68 109 103  77
+                24  35  55  64  81 104 113  92
+                49  64  78  87 103 121 120 101
+                72  92  95  98 112 100 103  99
+                """.split(
+                    None
+                )
+            ]
+
+            standard_chrominance_qtable = [
+                int(s)
+                for s in """
+                17  18  24  47  99  99  99  99
+                18  21  26  66  99  99  99  99
+                24  26  56  99  99  99  99  99
+                47  66  99  99  99  99  99  99
+                99  99  99  99  99  99  99  99
+                99  99  99  99  99  99  99  99
+                99  99  99  99  99  99  99  99
+                99  99  99  99  99  99  99  99
+                """.split(
+                    None
+                )
+            ]
+            # list of qtable lists
+            self.assert_image_similar(
+                im,
+                self.roundtrip(
+                    im, qtables=[standard_l_qtable, standard_chrominance_qtable]
+                ),
+                30,
             )
-        ]
 
-        standard_chrominance_qtable = [
-            int(s)
-            for s in """
-            17  18  24  47  99  99  99  99
-            18  21  26  66  99  99  99  99
-            24  26  56  99  99  99  99  99
-            47  66  99  99  99  99  99  99
-            99  99  99  99  99  99  99  99
-            99  99  99  99  99  99  99  99
-            99  99  99  99  99  99  99  99
-            99  99  99  99  99  99  99  99
-            """.split(
-                None
+            # tuple of qtable lists
+            self.assert_image_similar(
+                im,
+                self.roundtrip(
+                    im, qtables=(standard_l_qtable, standard_chrominance_qtable)
+                ),
+                30,
             )
-        ]
-        # list of qtable lists
-        self.assert_image_similar(
-            im,
-            self.roundtrip(
-                im, qtables=[standard_l_qtable, standard_chrominance_qtable]
-            ),
-            30,
-        )
 
-        # tuple of qtable lists
-        self.assert_image_similar(
-            im,
-            self.roundtrip(
-                im, qtables=(standard_l_qtable, standard_chrominance_qtable)
-            ),
-            30,
-        )
+            # dict of qtable lists
+            self.assert_image_similar(
+                im,
+                self.roundtrip(
+                    im, qtables={0: standard_l_qtable, 1: standard_chrominance_qtable}
+                ),
+                30,
+            )
 
-        # dict of qtable lists
-        self.assert_image_similar(
-            im,
-            self.roundtrip(
-                im, qtables={0: standard_l_qtable, 1: standard_chrominance_qtable}
-            ),
-            30,
-        )
+            self._n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
+            self._n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
+            self._n_qtables_helper(2, "Tests/images/pil_sample_rgb.jpg")
+            self._n_qtables_helper(3, "Tests/images/pil_sample_rgb.jpg")
+            self._n_qtables_helper(1, "Tests/images/pil_sample_cmyk.jpg")
+            self._n_qtables_helper(2, "Tests/images/pil_sample_cmyk.jpg")
+            self._n_qtables_helper(3, "Tests/images/pil_sample_cmyk.jpg")
+            self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
-        self._n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
-        self._n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
-        self._n_qtables_helper(2, "Tests/images/pil_sample_rgb.jpg")
-        self._n_qtables_helper(3, "Tests/images/pil_sample_rgb.jpg")
-        self._n_qtables_helper(1, "Tests/images/pil_sample_cmyk.jpg")
-        self._n_qtables_helper(2, "Tests/images/pil_sample_cmyk.jpg")
-        self._n_qtables_helper(3, "Tests/images/pil_sample_cmyk.jpg")
-        self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
+            # not a sequence
+            self.assertRaises(ValueError, self.roundtrip, im, qtables="a")
+            # sequence wrong length
+            self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
+            # sequence wrong length
+            self.assertRaises(ValueError, self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
 
-        # not a sequence
-        self.assertRaises(ValueError, self.roundtrip, im, qtables="a")
-        # sequence wrong length
-        self.assertRaises(ValueError, self.roundtrip, im, qtables=[])
-        # sequence wrong length
-        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1, 2, 3, 4, 5])
-
-        # qtable entry not a sequence
-        self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
-        # qtable entry has wrong number of items
-        self.assertRaises(ValueError, self.roundtrip, im, qtables=[[1, 2, 3, 4]])
+            # qtable entry not a sequence
+            self.assertRaises(ValueError, self.roundtrip, im, qtables=[1])
+            # qtable entry has wrong number of items
+            self.assertRaises(ValueError, self.roundtrip, im, qtables=[[1, 2, 3, 4]])
 
     @unittest.skipUnless(djpeg_available(), "djpeg not available")
     def test_load_djpeg(self):
-        img = Image.open(TEST_FILE)
-        img.load_djpeg()
-        self.assert_image_similar(img, Image.open(TEST_FILE), 0)
+        with Image.open(TEST_FILE) as img:
+            img.load_djpeg()
+            self.assert_image_similar(img, Image.open(TEST_FILE), 0)
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg(self):
-        img = Image.open(TEST_FILE)
-
-        tempfile = self.tempfile("temp.jpg")
-        JpegImagePlugin._save_cjpeg(img, 0, tempfile)
-        # Default save quality is 75%, so a tiny bit of difference is alright
-        self.assert_image_similar(img, Image.open(tempfile), 17)
+        with Image.open(TEST_FILE) as img:
+            tempfile = self.tempfile("temp.jpg")
+            JpegImagePlugin._save_cjpeg(img, 0, tempfile)
+            # Default save quality is 75%, so a tiny bit of difference is alright
+            self.assert_image_similar(img, Image.open(tempfile), 17)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
@@ -505,12 +515,11 @@ class TestFileJpeg(PillowTestCase):
         f = self.tempfile("temp.jpeg")
         im.save(f, quality=100, optimize=True)
 
-        reloaded = Image.open(f)
-
-        # none of these should crash
-        reloaded.save(f, quality="keep")
-        reloaded.save(f, quality="keep", progressive=True)
-        reloaded.save(f, quality="keep", optimize=True)
+        with Image.open(f) as reloaded:
+            # none of these should crash
+            reloaded.save(f, quality="keep")
+            reloaded.save(f, quality="keep", progressive=True)
+            reloaded.save(f, quality="keep", optimize=True)
 
     def test_bad_mpo_header(self):
         """ Treat unknown MPO as JPEG """
@@ -519,10 +528,10 @@ class TestFileJpeg(PillowTestCase):
         # Act
         # Shouldn't raise error
         fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        im = self.assert_warning(UserWarning, Image.open, fn)
+        with self.assert_warning(UserWarning, Image.open, fn) as im:
 
-        # Assert
-        self.assertEqual(im.format, "JPEG")
+            # Assert
+            self.assertEqual(im.format, "JPEG")
 
     def test_save_correct_modes(self):
         out = BytesIO()
@@ -540,121 +549,127 @@ class TestFileJpeg(PillowTestCase):
     def test_save_tiff_with_dpi(self):
         # Arrange
         outfile = self.tempfile("temp.tif")
-        im = Image.open("Tests/images/hopper.tif")
+        with Image.open("Tests/images/hopper.tif") as im:
 
-        # Act
-        im.save(outfile, "JPEG", dpi=im.info["dpi"])
+            # Act
+            im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
-        # Assert
-        reloaded = Image.open(outfile)
-        reloaded.load()
-        self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
+            # Assert
+            with Image.open(outfile) as reloaded:
+                reloaded.load()
+                self.assertEqual(im.info["dpi"], reloaded.info["dpi"])
 
     def test_load_dpi_rounding(self):
         # Round up
-        im = Image.open("Tests/images/iptc_roundUp.jpg")
-        self.assertEqual(im.info["dpi"], (44, 44))
+        with Image.open("Tests/images/iptc_roundUp.jpg") as im:
+            self.assertEqual(im.info["dpi"], (44, 44))
 
         # Round down
-        im = Image.open("Tests/images/iptc_roundDown.jpg")
-        self.assertEqual(im.info["dpi"], (2, 2))
+        with Image.open("Tests/images/iptc_roundDown.jpg") as im:
+            self.assertEqual(im.info["dpi"], (2, 2))
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.jpg")
-        im = Image.open("Tests/images/hopper.jpg")
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.save(outfile, dpi=(72.2, 72.2))
 
-        im.save(outfile, dpi=(72.2, 72.2))
-        reloaded = Image.open(outfile)
-        self.assertEqual(reloaded.info["dpi"], (72, 72))
+            with Image.open(outfile) as reloaded:
+                self.assertEqual(reloaded.info["dpi"], (72, 72))
 
-        im.save(outfile, dpi=(72.8, 72.8))
-        reloaded = Image.open(outfile)
-        self.assertEqual(reloaded.info["dpi"], (73, 73))
+            im.save(outfile, dpi=(72.8, 72.8))
+
+        with Image.open(outfile) as reloaded:
+            self.assertEqual(reloaded.info["dpi"], (73, 73))
 
     def test_dpi_tuple_from_exif(self):
         # Arrange
         # This Photoshop CC 2017 image has DPI in EXIF not metadata
         # EXIF XResolution is (2000000, 10000)
-        im = Image.open("Tests/images/photoshop-200dpi.jpg")
+        with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
 
-        # Act / Assert
-        self.assertEqual(im.info.get("dpi"), (200, 200))
+            # Act / Assert
+            self.assertEqual(im.info.get("dpi"), (200, 200))
 
     def test_dpi_int_from_exif(self):
         # Arrange
         # This image has DPI in EXIF not metadata
         # EXIF XResolution is 72
-        im = Image.open("Tests/images/exif-72dpi-int.jpg")
+        with Image.open("Tests/images/exif-72dpi-int.jpg") as im:
 
-        # Act / Assert
-        self.assertEqual(im.info.get("dpi"), (72, 72))
+            # Act / Assert
+            self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_dpi_from_dpcm_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with EXIF resolution unit set to cm:
         # exiftool -exif:ResolutionUnit=cm photoshop-200dpi.jpg
-        im = Image.open("Tests/images/exif-200dpcm.jpg")
+        with Image.open("Tests/images/exif-200dpcm.jpg") as im:
 
-        # Act / Assert
-        self.assertEqual(im.info.get("dpi"), (508, 508))
+            # Act / Assert
+            self.assertEqual(im.info.get("dpi"), (508, 508))
 
     def test_dpi_exif_zero_division(self):
         # Arrange
         # This is photoshop-200dpi.jpg with EXIF resolution set to 0/0:
         # exiftool -XResolution=0/0 -YResolution=0/0 photoshop-200dpi.jpg
-        im = Image.open("Tests/images/exif-dpi-zerodivision.jpg")
+        with Image.open("Tests/images/exif-dpi-zerodivision.jpg") as im:
 
-        # Act / Assert
-        # This should return the default, and not raise a ZeroDivisionError
-        self.assertEqual(im.info.get("dpi"), (72, 72))
+            # Act / Assert
+            # This should return the default, and not raise a ZeroDivisionError
+            self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_no_dpi_in_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
         # exiftool "-*resolution*"= photoshop-200dpi.jpg
-        im = Image.open("Tests/images/no-dpi-in-exif.jpg")
+        with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:
 
-        # Act / Assert
-        # "When the image resolution is unknown, 72 [dpi] is designated."
-        # http://www.exiv2.org/tags.html
-        self.assertEqual(im.info.get("dpi"), (72, 72))
+            # Act / Assert
+            # "When the image resolution is unknown, 72 [dpi] is designated."
+            # http://www.exiv2.org/tags.html
+            self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_invalid_exif(self):
         # This is no-dpi-in-exif with the tiff header of the exif block
         # hexedited from MM * to FF FF FF FF
-        im = Image.open("Tests/images/invalid-exif.jpg")
+        with Image.open("Tests/images/invalid-exif.jpg") as im:
 
-        # This should return the default, and not a SyntaxError or
-        # OSError for unidentified image.
-        self.assertEqual(im.info.get("dpi"), (72, 72))
+            # This should return the default, and not a SyntaxError or
+            # OSError for unidentified image.
+            self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_ifd_offset_exif(self):
         # Arrange
         # This image has been manually hexedited to have an IFD offset of 10,
         # in contrast to normal 8
-        im = Image.open("Tests/images/exif-ifd-offset.jpg")
+        with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
 
-        # Act / Assert
-        self.assertEqual(im._getexif()[306], "2017:03:13 23:03:09")
+            # Act / Assert
+            self.assertEqual(im._getexif()[306], "2017:03:13 23:03:09")
 
     def test_photoshop(self):
-        im = Image.open("Tests/images/photoshop-200dpi.jpg")
-        self.assertEqual(
-            im.info["photoshop"][0x03ED],
-            {
-                "XResolution": 200.0,
-                "DisplayedUnitsX": 1,
-                "YResolution": 200.0,
-                "DisplayedUnitsY": 1,
-            },
-        )
+        with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
+            self.assertEqual(
+                im.info["photoshop"][0x03ED],
+                {
+                    "XResolution": 200.0,
+                    "DisplayedUnitsX": 1,
+                    "YResolution": 200.0,
+                    "DisplayedUnitsY": 1,
+                },
+            )
+
+            # Test that the image can still load, even with broken Photoshop data
+            # This image had the APP13 length hexedited to be smaller
+            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
+                self.assert_image_equal(im_broken, im)
 
         # This image does not contain a Photoshop header string
-        im = Image.open("Tests/images/app13.jpg")
-        self.assertNotIn("photoshop", im.info)
+        with Image.open("Tests/images/app13.jpg") as im:
+            self.assertNotIn("photoshop", im.info)
 
 
-@unittest.skipUnless(sys.platform.startswith("win32"), "Windows only")
+@unittest.skipUnless(is_win32(), "Windows only")
 class TestFileCloseW32(PillowTestCase):
     def setUp(self):
         if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:

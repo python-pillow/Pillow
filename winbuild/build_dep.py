@@ -45,9 +45,7 @@ def extract(src, dest):
 
 def extract_libs():
     for name, lib in libs.items():
-        filename = lib["filename"]
-        if not os.path.exists(filename):
-            filename = fetch(lib["url"])
+        filename = fetch(lib["url"])
         if name == "openjpeg":
             for compiler in all_compilers():
                 if not os.path.exists(
@@ -103,7 +101,7 @@ set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 """ + "\n".join(
-        r"set %s=%%BUILD%%\%s" % (k.upper(), v["dir"])
+        r"set {}=%BUILD%\{}".format(k.upper(), v["dir"])
         for (k, v) in libs.items()
         if v["dir"]
     )
@@ -202,7 +200,7 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 rem do after building jpeg and zlib
-copy %%~dp0\nmake.opt %%TIFF%%
+copy %%~dp0\tiff.opt %%TIFF%%\nmake.opt
 
 cd /D %%TIFF%%
 nmake -nologo -f makefile.vc clean
@@ -270,6 +268,7 @@ def build_lcms_70(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.7%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
@@ -287,8 +286,10 @@ def build_lcms_71(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.8%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
+powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreadedDLL', 'MultiThreaded' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
@@ -297,33 +298,6 @@ endlocal
 """  # noqa: E501
         % compiler
     )
-
-
-def build_ghostscript(compiler, bit):
-    script = (
-        r"""
-rem Build gs
-setlocal
-"""
-        + vc_setup(compiler, bit)
-        + r"""
-set MSVC_VERSION="""
-        + {"2010": "90", "2015": "14"}[compiler["vc_version"]]
-        + r"""
-set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
-cd /D %%GHOSTSCRIPT%%
-"""
-    )
-    if bit == 64:
-        script += r"""
-set WIN64=""
-"""
-    script += r"""
-nmake -nologo -f psi/msvc.mak
-copy /Y /B bin\ C:\Python27\
-endlocal
-"""
-    return script % compiler
 
 
 def add_compiler(compiler, bit):
@@ -335,7 +309,6 @@ def add_compiler(compiler, bit):
     script.append(msbuild_freetype(compiler, bit))
     script.append(build_lcms2(compiler))
     script.append(nmake_openjpeg(compiler, bit))
-    script.append(build_ghostscript(compiler, bit))
     script.append(end_compiler())
 
 

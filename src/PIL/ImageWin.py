@@ -20,7 +20,7 @@
 from . import Image
 
 
-class HDC(object):
+class HDC:
     """
     Wraps an HDC integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
@@ -34,7 +34,7 @@ class HDC(object):
         return self.dc
 
 
-class HWND(object):
+class HWND:
     """
     Wraps an HWND integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
@@ -48,7 +48,7 @@ class HWND(object):
         return self.wnd
 
 
-class Dib(object):
+class Dib:
     """
     A Windows bitmap with the given mode and size.  The mode can be one of "1",
     "L", "P", or "RGB".
@@ -186,7 +186,7 @@ class Dib(object):
         return self.image.tobytes()
 
 
-class Window(object):
+class Window:
     """Create a Window with the given title size."""
 
     def __init__(self, title="PIL", width=None, height=None):
@@ -224,7 +224,7 @@ class ImageWindow(Window):
             image = Dib(image)
         self.image = image
         width, height = image.size
-        Window.__init__(self, title, width=width, height=height)
+        super().__init__(title, width=width, height=height)
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
         self.image.draw(dc, (x0, y0, x1, y1))

@@ -16,10 +16,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.4"
-
 import io
 
 from . import Image, ImageFile, ImagePalette
@@ -75,7 +71,7 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise IOError("not enough channels")
+            raise OSError("not enough channels")
 
         self.mode = mode
         self._size = i32(s[18:]), i32(s[14:])

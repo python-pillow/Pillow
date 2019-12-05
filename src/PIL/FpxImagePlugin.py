@@ -14,17 +14,10 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import olefile
 
 from . import Image, ImageFile
 from ._binary import i8, i32le as i32
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
@@ -66,7 +59,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except IOError:
+        except OSError:
             raise SyntaxError("not an FPX file; invalid OLE file")
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
@@ -145,7 +138,7 @@ class FpxImageFile(ImageFile.ImageFile):
         length = i32(s, 32)
 
         if size != self.size:
-            raise IOError("subimage mismatch")
+            raise OSError("subimage mismatch")
 
         # get tile descriptors
         fp.seek(28 + offset)
@@ -218,7 +211,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     self.tile_prefix = self.jpeg[jpeg_tables]
 
             else:
-                raise IOError("unknown/invalid compression")
+                raise OSError("unknown/invalid compression")
 
             x = x + xtile
             if x >= xsize:

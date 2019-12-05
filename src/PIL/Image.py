@@ -25,6 +25,7 @@
 #
 
 import atexit
+import builtins
 import io
 import logging
 import math
@@ -32,33 +33,17 @@ import numbers
 import os
 import struct
 import sys
+import tempfile
 import warnings
+from collections.abc import Callable, MutableMapping
+from pathlib import Path
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
+# PILLOW_VERSION was removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import PILLOW_VERSION, ImageMode, TiffTags, __version__, _plugins
+from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i8, i32le
-from ._util import deferred_error, isPath, isStringType, py3
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-
-    builtins = __builtin__
-
-
-try:
-    # Python 3
-    from collections.abc import Callable, MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import Callable, MutableMapping
-
-
-# Silence warning
-assert PILLOW_VERSION
+from ._util import deferred_error, isPath
 
 logger = logging.getLogger(__name__)
 
@@ -69,12 +54,6 @@ class DecompressionBombWarning(RuntimeWarning):
 
 class DecompressionBombError(Exception):
     pass
-
-
-class _imaging_not_installed(object):
-    # module placeholder
-    def __getattr__(self, id):
-        raise ImportError("The _imaging C module is not installed")
 
 
 # Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
@@ -97,7 +76,7 @@ try:
         )
 
 except ImportError as v:
-    core = _imaging_not_installed()
+    core = deferred_error(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -109,22 +88,6 @@ except ImportError as v:
         )
     elif str(v).startswith("The _imaging extension"):
         warnings.warn(str(v), RuntimeWarning)
-    elif "Symbol not found: _PyUnicodeUCS2_" in str(v):
-        # should match _PyUnicodeUCS2_FromString and
-        # _PyUnicodeUCS2_AsLatin1String
-        warnings.warn(
-            "The _imaging extension was built for Python with UCS2 support; "
-            "recompile Pillow or build Python --without-wide-unicode. ",
-            RuntimeWarning,
-        )
-    elif "Symbol not found: _PyUnicodeUCS4_" in str(v):
-        # should match _PyUnicodeUCS4_FromString and
-        # _PyUnicodeUCS4_AsLatin1String
-        warnings.warn(
-            "The _imaging extension was built for Python with UCS4 support; "
-            "recompile Pillow or build Python --with-wide-unicode. ",
-            RuntimeWarning,
-        )
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
     # see docs/porting.rst
     raise
@@ -136,18 +99,6 @@ try:
     import cffi
 except ImportError:
     cffi = None
-
-try:
-    from pathlib import Path
-
-    HAS_PATHLIB = True
-except ImportError:
-    try:
-        from pathlib2 import Path
-
-        HAS_PATHLIB = True
-    except ImportError:
-        HAS_PATHLIB = False
 
 
 def isImageType(t):
@@ -455,7 +406,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         decoder = getattr(core, decoder_name + "_decoder")
         return decoder(mode, *args + extra)
     except AttributeError:
-        raise IOError("decoder %s not available" % decoder_name)
+        raise OSError("decoder %s not available" % decoder_name)
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
@@ -476,7 +427,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
         encoder = getattr(core, encoder_name + "_encoder")
         return encoder(mode, *args + extra)
     except AttributeError:
-        raise IOError("encoder %s not available" % encoder_name)
+        raise OSError("encoder %s not available" % encoder_name)
 
 
 # --------------------------------------------------------------------
@@ -487,7 +438,7 @@ def coerce_e(value):
     return value if isinstance(value, _E) else _E(value)
 
 
-class _E(object):
+class _E:
     def __init__(self, data):
         self.data = data
 
@@ -528,7 +479,7 @@ def _getscaleoffset(expr):
 # Implementation wrapper
 
 
-class Image(object):
+class Image:
     """
     This class represents an image object.  To create
     :py:class:`~PIL.Image.Image` objects, use the appropriate factory
@@ -624,11 +575,6 @@ class Image(object):
         # object is gone.
         self.im = deferred_error(ValueError("Operation on closed image"))
 
-    if sys.version_info.major >= 3:
-
-        def __del__(self):
-            self.__exit__()
-
     def _copy(self):
         self.load()
         self.im = self.im.copy()
@@ -642,8 +588,6 @@ class Image(object):
             self.load()
 
     def _dump(self, file=None, format=None, **options):
-        import tempfile
-
         suffix = ""
         if format:
             suffix = "." + format
@@ -676,10 +620,6 @@ class Image(object):
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
         )
-
-    def __ne__(self, other):
-        eq = self == other
-        return not eq
 
     def __repr__(self):
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
@@ -1350,10 +1290,7 @@ class Image(object):
 
         self.load()
         try:
-            if py3:
-                return list(self.im.getpalette())
-            else:
-                return [i8(c) for c in self.im.getpalette()]
+            return list(self.im.getpalette())
         except ValueError:
             return None  # no palette
 
@@ -1504,7 +1441,7 @@ class Image(object):
                 raise ValueError("cannot determine region size; use 4-item box")
             box += (box[0] + size[0], box[1] + size[1])
 
-        if isStringType(im):
+        if isinstance(im, str):
             from . import ImageColor
 
             im = ImageColor.getcolor(im, self.mode)
@@ -1704,10 +1641,7 @@ class Image(object):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
             if not isinstance(data, bytes):
-                if py3:
-                    data = bytes(data)
-                else:
-                    data = "".join(chr(x) for x in data)
+                data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self.mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
@@ -2072,7 +2006,7 @@ class Image(object):
         if isPath(fp):
             filename = fp
             open_fp = True
-        elif HAS_PATHLIB and isinstance(fp, Path):
+        elif isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
         if not filename and hasattr(fp, "name") and isPath(fp.name):
@@ -2194,7 +2128,7 @@ class Image(object):
         """
         self.load()
 
-        if isStringType(channel):
+        if isinstance(channel, str):
             try:
                 channel = self.getbands().index(channel)
             except ValueError:
@@ -2330,6 +2264,7 @@ class Image(object):
             raise ValueError("missing method data")
 
         im = new(self.mode, size, fillcolor)
+        im.info = self.info.copy()
         if method == MESH:
             # list of quads
             for box, quad in data:
@@ -2458,12 +2393,12 @@ class Image(object):
 # Abstract handlers.
 
 
-class ImagePointHandler(object):
+class ImagePointHandler:
     # used as a mixin by point transforms (for use with im.point)
     pass
 
 
-class ImageTransformHandler(object):
+class ImageTransformHandler:
     # used as a mixin by geometry transforms (for use with im.transform)
     pass
 
@@ -2521,7 +2456,7 @@ def new(mode, size, color=0):
         # don't initialize
         return Image()._new(core.new(mode, size))
 
-    if isStringType(color):
+    if isinstance(color, str):
         # css3-style specifier
 
         from . import ImageColor
@@ -2625,14 +2560,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            warnings.warn(
-                "the frombuffer defaults will change in Pillow 7.0.0; "
-                "for portability, change the call to read:\n"
-                "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-            args = mode, 0, -1  # may change to (mode, 0, 1) post-1.1.6
+            args = mode, 0, 1
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, None, 0, args))
@@ -2675,9 +2603,12 @@ def fromarray(obj, mode=None):
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
-            mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
             raise TypeError("Cannot handle this data type")
+        try:
+            mode, rawmode = _fromarray_typemap[typekey]
+        except KeyError:
+            raise TypeError("Cannot handle this data type: %s, %s" % typekey)
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -2790,7 +2721,7 @@ def open(fp, mode="r"):
 
     exclusive_fp = False
     filename = ""
-    if HAS_PATHLIB and isinstance(fp, Path):
+    if isinstance(fp, Path):
         filename = str(fp.resolve())
     elif isPath(fp):
         filename = fp
@@ -2848,7 +2779,9 @@ def open(fp, mode="r"):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise IOError("cannot identify image file %r" % (filename if filename else fp))
+    raise UnidentifiedImageError(
+        "cannot identify image file %r" % (filename if filename else fp)
+    )
 
 
 #
@@ -3271,7 +3204,7 @@ class Exif(MutableMapping):
                             continue
                         size = count * unit_size
                         if size > 4:
-                            offset, = struct.unpack("<L", data)
+                            (offset,) = struct.unpack("<L", data)
                             data = ifd_data[offset - 12 : offset + size - 12]
                         else:
                             data = data[:size]
@@ -3301,7 +3234,7 @@ class Exif(MutableMapping):
                         )
                         if ifd_tag == 0x1101:
                             # CameraInfo
-                            offset, = struct.unpack(">L", data)
+                            (offset,) = struct.unpack(">L", data)
                             self.fp.seek(offset)
 
                             camerainfo = {"ModelID": self.fp.read(4)}
@@ -3353,11 +3286,6 @@ class Exif(MutableMapping):
 
     def __contains__(self, tag):
         return tag in self._data or (self._info is not None and tag in self._info)
-
-    if not py3:
-
-        def has_key(self, tag):
-            return tag in self
 
     def __setitem__(self, tag, value):
         if self._info is not None and tag in self._info:

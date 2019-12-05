@@ -1,6 +1,5 @@
 #include "Python.h"
 #include "Imaging.h"
-#include "../py3.h"
 
 
 Py_ssize_t
@@ -72,7 +71,7 @@ _imaging_tell_pyFd(PyObject *fd)
     Py_ssize_t location;
 
     result = PyObject_CallMethod(fd, "tell", NULL);
-    location = PyInt_AsSsize_t(result);
+    location = PyLong_AsSsize_t(result);
 
     Py_DECREF(result);
     return location;

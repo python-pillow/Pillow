@@ -47,7 +47,7 @@ creates the following image:
 ImageGrab on multi-monitor Windows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An `all_screens` argument has been added to ``ImageGrab.grab``. If ``True``,
+An ``all_screens`` argument has been added to ``ImageGrab.grab``. If ``True``,
 all monitors will be included in the created image.
 
 API Changes
@@ -61,14 +61,6 @@ shared instance of ``Image.Exif``.
 
 Deprecations
 ^^^^^^^^^^^^
-
-Python 2.7
-~~~~~~~~~~
-
-Python 2.7 reaches end-of-life on 2020-01-01.
-
-Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python
-2.7, making Pillow 6.2.x the last release series to support Python 2.
 
 Image.frombuffer
 ~~~~~~~~~~~~~~~~

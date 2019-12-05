@@ -51,6 +51,7 @@ Released as needed for security, installation or critical bug fixes.
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.1*`
 * [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
 
 ## Embargoed Release
@@ -92,7 +93,7 @@ Released as needed privately to individual vendors for critical security-related
   ```
 * [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).
   ```bash
-  wget -m -A 'Pillow-<VERSION>*' \
+  wget -m -A 'Pillow-<VERSION>-*' \
   http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
   ```
 

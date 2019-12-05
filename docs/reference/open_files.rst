@@ -8,27 +8,25 @@ object, or a file-like object. Pillow uses the filename or ``Path`` to open a
 file, so for the rest of this article, they will all be treated as a file-like
 object.
 
-The first four of these items are equivalent, the last is dangerous
-and may fail::
+The following are all equivalent::
 
     from PIL import Image
     import io
     import pathlib
 
-    im = Image.open('test.jpg')
+    with Image.open('test.jpg') as im:
+        ...
 
-    im2 = Image.open(pathlib.Path('test.jpg'))
+    with Image.open(pathlib.Path('test.jpg')) as im2:
+        ...
 
-    f = open('test.jpg', 'rb')
-    im3 = Image.open(f)
+    with open('test.jpg', 'rb') as f:
+        im3 = Image.open(f)
+        ...
 
     with open('test.jpg', 'rb') as f:
         im4 = Image.open(io.BytesIO(f.read()))
-
-    # Dangerous FAIL:
-    with open('test.jpg', 'rb') as f:
-        im5 = Image.open(f)
-    im5.load() # FAILS, closed file
+        ...
 
 If a filename or a path-like object is passed to Pillow, then the resulting
 file object opened by Pillow may also be closed by Pillow after the
@@ -37,13 +35,6 @@ have multiple frames.
 
 Pillow cannot in general close and reopen a file, so any access to
 that file needs to be prior to the close.
-
-Issues
-------
-
-* Using the file context manager to provide a file-like object to
-  Pillow is dangerous unless the context of the image is limited to
-  the context of the file.
 
 Image Lifecycle
 ---------------
@@ -70,9 +61,9 @@ Image Lifecycle
          ...  # image operations here.
 
 
-The lifecycle of a single-frame image is relatively simple. The file
-must remain open until the ``load()`` or ``close()`` function is
-called.
+The lifecycle of a single-frame image is relatively simple. The file must
+remain open until the ``load()`` or ``close()`` function is called or the
+context manager exits.
 
 Multi-frame images are more complicated. The ``load()`` method is not
 a terminal method, so it should not close the underlying file. In general,
@@ -87,13 +78,15 @@ Complications
   libtiff (if working on an actual file). Since libtiff closes the file
   descriptor internally, it is duplicated prior to passing it into libtiff.
 
-* I don't think that there's any way to make this safe without
-  changing the lazy loading::
+* After a file has been closed, operations that require file access will fail::
 
-    # Dangerous FAIL:
     with open('test.jpg', 'rb') as f:
         im5 = Image.open(f)
     im5.load() # FAILS, closed file
+
+    with Image.open('test.jpg') as im6:
+        pass
+    im6.load() # FAILS, closed file
 
 
 Proposed File Handling
@@ -104,5 +97,6 @@ Proposed File Handling
 
 * ``Image.Image.seek()`` should never close the image file.
 
-* Users of the library should call ``Image.Image.close()`` on any
-  multi-frame image to ensure that the underlying file is closed.
+* Users of the library should use a context manager or call
+  ``Image.Image.close()`` on any image opened with a filename or ``Path``
+  object to ensure that the underlying file is closed.

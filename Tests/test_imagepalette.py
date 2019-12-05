@@ -128,9 +128,8 @@ class TestImagePalette(PillowTestCase):
         img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
         img.save(outfile, format="PNG")
 
-        reloaded = Image.open(outfile)
-
-        self.assert_image_equal(img, reloaded)
+        with Image.open(outfile) as reloaded:
+            self.assert_image_equal(img, reloaded)
 
     def test_invalid_palette(self):
         self.assertRaises(IOError, ImagePalette.load, "Tests/images/hopper.jpg")

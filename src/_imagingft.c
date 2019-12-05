@@ -30,7 +30,6 @@
 #include FT_SFNT_NAMES_H
 
 #define KEEP_PY_UNICODE
-#include "py3.h"
 
 #if !defined(_MSC_VER)
 #include <dlfcn.h>
@@ -266,8 +265,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "etn|ns"PY_ARG_BYTES_LENGTH"n",
-                                     kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "etn|nsy#n", kwlist,
                                      Py_FileSystemDefaultEncoding, &filename,
                                      &size, &index, &encoding, &font_bytes,
                                      &font_bytes_size, &layout_engine)) {
@@ -328,34 +326,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if (PY_VERSION_HEX < 0x03030000) || (defined(PYPY_VERSION_NUM))
-    if (PyUnicode_Check(string)) {
-        Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
-        int size = PyUnicode_GET_SIZE(string);
-        if (index >= size)
-            return 0;
-        *char_out = p[index];
-        return 1;
-    }
-#if PY_VERSION_HEX < 0x03000000
-    if (PyString_Check(string)) {
-        unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
-        int size = PyString_GET_SIZE(string);
-        if (index >= size)
-            return 0;
-        *char_out = (unsigned char) p[index];
-        return 1;
-    }
-#endif
-#else
     if (PyUnicode_Check(string)) {
         if (index >= PyUnicode_GET_LENGTH(string))
             return 0;
         *char_out = PyUnicode_READ_CHAR(string, index);
         return 1;
     }
-#endif
-
     return 0;
 }
 
@@ -375,7 +351,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-#if (PY_VERSION_HEX < 0x03030000) || (defined(PYPY_VERSION_NUM))
+#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM < 0x07020000))
     if (PyUnicode_Check(string)) {
         Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
         Py_ssize_t size = PyUnicode_GET_SIZE(string);
@@ -395,25 +371,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             }
         }
     }
-#if PY_VERSION_HEX < 0x03000000
-    else if (PyString_Check(string)) {
-        char *text = PyString_AS_STRING(string);
-        int size = PyString_GET_SIZE(string);
-        if (! size) {
-            goto failed;
-        }
-        if (!(*p_raqm.set_text_utf8)(rq, text, size)) {
-            PyErr_SetString(PyExc_ValueError, "raqm_set_text_utf8() failed");
-            goto failed;
-        }
-        if (lang) {
-            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
-                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
-                goto failed;
-            }
-        }
-    }
-#endif
 #else
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
@@ -423,7 +380,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
                and raqm fails with empty strings */
             goto failed;
         }
-        int set_text = (*p_raqm.set_text)(rq, (const uint32_t *)(text), size);
+        int set_text = (*p_raqm.set_text)(rq, text, size);
         PyMem_Free(text);
         if (!set_text) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
@@ -479,11 +436,7 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             Py_ssize_t size = 0;
             PyObject *bytes;
 
-#if PY_VERSION_HEX >= 0x03000000
             if (!PyUnicode_Check(item)) {
-#else
-            if (!PyUnicode_Check(item) && !PyString_Check(item)) {
-#endif
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
@@ -495,12 +448,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
                 feature = PyBytes_AS_STRING(bytes);
                 size = PyBytes_GET_SIZE(bytes);
             }
-#if PY_VERSION_HEX < 0x03000000
-            else {
-                feature = PyString_AsString(item);
-                size = PyString_GET_SIZE(item);
-            }
-#endif
             if (!(*p_raqm.add_font_feature)(rq, feature, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
@@ -581,11 +528,7 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
     if (features != Py_None || dir != NULL || lang != NULL) {
       PyErr_SetString(PyExc_KeyError, "setting text direction, language or font features is not supported without libraqm");
     }
-#if PY_VERSION_HEX >= 0x03000000
     if (!PyUnicode_Check(string)) {
-#else
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#endif
         PyErr_SetString(PyExc_TypeError, "expected string");
         return 0;
     }
@@ -890,8 +833,6 @@ font_render(FontObject* self, PyObject* args)
 
             bitmap = bitmap_glyph->bitmap;
             left = bitmap_glyph->left;
-
-            FT_Done_Glyph(glyph);
         } else {
             bitmap = glyph_slot->bitmap;
             left = glyph_slot->bitmap_left;
@@ -953,6 +894,9 @@ font_render(FontObject* self, PyObject* args)
         }
         x += glyph_info[i].x_advance;
         y -= glyph_info[i].y_advance;
+        if (stroker != NULL) {
+            FT_Done_Glyph(glyph);
+        }
     }
 
     FT_Stroker_Done(stroker);
@@ -990,8 +934,7 @@ font_render(FontObject* self, PyObject* args)
                     continue;
 
                 if (master->namedstyle[j].strid == name.name_id) {
-                    list_name = Py_BuildValue(PY_ARG_BYTES_LENGTH,
-                                              name.string, name.string_len);
+                    list_name = Py_BuildValue("y#", name.string, name.string_len);
                     PyList_SetItem(list_names, j, list_name);
                     break;
                 }
@@ -1025,11 +968,11 @@ font_render(FontObject* self, PyObject* args)
 
             list_axis = PyDict_New();
             PyDict_SetItemString(list_axis, "minimum",
-                                 PyInt_FromLong(axis.minimum / 65536));
+                                 PyLong_FromLong(axis.minimum / 65536));
             PyDict_SetItemString(list_axis, "default",
-                                 PyInt_FromLong(axis.def / 65536));
+                                 PyLong_FromLong(axis.def / 65536));
             PyDict_SetItemString(list_axis, "maximum",
-                                 PyInt_FromLong(axis.maximum / 65536));
+                                 PyLong_FromLong(axis.maximum / 65536));
 
             for (j = 0; j < name_count; j++) {
                 error = FT_Get_Sfnt_Name(self->face, j, &name);
@@ -1037,8 +980,7 @@ font_render(FontObject* self, PyObject* args)
                     return geterror(error);
 
                 if (name.name_id == axis.strid) {
-                    axis_name = Py_BuildValue(PY_ARG_BYTES_LENGTH,
-                                              name.string, name.string_len);
+                    axis_name = Py_BuildValue("y#", name.string, name.string_len);
                     PyDict_SetItemString(list_axis, "name", axis_name);
                     break;
                 }
@@ -1095,8 +1037,8 @@ font_render(FontObject* self, PyObject* args)
             item = PyList_GET_ITEM(axes, i);
             if (PyFloat_Check(item))
                 coord = PyFloat_AS_DOUBLE(item);
-            else if (PyInt_Check(item))
-                coord = (float) PyInt_AS_LONG(item);
+            else if (PyLong_Check(item))
+                coord = (float) PyLong_AS_LONG(item);
             else if (PyNumber_Check(item))
                 coord = PyFloat_AsDouble(item);
             else {
@@ -1146,64 +1088,54 @@ static PyMethodDef font_methods[] = {
 static PyObject*
 font_getattr_family(FontObject* self, void* closure)
 {
-#if PY_VERSION_HEX >= 0x03000000
     if (self->face->family_name)
         return PyUnicode_FromString(self->face->family_name);
-#else
-    if (self->face->family_name)
-        return PyString_FromString(self->face->family_name);
-#endif
     Py_RETURN_NONE;
 }
 
 static PyObject*
 font_getattr_style(FontObject* self, void* closure)
 {
-#if PY_VERSION_HEX >= 0x03000000
     if (self->face->style_name)
         return PyUnicode_FromString(self->face->style_name);
-#else
-    if (self->face->style_name)
-        return PyString_FromString(self->face->style_name);
-#endif
     Py_RETURN_NONE;
 }
 
 static PyObject*
 font_getattr_ascent(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(PIXEL(self->face->size->metrics.ascender));
+    return PyLong_FromLong(PIXEL(self->face->size->metrics.ascender));
 }
 
 static PyObject*
 font_getattr_descent(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(-PIXEL(self->face->size->metrics.descender));
+    return PyLong_FromLong(-PIXEL(self->face->size->metrics.descender));
 }
 
 static PyObject*
 font_getattr_height(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(PIXEL(self->face->size->metrics.height));
+    return PyLong_FromLong(PIXEL(self->face->size->metrics.height));
 }
 
 static PyObject*
 font_getattr_x_ppem(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(self->face->size->metrics.x_ppem);
+    return PyLong_FromLong(self->face->size->metrics.x_ppem);
 }
 
 static PyObject*
 font_getattr_y_ppem(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(self->face->size->metrics.y_ppem);
+    return PyLong_FromLong(self->face->size->metrics.y_ppem);
 }
 
 
 static PyObject*
 font_getattr_glyphs(FontObject* self, void* closure)
 {
-    return PyInt_FromLong(self->face->num_glyphs);
+    return PyLong_FromLong(self->face->num_glyphs);
 }
 
 static struct PyGetSetDef font_getsetters[] = {
@@ -1271,11 +1203,7 @@ setup_module(PyObject* m) {
 
     FT_Library_Version(library, &major, &minor, &patch);
 
-#if PY_VERSION_HEX >= 0x03000000
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-#else
-    v = PyString_FromFormat("%d.%d.%d", major, minor, patch);
-#endif
     PyDict_SetItemString(d, "freetype2_version", v);
 
 
@@ -1286,7 +1214,6 @@ setup_module(PyObject* m) {
     return 0;
 }
 
-#if PY_VERSION_HEX >= 0x03000000
 PyMODINIT_FUNC
 PyInit__imagingft(void) {
     PyObject* m;
@@ -1306,12 +1233,3 @@ PyInit__imagingft(void) {
 
     return m;
 }
-#else
-PyMODINIT_FUNC
-init_imagingft(void)
-{
-    PyObject* m = Py_InitModule("_imagingft", _functions);
-    setup_module(m);
-}
-#endif
-

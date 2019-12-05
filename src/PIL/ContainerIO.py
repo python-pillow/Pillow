@@ -21,7 +21,7 @@
 import io
 
 
-class ContainerIO(object):
+class ContainerIO:
     def __init__(self, file, offset, length):
         """
         Create file object.

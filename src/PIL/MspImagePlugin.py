@@ -29,11 +29,6 @@ import struct
 from . import Image, ImageFile
 from ._binary import i8, i16le as i16, o16le as o16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 #
 # read MSP files
 
@@ -122,7 +117,7 @@ class MspDecoder(ImageFile.PyDecoder):
                 "<%dH" % (self.state.ysize), self.fd.read(self.state.ysize * 2)
             )
         except struct.error:
-            raise IOError("Truncated MSP file in row map")
+            raise OSError("Truncated MSP file in row map")
 
         for x, rowlen in enumerate(rowmap):
             try:
@@ -131,7 +126,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    raise IOError(
+                    raise OSError(
                         "Truncated MSP file, expected %d bytes on row %s", (rowlen, x)
                     )
                 idx = 0
@@ -148,7 +143,7 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += runcount
 
             except struct.error:
-                raise IOError("Corrupted MSP file in row %d" % x)
+                raise OSError("Corrupted MSP file in row %d" % x)
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
@@ -165,7 +160,7 @@ Image.register_decoder("MSP", MspDecoder)
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise IOError("cannot write mode %s as MSP" % im.mode)
+        raise OSError("cannot write mode %s as MSP" % im.mode)
 
     # create MSP header
     header = [0] * 16

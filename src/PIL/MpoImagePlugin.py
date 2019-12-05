@@ -21,10 +21,6 @@
 from . import Image, ImageFile, JpegImagePlugin
 from ._binary import i16be as i16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 
 def _accept(prefix):
     return JpegImagePlugin._accept(prefix)
@@ -86,7 +82,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.offset = self.__mpoffsets[frame]
 
         self.fp.seek(self.offset + 2)  # skip SOI marker
-        if i16(self.fp.read(2)) == 0xFFE1:  # APP1
+        segment = self.fp.read(2)
+        if not segment:
+            raise ValueError("No data found for frame")
+        if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
 

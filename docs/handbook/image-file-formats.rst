@@ -113,8 +113,8 @@ to seek to the next frame (``im.seek(im.tell() + 1)``).
 Saving
 ~~~~~~
 
-When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available::
+When calling :py:meth:`~PIL.Image.Image.save` to write a GIF file, the
+following options are available::
 
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
@@ -813,8 +813,9 @@ Saving sequences
     library is v0.5.0 or later. You can check webp animation support at
     runtime by calling ``features.check("webp_anim")``.
 
-When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available when the ``save_all`` argument is present and true.
+When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, the
+following options are available when the ``save_all`` argument is present and
+true.
 
 **append_images**
     A list of images to append as additional frames. Each of the

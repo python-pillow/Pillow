@@ -1,9 +1,13 @@
+import ctypes
 import os
+import subprocess
 import sys
+import unittest
+from distutils import ccompiler, sysconfig
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, on_appveyor, unittest
+from .helper import PillowTestCase, hopper, is_win32, on_ci
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -122,7 +126,7 @@ class TestImageGetPixel(AccessTest):
         self.assertEqual(
             im.getpixel((0, 0)),
             c,
-            "put/getpixel roundtrip failed for mode %s, color %s" % (mode, c),
+            "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c),
         )
 
         # check putpixel negative index
@@ -151,7 +155,7 @@ class TestImageGetPixel(AccessTest):
         self.assertEqual(
             im.getpixel((0, 0)),
             c,
-            "initial color failed for mode %s, color %s " % (mode, c),
+            "initial color failed for mode {}, color {} ".format(mode, c),
         )
         # check initial color negative index
         self.assertEqual(
@@ -333,14 +337,10 @@ class TestCffi(AccessTest):
 
 class TestEmbeddable(unittest.TestCase):
     @unittest.skipIf(
-        not sys.platform.startswith("win32") or on_appveyor(),
-        "Failing on AppVeyor when run from subprocess, not from shell",
+        not is_win32() or on_ci(),
+        "Failing on AppVeyor / GitHub Actions when run from subprocess, not from shell",
     )
     def test_embeddable(self):
-        import subprocess
-        import ctypes
-        from distutils import ccompiler, sysconfig
-
         with open("embed_pil.c", "w") as fh:
             fh.write(
                 """
@@ -349,12 +349,8 @@ class TestEmbeddable(unittest.TestCase):
 int main(int argc, char* argv[])
 {
     char *home = "%s";
-#if PY_MAJOR_VERSION >= 3
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
-#else
-    Py_SetPythonHome(home);
-#endif
 
     Py_InitializeEx(0);
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
@@ -364,9 +360,7 @@ int main(int argc, char* argv[])
     Py_DECREF(PyImport_ImportModule("PIL.Image"));
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3
     PyMem_RawFree(whome);
-#endif
 
     return 0;
 }
