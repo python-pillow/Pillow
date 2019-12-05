@@ -1306,6 +1306,9 @@ static struct {
     /* greyscale w. alpha */
     {"LA",      "LA",           16,     unpackLA},
     {"LA",      "LA;L",         16,     unpackLAL},
+    
+    /* greyscale w. alpha premultiplied */
+    {"La",      "La",           16,     unpackLA},
 
     /* palette */
     {"P",       "P;1",          1,      unpackP1},
@@ -1383,7 +1386,6 @@ static struct {
     {"RGBA",    "RGBA;16N",     64,     unpackRGBA16L},
     {"RGBX",    "RGBX;16N",     64,     unpackRGBA16B},
 #endif
-
 
     /* true colour w. alpha premultiplied */
     {"RGBa",    "RGBa",         32,     copy4},

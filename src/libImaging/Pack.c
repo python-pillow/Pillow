@@ -555,6 +555,9 @@ static struct {
     {"LA",      "LA",           16,     packLA},
     {"LA",      "LA;L",         16,     packLAL},
 
+    /* greyscale w. alpha premultiplied */
+    {"La",      "La",           16,     packLA},
+
     /* palette */
     {"P",       "P;1",          1,      pack1},
     {"P",       "P;2",          2,      packP2},
