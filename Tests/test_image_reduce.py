@@ -1,6 +1,6 @@
-from PIL import Image, ImageMode, ImageMath
+from PIL import Image, ImageMath, ImageMode
 
-from .helper import PillowTestCase, hopper, convert_to_comparable
+from .helper import PillowTestCase, convert_to_comparable
 
 
 class TestImageReduce(PillowTestCase):
