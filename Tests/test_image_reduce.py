@@ -32,6 +32,29 @@ class TestImageReduce(PillowTestCase):
         with self.assertRaises(ValueError):
             im.reduce((0, 10))
 
+    def test_args_box(self):
+        im = Image.new("L", (10, 10))
+
+        self.assertEqual((5, 5), im.reduce(2, (0, 0, 10, 10)).size)
+        self.assertEqual((1, 1), im.reduce(2, (5, 5, 6, 6)).size)
+
+        with self.assertRaises(TypeError):
+            im.reduce(2, "stri")
+        with self.assertRaises(TypeError):
+            im.reduce(2, 2)
+        with self.assertRaises(ValueError):
+            im.reduce(2, (0, 0, 11, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(2, (0, 0, 10, 11))
+        with self.assertRaises(ValueError):
+            im.reduce(2, (-1, 0, 10, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(2, (0, -1, 10, 10))
+        with self.assertRaises(ValueError):
+            im.reduce(2, (0, 5, 10, 5))
+        with self.assertRaises(ValueError):
+            im.reduce(2, (5, 0, 5, 10))
+
     def test_unsupported_modes(self):
         im = Image.new("P", (10, 10))
         with self.assertRaises(ValueError):
