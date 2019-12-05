@@ -6,11 +6,29 @@ from .helper import PillowTestCase, hopper, convert_to_comparable
 class TestImageReduce(PillowTestCase):
     # There are several internal implementations
     remarkable_factors = [
-        1, 2, 3, 4, 5, 6,  # special implementations
-        (1, 2), (1, 3), (1, 4), (1, 7),  # 1xN implementation
-        (2, 1), (3, 1), (4, 1), (7, 1),  # Nx1 implementation
+        # special implementations
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        # 1xN implementation
+        (1, 2),
+        (1, 3),
+        (1, 4),
+        (1, 7),
+        # Nx1 implementation
+        (2, 1),
+        (3, 1),
+        (4, 1),
+        (7, 1),
         # general implementation with different paths
-        (4, 6), (5, 6), (4, 7), (5, 7), (19, 17),
+        (4, 6),
+        (5, 6),
+        (4, 7),
+        (5, 7),
+        (19, 17),
     ]
 
     @classmethod
@@ -20,7 +38,7 @@ class TestImageReduce(PillowTestCase):
 
     def test_args_factor(self):
         im = Image.new("L", (10, 10))
-        
+
         self.assertEqual((4, 4), im.reduce(3).size)
         self.assertEqual((4, 10), im.reduce((3, 1)).size)
         self.assertEqual((10, 4), im.reduce((1, 3)).size)
@@ -70,7 +88,7 @@ class TestImageReduce(PillowTestCase):
 
     def get_image(self, mode):
         mode_info = ImageMode.getmode(mode)
-        if mode_info.basetype == 'L':
+        if mode_info.basetype == "L":
             bands = [self.gradients_image]
             for _ in mode_info.bands[1:]:
                 # rotate previous image
@@ -78,7 +96,7 @@ class TestImageReduce(PillowTestCase):
                 bands.append(band)
             # Correct alpha channel to exclude completely transparent pixels.
             # Low alpha values also emphasize error after alpha multiplication.
-            if mode.endswith('A'):
+            if mode.endswith("A"):
                 bands[-1] = bands[-1].point(lambda x: int(85 + x / 1.5))
             im = Image.merge(mode, bands)
         else:
@@ -136,10 +154,8 @@ class TestImageReduce(PillowTestCase):
         self.assert_compare_images(reduced, reference, average_diff, max_diff)
 
     def assert_compare_images(self, a, b, max_average_diff, max_diff=255):
-        self.assertEqual(
-            a.mode, b.mode, "got mode %r, expected %r" % (a.mode, b.mode))
-        self.assertEqual(
-            a.size, b.size, "got size %r, expected %r" % (a.size, b.size))
+        self.assertEqual(a.mode, b.mode, "got mode %r, expected %r" % (a.mode, b.mode))
+        self.assertEqual(a.size, b.size, "got size %r, expected %r" % (a.size, b.size))
 
         a, b = convert_to_comparable(a, b)
 
@@ -148,19 +164,25 @@ class TestImageReduce(PillowTestCase):
             ch_diff = ImageMath.eval("convert(abs(a - b), 'L')", a=ach, b=bch)
             ch_hist = ch_diff.histogram()
 
-            average_diff = (sum(i * num for i, num in enumerate(ch_hist))
-                            / float(a.size[0] * a.size[1]))
+            average_diff = sum(i * num for i, num in enumerate(ch_hist)) / float(
+                a.size[0] * a.size[1]
+            )
             self.assertGreaterEqual(
-                max_average_diff, average_diff,
-                ("average pixel value difference {:.4f} > expected {:.4f} "
-                 "for '{}' band").format(average_diff, max_average_diff, band),
+                max_average_diff,
+                average_diff,
+                (
+                    "average pixel value difference {:.4f} > expected {:.4f} "
+                    "for '{}' band"
+                ).format(average_diff, max_average_diff, band),
             )
 
             last_diff = [i for i, num in enumerate(ch_hist) if num > 0][-1]
             self.assertGreaterEqual(
-                max_diff, last_diff,
-                "max pixel value difference {} > expected {} for '{}' band"
-                    .format(last_diff, max_diff, band),
+                max_diff,
+                last_diff,
+                "max pixel value difference {} > expected {} for '{}' band".format(
+                    last_diff, max_diff, band
+                ),
             )
 
     def test_mode_L(self):
@@ -173,9 +195,9 @@ class TestImageReduce(PillowTestCase):
         im = self.get_image("LA")
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor, 0.8, 5)
-        
+
         # With opaque alpha, error should be way smaller
-        im.putalpha(Image.new('L', im.size, 255))
+        im.putalpha(Image.new("L", im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
             self.compare_reduce_with_box(im, factor)
@@ -198,7 +220,7 @@ class TestImageReduce(PillowTestCase):
             self.compare_reduce_with_reference(im, factor, 0.8, 5)
 
         # With opaque alpha, error should be way smaller
-        im.putalpha(Image.new('L', im.size, 255))
+        im.putalpha(Image.new("L", im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
             self.compare_reduce_with_box(im, factor)

@@ -983,12 +983,16 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4])
                 for (x = 0; x < box[2] / xscale; x++) {
                     int xx = box[0] + x*xscale;
                     UINT32 v;
-                    ss0 = line0[xx*4 + 0] + line0[xx*4 + 4] + line0[xx*4 + 8] +
-                          line1[xx*4 + 0] + line1[xx*4 + 4] + line1[xx*4 + 8] +
-                          line2[xx*4 + 0] + line2[xx*4 + 4] + line2[xx*4 + 8];
-                    ss3 = line0[xx*4 + 3] + line0[xx*4 + 7] + line0[xx*4 + 11] +
-                          line1[xx*4 + 3] + line1[xx*4 + 7] + line1[xx*4 + 11] +
-                          line2[xx*4 + 3] + line2[xx*4 + 7] + line2[xx*4 + 11];
+                    ss0 = line0[xx*4 + 0] + line0[xx*4 + 4] + line0[xx*4 + 8] + line0[xx*4 + 12] + line0[xx*4 + 16] +
+                          line1[xx*4 + 0] + line1[xx*4 + 4] + line1[xx*4 + 8] + line1[xx*4 + 12] + line1[xx*4 + 16] +
+                          line2[xx*4 + 0] + line2[xx*4 + 4] + line2[xx*4 + 8] + line2[xx*4 + 12] + line2[xx*4 + 16] +
+                          line3[xx*4 + 0] + line3[xx*4 + 4] + line3[xx*4 + 8] + line3[xx*4 + 12] + line3[xx*4 + 16] +
+                          line4[xx*4 + 0] + line4[xx*4 + 4] + line4[xx*4 + 8] + line4[xx*4 + 12] + line4[xx*4 + 16];
+                    ss3 = line0[xx*4 + 3] + line0[xx*4 + 7] + line0[xx*4 + 11] + line0[xx*4 + 15] + line0[xx*4 + 19] +
+                          line1[xx*4 + 3] + line1[xx*4 + 7] + line1[xx*4 + 11] + line1[xx*4 + 15] + line1[xx*4 + 19] +
+                          line2[xx*4 + 3] + line2[xx*4 + 7] + line2[xx*4 + 11] + line2[xx*4 + 15] + line2[xx*4 + 19] +
+                          line3[xx*4 + 3] + line3[xx*4 + 7] + line3[xx*4 + 11] + line3[xx*4 + 15] + line3[xx*4 + 19] +
+                          line4[xx*4 + 3] + line4[xx*4 + 7] + line4[xx*4 + 11] + line4[xx*4 + 15] + line4[xx*4 + 19];
                     v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24, 0,
                         0, ((ss3 + amend) * multiplier) >> 24);
@@ -998,15 +1002,21 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4])
                 for (x = 0; x < box[2] / xscale; x++) {
                     int xx = box[0] + x*xscale;
                     UINT32 v;
-                    ss0 = line0[xx*4 + 0] + line0[xx*4 + 4] + line0[xx*4 + 8] +
-                          line1[xx*4 + 0] + line1[xx*4 + 4] + line1[xx*4 + 8] +
-                          line2[xx*4 + 0] + line2[xx*4 + 4] + line2[xx*4 + 8];
-                    ss1 = line0[xx*4 + 1] + line0[xx*4 + 5] + line0[xx*4 + 9] +
-                          line1[xx*4 + 1] + line1[xx*4 + 5] + line1[xx*4 + 9] +
-                          line2[xx*4 + 1] + line2[xx*4 + 5] + line2[xx*4 + 9];
-                    ss2 = line0[xx*4 + 2] + line0[xx*4 + 6] + line0[xx*4 + 10] +
-                          line1[xx*4 + 2] + line1[xx*4 + 6] + line1[xx*4 + 10] +
-                          line2[xx*4 + 2] + line2[xx*4 + 6] + line2[xx*4 + 10];
+                    ss0 = line0[xx*4 + 0] + line0[xx*4 + 4] + line0[xx*4 + 8] + line0[xx*4 + 12] + line0[xx*4 + 16] +
+                          line1[xx*4 + 0] + line1[xx*4 + 4] + line1[xx*4 + 8] + line1[xx*4 + 12] + line1[xx*4 + 16] +
+                          line2[xx*4 + 0] + line2[xx*4 + 4] + line2[xx*4 + 8] + line2[xx*4 + 12] + line2[xx*4 + 16] +
+                          line3[xx*4 + 0] + line3[xx*4 + 4] + line3[xx*4 + 8] + line3[xx*4 + 12] + line3[xx*4 + 16] +
+                          line4[xx*4 + 0] + line4[xx*4 + 4] + line4[xx*4 + 8] + line4[xx*4 + 12] + line4[xx*4 + 16];
+                    ss1 = line0[xx*4 + 1] + line0[xx*4 + 5] + line0[xx*4 + 9] + line0[xx*4 + 13] + line0[xx*4 + 17] +
+                          line1[xx*4 + 1] + line1[xx*4 + 5] + line1[xx*4 + 9] + line1[xx*4 + 13] + line1[xx*4 + 17] +
+                          line2[xx*4 + 1] + line2[xx*4 + 5] + line2[xx*4 + 9] + line2[xx*4 + 13] + line2[xx*4 + 17] +
+                          line3[xx*4 + 1] + line3[xx*4 + 5] + line3[xx*4 + 9] + line3[xx*4 + 13] + line3[xx*4 + 17] +
+                          line4[xx*4 + 1] + line4[xx*4 + 5] + line4[xx*4 + 9] + line4[xx*4 + 13] + line4[xx*4 + 17];
+                    ss2 = line0[xx*4 + 2] + line0[xx*4 + 6] + line0[xx*4 + 10] + line0[xx*4 + 14] + line0[xx*4 + 18] +
+                          line1[xx*4 + 2] + line1[xx*4 + 6] + line1[xx*4 + 10] + line1[xx*4 + 14] + line1[xx*4 + 18] +
+                          line2[xx*4 + 2] + line2[xx*4 + 6] + line2[xx*4 + 10] + line2[xx*4 + 14] + line2[xx*4 + 18] +
+                          line3[xx*4 + 2] + line3[xx*4 + 6] + line3[xx*4 + 10] + line3[xx*4 + 14] + line3[xx*4 + 18] +
+                          line4[xx*4 + 2] + line4[xx*4 + 6] + line4[xx*4 + 10] + line4[xx*4 + 14] + line4[xx*4 + 18];
                     v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24, ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24, 0);
@@ -1397,7 +1407,7 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4])
             } else {
                 ImagingReduceNx1(imOut, imIn, box, xscale);
             }
-        } else if (xscale == yscale && xscale <= 4) {
+        } else if (xscale == yscale && xscale <= 5) {
             if (xscale == 2) {
                 ImagingReduce2x2(imOut, imIn, box);
             } else if (xscale == 3) {
