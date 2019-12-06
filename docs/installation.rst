@@ -95,11 +95,11 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 
 **Ports**::
 
-  $ cd /usr/ports/graphics/py-pillow && make install clean
+  cd /usr/ports/graphics/py-pillow && make install clean
 
 **Packages**::
 
-  $ pkg install py27-pillow
+  pkg install py27-pillow
 
 .. note::
 
