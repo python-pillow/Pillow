@@ -618,20 +618,20 @@ def _save_netpbm(im, fp, filename):
 
     with open(filename, "wb") as f:
         if im.mode != "RGB":
-            with open(os.devnull, "wb") as devnull:
-                subprocess.check_call(["ppmtogif", tempfile], stdout=f, stderr=devnull)
+            subprocess.check_call(
+                ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
+            )
         else:
             # Pipe ppmquant output into ppmtogif
             # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
             quant_cmd = ["ppmquant", "256", tempfile]
             togif_cmd = ["ppmtogif"]
-            with open(os.devnull, "wb") as devnull:
-                quant_proc = subprocess.Popen(
-                    quant_cmd, stdout=subprocess.PIPE, stderr=devnull
-                )
-                togif_proc = subprocess.Popen(
-                    togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=devnull
-                )
+            quant_proc = subprocess.Popen(
+                quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+            )
+            togif_proc = subprocess.Popen(
+                togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=subprocess.DEVNULL
+            )
 
             # Allow ppmquant to receive SIGPIPE if ppmtogif exits
             quant_proc.stdout.close()
@@ -848,7 +848,7 @@ def getdata(im, offset=(0, 0), **params):
 
     """
 
-    class Collector(object):
+    class Collector:
         data = []
 
         def write(self, data):

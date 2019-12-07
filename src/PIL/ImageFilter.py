@@ -14,9 +14,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import division
-
 import functools
 
 try:
@@ -25,7 +22,7 @@ except ImportError:  # pragma: no cover
     numpy = None
 
 
-class Filter(object):
+class Filter:
     pass
 
 
@@ -498,7 +495,7 @@ class Color3DLUT(MultibandFilter):
                             r / (size1D - 1),
                             g / (size2D - 1),
                             b / (size3D - 1),
-                            *values
+                            *values,
                         )
                     else:
                         values = callback(*values)

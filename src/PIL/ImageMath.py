@@ -15,15 +15,9 @@
 # See the README file for information on usage and redistribution.
 #
 
+import builtins
+
 from . import Image, _imagingmath
-from ._util import py3
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-
-    builtins = __builtin__
 
 VERBOSE = 0
 
@@ -32,7 +26,7 @@ def _isconstant(v):
     return isinstance(v, (int, float))
 
 
-class _Operand(object):
+class _Operand:
     """Wraps an image operand, providing standard operators"""
 
     def __init__(self, im):
@@ -101,11 +95,6 @@ class _Operand(object):
         # an image is "true" if it contains at least one non-zero pixel
         return self.im.getbbox() is not None
 
-    if not py3:
-        # Provide __nonzero__ for pre-Py3k
-        __nonzero__ = __bool__
-        del __bool__
-
     def __abs__(self):
         return self.apply("abs", self)
 
@@ -151,13 +140,6 @@ class _Operand(object):
 
     def __rpow__(self, other):
         return self.apply("pow", other, self)
-
-    if not py3:
-        # Provide __div__ and __rdiv__ for pre-Py3k
-        __div__ = __truediv__
-        __rdiv__ = __rtruediv__
-        del __truediv__
-        del __rtruediv__
 
     # bitwise
     def __invert__(self):

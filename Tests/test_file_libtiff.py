@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import base64
 import distutils.version
 import io
@@ -10,7 +8,6 @@ from collections import namedtuple
 from ctypes import c_float
 
 from PIL import Image, TiffImagePlugin, TiffTags, features
-from PIL._util import py3
 
 from .helper import PillowTestCase, hopper
 
@@ -50,25 +47,23 @@ class TestFileLibTiff(LibTiffTestCase):
         """Test the ordinary file path load path"""
 
         test_file = "Tests/images/hopper_g4_500.tif"
-        im = Image.open(test_file)
-
-        self.assertEqual(im.size, (500, 500))
-        self._assert_noerr(im)
+        with Image.open(test_file) as im:
+            self.assertEqual(im.size, (500, 500))
+            self._assert_noerr(im)
 
     def test_g4_large(self):
         test_file = "Tests/images/pport_g4.tif"
-        im = Image.open(test_file)
-        self._assert_noerr(im)
+        with Image.open(test_file) as im:
+            self._assert_noerr(im)
 
     def test_g4_tiff_file(self):
         """Testing the string load path"""
 
         test_file = "Tests/images/hopper_g4_500.tif"
         with open(test_file, "rb") as f:
-            im = Image.open(f)
-
-            self.assertEqual(im.size, (500, 500))
-            self._assert_noerr(im)
+            with Image.open(f) as im:
+                self.assertEqual(im.size, (500, 500))
+                self._assert_noerr(im)
 
     def test_g4_tiff_bytesio(self):
         """Testing the stringio loading code path"""
@@ -77,10 +72,9 @@ class TestFileLibTiff(LibTiffTestCase):
         with open(test_file, "rb") as f:
             s.write(f.read())
             s.seek(0)
-        im = Image.open(s)
-
-        self.assertEqual(im.size, (500, 500))
-        self._assert_noerr(im)
+        with Image.open(s) as im:
+            self.assertEqual(im.size, (500, 500))
+            self._assert_noerr(im)
 
     def test_g4_non_disk_file_object(self):
         """Testing loading from non-disk non-BytesIO file object"""
@@ -90,56 +84,51 @@ class TestFileLibTiff(LibTiffTestCase):
             s.write(f.read())
             s.seek(0)
         r = io.BufferedReader(s)
-        im = Image.open(r)
-
-        self.assertEqual(im.size, (500, 500))
-        self._assert_noerr(im)
+        with Image.open(r) as im:
+            self.assertEqual(im.size, (500, 500))
+            self._assert_noerr(im)
 
     def test_g4_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
-        png = Image.open("Tests/images/hopper_bw_500.png")
-        g4 = Image.open("Tests/images/hopper_g4_500.tif")
-
-        self.assert_image_equal(g4, png)
+        with Image.open("Tests/images/hopper_bw_500.png") as png:
+            with Image.open("Tests/images/hopper_g4_500.tif") as g4:
+                self.assert_image_equal(g4, png)
 
     # see https://github.com/python-pillow/Pillow/issues/279
     def test_g4_fillorder_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
-        png = Image.open("Tests/images/g4-fillorder-test.png")
-        g4 = Image.open("Tests/images/g4-fillorder-test.tif")
-
-        self.assert_image_equal(g4, png)
+        with Image.open("Tests/images/g4-fillorder-test.png") as png:
+            with Image.open("Tests/images/g4-fillorder-test.tif") as g4:
+                self.assert_image_equal(g4, png)
 
     def test_g4_write(self):
         """Checking to see that the saved image is the same as what we wrote"""
         test_file = "Tests/images/hopper_g4_500.tif"
-        orig = Image.open(test_file)
+        with Image.open(test_file) as orig:
+            out = self.tempfile("temp.tif")
+            rot = orig.transpose(Image.ROTATE_90)
+            self.assertEqual(rot.size, (500, 500))
+            rot.save(out)
 
-        out = self.tempfile("temp.tif")
-        rot = orig.transpose(Image.ROTATE_90)
-        self.assertEqual(rot.size, (500, 500))
-        rot.save(out)
+            with Image.open(out) as reread:
+                self.assertEqual(reread.size, (500, 500))
+                self._assert_noerr(reread)
+                self.assert_image_equal(reread, rot)
+                self.assertEqual(reread.info["compression"], "group4")
 
-        reread = Image.open(out)
-        self.assertEqual(reread.size, (500, 500))
-        self._assert_noerr(reread)
-        self.assert_image_equal(reread, rot)
-        self.assertEqual(reread.info["compression"], "group4")
+                self.assertEqual(reread.info["compression"], orig.info["compression"])
 
-        self.assertEqual(reread.info["compression"], orig.info["compression"])
-
-        self.assertNotEqual(orig.tobytes(), reread.tobytes())
+                self.assertNotEqual(orig.tobytes(), reread.tobytes())
 
     def test_adobe_deflate_tiff(self):
         test_file = "Tests/images/tiff_adobe_deflate.tif"
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (278, 374))
+            self.assertEqual(im.tile[0][:3], ("libtiff", (0, 0, 278, 374), 0))
+            im.load()
 
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (278, 374))
-        self.assertEqual(im.tile[0][:3], ("libtiff", (0, 0, 278, 374), 0))
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_write_metadata(self):
         """ Test metadata writing through libtiff """
@@ -207,44 +196,44 @@ class TestFileLibTiff(LibTiffTestCase):
 
         # Exclude ones that have special meaning
         # that we're already testing them
-        im = Image.open("Tests/images/hopper_g4.tif")
-        for tag in im.tag_v2:
-            try:
-                del core_items[tag]
-            except KeyError:
-                pass
+        with Image.open("Tests/images/hopper_g4.tif") as im:
+            for tag in im.tag_v2:
+                try:
+                    del core_items[tag]
+                except KeyError:
+                    pass
 
-        # Type codes:
-        #     2: "ascii",
-        #     3: "short",
-        #     4: "long",
-        #     5: "rational",
-        #     12: "double",
-        # Type: dummy value
-        values = {
-            2: "test",
-            3: 1,
-            4: 2 ** 20,
-            5: TiffImagePlugin.IFDRational(100, 1),
-            12: 1.05,
-        }
+            # Type codes:
+            #     2: "ascii",
+            #     3: "short",
+            #     4: "long",
+            #     5: "rational",
+            #     12: "double",
+            # Type: dummy value
+            values = {
+                2: "test",
+                3: 1,
+                4: 2 ** 20,
+                5: TiffImagePlugin.IFDRational(100, 1),
+                12: 1.05,
+            }
 
-        new_ifd = TiffImagePlugin.ImageFileDirectory_v2()
-        for tag, info in core_items.items():
-            if info.length == 1:
-                new_ifd[tag] = values[info.type]
-            if info.length == 0:
-                new_ifd[tag] = tuple(values[info.type] for _ in range(3))
-            else:
-                new_ifd[tag] = tuple(values[info.type] for _ in range(info.length))
+            new_ifd = TiffImagePlugin.ImageFileDirectory_v2()
+            for tag, info in core_items.items():
+                if info.length == 1:
+                    new_ifd[tag] = values[info.type]
+                if info.length == 0:
+                    new_ifd[tag] = tuple(values[info.type] for _ in range(3))
+                else:
+                    new_ifd[tag] = tuple(values[info.type] for _ in range(info.length))
 
-        # Extra samples really doesn't make sense in this application.
-        del new_ifd[338]
+            # Extra samples really doesn't make sense in this application.
+            del new_ifd[338]
 
-        out = self.tempfile("temp.tif")
-        TiffImagePlugin.WRITE_LIBTIFF = True
+            out = self.tempfile("temp.tif")
+            TiffImagePlugin.WRITE_LIBTIFF = True
 
-        im.save(out, tiffinfo=new_ifd)
+            im.save(out, tiffinfo=new_ifd)
 
         TiffImagePlugin.WRITE_LIBTIFF = False
 
@@ -263,7 +252,6 @@ class TestFileLibTiff(LibTiffTestCase):
                     tc(4.25, TiffTags.FLOAT, True),
                     tc(4.25, TiffTags.DOUBLE, True),
                     tc("custom tag value", TiffTags.ASCII, True),
-                    tc(u"custom tag value", TiffTags.ASCII, True),
                     tc(b"custom tag value", TiffTags.BYTE, True),
                     tc((4, 5, 6), TiffTags.SHORT, True),
                     tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
@@ -346,70 +334,58 @@ class TestFileLibTiff(LibTiffTestCase):
             self.assertEqual(reloaded.info["dpi"], (72.0, 72.0))
 
     def test_g3_compression(self):
-        i = Image.open("Tests/images/hopper_g4_500.tif")
-        out = self.tempfile("temp.tif")
-        i.save(out, compression="group3")
+        with Image.open("Tests/images/hopper_g4_500.tif") as i:
+            out = self.tempfile("temp.tif")
+            i.save(out, compression="group3")
 
-        reread = Image.open(out)
-        self.assertEqual(reread.info["compression"], "group3")
-        self.assert_image_equal(reread, i)
+            with Image.open(out) as reread:
+                self.assertEqual(reread.info["compression"], "group3")
+                self.assert_image_equal(reread, i)
 
     def test_little_endian(self):
-        im = Image.open("Tests/images/16bit.deflate.tif")
-        self.assertEqual(im.getpixel((0, 0)), 480)
-        self.assertEqual(im.mode, "I;16")
+        with Image.open("Tests/images/16bit.deflate.tif") as im:
+            self.assertEqual(im.getpixel((0, 0)), 480)
+            self.assertEqual(im.mode, "I;16")
 
-        b = im.tobytes()
-        # Bytes are in image native order (little endian)
-        if py3:
+            b = im.tobytes()
+            # Bytes are in image native order (little endian)
             self.assertEqual(b[0], ord(b"\xe0"))
             self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
 
-        out = self.tempfile("temp.tif")
-        # out = "temp.le.tif"
-        im.save(out)
-        reread = Image.open(out)
-
-        self.assertEqual(reread.info["compression"], im.info["compression"])
-        self.assertEqual(reread.getpixel((0, 0)), 480)
+            out = self.tempfile("temp.tif")
+            # out = "temp.le.tif"
+            im.save(out)
+        with Image.open(out) as reread:
+            self.assertEqual(reread.info["compression"], im.info["compression"])
+            self.assertEqual(reread.getpixel((0, 0)), 480)
         # UNDONE - libtiff defaults to writing in native endian, so
         # on big endian, we'll get back mode = 'I;16B' here.
 
     def test_big_endian(self):
-        im = Image.open("Tests/images/16bit.MM.deflate.tif")
+        with Image.open("Tests/images/16bit.MM.deflate.tif") as im:
+            self.assertEqual(im.getpixel((0, 0)), 480)
+            self.assertEqual(im.mode, "I;16B")
 
-        self.assertEqual(im.getpixel((0, 0)), 480)
-        self.assertEqual(im.mode, "I;16B")
+            b = im.tobytes()
 
-        b = im.tobytes()
-
-        # Bytes are in image native order (big endian)
-        if py3:
+            # Bytes are in image native order (big endian)
             self.assertEqual(b[0], ord(b"\x01"))
             self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
 
-        out = self.tempfile("temp.tif")
-        im.save(out)
-        reread = Image.open(out)
-
-        self.assertEqual(reread.info["compression"], im.info["compression"])
-        self.assertEqual(reread.getpixel((0, 0)), 480)
+            out = self.tempfile("temp.tif")
+            im.save(out)
+            with Image.open(out) as reread:
+                self.assertEqual(reread.info["compression"], im.info["compression"])
+                self.assertEqual(reread.getpixel((0, 0)), 480)
 
     def test_g4_string_info(self):
         """Tests String data in info directory"""
         test_file = "Tests/images/hopper_g4_500.tif"
-        orig = Image.open(test_file)
+        with Image.open(test_file) as orig:
+            out = self.tempfile("temp.tif")
 
-        out = self.tempfile("temp.tif")
-
-        orig.tag[269] = "temp.tif"
-        orig.save(out)
+            orig.tag[269] = "temp.tif"
+            orig.save(out)
 
         with Image.open(out) as reread:
             self.assertEqual("temp.tif", reread.tag_v2[269])
@@ -419,16 +395,16 @@ class TestFileLibTiff(LibTiffTestCase):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open("Tests/images/12bit.cropped.tif")
-        im.load()
-        TiffImagePlugin.READ_LIBTIFF = False
-        # to make the target --
-        # convert 12bit.cropped.tif -depth 16 tmp.tif
-        # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
-        # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
-        # so we need to unshift so that the integer values are the same.
+        with Image.open("Tests/images/12bit.cropped.tif") as im:
+            im.load()
+            TiffImagePlugin.READ_LIBTIFF = False
+            # to make the target --
+            # convert 12bit.cropped.tif -depth 16 tmp.tif
+            # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+            # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+            # so we need to unshift so that the integer values are the same.
 
-        self.assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
+            self.assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
 
     def test_blur(self):
         # test case from irc, how to do blur on b/w image
@@ -436,16 +412,16 @@ class TestFileLibTiff(LibTiffTestCase):
         from PIL import ImageFilter
 
         out = self.tempfile("temp.tif")
-        im = Image.open("Tests/images/pport_g4.tif")
-        im = im.convert("L")
+        with Image.open("Tests/images/pport_g4.tif") as im:
+            im = im.convert("L")
 
         im = im.filter(ImageFilter.GaussianBlur(4))
         im.save(out, compression="tiff_adobe_deflate")
 
-        im2 = Image.open(out)
-        im2.load()
+        with Image.open(out) as im2:
+            im2.load()
 
-        self.assert_image_equal(im, im2)
+            self.assert_image_equal(im, im2)
 
     def test_compressions(self):
         # Test various tiff compressions and assert similar image content but reduced
@@ -458,18 +434,18 @@ class TestFileLibTiff(LibTiffTestCase):
         for compression in ("packbits", "tiff_lzw"):
             im.save(out, compression=compression)
             size_compressed = os.path.getsize(out)
-            im2 = Image.open(out)
-            self.assert_image_equal(im, im2)
+            with Image.open(out) as im2:
+                self.assert_image_equal(im, im2)
 
         im.save(out, compression="jpeg")
         size_jpeg = os.path.getsize(out)
-        im2 = Image.open(out)
-        self.assert_image_similar(im, im2, 30)
+        with Image.open(out) as im2:
+            self.assert_image_similar(im, im2, 30)
 
         im.save(out, compression="jpeg", quality=30)
         size_jpeg_30 = os.path.getsize(out)
-        im3 = Image.open(out)
-        self.assert_image_similar(im2, im3, 30)
+        with Image.open(out) as im3:
+            self.assert_image_similar(im2, im3, 30)
 
         self.assertGreater(size_raw, size_compressed)
         self.assertGreater(size_compressed, size_jpeg)
@@ -491,8 +467,8 @@ class TestFileLibTiff(LibTiffTestCase):
         out = self.tempfile("temp.tif")
 
         im.save(out, compression="tiff_adobe_deflate")
-        im2 = Image.open(out)
-        self.assert_image_equal(im, im2)
+        with Image.open(out) as im2:
+            self.assert_image_equal(im, im2)
 
     def xtest_bw_compression_w_rgb(self):
         """ This test passes, but when running all tests causes a failure due
@@ -555,10 +531,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open("Tests/images/hopper.tif")
-        self.assertFalse(im.tag.next)
-        im.load()
-        self.assertFalse(im.tag.next)
+        with Image.open("Tests/images/hopper.tif") as im:
+            self.assertFalse(im.tag.next)
+            im.load()
+            self.assertFalse(im.tag.next)
 
     def test_4bit(self):
         # Arrange
@@ -567,13 +543,13 @@ class TestFileLibTiff(LibTiffTestCase):
 
         # Act
         TiffImagePlugin.READ_LIBTIFF = True
-        im = Image.open(test_file)
-        TiffImagePlugin.READ_LIBTIFF = False
+        with Image.open(test_file) as im:
+            TiffImagePlugin.READ_LIBTIFF = False
 
-        # Assert
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.mode, "L")
-        self.assert_image_similar(im, original, 7.3)
+            # Assert
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.mode, "L")
+            self.assert_image_similar(im, original, 7.3)
 
     def test_gray_semibyte_per_pixel(self):
         test_files = (
@@ -598,15 +574,15 @@ class TestFileLibTiff(LibTiffTestCase):
         )
         original = hopper("L")
         for epsilon, group in test_files:
-            im = Image.open(group[0])
-            self.assertEqual(im.size, (128, 128))
-            self.assertEqual(im.mode, "L")
-            self.assert_image_similar(im, original, epsilon)
+            with Image.open(group[0]) as im:
+                self.assertEqual(im.size, (128, 128))
+                self.assertEqual(im.mode, "L")
+                self.assert_image_similar(im, original, epsilon)
             for file in group[1:]:
-                im2 = Image.open(file)
-                self.assertEqual(im2.size, (128, 128))
-                self.assertEqual(im2.mode, "L")
-                self.assert_image_equal(im, im2)
+                with Image.open(file) as im2:
+                    self.assertEqual(im2.size, (128, 128))
+                    self.assertEqual(im2.mode, "L")
+                    self.assert_image_equal(im, im2)
 
     def test_save_bytesio(self):
         # PR 1011
@@ -624,8 +600,8 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
 
-            pilim_load = Image.open(buffer_io)
-            self.assert_image_similar(pilim, pilim_load, 0)
+            with Image.open(buffer_io) as pilim_load:
+                self.assert_image_similar(pilim, pilim_load, 0)
 
         save_bytesio()
         save_bytesio("raw")
@@ -637,12 +613,12 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_crashing_metadata(self):
         # issue 1597
-        im = Image.open("Tests/images/rdf.tif")
-        out = self.tempfile("temp.tif")
+        with Image.open("Tests/images/rdf.tif") as im:
+            out = self.tempfile("temp.tif")
 
-        TiffImagePlugin.WRITE_LIBTIFF = True
-        # this shouldn't crash
-        im.save(out, format="TIFF")
+            TiffImagePlugin.WRITE_LIBTIFF = True
+            # this shouldn't crash
+            im.save(out, format="TIFF")
         TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_page_number_x_0(self):
@@ -708,44 +684,50 @@ class TestFileLibTiff(LibTiffTestCase):
         # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
         # Contains JPEGTables (347) tag
         infile = "Tests/images/hopper_jpg.tif"
-        im = Image.open(infile)
-
-        # Act / Assert
-        # Should not raise UnicodeDecodeError or anything else
-        im.save(outfile)
+        with Image.open(infile) as im:
+            # Act / Assert
+            # Should not raise UnicodeDecodeError or anything else
+            im.save(outfile)
 
     def test_16bit_RGB_tiff(self):
-        im = Image.open("Tests/images/tiff_16bit_RGB.tiff")
+        with Image.open("Tests/images/tiff_16bit_RGB.tiff") as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (100, 40))
+            self.assertEqual(
+                im.tile,
+                [
+                    (
+                        "libtiff",
+                        (0, 0, 100, 40),
+                        0,
+                        ("RGB;16N", "tiff_adobe_deflate", False, 8),
+                    )
+                ],
+            )
+            im.load()
 
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (100, 40))
-        self.assertEqual(
-            im.tile,
-            [
-                (
-                    "libtiff",
-                    (0, 0, 100, 40),
-                    0,
-                    ("RGB;16N", "tiff_adobe_deflate", False, 8),
-                )
-            ],
-        )
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGB_target.png")
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGB_target.png")
 
     def test_16bit_RGBa_tiff(self):
-        im = Image.open("Tests/images/tiff_16bit_RGBa.tiff")
+        with Image.open("Tests/images/tiff_16bit_RGBa.tiff") as im:
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (100, 40))
+            self.assertEqual(
+                im.tile,
+                [
+                    (
+                        "libtiff",
+                        (0, 0, 100, 40),
+                        0,
+                        ("RGBa;16N", "tiff_lzw", False, 38236),
+                    )
+                ],
+            )
+            im.load()
 
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (100, 40))
-        self.assertEqual(
-            im.tile,
-            [("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))],
-        )
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+            self.assert_image_equal_tofile(
+                im, "Tests/images/tiff_16bit_RGBa_target.png"
+            )
 
     def test_gimp_tiff(self):
         # Read TIFF JPEG images from GIMP [@PIL168]
@@ -755,82 +737,79 @@ class TestFileLibTiff(LibTiffTestCase):
             self.skipTest("jpeg support not available")
 
         filename = "Tests/images/pil168.tif"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (256, 256))
+            self.assertEqual(
+                im.tile,
+                [("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))],
+            )
+            im.load()
 
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (256, 256))
-        self.assertEqual(
-            im.tile, [("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))]
-        )
-        im.load()
-
-        self.assert_image_equal_tofile(im, "Tests/images/pil168.png")
+            self.assert_image_equal_tofile(im, "Tests/images/pil168.png")
 
     def test_sampleformat(self):
         # https://github.com/python-pillow/Pillow/issues/1466
-        im = Image.open("Tests/images/copyleft.tiff")
-        self.assertEqual(im.mode, "RGB")
+        with Image.open("Tests/images/copyleft.tiff") as im:
+            self.assertEqual(im.mode, "RGB")
 
-        self.assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
+            self.assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
 
     def test_lzw(self):
-        im = Image.open("Tests/images/hopper_lzw.tif")
-
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "TIFF")
-        im2 = hopper()
-        self.assert_image_similar(im, im2, 5)
+        with Image.open("Tests/images/hopper_lzw.tif") as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.format, "TIFF")
+            im2 = hopper()
+            self.assert_image_similar(im, im2, 5)
 
     def test_strip_cmyk_jpeg(self):
         infile = "Tests/images/tiff_strip_cmyk_jpeg.tif"
-        im = Image.open(infile)
-
-        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+        with Image.open(infile) as im:
+            self.assert_image_similar_tofile(
+                im, "Tests/images/pil_sample_cmyk.jpg", 0.5
+            )
 
     def test_strip_cmyk_16l_jpeg(self):
         infile = "Tests/images/tiff_strip_cmyk_16l_jpeg.tif"
-        im = Image.open(infile)
-
-        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+        with Image.open(infile) as im:
+            self.assert_image_similar_tofile(
+                im, "Tests/images/pil_sample_cmyk.jpg", 0.5
+            )
 
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
-        im = Image.open(infile)
-
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+        with Image.open(infile) as im:
+            self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
     def test_tiled_cmyk_jpeg(self):
         infile = "Tests/images/tiff_tiled_cmyk_jpeg.tif"
-        im = Image.open(infile)
-
-        self.assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
+        with Image.open(infile) as im:
+            self.assert_image_similar_tofile(
+                im, "Tests/images/pil_sample_cmyk.jpg", 0.5
+            )
 
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
-        im = Image.open(infile)
-
-        self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+        with Image.open(infile) as im:
+            self.assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
     def test_old_style_jpeg(self):
         infile = "Tests/images/old-style-jpeg-compression.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(
-            im, "Tests/images/old-style-jpeg-compression.png"
-        )
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(
+                im, "Tests/images/old-style-jpeg-compression.png"
+            )
 
     def test_no_rows_per_strip(self):
         # This image does not have a RowsPerStrip TIFF tag
@@ -840,13 +819,12 @@ class TestFileLibTiff(LibTiffTestCase):
         self.assertEqual(im.size, (950, 975))
 
     def test_orientation(self):
-        base_im = Image.open("Tests/images/g4_orientation_1.tif")
+        with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
+            for i in range(2, 9):
+                with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                    im.load()
 
-        for i in range(2, 9):
-            im = Image.open("Tests/images/g4_orientation_" + str(i) + ".tif")
-            im.load()
-
-            self.assert_image_similar(base_im, im, 0.7)
+                    self.assert_image_similar(base_im, im, 0.7)
 
     def test_sampleformat_not_corrupted(self):
         # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted

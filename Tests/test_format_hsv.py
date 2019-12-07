@@ -2,7 +2,6 @@ import colorsys
 import itertools
 
 from PIL import Image
-from PIL._util import py3
 
 from .helper import PillowTestCase, hopper
 
@@ -49,27 +48,18 @@ class TestFormatHSV(PillowTestCase):
 
         (r, g, b) = im.split()
 
-        if py3:
-            conv_func = self.int_to_float
-        else:
-            conv_func = self.str_to_float
-
-        if hasattr(itertools, "izip"):
-            iter_helper = itertools.izip
-        else:
-            iter_helper = itertools.zip_longest
+        conv_func = self.int_to_float
 
         converted = [
             self.tuple_to_ints(func(conv_func(_r), conv_func(_g), conv_func(_b)))
-            for (_r, _g, _b) in iter_helper(r.tobytes(), g.tobytes(), b.tobytes())
+            for (_r, _g, _b) in itertools.zip_longest(
+                r.tobytes(), g.tobytes(), b.tobytes()
+            )
         ]
 
-        if py3:
-            new_bytes = b"".join(
-                bytes(chr(h) + chr(s) + chr(v), "latin-1") for (h, s, v) in converted
-            )
-        else:
-            new_bytes = b"".join(chr(h) + chr(s) + chr(v) for (h, s, v) in converted)
+        new_bytes = b"".join(
+            bytes(chr(h) + chr(s) + chr(v), "latin-1") for (h, s, v) in converted
+        )
 
         hsv = Image.frombytes(mode, r.size, new_bytes)
 

@@ -229,18 +229,16 @@ class TestImageCms(PillowTestCase):
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
-        target = Image.open("Tests/images/hopper.Lab.tif")
-
-        self.assert_image_similar(i, target, 3.5)
+        with Image.open("Tests/images/hopper.Lab.tif") as target:
+            self.assert_image_similar(i, target, 3.5)
 
     def test_lab_srgb(self):
         psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
         t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
-        img = Image.open("Tests/images/hopper.Lab.tif")
-
-        img_srgb = ImageCms.applyTransform(img, t)
+        with Image.open("Tests/images/hopper.Lab.tif") as img:
+            img_srgb = ImageCms.applyTransform(img, t)
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 

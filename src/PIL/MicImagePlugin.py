@@ -46,7 +46,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except IOError:
+        except OSError:
             raise SyntaxError("not an MIC file; invalid OLE file")
 
         # find ACI subfiles with Image members (maybe not the

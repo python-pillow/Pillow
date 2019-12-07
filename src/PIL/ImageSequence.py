@@ -16,7 +16,7 @@
 ##
 
 
-class Iterator(object):
+class Iterator:
     """
     This class implements an iterator object that can be used to loop
     over an image sequence.
@@ -51,9 +51,6 @@ class Iterator(object):
             return self.im
         except EOFError:
             raise StopIteration
-
-    def next(self):
-        return self.__next__()
 
 
 def all_frames(im, func=None):

@@ -11,20 +11,14 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+from shlex import quote
 
 from PIL import Image
-
-if sys.version_info.major >= 3:
-    from shlex import quote
-else:
-    from pipes import quote
 
 _viewers = []
 
@@ -56,7 +50,7 @@ def show(image, title=None, **options):
     return 0
 
 
-class Viewer(object):
+class Viewer:
     """Base class for viewers."""
 
     # main api
@@ -127,10 +121,8 @@ elif sys.platform == "darwin":
             # on darwin open returns immediately resulting in the temp
             # file removal while app is opening
             command = "open -a Preview.app"
-            command = "(%s %s; sleep 20; rm -f %s)&" % (
-                command,
-                quote(file),
-                quote(file),
+            command = "({} {}; sleep 20; rm -f {})&".format(
+                command, quote(file), quote(file)
             )
             return command
 
@@ -154,23 +146,13 @@ else:
 
     # unixoids
 
-    def which(executable):
-        path = os.environ.get("PATH")
-        if not path:
-            return None
-        for dirname in path.split(os.pathsep):
-            filename = os.path.join(dirname, executable)
-            if os.path.isfile(filename) and os.access(filename, os.X_OK):
-                return filename
-        return None
-
     class UnixViewer(Viewer):
         format = "PNG"
         options = {"compress_level": 1}
 
         def get_command(self, file, **options):
             command = self.get_command_ex(file, **options)[0]
-            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+            return "({} {}; rm -f {})&".format(command, quote(file), quote(file))
 
         def show_file(self, file, **options):
             """Display given file"""
@@ -192,7 +174,7 @@ else:
             command = executable = "display"
             return command, executable
 
-    if which("display"):
+    if shutil.which("display"):
         register(DisplayViewer)
 
     class EogViewer(UnixViewer):
@@ -200,7 +182,7 @@ else:
             command = executable = "eog"
             return command, executable
 
-    if which("eog"):
+    if shutil.which("eog"):
         register(EogViewer)
 
     class XVViewer(UnixViewer):
@@ -212,7 +194,7 @@ else:
                 command += " -name %s" % quote(title)
             return command, executable
 
-    if which("xv"):
+    if shutil.which("xv"):
         register(XVViewer)
 
 if __name__ == "__main__":

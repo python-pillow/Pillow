@@ -1,13 +1,13 @@
 import logging
 import os
+import unittest
 from io import BytesIO
 
 import pytest
 from PIL import Image, TiffImagePlugin
-from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
-from .helper import PillowTestCase, hopper, is_pypy, is_win32, unittest
+from .helper import PillowTestCase, hopper, is_pypy, is_win32
 
 logger = logging.getLogger(__name__)
 
@@ -72,22 +72,20 @@ class TestFileTiff(PillowTestCase):
         # Read RGBa images from macOS [@PIL136]
 
         filename = "Tests/images/pil136.tiff"
-        im = Image.open(filename)
+        with Image.open(filename) as im:
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (55, 43))
+            self.assertEqual(im.tile, [("raw", (0, 0, 55, 43), 8, ("RGBa", 0, 1))])
+            im.load()
 
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (55, 43))
-        self.assertEqual(im.tile, [("raw", (0, 0, 55, 43), 8, ("RGBa", 0, 1))])
-        im.load()
-
-        self.assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
+            self.assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
     def test_wrong_bits_per_sample(self):
-        im = Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff")
-
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (52, 53))
-        self.assertEqual(im.tile, [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))])
-        im.load()
+        with Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff") as im:
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (52, 53))
+            self.assertEqual(im.tile, [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))])
+            im.load()
 
     def test_set_legacy_api(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -149,23 +147,22 @@ class TestFileTiff(PillowTestCase):
 
     def test_save_dpi_rounding(self):
         outfile = self.tempfile("temp.tif")
-        im = Image.open("Tests/images/hopper.tif")
+        with Image.open("Tests/images/hopper.tif") as im:
+            for dpi in (72.2, 72.8):
+                im.save(outfile, dpi=(dpi, dpi))
 
-        for dpi in (72.2, 72.8):
-            im.save(outfile, dpi=(dpi, dpi))
-
-            reloaded = Image.open(outfile)
-            reloaded.load()
-            self.assertEqual((round(dpi), round(dpi)), reloaded.info["dpi"])
+                with Image.open(outfile) as reloaded:
+                    reloaded.load()
+                    self.assertEqual((round(dpi), round(dpi)), reloaded.info["dpi"])
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
         Image.open("Tests/images/10ct_32bit_128.tiff").save(
             b, format="tiff", resolution=123.45
         )
-        im = Image.open(b)
-        self.assertEqual(float(im.tag_v2[X_RESOLUTION]), 123.45)
-        self.assertEqual(float(im.tag_v2[Y_RESOLUTION]), 123.45)
+        with Image.open(b) as im:
+            self.assertEqual(float(im.tag_v2[X_RESOLUTION]), 123.45)
+            self.assertEqual(float(im.tag_v2[Y_RESOLUTION]), 123.45)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -192,63 +189,53 @@ class TestFileTiff(PillowTestCase):
         self.assertRaises(IOError, im.save, outfile)
 
     def test_little_endian(self):
-        im = Image.open("Tests/images/16bit.cropped.tif")
-        self.assertEqual(im.getpixel((0, 0)), 480)
-        self.assertEqual(im.mode, "I;16")
+        with Image.open("Tests/images/16bit.cropped.tif") as im:
+            self.assertEqual(im.getpixel((0, 0)), 480)
+            self.assertEqual(im.mode, "I;16")
 
-        b = im.tobytes()
+            b = im.tobytes()
         # Bytes are in image native order (little endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\xe0"))
-            self.assertEqual(b[1], ord(b"\x01"))
-        else:
-            self.assertEqual(b[0], b"\xe0")
-            self.assertEqual(b[1], b"\x01")
+        self.assertEqual(b[0], ord(b"\xe0"))
+        self.assertEqual(b[1], ord(b"\x01"))
 
     def test_big_endian(self):
-        im = Image.open("Tests/images/16bit.MM.cropped.tif")
-        self.assertEqual(im.getpixel((0, 0)), 480)
-        self.assertEqual(im.mode, "I;16B")
+        with Image.open("Tests/images/16bit.MM.cropped.tif") as im:
+            self.assertEqual(im.getpixel((0, 0)), 480)
+            self.assertEqual(im.mode, "I;16B")
 
-        b = im.tobytes()
-
+            b = im.tobytes()
         # Bytes are in image native order (big endian)
-        if py3:
-            self.assertEqual(b[0], ord(b"\x01"))
-            self.assertEqual(b[1], ord(b"\xe0"))
-        else:
-            self.assertEqual(b[0], b"\x01")
-            self.assertEqual(b[1], b"\xe0")
+        self.assertEqual(b[0], ord(b"\x01"))
+        self.assertEqual(b[1], ord(b"\xe0"))
 
     def test_16bit_s(self):
-        im = Image.open("Tests/images/16bit.s.tif")
-        im.load()
-        self.assertEqual(im.mode, "I")
-        self.assertEqual(im.getpixel((0, 0)), 32767)
-        self.assertEqual(im.getpixel((0, 1)), 0)
+        with Image.open("Tests/images/16bit.s.tif") as im:
+            im.load()
+            self.assertEqual(im.mode, "I")
+            self.assertEqual(im.getpixel((0, 0)), 32767)
+            self.assertEqual(im.getpixel((0, 1)), 0)
 
     def test_12bit_rawmode(self):
         """ Are we generating the same interpretation
         of the image as Imagemagick is? """
 
-        im = Image.open("Tests/images/12bit.cropped.tif")
+        with Image.open("Tests/images/12bit.cropped.tif") as im:
+            # to make the target --
+            # convert 12bit.cropped.tif -depth 16 tmp.tif
+            # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
+            # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
+            # so we need to unshift so that the integer values are the same.
 
-        # to make the target --
-        # convert 12bit.cropped.tif -depth 16 tmp.tif
-        # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
-        # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
-        # so we need to unshift so that the integer values are the same.
-
-        self.assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
+            self.assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
 
     def test_32bit_float(self):
         # Issue 614, specific 32-bit float format
         path = "Tests/images/10ct_32bit_128.tiff"
-        im = Image.open(path)
-        im.load()
+        with Image.open(path) as im:
+            im.load()
 
-        self.assertEqual(im.getpixel((0, 0)), -0.4526388943195343)
-        self.assertEqual(im.getextrema(), (-3.140936851501465, 3.140684127807617))
+            self.assertEqual(im.getpixel((0, 0)), -0.4526388943195343)
+            self.assertEqual(im.getextrema(), (-3.140936851501465, 3.140684127807617))
 
     def test_unknown_pixel_mode(self):
         self.assertRaises(
@@ -300,10 +287,10 @@ class TestFileTiff(PillowTestCase):
             self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
 
     def test_multipage_last_frame(self):
-        im = Image.open("Tests/images/multipage-lastframe.tif")
-        im.load()
-        self.assertEqual(im.size, (20, 20))
-        self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
+        with Image.open("Tests/images/multipage-lastframe.tif") as im:
+            im.load()
+            self.assertEqual(im.size, (20, 20))
+            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (0, 0, 255))
 
     def test___str__(self):
         filename = "Tests/images/pil136.tiff"
@@ -419,10 +406,10 @@ class TestFileTiff(PillowTestCase):
     def test_4bit(self):
         test_file = "Tests/images/hopper_gray_4bpp.tif"
         original = hopper("L")
-        im = Image.open(test_file)
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.mode, "L")
-        self.assert_image_similar(im, original, 7.3)
+        with Image.open(test_file) as im:
+            self.assertEqual(im.size, (128, 128))
+            self.assertEqual(im.mode, "L")
+            self.assert_image_similar(im, original, 7.3)
 
     def test_gray_semibyte_per_pixel(self):
         test_files = (
@@ -447,15 +434,15 @@ class TestFileTiff(PillowTestCase):
         )
         original = hopper("L")
         for epsilon, group in test_files:
-            im = Image.open(group[0])
-            self.assertEqual(im.size, (128, 128))
-            self.assertEqual(im.mode, "L")
-            self.assert_image_similar(im, original, epsilon)
-            for file in group[1:]:
-                im2 = Image.open(file)
-                self.assertEqual(im2.size, (128, 128))
-                self.assertEqual(im2.mode, "L")
-                self.assert_image_equal(im, im2)
+            with Image.open(group[0]) as im:
+                self.assertEqual(im.size, (128, 128))
+                self.assertEqual(im.mode, "L")
+                self.assert_image_similar(im, original, epsilon)
+                for file in group[1:]:
+                    with Image.open(file) as im2:
+                        self.assertEqual(im2.size, (128, 128))
+                        self.assertEqual(im2.mode, "L")
+                        self.assert_image_equal(im, im2)
 
     def test_with_underscores(self):
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
@@ -475,29 +462,26 @@ class TestFileTiff(PillowTestCase):
         # Test an image of all '0' values
         pixel_value = 0x1234
         infile = "Tests/images/uint16_1_4660.tif"
-        im = Image.open(infile)
-        self.assertEqual(im.getpixel((0, 0)), pixel_value)
+        with Image.open(infile) as im:
+            self.assertEqual(im.getpixel((0, 0)), pixel_value)
 
-        tmpfile = self.tempfile("temp.tif")
-        im.save(tmpfile)
+            tmpfile = self.tempfile("temp.tif")
+            im.save(tmpfile)
 
-        reloaded = Image.open(tmpfile)
-
-        self.assert_image_equal(im, reloaded)
+            with Image.open(tmpfile) as reloaded:
+                self.assert_image_equal(im, reloaded)
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw(self):
         # gdal_translate -of GTiff -co INTERLEAVE=BAND \
         # tiff_strip_raw.tif tiff_strip_planar_raw.tiff
         infile = "Tests/images/tiff_strip_planar_raw.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw_with_overviews(self):
         # gdaladdo tiff_strip_planar_raw2.tif 2 4 8 16
@@ -510,9 +494,8 @@ class TestFileTiff(PillowTestCase):
         # -co BLOCKYSIZE=32 -co INTERLEAVE=BAND \
         # tiff_tiled_raw.tif tiff_tiled_planar_raw.tiff
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
-        im = Image.open(infile)
-
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        with Image.open(infile) as im:
+            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_palette(self):
         for mode in ["P", "PA"]:
@@ -521,8 +504,8 @@ class TestFileTiff(PillowTestCase):
             im = hopper(mode)
             im.save(outfile)
 
-            reloaded = Image.open(outfile)
-            self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+            with Image.open(outfile) as reloaded:
+                self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_tiff_save_all(self):
         mp = BytesIO()
@@ -540,20 +523,19 @@ class TestFileTiff(PillowTestCase):
         im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
-        reread = Image.open(mp)
-        self.assertEqual(reread.n_frames, 3)
+        with Image.open(mp) as reread:
+            self.assertEqual(reread.n_frames, 3)
 
         # Test appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         mp = BytesIO()
         im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
-        reread = Image.open(mp)
-        self.assertEqual(reread.n_frames, 3)
+        with Image.open(mp) as reread:
+            self.assertEqual(reread.n_frames, 3)
 
     def test_saving_icc_profile(self):
         # Tests saving TIFF with icc_profile set.

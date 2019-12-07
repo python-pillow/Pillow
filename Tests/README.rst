@@ -27,6 +27,6 @@ Run all the tests from the root of the Pillow source distribution::
 
 Or with coverage::
 
-    pytest --cov PIL --cov-report term
+    pytest --cov PIL --cov Tests --cov-report term
     coverage html
     open htmlcov/index.html

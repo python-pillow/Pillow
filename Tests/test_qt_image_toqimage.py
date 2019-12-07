@@ -43,8 +43,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             data.save(tempfile)
 
             # Check that it actually worked.
-            reloaded = Image.open(tempfile)
-            self.assert_image_equal(reloaded, src)
+            with Image.open(tempfile) as reloaded:
+                self.assert_image_equal(reloaded, src)
 
     def test_segfault(self):
         app = QApplication([])
@@ -57,7 +57,7 @@ if ImageQt.qt_is_installed:
 
     class Example(QWidget):
         def __init__(self):
-            super(Example, self).__init__()
+            super().__init__()
 
             img = hopper().resize((1000, 1000))
 

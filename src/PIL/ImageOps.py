@@ -21,7 +21,6 @@ import functools
 import operator
 
 from . import Image
-from ._util import isStringType
 
 #
 # helpers
@@ -39,7 +38,7 @@ def _border(border):
 
 
 def _color(color, mode):
-    if isStringType(color):
+    if isinstance(color, str):
         from . import ImageColor
 
         color = ImageColor.getcolor(color, mode)
@@ -55,7 +54,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        raise IOError("not supported for this image mode")
+        raise OSError("not supported for this image mode")
 
 
 #

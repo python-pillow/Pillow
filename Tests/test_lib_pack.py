@@ -18,7 +18,7 @@ class TestLibPack(PillowTestCase):
 
         if isinstance(data, int):
             data_len = data * len(pixels)
-            data = bytes(bytearray(range(1, data_len + 1)))
+            data = bytes(range(1, data_len + 1))
 
         self.assertEqual(data, im.tobytes("raw", rawmode))
 
@@ -43,6 +43,9 @@ class TestLibPack(PillowTestCase):
     def test_LA(self):
         self.assert_pack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_pack("LA", "LA;L", 2, (1, 4), (2, 5), (3, 6))
+
+    def test_La(self):
+        self.assert_pack("La", "La", 2, (1, 2), (3, 4), (5, 6))
 
     def test_P(self):
         self.assert_pack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 255, 0, 0)
@@ -226,7 +229,7 @@ class TestLibUnpack(PillowTestCase):
         """
         if isinstance(data, int):
             data_len = data * len(pixels)
-            data = bytes(bytearray(range(1, data_len + 1)))
+            data = bytes(range(1, data_len + 1))
 
         im = Image.frombytes(mode, (len(pixels), 1), data, "raw", rawmode, 0, 1)
 
@@ -268,6 +271,9 @@ class TestLibUnpack(PillowTestCase):
     def test_LA(self):
         self.assert_unpack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_unpack("LA", "LA;L", 2, (1, 4), (2, 5), (3, 6))
+
+    def test_La(self):
+        self.assert_unpack("La", "La", 2, (1, 2), (3, 4), (5, 6))
 
     def test_P(self):
         self.assert_unpack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 1, 0, 0)

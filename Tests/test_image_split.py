@@ -53,8 +53,8 @@ class TestImageSplit(PillowTestCase):
 
         def split_open(mode):
             hopper(mode).save(test_file)
-            im = Image.open(test_file)
-            return len(im.split())
+            with Image.open(test_file) as im:
+                return len(im.split())
 
         self.assertEqual(split_open("1"), 1)
         self.assertEqual(split_open("L"), 1)

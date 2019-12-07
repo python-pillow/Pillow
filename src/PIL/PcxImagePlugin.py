@@ -103,7 +103,7 @@ class PcxImageFile(ImageFile.ImageFile):
             rawmode = "RGB;L"
 
         else:
-            raise IOError("unknown PCX mode")
+            raise OSError("unknown PCX mode")
 
         self.mode = mode
         self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]

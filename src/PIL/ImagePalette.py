@@ -21,7 +21,7 @@ import array
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
 
-class ImagePalette(object):
+class ImagePalette:
     """
     Color palette for palette mapped images
 
@@ -216,6 +216,6 @@ def load(filename):
                 # traceback.print_exc()
                 pass
         else:
-            raise IOError("cannot load palette")
+            raise OSError("cannot load palette")
 
     return lut  # data, rawmode

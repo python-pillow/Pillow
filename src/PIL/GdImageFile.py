@@ -23,7 +23,7 @@
 # purposes only.
 
 
-from . import ImageFile, ImagePalette
+from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i8, i16be as i16, i32be as i32
 
 ##
@@ -82,4 +82,4 @@ def open(fp, mode="r"):
     try:
         return GdImageFile(fp)
     except SyntaxError:
-        raise IOError("cannot identify this image file")
+        raise UnidentifiedImageError("cannot identify this image file")

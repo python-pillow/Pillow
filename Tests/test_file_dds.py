@@ -17,73 +17,71 @@ class TestFileDds(PillowTestCase):
 
     def test_sanity_dxt1(self):
         """Check DXT1 images can be opened"""
-        target = Image.open(TEST_FILE_DXT1.replace(".dds", ".png"))
+        with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
+            target = target.convert("RGBA")
+        with Image.open(TEST_FILE_DXT1) as im:
+            im.load()
 
-        im = Image.open(TEST_FILE_DXT1)
-        im.load()
+            self.assertEqual(im.format, "DDS")
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (256, 256))
 
-        self.assertEqual(im.format, "DDS")
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (256, 256))
-
-        self.assert_image_equal(target.convert("RGBA"), im)
+            self.assert_image_equal(im, target)
 
     def test_sanity_dxt5(self):
         """Check DXT5 images can be opened"""
 
-        target = Image.open(TEST_FILE_DXT5.replace(".dds", ".png"))
-
-        im = Image.open(TEST_FILE_DXT5)
-        im.load()
+        with Image.open(TEST_FILE_DXT5) as im:
+            im.load()
 
         self.assertEqual(im.format, "DDS")
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (256, 256))
 
-        self.assert_image_equal(target, im)
+        with Image.open(TEST_FILE_DXT5.replace(".dds", ".png")) as target:
+            self.assert_image_equal(target, im)
 
     def test_sanity_dxt3(self):
         """Check DXT3 images can be opened"""
 
-        target = Image.open(TEST_FILE_DXT3.replace(".dds", ".png"))
+        with Image.open(TEST_FILE_DXT3.replace(".dds", ".png")) as target:
+            with Image.open(TEST_FILE_DXT3) as im:
+                im.load()
 
-        im = Image.open(TEST_FILE_DXT3)
-        im.load()
+                self.assertEqual(im.format, "DDS")
+                self.assertEqual(im.mode, "RGBA")
+                self.assertEqual(im.size, (256, 256))
 
-        self.assertEqual(im.format, "DDS")
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (256, 256))
-
-        self.assert_image_equal(target, im)
+                self.assert_image_equal(target, im)
 
     def test_dx10_bc7(self):
         """Check DX10 images can be opened"""
 
-        target = Image.open(TEST_FILE_DX10_BC7.replace(".dds", ".png"))
+        with Image.open(TEST_FILE_DX10_BC7) as im:
+            im.load()
 
-        im = Image.open(TEST_FILE_DX10_BC7)
-        im.load()
+            self.assertEqual(im.format, "DDS")
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (256, 256))
 
-        self.assertEqual(im.format, "DDS")
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (256, 256))
-
-        self.assert_image_equal(target, im)
+            with Image.open(TEST_FILE_DX10_BC7.replace(".dds", ".png")) as target:
+                self.assert_image_equal(target, im)
 
     def test_dx10_bc7_unorm_srgb(self):
         """Check DX10 unsigned normalized integer images can be opened"""
 
-        target = Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB.replace(".dds", ".png"))
+        with Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB) as im:
+            im.load()
 
-        im = Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB)
-        im.load()
+            self.assertEqual(im.format, "DDS")
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (16, 16))
+            self.assertEqual(im.info["gamma"], 1 / 2.2)
 
-        self.assertEqual(im.format, "DDS")
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (16, 16))
-        self.assertEqual(im.info["gamma"], 1 / 2.2)
-
-        self.assert_image_equal(target, im)
+            with Image.open(
+                TEST_FILE_DX10_BC7_UNORM_SRGB.replace(".dds", ".png")
+            ) as target:
+                self.assert_image_equal(target, im)
 
     def test_unimplemented_dxgi_format(self):
         self.assertRaises(
@@ -95,16 +93,17 @@ class TestFileDds(PillowTestCase):
     def test_uncompressed_rgb(self):
         """Check uncompressed RGB images can be opened"""
 
-        target = Image.open(TEST_FILE_UNCOMPRESSED_RGB.replace(".dds", ".png"))
+        with Image.open(TEST_FILE_UNCOMPRESSED_RGB) as im:
+            im.load()
 
-        im = Image.open(TEST_FILE_UNCOMPRESSED_RGB)
-        im.load()
+            self.assertEqual(im.format, "DDS")
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (800, 600))
 
-        self.assertEqual(im.format, "DDS")
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (800, 600))
-
-        self.assert_image_equal(target, im)
+            with Image.open(
+                TEST_FILE_UNCOMPRESSED_RGB.replace(".dds", ".png")
+            ) as target:
+                self.assert_image_equal(target, im)
 
     def test__validate_true(self):
         """Check valid prefix"""
@@ -145,8 +144,8 @@ class TestFileDds(PillowTestCase):
             img_file = f.read()
 
         def short_file():
-            im = Image.open(BytesIO(img_file[:-100]))
-            im.load()
+            with Image.open(BytesIO(img_file[:-100])) as im:
+                im.load()
 
         self.assertRaises(IOError, short_file)
 

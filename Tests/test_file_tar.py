@@ -22,11 +22,11 @@ class TestFileTar(PillowTestCase):
         ]:
             if codec in codecs:
                 with TarIO.TarIO(TEST_TAR_FILE, test_path) as tar:
-                    im = Image.open(tar)
-                    im.load()
-                    self.assertEqual(im.mode, "RGB")
-                    self.assertEqual(im.size, (128, 128))
-                    self.assertEqual(im.format, format)
+                    with Image.open(tar) as im:
+                        im.load()
+                        self.assertEqual(im.mode, "RGB")
+                        self.assertEqual(im.size, (128, 128))
+                        self.assertEqual(im.format, format)
 
     @unittest.skipIf(is_pypy(), "Requires CPython")
     def test_unclosed_file(self):

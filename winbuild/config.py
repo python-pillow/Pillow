@@ -3,18 +3,17 @@ import os
 SF_MIRROR = "https://iweb.dl.sourceforge.net"
 
 pythons = {
+    "pypy3": {"compiler": 7.1, "vc": 2015},
     # for AppVeyor
-    "27": {"compiler": 7, "vc": 2010},
-    "pypy2": {"compiler": 7, "vc": 2010},
     "35": {"compiler": 7.1, "vc": 2015},
     "36": {"compiler": 7.1, "vc": 2015},
-    "pypy3": {"compiler": 7.1, "vc": 2015},
     "37": {"compiler": 7.1, "vc": 2015},
     "38": {"compiler": 7.1, "vc": 2015},
     # for GitHub Actions
     "3.5": {"compiler": 7.1, "vc": 2015},
     "3.6": {"compiler": 7.1, "vc": 2015},
     "3.7": {"compiler": 7.1, "vc": 2015},
+    "3.8": {"compiler": 7.1, "vc": 2015},
 }
 
 VIRT_BASE = "c:/vp/"
@@ -55,11 +54,6 @@ libs = {
         "filename": "lcms2-2.8.zip",
         "dir": "lcms2-2.8",
     },
-    "ghostscript": {
-        "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostscript-9.27.tar.gz",  # noqa: E501
-        "filename": "ghostscript-9.27.tar.gz",
-        "dir": "ghostscript-9.27",
-    },
     "tcl-8.5": {
         "url": SF_MIRROR + "/project/tcl/Tcl/8.5.19/tcl8519-src.zip",
         "filename": "tcl8519-src.zip",
@@ -72,15 +66,15 @@ libs = {
         "version": "8.5.19",
     },
     "tcl-8.6": {
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tcl869-src.zip",
-        "filename": "tcl869-src.zip",
+        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.10/tcl8610-src.zip",
+        "filename": "tcl8610-src.zip",
         "dir": "",
     },
     "tk-8.6": {
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tk869-src.zip",
-        "filename": "tk869-src.zip",
+        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.10/tk8610-src.zip",
+        "filename": "tk8610-src.zip",
         "dir": "",
-        "version": "8.6.9",
+        "version": "8.6.10",
     },
     "webp": {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.0.3.tar.gz",
@@ -167,14 +161,14 @@ compilers = {
 def pyversion_from_env():
     py = os.environ["PYTHON"]
 
-    py_version = "27"
+    py_version = "35"
     for k in pythons:
         if k in py:
             py_version = k
             break
 
     if "64" in py:
-        py_version = "%s%s" % (py_version, X64_EXT)
+        py_version = "{}{}".format(py_version, X64_EXT)
 
     return py_version
 

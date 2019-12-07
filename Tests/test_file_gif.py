@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
 
-from .helper import PillowTestCase, hopper, is_pypy, netpbm_available, unittest
+from .helper import PillowTestCase, hopper, is_pypy, netpbm_available
 
 try:
     from PIL import _webp
@@ -87,21 +88,20 @@ class TestFileGif(PillowTestCase):
         def check(colors, size, expected_palette_length):
             # make an image with empty colors in the start of the palette range
             im = Image.frombytes(
-                "P",
-                (colors, colors),
-                bytes(bytearray(range(256 - colors, 256)) * colors),
+                "P", (colors, colors), bytes(range(256 - colors, 256)) * colors
             )
             im = im.resize((size, size))
             outfile = BytesIO()
             im.save(outfile, "GIF")
             outfile.seek(0)
-            reloaded = Image.open(outfile)
+            with Image.open(outfile) as reloaded:
+                # check palette length
+                palette_length = max(
+                    i + 1 for i, v in enumerate(reloaded.histogram()) if v
+                )
+                self.assertEqual(expected_palette_length, palette_length)
 
-            # check palette length
-            palette_length = max(i + 1 for i, v in enumerate(reloaded.histogram()) if v)
-            self.assertEqual(expected_palette_length, palette_length)
-
-            self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+                self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
         # These do optimize the palette
         check(128, 511, 128)
@@ -119,7 +119,7 @@ class TestFileGif(PillowTestCase):
         check(256, 511, 256)
 
     def test_optimize_full_l(self):
-        im = Image.frombytes("L", (16, 16), bytes(bytearray(range(256))))
+        im = Image.frombytes("L", (16, 16), bytes(range(256)))
         test_file = BytesIO()
         im.save(test_file, "GIF", optimize=True)
         self.assertEqual(im.mode, "L")
@@ -555,9 +555,9 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(reread.info["background"], im.info["background"])
 
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
-            im = Image.open("Tests/images/hopper.webp")
-            self.assertIsInstance(im.info["background"], tuple)
-            im.save(out)
+            with Image.open("Tests/images/hopper.webp") as im:
+                self.assertIsInstance(im.info["background"], tuple)
+                im.save(out)
 
     def test_comment(self):
         with Image.open(TEST_GIF) as im:
@@ -632,8 +632,7 @@ class TestFileGif(PillowTestCase):
 
         # Tests appending using a generator
         def imGenerator(ims):
-            for im in ims:
-                yield im
+            yield from ims
 
         im.save(out, save_all=True, append_images=imGenerator(ims))
 
@@ -655,7 +654,7 @@ class TestFileGif(PillowTestCase):
         # that's > 128 items where the transparent color is actually
         # the top palette entry to trigger the bug.
 
-        data = bytes(bytearray(range(1, 254)))
+        data = bytes(range(1, 254))
         palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
         im = Image.new("L", (253, 1))
@@ -703,7 +702,7 @@ class TestFileGif(PillowTestCase):
 
         im = hopper("P")
         im_l = Image.frombytes("L", im.size, im.tobytes())
-        palette = bytes(bytearray(im.getpalette()))
+        palette = bytes(im.getpalette())
 
         out = self.tempfile("temp.gif")
         im_l.save(out, palette=palette)
@@ -718,7 +717,7 @@ class TestFileGif(PillowTestCase):
         # Forcing a non-straight grayscale palette.
 
         im = hopper("P")
-        palette = bytes(bytearray([255 - i // 3 for i in range(768)]))
+        palette = bytes([255 - i // 3 for i in range(768)])
 
         out = self.tempfile("temp.gif")
         im.save(out, palette=palette)
@@ -759,7 +758,7 @@ class TestFileGif(PillowTestCase):
         im.putpalette(ImagePalette.ImagePalette("RGB"))
         im.info = {"background": 0}
 
-        passed_palette = bytes(bytearray([255 - i // 3 for i in range(768)]))
+        passed_palette = bytes([255 - i // 3 for i in range(768)])
 
         GifImagePlugin._FORCE_OPTIMIZE = True
         try:

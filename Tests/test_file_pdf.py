@@ -99,8 +99,7 @@ class TestFilePdf(PillowTestCase):
 
             # Test appending using a generator
             def imGenerator(ims):
-                for im in ims:
-                    yield im
+                yield from ims
 
             im.save(outfile, save_all=True, append_images=imGenerator(ims))
 
@@ -108,8 +107,8 @@ class TestFilePdf(PillowTestCase):
         self.assertGreater(os.path.getsize(outfile), 0)
 
         # Append JPEG images
-        jpeg = Image.open("Tests/images/flower.jpg")
-        jpeg.save(outfile, save_all=True, append_images=[jpeg.copy()])
+        with Image.open("Tests/images/flower.jpg") as jpeg:
+            jpeg.save(outfile, save_all=True, append_images=[jpeg.copy()])
 
         self.assertTrue(os.path.isfile(outfile))
         self.assertGreater(os.path.getsize(outfile), 0)
@@ -163,13 +162,10 @@ class TestFilePdf(PillowTestCase):
 
     def test_pdf_append_fails_on_nonexistent_file(self):
         im = hopper("RGB")
-        temp_dir = tempfile.mkdtemp()
-        try:
+        with tempfile.TemporaryDirectory() as temp_dir:
             self.assertRaises(
                 IOError, im.save, os.path.join(temp_dir, "nonexistent.pdf"), append=True
             )
-        finally:
-            os.rmdir(temp_dir)
 
     def check_pdf_pages_consistency(self, pdf):
         pages_info = pdf.read_indirect(pdf.pages_ref)
@@ -207,7 +203,7 @@ class TestFilePdf(PillowTestCase):
             # append some info
             pdf.info.Title = "abc"
             pdf.info.Author = "def"
-            pdf.info.Subject = u"ghi\uABCD"
+            pdf.info.Subject = "ghi\uABCD"
             pdf.info.Keywords = "qw)e\\r(ty"
             pdf.info.Creator = "hopper()"
             pdf.start_writing()
@@ -235,7 +231,7 @@ class TestFilePdf(PillowTestCase):
             self.assertEqual(pdf.info.Title, "abc")
             self.assertEqual(pdf.info.Producer, "PdfParser")
             self.assertEqual(pdf.info.Keywords, "qw)e\\r(ty")
-            self.assertEqual(pdf.info.Subject, u"ghi\uABCD")
+            self.assertEqual(pdf.info.Subject, "ghi\uABCD")
             self.assertIn(b"CreationDate", pdf.info)
             self.assertIn(b"ModDate", pdf.info)
             self.check_pdf_pages_consistency(pdf)

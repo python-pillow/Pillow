@@ -51,8 +51,8 @@ class MorphTests(PillowTestCase):
         self.assertEqual(self.img_to_string(A), self.img_string_normalize(Bstring))
 
     def test_str_to_img(self):
-        im = Image.open("Tests/images/morph_a.png")
-        self.assert_image_equal(self.A, im)
+        with Image.open("Tests/images/morph_a.png") as im:
+            self.assert_image_equal(self.A, im)
 
     def create_lut(self):
         for op in ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge"):

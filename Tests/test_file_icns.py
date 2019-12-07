@@ -1,9 +1,10 @@
 import io
 import sys
+import unittest
 
 from PIL import IcnsImagePlugin, Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -26,32 +27,31 @@ class TestFileIcns(PillowTestCase):
 
     @unittest.skipIf(sys.platform != "darwin", "requires macOS")
     def test_save(self):
-        im = Image.open(TEST_FILE)
-
         temp_file = self.tempfile("temp.icns")
-        im.save(temp_file)
 
-        reread = Image.open(temp_file)
+        with Image.open(TEST_FILE) as im:
+            im.save(temp_file)
 
-        self.assertEqual(reread.mode, "RGBA")
-        self.assertEqual(reread.size, (1024, 1024))
-        self.assertEqual(reread.format, "ICNS")
+        with Image.open(temp_file) as reread:
+            self.assertEqual(reread.mode, "RGBA")
+            self.assertEqual(reread.size, (1024, 1024))
+            self.assertEqual(reread.format, "ICNS")
 
     @unittest.skipIf(sys.platform != "darwin", "requires macOS")
     def test_save_append_images(self):
-        im = Image.open(TEST_FILE)
-
         temp_file = self.tempfile("temp.icns")
         provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
-        im.save(temp_file, append_images=[provided_im])
 
-        reread = Image.open(temp_file)
-        self.assert_image_similar(reread, im, 1)
+        with Image.open(TEST_FILE) as im:
+            im.save(temp_file, append_images=[provided_im])
 
-        reread = Image.open(temp_file)
-        reread.size = (16, 16, 2)
-        reread.load()
-        self.assert_image_equal(reread, provided_im)
+            with Image.open(temp_file) as reread:
+                self.assert_image_similar(reread, im, 1)
+
+            with Image.open(temp_file) as reread:
+                reread.size = (16, 16, 2)
+                reread.load()
+                self.assert_image_equal(reread, provided_im)
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel

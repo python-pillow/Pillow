@@ -101,7 +101,7 @@ set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 """ + "\n".join(
-        r"set %s=%%BUILD%%\%s" % (k.upper(), v["dir"])
+        r"set {}=%BUILD%\{}".format(k.upper(), v["dir"])
         for (k, v) in libs.items()
         if v["dir"]
     )
@@ -300,33 +300,6 @@ endlocal
     )
 
 
-def build_ghostscript(compiler, bit):
-    script = (
-        r"""
-rem Build gs
-setlocal
-"""
-        + vc_setup(compiler, bit)
-        + r"""
-set MSVC_VERSION="""
-        + {"2010": "90", "2015": "14"}[compiler["vc_version"]]
-        + r"""
-set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
-cd /D %%GHOSTSCRIPT%%
-"""
-    )
-    if bit == 64:
-        script += r"""
-set WIN64=""
-"""
-    script += r"""
-nmake -nologo -f psi/msvc.mak
-copy /Y /B bin\ C:\Python27\
-endlocal
-"""
-    return script % compiler
-
-
 def add_compiler(compiler, bit):
     script.append(setup_compiler(compiler))
     script.append(nmake_libs(compiler, bit))
@@ -336,7 +309,6 @@ def add_compiler(compiler, bit):
     script.append(msbuild_freetype(compiler, bit))
     script.append(build_lcms2(compiler))
     script.append(nmake_openjpeg(compiler, bit))
-    script.append(build_ghostscript(compiler, bit))
     script.append(end_compiler())
 
 
