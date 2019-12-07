@@ -1761,7 +1761,7 @@ class Image:
 
         return m_im
 
-    def resize(self, size, resample=NEAREST, box=None):
+    def resize(self, size, resample=BICUBIC, box=None):
         """
         Returns a resized copy of this image.
 
@@ -1771,8 +1771,9 @@ class Image:
            one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
            :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
            :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
-           If omitted, or if the image has mode "1" or "P", it is
-           set :py:attr:`PIL.Image.NEAREST`.
+           Default filter is :py:attr:`PIL.Image.BICUBIC`.
+           If the image has mode "1" or "P", it is
+           always set :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats giving the region
            of the source image which should be scaled.

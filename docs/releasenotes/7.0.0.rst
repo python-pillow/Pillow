@@ -47,6 +47,13 @@ Setting the size of TIFF images
 Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
 an error. Use ``Image.resize`` instead.
 
+Default resize resampling filter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default resampling filter for the ``Image.resize`` method is changed to
+high-quality convolution ``Image.BICUBIC`` instead of ``Image.NEAREST``.
+``Image.NEAREST`` is still always used for images in "P" and "1" modes.
+
 
 API Changes
 ===========
