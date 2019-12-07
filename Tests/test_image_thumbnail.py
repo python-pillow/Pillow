@@ -60,7 +60,8 @@ class TestImageThumbnail(PillowTestCase):
         im.paste(Image.new("RGB", (235, 235)), (11, 11))
 
         thumb = fromstring(tostring(im, "JPEG", quality=99, subsampling=0))
-        thumb.thumbnail((32, 32), Image.BICUBIC)
+        # small max_reduce to amplify the effect
+        thumb.thumbnail((32, 32), Image.BICUBIC, max_reduce=1.0)
 
         ref = im.resize((32, 32), Image.BICUBIC)
         # This is still JPEG, some error is present. Without the fix it is 11.5

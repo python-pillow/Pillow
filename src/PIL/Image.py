@@ -1764,7 +1764,7 @@ class Image:
 
         return m_im
 
-    def resize(self, size, resample=NEAREST, box=None):
+    def resize(self, size, resample=NEAREST, box=None, max_reduce=None):
         """
         Returns a resized copy of this image.
 
@@ -1781,6 +1781,18 @@ class Image:
            of the source image which should be scaled.
            The values should be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
+        :param max_reduce: Apply optimization by resizing the image
+           in two steps. First, reducing the image in integer times
+           using :py:meth:`~PIL.Image.Image.reduce`.
+           Second, resizing using regular resampling. The last step
+           changes size not less than in ``max_reduce`` times.
+           ``max_reduce`` could be None (no first step is performed)
+           or should be greater than 1.0. The bigger `max_reduce`,
+           the closer the result to the fair resampling.
+           The smaller `max_reduce`, the faster resizing.
+           With `max_reduce` greater or equal to 3.0 result is
+           indistinguishable from fair resampling in most cases.
+           The default value is None (no optimization).
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1802,6 +1814,9 @@ class Image:
                 message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
             )
 
+        if max_reduce is not None and max_reduce < 1.0:
+            raise ValueError('max_reduce could not be less than 1.0')
+
         size = tuple(size)
 
         if box is None:
@@ -1821,6 +1836,18 @@ class Image:
             return im.convert(self.mode)
 
         self.load()
+
+        if max_reduce is not None and resample != NEAREST:
+            x_factor = int((box[2] - box[0]) / size[0] / max_reduce) or 1
+            y_factor = int((box[3] - box[1]) / size[1] / max_reduce) or 1
+            if x_factor > 1 or y_factor > 1:
+                self = self.reduce((x_factor, y_factor))
+                box = (
+                    box[0] / x_factor,
+                    box[1] / y_factor,
+                    box[2] / x_factor,
+                    box[3] / y_factor,
+                )
 
         return self._new(self.im.resize(size, resample, box))
 
@@ -2147,7 +2174,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=BICUBIC):
+    def thumbnail(self, size, resample=BICUBIC, max_reduce=2.0):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -2166,7 +2193,21 @@ class Image:
            of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
-           (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0)
+           (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
+        :param max_reduce: Apply optimization by resizing the image
+           in two steps. First, reducing the image in integer times
+           using :py:meth:`~PIL.Image.Image.reduce` or
+           :py:meth:`~PIL.Image.Image.draft` for JPEG images.
+           Second, resizing using regular resampling. The last step
+           changes size not less than in ``max_reduce`` times.
+           ``max_reduce`` could be None (no first step is performed)
+           or should be greater than 1.0. The bigger `max_reduce`,
+           the closer the result to the fair resampling.
+           The smaller `max_reduce`, the faster resizing.
+           With `max_reduce` greater or equal to 3.0 result is
+           indistinguishable from fair resampling in most cases.
+           The default value is 2.0 (very close to fair resampling
+           while still faster in many cases).
         :returns: None
         """
 
@@ -2184,12 +2225,13 @@ class Image:
         if size == self.size:
             return
 
-        res = self.draft(None, size)
-        if res is not None:
-            box = res[1]
+        if max_reduce is not None:
+            res = self.draft(None, (size[0] * max_reduce, size[1] * max_reduce))
+            if res is not None:
+                box = res[1]
 
         if self.size != size:
-            im = self.resize(size, resample, box=box)
+            im = self.resize(size, resample, box=box, max_reduce=max_reduce)
 
             self.im = im.im
             self._size = size
