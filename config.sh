@@ -14,6 +14,7 @@ TIFF_VERSION=4.1.0
 LCMS2_VERSION=2.9
 GIFLIB_VERSION=5.1.4
 LIBWEBP_VERSION=1.0.3
+BZIP2_VERSION=1.0.8
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
@@ -50,12 +51,18 @@ function pre_build {
         CPPFLAGS=$ORIGINAL_CPPFLAGS
     fi
 
+    # freetype
+    freetype_args=""
     if [ -n "$IS_OSX" ]; then
-        # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
+        freetype_args="--with-harfbuzz=no"
     else
-        build_freetype
+        # bzip2
+        fetch_unpack https://sourceware.org/pub/bzip2/bzip2-${BZIP2_VERSION}.tar.gz
+        (cd bzip2-${BZIP2_VERSION} \
+            && make -f Makefile-libbz2_so \
+            && make install PREFIX=$BUILD_PREFIX)
     fi
+    build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz $freetype_args
 }
 
 function run_tests_in_repo {
