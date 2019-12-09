@@ -187,7 +187,7 @@ Many of Pillow's features require external libraries:
     libraqm.
   * libraqm is dynamically loaded in Pillow 5.0.0 and above, so support
     is available if all the libraries are installed.
-  * Windows support: Raqm support is currently unsupported on Windows.
+  * Windows support: Raqm is not included in prebuilt wheels
 
 Once you have installed the prerequisites, run::
 
@@ -408,9 +408,13 @@ These platforms are built and tested for every change.
 +----------------------------------+--------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 3.5, 3.6, 3.7, 3.8, PyPy3|x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
-| Windows Server 2012 R2           | 3.5, 3.6, 3.7, 3.8       |x86, x86-64            |
+| Windows Server 2012 R2           | 3.5, 3.8                 |x86, x86-64            |
 |                                  +--------------------------+-----------------------+
 |                                  | PyPy3, 3.7/MinGW         |x86                    |
++----------------------------------+--------------------------+-----------------------+
+| Windows Server 2019              | 3.5, 3.6, 3.7, 3.8       |x86, x86-64            |
+|                                  +--------------------------+-----------------------+
+|                                  | PyPy3                    |x86                    |
 +----------------------------------+--------------------------+-----------------------+
 
 
