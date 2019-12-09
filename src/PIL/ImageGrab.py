@@ -15,10 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import os
-import subprocess
 import sys
-import tempfile
 
 from . import Image
 
@@ -26,10 +23,6 @@ if sys.platform == "darwin":
     import os
     import tempfile
     import subprocess
-elif sys.platform == "win32":
-    pass
-elif not Image.core.HAVE_XCB:
-    raise ImportError("ImageGrab requires Windows, macOS, or the XCB library")
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
@@ -47,7 +40,9 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 return im_cropped
             return im
         elif sys.platform == "win32":
-            offset, size, data = Image.core.grabscreen(include_layered_windows, all_screens)
+            offset, size, data = Image.core.grabscreen_win32(
+                include_layered_windows, all_screens
+            )
             im = Image.frombytes(
                 "RGB",
                 size,
@@ -65,7 +60,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:
-        raise AttributeError("XCB support not present")
+        raise IOError("Pillow was built without XCB support")
     size, data = Image.core.grabscreen_x11(xdisplay)
     im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
     if bbox:
@@ -105,3 +100,5 @@ def grabclipboard():
 
             return BmpImagePlugin.DibImageFile(io.BytesIO(data))
         return data
+    else:
+        raise IOError("ImageGrab.grabclipboard() is macOS and Windows only")

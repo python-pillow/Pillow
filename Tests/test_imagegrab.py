@@ -46,9 +46,6 @@ class TestImageGrab:
         assert isinstance(exception, IOError)
         assert str(exception).startswith("X connection failed")
 
-    @pytest.mark.skipif(
-        sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
-    )
     def test_grabclipboard(self):
         if sys.platform == "darwin":
             subprocess.call(["screencapture", "-cx"])
@@ -62,7 +59,15 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            pytest.skip("ImageGrab.grabclipboard() is macOS and Windows only")
+            exception = None
+
+            try:
+                ImageGrab.grabclipboard()
+            except IOError as e:
+                exception = e
+
+            assert isinstance(exception, IOError)
+            assert str(exception) == "ImageGrab.grabclipboard() is macOS and Windows only"
             return
 
         im = ImageGrab.grabclipboard()
