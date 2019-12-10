@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Add La mode packing and unpacking #4248
+  [homm]
+
+- Include tests in coverage reports #4173
+  [hugovk]
+
 - Handle broken Photoshop data #4239
   [radarhere]
 
