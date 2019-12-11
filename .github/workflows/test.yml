@@ -95,12 +95,16 @@ jobs:
         .travis/after_success.sh
       env:
         MATRIX_OS: ${{ matrix.os }}
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
     - name: Upload coverage
       if: success()
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+      run: |
+        if [ "$GITHUB_REPOSITORY" == "python-pillow/Pillow" ]; then
+          echo "CI on python-pillow/Pillow, copy CodeCov settings"
+          cp .github/workflows/codecov-upstream.yml .codecov.yml
+        fi
+        bash <(curl -s https://codecov.io/bash)
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}

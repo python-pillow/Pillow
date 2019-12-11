@@ -366,10 +366,16 @@ jobs:
 
     - name: Upload coverage
       if: success()
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        name: ${{ runner.os }} Python ${{ matrix.python-version }}
+      run: |
+        if [ "$GITHUB_REPOSITORY" == "python-pillow/Pillow" ]; then
+          echo "CI on python-pillow/Pillow, copy CodeCov settings"
+          cp .github/workflows/codecov-upstream.yml .codecov.yml
+        fi
+         curl -s https://codecov.io/bash | bash
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_NAME: ${{ runner.os }} Python ${{ matrix.python-version }}
+      shell: bash
 
     - name: Build wheel
       id: wheel
