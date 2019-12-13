@@ -21,4 +21,5 @@ print("platform.machine()\t", platform.machine())
 print("platform.platform()\t", platform.platform())
 print("platform.version()\t", platform.version())
 print("platform.uname()\t", platform.uname())
-print("platform.mac_ver()\t", platform.mac_ver())
+if sys.platform == "darwin":
+    print("platform.mac_ver()\t", platform.mac_ver())
