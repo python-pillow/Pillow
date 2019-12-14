@@ -371,7 +371,8 @@ jobs:
           echo "CI on python-pillow/Pillow, copy CodeCov settings"
           cp .github/workflows/codecov-upstream.yml .codecov.yml
         fi
-         curl -s https://codecov.io/bash | bash
+        echo Upload coverage
+        curl -s https://codecov.io/bash | bash
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_NAME: ${{ runner.os }} Python ${{ matrix.python-version }}
