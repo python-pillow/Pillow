@@ -122,11 +122,6 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
-    def draft(self, mode, size):
-        """Set draft mode"""
-
-        pass
-
     def get_format_mimetype(self):
         if self.custom_mimetype:
             return self.custom_mimetype
