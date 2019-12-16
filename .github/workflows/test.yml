@@ -55,6 +55,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Build system information
+      run: python .github/workflows/system-info.py
+
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
