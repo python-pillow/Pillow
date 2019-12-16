@@ -2140,11 +2140,11 @@ class Image:
         # preserve aspect ratio
         x, y = self.size
         if x > size[0]:
-            y = int(max(y * size[0] / x, 1))
-            x = int(size[0])
+            y = max(round(y * size[0] / x), 1)
+            x = size[0]
         if y > size[1]:
-            x = int(max(x * size[1] / y, 1))
-            y = int(size[1])
+            x = max(round(x * size[1] / y), 1)
+            y = size[1]
         size = x, y
         box = None
 
@@ -2576,9 +2576,12 @@ def fromarray(obj, mode=None):
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
-            mode, rawmode = _fromarray_typemap[typekey]
         except KeyError:
             raise TypeError("Cannot handle this data type")
+        try:
+            mode, rawmode = _fromarray_typemap[typekey]
+        except KeyError:
+            raise TypeError("Cannot handle this data type: %s, %s" % typekey)
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:

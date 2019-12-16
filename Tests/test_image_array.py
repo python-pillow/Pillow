@@ -52,3 +52,8 @@ class TestImageArray(PillowTestCase):
         self.assertEqual(test("RGB"), ("RGB", (128, 100), True))
         self.assertEqual(test("RGBA"), ("RGBA", (128, 100), True))
         self.assertEqual(test("RGBX"), ("RGBA", (128, 100), True))
+
+        # Test mode is None with no "typestr" in the array interface
+        with self.assertRaises(TypeError):
+            wrapped = Wrapper(test("L"), {"shape": (100, 128)})
+            Image.fromarray(wrapped)

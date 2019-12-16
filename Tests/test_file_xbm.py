@@ -30,11 +30,10 @@ static char basic_bits[] = {
 
 class TestFileXbm(PillowTestCase):
     def test_pil151(self):
-        im = Image.open(BytesIO(PIL151))
-
-        im.load()
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (32, 32))
+        with Image.open(BytesIO(PIL151)) as im:
+            im.load()
+            self.assertEqual(im.mode, "1")
+            self.assertEqual(im.size, (32, 32))
 
     def test_open(self):
         # Arrange

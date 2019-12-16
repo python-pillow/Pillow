@@ -6,33 +6,33 @@ from .helper import PillowTestCase
 class TestPickle(PillowTestCase):
     def helper_pickle_file(self, pickle, protocol=0, mode=None):
         # Arrange
-        im = Image.open("Tests/images/hopper.jpg")
-        filename = self.tempfile("temp.pkl")
-        if mode:
-            im = im.convert(mode)
+        with Image.open("Tests/images/hopper.jpg") as im:
+            filename = self.tempfile("temp.pkl")
+            if mode:
+                im = im.convert(mode)
 
-        # Act
-        with open(filename, "wb") as f:
-            pickle.dump(im, f, protocol)
-        with open(filename, "rb") as f:
-            loaded_im = pickle.load(f)
+            # Act
+            with open(filename, "wb") as f:
+                pickle.dump(im, f, protocol)
+            with open(filename, "rb") as f:
+                loaded_im = pickle.load(f)
 
-        # Assert
-        self.assertEqual(im, loaded_im)
+            # Assert
+            self.assertEqual(im, loaded_im)
 
     def helper_pickle_string(
         self, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
     ):
-        im = Image.open(test_file)
-        if mode:
-            im = im.convert(mode)
+        with Image.open(test_file) as im:
+            if mode:
+                im = im.convert(mode)
 
-        # Act
-        dumped_string = pickle.dumps(im, protocol)
-        loaded_im = pickle.loads(dumped_string)
+            # Act
+            dumped_string = pickle.dumps(im, protocol)
+            loaded_im = pickle.loads(dumped_string)
 
-        # Assert
-        self.assertEqual(im, loaded_im)
+            # Assert
+            self.assertEqual(im, loaded_im)
 
     def test_pickle_image(self):
         # Arrange
@@ -97,9 +97,9 @@ class TestPickle(PillowTestCase):
         # Arrange
         import pickle
 
-        im = Image.open("Tests/images/hopper.jpg")
         filename = self.tempfile("temp.pkl")
-        im = im.convert("PA")
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im = im.convert("PA")
 
         # Act / Assert
         for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):

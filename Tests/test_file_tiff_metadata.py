@@ -130,14 +130,13 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """
-        img = Image.open("Tests/images/hopper.tif")
-
-        f = self.tempfile("temp.tiff")
-        img.save(f, tiffinfo=img.tag)
-
-        with Image.open(f) as loaded:
+        with Image.open("Tests/images/hopper.tif") as img:
+            f = self.tempfile("temp.tiff")
+            img.save(f, tiffinfo=img.tag)
 
             original = img.tag_v2.named()
+
+        with Image.open(f) as loaded:
             reloaded = loaded.tag_v2.named()
 
         for k, v in original.items():
@@ -187,10 +186,10 @@ class TestFileTiffMetadata(PillowTestCase):
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
-        im = Image.open("Tests/images/hopper.iccprofile.tif")
         out = self.tempfile("temp.tiff")
+        with Image.open("Tests/images/hopper.iccprofile.tif") as im:
+            im.save(out)
 
-        im.save(out)
         with Image.open(out) as reloaded:
             self.assertNotIsInstance(im.info["icc_profile"], tuple)
             self.assertEqual(im.info["icc_profile"], reloaded.info["icc_profile"])
@@ -205,14 +204,14 @@ class TestFileTiffMetadata(PillowTestCase):
             self.assertTrue(im.info["icc_profile"])
 
     def test_iccprofile_save_png(self):
-        im = Image.open("Tests/images/hopper.iccprofile.tif")
-        outfile = self.tempfile("temp.png")
-        im.save(outfile)
+        with Image.open("Tests/images/hopper.iccprofile.tif") as im:
+            outfile = self.tempfile("temp.png")
+            im.save(outfile)
 
     def test_iccprofile_binary_save_png(self):
-        im = Image.open("Tests/images/hopper.iccprofile_binary.tif")
-        outfile = self.tempfile("temp.png")
-        im.save(outfile)
+        with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
+            outfile = self.tempfile("temp.png")
+            im.save(outfile)
 
     def test_exif_div_zero(self):
         im = hopper()
@@ -241,12 +240,11 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertIn(33432, info)
 
     def test_PhotoshopInfo(self):
-        im = Image.open("Tests/images/issue_2278.tif")
-
-        self.assertEqual(len(im.tag_v2[34377]), 1)
-        self.assertIsInstance(im.tag_v2[34377][0], bytes)
-        out = self.tempfile("temp.tiff")
-        im.save(out)
+        with Image.open("Tests/images/issue_2278.tif") as im:
+            self.assertEqual(len(im.tag_v2[34377]), 1)
+            self.assertIsInstance(im.tag_v2[34377][0], bytes)
+            out = self.tempfile("temp.tiff")
+            im.save(out)
         with Image.open(out) as reloaded:
             self.assertEqual(len(reloaded.tag_v2[34377]), 1)
             self.assertIsInstance(reloaded.tag_v2[34377][0], bytes)

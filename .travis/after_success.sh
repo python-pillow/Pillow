@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # gather the coverage data
-sudo apt-get -qq install lcov
+if [[ "$MATRIX_OS" == "macOS-latest" ]]; then
+    brew install lcov
+else
+    sudo apt-get -qq install lcov
+fi
+
 lcov --capture --directory . -b . --output-file coverage.info
 #  filter to remove system headers
 lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
@@ -13,7 +18,9 @@ coverage report
 pip install codecov
 pip install coveralls-merge
 coveralls-merge coverage.c.json
-codecov
+if [[ $TRAVIS ]]; then
+    codecov
+fi
 
 if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ] && [ "$DOCKER" == "" ]; then
     # Coverage and quality reports on just the latest diff.

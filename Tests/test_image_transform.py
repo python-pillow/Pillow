@@ -23,11 +23,11 @@ class TestImageTransform(PillowTestCase):
     def test_info(self):
         comment = b"File written by Adobe Photoshop\xa8 4.0"
 
-        im = Image.open("Tests/images/hopper.gif")
-        self.assertEqual(im.info["comment"], comment)
+        with Image.open("Tests/images/hopper.gif") as im:
+            self.assertEqual(im.info["comment"], comment)
 
-        transform = ImageTransform.ExtentTransform((0, 0, 0, 0))
-        new_im = im.transform((100, 100), transform)
+            transform = ImageTransform.ExtentTransform((0, 0, 0, 0))
+            new_im = im.transform((100, 100), transform)
         self.assertEqual(new_im.info["comment"], comment)
 
     def test_extent(self):

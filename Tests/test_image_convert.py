@@ -53,16 +53,16 @@ class TestImageConvert(PillowTestCase):
         self.assertEqual(orig, converted)
 
     def test_8bit(self):
-        im = Image.open("Tests/images/hopper.jpg")
-        self._test_float_conversion(im.convert("L"))
+        with Image.open("Tests/images/hopper.jpg") as im:
+            self._test_float_conversion(im.convert("L"))
 
     def test_16bit(self):
-        im = Image.open("Tests/images/16bit.cropped.tif")
-        self._test_float_conversion(im)
+        with Image.open("Tests/images/16bit.cropped.tif") as im:
+            self._test_float_conversion(im)
 
     def test_16bit_workaround(self):
-        im = Image.open("Tests/images/16bit.cropped.tif")
-        self._test_float_conversion(im.convert("I"))
+        with Image.open("Tests/images/16bit.cropped.tif") as im:
+            self._test_float_conversion(im.convert("I"))
 
     def test_rgba_p(self):
         im = hopper("RGBA")
@@ -210,13 +210,13 @@ class TestImageConvert(PillowTestCase):
             # Assert
             self.assertEqual(converted_im.mode, mode)
             self.assertEqual(converted_im.size, im.size)
-            target = Image.open("Tests/images/hopper-XYZ.png")
-            if converted_im.mode == "RGB":
-                self.assert_image_similar(converted_im, target, 3)
-                self.assertEqual(converted_im.info["transparency"], (105, 54, 4))
-            else:
-                self.assert_image_similar(converted_im, target.getchannel(0), 1)
-                self.assertEqual(converted_im.info["transparency"], 105)
+            with Image.open("Tests/images/hopper-XYZ.png") as target:
+                if converted_im.mode == "RGB":
+                    self.assert_image_similar(converted_im, target, 3)
+                    self.assertEqual(converted_im.info["transparency"], (105, 54, 4))
+                else:
+                    self.assert_image_similar(converted_im, target.getchannel(0), 1)
+                    self.assertEqual(converted_im.info["transparency"], 105)
 
         matrix_convert("RGB")
         matrix_convert("L")

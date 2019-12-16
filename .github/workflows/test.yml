@@ -30,10 +30,33 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Ubuntu cache
+      uses: actions/cache@v1
+      if: startsWith(matrix.os, 'ubuntu')
+      with:
+        path: ~/.cache/pip
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
+
+    - name: macOS cache
+      uses: actions/cache@v1
+      if: startsWith(matrix.os, 'macOS')
+      with:
+        path: ~/Library/Caches/pip
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Build system information
+      run: python .github/workflows/system-info.py
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -71,5 +94,13 @@ jobs:
       run: |
         .travis/after_success.sh
       env:
+        MATRIX_OS: ${{ matrix.os }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}

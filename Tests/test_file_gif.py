@@ -94,13 +94,14 @@ class TestFileGif(PillowTestCase):
             outfile = BytesIO()
             im.save(outfile, "GIF")
             outfile.seek(0)
-            reloaded = Image.open(outfile)
+            with Image.open(outfile) as reloaded:
+                # check palette length
+                palette_length = max(
+                    i + 1 for i, v in enumerate(reloaded.histogram()) if v
+                )
+                self.assertEqual(expected_palette_length, palette_length)
 
-            # check palette length
-            palette_length = max(i + 1 for i, v in enumerate(reloaded.histogram()) if v)
-            self.assertEqual(expected_palette_length, palette_length)
-
-            self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+                self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
         # These do optimize the palette
         check(128, 511, 128)
@@ -554,9 +555,9 @@ class TestFileGif(PillowTestCase):
             self.assertEqual(reread.info["background"], im.info["background"])
 
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
-            im = Image.open("Tests/images/hopper.webp")
-            self.assertIsInstance(im.info["background"], tuple)
-            im.save(out)
+            with Image.open("Tests/images/hopper.webp") as im:
+                self.assertIsInstance(im.info["background"], tuple)
+                im.save(out)
 
     def test_comment(self):
         with Image.open(TEST_GIF) as im:

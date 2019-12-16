@@ -15,6 +15,6 @@ class TestFileBlp(PillowTestCase):
                 self.assert_image_equal(im, target)
 
     def test_load_blp2_dxt1a(self):
-        im = Image.open("Tests/images/blp/blp2_dxt1a.blp")
-        target = Image.open("Tests/images/blp/blp2_dxt1a.png")
-        self.assert_image_equal(im, target)
+        with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
+            with Image.open("Tests/images/blp/blp2_dxt1a.png") as target:
+                self.assert_image_equal(im, target)

@@ -42,21 +42,24 @@ class TestImageQuantize(PillowTestCase):
         self.assertEqual(image.quantize().convert().mode, "RGBA")
 
     def test_quantize(self):
-        image = Image.open("Tests/images/caption_6_33_22.png").convert("RGB")
+        with Image.open("Tests/images/caption_6_33_22.png") as image:
+            image = image.convert("RGB")
         converted = image.quantize()
         self.assert_image(converted, "P", converted.size)
         self.assert_image_similar(converted.convert("RGB"), image, 1)
 
     def test_quantize_no_dither(self):
         image = hopper()
-        palette = Image.open("Tests/images/caption_6_33_22.png").convert("P")
+        with Image.open("Tests/images/caption_6_33_22.png") as palette:
+            palette = palette.convert("P")
 
         converted = image.quantize(dither=0, palette=palette)
         self.assert_image(converted, "P", converted.size)
 
     def test_quantize_dither_diff(self):
         image = hopper()
-        palette = Image.open("Tests/images/caption_6_33_22.png").convert("P")
+        with Image.open("Tests/images/caption_6_33_22.png") as palette:
+            palette = palette.convert("P")
 
         dither = image.quantize(dither=1, palette=palette)
         nodither = image.quantize(dither=0, palette=palette)

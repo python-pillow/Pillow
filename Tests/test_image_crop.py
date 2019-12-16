@@ -76,13 +76,13 @@ class TestImageCrop(PillowTestCase):
         test_img = "Tests/images/bmp/g/pal8-0.bmp"
         extents = (1, 1, 10, 10)
         # works prepatch
-        img = Image.open(test_img)
-        img2 = img.crop(extents)
+        with Image.open(test_img) as img:
+            img2 = img.crop(extents)
         img2.load()
 
         # fail prepatch
-        img = Image.open(test_img)
-        img = img.crop(extents)
+        with Image.open(test_img) as img:
+            img = img.crop(extents)
         img.load()
 
     def test_crop_zero(self):
