@@ -92,3 +92,9 @@ Use instead:
 
     with Image.open("hopper.png") as im:
         im.save("out.jpg")
+
+Better thumbnail aspect ratio preservation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calculating the new dimensions in ``Image.thumbnail``, round to the
+nearest integer, instead of always rounding down.
