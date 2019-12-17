@@ -15,24 +15,25 @@ Notes
 
 .. note:: Pillow is supported on the following Python versions
 
+
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|**Python**         |**2.4**|**2.5**|**2.6**|**2.7**|**3.2**|**3.3**|**3.4**|**3.5**|**3.6**|**3.7**|**3.8**|
+|**Python**         |**3.8**|**3.7**|**3.6**|**3.5**|**3.4**|**3.3**|**3.2**|**2.7**|**2.6**|**2.5**|**2.4**|
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow < 2         |  Yes  |  Yes  |  Yes  |  Yes  |       |       |       |       |       |       |       |
+|Pillow >= 7        |  Yes  |  Yes  |  Yes  |  Yes  |       |       |       |       |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 2 - 3       |       |       |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |       |       |       |
+|Pillow 6.2.1       |  Yes  |  Yes  |  Yes  |  Yes  |       |       |       |  Yes  |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 4           |       |       |       |  Yes  |       |  Yes  |  Yes  |  Yes  |  Yes  |       |       |
+|Pillow 6.0 - 6.2.0 |       |  Yes  |  Yes  |  Yes  |       |       |       |  Yes  |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 5.0 - 5.1   |       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |       |       |
+|Pillow 5.2 - 5.4   |       |  Yes  |  Yes  |  Yes  |  Yes  |       |       |  Yes  |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 5.2 - 5.4   |       |       |       |  Yes  |       |       |  Yes  |  Yes  |  Yes  |  Yes  |       |
+|Pillow 5.0 - 5.1   |       |       |  Yes  |  Yes  |  Yes  |       |       |  Yes  |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 6.0 - 6.2.0 |       |       |       |  Yes  |       |       |       |  Yes  |  Yes  |  Yes  |       |
+|Pillow 4           |       |       |  Yes  |  Yes  |  Yes  |  Yes  |       |  Yes  |       |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow 6.2.1       |       |       |       |  Yes  |       |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
+|Pillow 2 - 3       |       |       |       |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |  Yes  |       |       |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
-|Pillow >= 7        |       |       |       |       |       |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
+|Pillow < 2         |       |       |       |       |       |       |       |  Yes  |  Yes  |  Yes  |  Yes  |
 +-------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
 
 Basic Installation
@@ -190,7 +191,7 @@ Many of Pillow's features require external libraries:
     libraqm.
   * libraqm is dynamically loaded in Pillow 5.0.0 and above, so support
     is available if all the libraries are installed.
-  * Windows support: Raqm support is currently unsupported on Windows.
+  * Windows support: Raqm is not included in prebuilt wheels
 
 Once you have installed the prerequisites, run::
 
@@ -364,8 +365,8 @@ Building on Android
 Basic Android support has been added for compilation within the Termux
 environment. The dependencies can be installed by::
 
-    pkg -y install python python-dev ndk-sysroot clang make \
-        libjpeg-turbo-dev
+    pkg install -y python ndk-sysroot clang make \
+        libjpeg-turbo
 
 This has been tested within the Termux app on ChromeOS, on x86.
 
@@ -413,9 +414,13 @@ These platforms are built and tested for every change.
 +----------------------------------+--------------------------+-----------------------+
 | Ubuntu Linux 16.04 LTS           | 3.5, 3.6, 3.7, 3.8, PyPy3|x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
-| Windows Server 2012 R2           | 3.5, 3.6, 3.7, 3.8       |x86, x86-64            |
+| Windows Server 2012 R2           | 3.5, 3.8                 |x86, x86-64            |
 |                                  +--------------------------+-----------------------+
 |                                  | PyPy3, 3.7/MinGW         |x86                    |
++----------------------------------+--------------------------+-----------------------+
+| Windows Server 2019              | 3.5, 3.6, 3.7, 3.8       |x86, x86-64            |
+|                                  +--------------------------+-----------------------+
+|                                  | PyPy3                    |x86                    |
 +----------------------------------+--------------------------+-----------------------+
 
 

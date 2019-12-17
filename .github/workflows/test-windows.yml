@@ -70,6 +70,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
 
+    - name: Build system information
+      run: python .github/workflows/system-info.py
+
     - name: pip install wheel pytest pytest-cov
       run: |
         "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
