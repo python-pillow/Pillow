@@ -1773,7 +1773,7 @@ class Image:
            :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
            Default filter is :py:attr:`PIL.Image.BICUBIC`.
            If the image has mode "1" or "P", it is
-           always set :py:attr:`PIL.Image.NEAREST`.
+           always set to :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats giving the region
            of the source image which should be scaled.
@@ -1843,7 +1843,7 @@ class Image:
            environment), or :py:attr:`PIL.Image.BICUBIC`
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
-           set :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
+           set to :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
