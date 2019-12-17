@@ -47,12 +47,16 @@ Setting the size of TIFF images
 Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
 an error. Use ``Image.resize`` instead.
 
-Default resize resampling filter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Default resampling filter
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default resampling filter for the ``Image.resize`` method is changed to
-high-quality convolution ``Image.BICUBIC`` instead of ``Image.NEAREST``.
+The default resampling filter is changed to high-quality convolution
+``Image.BICUBIC`` instead of ``Image.NEAREST`` for the :py:meth:`~PIL.Image.Image.resize`
+method and for :py:meth:`~PIL.ImageOps.pad``, :py:meth:`~PIL.ImageOps.scale``
+and :py:meth:`~PIL.ImageOps.fit`` functions.
 ``Image.NEAREST`` is still always used for images in "P" and "1" modes.
+See :ref:`concept-filters` to learn the difference. In short,
+``Image.NEAREST`` is a very fast and simple but low-quality filter.
 
 
 API Changes
