@@ -13,7 +13,7 @@ struct filter {
 
 static inline double box_filter(double x)
 {
-    if (x >= -0.5 && x < 0.5)
+    if (x > -0.5 && x <= 0.5)
         return 1.0;
     return 0.0;
 }

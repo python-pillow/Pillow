@@ -159,7 +159,8 @@ class TestImageDraw(PillowTestCase):
         # Arrange
         im = Image.new("RGB", (W, H))
         draw = ImageDraw.Draw(im)
-        with Image.open("Tests/images/pil123rgba.png").resize((50, 50)) as small:
+        with Image.open("Tests/images/pil123rgba.png") as small:
+            small = small.resize((50, 50), Image.NEAREST)
 
             # Act
             draw.bitmap((10, 10), small)

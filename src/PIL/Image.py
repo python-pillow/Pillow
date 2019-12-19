@@ -1764,7 +1764,7 @@ class Image:
 
         return m_im
 
-    def resize(self, size, resample=NEAREST, box=None):
+    def resize(self, size, resample=BICUBIC, box=None):
         """
         Returns a resized copy of this image.
 
@@ -1774,8 +1774,9 @@ class Image:
            one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
            :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
            :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
-           If omitted, or if the image has mode "1" or "P", it is
-           set :py:attr:`PIL.Image.NEAREST`.
+           Default filter is :py:attr:`PIL.Image.BICUBIC`.
+           If the image has mode "1" or "P", it is
+           always set to :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats giving the region
            of the source image which should be scaled.
@@ -1845,7 +1846,7 @@ class Image:
            environment), or :py:attr:`PIL.Image.BICUBIC`
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
-           set :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
+           set to :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
@@ -2141,10 +2142,10 @@ class Image:
         x, y = self.size
         if x > size[0]:
             y = max(round(y * size[0] / x), 1)
-            x = size[0]
+            x = round(size[0])
         if y > size[1]:
             x = max(round(x * size[1] / y), 1)
-            y = size[1]
+            y = round(size[1])
         size = x, y
         box = None
 

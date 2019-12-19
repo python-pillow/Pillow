@@ -43,6 +43,11 @@ class TestImageThumbnail(PillowTestCase):
         im.thumbnail((33, 33))
         self.assertEqual(im.size, (21, 33))  # ratio is 0.6363636364
 
+    def test_float(self):
+        im = Image.new("L", (128, 128))
+        im.thumbnail((99.9, 99.9))
+        self.assertEqual(im.size, (100, 100))
+
     def test_no_resize(self):
         # Check that draft() can resize the image to the destination size
         with Image.open("Tests/images/hopper.jpg") as im:

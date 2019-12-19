@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Better thumbnail aspect ratio preservation #4256
+  [homm]
+
 - Add La mode packing and unpacking #4248
   [homm]
 
