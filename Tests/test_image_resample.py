@@ -212,6 +212,11 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (12, 12)))
 
+    def test_box_filter_correct_range(self):
+        im = Image.new("RGB", (8, 8), "#1688ff").resize((100, 100), Image.BOX)
+        ref = Image.new("RGB", (100, 100), "#1688ff")
+        self.assert_image_equal(im, ref)
+
 
 class CoreResampleConsistencyTest(PillowTestCase):
     def make_case(self, mode, fill):
