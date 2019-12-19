@@ -221,7 +221,7 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
     return _lut(image, red + green + blue)
 
 
-def pad(image, size, method=Image.NEAREST, color=None, centering=(0.5, 0.5)):
+def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     """
     Returns a sized and padded version of the image, expanded to fill the
     requested aspect ratio and size.
@@ -230,7 +230,7 @@ def pad(image, size, method=Image.NEAREST, color=None, centering=(0.5, 0.5)):
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: What resampling method to use. Default is
-                   :py:attr:`PIL.Image.NEAREST`.
+                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
                       padded version.
@@ -280,7 +280,7 @@ def crop(image, border=0):
     return image.crop((left, top, image.size[0] - right, image.size[1] - bottom))
 
 
-def scale(image, factor, resample=Image.NEAREST):
+def scale(image, factor, resample=Image.BICUBIC):
     """
     Returns a rescaled image by a specific factor given in parameter.
     A factor greater than 1 expands the image, between 0 and 1 contracts the
@@ -288,8 +288,8 @@ def scale(image, factor, resample=Image.NEAREST):
 
     :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
-    :param resample: An optional resampling filter. Same values possible as
-       in the PIL.Image.resize function.
+    :param resample: What resampling method to use. Default is
+                     :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
     if factor == 1:
@@ -363,7 +363,7 @@ def expand(image, border=0, fill=0):
     return out
 
 
-def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
+def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
     """
     Returns a sized and cropped version of the image, cropped to the
     requested aspect ratio and size.
@@ -374,7 +374,7 @@ def fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5)):
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: What resampling method to use. Default is
-                   :py:attr:`PIL.Image.NEAREST`.
+                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).
