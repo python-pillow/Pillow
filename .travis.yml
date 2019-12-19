@@ -24,11 +24,35 @@ matrix:
       # Exclude the default Python 3.5 build
       - python: 3.5
   include:
+    - name: "2.7 macOS"
+      os: osx
+      language: generic
+      env: MB_PYTHON_VERSION=2.7
     - name: "3.5 macOS"
       os: osx
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
+    - name: "2.7 Xenial"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+    - name: "2.7 Xenial UNICODE_WIDTH=16"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - UNICODE_WIDTH=16
+    - name: "2.7 Xenial 32-bit"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+    - name: "2.7 Xenial 32-bit UNICODE_WIDTH=16"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=2.7
+        - PLAT=i686
+        - UNICODE_WIDTH=16
     - name: "3.6 macOS"
       os: osx
       language: generic
