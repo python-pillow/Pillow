@@ -322,11 +322,11 @@ def _save(im, fp, filename, bitmap_header=True):
     if bitmap_header:
         offset = 14 + header + colors * 4
         fp.write(
-            b"BM"
-            + o32(offset + image)  # file type (magic)
-            + o32(0)  # file size
-            + o32(offset)  # reserved
-        )  # image data offset
+            b"BM"  # file type (magic)
+            + o32(offset + image)  # file size
+            + o32(0)  # reserved
+            + o32(offset)  # image data offset
+        )
 
     # bitmap info header
     fp.write(
