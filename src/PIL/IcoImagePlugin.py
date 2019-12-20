@@ -65,7 +65,7 @@ def _save(im, fp, filename):
         image_io = BytesIO()
         # TODO: invent a more convenient method for proportional scalings than thumbnail()
         tmp = im.copy()
-        tmp.thumbnail(size, Image.LANCZOS, max_reduce=None)
+        tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()

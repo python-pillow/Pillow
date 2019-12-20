@@ -1784,7 +1784,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=NEAREST, box=None, max_reduce=None):
+    def resize(self, size, resample=NEAREST, box=None, reducing_gap=None):
         """
         Returns a resized copy of this image.
 
@@ -1801,16 +1801,16 @@ class Image:
            of the source image which should be scaled.
            The values should be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
-        :param max_reduce: Apply optimization by resizing the image
+        :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image in integer times
            using :py:meth:`~PIL.Image.Image.reduce`.
            Second, resizing using regular resampling. The last step
-           changes size not less than in ``max_reduce`` times.
-           ``max_reduce`` could be None (no first step is performed)
-           or should be greater than 1.0. The bigger `max_reduce`,
+           changes size not less than in ``reducing_gap`` times.
+           ``reducing_gap`` could be None (no first step is performed)
+           or should be greater than 1.0. The bigger `reducing_gap`,
            the closer the result to the fair resampling.
-           The smaller `max_reduce`, the faster resizing.
-           With `max_reduce` greater or equal to 3.0 result is
+           The smaller `reducing_gap`, the faster resizing.
+           With `reducing_gap` greater or equal to 3.0 result is
            indistinguishable from fair resampling in most cases.
            The default value is None (no optimization).
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -1834,8 +1834,8 @@ class Image:
                 message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
             )
 
-        if max_reduce is not None and max_reduce < 1.0:
-            raise ValueError("max_reduce could not be less than 1.0")
+        if reducing_gap is not None and reducing_gap < 1.0:
+            raise ValueError("reducing_gap could not be less than 1.0")
 
         size = tuple(size)
 
@@ -1857,9 +1857,9 @@ class Image:
 
         self.load()
 
-        if max_reduce is not None and resample != NEAREST:
-            factor_x = int((box[2] - box[0]) / size[0] / max_reduce) or 1
-            factor_y = int((box[3] - box[1]) / size[1] / max_reduce) or 1
+        if reducing_gap is not None and resample != NEAREST:
+            factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
+            factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
                 reduce_box = self._get_safe_box(size, resample, box)
                 self = self.reduce((factor_x, factor_y), box=reduce_box)
@@ -2195,7 +2195,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=BICUBIC, max_reduce=2.0):
+    def thumbnail(self, size, resample=BICUBIC, reducing_gap=2.0):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -2215,17 +2215,17 @@ class Image:
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
            (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
-        :param max_reduce: Apply optimization by resizing the image
+        :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image in integer times
            using :py:meth:`~PIL.Image.Image.reduce` or
            :py:meth:`~PIL.Image.Image.draft` for JPEG images.
            Second, resizing using regular resampling. The last step
-           changes size not less than in ``max_reduce`` times.
-           ``max_reduce`` could be None (no first step is performed)
-           or should be greater than 1.0. The bigger `max_reduce`,
+           changes size not less than in ``reducing_gap`` times.
+           ``reducing_gap`` could be None (no first step is performed)
+           or should be greater than 1.0. The bigger `reducing_gap`,
            the closer the result to the fair resampling.
-           The smaller `max_reduce`, the faster resizing.
-           With `max_reduce` greater or equal to 3.0 result is
+           The smaller `reducing_gap`, the faster resizing.
+           With `reducing_gap` greater or equal to 3.0 result is
            indistinguishable from fair resampling in most cases.
            The default value is 2.0 (very close to fair resampling
            while still faster in many cases).
@@ -2246,13 +2246,13 @@ class Image:
         if size == self.size:
             return
 
-        if max_reduce is not None:
-            res = self.draft(None, (size[0] * max_reduce, size[1] * max_reduce))
+        if reducing_gap is not None:
+            res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
             if res is not None:
                 box = res[1]
 
         if self.size != size:
-            im = self.resize(size, resample, box=box, max_reduce=max_reduce)
+            im = self.resize(size, resample, box=box, reducing_gap=reducing_gap)
 
             self.im = im.im
             self._size = size
