@@ -1,3 +1,5 @@
+from PIL import Image
+
 from .helper import PillowTestCase, hopper
 
 
@@ -13,7 +15,7 @@ class TestImageGetData(PillowTestCase):
 
     def test_roundtrip(self):
         def getdata(mode):
-            im = hopper(mode).resize((32, 30))
+            im = hopper(mode).resize((32, 30), Image.NEAREST)
             data = im.getdata()
             return data[0], len(data), len(list(data))
 

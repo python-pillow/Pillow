@@ -237,3 +237,12 @@ class TestImageResize(PillowTestCase):
         # Test unknown resampling filter
         with hopper() as im:
             self.assertRaises(ValueError, im.resize, (10, 10), "unknown")
+
+    def test_default_filter(self):
+        for mode in "L", "RGB", "I", "F":
+            im = hopper(mode)
+            self.assertEqual(im.resize((20, 20), Image.BICUBIC), im.resize((20, 20)))
+
+        for mode in "1", "P":
+            im = hopper(mode)
+            self.assertEqual(im.resize((20, 20), Image.NEAREST), im.resize((20, 20)))
