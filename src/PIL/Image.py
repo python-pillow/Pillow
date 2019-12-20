@@ -1808,10 +1808,10 @@ class Image:
            Second, resizing using regular resampling. The last step
            changes size not less than in ``reducing_gap`` times.
            ``reducing_gap`` could be None (no first step is performed)
-           or should be greater than 1.0. The bigger `reducing_gap`,
+           or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
-           The smaller `reducing_gap`, the faster resizing.
-           With `reducing_gap` greater or equal to 3.0 result is
+           The smaller ``reducing_gap``, the faster resizing.
+           With ``reducing_gap`` greater or equal to 3.0 result is
            indistinguishable from fair resampling in most cases.
            The default value is None (no optimization).
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -2223,10 +2223,10 @@ class Image:
            Second, resizing using regular resampling. The last step
            changes size not less than in ``reducing_gap`` times.
            ``reducing_gap`` could be None (no first step is performed)
-           or should be greater than 1.0. The bigger `reducing_gap`,
+           or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
-           The smaller `reducing_gap`, the faster resizing.
-           With `reducing_gap` greater or equal to 3.0 result is
+           The smaller ``reducing_gap``, the faster resizing.
+           With ``reducing_gap`` greater or equal to 3.0 result is
            indistinguishable from fair resampling in most cases.
            The default value is 2.0 (very close to fair resampling
            while still faster in many cases).

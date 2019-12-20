@@ -94,6 +94,33 @@ Custom unidentified image error
 Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
 identified. For backwards compatibility, this will inherit from ``IOError``.
 
+New argument ``reducing_gap`` for Image.resize() and Image.thumbnail() methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Speeds up resizing by resizing the image in two steps. The bigger ``reducing_gap``,
+the closer the result to the fair resampling. The smaller ``reducing_gap``,
+the faster resizing. With ``reducing_gap`` greater or equal to 3.0 result is
+indistinguishable from fair resampling.
+
+The default value for :py:meth:`~PIL.Image.Image.resize` is ``None``,
+which means that the optimization is turned off by default.
+
+The default value for :py:meth:`~PIL.Image.Image.thumbnail` is 2.0,
+which is very close to fair resampling while still faster in many cases.
+In addition, the same gap is applied when :py:meth:`~PIL.Image.Image.thumbnail`
+calls :py:meth:`~PIL.Image.Image.draft`, which could greatly improve the quality
+of JPEG thumbnails. As a result, :py:meth:`~PIL.Image.Image.thumbnail`
+in the new version provides equally high speed and high quality from any
+sources (JPEG or arbitrary images).
+
+New Image.reduce() method
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.reduce` is a highly efficient operation
+to reduce an image by integer times. Normally, shouldn't be used directly.
+Used internally by :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+methods to speed up resize when a new argument ``reducing_gap`` is set.
+
 Other Changes
 =============
 
