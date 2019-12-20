@@ -321,9 +321,12 @@ def _save(im, fp, filename, bitmap_header=True):
     # bitmap header
     if bitmap_header:
         offset = 14 + header + colors * 4
+        file_size = offset + image
+        if file_size > 2 ** 32 - 1:
+            raise ValueError("File size is too large for the BMP format")
         fp.write(
             b"BM"  # file type (magic)
-            + o32(offset + image)  # file size
+            + o32(file_size)  # file size
             + o32(0)  # reserved
             + o32(offset)  # image data offset
         )
