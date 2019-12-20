@@ -24,7 +24,7 @@ class TestImageFile(PillowTestCase):
     def test_parser(self):
         def roundtrip(format):
 
-            im = hopper("L").resize((1000, 1000))
+            im = hopper("L").resize((1000, 1000), Image.NEAREST)
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
 
