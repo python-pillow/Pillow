@@ -118,8 +118,12 @@ Use instead:
     with Image.open("hopper.png") as im:
         im.save("out.jpg")
 
-Better thumbnail aspect ratio preservation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Better thumbnail geometry
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When calculating the new dimensions in ``Image.thumbnail``, round to the
 nearest integer, instead of always rounding down.
+This better preserves the original aspect ratio.
+
+The last row and column in the image get the correct weight after
+JPEG DCT scaling when image size is not divisible by 8.
