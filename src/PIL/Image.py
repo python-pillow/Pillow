@@ -144,6 +144,9 @@ HAMMING = 5
 BICUBIC = CUBIC = 3
 LANCZOS = ANTIALIAS = 1
 
+_filters_support = {BOX: 0.5, BILINEAR: 1.0, HAMMING: 1.0, BICUBIC: 2.0, LANCZOS: 3.0}
+
+
 # dithers
 NEAREST = NONE = 0
 ORDERED = 1  # Not yet implemented
@@ -1764,6 +1767,23 @@ class Image:
 
         return m_im
 
+    def _get_safe_box(self, size, resample, box):
+        """Expands the box so it includes neighboring pixels
+        that could be used by resampling with the given resampling filter.
+        """
+        filter_support = _filters_support[resample] - 0.5
+        scale_x = (box[2] - box[0]) / size[0]
+        scale_y = (box[3] - box[1]) / size[1]
+        support_x = filter_support * scale_x
+        support_y = filter_support * scale_y
+
+        return (
+            max(0, int(box[0] - support_x)),
+            max(0, int(box[1] - support_y)),
+            min(self.size[0], math.ceil(box[2] + support_x)),
+            min(self.size[1], math.ceil(box[3] + support_y)),
+        )
+
     def resize(self, size, resample=NEAREST, box=None, max_reduce=None):
         """
         Returns a resized copy of this image.
@@ -1815,7 +1835,7 @@ class Image:
             )
 
         if max_reduce is not None and max_reduce < 1.0:
-            raise ValueError('max_reduce could not be less than 1.0')
+            raise ValueError("max_reduce could not be less than 1.0")
 
         size = tuple(size)
 
@@ -1838,15 +1858,16 @@ class Image:
         self.load()
 
         if max_reduce is not None and resample != NEAREST:
-            x_factor = int((box[2] - box[0]) / size[0] / max_reduce) or 1
-            y_factor = int((box[3] - box[1]) / size[1] / max_reduce) or 1
-            if x_factor > 1 or y_factor > 1:
-                self = self.reduce((x_factor, y_factor))
+            factor_x = int((box[2] - box[0]) / size[0] / max_reduce) or 1
+            factor_y = int((box[3] - box[1]) / size[1] / max_reduce) or 1
+            if factor_x > 1 or factor_y > 1:
+                reduce_box = self._get_safe_box(size, resample, box)
+                self = self.reduce((factor_x, factor_y), box=reduce_box)
                 box = (
-                    box[0] / x_factor,
-                    box[1] / y_factor,
-                    box[2] / x_factor,
-                    box[3] / y_factor,
+                    (box[0] - reduce_box[0]) / factor_x,
+                    (box[1] - reduce_box[1]) / factor_y,
+                    (box[2] - reduce_box[0]) / factor_x,
+                    (box[3] - reduce_box[1]) / factor_y,
                 )
 
         return self._new(self.im.resize(size, resample, box))
