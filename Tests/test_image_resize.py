@@ -189,7 +189,7 @@ class TestReducingGapResize(PillowTestCase):
         for box, epsilon in [
             (None, 1),
             ((1.1, 2.2, 510.8, 510.9), 1),
-            ((3, 10, 410, 256), .5),
+            ((3, 10, 410, 256), 0.5),
         ]:
             ref = self.gradients_image.resize((52, 34), Image.BICUBIC, box=box)
             im = self.gradients_image.resize(
@@ -209,7 +209,7 @@ class TestReducingGapResize(PillowTestCase):
             )
 
             self.assert_image_equal(ref, im)
-    
+
     def test_box_filter(self):
         for box, epsilon in [
             ((0, 0, 512, 512), 5.5),

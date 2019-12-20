@@ -63,7 +63,7 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
-        # TODO: invent a more convenient method for proportional scalings than thumbnail()
+        # TODO: invent a more convenient method for proportional scalings
         tmp = im.copy()
         tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
