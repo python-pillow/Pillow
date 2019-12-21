@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Change default resize resampling filter from NEAREST to BICUBIC #4255
+  [homm]
+
 - Better thumbnail aspect ratio preservation #4256
   [homm]
 
