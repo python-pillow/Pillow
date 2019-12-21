@@ -590,7 +590,12 @@ class TestImage(PillowTestCase):
             self.assertFalse(fp.closed)
 
     def test_overrun(self):
-        for file in ["fli_overrun.bin", "sgi_overrun.bin", "pcx_overrun.bin"]:
+        for file in [
+            "fli_overrun.bin",
+            "sgi_overrun.bin",
+            "pcx_overrun.bin",
+            "pcx_overrun2.bin",
+        ]:
             im = Image.open(os.path.join("Tests/images", file))
             try:
                 im.load()
