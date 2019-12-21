@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Fixed black lines on upscaled images with the BOX filter #4278
+  [homm]
+
+- Change default resize resampling filter from NEAREST to BICUBIC #4255
+  [homm]
+
 - Better thumbnail aspect ratio preservation #4256
   [homm]
 
