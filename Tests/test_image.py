@@ -1,3 +1,4 @@
+import io
 import os
 import shutil
 import tempfile
@@ -90,6 +91,11 @@ class TestImage(PillowTestCase):
 
     def test_bad_mode(self):
         self.assertRaises(ValueError, Image.open, "filename", "bad mode")
+
+    def test_stringio(self):
+        with Image.open(io.StringIO("Tests/images/hopper.jpg")) as im:
+            self.assertEqual(im.mode, "RGB")
+            self.assertEqual(im.size, (128, 128))
 
     def test_pathlib(self):
         from PIL.Image import Path

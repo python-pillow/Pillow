@@ -3,10 +3,10 @@
 File Handling in Pillow
 =======================
 
-When opening a file as an image, Pillow requires a filename, ``pathlib.Path``
-object, or a file-like object. Pillow uses the filename or ``Path`` to open a
-file, so for the rest of this article, they will all be treated as a file-like
-object.
+When opening a file as an image, Pillow requires a filename, ``io.StringIO``
+object, ``pathlib.Path`` object, or a file-like object. Pillow uses the
+filename, ``StringIO`` or ``Path`` to open a file, so for the rest of this
+article, they will all be treated as a file-like object.
 
 The following are all equivalent::
 
@@ -15,6 +15,9 @@ The following are all equivalent::
     import pathlib
 
     with Image.open('test.jpg') as im:
+        ...
+
+    with Image.open(io.StringIO('test.jpg')) as im2:
         ...
 
     with Image.open(pathlib.Path('test.jpg')) as im2:
