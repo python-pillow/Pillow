@@ -527,7 +527,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     A tuple of two numbers corresponding to the desired dpi in each direction.
 
 **pnginfo**
-    A :py:class:`PIL.PngImagePlugin.PngInfo` instance containing text tags.
+    A :py:class:`PIL.PngImagePlugin.PngInfo` instance containing chunks.
 
 **compress_level**
     ZLIB compression level, a number between 0 and 9: 1 gives best speed,
