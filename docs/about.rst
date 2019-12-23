@@ -12,7 +12,7 @@ The fork author's goal is to foster and support active development of PIL throug
 
 .. _Travis CI: https://travis-ci.org/python-pillow/Pillow
 .. _AppVeyor: https://ci.appveyor.com/project/Python-pillow/pillow
-.. _GitHub Actions: https://github.com/python-pillow/Pillow/actions
+.. _GitHub Actions: https://github.com/python-pillow/Pillow/commit/6e0f07bbe38def22d36ee176b2efd9ea74b453a6/checks
 .. _GitHub: https://github.com/python-pillow/Pillow
 .. _Python Package Index: https://pypi.org/project/Pillow/
 
