@@ -20,8 +20,8 @@ if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
     pip install pyqt5
 fi
 
-# docs only on Python 3.7
-if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then pip install -r requirements.txt ; fi
+# docs only on Python 3.8
+if [ "$TRAVIS_PYTHON_VERSION" == "3.8" ]; then pip install -r requirements.txt ; fi
 
 # webp
 pushd depends && ./install_webp.sh && popd
