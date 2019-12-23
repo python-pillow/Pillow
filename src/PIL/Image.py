@@ -2181,12 +2181,14 @@ class Image:
 
           It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
           object::
+
             class Example(Image.ImageTransformHandler):
                 def transform(size, method, data, resample, fill=1):
                     # Return result
 
           It may also be an object with a :py:meth:`~method.getdata` method
           that returns a tuple supplying new **method** and **data** values::
+
             class Example(object):
                 def getdata(self):
                     method = Image.EXTENT
