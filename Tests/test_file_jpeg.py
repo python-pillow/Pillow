@@ -494,7 +494,7 @@ class TestFileJpeg(PillowTestCase):
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 0)
+            assert_image_similar(img, Image.open(TEST_FILE), 5)
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg(self):
