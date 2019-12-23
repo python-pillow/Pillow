@@ -882,7 +882,6 @@ def _save(im, fp, filename, chunk=putchunk):
             b"\x01",
         )
 
-    info = im.encoderinfo.get("pnginfo")
     if info:
         chunks = [b"bKGD", b"hIST"]
         for cid, data in info.chunks:
