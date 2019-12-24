@@ -83,12 +83,6 @@ jobs:
         name: errors
         path: Tests/errors
 
-    - name: Docs
-      if: matrix.python-version == 3.8
-      run: |
-        pip install sphinx-rtd-theme
-        make doccheck
-
     - name: After success
       if: success()
       run: |

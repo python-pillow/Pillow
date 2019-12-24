@@ -1127,8 +1127,7 @@ class Image:
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size. For example, you can use this method to convert a color
-        JPEG to greyscale while loading it, or to extract a 128x192
-        version from a PCD file.
+        JPEG to greyscale while loading it.
 
         If any changes are made, returns a tuple with the chosen ``mode`` and
         ``box`` with coordinates of the original image within the altered one.
@@ -1138,7 +1137,7 @@ class Image:
         effect.
 
         Note: This method is not implemented for most images. It is
-        currently implemented only for JPEG and PCD images.
+        currently implemented only for JPEG and MPO images.
 
         :param mode: The requested mode.
         :param size: The requested size.
@@ -2187,12 +2186,14 @@ class Image:
 
           It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
           object::
+
             class Example(Image.ImageTransformHandler):
                 def transform(size, method, data, resample, fill=1):
                     # Return result
 
           It may also be an object with a :py:meth:`~method.getdata` method
           that returns a tuple supplying new **method** and **data** values::
+
             class Example(object):
                 def getdata(self):
                     method = Image.EXTENT
