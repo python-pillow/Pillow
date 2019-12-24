@@ -369,7 +369,7 @@ jobs:
       run: |
         if [ "$GITHUB_REPOSITORY" == "python-pillow/Pillow" ]; then
           echo "CI on python-pillow/Pillow, copy CodeCov settings"
-          cp .github/workflows/codecov-upstream.yml .codecov.yml
+          cp .github/codecov-upstream.yml .codecov.yml
         fi
         echo Upload coverage
         curl -s https://codecov.io/bash | bash
