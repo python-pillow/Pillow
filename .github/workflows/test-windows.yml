@@ -19,8 +19,8 @@ jobs:
             platform-vcvars: "x86_amd64"
             platform-msbuild: "x64"
           - python-version: "pypy3.6"
-            pypy-version: "pypy3.6-v7.2.0-win32"
-            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.2.0-win32.zip"
+            pypy-version: "pypy3.6-v7.3.0-win32"
+            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.3.0-win32.zip"
         exclude:
           - python-version: "pypy3.6"
             architecture: "x64"
