@@ -61,14 +61,14 @@ See :ref:`concept-filters` to learn the difference. In short,
 Image.draft() return value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``Image.draft()`` method used to return ``None`` or the image itself.
-Unlike other `chain methods`_, ``draft()`` modifies the image in-place
-rather than returning a modified version.
-
-In the new version, ``draft()`` returns ``None`` if it has no effect or
-a tuple of new image mode and the box of original coordinates in the
-bounds of resulting image otherwise
-(the box could be useful in subsequent ``resize()`` call).
+If the :py:meth:`~PIL.Image.Image.draft` method has no effect, it returns ``None``.
+If it does have an effect, then it previously returned the image itself.
+However, unlike other `chain methods`_, :py:meth:`~PIL.Image.Image.draft` does not
+return a modified version of the image, but modifies it in-place. So instead, if
+:py:meth:`~PIL.Image.Image.draft` has an effect, Pillow will now return a tuple
+of the image mode and a co-ordinate box. The box is the original coordinates in the
+bounds of resulting image. This may be useful in a subsequent
+:py:meth:`~PIL.Image.Image.resize` call.
 
 .. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
 
