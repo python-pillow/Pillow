@@ -97,14 +97,13 @@ jobs:
         MATRIX_OS: ${{ matrix.os }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
     - name: Upload coverage
       if: success()
-      run: |
-        if [ "$GITHUB_REPOSITORY" == "python-pillow/Pillow" ]; then
-          echo "CI on python-pillow/Pillow, copy CodeCov settings"
-          cp .github/codecov-upstream.yml .codecov.yml
-        fi
-        bash <(curl -s https://codecov.io/bash)
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
