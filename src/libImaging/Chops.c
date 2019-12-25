@@ -150,8 +150,6 @@ ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2)
 Imaging
 ImagingChopSoftLight(Imaging imIn1, Imaging imIn2)
 {
-    // CHOP2( ( ( (255-in1[x]) * (in1[x]*in2[x]) ) / 65536) +
-    //          ((in1[x] * (255 - ((255 - in1[1]) * (255 - in2[x]) / 255 ) )) / 255), NULL );
     CHOP2( (((255-in1[x]) * (in1[x]*in2[x]) ) / 65536) +
          (in1[x] * ( 255 - ( (255 - in1[x]) * (255 - in2[x] ) / 255) )) / 255
          , NULL );
