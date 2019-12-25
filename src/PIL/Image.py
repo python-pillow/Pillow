@@ -1126,11 +1126,14 @@ class Image:
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
-        size.  For example, you can use this method to convert a color
+        size. For example, you can use this method to convert a color
         JPEG to greyscale while loading it.
 
+        If any changes are made, returns a tuple with the chosen ``mode`` and
+        ``box`` with coordinates of the original image within the altered one.
+
         Note that this method modifies the :py:class:`~PIL.Image.Image` object
-        in place.  If the image has already been loaded, this method has no
+        in place. If the image has already been loaded, this method has no
         effect.
 
         Note: This method is not implemented for most images. It is
@@ -2143,14 +2146,17 @@ class Image:
             x = max(round(x * size[1] / y), 1)
             y = round(size[1])
         size = x, y
+        box = None
 
         if size == self.size:
             return
 
-        self.draft(None, size)
+        res = self.draft(None, size)
+        if res is not None:
+            box = res[1]
 
         if self.size != size:
-            im = self.resize(size, resample)
+            im = self.resize(size, resample, box=box)
 
             self.im = im.im
             self._size = size

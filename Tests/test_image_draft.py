@@ -13,7 +13,11 @@ class TestImageDraft(PillowTestCase):
         im = Image.new(in_mode, in_size)
         data = tostring(im, "JPEG")
         im = fromstring(data)
-        im.draft(req_mode, req_size)
+        mode, box = im.draft(req_mode, req_size)
+        scale, _ = im.decoderconfig
+        self.assertEqual(box[:2], (0, 0))
+        self.assertTrue((im.width - scale) < box[2] <= im.width)
+        self.assertTrue((im.height - scale) < box[3] <= im.height)
         return im
 
     def test_size(self):

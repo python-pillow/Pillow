@@ -58,6 +58,20 @@ and :py:meth:`~PIL.ImageOps.fit` functions.
 See :ref:`concept-filters` to learn the difference. In short,
 ``Image.NEAREST`` is a very fast filter, but simple and low-quality.
 
+Image.draft() return value
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the :py:meth:`~PIL.Image.Image.draft` method has no effect, it returns ``None``.
+If it does have an effect, then it previously returned the image itself.
+However, unlike other `chain methods`_, :py:meth:`~PIL.Image.Image.draft` does not
+return a modified version of the image, but modifies it in-place. So instead, if
+:py:meth:`~PIL.Image.Image.draft` has an effect, Pillow will now return a tuple
+of the image mode and a co-ordinate box. The box is the original coordinates in the
+bounds of resulting image. This may be useful in a subsequent
+:py:meth:`~PIL.Image.Image.resize` call.
+
+.. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
+
 
 API Changes
 ===========
@@ -104,8 +118,12 @@ Use instead:
     with Image.open("hopper.png") as im:
         im.save("out.jpg")
 
-Better thumbnail aspect ratio preservation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Better thumbnail geometry
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When calculating the new dimensions in :py:meth:`~PIL.Image.Image.thumbnail`,
 round to the nearest integer, instead of always rounding down.
+This better preserves the original aspect ratio.
+
+When the image width or height is not divisible by 8 the last row and column
+in the image get the correct weight after JPEG DCT scaling.

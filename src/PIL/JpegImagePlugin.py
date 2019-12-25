@@ -413,7 +413,8 @@ class JpegImageFile(ImageFile.ImageFile):
             return
 
         d, e, o, a = self.tile[0]
-        scale = 0
+        scale = 1
+        original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self.mode = mode
@@ -436,7 +437,8 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
-        return self
+        box = (0, 0, original_size[0] / float(scale), original_size[1] / float(scale))
+        return (self.mode, box)
 
     def load_djpeg(self):
 
