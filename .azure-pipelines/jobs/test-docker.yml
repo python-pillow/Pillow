@@ -1,6 +1,6 @@
 parameters:
   docker: ''  # defaults for any parameters that aren't specified
-  dockerTag: 'master'
+  dockerTag: '6.2.x'
   name: ''
   vmImage: 'Ubuntu-16.04'
 

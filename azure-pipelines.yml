@@ -63,10 +63,5 @@ jobs:
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
-    docker: 'fedora-29-amd64'
-    name:   'fedora_29_amd64'
-
-- template: .azure-pipelines/jobs/test-docker.yml
-  parameters:
     docker: 'fedora-30-amd64'
     name:   'fedora_30_amd64'
