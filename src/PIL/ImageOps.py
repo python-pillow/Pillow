@@ -234,6 +234,7 @@ def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
                       padded version.
+
                           (0.5, 0.5) will keep the image centered
                           (0, 0) will keep the image aligned to the top left
                           (1, 1) will keep the image aligned to the bottom

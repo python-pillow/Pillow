@@ -6,6 +6,8 @@ codecov:
   # https://docs.codecov.io/docs/comparing-commits
   allow_coverage_offsets: true
 
+  token: 6dafc396-e7f5-4221-a38a-8b07a49fbdae
+
 comment: off
 
 # Matches 'omit:' in .coveragerc

@@ -16,7 +16,7 @@ class TestUtil(PillowTestCase):
         # Assert
         self.assertTrue(it_is)
 
-    @unittest.skipIf(not _util.py36, "os.path support for Paths added in 3.6")
+    @unittest.skipUnless(_util.py36, "os.path support for Paths added in 3.6")
     def test_path_obj_is_path(self):
         # Arrange
         from pathlib import Path

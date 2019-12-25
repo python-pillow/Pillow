@@ -47,7 +47,8 @@ Basic Installation
 
 Install Pillow with :command:`pip`::
 
-    $ pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 
 Windows Installation
@@ -58,7 +59,8 @@ supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
 libraries included except for raqm and libimagequant::
 
-  > pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 
 macOS Installation
@@ -69,7 +71,8 @@ versions in the wheel format. These include support for all optional
 libraries except libimagequant.  Raqm support requires libraqm,
 fribidi, and harfbuzz to be installed separately::
 
-  $ pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 Linux Installation
 ^^^^^^^^^^^^^^^^^^
@@ -79,7 +82,8 @@ versions in the manylinux wheel format. These include support for all
 optional libraries except libimagequant. Raqm support requires
 libraqm, fribidi, and harfbuzz to be installed separately::
 
-  $ pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 Most major Linux distributions, including Fedora, Debian/Ubuntu and
 ArchLinux also include Pillow in packages that previously contained
@@ -92,11 +96,11 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 
 **Ports**::
 
-  $ cd /usr/ports/graphics/py-pillow && make install clean
+  cd /usr/ports/graphics/py-pillow && make install clean
 
 **Packages**::
 
-  $ pkg install py36-pillow
+  pkg install py36-pillow
 
 .. note::
 
@@ -191,7 +195,8 @@ Many of Pillow's features require external libraries:
 
 Once you have installed the prerequisites, run::
 
-    $ pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
@@ -201,7 +206,7 @@ those locations by editing :file:`setup.py` or
 :file:`setup.cfg`, or by adding environment variables on the command
 line::
 
-    $ CFLAGS="-I/usr/pkg/include" pip install pillow
+    CFLAGS="-I/usr/pkg/include" python -m pip install pillow
 
 If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
@@ -245,11 +250,11 @@ Build Options
 
 Sample usage::
 
-    $ MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
+    MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
 
 or using pip::
 
-    $ pip install pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python -m pip install pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
 Building on macOS
@@ -265,21 +270,22 @@ tools.
 The easiest way to install external libraries is via `Homebrew
 <https://brew.sh/>`_. After you install Homebrew, run::
 
-    $ brew install libtiff libjpeg webp little-cms2
+    brew install libtiff libjpeg webp little-cms2
 
 To install libraqm on macOS use Homebrew to install its dependencies::
 
-    $ brew install freetype harfbuzz fribidi
+    brew install freetype harfbuzz fribidi
 
 Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 Now install Pillow with::
 
-    $ pip install Pillow
+    python -m pip install pip
+    python -m pip install Pillow
 
 or from within the uncompressed source directory::
 
-    $ python setup.py install
+    python setup.py install
 
 Building on Windows
 ^^^^^^^^^^^^^^^^^^^
@@ -293,17 +299,17 @@ Building on FreeBSD
 
 .. Note:: Only FreeBSD 10 and 11 tested
 
-Make sure you have Python's development libraries installed.::
+Make sure you have Python's development libraries installed::
 
-    $ sudo pkg install python2
+    sudo pkg install python2
 
 Or for Python 3::
 
-    $ sudo pkg install python3
+    sudo pkg install python3
 
 Prerequisites are installed on **FreeBSD 10 or 11** with::
 
-    $ sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi
+    sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi
 
 Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
@@ -316,33 +322,33 @@ development libraries installed.
 
 In Debian or Ubuntu::
 
-    $ sudo apt-get install python-dev python-setuptools
+    sudo apt-get install python-dev python-setuptools
 
 Or for Python 3::
 
-    $ sudo apt-get install python3-dev python3-setuptools
+    sudo apt-get install python3-dev python3-setuptools
 
 In Fedora, the command is::
 
-    $ sudo dnf install python-devel redhat-rpm-config
+    sudo dnf install python-devel redhat-rpm-config
 
 Or for Python 3::
 
-    $ sudo dnf install python3-devel redhat-rpm-config
+    sudo dnf install python3-devel redhat-rpm-config
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
 Prerequisites are installed on **Ubuntu 16.04 LTS** with::
 
-    $ sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk \
+    sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
         libharfbuzz-dev libfribidi-dev
 
 Then see ``depends/install_raqm.sh`` to install libraqm.
 
 Prerequisites are installed on recent **RedHat** **Centos** or **Fedora** with::
 
-    $ sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
+    sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
         freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
         harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel
 
@@ -359,7 +365,7 @@ Building on Android
 Basic Android support has been added for compilation within the Termux
 environment. The dependencies can be installed by::
 
-    $ pkg install -y python ndk-sysroot clang make \
+    pkg install -y python ndk-sysroot clang make \
         libjpeg-turbo
 
 This has been tested within the Termux app on ChromeOS, on x86.

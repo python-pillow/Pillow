@@ -5,7 +5,13 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Use default DPI when exif provides invalid x_resolution #4147
+  [beipang2, radarhere]
+
 - Change default resize resampling filter from NEAREST to BICUBIC #4255
+  [homm]
+
+- Fixed black lines on upscaled images with the BOX filter #4278
   [homm]
 
 - Better thumbnail aspect ratio preservation #4256

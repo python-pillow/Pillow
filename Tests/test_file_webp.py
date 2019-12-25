@@ -26,7 +26,7 @@ class TestUnsupportedWebp(PillowTestCase):
             WebPImagePlugin.SUPPORTED = True
 
 
-@unittest.skipIf(not HAVE_WEBP, "WebP support not installed")
+@unittest.skipUnless(HAVE_WEBP, "WebP support not installed")
 class TestFileWebp(PillowTestCase):
     def setUp(self):
         self.rgb_mode = "RGB"

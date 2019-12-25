@@ -41,6 +41,13 @@ class TestFileBmp(PillowTestCase):
             self.assertEqual(im.size, reloaded.size)
             self.assertEqual(reloaded.format, "BMP")
 
+    def test_save_too_large(self):
+        outfile = self.tempfile("temp.bmp")
+        with Image.new("RGB", (1, 1)) as im:
+            im._size = (37838, 37838)
+            with self.assertRaises(ValueError):
+                im.save(outfile)
+
     def test_dpi(self):
         dpi = (72, 72)
 

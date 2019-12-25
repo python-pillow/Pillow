@@ -166,10 +166,11 @@ def APP(self, marker):
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
-        except (KeyError, SyntaxError, ZeroDivisionError):
+        except (KeyError, SyntaxError, ValueError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
+            # ValueError for x_resolution[0] being an invalid float
             self.info["dpi"] = 72, 72
 
 
@@ -412,7 +413,8 @@ class JpegImageFile(ImageFile.ImageFile):
             return
 
         d, e, o, a = self.tile[0]
-        scale = 0
+        scale = 1
+        original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self.mode = mode
@@ -435,7 +437,8 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
-        return self
+        box = (0, 0, original_size[0] / float(scale), original_size[1] / float(scale))
+        return (self.mode, box)
 
     def load_djpeg(self):
 

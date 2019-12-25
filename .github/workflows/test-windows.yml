@@ -19,8 +19,8 @@ jobs:
             platform-vcvars: "x86_amd64"
             platform-msbuild: "x64"
           - python-version: "pypy3.6"
-            pypy-version: "pypy3.6-v7.2.0-win32"
-            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.2.0-win32.zip"
+            pypy-version: "pypy3.6-v7.3.0-win32"
+            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.3.0-win32.zip"
         exclude:
           - python-version: "pypy3.6"
             architecture: "x64"
@@ -364,12 +364,16 @@ jobs:
         name: errors
         path: Tests/errors
 
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
     - name: Upload coverage
       if: success()
       uses: codecov/codecov-action@v1
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        name: ${{ runner.os }} Python ${{ matrix.python-version }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: ${{ runner.os }} Python ${{ matrix.python-version }}
 
     - name: Build wheel
       id: wheel

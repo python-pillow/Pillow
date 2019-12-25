@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, fromstring, hopper, tostring
 
 
 class TestImageThumbnail(PillowTestCase):
@@ -58,3 +58,15 @@ class TestImageThumbnail(PillowTestCase):
         with Image.open("Tests/images/hopper.jpg") as im:
             im.thumbnail((64, 64))
             self.assertEqual(im.size, (64, 64))
+
+    def test_DCT_scaling_edges(self):
+        # Make an image with red borders and size (N * 8) + 1 to cross DCT grid
+        im = Image.new("RGB", (257, 257), "red")
+        im.paste(Image.new("RGB", (235, 235)), (11, 11))
+
+        thumb = fromstring(tostring(im, "JPEG", quality=99, subsampling=0))
+        thumb.thumbnail((32, 32), Image.BICUBIC)
+
+        ref = im.resize((32, 32), Image.BICUBIC)
+        # This is still JPEG, some error is present. Without the fix it is 11.5
+        self.assert_image_similar(thumb, ref, 1.5)
