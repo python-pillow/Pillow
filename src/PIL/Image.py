@@ -3238,7 +3238,7 @@ class Exif(MutableMapping):
                             continue
                         size = count * unit_size
                         if size > 4:
-                            offset, = struct.unpack("<L", data)
+                            (offset,) = struct.unpack("<L", data)
                             data = ifd_data[offset - 12 : offset + size - 12]
                         else:
                             data = data[:size]
@@ -3268,7 +3268,7 @@ class Exif(MutableMapping):
                         )
                         if ifd_tag == 0x1101:
                             # CameraInfo
-                            offset, = struct.unpack(">L", data)
+                            (offset,) = struct.unpack(">L", data)
                             self.fp.seek(offset)
 
                             camerainfo = {"ModelID": self.fp.read(4)}
