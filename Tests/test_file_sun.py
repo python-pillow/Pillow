@@ -30,7 +30,7 @@ class TestFileSun(PillowTestCase):
             with Image.open("Tests/images/sunraster.im1.png") as target:
                 self.assert_image_equal(im, target)
 
-    @unittest.skipIf(not os.path.exists(EXTRA_DIR), "Extra image files not installed")
+    @unittest.skipUnless(os.path.exists(EXTRA_DIR), "Extra image files not installed")
     def test_others(self):
         files = (
             os.path.join(EXTRA_DIR, f)

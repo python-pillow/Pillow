@@ -19,7 +19,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
             )
         )
 
-    @unittest.skipIf(not features.check("freetype2"), "Test requires freetype2")
+    @unittest.skipUnless(features.check("freetype2"), "Test requires freetype2")
     def test_leak(self):
         ttype = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
         self._test_font(ttype)

@@ -49,7 +49,7 @@ class TestFileMsp(PillowTestCase):
             with Image.open(target_path) as target:
                 self.assert_image_equal(im, target)
 
-    @unittest.skipIf(not os.path.exists(EXTRA_DIR), "Extra image files not installed")
+    @unittest.skipUnless(os.path.exists(EXTRA_DIR), "Extra image files not installed")
     def test_open_windows_v2(self):
 
         files = (
