@@ -125,5 +125,5 @@ When calculating the new dimensions in :py:meth:`~PIL.Image.Image.thumbnail`,
 round to the nearest integer, instead of always rounding down.
 This better preserves the original aspect ratio.
 
-The last row and column in the image get the correct weight after
-JPEG DCT scaling when image size is not divisible by 8.
+When the image width or height is not divisible by 8 the last row and column
+in the image get the correct weight after JPEG DCT scaling.
