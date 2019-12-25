@@ -139,7 +139,7 @@ def screen(image1, image2):
     return image1._new(image1.im.chop_screen(image2.im))
 
 
-def softlight(image1, image2):
+def soft_light(image1, image2):
     """
     Superimposes two images on top of each other using the Soft Light algorithm
 
@@ -148,10 +148,10 @@ def softlight(image1, image2):
 
     image1.load()
     image2.load()
-    return image1._new(image1.im.chop_softlight(image2.im))
+    return image1._new(image1.im.chop_soft_light(image2.im))
 
 
-def hardlight(image1, image2):
+def hard_light(image1, image2):
     """
     Superimposes two images on top of each other using the Hard Light algorithm
 
@@ -160,7 +160,7 @@ def hardlight(image1, image2):
 
     image1.load()
     image2.load()
-    return image1._new(image1.im.chop_hardlight(image2.im))
+    return image1._new(image1.im.chop_hard_light(image2.im))
 
 
 def overlay(image1, image2):

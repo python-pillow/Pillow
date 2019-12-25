@@ -2407,7 +2407,7 @@ _chop_subtract_modulo(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
-_chop_softlight(ImagingObject* self, PyObject* args)
+_chop_soft_light(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
 
@@ -2418,7 +2418,7 @@ _chop_softlight(ImagingObject* self, PyObject* args)
 }
 
 static PyObject*
-_chop_hardlight(ImagingObject* self, PyObject* args)
+_chop_hard_light(ImagingObject* self, PyObject* args)
 {
     ImagingObject* imagep;
 
@@ -3357,8 +3357,8 @@ static struct PyMethodDef methods[] = {
     {"chop_and", (PyCFunction)_chop_and, 1},
     {"chop_or", (PyCFunction)_chop_or, 1},
     {"chop_xor", (PyCFunction)_chop_xor, 1},
-    {"chop_softlight", (PyCFunction)_chop_softlight, 1},
-    {"chop_hardlight", (PyCFunction)_chop_hardlight, 1},
+    {"chop_soft_light", (PyCFunction)_chop_soft_light, 1},
+    {"chop_hard_light", (PyCFunction)_chop_hard_light, 1},
     {"chop_overlay", (PyCFunction)_chop_overlay, 1},
 
 #endif

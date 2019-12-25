@@ -38,8 +38,8 @@ def test_sanity():
     ImageChops.blend(im, im, 0.5)
     ImageChops.composite(im, im, im)
 
-    ImageChops.softlight(im, im)
-    ImageChops.hardlight(im, im)
+    ImageChops.soft_light(im, im)
+    ImageChops.hard_light(im, im)
     ImageChops.overlay(im, im)
 
     ImageChops.offset(im, 10)
@@ -366,26 +366,26 @@ def test_subtract_modulo_no_clip():
         self.assertEqual(new.getpixel((50, 50)), (241, 167, 127))
 
 
-def test_softlight(self):
+def test_soft_light(self):
     # Arrange
     im1 = Image.open("Tests/images/hopper.png")
     im2 = Image.open("Tests/images/hopper-XYZ.png")
 
     # Act
-    new = ImageChops.softlight(im1, im2)
+    new = ImageChops.soft_light(im1, im2)
 
     # Assert
     self.assertEqual(new.getpixel((64, 64)), (163, 54, 32))
     self.assertEqual(new.getpixel((15, 100)), (1, 1, 3))
 
 
-def test_hardlight(self):
+def test_hard_light(self):
     # Arrange
     im1 = Image.open("Tests/images/hopper.png")
     im2 = Image.open("Tests/images/hopper-XYZ.png")
 
     # Act
-    new = ImageChops.hardlight(im1, im2)
+    new = ImageChops.hard_light(im1, im2)
 
     # Assert
     self.assertEqual(new.getpixel((64, 64)), (144, 50, 27))
