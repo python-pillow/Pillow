@@ -11,7 +11,7 @@ except ImportError:
     image_font_installed = False
 
 
-@unittest.skipIf(not image_font_installed, "image font not installed")
+@unittest.skipUnless(image_font_installed, "image font not installed")
 class TestImageFontBitmap(PillowTestCase):
     def test_similar(self):
         text = "EmbeddedBitmap"
