@@ -46,7 +46,6 @@ matrix:
     - env: DOCKER="centos-7-amd64" DOCKER_TAG="6.2.x"
     - env: DOCKER="amazon-1-amd64" DOCKER_TAG="6.2.x"
     - env: DOCKER="amazon-2-amd64" DOCKER_TAG="6.2.x"
-    - env: DOCKER="fedora-29-amd64" DOCKER_TAG="6.2.x"
     - env: DOCKER="fedora-30-amd64" DOCKER_TAG="6.2.x"
 
 services:
