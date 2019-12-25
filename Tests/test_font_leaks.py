@@ -2,10 +2,9 @@ import unittest
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowLeakTestCase, is_win32
+from .helper import PillowLeakTestCase
 
 
-@unittest.skipIf(is_win32(), "requires Unix or macOS")
 class TestTTypeFontLeak(PillowLeakTestCase):
     # fails at iteration 3 in master
     iterations = 10
