@@ -2690,10 +2690,17 @@ def open(fp, mode="r"):
     :exception FileNotFoundError: If the file cannot be found.
     :exception PIL.UnidentifiedImageError: If the image cannot be opened and
        identified.
+    :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
+       instance is used for ``fp``.
     """
 
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
+    elif isinstance(fp, io.StringIO):
+        raise ValueError(
+            "StringIO cannot be used to open an image. "
+            "Binary data must be used instead."
+        )
 
     exclusive_fp = False
     filename = ""
