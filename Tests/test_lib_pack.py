@@ -377,7 +377,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBA",
             "RGBa;16L",
-            b"\x88\x01\x88\x02\x88\x03\x88\x00" b"\x88\x10\x88\x20\x88\x30\x88\xff",
+            b"\x88\x01\x88\x02\x88\x03\x88\x00\x88\x10\x88\x20\x88\x30\x88\xff",
             (0, 0, 0, 0),
             (16, 32, 48, 255),
         )
@@ -392,7 +392,7 @@ class TestLibUnpack(PillowTestCase):
         self.assert_unpack(
             "RGBA",
             "RGBa;16B",
-            b"\x01\x88\x02\x88\x03\x88\x00\x88" b"\x10\x88\x20\x88\x30\x88\xff\x88",
+            b"\x01\x88\x02\x88\x03\x88\x00\x88\x10\x88\x20\x88\x30\x88\xff\x88",
             (0, 0, 0, 0),
             (16, 32, 48, 255),
         )
