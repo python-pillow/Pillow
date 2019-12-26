@@ -2698,7 +2698,8 @@ def open(fp, mode="r"):
         raise ValueError("bad mode %r" % mode)
     elif isinstance(fp, io.StringIO):
         raise ValueError(
-            "StringIO cannot be used to open an image. Binary data must be used instead."
+            "StringIO cannot be used to open an image. "
+            "Binary data must be used instead."
         )
 
     exclusive_fp = False
