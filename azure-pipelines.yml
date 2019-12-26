@@ -53,6 +53,11 @@ jobs:
 
 - template: .azure-pipelines/jobs/test-docker.yml
   parameters:
+    docker: 'centos-8-amd64'
+    name:   'centos_8_amd64'
+
+- template: .azure-pipelines/jobs/test-docker.yml
+  parameters:
     docker: 'amazon-1-amd64'
     name:   'amazon_1_amd64'
 
