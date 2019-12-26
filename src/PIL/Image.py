@@ -2690,7 +2690,7 @@ def open(fp, mode="r"):
     :exception FileNotFoundError: If the file cannot be found.
     :exception PIL.UnidentifiedImageError: If the image cannot be opened and
        identified.
-    :exception ValueError: If the ``mode`` is not "r", or if a StringIO
+    :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
        instance is used for ``fp``.
     """
 
