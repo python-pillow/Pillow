@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Raise ValueError for io.StringIO in Image.open #4302
+  [radarhere, hugovk]
+
 - Fix thumbnail geometry when DCT scaling is used #4231
   [homm, radarhere]
 
