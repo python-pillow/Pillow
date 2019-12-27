@@ -94,7 +94,7 @@ class TestImageReduce(PillowTestCase):
                 # rotate previous image
                 band = bands[-1].transpose(Image.ROTATE_90)
                 bands.append(band)
-            # Correct alpha channel to exclude completely transparent pixels.
+            # Correct alpha channel by transforming completely transparent pixels.
             # Low alpha values also emphasize error after alpha multiplication.
             if mode.endswith("A"):
                 bands[-1] = bands[-1].point(lambda x: int(85 + x / 1.5))
@@ -102,7 +102,7 @@ class TestImageReduce(PillowTestCase):
         else:
             assert len(mode_info.bands) == 1
             im = self.gradients_image.convert(mode)
-        # change the height to make a not square image
+        # change the height to make a not-square image
         return im.crop((0, 0, im.width, im.height - 5))
 
     def compare_reduce_with_box(self, im, factor):
@@ -196,7 +196,7 @@ class TestImageReduce(PillowTestCase):
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor, 0.8, 5)
 
-        # With opaque alpha, error should be way smaller
+        # With opaque alpha, an error should be way smaller.
         im.putalpha(Image.new("L", im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)
@@ -219,7 +219,7 @@ class TestImageReduce(PillowTestCase):
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor, 0.8, 5)
 
-        # With opaque alpha, error should be way smaller
+        # With opaque alpha, an error should be way smaller.
         im.putalpha(Image.new("L", im.size, 255))
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor)

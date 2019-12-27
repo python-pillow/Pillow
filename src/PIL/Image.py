@@ -1777,9 +1777,9 @@ class Image:
            If the image has mode "1" or "P", it is
            always set to :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
-        :param box: An optional 4-tuple of floats giving the region
-           of the source image which should be scaled.
-           The values should be within (0, 0, width, height) rectangle.
+        :param box: An optional 4-tuple of floats providing
+           the source image region to be scaled.
+           The values must be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
@@ -1826,15 +1826,15 @@ class Image:
 
     def reduce(self, factor, box=None):
         """
-        Returns reduced in `factor` times copy of the image.
+        Returns a copy of the image reduced by `factor` times.
         If the size of the image is not dividable by the `factor`,
         the resulting size will be rounded up.
 
         :param factor: A greater than 0 integer or tuple of two integers
-            for width and height separately.
-        :param box: An optional 4-tuple of ints giving the region
-           of the source image which should be reduced.
-           The values should be within (0, 0, width, height) rectangle.
+           for width and height separately.
+        :param box: An optional 4-tuple of ints providing
+           the source image region to be reduced.
+           The values must be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
         """
         if not isinstance(factor, (list, tuple)):
