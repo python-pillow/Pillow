@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Added reduce operation #4251
+  [homm]
+
 - Raise ValueError for io.StringIO in Image.open #4302
   [radarhere, hugovk]
 
