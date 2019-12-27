@@ -225,8 +225,8 @@ set DefaultPlatformToolset=v100
     if bit == 64:
         script += (
             r"copy /Y /B "
-            + r'"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64\*.Lib" '
-            + r"%%FREETYPE%%\builds\windows\vc2010"
+            r'"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64\*.Lib" '
+            r"%%FREETYPE%%\builds\windows\vc2010"
         )
         properties += r" /p:_IsNativeEnvironment=false"
     script += (

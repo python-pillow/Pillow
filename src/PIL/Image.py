@@ -1797,9 +1797,9 @@ class Image:
            If the image has mode "1" or "P", it is
            always set to :py:attr:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
-        :param box: An optional 4-tuple of floats giving the region
-           of the source image which should be scaled.
-           The values should be within (0, 0, width, height) rectangle.
+        :param box: An optional 4-tuple of floats providing
+           the source image region to be scaled.
+           The values must be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image in integer times
@@ -1874,15 +1874,15 @@ class Image:
 
     def reduce(self, factor, box=None):
         """
-        Returns reduced in `factor` times copy of the image.
+        Returns a copy of the image reduced by `factor` times.
         If the size of the image is not dividable by the `factor`,
         the resulting size will be rounded up.
 
         :param factor: A greater than 0 integer or tuple of two integers
-            for width and height separately.
-        :param box: An optional 4-tuple of ints giving the region
-           of the source image which should be reduced.
-           The values should be within (0, 0, width, height) rectangle.
+           for width and height separately.
+        :param box: An optional 4-tuple of ints providing
+           the source image region to be reduced.
+           The values must be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
         """
         if not isinstance(factor, (list, tuple)):
@@ -2783,12 +2783,20 @@ def open(fp, mode="r"):
        and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
     :returns: An :py:class:`~PIL.Image.Image` object.
-    :exception IOError: If the file cannot be found, or the image cannot be
-       opened and identified.
+    :exception FileNotFoundError: If the file cannot be found.
+    :exception PIL.UnidentifiedImageError: If the image cannot be opened and
+       identified.
+    :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
+       instance is used for ``fp``.
     """
 
     if mode != "r":
         raise ValueError("bad mode %r" % mode)
+    elif isinstance(fp, io.StringIO):
+        raise ValueError(
+            "StringIO cannot be used to open an image. "
+            "Binary data must be used instead."
+        )
 
     exclusive_fp = False
     filename = ""
