@@ -1,5 +1,4 @@
 import base64
-import distutils.version
 import io
 import itertools
 import logging
@@ -272,12 +271,8 @@ class TestFileLibTiff(LibTiffTestCase):
             )
         }
 
-        libtiff_version = TiffImagePlugin._libtiff_version()
-
         libtiffs = [False]
-        if distutils.version.StrictVersion(
-            libtiff_version
-        ) >= distutils.version.StrictVersion("4.0"):
+        if Image.core.libtiff_v4_or_greater:
             libtiffs.append(True)
 
         for libtiff in libtiffs:

@@ -82,6 +82,12 @@
 #include "zlib.h"
 #endif
 
+#ifdef HAVE_LIBTIFF
+#ifndef _TIFFIO_
+#include <tiffio.h>
+#endif
+#endif
+
 #include "Imaging.h"
 
 #define _USE_MATH_DEFINES
@@ -3961,6 +3967,15 @@ setup_module(PyObject* m) {
   {
     extern const char * ImagingTiffVersion(void);
     PyDict_SetItemString(d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
+
+    // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
+    PyObject* v4_or_greater;
+#if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && TIFFLIB_VERSION != 20120922
+    v4_or_greater = Py_True;
+#else
+    v4_or_greater = Py_False;
+#endif
+    PyDict_SetItemString(d, "libtiff_v4_or_greater", v4_or_greater);
   }
 #endif
 

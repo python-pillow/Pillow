@@ -38,7 +38,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-import distutils.version
 import io
 import itertools
 import os
@@ -1559,11 +1558,10 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
-                    continue
-                if distutils.version.StrictVersion(
-                    _libtiff_version()
-                ) < distutils.version.StrictVersion("4.0"):
+                if (
+                    TiffTags.lookup(tag).type == TiffTags.UNDEFINED
+                    or not Image.core.libtiff_v4_or_greater
+                ):
                     continue
 
                 if tag in ifd.tagtype:
