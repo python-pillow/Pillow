@@ -54,6 +54,7 @@ _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
     "Resample",
+    "Reduce",
     "Bands",
     "BcnDecode",
     "BitDecode",
