@@ -1767,8 +1767,8 @@ class Image:
         return m_im
 
     def _get_safe_box(self, size, resample, box):
-        """Expands the box so it includes neighboring pixels
-        that could be used by resampling with the given resampling filter.
+        """Expands the box so it includes adjacent pixels
+        that may be used by resampling with the given resampling filter.
         """
         filter_support = _filters_support[resample] - 0.5
         scale_x = (box[2] - box[0]) / size[0]
@@ -1802,11 +1802,11 @@ class Image:
            The values must be within (0, 0, width, height) rectangle.
            If omitted or None, the entire source is used.
         :param reducing_gap: Apply optimization by resizing the image
-           in two steps. First, reducing the image in integer times
+           in two steps. First, reducing the image by integer times
            using :py:meth:`~PIL.Image.Image.reduce`.
            Second, resizing using regular resampling. The last step
-           changes size not less than in ``reducing_gap`` times.
-           ``reducing_gap`` could be None (no first step is performed)
+           changes size no less than by ``reducing_gap`` times.
+           ``reducing_gap`` may be None (no first step is performed)
            or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
            The smaller ``reducing_gap``, the faster resizing.
@@ -2216,19 +2216,19 @@ class Image:
            If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
            (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
         :param reducing_gap: Apply optimization by resizing the image
-           in two steps. First, reducing the image in integer times
+           in two steps. First, reducing the image by integer times
            using :py:meth:`~PIL.Image.Image.reduce` or
            :py:meth:`~PIL.Image.Image.draft` for JPEG images.
            Second, resizing using regular resampling. The last step
-           changes size not less than in ``reducing_gap`` times.
-           ``reducing_gap`` could be None (no first step is performed)
+           changes size no less than by ``reducing_gap`` times.
+           ``reducing_gap`` may be none (no first step is performed)
            or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
            The smaller ``reducing_gap``, the faster resizing.
            With ``reducing_gap`` greater or equal to 3.0 result is
            indistinguishable from fair resampling in most cases.
            The default value is 2.0 (very close to fair resampling
-           while still faster in many cases).
+           while still being faster in many cases).
         :returns: None
         """
 

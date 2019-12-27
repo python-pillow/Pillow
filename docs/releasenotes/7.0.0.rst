@@ -99,16 +99,16 @@ New argument ``reducing_gap`` for Image.resize() and Image.thumbnail() methods
 
 Speeds up resizing by resizing the image in two steps. The bigger ``reducing_gap``,
 the closer the result to the fair resampling. The smaller ``reducing_gap``,
-the faster resizing. With ``reducing_gap`` greater or equal to 3.0 result is
-indistinguishable from fair resampling.
+the faster resizing. With ``reducing_gap`` greater or equal to 3.0,
+the result is indistinguishable from fair resampling.
 
 The default value for :py:meth:`~PIL.Image.Image.resize` is ``None``,
 which means that the optimization is turned off by default.
 
 The default value for :py:meth:`~PIL.Image.Image.thumbnail` is 2.0,
-which is very close to fair resampling while still faster in many cases.
+which is very close to fair resampling while still being faster in many cases.
 In addition, the same gap is applied when :py:meth:`~PIL.Image.Image.thumbnail`
-calls :py:meth:`~PIL.Image.Image.draft`, which could greatly improve the quality
+calls :py:meth:`~PIL.Image.Image.draft`, which may greatly improve the quality
 of JPEG thumbnails. As a result, :py:meth:`~PIL.Image.Image.thumbnail`
 in the new version provides equally high speed and high quality from any
 sources (JPEG or arbitrary images).
