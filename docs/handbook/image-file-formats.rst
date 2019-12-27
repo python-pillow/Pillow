@@ -573,7 +573,7 @@ where applicable:
     When an APNG file contains a default image, the initially loaded image (i.e.
     the result of ``seek(0)``) will be the default image.
     To account for the presence of the default image, the
-    py:attr:`~PIL.Image.Image.n_frames` property will be set to ``frame_count + 1``,
+    :py:attr:`~PIL.Image.Image.n_frames` property will be set to ``frame_count + 1``,
     where ``frame_count`` is the actual APNG animation frame count.
     To load the first APNG animation frame, ``seek(1)`` must be called.
 
