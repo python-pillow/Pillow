@@ -263,10 +263,6 @@ def _limit_rational(val, max_val):
     return n_d[::-1] if inv else n_d
 
 
-def _libtiff_version():
-    return Image.core.libtiff_version.split("\n")[0].split("Version ")[1]
-
-
 ##
 # Wrapper for TIFF IFDs.
 
