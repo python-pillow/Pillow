@@ -36,15 +36,9 @@ class TestImageGrab:
 
     @pytest.mark.skipif(not Image.core.HAVE_XCB, reason="requires XCB")
     def test_grab_invalid_xdisplay(self):
-        exception = None
-
-        try:
+        with pytest.raises(IOError) as e:
             ImageGrab.grab(xdisplay="error.test:0.0")
-        except Exception as e:
-            exception = e
-
-        assert isinstance(exception, IOError)
-        assert str(exception).startswith("X connection failed")
+        assert str(e.value).startswith("X connection failed")
 
     def test_grabclipboard(self):
         if sys.platform == "darwin":
@@ -59,15 +53,11 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            exception = None
-
-            try:
+            with pytest.raises(NotImplementedError) as e:
                 ImageGrab.grabclipboard()
-            except IOError as e:
-                exception = e
-
-            assert isinstance(exception, IOError)
-            assert str(exception) == "ImageGrab.grabclipboard() is macOS and Windows only"
+            self.assertEqual(
+                str(e.value), "ImageGrab.grabclipboard() is macOS and Windows only"
+            )
             return
 
         im = ImageGrab.grabclipboard()
