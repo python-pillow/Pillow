@@ -26,7 +26,7 @@ class TestImageGrab:
     def test_grabclipboard(self):
         if sys.platform == "darwin":
             subprocess.call(["screencapture", "-cx"])
-        else:
+        elif sys.platform == "win32":
             p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
             p.stdin.write(
                 b"""[Reflection.Assembly]::LoadWithPartialName("System.Drawing")
@@ -35,6 +35,9 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 [Windows.Forms.Clipboard]::SetImage($bmp)"""
             )
             p.communicate()
+        else:
+            self.assertRaises(NotImplementedError, ImageGrab.grabclipboard)
+            return
 
         im = ImageGrab.grabclipboard()
         assert_image(im, im.mode, im.size)
