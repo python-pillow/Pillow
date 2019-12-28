@@ -23,6 +23,17 @@ import tempfile
 from . import Image
 
 
+def _has_imagemagick():
+    try:
+        with open(os.devnull, "wb") as devnull:
+            subprocess.check_call(["import", "--version"], stdout=devnull)
+        return True
+    except OSError:
+        # No ImageMagick
+        pass
+    return False
+
+
 def grab(bbox=None, include_layered_windows=False, all_screens=False):
     if sys.platform == "darwin":
         fh, filepath = tempfile.mkstemp(".png")
@@ -53,6 +64,8 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
             left, top, right, bottom = bbox
             im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
     else:
+        if not _has_imagemagick:
+            raise IOError("grab requires ImageMagick unless used on macOS or Windows")
         fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)
         subprocess.call(["import", "-window", "root", filepath])
