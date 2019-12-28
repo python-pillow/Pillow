@@ -887,7 +887,7 @@ PyImaging_GrabScreenX11(PyObject* self, PyObject* args)
         buffer = PyBytes_FromStringAndSize((char*)xcb_get_image_data(reply),
                                            xcb_get_image_data_length(reply));
     } else {
-        PyErr_Format(PyExc_IOError, "usupported bit depth: %i", reply->depth);
+        PyErr_Format(PyExc_IOError, "unsupported bit depth: %i", reply->depth);
     }
 
     free(reply);
