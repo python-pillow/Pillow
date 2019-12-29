@@ -1019,6 +1019,43 @@ this format.
 By default, a Quake2 standard palette is attached to the texture. To override
 the palette, use the putpalette method.
 
+WMF
+^^^
+
+Pillow can identify WMF files.
+
+On Windows, it can read WMF files. By default, it will load the image at 72
+dpi. To load it at another resolution:
+
+.. code-block:: python
+
+    from PIL import Image
+    with Image.open("drawing.wmf") as im:
+        im.load(dpi=144)
+
+To add other read or write support, use
+:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
+
+.. code-block:: python
+
+    from PIL import Image
+    from PIL import WmfImagePlugin
+
+    class WmfHandler:
+        def open(self, im):
+            ...
+        def load(self, im):
+            ...
+            return image
+        def save(self, im, fp, filename):
+            ...
+
+    wmf_handler = WmfHandler()
+
+    WmfImagePlugin.register_handler(wmf_handler)
+
+    im = Image.open("sample.wmf")
+
 XPM
 ^^^
 
@@ -1176,35 +1213,3 @@ MPEG
 ^^^^
 
 Pillow identifies MPEG files.
-
-WMF
-^^^
-
-Pillow can identify playable WMF files.
-
-In PIL 1.1.4 and earlier, the WMF driver provides some limited rendering
-support, but not enough to be useful for any real application.
-
-In PIL 1.1.5 and later, the WMF driver is a stub driver. To add WMF read or
-write support to your application, use
-:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
-
-::
-
-    from PIL import Image
-    from PIL import WmfImagePlugin
-
-    class WmfHandler:
-        def open(self, im):
-            ...
-        def load(self, im):
-            ...
-            return image
-        def save(self, im, fp, filename):
-            ...
-
-    wmf_handler = WmfHandler()
-
-    WmfImagePlugin.register_handler(wmf_handler)
-
-    im = Image.open("sample.wmf")
