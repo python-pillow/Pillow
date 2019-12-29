@@ -73,18 +73,6 @@ bounds of resulting image. This may be useful in a subsequent
 .. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
 
 
-API Changes
-===========
-
-Deprecations
-^^^^^^^^^^^^
-
-TODO
-~~~~
-
-TODO
-
-
 API Additions
 =============
 
