@@ -1,17 +1,10 @@
 import os
 import subprocess
 import sys
-import unittest
 from unittest import TestCase
-
-from .helper import is_pypy, is_win32, on_github_actions
 
 
 class TestMain(TestCase):
-    @unittest.skipIf(
-        is_win32() and is_pypy() and on_github_actions(),
-        "Failing on Windows on GitHub Actions running PyPy",
-    )
     def test_main(self):
         out = subprocess.check_output([sys.executable, "-m", "PIL"]).decode("utf-8")
         lines = out.splitlines()
