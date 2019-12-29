@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Allow loading of WMF images at a given DPI #4311
+  [radarhere]
+
 - Added reduce operation #4251
   [homm]
 
