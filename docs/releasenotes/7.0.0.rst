@@ -94,6 +94,18 @@ Custom unidentified image error
 Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
 identified. For backwards compatibility, this will inherit from ``IOError``.
 
+Loading WMF images at a given DPI
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On Windows, Pillow can read WMF files, with a default DPI of 72. An image can
+now also be loaded at another resolution:
+
+.. code-block:: python
+
+    from PIL import Image
+    with Image.open("drawing.wmf") as im:
+        im.load(dpi=144)
+
 Other Changes
 =============
 
