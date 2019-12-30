@@ -52,7 +52,6 @@ jobs:
         PATH="$PATH:~/.local/bin"
         .travis/after_success.sh
       env:
-        MATRIX_OS: ${{ matrix.os }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
     - name: Prepare coverage token
@@ -64,4 +63,4 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+        name: ${{ matrix.docker }}
