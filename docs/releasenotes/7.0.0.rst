@@ -4,6 +4,11 @@
 Backwards Incompatible Changes
 ==============================
 
+Python 2.7
+^^^^^^^^^^
+
+Pillow has dropped support for Python 2.7, which reached end-of-life on 2020-01-01.
+
 PILLOW_VERSION constant
 ^^^^^^^^^^^^^^^^^^^^^^^
 
