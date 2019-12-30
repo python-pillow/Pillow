@@ -42,3 +42,25 @@ jobs:
         # The Pillow user in the docker container is UID 1000
         sudo chown -R 1000 $GITHUB_WORKSPACE
         docker run -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        sudo chown -R runner $GITHUB_WORKSPACE
+
+    - name: After success
+      if: success()
+      run: |
+        pip install wheel
+        sudo apt-get install -qq ruby-dev
+        PATH="$PATH:~/.local/bin"
+        .travis/after_success.sh
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.docker }}
