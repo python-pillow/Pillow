@@ -246,8 +246,8 @@ jobs:
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        rem ba653c8: Merge tag '2.12.5' into msvc
-        cd /D %BUILD%\libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971
+        rem e5d454b: Merge tag '2.12.6' into msvc
+        cd /D %BUILD%\libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
