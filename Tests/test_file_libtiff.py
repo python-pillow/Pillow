@@ -272,7 +272,7 @@ class TestFileLibTiff(LibTiffTestCase):
         }
 
         libtiffs = [False]
-        if Image.core.libtiff_v4_or_greater:
+        if Image.core.libtiff_support_custom_tags:
             libtiffs.append(True)
 
         for libtiff in libtiffs:

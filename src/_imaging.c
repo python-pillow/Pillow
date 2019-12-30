@@ -3969,13 +3969,13 @@ setup_module(PyObject* m) {
     PyDict_SetItemString(d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
 
     // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
-    PyObject* v4_or_greater;
+    PyObject* support_custom_tags;
 #if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && TIFFLIB_VERSION != 20120922
-    v4_or_greater = Py_True;
+    support_custom_tags = Py_True;
 #else
-    v4_or_greater = Py_False;
+    support_custom_tags = Py_False;
 #endif
-    PyDict_SetItemString(d, "libtiff_v4_or_greater", v4_or_greater);
+    PyDict_SetItemString(d, "libtiff_support_custom_tags", support_custom_tags);
   }
 #endif
 

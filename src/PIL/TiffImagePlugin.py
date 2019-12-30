@@ -1556,7 +1556,7 @@ def _save(im, fp, filename):
             if tag not in TiffTags.LIBTIFF_CORE:
                 if (
                     TiffTags.lookup(tag).type == TiffTags.UNDEFINED
-                    or not Image.core.libtiff_v4_or_greater
+                    or not Image.core.libtiff_support_custom_tags
                 ):
                     continue
 
