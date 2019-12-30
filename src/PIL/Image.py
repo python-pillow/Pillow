@@ -1810,7 +1810,7 @@ class Image:
            or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
            The smaller ``reducing_gap``, the faster resizing.
-           With ``reducing_gap`` greater or equal to 3.0 result is
+           With ``reducing_gap`` greater or equal to 3.0, the result is
            indistinguishable from fair resampling in most cases.
            The default value is None (no optimization).
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -1835,7 +1835,7 @@ class Image:
             )
 
         if reducing_gap is not None and reducing_gap < 1.0:
-            raise ValueError("reducing_gap could not be less than 1.0")
+            raise ValueError("reducing_gap must be 1.0 or greater")
 
         size = tuple(size)
 
@@ -2221,11 +2221,11 @@ class Image:
            :py:meth:`~PIL.Image.Image.draft` for JPEG images.
            Second, resizing using regular resampling. The last step
            changes size no less than by ``reducing_gap`` times.
-           ``reducing_gap`` may be none (no first step is performed)
+           ``reducing_gap`` may be None (no first step is performed)
            or should be greater than 1.0. The bigger ``reducing_gap``,
            the closer the result to the fair resampling.
            The smaller ``reducing_gap``, the faster resizing.
-           With ``reducing_gap`` greater or equal to 3.0 result is
+           With ``reducing_gap`` greater or equal to 3.0, the result is
            indistinguishable from fair resampling in most cases.
            The default value is 2.0 (very close to fair resampling
            while still being faster in many cases).

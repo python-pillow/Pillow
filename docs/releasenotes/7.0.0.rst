@@ -111,13 +111,13 @@ In addition, the same gap is applied when :py:meth:`~PIL.Image.Image.thumbnail`
 calls :py:meth:`~PIL.Image.Image.draft`, which may greatly improve the quality
 of JPEG thumbnails. As a result, :py:meth:`~PIL.Image.Image.thumbnail`
 in the new version provides equally high speed and high quality from any
-sources (JPEG or arbitrary images).
+source (JPEG or arbitrary images).
 
 New Image.reduce() method
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.Image.Image.reduce` is a highly efficient operation
-to reduce an image by integer times. Normally, shouldn't be used directly.
+to reduce an image by integer times. Normally, it shouldn't be used directly.
 Used internally by :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
 methods to speed up resize when a new argument ``reducing_gap`` is set.
 
