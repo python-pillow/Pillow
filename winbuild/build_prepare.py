@@ -231,27 +231,36 @@ def find_vs2017(config):
 
 def find_sdk71a():
     try:
+        print("trace: opening sdk key")
         key = winreg.OpenKeyEx(
             winreg.HKEY_LOCAL_MACHINE,
             r"SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A",
             access=winreg.KEY_READ | winreg.KEY_WOW64_32KEY,
         )
+        print("trace: opened sdk key")
     except OSError:
         return None
+    print("trace: enumerating key")
     with key:
         for i in count():
             try:
                 v_name, v_value, v_type = winreg.EnumValue(key, i)
+                print("trace: entry: {} {} = {}".format(v_type, v_name, v_value))
             except OSError:
                 return None
             if v_name == "InstallationFolder" and v_type == winreg.REG_SZ:
                 sdk_dir = v_value
+                print("trace: found dir: {}".format(sdk_dir))
                 break
         else:
             return None
 
+    print("trace: closed key")
+
     if not os.path.isdir(sdk_dir):
         return None
+
+    print("trace: creating dict")
 
     sdk = {
         "header": [
