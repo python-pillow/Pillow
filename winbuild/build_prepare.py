@@ -15,35 +15,14 @@ architectures = {
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
 }
 
-# use PYTHON + architecture to select config
-pythons = {
-    "pypy3.6": {"config-x86": "3.5"},
-    "3.5": {"config-x86": "3.5", "config-x64": "3.5"},
-    "3.6": {"config-x86": "3.6", "config-x64": "3.6"},
-    "3.7": {"config-x86": "3.6", "config-x64": "3.6"},
-}
-
 # select preferred compiler
-configs = {
-    "3.5": {
-        "vcvars_ver": "14.0",
-        "vs_ver": "2015",
-    },
-    "3.6": {
-        "vs_ver": "2017",
-    },
+pythons = {
+    "pypy3.6": {"vs_ver": "2015", "vcvars_ver": "14.0"},
+    "3.5": {"vs_ver": "2015", "vcvars_ver": "14.0"},
+    "3.6": {"vs_ver": "2017"},
+    "3.7": {"vs_ver": "2017"},
+    "3.8": {"vs_ver": "2017"},  # TODO check
 }
-
-# selected dependencies
-deps_list = [
-    "libjpeg-turbo-2.0.3",
-    "zlib-1.2.11",
-    "tiff-4.0.10",
-    "libwebp-1.0.3",
-    "freetype-2.10.1",
-    "lcms2-2.9",
-    "openjpeg-2.3.1",
-]
 
 header = [
     cmd_set("BUILD", "{build_dir}"),
@@ -55,16 +34,18 @@ header = [
 
 # dependencies
 deps = {
-    "libjpeg-turbo-2.0.3": {
-        "name": "libjpeg",
+    "libjpeg": {
         "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
         "filename": "libjpeg-turbo-2.0.3.tar.gz",
+        "dir": "libjpeg-turbo-2.0.3",
         "build": [
-            cmd_cmake([
-                "-DENABLE_SHARED:BOOL=FALSE",
-                "-DWITH_JPEG8:BOOL=TRUE",
-                "-DWITH_CRT_DLL:BOOL=TRUE",
-            ]),
+            cmd_cmake(
+                [
+                    "-DENABLE_SHARED:BOOL=FALSE",
+                    "-DWITH_JPEG8:BOOL=TRUE",
+                    "-DWITH_CRT_DLL:BOOL=TRUE",
+                ]
+            ),
             cmd_nmake(target="clean"),
             cmd_nmake(target="jpeg-static"),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
@@ -77,10 +58,10 @@ deps = {
         "libs": ["libjpeg.lib"],
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
-    "zlib-1.2.11": {
-        "name": "zlib",
+    "zlib": {
         "url": "http://zlib.net/zlib1211.zip",
         "filename": "zlib1211.zip",
+        "dir": "zlib-1.2.11",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
@@ -89,82 +70,90 @@ deps = {
         "headers": [r"z*.h"],
         "libs": [r"*.lib"],
     },
-    "tiff-4.0.10": {
-        "name": "libtiff",
+    "libtiff": {
         # FIXME FTP timeout
-        "url": "ftp://download.osgeo.org/libtiff/tiff-4.0.10.tar.gz",
-        "filename": "tiff-4.0.10.tar.gz",
+        "url": "ftp://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
+        "filename": "tiff-4.1.0.tar.gz",
+        "dir": "tiff-4.1.0",
         "build": [
             cmd_copy(r"{script_dir}\tiff.opt", "nmake.opt"),
             cmd_nmake("makefile.vc", "clean"),
-            cmd_nmake("makefile.vc", "lib", "RuntimeLibrary=-MT"),
+            cmd_nmake("makefile.vc", "lib"),
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
         # "bins": [r"libtiff\*.dll"],
     },
-    "libwebp-1.0.3": {
-        "name": "libwebp",
+    "libwebp": {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.0.3.tar.gz",  # noqa: E501
         "filename": "libwebp-1.0.3.tar.gz",
+        "dir": "libwebp-1.0.3",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
                 "Makefile.vc",
                 "all",
-                ["CFG=release-static", "OBJDIR=output", "ARCH={architecture}"]
+                ["CFG=release-static", "OBJDIR=output", "ARCH={architecture}"],
             ),
             cmd_mkdir(r"{inc_dir}\webp"),
             cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
         ],
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
-    "freetype-2.10.1": {
-        "name": "freetype",
+    "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501
         "filename": "freetype-2.10.1.tar.gz",
+        "dir": "freetype-2.10.1",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
-            },
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>":
+                    "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+            }
         },
         "build": [
             cmd_rmdir("objs"),
-            cmd_msbuild(r"builds\windows\vc2010\freetype.sln", "Release Static", "Clean"),  # TODO failing on GHA  # noqa: E501
-            cmd_msbuild(r"builds\windows\vc2010\freetype.sln", "Release Static", "Build"),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.sln", "Release Static", "Clean"
+            ),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.sln", "Release Static", "Build"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
-    "lcms2-2.9": {
-        "name": "lcms2",
+    "lcms2": {
         "url": SF_MIRROR + "/project/lcms/lcms/2.9/lcms2-2.9.tar.gz",
         "filename": "lcms2-2.9.tar.gz",
+        "dir": "lcms2-2.9",
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
-                # lcms2-2.8\VC2015 setting is /MD for x86 and /MT for x64, we need /MD always
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
-                # retarget to default msvc
-                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",
-                # retarget to latest SDK 10.0
-                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>",
-            },
+                # default is /MD for x86 and /MT for x64, we need /MD always
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>":
+                    "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+                # retarget to default toolset (selected by vcvarsall.bat)
+                "<PlatformToolset>v141</PlatformToolset>":
+                    "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",
+                # retarget to latest (selected by vcvarsall.bat)
+                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>":
+                    "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa E501
+            }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC{vs_ver}\Release"),
-            cmd_msbuild(r"Projects\VC{vs_ver}\lcms2.sln", "Release", "Clean"),
-            cmd_msbuild(r"Projects\VC{vs_ver}\lcms2.sln", "Release", "lcms2_static"),
+            cmd_rmdir(r"Projects\VC2017\Release"),
+            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
+            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static"),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
     },
-    "openjpeg-2.3.1": {
-        "name": "openjpeg",
+    "openjpeg": {
         "url": "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz",
         "filename": "openjpeg-2.3.1.tar.gz",
+        "dir": "openjpeg-2.3.1",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
@@ -173,6 +162,64 @@ deps = {
             cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.3.1"),
         ],
         "libs": [r"bin\*.lib"],
+    },
+    "libimagequant": {
+        # ba653c8: Merge tag '2.12.5' into msvc
+        "url": "https://github.com/ImageOptim/libimagequant/archive/ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",  # noqa: E501
+        "filename": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",
+        "dir": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971",
+        "patch": {
+            "CMakeLists.txt": {
+                "add_library": "add_compile_options(-openmp-)\r\nadd_library",
+                " SHARED": " STATIC",
+            }
+        },
+        "build": [
+            # lint: do not inline
+            cmd_cmake(),
+            cmd_nmake(target="clean"),
+            cmd_nmake(),
+        ],
+        "headers": [r"*.h"],
+        "libs": [r"*.lib"],
+    },
+    "harfbuzz": {
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.1.zip",
+        "filename": "harfbuzz-2.6.1.zip",
+        "dir": "harfbuzz-2.6.1",
+        "build": [
+            cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="harfbuzz"),
+        ],
+        "headers": [r"src\*.h"],
+        "libs": [r"*.lib"],
+    },
+    "fribidi": {
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.7.zip",
+        "filename": "fribidi-1.0.7.zip",
+        "dir": "fribidi-1.0.7",
+        "build": [
+            cmd_copy(r"{script_dir}\fribidi.cmake", r"CMakeLists.txt"),
+            cmd_cmake(),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="fribidi"),
+        ],
+        "headers": [r"lib\*.h"],
+        "libs": [r"*.lib"],
+    },
+    "libraqm": {
+        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
+        "filename": "libraqm-0.7.0.zip",
+        "dir": "libraqm-0.7.0",
+        "build": [
+            cmd_copy(r"{script_dir}\raqm.cmake", r"CMakeLists.txt"),
+            cmd_cmake(),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="libraqm"),
+        ],
+        "headers": [r"src\*.h"],
+        "bins": [r"libraqm.dll"],
     },
 }
 
@@ -185,14 +232,25 @@ def find_vs2017(config):
         return None
 
     try:
-        vspath = subprocess.check_output([
-            os.path.join(root, "Microsoft Visual Studio", "Installer", "vswhere.exe"),
-            "-latest",
-            "-prerelease",
-            "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-            "-property", "installationPath",
-            "-products", "*",
-        ]).decode(encoding="mbcs").strip()
+        vspath = (
+            subprocess.check_output(
+                [
+                    os.path.join(
+                        root, "Microsoft Visual Studio", "Installer", "vswhere.exe"
+                    ),
+                    "-latest",
+                    "-prerelease",
+                    "-requires",
+                    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                    "-property",
+                    "installationPath",
+                    "-products",
+                    "*",
+                ]
+            )
+            .decode(encoding="mbcs")
+            .strip()
+        )
     except (subprocess.CalledProcessError, OSError, UnicodeDecodeError):
         print("vswhere not found")
         return None
@@ -211,13 +269,13 @@ def find_vs2017(config):
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
     if os.path.isfile(msbuild):
-        default_platform_toolset = "v140"
+        # default_platform_toolset = "v140"
         vs["msbuild"] = '"{}"'.format(msbuild)
     else:
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
         if os.path.isfile(msbuild):
-            default_platform_toolset = "v142"
+            # default_platform_toolset = "v142"
             vs["msbuild"] = '"{}"'.format(msbuild)
         else:
             print("Visual Studio MSBuild not found")
@@ -228,7 +286,9 @@ def find_vs2017(config):
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vcvars_ver = "-vcvars_ver={}".format(config["vcvars_ver"]) if "vcvars_ver" in config else ""
+    vcvars_ver = (
+        "-vcvars_ver={}".format(config["vcvars_ver"]) if "vcvars_ver" in config else ""
+    )
     vs["header"].append('call "{}" {{vcvars_arch}} {}'.format(vcvarsall, vcvars_ver))
 
     return vs
@@ -338,22 +398,23 @@ def get_footer(dep):
 
 def build_dep(name):
     dep = deps[name]
-    file = "build_dep_{name}.cmd".format(name=dep["name"])
+    dir = dep["dir"]
+    file = "build_dep_{name}.cmd".format(**locals())
 
     extract_dep(dep["url"], dep["filename"])
 
     for patch_file, patch_list in dep.get("patch", {}).items():
-        patch_file = os.path.join(build_dir, name, patch_file)
+        patch_file = os.path.join(build_dir, dir, patch_file.format(**prefs))
         with open(patch_file, "r") as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
-            text = text.replace(patch_from, patch_to)
+            text = text.replace(patch_from.format(**prefs), patch_to.format(**prefs))
         with open(patch_file, "w") as f:
             f.write(text)
 
     lines = [
-        "@echo Building {name} ({dir})...".format(name=dep["name"], dir=name),
-        "cd /D %s" % os.path.join(build_dir, name),
+        "@echo ---- Building {name} ({dir}) ----".format(**locals()),
+        "cd /D %s" % os.path.join(build_dir, dir),
         *prefs["header"],
         *dep.get("build", []),
         *get_footer(dep),
@@ -368,7 +429,7 @@ def build_dep_all():
         "$ErrorActionPreference = 'stop'",
         "cd {script_dir}",
     ]
-    for dep_name in deps_list:
+    for dep_name in deps:
         lines.append('cmd.exe /c "%s"' % build_dep(dep_name))
     write_script("build_dep_all.ps1", lines)
 
@@ -380,10 +441,13 @@ def build_pillow(wheel=False):
     lines.extend(prefs["header"])
     lines.extend(
         [
+            "@echo ---- Building Pillow (%s) ----",
             cmd_cd("{pillow_dir}"),
             cmd_append("LIB", r"{python_dir}\tcl"),
-            r'"{{python_dir}}\python.exe" setup.py build_ext %*',
-            # r"""%PYTHON%\python.exe selftest.py --installed""",
+            cmd_set("MSSdk", "1"),
+            cmd_set("DISTUTILS_USE_SDK", "1"),
+            cmd_set("py_vcruntime_redist", "true"),
+            r'"{python_dir}\python.exe" setup.py build_ext %*',
         ]
     )
 
@@ -393,7 +457,9 @@ def build_pillow(wheel=False):
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.realpath(__file__))
     depends_dir = os.path.join(script_dir, "depends")
-    python_dir = os.environ.get("PYTHON", os.path.dirname(os.path.realpath(sys.executable)))
+    python_dir = os.environ.get(
+        "PYTHON", os.path.dirname(os.path.realpath(sys.executable))
+    )
 
     # copy binaries to this directory
     path_dir = os.environ.get("PILLOW_BIN")
@@ -410,15 +476,17 @@ if __name__ == "__main__":
     # use PYTHON to select python version
     python_prefs = match(pythons, python_dir)
     if python_prefs is None:
-        raise KeyError("Failed to determine Python version from PYTHON: " + python_dir)
+        raise KeyError("Failed to determine Python version for {}".format(python_dir))
 
-    print("Target: Python {python_version} {architecture} at: {python_dir}".format(python_version=python_prefs["name"], architecture=architecture, python_dir=python_dir))
+    print(
+        "Target: Python {python_version} {architecture} at: {python_dir}".format(
+            python_version=python_prefs["name"],
+            architecture=architecture,
+            python_dir=python_dir,
+        )
+    )
 
-    # use python version + architecture to select build config
-    config_name = python_prefs["config-" + architecture]
-    config = configs[config_name]
-
-    vs2017 = find_vs2017(config)
+    vs2017 = find_vs2017(python_prefs)
     if vs2017 is None:
         raise RuntimeError("Visual Studio 2017 not found")
 
@@ -430,13 +498,12 @@ if __name__ == "__main__":
     #
     # print("Found Windows SDK 7.1A at: {}".format(sdk71a["sdk_dir"]))
 
-    build_dir = os.path.join(script_dir, "build", config_name, architecture)
+    build_dir = os.path.join(script_dir, "build", python_prefs["name"], architecture)
     lib_dir = os.path.join(build_dir, "lib")
     inc_dir = os.path.join(build_dir, "inc")
     bin_dir = os.path.join(build_dir, "bin")
 
-    # for path in [lib_dir, inc_dir, bin_dir]:
-    #     shutil.rmtree(path)
+    # shutil.rmtree(build_dir)
     for path in [depends_dir, build_dir, lib_dir, inc_dir, bin_dir]:
         os.makedirs(path, exist_ok=True)
 
@@ -455,7 +522,7 @@ if __name__ == "__main__":
         "cmake": "cmake.exe",
     }
 
-    dicts = [vs2017, arch_prefs, python_prefs, config]
+    dicts = [vs2017, arch_prefs, python_prefs]
     for x in dicts:
         prefs.update(x)
     prefs["header"] = sum((x.get("header", []) for x in dicts), header) + ["@echo on"]
