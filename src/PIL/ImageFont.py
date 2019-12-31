@@ -25,17 +25,19 @@
 # See the README file for information on usage and redistribution.
 #
 
+import base64
 import os
 import sys
+from io import BytesIO
 
 from . import Image
-from ._util import isDirectory, isPath, py3
+from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
 
 
-class _imagingft_not_installed(object):
+class _imagingft_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -63,7 +65,7 @@ except ImportError:
 # --------------------------------------------------------------------
 
 
-class ImageFont(object):
+class ImageFont:
     "PIL font wrapper"
 
     def _load_pilfont(self, filename):
@@ -79,7 +81,7 @@ class ImageFont(object):
                     if image and image.mode in ("1", "L"):
                         break
             else:
-                raise IOError("cannot find glyph data file")
+                raise OSError("cannot find glyph data file")
 
             self.file = fullname
 
@@ -145,7 +147,7 @@ class ImageFont(object):
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont(object):
+class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
     def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
@@ -207,7 +209,9 @@ class FreeTypeFont(object):
         """
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text, direction=None, features=None, language=None):
+    def getsize(
+        self, text, direction=None, features=None, language=None, stroke_width=0
+    ):
         """
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
@@ -243,13 +247,26 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: (width, height)
         """
         size, offset = self.font.getsize(text, direction, features, language)
-        return (size[0] + offset[0], size[1] + offset[1])
+        return (
+            size[0] + stroke_width * 2 + offset[0],
+            size[1] + stroke_width * 2 + offset[1],
+        )
 
     def getsize_multiline(
-        self, text, direction=None, spacing=4, features=None, language=None
+        self,
+        text,
+        direction=None,
+        spacing=4,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         """
         Returns width and height (in pixels) of given text if rendered in font
@@ -285,13 +302,19 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: (width, height)
         """
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A")[1] + spacing
+        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
         for line in lines:
-            line_width, line_height = self.getsize(line, direction, features, language)
+            line_width, line_height = self.getsize(
+                line, direction, features, language, stroke_width
+            )
             max_width = max(max_width, line_width)
 
         return max_width, len(lines) * line_spacing - spacing
@@ -308,7 +331,15 @@ class FreeTypeFont(object):
         """
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode="", direction=None, features=None, language=None):
+    def getmask(
+        self,
+        text,
+        mode="",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+    ):
         """
         Create a bitmap for the text.
 
@@ -352,11 +383,20 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
         return self.getmask2(
-            text, mode, direction=direction, features=features, language=language
+            text,
+            mode,
+            direction=direction,
+            features=features,
+            language=language,
+            stroke_width=stroke_width,
         )[0]
 
     def getmask2(
@@ -367,6 +407,7 @@ class FreeTypeFont(object):
         direction=None,
         features=None,
         language=None,
+        stroke_width=0,
         *args,
         **kwargs
     ):
@@ -413,13 +454,20 @@ class FreeTypeFont(object):
 
                          .. versionadded:: 6.0.0
 
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
         size, offset = self.font.getsize(text, direction, features, language)
+        size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1", direction, features, language)
+        self.font.render(
+            text, im.id, mode == "1", direction, features, language, stroke_width
+        )
         return im, offset
 
     def font_variant(
@@ -496,7 +544,7 @@ class FreeTypeFont(object):
             raise NotImplementedError("FreeType 2.9.1 or greater is required")
 
 
-class TransposedFont(object):
+class TransposedFont:
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
@@ -562,11 +610,25 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
-    :param encoding: Which font encoding to use (default is Unicode). Common
-                     encodings are "unic" (Unicode), "symb" (Microsoft
-                     Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
-                     and "armn" (Apple Roman). See the FreeType documentation
-                     for more information.
+    :param encoding: Which font encoding to use (default is Unicode). Possible
+                     encodings include (see the FreeType documentation for more
+                     information):
+
+                     * "unic" (Unicode)
+                     * "symb" (Microsoft Symbol)
+                     * "ADOB" (Adobe Standard)
+                     * "ADBE" (Adobe Expert)
+                     * "ADBC" (Adobe Custom)
+                     * "armn" (Apple Roman)
+                     * "sjis" (Shift JIS)
+                     * "gb  " (PRC)
+                     * "big5"
+                     * "wans" (Extended Wansung)
+                     * "joha" (Johab)
+                     * "lat1" (Latin-1)
+
+                     This specifies the character set to use. It does not alter the
+                     encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
     :return: A font object.
@@ -578,7 +640,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     try:
         return freetype(font)
-    except IOError:
+    except OSError:
         if not isPath(font):
             raise
         ttf_filename = os.path.basename(font)
@@ -635,15 +697,12 @@ def load_path(filename):
     for directory in sys.path:
         if isDirectory(directory):
             if not isinstance(filename, str):
-                if py3:
-                    filename = filename.decode("utf-8")
-                else:
-                    filename = filename.encode("utf-8")
+                filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(directory, filename))
-            except IOError:
+            except OSError:
                 pass
-    raise IOError("cannot find font file")
+    raise OSError("cannot find font file")
 
 
 def load_default():
@@ -653,9 +712,6 @@ def load_default():
 
     :return: A font object.
     """
-    from io import BytesIO
-    import base64
-
     f = ImageFont()
     f._load_pilfont_data(
         # courB08

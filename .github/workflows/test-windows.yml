@@ -1,0 +1,399 @@
+name: Test Windows
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.5", "3.6", "3.7", "3.8", "pypy3.6"]
+        architecture: ["x86", "x64"]
+        include:
+          - architecture: "x86"
+            platform-vcvars: "x86"
+            platform-msbuild: "Win32"
+          - architecture: "x64"
+            platform-vcvars: "x86_amd64"
+            platform-msbuild: "x64"
+          - python-version: "pypy3.6"
+            pypy-version: "pypy3.6-v7.3.0-win32"
+            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.3.0-win32.zip"
+        exclude:
+          - python-version: "pypy3.6"
+            architecture: "x64"
+    timeout-minutes: 30
+
+    name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/checkout@v1
+      with:
+        repository: python-pillow/pillow-depends
+        ref: master
+
+    - name: Cache
+      uses: actions/cache@v1
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key:
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-${{ hashFiles('**/.github/workflows/test-windows.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-
+          ${{ runner.os }}-${{ matrix.python-version }}-
+
+    - name: Install PyPy
+      if: "contains(matrix.python-version, 'pypy')"
+      run: |
+        curl -fsSL -o pypy3.zip "${{ matrix.pypy-url }}"
+        7z x pypy3.zip "-o$env:RUNNER_WORKSPACE\"
+        mv "$env:RUNNER_WORKSPACE\${{ matrix.pypy-version }}" "$env:RUNNER_WORKSPACE\${{ matrix.python-version }}"
+        $env:PYTHON="$env:RUNNER_WORKSPACE\${{ matrix.python-version }}"
+        # set env: pythonLocation
+        Write-Host "`#`#[set-env name=pythonLocation;]$env:PYTHON" # old syntax https://github.com/actions/toolkit/issues/61
+        Write-Host "::set-env name=pythonLocation::$env:PYTHON" # new syntax https://github.com/actions/toolkit/blob/5bb77ec03fea98332e41f9347c8fbb1ce1e48f4a/docs/commands.md
+        New-Item -ItemType SymbolicLink -Path "$env:PYTHON\python.exe" -Target "$env:PYTHON\pypy3.exe"
+        curl -fsSL -o get-pip.py https://bootstrap.pypa.io/get-pip.py
+        $env:PATH = "$env:PYTHON\bin;$env:PATH"
+        & $env:PYTHON\python.exe get-pip.py
+      shell: pwsh
+
+    # sets env: pythonLocation
+    - name: Set up Python
+      if: "!contains(matrix.python-version, 'pypy')"
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ matrix.architecture }}
+
+    - name: Build system information
+      run: python .github/workflows/system-info.py
+
+    - name: pip install wheel pytest pytest-cov
+      run: |
+        "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
+      shell: cmd
+
+    - name: Fetch dependencies
+      run: |
+        7z x ..\pillow-depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        Write-Host "`#`#[add-path]$env:RUNNER_WORKSPACE\nasm-2.14.02"
+        Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
+
+        ..\pillow-depends\gs950w32.exe /S
+        Write-Host "`#`#[add-path]C:\Program Files (x86)\gs\gs9.50\bin"
+        Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.50\bin"
+
+        $env:PYTHON=$env:pythonLocation
+        xcopy ..\pillow-depends\*.zip $env:GITHUB_WORKSPACE\winbuild\
+        xcopy ..\pillow-depends\*.tar.gz $env:GITHUB_WORKSPACE\winbuild\
+        xcopy /s ..\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
+        cd $env:GITHUB_WORKSPACE/winbuild/
+        python.exe $env:GITHUB_WORKSPACE\winbuild\build_dep.py
+      env:
+        EXECUTABLE: bin\python.exe
+      shell: pwsh
+
+    - name: Build dependencies / libjpeg
+      if: false
+      run: |
+        REM FIXME uses /MT not /MD, see makefile.vc and win32.mak for more info
+
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\jpeg-9c
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        nmake -nologo -f makefile.vc setup-vc6
+        nmake -nologo -f makefile.vc clean
+        nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib cjpeg.exe djpeg.exe
+        copy /Y /B j*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+        copy /Y /B *.exe %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / libjpeg-turbo
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\libjpeg-turbo-2.0.3
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DENABLE_SHARED:BOOL=OFF -DWITH_JPEG8:BOOL=TRUE -DWITH_CRT_DLL:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile jpeg-static cjpeg-static djpeg-static
+        copy /Y /B j*.h %INCLIB%
+        copy /Y /B jpeg-static.lib %INCLIB%\libjpeg.lib
+        copy /Y /B cjpeg-static.exe %INCLIB%\cjpeg.exe
+        copy /Y /B djpeg-static.exe %INCLIB%\djpeg.exe
+      shell: cmd
+
+    - name: Build dependencies / zlib
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\zlib-1.2.11
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        nmake -nologo -f win32\Makefile.msc clean
+        nmake -nologo -f win32\Makefile.msc zlib.lib
+        copy /Y /B z*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+        copy /Y /B zlib.lib %INCLIB%\z.lib
+      shell: cmd
+
+    - name: Build dependencies / LibTIFF
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\tiff-4.1.0
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        copy %GITHUB_WORKSPACE%\winbuild\tiff.opt nmake.opt
+        nmake -nologo -f makefile.vc clean
+        nmake -nologo -f makefile.vc lib
+        copy /Y /B libtiff\tiff*.h %INCLIB%
+        copy /Y /B libtiff\*.dll %INCLIB%
+        copy /Y /B libtiff\*.lib %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / WebP
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\libwebp-1.0.3
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        rmdir /S /Q output\release-static
+        nmake -nologo -f Makefile.vc CFG=release-static OBJDIR=output ARCH=${{ matrix.architecture }} all
+        mkdir %INCLIB%\webp
+        copy /Y /B src\webp\*.h %INCLIB%\webp
+        copy /Y /B output\release-static\${{ matrix.architecture }}\lib\* %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / FreeType
+      run: |
+        REM Toolkit v100 not available; missing VCTargetsPath; Clean fails
+
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\freetype-2.10.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        rmdir /S /Q objs
+        set DefaultPlatformToolset=v142
+        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\
+        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+        powershell -Command "(gc builds\windows\vc2010\freetype.vcxproj) -replace 'MultiThreaded<', 'MultiThreadedDLL<' | Out-File -encoding ASCII builds\windows\vc2010\freetype.vcxproj"
+        %MSBUILD% builds\windows\vc2010\freetype.sln /t:Build /p:Configuration="Release Static" /p:Platform=${{ matrix.platform-msbuild }} /m
+        xcopy /Y /E /Q include %INCLIB%
+        copy /Y /B "objs\${{ matrix.platform-msbuild }}\Release Static\freetype.lib" %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / LCMS2
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\lcms2-2.8
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        rmdir /S /Q Lib
+        rmdir /S /Q Projects\VC2015\Release
+        set VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\
+        set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+        powershell %GITHUB_WORKSPACE%\winbuild\lcms2_patch.ps1
+        %MSBUILD% Projects\VC2015\lcms2.sln /t:Clean;lcms2_static /p:Configuration="Release" /p:Platform=${{ matrix.platform-msbuild }} /m
+        xcopy /Y /E /Q include %INCLIB%
+        copy /Y /B Lib\MS\*.lib %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / OpenJPEG
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\openjpeg-2.3.1msvcr10-x32
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile
+        mkdir %INCLIB%\openjpeg-2.3.1
+        copy /Y /B src\lib\openjp2\*.h %INCLIB%\openjpeg-2.3.1
+        copy /Y /B bin\*.lib %INCLIB%
+      shell: cmd
+
+    # GPL licensed; skip if building wheels
+    - name: Build dependencies / libimagequant
+      if: "github.event_name != 'push' || contains(matrix.python-version, 'pypy')"
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        rem e5d454b: Merge tag '2.12.6' into msvc
+        cd /D %BUILD%\libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        echo (gc CMakeLists.txt) -replace 'add_library', "add_compile_options(-openmp-)`r`nadd_library" ^| Out-File -encoding ASCII CMakeLists.txt > patch.ps1
+        echo (gc CMakeLists.txt) -replace ' SHARED', ' STATIC' ^| Out-File -encoding ASCII CMakeLists.txt >> patch.ps1
+        powershell .\patch.ps1
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile
+        copy /Y /B *.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+      shell: cmd
+
+    # for Raqm
+    - name: Build dependencies / HarfBuzz
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        set INCLUDE=%INCLUDE%;%INCLIB%
+        set LIB=%LIB%;%INCLIB%
+        cd /D %BUILD%\harfbuzz-2.6.1
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DHB_HAVE_FREETYPE:BOOL=ON -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile harfbuzz
+        copy /Y /B src\*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+      shell: cmd
+
+    # for Raqm
+    - name: Build dependencies / FriBidi
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        cd /D %BUILD%\fribidi-1.0.7
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        copy /Y /B %GITHUB_WORKSPACE%\winbuild\fribidi.cmake CMakeLists.txt
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile fribidi
+        copy /Y /B lib\*.h %INCLIB%
+        copy /Y /B *.lib %INCLIB%
+      shell: cmd
+
+    - name: Build dependencies / Raqm
+      run: |
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        set BUILD=%GITHUB_WORKSPACE%\winbuild\build
+        set INCLUDE=%INCLUDE%;%INCLIB%
+        set LIB=%LIB%;%INCLIB%
+        cd /D %BUILD%\libraqm-0.7.0
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        echo on
+        copy /Y /B %GITHUB_WORKSPACE%\winbuild\raqm.cmake CMakeLists.txt
+        set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
+        set CMAKE=%CMAKE% -DCMAKE_BUILD_TYPE=Release
+        %CMAKE% -G "NMake Makefiles" .
+        nmake -nologo -f Makefile clean
+        nmake -nologo -f Makefile libraqm
+        copy /Y /B src\*.h %INCLIB%
+        copy /Y /B libraqm.dll %INCLIB%
+      shell: cmd
+
+    - name: Build Pillow
+      run: |
+        set PYTHON=%pythonLocation%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set MPLSRC=%GITHUB_WORKSPACE%
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        cd /D %GITHUB_WORKSPACE%
+        set LIB=%INCLIB%;%PYTHON%\tcl
+        set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        set MSSdk=1
+        set DISTUTILS_USE_SDK=1
+        set py_vcruntime_redist=true
+        %PYTHON%\python.exe setup.py build_ext install
+        rem Add libraqm.dll (copied to INCLIB) to PATH.
+        path %INCLIB%;%PATH%
+        %PYTHON%\python.exe selftest.py --installed
+      shell: cmd
+
+    # failing with PyPy3
+    - name: Enable heap verification
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: |
+        c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\python.exe
+      shell: cmd
+
+    - name: Test Pillow
+      run: |
+        set PYTHON=%pythonLocation%
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        rem Add libraqm.dll (copied to INCLIB) to PATH.
+        path %INCLIB%;%PATH%
+        cd /D %GITHUB_WORKSPACE%
+        %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+      shell: cmd
+
+    - name: Upload errors
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: ${{ runner.os }} Python ${{ matrix.python-version }}
+
+    - name: Build wheel
+      id: wheel
+      if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
+      run: |
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ##[set-output name=dist;]dist-%%a
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
+        set PYTHON=%pythonLocation%
+        set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
+        set MPLSRC=%GITHUB_WORKSPACE%
+        set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
+        cd /D %GITHUB_WORKSPACE%
+        set LIB=%INCLIB%;%PYTHON%\tcl
+        set INCLUDE=%INCLIB%;%GITHUB_WORKSPACE%\depends\tcl86\include;%INCLUDE%
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
+        %PYTHON%\python.exe setup.py bdist_wheel
+      shell: cmd
+
+    - uses: actions/upload-artifact@v1
+      if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
+      with:
+        name: ${{ steps.wheel.outputs.dist }}
+        path: dist

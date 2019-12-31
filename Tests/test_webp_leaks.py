@@ -1,8 +1,9 @@
+import unittest
 from io import BytesIO
 
 from PIL import Image, features
 
-from .helper import PillowLeakTestCase, unittest
+from .helper import PillowLeakTestCase
 
 test_file = "Tests/images/hopper.webp"
 

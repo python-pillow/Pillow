@@ -1,21 +1,24 @@
-from __future__ import division, print_function
-
+import unittest
 from contextlib import contextmanager
 
 from PIL import Image, ImageDraw
 
-from .helper import PillowTestCase, hopper, unittest
+from .helper import PillowTestCase, hopper
 
 
 class TestImagingResampleVulnerability(PillowTestCase):
     # see https://github.com/python-pillow/Pillow/issues/1710
     def test_overflow(self):
         im = hopper("L")
-        xsize = 0x100000008 // 4
-        ysize = 1000  # unimportant
-        with self.assertRaises(MemoryError):
-            # any resampling filter will do here
-            im.im.resize((xsize, ysize), Image.BILINEAR)
+        size_too_large = 0x100000008 // 4
+        size_normal = 1000  # unimportant
+        for xsize, ysize in (
+            (size_too_large, size_normal),
+            (size_normal, size_too_large),
+        ):
+            with self.assertRaises(MemoryError):
+                # any resampling filter will do here
+                im.im.resize((xsize, ysize), Image.BILINEAR)
 
     def test_invalid_size(self):
         im = hopper()
@@ -208,6 +211,11 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
             )
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (12, 12)))
+
+    def test_box_filter_correct_range(self):
+        im = Image.new("RGB", (8, 8), "#1688ff").resize((100, 100), Image.BOX)
+        ref = Image.new("RGB", (100, 100), "#1688ff")
+        self.assert_image_equal(im, ref)
 
 
 class CoreResampleConsistencyTest(PillowTestCase):
@@ -447,25 +455,25 @@ class CoreResampleBoxTest(PillowTestCase):
         return tiled
 
     def test_tiles(self):
-        im = Image.open("Tests/images/flower.jpg")
-        self.assertEqual(im.size, (480, 360))
-        dst_size = (251, 188)
-        reference = im.resize(dst_size, Image.BICUBIC)
+        with Image.open("Tests/images/flower.jpg") as im:
+            self.assertEqual(im.size, (480, 360))
+            dst_size = (251, 188)
+            reference = im.resize(dst_size, Image.BICUBIC)
 
-        for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
-            tiled = self.resize_tiled(im, dst_size, *tiles)
-            self.assert_image_similar(reference, tiled, 0.01)
+            for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
+                tiled = self.resize_tiled(im, dst_size, *tiles)
+                self.assert_image_similar(reference, tiled, 0.01)
 
     def test_subsample(self):
         # This test shows advantages of the subpixel resizing
         # after supersampling (e.g. during JPEG decoding).
-        im = Image.open("Tests/images/flower.jpg")
-        self.assertEqual(im.size, (480, 360))
-        dst_size = (48, 36)
-        # Reference is cropped image resized to destination
-        reference = im.crop((0, 0, 473, 353)).resize(dst_size, Image.BICUBIC)
-        # Image.BOX emulates supersampling (480 / 8 = 60, 360 / 8 = 45)
-        supersampled = im.resize((60, 45), Image.BOX)
+        with Image.open("Tests/images/flower.jpg") as im:
+            self.assertEqual(im.size, (480, 360))
+            dst_size = (48, 36)
+            # Reference is cropped image resized to destination
+            reference = im.crop((0, 0, 473, 353)).resize(dst_size, Image.BICUBIC)
+            # Image.BOX emulates supersampling (480 / 8 = 60, 360 / 8 = 45)
+            supersampled = im.resize((60, 45), Image.BOX)
 
         with_box = supersampled.resize(dst_size, Image.BICUBIC, (0, 0, 59.125, 44.125))
         without_box = supersampled.resize(dst_size, Image.BICUBIC)

@@ -19,20 +19,10 @@
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 
-from __future__ import print_function
-
 from . import Image, ImageFile
 from ._binary import i16le as word, i32le as dword, si16le as short, si32le as _long
-from ._util import py3
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.2"
 
 _handler = None
-
-if py3:
-    long = int
 
 
 def register_handler(handler):
@@ -48,7 +38,7 @@ def register_handler(handler):
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
-    class WmfHandler(object):
+    class WmfHandler:
         def open(self, im):
             im.mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
@@ -88,6 +78,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format_description = "Windows Metafile"
 
     def _open(self):
+        self._inch = None
 
         # check placable header
         s = self.fp.read(80)
@@ -97,7 +88,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # placeable windows metafile
 
             # get units per inch
-            inch = word(s, 14)
+            self._inch = word(s, 14)
 
             # get bounding box
             x0 = short(s, 6)
@@ -106,11 +97,13 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             y1 = short(s, 12)
 
             # normalize size to 72 dots per inch
-            size = (x1 - x0) * 72 // inch, (y1 - y0) * 72 // inch
+            self.info["dpi"] = 72
+            size = (
+                (x1 - x0) * self.info["dpi"] // self._inch,
+                (y1 - y0) * self.info["dpi"] // self._inch,
+            )
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
-
-            self.info["dpi"] = 72
 
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
@@ -128,7 +121,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # get frame (in 0.01 millimeter units)
             frame = _long(s, 24), _long(s, 28), _long(s, 32), _long(s, 36)
 
-            # normalize size to 72 dots per inch
             size = x1 - x0, y1 - y0
 
             # calculate dots per inch from bbox and frame
@@ -155,10 +147,20 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     def _load(self):
         return _handler
 
+    def load(self, dpi=None):
+        if dpi is not None and self._inch is not None:
+            self.info["dpi"] = int(dpi + 0.5)
+            x0, y0, x1, y1 = self.info["wmf_bbox"]
+            self._size = (
+                (x1 - x0) * self.info["dpi"] // self._inch,
+                (y1 - y0) * self.info["dpi"] // self._inch,
+            )
+        super().load()
+
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
-        raise IOError("WMF save handler not installed")
+        raise OSError("WMF save handler not installed")
     _handler.save(im, fp, filename)
 
 

@@ -14,7 +14,7 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
     * - docs
       - |docs|
     * - tests
-      - |linux| |macos| |windows| |coverage|
+      - |linux| |macos| |windows| |gha_lint| |gha| |gha_windows| |gha_docker| |coverage|
     * - package
       - |zenodo| |tidelift| |version| |downloads|
     * - social
@@ -60,6 +60,18 @@ To report a security vulnerability, please follow the procedure described in the
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
 
+.. |gha_lint| image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
+   :alt: GitHub Actions build status (Lint)
+
+.. |gha_docker| image:: https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg
+   :alt: GitHub Actions build status (Test Docker)
+
+.. |gha| image:: https://github.com/python-pillow/Pillow/workflows/Test/badge.svg
+   :alt: GitHub Actions build status (Test Linux and macOS)
+
+.. |gha_windows| image:: https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg
+   :alt: GitHub Actions build status (Test Windows)
+
 .. |coverage| image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
@@ -67,7 +79,7 @@ To report a security vulnerability, please follow the procedure described in the
 .. |zenodo| image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
-.. |tidelift| image:: https://tidelift.com/badges/github/python-pillow/Pillow?style=flat
+.. |tidelift| image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=referral&utm_campaign=readme
 
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg

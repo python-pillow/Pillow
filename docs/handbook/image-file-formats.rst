@@ -113,8 +113,8 @@ to seek to the next frame (``im.seek(im.tell() + 1)``).
 Saving
 ~~~~~~
 
-When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available::
+When calling :py:meth:`~PIL.Image.Image.save` to write a GIF file, the
+following options are available::
 
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
@@ -389,12 +389,12 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     image will be saved without tiling.
 
 **quality_mode**
-    Either `"rates"` or `"dB"` depending on the units you want to use to
+    Either ``"rates"`` or ``"dB"`` depending on the units you want to use to
     specify image quality.
 
 **quality_layers**
     A sequence of numbers, each of which represents either an approximate size
-    reduction (if quality mode is `"rates"`) or a signal to noise ratio value
+    reduction (if quality mode is ``"rates"``) or a signal to noise ratio value
     in decibels.  If not specified, defaults to a single layer of full quality.
 
 **num_resolutions**
@@ -811,10 +811,11 @@ Saving sequences
 
     Support for animated WebP files will only be enabled if the system WebP
     library is v0.5.0 or later. You can check webp animation support at
-    runtime by calling `features.check("webp_anim")`.
+    runtime by calling ``features.check("webp_anim")``.
 
-When calling :py:meth:`~PIL.Image.Image.save`, the following options
-are available when the `save_all` argument is present and true.
+When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, the
+following options are available when the ``save_all`` argument is present and
+true.
 
 **append_images**
     A list of images to append as additional frames. Each of the
@@ -1018,6 +1019,43 @@ this format.
 By default, a Quake2 standard palette is attached to the texture. To override
 the palette, use the putpalette method.
 
+WMF
+^^^
+
+Pillow can identify WMF files.
+
+On Windows, it can read WMF files. By default, it will load the image at 72
+dpi. To load it at another resolution:
+
+.. code-block:: python
+
+    from PIL import Image
+    with Image.open("drawing.wmf") as im:
+        im.load(dpi=144)
+
+To add other read or write support, use
+:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
+
+.. code-block:: python
+
+    from PIL import Image
+    from PIL import WmfImagePlugin
+
+    class WmfHandler:
+        def open(self, im):
+            ...
+        def load(self, im):
+            ...
+            return image
+        def save(self, im, fp, filename):
+            ...
+
+    wmf_handler = WmfHandler()
+
+    WmfImagePlugin.register_handler(wmf_handler)
+
+    im = Image.open("sample.wmf")
+
 XPM
 ^^^
 
@@ -1175,35 +1213,3 @@ MPEG
 ^^^^
 
 Pillow identifies MPEG files.
-
-WMF
-^^^
-
-Pillow can identify playable WMF files.
-
-In PIL 1.1.4 and earlier, the WMF driver provides some limited rendering
-support, but not enough to be useful for any real application.
-
-In PIL 1.1.5 and later, the WMF driver is a stub driver. To add WMF read or
-write support to your application, use
-:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
-
-::
-
-    from PIL import Image
-    from PIL import WmfImagePlugin
-
-    class WmfHandler:
-        def open(self, im):
-            ...
-        def load(self, im):
-            ...
-            return image
-        def save(self, im, fp, filename):
-            ...
-
-    wmf_handler = WmfHandler()
-
-    WmfImagePlugin.register_handler(wmf_handler)
-
-    im = Image.open("sample.wmf")

@@ -23,10 +23,6 @@ import re
 
 from . import Image, ImageFile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
-
 # XBM header
 xbm_head = re.compile(
     br"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
@@ -73,7 +69,7 @@ class XbmImageFile(ImageFile.ImageFile):
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise IOError("cannot write mode %s as XBM" % im.mode)
+        raise OSError("cannot write mode %s as XBM" % im.mode)
 
     fp.write(("#define im_width %d\n" % im.size[0]).encode("ascii"))
     fp.write(("#define im_height %d\n" % im.size[1]).encode("ascii"))

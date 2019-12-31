@@ -58,10 +58,10 @@ class TestImageCms(PillowTestCase):
         i = ImageCms.applyTransform(hopper(), t)
         self.assert_image(i, "RGB", (128, 128))
 
-        i = hopper()
-        t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
-        ImageCms.applyTransform(hopper(), t, inPlace=True)
-        self.assert_image(i, "RGB", (128, 128))
+        with hopper() as i:
+            t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
+            ImageCms.applyTransform(hopper(), t, inPlace=True)
+            self.assert_image(i, "RGB", (128, 128))
 
         p = ImageCms.createProfile("sRGB")
         o = ImageCms.getOpenProfile(SRGB)
@@ -151,8 +151,8 @@ class TestImageCms(PillowTestCase):
     def test_extensions(self):
         # extensions
 
-        i = Image.open("Tests/images/rgb.jpg")
-        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+        with Image.open("Tests/images/rgb.jpg") as i:
+            p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
         self.assertEqual(
             ImageCms.getProfileName(p).strip(),
             "IEC 61966-2.1 Default RGB colour space - sRGB",
@@ -166,9 +166,10 @@ class TestImageCms(PillowTestCase):
         self.assertRaises(ValueError, t.apply_in_place, hopper("RGBA"))
 
         # the procedural pyCMS API uses PyCMSError for all sorts of errors
-        self.assertRaises(
-            ImageCms.PyCMSError, ImageCms.profileToProfile, hopper(), "foo", "bar"
-        )
+        with hopper() as im:
+            self.assertRaises(
+                ImageCms.PyCMSError, ImageCms.profileToProfile, im, "foo", "bar"
+            )
         self.assertRaises(
             ImageCms.PyCMSError, ImageCms.buildTransform, "foo", "bar", "RGB", "RGB"
         )
@@ -228,18 +229,16 @@ class TestImageCms(PillowTestCase):
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
-        target = Image.open("Tests/images/hopper.Lab.tif")
-
-        self.assert_image_similar(i, target, 3.5)
+        with Image.open("Tests/images/hopper.Lab.tif") as target:
+            self.assert_image_similar(i, target, 3.5)
 
     def test_lab_srgb(self):
         psRGB = ImageCms.createProfile("sRGB")
         pLab = ImageCms.createProfile("LAB")
         t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
-        img = Image.open("Tests/images/hopper.Lab.tif")
-
-        img_srgb = ImageCms.applyTransform(img, t)
+        with Image.open("Tests/images/hopper.Lab.tif") as img:
+            img_srgb = ImageCms.applyTransform(img, t)
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
@@ -266,8 +265,8 @@ class TestImageCms(PillowTestCase):
         self.assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
-        i = Image.open("Tests/images/rgb.jpg")
-        p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
+        with Image.open("Tests/images/rgb.jpg") as i:
+            p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
 
         p2 = ImageCms.getOpenProfile(BytesIO(p.tobytes()))
 

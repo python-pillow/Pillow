@@ -1,0 +1,66 @@
+name: Test Docker
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker: [
+          alpine,
+          arch,
+          ubuntu-16.04-xenial-amd64,
+          ubuntu-18.04-bionic-amd64,
+          debian-9-stretch-x86,
+          debian-10-buster-x86,
+          centos-6-amd64,
+          centos-7-amd64,
+          centos-8-amd64,
+          amazon-1-amd64,
+          amazon-2-amd64,
+          fedora-30-amd64,
+          fedora-31-amd64,
+        ]
+        dockerTag: [master]
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build system information
+      run: python .github/workflows/system-info.py
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Docker build
+      run: |
+        # The Pillow user in the docker container is UID 1000
+        sudo chown -R 1000 $GITHUB_WORKSPACE
+        docker run -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        sudo chown -R runner $GITHUB_WORKSPACE
+
+    - name: After success
+      if: success()
+      run: |
+        pip install wheel
+        sudo apt-get install -qq ruby-dev
+        PATH="$PATH:~/.local/bin"
+        .travis/after_success.sh
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.docker }}

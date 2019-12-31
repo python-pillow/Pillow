@@ -7,13 +7,12 @@ class TestFilePcx(PillowTestCase):
     def _roundtrip(self, im):
         f = self.tempfile("temp.pcx")
         im.save(f)
-        im2 = Image.open(f)
-
-        self.assertEqual(im2.mode, im.mode)
-        self.assertEqual(im2.size, im.size)
-        self.assertEqual(im2.format, "PCX")
-        self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
-        self.assert_image_equal(im2, im)
+        with Image.open(f) as im2:
+            self.assertEqual(im2.mode, im.mode)
+            self.assertEqual(im2.size, im.size)
+            self.assertEqual(im2.format, "PCX")
+            self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
+            self.assert_image_equal(im2, im)
 
     def test_sanity(self):
         for mode in ("1", "L", "P", "RGB"):
@@ -42,13 +41,12 @@ class TestFilePcx(PillowTestCase):
         # Check reading of files where xmin/xmax is not zero.
 
         test_file = "Tests/images/pil184.pcx"
-        im = Image.open(test_file)
+        with Image.open(test_file) as im:
+            self.assertEqual(im.size, (447, 144))
+            self.assertEqual(im.tile[0][1], (0, 0, 447, 144))
 
-        self.assertEqual(im.size, (447, 144))
-        self.assertEqual(im.tile[0][1], (0, 0, 447, 144))
-
-        # Make sure all pixels are either 0 or 255.
-        self.assertEqual(im.histogram()[0] + im.histogram()[255], 447 * 144)
+            # Make sure all pixels are either 0 or 255.
+            self.assertEqual(im.histogram()[0] + im.histogram()[255], 447 * 144)
 
     def test_1px_width(self):
         im = Image.new("L", (1, 256))

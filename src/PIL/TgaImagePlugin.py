@@ -22,11 +22,6 @@ import warnings
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, o8, o16le as o16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
-
-
 #
 # --------------------------------------------------------------------
 # Read RGA file
@@ -173,7 +168,7 @@ def _save(im, fp, filename):
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as TGA" % im.mode)
+        raise OSError("cannot write mode %s as TGA" % im.mode)
 
     if "rle" in im.encoderinfo:
         rle = im.encoderinfo["rle"]

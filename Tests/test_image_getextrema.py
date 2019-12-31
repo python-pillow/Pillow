@@ -19,7 +19,7 @@ class TestImageGetExtrema(PillowTestCase):
         self.assertEqual(extrema("I;16"), (0, 255))
 
     def test_true_16(self):
-        im = Image.open("Tests/images/16_bit_noise.tif")
-        self.assertEqual(im.mode, "I;16")
-        extrema = im.getextrema()
+        with Image.open("Tests/images/16_bit_noise.tif") as im:
+            self.assertEqual(im.mode, "I;16")
+            extrema = im.getextrema()
         self.assertEqual(extrema, (106, 285))

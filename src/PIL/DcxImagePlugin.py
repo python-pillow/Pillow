@@ -25,10 +25,6 @@ from . import Image
 from ._binary import i32le as i32
 from .PcxImagePlugin import PcxImageFile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.2"
-
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
 
 

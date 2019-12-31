@@ -1,12 +1,6 @@
-import sys
-import warnings
-
 from PIL import ImageQt
 
 from .helper import PillowTestCase, hopper
-
-if sys.version_info.major >= 3:
-    from importlib import reload
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
@@ -21,7 +15,7 @@ else:
         test_case.skipTest("Qt bindings are not installed")
 
 
-class PillowQtTestCase(object):
+class PillowQtTestCase:
     def setUp(self):
         skip_if_qt_is_not_installed(self)
 
@@ -31,14 +25,10 @@ class PillowQtTestCase(object):
 
 class PillowQPixmapTestCase(PillowQtTestCase):
     def setUp(self):
-        PillowQtTestCase.setUp(self)
+        super().setUp()
         try:
             if ImageQt.qt_version == "5":
                 from PyQt5.QtGui import QGuiApplication
-            elif ImageQt.qt_version == "4":
-                from PyQt4.QtGui import QGuiApplication
-            elif ImageQt.qt_version == "side":
-                from PySide.QtGui import QGuiApplication
             elif ImageQt.qt_version == "side2":
                 from PySide2.QtGui import QGuiApplication
         except ImportError:
@@ -47,7 +37,7 @@ class PillowQPixmapTestCase(PillowQtTestCase):
         self.app = QGuiApplication([])
 
     def tearDown(self):
-        PillowQtTestCase.tearDown(self)
+        super().tearDown()
         self.app.quit()
 
 
@@ -59,10 +49,6 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         # equivalent to an unsigned int.
         if ImageQt.qt_version == "5":
             from PyQt5.QtGui import qRgb
-        elif ImageQt.qt_version == "4":
-            from PyQt4.QtGui import qRgb
-        elif ImageQt.qt_version == "side":
-            from PySide.QtGui import qRgb
         elif ImageQt.qt_version == "side2":
             from PySide2.QtGui import qRgb
 
@@ -83,13 +69,3 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
     def test_image(self):
         for mode in ("1", "RGB", "RGBA", "L", "P"):
             ImageQt.ImageQt(hopper(mode))
-
-    def test_deprecated(self):
-        with warnings.catch_warnings(record=True) as w:
-            reload(ImageQt)
-        if ImageQt.qt_version in ["4", "side"]:
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
-        else:
-            # No warning.
-            self.assertEqual(w, [])

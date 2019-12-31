@@ -18,10 +18,6 @@ import struct
 
 from . import Image, ImageFile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 
 def _parse_codestream(fp):
     """Parse the JPEG 2000 codestream to extract the size and component

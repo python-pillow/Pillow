@@ -1,0 +1,103 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          "ubuntu-latest",
+          "macOS-latest",
+        ]
+        python-version: [
+          "pypy3",
+          "3.8",
+          "3.7",
+          "3.6",
+          "3.5",
+        ]
+        include:
+        - python-version: "3.5"
+          env: PYTHONOPTIMIZE=2
+        - python-version: "3.6"
+          env: PYTHONOPTIMIZE=1
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Ubuntu cache
+      uses: actions/cache@v1
+      if: startsWith(matrix.os, 'ubuntu')
+      with:
+        path: ~/.cache/pip
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
+
+    - name: macOS cache
+      uses: actions/cache@v1
+      if: startsWith(matrix.os, 'macOS')
+      with:
+        path: ~/Library/Caches/pip
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Build system information
+      run: python .github/workflows/system-info.py
+
+    - name: Install Linux dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        .travis/install.sh
+
+    - name: Install macOS dependencies
+      if: startsWith(matrix.os, 'macOS')
+      run: |
+        .github/workflows/macos-install.sh
+
+    - name: Build
+      run: |
+        .travis/build.sh
+
+    - name: Test
+      run: |
+        .travis/test.sh
+
+    - name: Upload errors
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
+    - name: After success
+      if: success()
+      run: |
+        .travis/after_success.sh
+      env:
+        MATRIX_OS: ${{ matrix.os }}
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+    - name: Prepare coverage token
+      if: success() && github.repository == 'python-pillow/Pillow'
+      run: cp .github/codecov-upstream.yml .codecov.yml
+
+    - name: Upload coverage
+      if: success()
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}

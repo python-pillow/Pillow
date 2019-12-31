@@ -35,7 +35,7 @@ class TestImageEnhance(PillowTestCase):
         self.assert_image_equal(
             im.getchannel("A"),
             original.getchannel("A"),
-            "Diff on %s: %s" % (op, amount),
+            "Diff on {}: {}".format(op, amount),
         )
 
     def test_alpha(self):

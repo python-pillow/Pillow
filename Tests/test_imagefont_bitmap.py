@@ -1,6 +1,8 @@
+import unittest
+
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 image_font_installed = True
 try:
@@ -9,7 +11,7 @@ except ImportError:
     image_font_installed = False
 
 
-@unittest.skipIf(not image_font_installed, "image font not installed")
+@unittest.skipUnless(image_font_installed, "image font not installed")
 class TestImageFontBitmap(PillowTestCase):
     def test_similar(self):
         text = "EmbeddedBitmap"

@@ -5,8 +5,8 @@
 ImageDraw arc, chord and pieslice can now use floats
 ----------------------------------------------------
 
-There is no longer a need to ensure that the start and end arguments for `arc`,
-`chord` and `pieslice` are integers.
+There is no longer a need to ensure that the start and end arguments for ``arc``,
+``chord`` and ``pieslice`` are integers.
 
 Note that these numbers are not simply rounded internally, but are actually
 utilised in the drawing process.

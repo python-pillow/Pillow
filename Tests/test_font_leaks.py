@@ -1,13 +1,10 @@
-from __future__ import division
-
-import sys
+import unittest
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowLeakTestCase, unittest
+from .helper import PillowLeakTestCase
 
 
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
 class TestTTypeFontLeak(PillowLeakTestCase):
     # fails at iteration 3 in master
     iterations = 10
@@ -22,7 +19,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
             )
         )
 
-    @unittest.skipIf(not features.check("freetype2"), "Test requires freetype2")
+    @unittest.skipUnless(features.check("freetype2"), "Test requires freetype2")
     def test_leak(self):
         ttype = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
         self._test_font(ttype)

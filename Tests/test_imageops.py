@@ -11,7 +11,7 @@ except ImportError:
 
 
 class TestImageOps(PillowTestCase):
-    class Deformer(object):
+    class Deformer:
         def getmesh(self, im):
             x, y = im.size
             return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
@@ -81,6 +81,16 @@ class TestImageOps(PillowTestCase):
         newimg = ImageOps.fit(hopper("RGB").resize((100, 1)), (35, 35))
         self.assertEqual(newimg.size, (35, 35))
 
+    def test_fit_same_ratio(self):
+        # The ratio for this image is 1000.0 / 755 = 1.3245033112582782
+        # If the ratios are not acknowledged to be the same,
+        # and Pillow attempts to adjust the width to
+        # 1.3245033112582782 * 755 = 1000.0000000000001
+        # then centering this greater width causes a negative x offset when cropping
+        with Image.new("RGB", (1000, 755)) as im:
+            new_im = ImageOps.fit(im, (1000, 755))
+            self.assertEqual(new_im.size, (1000, 755))
+
     def test_pad(self):
         # Same ratio
         im = hopper()
@@ -96,10 +106,10 @@ class TestImageOps(PillowTestCase):
                 new_im = ImageOps.pad(im, new_size, color=color, centering=centering)
                 self.assertEqual(new_im.size, new_size)
 
-                target = Image.open(
+                with Image.open(
                     "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg"
-                )
-                self.assert_image_similar(new_im, target, 6)
+                ) as target:
+                    self.assert_image_similar(new_im, target, 6)
 
     def test_pil163(self):
         # Division by zero in equalize if < 255 pixels in image (@PIL163)
@@ -130,8 +140,8 @@ class TestImageOps(PillowTestCase):
         # Test the colorizing function with 2-color functionality
 
         # Open test image (256px by 10px, black to white)
-        im = Image.open("Tests/images/bw_gradient.png")
-        im = im.convert("L")
+        with Image.open("Tests/images/bw_gradient.png") as im:
+            im = im.convert("L")
 
         # Create image with original 2-color functionality
         im_test = ImageOps.colorize(im, "red", "green")
@@ -163,8 +173,8 @@ class TestImageOps(PillowTestCase):
         # Test the colorizing function with 2-color functionality and offset
 
         # Open test image (256px by 10px, black to white)
-        im = Image.open("Tests/images/bw_gradient.png")
-        im = im.convert("L")
+        with Image.open("Tests/images/bw_gradient.png") as im:
+            im = im.convert("L")
 
         # Create image with original 2-color functionality with offsets
         im_test = ImageOps.colorize(
@@ -198,8 +208,8 @@ class TestImageOps(PillowTestCase):
         # Test the colorizing function with 3-color functionality and offset
 
         # Open test image (256px by 10px, black to white)
-        im = Image.open("Tests/images/bw_gradient.png")
-        im = im.convert("L")
+        with Image.open("Tests/images/bw_gradient.png") as im:
+            im = im.convert("L")
 
         # Create image with new three color functionality with offsets
         im_test = ImageOps.colorize(
@@ -251,27 +261,36 @@ class TestImageOps(PillowTestCase):
         if HAVE_WEBP and _webp.HAVE_WEBPANIM:
             exts.append(".webp")
         for ext in exts:
-            base_im = Image.open("Tests/images/hopper" + ext)
+            with Image.open("Tests/images/hopper" + ext) as base_im:
 
-            orientations = [base_im]
-            for i in range(2, 9):
-                im = Image.open("Tests/images/hopper_orientation_" + str(i) + ext)
-                orientations.append(im)
-            for i, orientation_im in enumerate(orientations):
-                for im in [orientation_im, orientation_im.copy()]:  # ImageFile  # Image
-                    if i == 0:
-                        self.assertNotIn("exif", im.info)
-                    else:
-                        original_exif = im.info["exif"]
-                    transposed_im = ImageOps.exif_transpose(im)
-                    self.assert_image_similar(base_im, transposed_im, 17)
-                    if i == 0:
-                        self.assertNotIn("exif", im.info)
-                    else:
-                        self.assertNotEqual(transposed_im.info["exif"], original_exif)
+                def check(orientation_im):
+                    for im in [
+                        orientation_im,
+                        orientation_im.copy(),
+                    ]:  # ImageFile  # Image
+                        if orientation_im is base_im:
+                            self.assertNotIn("exif", im.info)
+                        else:
+                            original_exif = im.info["exif"]
+                        transposed_im = ImageOps.exif_transpose(im)
+                        self.assert_image_similar(base_im, transposed_im, 17)
+                        if orientation_im is base_im:
+                            self.assertNotIn("exif", im.info)
+                        else:
+                            self.assertNotEqual(
+                                transposed_im.info["exif"], original_exif
+                            )
 
-                        self.assertNotIn(0x0112, transposed_im.getexif())
+                            self.assertNotIn(0x0112, transposed_im.getexif())
 
-                    # Repeat the operation, to test that it does not keep transposing
-                    transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                    self.assert_image_equal(transposed_im2, transposed_im)
+                        # Repeat the operation
+                        # to test that it does not keep transposing
+                        transposed_im2 = ImageOps.exif_transpose(transposed_im)
+                        self.assert_image_equal(transposed_im2, transposed_im)
+
+                check(base_im)
+                for i in range(2, 9):
+                    with Image.open(
+                        "Tests/images/hopper_orientation_" + str(i) + ext
+                    ) as orientation_im:
+                        check(orientation_im)

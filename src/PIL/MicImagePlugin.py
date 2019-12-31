@@ -21,11 +21,6 @@ import olefile
 
 from . import Image, TiffImagePlugin
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 #
 # --------------------------------------------------------------------
 
@@ -51,7 +46,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except IOError:
+        except OSError:
             raise SyntaxError("not an MIC file; invalid OLE file")
 
         # find ACI subfiles with Image members (maybe not the

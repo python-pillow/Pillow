@@ -45,9 +45,7 @@ def extract(src, dest):
 
 def extract_libs():
     for name, lib in libs.items():
-        filename = lib["filename"]
-        if not os.path.exists(filename):
-            filename = fetch(lib["url"])
+        filename = fetch(lib["url"])
         if name == "openjpeg":
             for compiler in all_compilers():
                 if not os.path.exists(
@@ -67,7 +65,6 @@ def extract_openjpeg(compiler):
         r"""
 rem build openjpeg
 setlocal
-@echo on
 cd %%BUILD%%
 mkdir %%INCLIB%%\openjpeg-2.0
 copy /Y /B openjpeg-2.0.0-win32-x86\include\openjpeg-2.0  %%INCLIB%%\openjpeg-2.0
@@ -104,7 +101,7 @@ set CMAKE="cmake.exe"
 set INCLIB=%~dp0\depends
 set BUILD=%~dp0\build
 """ + "\n".join(
-        r"set %s=%%BUILD%%\%s" % (k.upper(), v["dir"])
+        r"set {}=%BUILD%\{}".format(k.upper(), v["dir"])
         for (k, v) in libs.items()
         if v["dir"]
     )
@@ -114,6 +111,7 @@ def setup_compiler(compiler):
     return (
         r"""setlocal EnableDelayedExpansion
 call "%%ProgramFiles%%\Microsoft SDKs\Windows\%(env_version)s\Bin\SetEnv.Cmd" /Release %(env_flags)s
+echo on
 set INCLIB=%%INCLIB%%\%(inc_dir)s
 """  # noqa: E501
         % compiler
@@ -139,12 +137,11 @@ setlocal
 """
         + vc_setup(compiler, bit)
         + r"""
-@echo on
 cd /D %%OPENJPEG%%%(inc_dir)s
 
-%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -G "NMake Makefiles" .
-nmake -f Makefile clean
-nmake -f Makefile
+%%CMAKE%% -DBUILD_THIRDPARTY:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
+nmake -nologo -f Makefile clean
+nmake -nologo -f Makefile
 copy /Y /B bin\* %%INCLIB%%
 mkdir %%INCLIB%%\openjpeg-%(op_ver)s
 copy /Y /B src\lib\openjp2\*.h %%INCLIB%%\openjpeg-%(op_ver)s
@@ -164,9 +161,9 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 cd /D %%JPEG%%
-nmake -f makefile.vc setup-vc6
-nmake -f makefile.vc clean
-nmake -f makefile.vc libjpeg.lib
+nmake -nologo -f makefile.vc setup-vc6
+nmake -nologo -f makefile.vc clean
+nmake -nologo -f makefile.vc nodebug=1 libjpeg.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B j*.h %%INCLIB%%
@@ -175,8 +172,8 @@ endlocal
 rem Build zlib
 setlocal
 cd /D %%ZLIB%%
-nmake -f win32\Makefile.msc clean
-nmake -f win32\Makefile.msc zlib.lib
+nmake -nologo -f win32\Makefile.msc clean
+nmake -nologo -f win32\Makefile.msc zlib.lib
 copy /Y /B *.dll %%INCLIB%%
 copy /Y /B *.lib %%INCLIB%%
 copy /Y /B zlib.lib %%INCLIB%%\z.lib
@@ -191,7 +188,7 @@ setlocal
         + r"""
 cd /D %%WEBP%%
 rd /S /Q %%WEBP%%\output\release-static
-nmake -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
+nmake -nologo -f Makefile.vc CFG=release-static RTLIBCFG=static OBJDIR=output all
 copy /Y /B output\release-static\%(webp_platform)s\lib\* %%INCLIB%%
 mkdir %%INCLIB%%\webp
 copy /Y /B src\webp\*.h %%INCLIB%%\\webp
@@ -203,11 +200,11 @@ setlocal
         + vc_setup(compiler, bit)
         + r"""
 rem do after building jpeg and zlib
-copy %%~dp0\nmake.opt %%TIFF%%
+copy %%~dp0\tiff.opt %%TIFF%%\nmake.opt
 
 cd /D %%TIFF%%
-nmake -f makefile.vc clean
-nmake -f makefile.vc lib
+nmake -nologo -f makefile.vc clean
+nmake -nologo -f makefile.vc lib
 copy /Y /B libtiff\*.dll %%INCLIB%%
 copy /Y /B libtiff\*.lib %%INCLIB%%
 copy /Y /B libtiff\tiff*.h %%INCLIB%%
@@ -228,8 +225,8 @@ set DefaultPlatformToolset=v100
     if bit == 64:
         script += (
             r"copy /Y /B "
-            + r'"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64\*.Lib" '
-            + r"%%FREETYPE%%\builds\windows\vc2010"
+            r'"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64\*.Lib" '
+            r"%%FREETYPE%%\builds\windows\vc2010"
         )
         properties += r" /p:_IsNativeEnvironment=false"
     script += (
@@ -271,6 +268,7 @@ def build_lcms_70(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.7%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=Win32 /m
@@ -288,8 +286,10 @@ def build_lcms_71(compiler):
         r"""
 rem Build lcms2
 setlocal
+set LCMS=%%LCMS-2.8%%
 rd /S /Q %%LCMS%%\Lib
 rd /S /Q %%LCMS%%\Projects\VC%(vc_version)s\Release
+powershell -Command "(gc Projects\VC2015\lcms2_static\lcms2_static.vcxproj) -replace 'MultiThreadedDLL', 'MultiThreaded' | Out-File -encoding ASCII Projects\VC2015\lcms2_static\lcms2_static.vcxproj"
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:Clean /p:Configuration="Release" /p:Platform=%(platform)s /m
 %%MSBUILD%% %%LCMS%%\Projects\VC%(vc_version)s\lcms2.sln /t:lcms2_static /p:Configuration="Release" /p:Platform=%(platform)s /m
 xcopy /Y /E /Q %%LCMS%%\include %%INCLIB%%
@@ -298,33 +298,6 @@ endlocal
 """  # noqa: E501
         % compiler
     )
-
-
-def build_ghostscript(compiler, bit):
-    script = (
-        r"""
-rem Build gs
-setlocal
-"""
-        + vc_setup(compiler, bit)
-        + r"""
-set MSVC_VERSION="""
-        + {"2010": "90", "2015": "14"}[compiler["vc_version"]]
-        + r"""
-set RCOMP="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\RC.Exe"
-cd /D %%GHOSTSCRIPT%%
-"""
-    )
-    if bit == 64:
-        script += r"""
-set WIN64=""
-"""
-    script += r"""
-nmake -f psi/msvc.mak
-copy /Y /B bin\ C:\Python27\
-endlocal
-"""
-    return script % compiler
 
 
 def add_compiler(compiler, bit):
@@ -336,7 +309,6 @@ def add_compiler(compiler, bit):
     script.append(msbuild_freetype(compiler, bit))
     script.append(build_lcms2(compiler))
     script.append(nmake_openjpeg(compiler, bit))
-    script.append(build_ghostscript(compiler, bit))
     script.append(end_compiler())
 
 

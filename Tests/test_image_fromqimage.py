@@ -5,12 +5,15 @@ from .test_imageqt import PillowQtTestCase
 
 
 class TestFromQImage(PillowQtTestCase, PillowTestCase):
-
-    files_to_test = [
-        hopper(),
-        Image.open("Tests/images/transparent.png"),
-        Image.open("Tests/images/7x13.png"),
-    ]
+    def setUp(self):
+        super().setUp()
+        self.files_to_test = [
+            hopper(),
+            Image.open("Tests/images/transparent.png"),
+            Image.open("Tests/images/7x13.png"),
+        ]
+        for im in self.files_to_test:
+            self.addCleanup(im.close)
 
     def roundtrip(self, expected):
         # PIL -> Qt

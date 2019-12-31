@@ -17,18 +17,12 @@
 #
 
 import sys
-import warnings
 from io import BytesIO
 
 from . import Image
-from ._util import isPath, py3
+from ._util import isPath
 
-qt_versions = [["5", "PyQt5"], ["side2", "PySide2"], ["4", "PyQt4"], ["side", "PySide"]]
-
-WARNING_TEXT = (
-    "Support for EOL {} is deprecated and will be removed in a future version. "
-    "Please upgrade to PyQt5 or PySide2."
-)
+qt_versions = [["5", "PyQt5"], ["side2", "PySide2"]]
 
 # If a version has already been imported, attempt it first
 qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
@@ -40,16 +34,6 @@ for qt_version, qt_module in qt_versions:
         elif qt_module == "PySide2":
             from PySide2.QtGui import QImage, qRgba, QPixmap
             from PySide2.QtCore import QBuffer, QIODevice
-        elif qt_module == "PyQt4":
-            from PyQt4.QtGui import QImage, qRgba, QPixmap
-            from PyQt4.QtCore import QBuffer, QIODevice
-
-            warnings.warn(WARNING_TEXT.format(qt_module), DeprecationWarning)
-        elif qt_module == "PySide":
-            from PySide.QtGui import QImage, qRgba, QPixmap
-            from PySide.QtCore import QBuffer, QIODevice
-
-            warnings.warn(WARNING_TEXT.format(qt_module), DeprecationWarning)
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True
@@ -81,11 +65,7 @@ def fromqimage(im):
         im.save(buffer, "ppm")
 
     b = BytesIO()
-    try:
-        b.write(buffer.data())
-    except TypeError:
-        # workaround for Python 2
-        b.write(str(buffer.data()))
+    b.write(buffer.data())
     buffer.close()
     b.seek(0)
 
@@ -141,10 +121,7 @@ def _toqclass_helper(im):
     # handle filename, if given instead of image name
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
-        if py3:
-            im = str(im.toUtf8(), "utf-8")
-        else:
-            im = unicode(im.toUtf8(), "utf-8")  # noqa: F821
+        im = str(im.toUtf8(), "utf-8")
     if isPath(im):
         im = Image.open(im)
 
@@ -196,8 +173,7 @@ if qt_is_installed:
             # buffer, so this buffer has to hang on for the life of the image.
             # Fixes https://github.com/python-pillow/Pillow/issues/1370
             self.__data = im_data["data"]
-            QImage.__init__(
-                self,
+            super().__init__(
                 self.__data,
                 im_data["im"].size[0],
                 im_data["im"].size[1],

@@ -16,10 +16,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.4"
-
 import io
 
 from . import Image, ImageFile, ImagePalette
@@ -75,7 +71,7 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise IOError("not enough channels")
+            raise OSError("not enough channels")
 
         self.mode = mode
         self._size = i32(s[18:]), i32(s[14:])
@@ -224,9 +220,11 @@ def _layerinfo(file):
         # skip over blend flags and extra information
         read(12)  # filler
         name = ""
-        size = i32(read(4))
+        size = i32(read(4))  # length of the extra data field
         combined = 0
         if size:
+            data_end = file.tell() + size
+
             length = i32(read(4))
             if length:
                 file.seek(length - 16, io.SEEK_CUR)
@@ -244,7 +242,7 @@ def _layerinfo(file):
                 name = read(length).decode("latin-1", "replace")
             combined += length + 1
 
-        file.seek(size - combined, io.SEEK_CUR)
+            file.seek(data_end)
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles

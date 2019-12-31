@@ -19,25 +19,25 @@
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 
 
-class Pen(object):
+class Pen:
     def __init__(self, color, width=1, opacity=255):
         self.color = ImageColor.getrgb(color)
         self.width = width
 
 
-class Brush(object):
+class Brush:
     def __init__(self, color, opacity=255):
         self.color = ImageColor.getrgb(color)
 
 
-class Font(object):
+class Font:
     def __init__(self, color, file, size=12):
         # FIXME: add support for bitmap fonts
         self.color = ImageColor.getrgb(color)
         self.font = ImageFont.truetype(file, size)
 
 
-class Draw(object):
+class Draw:
     def __init__(self, image, size=None, color=None):
         if not hasattr(image, "im"):
             image = Image.new(image, size, color)

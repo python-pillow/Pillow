@@ -37,8 +37,8 @@ virtualenv as well, reducing the number of packages that we need to
 install.)
 
 Download the rest of the Pythons by opening a command window, changing
-to the `winbuild` directory, and running `python
-get_pythons.py`.
+to the ``winbuild`` directory, and running ``python
+get_pythons.py``.
 
 UNDONE -- gpg verify the signatures (note that we can download from
 https)
@@ -65,8 +65,8 @@ Dependencies
 ------------
 
 The script 'build_dep.py' downloads and builds the dependencies.  Open
-a command window, change directory into `winbuild` and run `python
-build_dep.py`.
+a command window, change directory into ``winbuild`` and run ``python
+build_dep.py``.
 
 This will download libjpeg, libtiff, libz, and freetype. It will then
 compile 32 and 64-bit versions of the libraries, with both versions of
@@ -78,9 +78,9 @@ UNDONE -- webp, jpeg2k not recognized
 Building Pillow
 ---------------
 
-Once the dependencies are built, run `python build.py --clean` to
-build and install Pillow in virtualenvs for each python
-build. `build.py --dist` will build Windows installers instead of
+Once the dependencies are built, run ``python build.py --clean`` to
+build and install Pillow in virtualenvs for each Python
+build. ``build.py --wheel`` will build wheels instead of
 installing into virtualenvs.
 
 UNDONE -- suppressed output, what about failures.
@@ -88,6 +88,6 @@ UNDONE -- suppressed output, what about failures.
 Testing Pillow
 --------------
 
-Build and install Pillow, then run `python test.py` from the
-`winbuild` directory.
+Build and install Pillow, then run ``python test.py`` from the
+``winbuild`` directory.
 

@@ -30,10 +30,6 @@ from math import ceil, log
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i8, i16le as i16, i32le as i32
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 #
 # --------------------------------------------------------------------
 
@@ -67,8 +63,9 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
+        # TODO: invent a more convenient method for proportional scalings
         tmp = im.copy()
-        tmp.thumbnail(size, Image.LANCZOS)
+        tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()
@@ -86,7 +83,7 @@ def _accept(prefix):
     return prefix[:4] == _MAGIC
 
 
-class IcoFile(object):
+class IcoFile:
     def __init__(self, buf):
         """
         Parse image from file-like object containing ico file data
@@ -180,6 +177,7 @@ class IcoFile(object):
         else:
             # XOR + AND mask bmp frame
             im = BmpImagePlugin.DibImageFile(self.buf)
+            Image._decompression_bomb_check(im.size)
 
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))

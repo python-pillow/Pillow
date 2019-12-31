@@ -27,10 +27,6 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8, i16le as i16, i32le as i32, o8, o16le as o16, o32le as o32
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.7"
-
 #
 # --------------------------------------------------------------------
 # Read BMP file
@@ -148,7 +144,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     file_info["a_mask"],
                 )
         else:
-            raise IOError("Unsupported BMP header type (%d)" % file_info["header_size"])
+            raise OSError("Unsupported BMP header type (%d)" % file_info["header_size"])
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
@@ -163,12 +159,12 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------------------------------- Check abnormal values for DOS attacks
         if file_info["width"] * file_info["height"] > 2 ** 31:
-            raise IOError("Unsupported BMP Size: (%dx%d)" % self.size)
+            raise OSError("Unsupported BMP Size: (%dx%d)" % self.size)
 
         # ---------------------- Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
         if self.mode is None:
-            raise IOError("Unsupported BMP pixel depth (%d)" % file_info["bits"])
+            raise OSError("Unsupported BMP pixel depth (%d)" % file_info["bits"])
 
         # ---------------- Process BMP with Bitfields compression (not palette)
         if file_info["compression"] == self.BITFIELDS:
@@ -206,21 +202,21 @@ class BmpImageFile(ImageFile.ImageFile):
                 ):
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgb_mask"])]
                 else:
-                    raise IOError("Unsupported BMP bitfields layout")
+                    raise OSError("Unsupported BMP bitfields layout")
             else:
-                raise IOError("Unsupported BMP bitfields layout")
+                raise OSError("Unsupported BMP bitfields layout")
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
                 raw_mode, self.mode = "BGRA", "RGBA"
         else:
-            raise IOError("Unsupported BMP compression (%d)" % file_info["compression"])
+            raise OSError("Unsupported BMP compression (%d)" % file_info["compression"])
 
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
 
             # ---------------------------------------------------- 1-bit images
             if not (0 < file_info["colors"] <= 65536):
-                raise IOError("Unsupported BMP Palette size (%d)" % file_info["colors"])
+                raise OSError("Unsupported BMP Palette size (%d)" % file_info["colors"])
             else:
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
@@ -309,7 +305,7 @@ def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as BMP" % im.mode)
+        raise OSError("cannot write mode %s as BMP" % im.mode)
 
     info = im.encoderinfo
 
@@ -325,12 +321,15 @@ def _save(im, fp, filename, bitmap_header=True):
     # bitmap header
     if bitmap_header:
         offset = 14 + header + colors * 4
+        file_size = offset + image
+        if file_size > 2 ** 32 - 1:
+            raise ValueError("File size is too large for the BMP format")
         fp.write(
-            b"BM"
-            + o32(offset + image)  # file type (magic)
-            + o32(0)  # file size
-            + o32(offset)  # reserved
-        )  # image data offset
+            b"BM"  # file type (magic)
+            + o32(file_size)  # file size
+            + o32(0)  # reserved
+            + o32(offset)  # image data offset
+        )
 
     # bitmap info header
     fp.write(

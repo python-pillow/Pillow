@@ -31,23 +31,17 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
 import array
 import io
+import os
 import struct
+import subprocess
+import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i8, i16be as i16, i32be as i32, o8
-from ._util import isStringType
 from .JpegPresets import presets
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
-
 
 #
 # Parser
@@ -115,7 +109,10 @@ def APP(self, marker):
             while blocks[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
-                code = i16(blocks, offset)
+                try:
+                    code = i16(blocks, offset)
+                except struct.error:
+                    break
                 offset += 2
                 # resource name (usually empty)
                 name_len = i8(blocks[offset])
@@ -158,7 +155,7 @@ def APP(self, marker):
     # If DPI isn't in JPEG header, fetch from EXIF
     if "dpi" not in self.info and "exif" in self.info:
         try:
-            exif = self._getexif()
+            exif = self.getexif()
             resolution_unit = exif[0x0128]
             x_resolution = exif[0x011A]
             try:
@@ -169,10 +166,11 @@ def APP(self, marker):
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
-        except (KeyError, SyntaxError, ZeroDivisionError):
+        except (KeyError, SyntaxError, ValueError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
+            # ValueError for x_resolution[0] being an invalid float
             self.info["dpi"] = 72, 72
 
 
@@ -415,7 +413,8 @@ class JpegImageFile(ImageFile.ImageFile):
             return
 
         d, e, o, a = self.tile[0]
-        scale = 0
+        scale = 1
+        original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self.mode = mode
@@ -438,15 +437,12 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
-        return self
+        box = (0, 0, original_size[0] / float(scale), original_size[1] / float(scale))
+        return (self.mode, box)
 
     def load_djpeg(self):
 
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
-
-        import subprocess
-        import tempfile
-        import os
 
         f, path = tempfile.mkstemp()
         os.close(f)
@@ -485,19 +481,9 @@ def _fixup_dict(src_dict):
 
 
 def _getexif(self):
-    # Use the cached version if possible
-    try:
-        return self.info["parsed_exif"]
-    except KeyError:
-        pass
-
     if "exif" not in self.info:
         return None
-    exif = dict(self.getexif())
-
-    # Cache the result for future use
-    self.info["parsed_exif"] = exif
-    return exif
+    return dict(self.getexif())
 
 
 def _getmp(self):
@@ -628,7 +614,7 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-        raise IOError("cannot write mode %s as JPEG" % im.mode)
+        raise OSError("cannot write mode %s as JPEG" % im.mode)
 
     info = im.encoderinfo
 
@@ -652,7 +638,7 @@ def _save(im, fp, filename):
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get("subsampling", -1)
-        if isStringType(qtables) and qtables in presets:
+        if isinstance(qtables, str) and qtables in presets:
             qtables = presets[qtables].get("quantization")
 
     if subsampling == "4:4:4":
@@ -673,7 +659,7 @@ def _save(im, fp, filename):
     def validate_qtables(qtables):
         if qtables is None:
             return qtables
-        if isStringType(qtables):
+        if isinstance(qtables, str):
             try:
                 lines = [
                     int(num)
@@ -782,9 +768,6 @@ def _save(im, fp, filename):
 
 def _save_cjpeg(im, fp, filename):
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    import os
-    import subprocess
-
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
     try:

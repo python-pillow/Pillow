@@ -7,7 +7,6 @@
 # Final rating: 10/10
 # Your cheese is so fresh most people think it's a cream: Mascarpone
 # ------------------------------
-from __future__ import print_function
 
 import os
 import re
@@ -20,15 +19,31 @@ from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
 
-# monkey patch import hook. Even though flake8 says it's not used, it is.
-# comment this out to disable multi threaded builds.
-import mp_compile
 
-if sys.platform == "win32" and sys.version_info >= (3, 8):
+def get_version():
+    version_file = "src/PIL/_version.py"
+    with open(version_file, "r") as f:
+        exec(compile(f.read(), version_file, "exec"))
+    return locals()["__version__"]
+
+
+NAME = "Pillow"
+PILLOW_VERSION = get_version()
+FREETYPE_ROOT = None
+IMAGEQUANT_ROOT = None
+JPEG2K_ROOT = None
+JPEG_ROOT = None
+LCMS_ROOT = None
+TIFF_ROOT = None
+ZLIB_ROOT = None
+
+
+if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
-        "Pillow does not yet support Python {}.{} and does not yet provide "
-        "prebuilt Windows binaries. We do not recommend building from "
-        "source on Windows.".format(sys.version_info.major, sys.version_info.minor),
+        "Pillow {} does not support Python {}.{} and does not provide prebuilt "
+        "Windows binaries. We do not recommend building from source on Windows.".format(
+            PILLOW_VERSION, sys.version_info.major, sys.version_info.minor
+        ),
         RuntimeWarning,
     )
 
@@ -39,6 +54,7 @@ _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
     "Resample",
+    "Reduce",
     "Bands",
     "BcnDecode",
     "BitDecode",
@@ -169,10 +185,10 @@ def _find_library_dirs_ldconfig():
         expr = r".* => (.*)"
         env = {}
 
-    null = open(os.devnull, "wb")
     try:
-        with null:
-            p = subprocess.Popen(args, stderr=null, stdout=subprocess.PIPE, env=env)
+        p = subprocess.Popen(
+            args, stderr=subprocess.DEVNULL, stdout=subprocess.PIPE, env=env
+        )
     except OSError:  # E.g. command not found
         return []
     [data, _] = p.communicate()
@@ -233,24 +249,6 @@ def _read(file):
         return fp.read()
 
 
-def get_version():
-    version_file = "src/PIL/_version.py"
-    with open(version_file, "r") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
-
-
-NAME = "Pillow"
-PILLOW_VERSION = get_version()
-JPEG_ROOT = None
-JPEG2K_ROOT = None
-ZLIB_ROOT = None
-IMAGEQUANT_ROOT = None
-TIFF_ROOT = None
-FREETYPE_ROOT = None
-LCMS_ROOT = None
-
-
 def _pkg_config(name):
     try:
         command = os.environ.get("PKG_CONFIG", "pkg-config")
@@ -303,8 +301,7 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def __iter__(self):
-            for x in self.features:
-                yield x
+            yield from self.features
 
     feature = feature()
 
@@ -332,12 +329,15 @@ class pil_build_ext(build_ext):
         if self.debug:
             global DEBUG
             DEBUG = True
-        if sys.version_info.major >= 3 and not self.parallel:
-            # For Python 2.7, we monkeypatch distutils to have parallel
-            # builds. If --parallel (or -j) wasn't specified, we want to
-            # reproduce the same behavior as before, that is, auto-detect the
-            # number of jobs.
-            self.parallel = mp_compile.MAX_PROCS
+        if not self.parallel:
+            # If --parallel (or -j) wasn't specified, we want to reproduce the same
+            # behavior as before, that is, auto-detect the number of jobs.
+            try:
+                self.parallel = int(
+                    os.environ.get("MAX_CONCURRENCY", min(4, os.cpu_count()))
+                )
+            except TypeError:
+                self.parallel = None
         for x in self.feature:
             if getattr(self, "disable_%s" % x):
                 setattr(self.feature, x, False)
@@ -345,7 +345,7 @@ class pil_build_ext(build_ext):
                 _dbg("Disabling %s", x)
                 if getattr(self, "enable_%s" % x):
                     raise ValueError(
-                        "Conflicting options: --enable-%s and --disable-%s" % (x, x)
+                        "Conflicting options: --enable-{} and --disable-{}".format(x, x)
                     )
             if getattr(self, "enable_%s" % x):
                 _dbg("Requiring %s", x)
@@ -717,7 +717,7 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBTIFF", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
-        if struct.unpack("h", "\0\1".encode("ascii"))[0] == 1:
+        if struct.unpack("h", b"\0\1")[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
         if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
@@ -798,7 +798,7 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("version      Pillow %s" % PILLOW_VERSION)
         v = sys.version.split("[")
-        print("platform     %s %s" % (sys.platform, v[0].strip()))
+        print("platform     {} {}".format(sys.platform, v[0].strip()))
         for v in v[1:]:
             print("             [%s" % v.strip())
         print("-" * 68)
@@ -821,7 +821,7 @@ class pil_build_ext(build_ext):
                 version = ""
                 if len(option) >= 3 and option[2]:
                     version = " (%s)" % option[2]
-                print("--- %s support available%s" % (option[1], version))
+                print("--- {} support available{}".format(option[1], version))
             else:
                 print("*** %s support not available" % option[1])
                 all = 0
@@ -857,16 +857,21 @@ try:
         license="HPND",
         author="Alex Clark (PIL Fork Author)",
         author_email="aclark@python-pillow.org",
-        url="http://python-pillow.org",
+        url="https://python-pillow.org",
+        project_urls={
+            "Documentation": "https://pillow.readthedocs.io",
+            "Source": "https://github.com/python-pillow/Pillow",
+            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow",
+        },
         classifiers=[
             "Development Status :: 6 - Mature",
             "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Topic :: Multimedia :: Graphics",
@@ -875,7 +880,7 @@ try:
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
         ],
-        python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+        python_requires=">=3.5",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
         include_package_data=True,

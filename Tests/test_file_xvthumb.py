@@ -8,14 +8,14 @@ TEST_FILE = "Tests/images/hopper.p7"
 class TestFileXVThumb(PillowTestCase):
     def test_open(self):
         # Act
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Assert
-        self.assertEqual(im.format, "XVThumb")
+            # Assert
+            self.assertEqual(im.format, "XVThumb")
 
-        # Create a Hopper image with a similar XV palette
-        im_hopper = hopper().quantize(palette=im)
-        self.assert_image_similar(im, im_hopper, 9)
+            # Create a Hopper image with a similar XV palette
+            im_hopper = hopper().quantize(palette=im)
+            self.assert_image_similar(im, im_hopper, 9)
 
     def test_unexpected_eof(self):
         # Test unexpected EOF reading XV thumbnail file

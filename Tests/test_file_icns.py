@@ -1,9 +1,10 @@
 import io
 import sys
+import unittest
 
 from PIL import IcnsImagePlugin, Image
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -15,72 +16,71 @@ class TestFileIcns(PillowTestCase):
     def test_sanity(self):
         # Loading this icon by default should result in the largest size
         # (512x512@2x) being loaded
-        im = Image.open(TEST_FILE)
+        with Image.open(TEST_FILE) as im:
 
-        # Assert that there is no unclosed file warning
-        self.assert_warning(None, im.load)
+            # Assert that there is no unclosed file warning
+            self.assert_warning(None, im.load)
 
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (1024, 1024))
-        self.assertEqual(im.format, "ICNS")
+            self.assertEqual(im.mode, "RGBA")
+            self.assertEqual(im.size, (1024, 1024))
+            self.assertEqual(im.format, "ICNS")
 
     @unittest.skipIf(sys.platform != "darwin", "requires macOS")
     def test_save(self):
-        im = Image.open(TEST_FILE)
-
         temp_file = self.tempfile("temp.icns")
-        im.save(temp_file)
 
-        reread = Image.open(temp_file)
+        with Image.open(TEST_FILE) as im:
+            im.save(temp_file)
 
-        self.assertEqual(reread.mode, "RGBA")
-        self.assertEqual(reread.size, (1024, 1024))
-        self.assertEqual(reread.format, "ICNS")
+        with Image.open(temp_file) as reread:
+            self.assertEqual(reread.mode, "RGBA")
+            self.assertEqual(reread.size, (1024, 1024))
+            self.assertEqual(reread.format, "ICNS")
 
     @unittest.skipIf(sys.platform != "darwin", "requires macOS")
     def test_save_append_images(self):
-        im = Image.open(TEST_FILE)
-
         temp_file = self.tempfile("temp.icns")
         provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
-        im.save(temp_file, append_images=[provided_im])
 
-        reread = Image.open(temp_file)
-        self.assert_image_similar(reread, im, 1)
+        with Image.open(TEST_FILE) as im:
+            im.save(temp_file, append_images=[provided_im])
 
-        reread = Image.open(temp_file)
-        reread.size = (16, 16, 2)
-        reread.load()
-        self.assert_image_equal(reread, provided_im)
+            with Image.open(temp_file) as reread:
+                self.assert_image_similar(reread, im, 1)
+
+            with Image.open(temp_file) as reread:
+                reread.size = (16, 16, 2)
+                reread.load()
+                self.assert_image_equal(reread, provided_im)
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel
         # dimensions are as expected
-        im = Image.open(TEST_FILE)
-        for w, h, r in im.info["sizes"]:
-            wr = w * r
-            hr = h * r
-            im.size = (w, h, r)
-            im.load()
-            self.assertEqual(im.mode, "RGBA")
-            self.assertEqual(im.size, (wr, hr))
+        with Image.open(TEST_FILE) as im:
+            for w, h, r in im.info["sizes"]:
+                wr = w * r
+                hr = h * r
+                im.size = (w, h, r)
+                im.load()
+                self.assertEqual(im.mode, "RGBA")
+                self.assertEqual(im.size, (wr, hr))
 
-        # Check that we cannot load an incorrect size
-        with self.assertRaises(ValueError):
-            im.size = (1, 1)
+            # Check that we cannot load an incorrect size
+            with self.assertRaises(ValueError):
+                im.size = (1, 1)
 
     def test_older_icon(self):
         # This icon was made with Icon Composer rather than iconutil; it still
         # uses PNG rather than JP2, however (since it was made on 10.9).
-        im = Image.open("Tests/images/pillow2.icns")
-        for w, h, r in im.info["sizes"]:
-            wr = w * r
-            hr = h * r
-            im2 = Image.open("Tests/images/pillow2.icns")
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, "RGBA")
-            self.assertEqual(im2.size, (wr, hr))
+        with Image.open("Tests/images/pillow2.icns") as im:
+            for w, h, r in im.info["sizes"]:
+                wr = w * r
+                hr = h * r
+                with Image.open("Tests/images/pillow2.icns") as im2:
+                    im2.size = (w, h, r)
+                    im2.load()
+                    self.assertEqual(im2.mode, "RGBA")
+                    self.assertEqual(im2.size, (wr, hr))
 
     def test_jp2_icon(self):
         # This icon was made by using Uli Kusterer's oldiconutil to replace
@@ -93,15 +93,15 @@ class TestFileIcns(PillowTestCase):
         if not enable_jpeg2k:
             return
 
-        im = Image.open("Tests/images/pillow3.icns")
-        for w, h, r in im.info["sizes"]:
-            wr = w * r
-            hr = h * r
-            im2 = Image.open("Tests/images/pillow3.icns")
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, "RGBA")
-            self.assertEqual(im2.size, (wr, hr))
+        with Image.open("Tests/images/pillow3.icns") as im:
+            for w, h, r in im.info["sizes"]:
+                wr = w * r
+                hr = h * r
+                with Image.open("Tests/images/pillow3.icns") as im2:
+                    im2.size = (w, h, r)
+                    im2.load()
+                    self.assertEqual(im2.mode, "RGBA")
+                    self.assertEqual(im2.size, (wr, hr))
 
     def test_getimage(self):
         with open(TEST_FILE, "rb") as fp:

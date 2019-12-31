@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 import copy
 import distutils.version
 import os
 import re
 import shutil
 import sys
+import unittest
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase, unittest
+from .helper import PillowTestCase, is_pypy, is_win32
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -20,7 +20,7 @@ HAS_FREETYPE = features.check("freetype2")
 HAS_RAQM = features.check("raqm")
 
 
-class SimplePatcher(object):
+class SimplePatcher:
     def __init__(self, parent_obj, attr_name, value):
         self._parent_obj = parent_obj
         self._attr_name = attr_name
@@ -179,10 +179,10 @@ class TestImageFont(PillowTestCase):
         draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
 
         target = "Tests/images/rectangle_surrounding_text.png"
-        target_img = Image.open(target)
+        with Image.open(target) as target_img:
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, self.metrics["textsize"])
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, self.metrics["textsize"])
 
     def test_render_multiline(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -196,12 +196,12 @@ class TestImageFont(PillowTestCase):
             y += line_spacing
 
         target = "Tests/images/multiline_text.png"
-        target_img = Image.open(target)
+        with Image.open(target) as target_img:
 
-        # some versions of freetype have different horizontal spacing.
-        # setting a tight epsilon, I'm showing the original test failure
-        # at epsilon = ~38.
-        self.assert_image_similar(im, target_img, self.metrics["multiline"])
+            # some versions of freetype have different horizontal spacing.
+            # setting a tight epsilon, I'm showing the original test failure
+            # at epsilon = ~38.
+            self.assert_image_similar(im, target_img, self.metrics["multiline"])
 
     def test_render_multiline_text(self):
         ttf = self.get_font()
@@ -213,10 +213,10 @@ class TestImageFont(PillowTestCase):
         draw.text((0, 0), TEST_TEXT, font=ttf)
 
         target = "Tests/images/multiline_text.png"
-        target_img = Image.open(target)
+        with Image.open(target) as target_img:
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, self.metrics["multiline"])
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, self.metrics["multiline"])
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -232,10 +232,10 @@ class TestImageFont(PillowTestCase):
             draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
 
             target = "Tests/images/multiline_text" + ext + ".png"
-            target_img = Image.open(target)
+            with Image.open(target) as target_img:
 
-            # Epsilon ~.5 fails with FreeType 2.7
-            self.assert_image_similar(im, target_img, self.metrics["multiline"])
+                # Epsilon ~.5 fails with FreeType 2.7
+                self.assert_image_similar(im, target_img, self.metrics["multiline"])
 
     def test_unknown_align(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -297,10 +297,10 @@ class TestImageFont(PillowTestCase):
         draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
 
         target = "Tests/images/multiline_text_spacing.png"
-        target_img = Image.open(target)
+        with Image.open(target) as target_img:
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        self.assert_image_similar(im, target_img, self.metrics["multiline"])
+            # Epsilon ~.5 fails with FreeType 2.7
+            self.assert_image_similar(im, target_img, self.metrics["multiline"])
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -432,14 +432,14 @@ class TestImageFont(PillowTestCase):
         draw = ImageDraw.Draw(im)
 
         target = "Tests/images/default_font.png"
-        target_img = Image.open(target)
+        with Image.open(target) as target_img:
 
-        # Act
-        default_font = ImageFont.load_default()
-        draw.text((10, 10), txt, font=default_font)
+            # Act
+            default_font = ImageFont.load_default()
+            draw.text((10, 10), txt, font=default_font)
 
-        # Assert
-        self.assert_image_equal(im, target_img)
+            # Assert
+            self.assert_image_equal(im, target_img)
 
     def test_getsize_empty(self):
         # issue #2614
@@ -462,15 +462,12 @@ class TestImageFont(PillowTestCase):
         # issue #2826
         font = ImageFont.load_default()
         with self.assertRaises(UnicodeEncodeError):
-            font.getsize(u"’")
+            font.getsize("’")
 
-    @unittest.skipIf(
-        sys.version.startswith("2") or hasattr(sys, "pypy_translation_info"),
-        "requires CPython 3.3+",
-    )
+    @unittest.skipIf(is_pypy(), "failing on PyPy")
     def test_unicode_extended(self):
         # issue #3777
-        text = u"A\u278A\U0001F12B"
+        text = "A\u278A\U0001F12B"
         target = "Tests/images/unicode_extended.png"
 
         ttf = ImageFont.truetype(
@@ -504,7 +501,7 @@ class TestImageFont(PillowTestCase):
                 name = font.getname()
                 self.assertEqual(("FreeMono", "Regular"), name)
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -550,7 +547,7 @@ class TestImageFont(PillowTestCase):
                         font_directory + "/Duplicate.ttf", "Duplicate"
                     )
 
-    @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
+    @unittest.skipIf(is_win32(), "requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
@@ -604,6 +601,21 @@ class TestImageFont(PillowTestCase):
         self.assertEqual(t.getsize_multiline("ABC\n"), (36, 36))
         self.assertEqual(t.getsize_multiline("ABC\nA"), (36, 36))
         self.assertEqual(t.getsize_multiline("ABC\nAaaa"), (48, 36))
+
+    def test_getsize_stroke(self):
+        # Arrange
+        t = self.get_font()
+
+        # Act / Assert
+        for stroke_width in [0, 2]:
+            self.assertEqual(
+                t.getsize("A", stroke_width=stroke_width),
+                (12 + stroke_width * 2, 16 + stroke_width * 2),
+            )
+            self.assertEqual(
+                t.getsize_multiline("ABC\nAaaa", stroke_width=stroke_width),
+                (48 + stroke_width * 2, 36 + stroke_width * 4),
+            )
 
     def test_complex_font_settings(self):
         # Arrange
@@ -691,8 +703,8 @@ class TestImageFont(PillowTestCase):
             d = ImageDraw.Draw(im)
             d.text((10, 10), "Text", font=font, fill="black")
 
-            expected = Image.open(path)
-            self.assert_image_similar(im, expected, epsilon)
+            with Image.open(path) as expected:
+                self.assert_image_similar(im, expected, epsilon)
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         _check_text(font, "Tests/images/variation_adobe.png", 11)
@@ -721,8 +733,8 @@ class TestImageFont(PillowTestCase):
             d = ImageDraw.Draw(im)
             d.text((10, 10), "Text", font=font, fill="black")
 
-            expected = Image.open(path)
-            self.assert_image_similar(im, expected, epsilon)
+            with Image.open(path) as expected:
+                self.assert_image_similar(im, expected, epsilon)
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
