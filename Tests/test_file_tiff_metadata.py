@@ -264,7 +264,6 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
         self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
 
-        # pair of 4 byte signed longs
         numerator = -(2 ** 31)
         denominator = 2 ** 31 - 1
 
@@ -276,6 +275,19 @@ class TestFileTiffMetadata(PillowTestCase):
         reloaded = Image.open(out)
         self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
         self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+
+        # out of bounds of 4 byte signed long
+        numerator = -2 ** 31 - 1
+        denominator = 1
+
+        info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(- 2 ** 31, reloaded.tag_v2[37380].numerator)
+        self.assertEqual(1, reloaded.tag_v2[37380].denominator)
 
     def test_ifd_signed_long(self):
         im = hopper()
