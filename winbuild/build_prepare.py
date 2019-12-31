@@ -410,11 +410,11 @@ if __name__ == "__main__":
 
     print("Found Visual Studio at: {}".format(vs2017["vs_dir"]))
 
-    sdk71a = find_sdk71a()
-    if sdk71a is None:
-        raise RuntimeError("Windows SDK v7.1A not found")
-
-    print("Found Windows SDK 7.1A at: {}".format(sdk71a["sdk_dir"]))
+    # sdk71a = find_sdk71a()
+    # if sdk71a is None:
+    #     raise RuntimeError("Windows SDK v7.1A not found")
+    #
+    # print("Found Windows SDK 7.1A at: {}".format(sdk71a["sdk_dir"]))
 
     build_dir = os.path.join(script_dir, "build", config_name, architecture)
     lib_dir = os.path.join(build_dir, "lib")
@@ -441,7 +441,7 @@ if __name__ == "__main__":
         "cmake": "cmake.exe",
     }
 
-    dicts = [vs2017, sdk71a, arch_prefs, python_prefs, config]
+    dicts = [vs2017, arch_prefs, python_prefs, config]
     for x in dicts:
         prefs.update(x)
     prefs["header"] = sum((x.get("header", []) for x in dicts), header)
