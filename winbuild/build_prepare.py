@@ -51,7 +51,6 @@ header = [
     cmd_set("INCLIB", "{lib_dir}"),
     cmd_set("LIB", "{lib_dir}"),
     cmd_append("PATH", "{bin_dir}"),
-    "@echo on",
 ]
 
 # dependencies
@@ -124,14 +123,14 @@ deps = {
         "name": "freetype",
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501
         "filename": "freetype-2.10.1.tar.gz",
+        "patch": {
+            r"builds\windows\vc2010\freetype.vcxproj": {
+                # freetype setting is /MD for .dll and /MT for .lib, we need /MD
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+            },
+        },
         "build": [
             cmd_rmdir("objs"),
-            # freetype setting is /MD for .dll and /MT for .lib, we need /MD
-            cmd_patch_replace(
-                r"builds\windows\vc2010\freetype.vcxproj",
-                "MultiThreaded<",
-                "MultiThreadedDLL<"
-            ),
             cmd_msbuild(r"builds\windows\vc2010\freetype.sln", "Release Static", "Clean"),  # TODO failing on GHA  # noqa: E501
             cmd_msbuild(r"builds\windows\vc2010\freetype.sln", "Release Static", "Build"),
             cmd_xcopy("include", "{inc_dir}"),
@@ -141,15 +140,21 @@ deps = {
     },
     "lcms2-2.9": {
         "name": "lcms2",
-        "url": SF_MIRROR + "/project/lcms/lcms/2.8/lcms2-2.9.tar.gz",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.9/lcms2-2.9.tar.gz",
         "filename": "lcms2-2.9.tar.gz",
+        "patch": {
+            r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
+                # lcms2-2.8\VC2015 setting is /MD for x86 and /MT for x64, we need /MD always
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+                # retarget to default msvc
+                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",
+                # retarget to latest SDK 10.0
+                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>",
+            },
+        },
         "build": [
             cmd_rmdir("Lib"),
             cmd_rmdir(r"Projects\VC{vs_ver}\Release"),
-            # lcms2-2.8\VC2015 setting is /MD for x86 and /MT for x64, we need /MD always
-            cmd_patch_replace(
-                r"Projects\VC2017\lcms2.sln", "MultiThreaded<", "MultiThreadedDLL<"
-            ),
             cmd_msbuild(r"Projects\VC{vs_ver}\lcms2.sln", "Release", "Clean"),
             cmd_msbuild(r"Projects\VC{vs_ver}\lcms2.sln", "Release", "lcms2_static"),
             cmd_xcopy("include", "{inc_dir}"),
@@ -337,8 +342,17 @@ def build_dep(name):
 
     extract_dep(dep["url"], dep["filename"])
 
+    for patch_file, patch_list in dep.get("patch", {}).items():
+        patch_file = os.path.join(build_dir, name, patch_file)
+        with open(patch_file, "r") as f:
+            text = f.read()
+        for patch_from, patch_to in patch_list.items():
+            text = text.replace(patch_from, patch_to)
+        with open(patch_file, "w") as f:
+            f.write(text)
+
     lines = [
-        "echo Building {name} ({dir})...".format(name=dep["name"], dir=name),
+        "@echo Building {name} ({dir})...".format(name=dep["name"], dir=name),
         "cd /D %s" % os.path.join(build_dir, name),
         *prefs["header"],
         *dep.get("build", []),
@@ -444,7 +458,7 @@ if __name__ == "__main__":
     dicts = [vs2017, arch_prefs, python_prefs, config]
     for x in dicts:
         prefs.update(x)
-    prefs["header"] = sum((x.get("header", []) for x in dicts), header)
+    prefs["header"] = sum((x.get("header", []) for x in dicts), header) + ["@echo on"]
     del prefs["name"]
 
     build_dep_all()

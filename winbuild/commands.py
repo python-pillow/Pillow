@@ -94,18 +94,3 @@ def cmd_msbuild(
             "/m",
         ]
     ).format(**locals())
-
-
-# patch tools
-
-
-def cmd_patch_replace(file, src, dst):
-    return " ".join(
-        [
-            "echo",
-            "(Get-Content '{file}')",
-            '-replace "{src}", "{dst}"',
-            "^| Out-File -encoding ASCII '{file}'",
-            "> temp.ps1\r\npowershell .\\temp.ps1",
-        ]
-    ).format(**locals())
