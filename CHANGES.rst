@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Exif writing fixes: Rational boundaries and signed/unsigned types #3980
+  [kkopachev, radarhere]
+
 - Allow loading of WMF images at a given DPI #4311
   [radarhere]
 
