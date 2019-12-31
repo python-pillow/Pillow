@@ -165,14 +165,14 @@ class TestImageColor(PillowTestCase):
 
         self.assertEqual(0, ImageColor.getcolor("black", "L"))
         self.assertEqual(255, ImageColor.getcolor("white", "L"))
-        self.assertEqual(162, ImageColor.getcolor("rgba(0, 255, 115, 33)", "L"))
+        self.assertEqual(163, ImageColor.getcolor("rgba(0, 255, 115, 33)", "L"))
         Image.new("L", (1, 1), "white")
 
         self.assertEqual(0, ImageColor.getcolor("black", "1"))
         self.assertEqual(255, ImageColor.getcolor("white", "1"))
         # The following test is wrong, but is current behavior
         # The correct result should be 255 due to the mode 1
-        self.assertEqual(162, ImageColor.getcolor("rgba(0, 255, 115, 33)", "1"))
+        self.assertEqual(163, ImageColor.getcolor("rgba(0, 255, 115, 33)", "1"))
         # Correct behavior
         # self.assertEqual(
         #     255, ImageColor.getcolor("rgba(0, 255, 115, 33)", "1"))
@@ -180,5 +180,5 @@ class TestImageColor(PillowTestCase):
 
         self.assertEqual((0, 255), ImageColor.getcolor("black", "LA"))
         self.assertEqual((255, 255), ImageColor.getcolor("white", "LA"))
-        self.assertEqual((162, 33), ImageColor.getcolor("rgba(0, 255, 115, 33)", "LA"))
+        self.assertEqual((163, 33), ImageColor.getcolor("rgba(0, 255, 115, 33)", "LA"))
         Image.new("LA", (1, 1), "white")

@@ -134,7 +134,7 @@ def getcolor(color, mode):
 
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        color = (r * 299 + g * 587 + b * 114) // 1000
+        color = (r * 299 + g * 587 + b * 114 + 500) // 1000
         if mode[-1] == "A":
             return (color, alpha)
     else:
