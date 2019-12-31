@@ -82,6 +82,12 @@
 #include "zlib.h"
 #endif
 
+#ifdef HAVE_LIBTIFF
+#ifndef _TIFFIO_
+#include <tiffio.h>
+#endif
+#endif
+
 #include "Imaging.h"
 
 #define _USE_MATH_DEFINES
@@ -3961,6 +3967,15 @@ setup_module(PyObject* m) {
   {
     extern const char * ImagingTiffVersion(void);
     PyDict_SetItemString(d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
+
+    // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
+    PyObject* support_custom_tags;
+#if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && TIFFLIB_VERSION != 20120922
+    support_custom_tags = Py_True;
+#else
+    support_custom_tags = Py_False;
+#endif
+    PyDict_SetItemString(d, "libtiff_support_custom_tags", support_custom_tags);
   }
 #endif
 

@@ -38,7 +38,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-import distutils.version
 import io
 import itertools
 import os
@@ -262,10 +261,6 @@ def _limit_rational(val, max_val):
     inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
-
-
-def _libtiff_version():
-    return Image.core.libtiff_version.split("\n")[0].split("Version ")[1]
 
 
 ##
@@ -1559,11 +1554,10 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if TiffTags.lookup(tag).type == TiffTags.UNDEFINED:
-                    continue
-                if distutils.version.StrictVersion(
-                    _libtiff_version()
-                ) < distutils.version.StrictVersion("4.0"):
+                if (
+                    TiffTags.lookup(tag).type == TiffTags.UNDEFINED
+                    or not Image.core.libtiff_support_custom_tags
+                ):
                     continue
 
                 if tag in ifd.tagtype:
