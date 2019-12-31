@@ -58,7 +58,7 @@ jobs:
         "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
       shell: cmd
 
-    - name: Fetch dependencies
+    - name: Prepare dependencies
       run: |
         7z x ..\pillow-depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
@@ -66,14 +66,13 @@ jobs:
         ..\pillow-depends\gs950w32.exe /S
         Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.50\bin"
 
-        $env:PYTHON=$env:pythonLocation
         mkdir $env:GITHUB_WORKSPACE\winbuild\depends\
         xcopy ..\pillow-depends\*.zip $env:GITHUB_WORKSPACE\winbuild\depends\
         xcopy ..\pillow-depends\*.tar.gz $env:GITHUB_WORKSPACE\winbuild\depends\
         xcopy /s ..\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
+
+        $env:PYTHON=$env:pythonLocation
         cd $env:GITHUB_WORKSPACE/winbuild/
-        # reg query "HKLM\Software\Microsoft\Microsoft SDKs\Windows" /s
-        ls 'C:\Program Files (x86)\Microsoft SDKs\Windows\'
         & python.exe $env:GITHUB_WORKSPACE\winbuild\build_prepare.py
       shell: pwsh
 
@@ -108,8 +107,6 @@ jobs:
     - name: Build Pillow
       run: |
         cd $env:GITHUB_WORKSPACE
-        # & winbuild\build_dep_tcl.cmd
-        # & winbuild\build_dep_tk.cmd
         & winbuild\build_pillow.cmd install
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh

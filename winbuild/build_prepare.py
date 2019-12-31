@@ -9,19 +9,9 @@ from commands import *
 
 SF_MIRROR = "http://iweb.dl.sourceforge.net"
 
-# use PYTHON to select architecture
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
-}
-
-# select preferred compiler
-pythons = {
-    "pypy3.6": {"vs_ver": "2015", "vcvars_ver": "14.0"},
-    "3.5": {"vs_ver": "2015", "vcvars_ver": "14.0"},
-    "3.6": {"vs_ver": "2017"},
-    "3.7": {"vs_ver": "2017"},
-    "3.8": {"vs_ver": "2017"},  # TODO check
 }
 
 header = [
@@ -225,7 +215,7 @@ deps = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_vs2017(config):
+def find_msvs():
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
@@ -269,75 +259,23 @@ def find_vs2017(config):
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
     if os.path.isfile(msbuild):
-        # default_platform_toolset = "v140"
         vs["msbuild"] = '"{}"'.format(msbuild)
     else:
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
         if os.path.isfile(msbuild):
-            # default_platform_toolset = "v142"
             vs["msbuild"] = '"{}"'.format(msbuild)
         else:
             print("Visual Studio MSBuild not found")
             return None
-    # vs["header"].append(cmd_set("DefaultPlatformToolset", default_platform_toolset))
 
     vcvarsall = os.path.join(vspath, "VC", "Auxiliary", "Build", "vcvarsall.bat")
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vcvars_ver = (
-        "-vcvars_ver={}".format(config["vcvars_ver"]) if "vcvars_ver" in config else ""
-    )
-    vs["header"].append('call "{}" {{vcvars_arch}} {}'.format(vcvarsall, vcvars_ver))
+    vs["header"].append('call "{}" {{vcvars_arch}}'.format(vcvarsall))
 
     return vs
-
-
-def find_sdk71a():
-    try:
-        print("trace: opening sdk key")
-        key = winreg.OpenKeyEx(
-            winreg.HKEY_LOCAL_MACHINE,
-            r"SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A",
-            access=winreg.KEY_READ | winreg.KEY_WOW64_32KEY,
-        )
-        print("trace: opened sdk key")
-    except OSError:
-        return None
-    print("trace: enumerating key")
-    with key:
-        for i in count():
-            try:
-                v_name, v_value, v_type = winreg.EnumValue(key, i)
-                print("trace: entry: {} {} = {}".format(v_type, v_name, v_value))
-            except OSError:
-                return None
-            if v_name == "InstallationFolder" and v_type == winreg.REG_SZ:
-                sdk_dir = v_value
-                print("trace: found dir: {}".format(sdk_dir))
-                break
-        else:
-            return None
-
-    print("trace: closed key")
-
-    if not os.path.isdir(sdk_dir):
-        return None
-
-    print("trace: creating dict")
-
-    sdk = {
-        "header": [
-            # for win32.mak
-            cmd_append("INCLUDE", os.path.join(sdk_dir, "Include")),
-            # for ghostscript
-            cmd_set("RCOMP", '"{}"'.format(os.path.join(sdk_dir, "Bin", "RC.EXE"))),
-        ],
-        "sdk_dir": sdk_dir,
-    }
-
-    return sdk
 
 
 def match(values, target):
@@ -461,6 +399,8 @@ if __name__ == "__main__":
         "PYTHON", os.path.dirname(os.path.realpath(sys.executable))
     )
 
+    print("Target Python: {}".format(python_dir))
+
     # copy binaries to this directory
     path_dir = os.environ.get("PILLOW_BIN")
 
@@ -473,42 +413,26 @@ if __name__ == "__main__":
     else:
         architecture = arch_prefs["name"]
 
-    # use PYTHON to select python version
-    python_prefs = match(pythons, python_dir)
-    if python_prefs is None:
-        raise KeyError("Failed to determine Python version for {}".format(python_dir))
+    print("Target Architecture: {}".format(architecture))
 
-    print(
-        "Target: Python {python_version} {architecture} at: {python_dir}".format(
-            python_version=python_prefs["name"],
-            architecture=architecture,
-            python_dir=python_dir,
+    msvs = find_msvs()
+    if msvs is None:
+        raise RuntimeError(
+            "Visual Studio not found. Please install Visual Studio 2017 or newer."
         )
-    )
 
-    vs2017 = find_vs2017(python_prefs)
-    if vs2017 is None:
-        raise RuntimeError("Visual Studio 2017 not found")
+    print("Found Visual Studio at: {}".format(msvs["vs_dir"]))
 
-    print("Found Visual Studio at: {}".format(vs2017["vs_dir"]))
-
-    # sdk71a = find_sdk71a()
-    # if sdk71a is None:
-    #     raise RuntimeError("Windows SDK v7.1A not found")
-    #
-    # print("Found Windows SDK 7.1A at: {}".format(sdk71a["sdk_dir"]))
-
-    build_dir = os.path.join(script_dir, "build", python_prefs["name"], architecture)
+    build_dir = os.path.join(script_dir, "build", architecture)
     lib_dir = os.path.join(build_dir, "lib")
     inc_dir = os.path.join(build_dir, "inc")
     bin_dir = os.path.join(build_dir, "bin")
 
-    # shutil.rmtree(build_dir)
+    shutil.rmtree(build_dir, ignore_errors=True)
     for path in [depends_dir, build_dir, lib_dir, inc_dir, bin_dir]:
         os.makedirs(path, exist_ok=True)
 
     prefs = {
-        "python_version": python_prefs["name"],
         "architecture": architecture,
         "script_dir": script_dir,
         "depends_dir": depends_dir,
@@ -521,12 +445,9 @@ if __name__ == "__main__":
         # TODO auto find:
         "cmake": "cmake.exe",
     }
-
-    dicts = [vs2017, arch_prefs, python_prefs]
-    for x in dicts:
-        prefs.update(x)
-    prefs["header"] = sum((x.get("header", []) for x in dicts), header) + ["@echo on"]
-    del prefs["name"]
+    prefs.update(msvs)
+    prefs.update(arch_prefs)
+    prefs["header"] = sum([header, msvs["header"], ["@echo on"]], [])
 
     build_dep_all()
     build_pillow()
