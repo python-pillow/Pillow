@@ -263,20 +263,18 @@ def _limit_rational(val, max_val):
     return n_d[::-1] if inv else n_d
 
 
-def _limit_signed_rational(frac, max_val, min_val):
-    if frac >= 0:
-        return _limit_rational(frac, max_val)
+def _limit_signed_rational(val, max_val, min_val):
+    frac = Fraction(val)
+    n_d = frac.numerator, frac.denominator
 
-    max_abs = max(max_val, abs(min_val))
+    if min(n_d) < min_val:
+        n_d = _limit_rational(val, abs(min_val))
 
-    num, denom = _limit_rational(frac, max_abs)
-    if denom == max_abs or num == max_abs:
-        if (num < 0 or denom < 0) and num != denom:
-            num, denom = num * -1, denom * -1
-        else:
-            num, denom = _limit_rational(frac, max_val)
+    if max(n_d) > max_val:
+        val = Fraction(*n_d)
+        n_d = _limit_rational(val, max_val)
 
-    return num, denom
+    return n_d
 
 
 ##
