@@ -12,16 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Python 2.7
-~~~~~~~~~~
-
-.. deprecated:: 6.0.0
-
-Python 2.7 reaches end-of-life on 2020-01-01.
-
-Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python 2.7, making
-Pillow 6.x the last series to support Python 2.
-
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -47,6 +37,14 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Python 2.7
+~~~~~~~~~~
+
+*Removed in version 7.0.0.*
+
+Python 2.7 reached end-of-life on 2020-01-01. Pillow 6.x was the last series to
+support Python 2.
 
 Image.__del__
 ~~~~~~~~~~~~~
