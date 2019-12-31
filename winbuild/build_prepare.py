@@ -22,40 +22,27 @@ pythons = {
     "3.7": {"config-x86": "3.6", "config-x64": "3.6"},
 }
 
-# select deps and libs
+# select preferred compiler
 configs = {
     "3.5": {
-        "deps": [
-            "libjpeg-turbo-2.0.3",
-            "zlib-1.2.11",
-            "tiff-4.0.10",
-            "libwebp-1.0.3",
-            "freetype-2.10.1",
-            "lcms2-2.9",
-            "openjpeg-2.3.1",
-            "ghostscript-9.27",
-            # "tcl-8.6",
-            # "tk-8.6",
-        ],
         "vcvars_ver": "14.0",
         "vs_ver": "2015",
     },
     "3.6": {
-        "deps": [
-            "libjpeg-turbo-2.0.3",
-            "zlib-1.2.11",
-            "tiff-4.0.10",
-            "libwebp-1.0.3",
-            "freetype-2.10.1",
-            "lcms2-2.9",
-            "openjpeg-2.3.1",
-            "ghostscript-9.27",
-            # "tcl-8.6",
-            # "tk-8.6",
-        ],
         "vs_ver": "2017",
     },
 }
+
+# selected dependencies
+deps_list = [
+    "libjpeg-turbo-2.0.3",
+    "zlib-1.2.11",
+    "tiff-4.0.10",
+    "libwebp-1.0.3",
+    "freetype-2.10.1",
+    "lcms2-2.9",
+    "openjpeg-2.3.1",
+]
 
 header = [
     cmd_set("BUILD", "{build_dir}"),
@@ -68,20 +55,6 @@ header = [
 
 # dependencies
 deps = {
-    "jpeg-9c": {
-        "name": "libjpeg",
-        # FIXME HTTP 403
-        "url": "http://www.ijg.org/files/jpegsr9c.zip",
-        "filename": "jpegsr9c.zip",
-        "build": [
-            # FIXME builds with -MT, not -MD
-            cmd_nmake("makefile.vc", "setup-vc6"),
-            cmd_nmake("makefile.vc", "clean"),
-            cmd_nmake("makefile.vc", "libjpeg.lib", "nodebug=1"),
-        ],
-        "headers": [r"j*.h"],
-        "libs": [r"*.lib"],
-    },
     "libjpeg-turbo-2.0.3": {
         "name": "libjpeg",
         "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
@@ -195,43 +168,6 @@ deps = {
         ],
         "libs": [r"bin\*.lib"],
     },
-    "ghostscript-9.27": {
-        "name": "ghostscript",
-        "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostscript-9.27.tar.gz",  # noqa: E501
-        "filename": "ghostscript-9.27.tar.gz",
-        "build": [
-            cmd_set("MSVC_VERSION", 14),
-            cmd_if_eq("{architecture}", "x64", cmd_set("WIN64", '""')),
-            cmd_nmake(r"psi\msvc.mak"),
-        ],
-        "bins": [r"bin\*"],
-    },
-    "tcl-8.5": {
-        "name": "tcl",
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.5.19/tcl8519-src.zip",
-        "filename": "tcl8519-src.zip",
-    },
-    "tk-8.5": {
-        "name": "tk",
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.5.19/tk8519-src.zip",
-        "filename": "tk8519-src.zip",
-    },
-    "tcl-8.6": {
-        "name": "tcl",
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tcl869-src.zip",
-        "filename": "tcl869-src.zip",
-        "headers": [r"generic\*.h"],
-    },
-    "tk-8.6": {
-        "name": "tk",
-        "url": SF_MIRROR + "/project/tcl/Tcl/8.6.9/tk869-src.zip",
-        "filename": "tk869-src.zip",
-        "build": [
-            r"""mkdir {inc_dir}\X11""",
-            r"""copy /Y /B xlib\X11\* "{inc_dir}\X11\" """,
-        ],
-        "headers": [r"generic\*.h"],
-    },
 }
 
 
@@ -265,14 +201,21 @@ def find_vs2017(config):
         "nmake": "nmake.exe",
     }
 
+    # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
     if os.path.isfile(msbuild):
-        # default_platform_toolset = "v140"
+        default_platform_toolset = "v140"
         vs["msbuild"] = '"{}"'.format(msbuild)
-        # vs["header"].append(cmd_set("DefaultPlatformToolset", default_platform_toolset))
     else:
-        print("Visual Studio MSBuild not found")
-        return None
+        # vs2019
+        msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
+        if os.path.isfile(msbuild):
+            default_platform_toolset = "v142"
+            vs["msbuild"] = '"{}"'.format(msbuild)
+        else:
+            print("Visual Studio MSBuild not found")
+            return None
+    # vs["header"].append(cmd_set("DefaultPlatformToolset", default_platform_toolset))
 
     vcvarsall = os.path.join(vspath, "VC", "Auxiliary", "Build", "vcvarsall.bat")
     if not os.path.isfile(vcvarsall):
@@ -382,20 +325,24 @@ def build_dep(name):
 
     extract_dep(dep["url"], dep["filename"])
 
-    lines = ["cd /D %s" % os.path.join(build_dir, name)]
-    lines.extend(prefs["header"])
-
-    lines.extend(dep.get("build", []))
-
-    lines.extend(get_footer(dep))
+    lines = [
+        "echo Building {name} ({dir})...".format(name=dep["name"], dir=name),
+        "cd /D %s" % os.path.join(build_dir, name),
+        *prefs["header"],
+        *dep.get("build", []),
+        *get_footer(dep),
+    ]
 
     write_script(file, lines)
     return file
 
 
 def build_dep_all():
-    lines = ["cd {script_dir}"]
-    for dep_name in prefs["deps"]:
+    lines = [
+        "$ErrorActionPreference = 'stop'",
+        "cd {script_dir}",
+    ]
+    for dep_name in deps_list:
         lines.append('cmd.exe /c "%s"' % build_dep(dep_name))
     write_script("build_dep_all.ps1", lines)
 
