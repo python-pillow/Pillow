@@ -179,7 +179,7 @@ jobs:
         cd $env:GITHUB_WORKSPACE
         # & winbuild\build_dep_tcl.cmd
         # & winbuild\build_dep_tk.cmd
-        & winbuild\build_pillow.cmd
+        & winbuild\build_pillow.cmd install
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -224,7 +224,7 @@ jobs:
     - name: Build wheel
       id: wheel
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_pillow_wheel.cmd"
+      run: "%GITHUB_WORKSPACE%\\winbuild\\build_pillow.cmd bdist_wheel"
 
     - uses: actions/upload-artifact@v1
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"

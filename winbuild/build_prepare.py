@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import winreg
 from itertools import count
 
@@ -199,6 +200,7 @@ def find_vs2017(config):
         "header": [],
         # nmake selected by vcvarsall
         "nmake": "nmake.exe",
+        "vs_dir": vspath,
     }
 
     # vs2017
@@ -257,7 +259,8 @@ def find_sdk71a():
             cmd_append("INCLUDE", os.path.join(sdk_dir, "Include")),
             # for ghostscript
             cmd_set("RCOMP", '"{}"'.format(os.path.join(sdk_dir, "Bin", "RC.EXE"))),
-        ]
+        ],
+        "sdk_dir": sdk_dir,
     }
 
     return sdk
@@ -348,11 +351,6 @@ def build_dep_all():
 
 
 def build_pillow(wheel=False):
-    if not wheel:
-        op, filename = "install", "build_pillow.cmd"
-    else:
-        op, filename = "bdist_wheel", "build_pillow_wheel.cmd"
-
     lines = []
     if path_dir is not None and not wheel:
         lines.append(cmd_xcopy("{bin_dir}", path_dir))
@@ -361,18 +359,18 @@ def build_pillow(wheel=False):
         [
             cmd_cd("{pillow_dir}"),
             cmd_append("LIB", r"{python_dir}\tcl"),
-            r'"{{python_dir}}\python.exe" setup.py build_ext {}'.format(op),
+            r'"{{python_dir}}\python.exe" setup.py build_ext %*',
             # r"""%PYTHON%\python.exe selftest.py --installed""",
         ]
     )
 
-    write_script(filename, lines)
+    write_script("build_pillow.cmd", lines)
 
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.realpath(__file__))
     depends_dir = os.path.join(script_dir, "depends")
-    python_dir = os.environ["PYTHON"]
+    python_dir = os.environ.get("PYTHON", os.path.dirname(os.path.realpath(sys.executable)))
 
     # copy binaries to this directory
     path_dir = os.environ.get("PILLOW_BIN")
@@ -391,6 +389,8 @@ if __name__ == "__main__":
     if python_prefs is None:
         raise KeyError("Failed to determine Python version from PYTHON: " + python_dir)
 
+    print("Target: Python {python_version} {architecture} at: {python_dir}".format(python_version=python_prefs["name"], architecture=architecture, python_dir=python_dir))
+
     # use python version + architecture to select build config
     config_name = python_prefs["config-" + architecture]
     config = configs[config_name]
@@ -399,9 +399,13 @@ if __name__ == "__main__":
     if vs2017 is None:
         raise RuntimeError("Visual Studio 2017 not found")
 
+    print("Found Visual Studio at: {}".format(vs2017["vs_dir"]))
+
     sdk71a = find_sdk71a()
     if sdk71a is None:
         raise RuntimeError("Windows SDK v7.1A not found")
+
+    print("Found Windows SDK 7.1A at: {}".format(sdk71a["sdk_dir"]))
 
     build_dir = os.path.join(script_dir, "build", config_name, architecture)
     lib_dir = os.path.join(build_dir, "lib")
@@ -434,8 +438,5 @@ if __name__ == "__main__":
     prefs["header"] = sum((x.get("header", []) for x in dicts), header)
     del prefs["name"]
 
-    print("Target: Python {python_version} {architecture}".format(**prefs))
-
     build_dep_all()
     build_pillow()
-    build_pillow(wheel=True)
