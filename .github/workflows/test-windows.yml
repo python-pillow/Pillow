@@ -80,19 +80,19 @@ jobs:
       shell: pwsh
 
     - name: Build dependencies / libjpeg
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_libjpeg.cmd"
+      run: "& .\\winbuild\\build_dep_libjpeg.cmd"
     - name: Build dependencies / zlib
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_zlib.cmd"
+      run: "& .\\winbuild\\build_dep_zlib.cmd"
     - name: Build dependencies / LibTiff
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_libtiff.cmd"
+      run: "& .\\winbuild\\build_dep_libtiff.cmd"
     - name: Build dependencies / WebP
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_libwebp.cmd"
+      run: "& .\\winbuild\\build_dep_libwebp.cmd"
     - name: Build dependencies / FreeType
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_freetype.cmd"
+      run: "& .\\winbuild\\build_dep_freetype.cmd"
     - name: Build dependencies / LCMS2
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_lcms2.cmd"
+      run: "& .\\winbuild\\build_dep_lcms2.cmd"
     - name: Build dependencies / OpenJPEG
-      run: "%GITHUB_WORKSPACE%\\winbuild\\build_dep_openjpeg.cmd"
+      run: "& .\\winbuild\\build_dep_openjpeg.cmd"
 
     # GPL licensed; skip if building wheels
     - name: Build dependencies / libimagequant
