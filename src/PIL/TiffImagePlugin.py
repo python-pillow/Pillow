@@ -544,7 +544,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 elif all(isinstance(v, int) for v in values):
                     if all(0 <= v < 2 ** 16 for v in values):
                         self.tagtype[tag] = TiffTags.SHORT
-                    elif all(-2 ** 15 < v < 2 ** 15 for v in values):
+                    elif all(-(2 ** 15) < v < 2 ** 15 for v in values):
                         self.tagtype[tag] = TiffTags.SIGNED_SHORT
                     else:
                         self.tagtype[tag] = (
@@ -715,7 +715,7 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(10)
     def write_signed_rational(self, *values):
         return b"".join(
-            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -2 ** 31))
+            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -(2 ** 31)))
             for frac in values
         )
 

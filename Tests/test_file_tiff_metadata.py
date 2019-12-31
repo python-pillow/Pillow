@@ -253,7 +253,7 @@ class TestFileTiffMetadata(PillowTestCase):
 
         # pair of 4 byte signed longs
         numerator = 2 ** 31 - 1
-        denominator = -2 ** 31
+        denominator = -(2 ** 31)
 
         info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
@@ -265,7 +265,7 @@ class TestFileTiffMetadata(PillowTestCase):
         self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
 
         # pair of 4 byte signed longs
-        numerator = -2 ** 31
+        numerator = -(2 ** 31)
         denominator = 2 ** 31 - 1
 
         info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
