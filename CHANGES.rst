@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.0.0 (unreleased)
 ------------------
 
+- Drop support for EOL Python 2.7 #4109
+  [hugovk, radarhere, jdufresne]
+
 - Exif writing fixes: Rational boundaries and signed/unsigned types #3980
   [kkopachev, radarhere]
 
@@ -46,9 +49,6 @@ Changelog (Pillow)
 
 - Fix Unicode support for PyPy #4145
   [nulano]
-
-- Drop support for EOL Python 2.7 #4109
-  [hugovk, radarhere, jdufresne]
 
 - Added UnidentifiedImageError #4182
   [radarhere, hugovk]
