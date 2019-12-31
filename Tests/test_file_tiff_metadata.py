@@ -2,7 +2,7 @@ import io
 import struct
 
 from PIL import Image, TiffImagePlugin, TiffTags
-from PIL.TiffImagePlugin import IFDRational, _limit_rational
+from PIL.TiffImagePlugin import IFDRational
 
 from .helper import PillowTestCase, hopper
 
@@ -139,14 +139,6 @@ class TestFileTiffMetadata(PillowTestCase):
         with Image.open(f) as loaded:
             reloaded = loaded.tag_v2.named()
 
-        for k, v in original.items():
-            if isinstance(v, IFDRational):
-                original[k] = IFDRational(*_limit_rational(v, 2 ** 31))
-            elif isinstance(v, tuple) and isinstance(v[0], IFDRational):
-                original[k] = tuple(
-                    IFDRational(*_limit_rational(elt, 2 ** 31)) for elt in v
-                )
-
         ignored = ["StripByteCounts", "RowsPerStrip", "PageNumber", "StripOffsets"]
 
         for tag, value in reloaded.items():
@@ -224,6 +216,90 @@ class TestFileTiffMetadata(PillowTestCase):
         with Image.open(out) as reloaded:
             self.assertEqual(0, reloaded.tag_v2[41988].numerator)
             self.assertEqual(0, reloaded.tag_v2[41988].denominator)
+
+    def test_ifd_unsigned_rational(self):
+        im = hopper()
+        info = TiffImagePlugin.ImageFileDirectory_v2()
+
+        max_long = 2 ** 32 - 1
+
+        # 4 bytes unsigned long
+        numerator = max_long
+
+        info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
+        self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+
+        # out of bounds of 4 byte unsigned long
+        numerator = max_long + 1
+
+        info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
+        self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+
+    def test_ifd_signed_rational(self):
+        im = hopper()
+        info = TiffImagePlugin.ImageFileDirectory_v2()
+
+        # pair of 4 byte signed longs
+        numerator = 2 ** 31 - 1
+        denominator = -(2 ** 31)
+
+        info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
+        self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+
+        numerator = -(2 ** 31)
+        denominator = 2 ** 31 - 1
+
+        info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
+        self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+
+        # out of bounds of 4 byte signed long
+        numerator = -(2 ** 31) - 1
+        denominator = 1
+
+        info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(2 ** 31 - 1, reloaded.tag_v2[37380].numerator)
+        self.assertEqual(-1, reloaded.tag_v2[37380].denominator)
+
+    def test_ifd_signed_long(self):
+        im = hopper()
+        info = TiffImagePlugin.ImageFileDirectory_v2()
+
+        info[37000] = -60000
+
+        out = self.tempfile("temp.tiff")
+        im.save(out, tiffinfo=info, compression="raw")
+
+        reloaded = Image.open(out)
+        self.assertEqual(reloaded.tag_v2[37000], -60000)
 
     def test_empty_values(self):
         data = io.BytesIO(
