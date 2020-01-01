@@ -31,8 +31,9 @@ install:
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
 - 7z x pillow-depends.zip -oc:\
 - mv c:\pillow-depends-master c:\pillow-depends
-- xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\
-- xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\
+- mkdir c:\pillow\winbuild\depends
+- xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\depends\
+- xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\depends\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
 - cd c:\pillow\winbuild\
 - ps: |
@@ -47,8 +48,9 @@ install:
       }
       else
       {
-        c:\python37\python.exe c:\pillow\winbuild\build_dep.py
-        c:\pillow\winbuild\build_deps.cmd
+        $env:PILLOW_BIN = "c:\pillow\"
+        c:\python37\python.exe c:\pillow\winbuild\build_prepare.py
+        c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
       }
 - curl -fsSL -o gs952.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w32.exe
@@ -65,7 +67,7 @@ build_script:
       }
       else
       {
-        & $env:PYTHON/$env:EXECUTABLE c:\pillow\winbuild\build.py
+        & $env:PYTHON/$env:EXECUTABLE c:\pillow\winbuild\build\build_pillow.cmd install
         $host.SetShouldExit(0)
       }
 - cd c:\pillow
@@ -98,7 +100,7 @@ before_deploy:
   - cd c:\pillow
   - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
   - cd c:\pillow\winbuild\
-  - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build.py --wheel'
+  - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel'
   - cd c:\pillow
   - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
