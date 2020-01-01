@@ -97,7 +97,10 @@ class FpxImageFile(ImageFile.ImageFile):
         s = prop[0x2000002 | id]
 
         colors = []
-        for i in range(i32(s, 4)):
+        bands = i32(s, 4)
+        if bands > 4:
+            raise IOError("Invalid number of bands")
+        for i in range(bands):
             # note: for now, we ignore the "uncalibrated" flag
             colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
 
