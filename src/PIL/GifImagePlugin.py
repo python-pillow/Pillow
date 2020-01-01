@@ -569,8 +569,11 @@ def _write_local_header(fp, im, offset, flags):
 
     if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
         fp.write(b"!" + o8(254))  # extension intro
-        for i in range(0, len(im.encoderinfo["comment"]), 255):
-            subblock = im.encoderinfo["comment"][i : i + 255]
+        comment = im.encoderinfo["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
             fp.write(o8(len(subblock)) + subblock)
         fp.write(o8(0))
     if "loop" in im.encoderinfo:
