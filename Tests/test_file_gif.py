@@ -565,13 +565,17 @@ class TestFileGif(PillowTestCase):
                 im.info["comment"], b"File written by Adobe Photoshop\xa8 4.0"
             )
 
-            out = self.tempfile("temp.gif")
-            im = Image.new("L", (100, 100), "#000")
-            im.info["comment"] = b"Test comment text"
-            im.save(out)
+        out = self.tempfile("temp.gif")
+        im = Image.new("L", (100, 100), "#000")
+        im.info["comment"] = b"Test comment text"
+        im.save(out)
         with Image.open(out) as reread:
-
             self.assertEqual(reread.info["comment"], im.info["comment"])
+
+        im.info["comment"] = "Test comment text"
+        im.save(out)
+        with Image.open(out) as reread:
+            self.assertEqual(reread.info["comment"], im.info["comment"].encode())
 
     def test_comment_over_255(self):
         out = self.tempfile("temp.gif")
