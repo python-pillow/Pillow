@@ -1,7 +1,7 @@
 import pytest
 from PIL import Image, ImageShow
 
-from .helper import hopper, is_win32, on_ci, on_github_actions
+from .helper import hopper, is_win32, on_ci
 
 
 def test_sanity():

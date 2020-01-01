@@ -95,7 +95,6 @@ architectures = {
 }
 
 header = [
-    cmd_set("BUILD", "{build_dir}"),
     cmd_set("INCLUDE", "{inc_dir}"),
     cmd_set("INCLIB", "{lib_dir}"),
     cmd_set("LIB", "{lib_dir}"),
@@ -145,7 +144,7 @@ deps = {
         "filename": "tiff-4.1.0.tar.gz",
         "dir": "tiff-4.1.0",
         "build": [
-            cmd_copy(r"{script_dir}\tiff.opt", "nmake.opt"),
+            cmd_copy(r"{winbuild_dir}\tiff.opt", "nmake.opt"),
             cmd_nmake("makefile.vc", "clean"),
             cmd_nmake("makefile.vc", "lib"),
         ],
@@ -176,8 +175,7 @@ deps = {
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>":
-                    "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa E501
             }
         },
         "build": [
@@ -200,14 +198,11 @@ deps = {
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>":
-                    "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v141</PlatformToolset>":
-                    "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",
+                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>":
-                    "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa E501
+                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa E501
             }
         },
         "build": [
@@ -269,7 +264,7 @@ deps = {
         "filename": "fribidi-1.0.7.zip",
         "dir": "fribidi-1.0.7",
         "build": [
-            cmd_copy(r"{script_dir}\fribidi.cmake", r"CMakeLists.txt"),
+            cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
             cmd_nmake(target="clean"),
             cmd_nmake(target="fribidi"),
@@ -282,7 +277,7 @@ deps = {
         "filename": "libraqm-0.7.0.zip",
         "dir": "libraqm-0.7.0",
         "build": [
-            cmd_copy(r"{script_dir}\raqm.cmake", r"CMakeLists.txt"),
+            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
             cmd_nmake(target="clean"),
             cmd_nmake(target="libraqm"),
@@ -355,12 +350,6 @@ def find_msvs():
     vs["header"].append('call "{}" {{vcvars_arch}}'.format(vcvarsall))
 
     return vs
-
-
-def match(values, target):
-    for key, value in values.items():
-        if key in target:
-            return {"name": key, **value}
 
 
 def extract_dep(url, filename):
@@ -455,51 +444,42 @@ def build_dep_all():
     write_script("build_dep_all.cmd", lines)
 
 
-def build_pillow(wheel=False):
-    lines = []
-    if path_dir is not None and not wheel:
-        lines.append(cmd_xcopy("{bin_dir}", path_dir))
-    lines.extend(prefs["header"])
-    lines.extend(
-        [
-            "@echo ---- Building Pillow (build_ext %*) ----",
-            cmd_cd("{pillow_dir}"),
-            cmd_append("LIB", r"{python_dir}\tcl"),
-            cmd_set("MSSdk", "1"),
-            cmd_set("DISTUTILS_USE_SDK", "1"),
-            cmd_set("py_vcruntime_redist", "true"),
-            r'"{python_dir}\python.exe" setup.py build_ext %*',
-        ]
-    )
+def build_pillow():
+    lines = [
+        "@echo ---- Building Pillow (build_ext %*) ----",
+        cmd_cd("{pillow_dir}"),
+        *prefs["header"],
+        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
+        cmd_set("MSSdk", "1"),  # for Python 3.5 and PyPy3.6
+        cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
+        r'"{python_dir}\{python_exe}" setup.py build_ext %*',
+    ]
 
     write_script("build_pillow.cmd", lines)
 
 
 if __name__ == "__main__":
     # winbuild directory
-    script_dir = os.path.dirname(os.path.realpath(__file__))
+    winbuild_dir = os.path.dirname(os.path.realpath(__file__))
 
     # dependency cache directory
-    depends_dir = os.path.join(script_dir, "depends")
+    depends_dir = os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends"))
+    os.makedirs(depends_dir, exist_ok=True)
     print("Caching dependencies in:", depends_dir)
 
-    # python bin directory
-    python_dir = os.environ.get(
-        "PYTHON", os.path.dirname(os.path.realpath(sys.executable))
+    # Python bin directory
+    python_dir = os.environ.get("PYTHON")
+    python_exe = os.environ.get("EXECUTABLE", "python.exe")
+    if python_dir is None:
+        python_dir = os.path.dirname(os.path.realpath(sys.executable))
+        python_exe = os.path.basename(sys.executable)
+    print("Target Python:", os.path.join(python_dir, python_exe))
+
+    # use ARCHITECTURE or PYTHON to select architecture
+    architecture = os.environ.get(
+        "ARCHITECTURE", "x64" if "x64" in python_dir else "x86"
     )
-    print("Target Python:", python_dir)
-
-    # copy binaries to this directory
-    path_dir = os.environ.get("PILLOW_BIN")
-    print("Copying binary files to:", path_dir)
-
-    # use PYTHON to select architecture
-    arch_prefs = match(architectures, python_dir)
-    if arch_prefs is None:
-        architecture = "x86"
-        arch_prefs = architectures[architecture]
-    else:
-        architecture = arch_prefs["name"]
+    arch_prefs = architectures[architecture]
     print("Target Architecture:", architecture)
 
     msvs = find_msvs()
@@ -510,7 +490,7 @@ if __name__ == "__main__":
     print("Found Visual Studio at:", msvs["vs_dir"])
 
     # build root directory
-    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(script_dir, "build"))
+    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     print("Using output directory:", build_dir)
 
     # build directory for *.h files
@@ -523,25 +503,30 @@ if __name__ == "__main__":
     bin_dir = os.path.join(build_dir, "bin")
 
     shutil.rmtree(build_dir, ignore_errors=True)
-    for path in [depends_dir, build_dir, lib_dir, inc_dir, bin_dir]:
-        os.makedirs(path, exist_ok=True)
+    for path in [build_dir, inc_dir, lib_dir, bin_dir]:
+        os.makedirs(path)
 
     prefs = {
-        "architecture": architecture,
-        "script_dir": script_dir,
-        "depends_dir": depends_dir,
+        # Python paths / preferences
         "python_dir": python_dir,
+        "python_exe": python_exe,
+        "architecture": architecture,
+        **arch_prefs,
+        # Pillow paths
+        "pillow_dir": os.path.realpath(os.path.join(winbuild_dir, "..")),
+        "winbuild_dir": winbuild_dir,
+        # Build paths
         "build_dir": build_dir,
-        "lib_dir": lib_dir,
         "inc_dir": inc_dir,
+        "lib_dir": lib_dir,
         "bin_dir": bin_dir,
-        "pillow_dir": os.path.realpath(os.path.join(script_dir, "..")),
-        # TODO auto find:
-        "cmake": "cmake.exe",
+        # Compilers / Tools
+        **msvs,
+        "cmake": "cmake.exe",  # TODO find CMAKE automatically
+        # TODO find NASM automatically
+        # script header
+        "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
-    prefs.update(msvs)
-    prefs.update(arch_prefs)
-    prefs["header"] = sum([header, msvs["header"], ["@echo on"]], [])
 
     build_dep_all()
     build_pillow()
