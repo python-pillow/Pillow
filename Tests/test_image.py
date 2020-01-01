@@ -593,6 +593,8 @@ class TestImage(PillowTestCase):
         for file in [
             "fli_overrun.bin",
             "sgi_overrun.bin",
+            "sgi_overrun_expandrow.bin",
+            "sgi_overrun_expandrow2.bin",
             "pcx_overrun.bin",
             "pcx_overrun2.bin",
         ]:
