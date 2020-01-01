@@ -134,7 +134,9 @@ def getcolor(color, mode):
 
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        color = (r * 299 + g * 587 + b * 114) // 1000
+        # ITU-R Recommendation 601-2 for nonlinear RGB
+        # scaled to 24 bits to match the convert's implementation.
+        color = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
         if mode[-1] == "A":
             return (color, alpha)
     else:
