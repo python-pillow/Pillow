@@ -353,16 +353,18 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
 
         // We could use TIFFTileSize, but for YCbCr data it returns subsampled data size
         row_byte_size = (tile_width * state->bits + 7) / 8;
-        state->bytes = row_byte_size * tile_length;
 
-        /* overflow check for malloc */
-        if (state->bytes > INT_MAX - 1) {
+        /* overflow check for realloc */
+        if (INT_MAX / row_byte_size < tile_length) {
             state->errcode = IMAGING_CODEC_MEMORY;
             TIFFClose(tiff);
             return -1;
         }
+        
+        state->bytes = row_byte_size * tile_length;
 
         /* realloc to fit whole tile */
+        /* malloc check above */
         new_data = realloc (state->buffer, state->bytes);
         if (!new_data) {
             state->errcode = IMAGING_CODEC_MEMORY;
@@ -415,11 +417,20 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
 
         // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
         row_byte_size = (state->xsize * state->bits + 7) / 8;
+
+        /* overflow check for realloc */
+        if (INT_MAX / row_byte_size < rows_per_strip) {
+            state->errcode = IMAGING_CODEC_MEMORY;
+            TIFFClose(tiff);
+            return -1;
+        }
+        
         state->bytes = rows_per_strip * row_byte_size;
 
         TRACE(("StripSize: %d \n", state->bytes));
 
         /* realloc to fit whole strip */
+        /* malloc check above */
         new_data = realloc (state->buffer, state->bytes);
         if (!new_data) {
             state->errcode = IMAGING_CODEC_MEMORY;
