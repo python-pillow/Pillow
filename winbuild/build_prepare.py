@@ -2,10 +2,90 @@ import os
 import shutil
 import subprocess
 import sys
-import winreg
-from itertools import count
 
-from commands import *
+
+def cmd_cd(path):
+    return "cd /D {path}".format(**locals())
+
+
+def cmd_set(name, value):
+    return "set {name}={value}".format(**locals())
+
+
+def cmd_append(name, value):
+    op = "path " if name == "PATH" else "set {name}="
+    return (op + "%{name}%;{value}").format(**locals())
+
+
+def cmd_copy(src, tgt):
+    return 'copy /Y /B "{src}" "{tgt}"'.format(**locals())
+
+
+def cmd_xcopy(src, tgt):
+    return 'xcopy /Y /E "{src}" "{tgt}"'.format(**locals())
+
+
+def cmd_mkdir(path):
+    return 'mkdir "{path}"'.format(**locals())
+
+
+def cmd_rmdir(path):
+    return 'rmdir /S /Q "{path}"'.format(**locals())
+
+
+def cmd_nmake(makefile=None, target="", params=None):
+    if params is None:
+        params = ""
+    elif isinstance(params, list) or isinstance(params, tuple):
+        params = " ".join(params)
+    else:
+        params = str(params)
+
+    return " ".join(
+        [
+            "{{nmake}}",
+            "-nologo",
+            '-f "{makefile}"' if makefile is not None else "",
+            "{params}",
+            '"{target}"',
+        ]
+    ).format(**locals())
+
+
+def cmd_cmake(params=None, file="."):
+    if params is None:
+        params = ""
+    elif isinstance(params, list) or isinstance(params, tuple):
+        params = " ".join(params)
+    else:
+        params = str(params)
+    return " ".join(
+        [
+            "{{cmake}}",
+            "-DCMAKE_VERBOSE_MAKEFILE=ON",
+            "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "{params}",
+            '-G "NMake Makefiles"',
+            '"{file}"',
+        ]
+    ).format(**locals())
+
+
+def cmd_msbuild(
+    file, configuration="Release", target="Build", platform="{msbuild_arch}"
+):
+    return " ".join(
+        [
+            "{{msbuild}}",
+            "{file}",
+            '/t:"{target}"',
+            '/p:Configuration="{configuration}"',
+            "/p:Platform={platform}",
+            "/m",
+        ]
+    ).format(**locals())
+
 
 SF_MIRROR = "http://iweb.dl.sourceforge.net"
 
@@ -61,8 +141,7 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        # FIXME FTP timeout
-        "url": "ftp://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
         "filename": "tiff-4.1.0.tar.gz",
         "dir": "tiff-4.1.0",
         "build": [
@@ -147,7 +226,7 @@ deps = {
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
-            cmd_nmake(),
+            cmd_nmake(target="openjp2"),
             cmd_mkdir(r"{inc_dir}\openjpeg-2.3.1"),
             cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.3.1"),
         ],
@@ -303,6 +382,8 @@ def extract_dep(url, filename):
                 ex = e
         else:
             raise RuntimeError(ex)
+
+    print("Extracting " + filename)
     if filename.endswith(".zip"):
         with zipfile.ZipFile(file) as zf:
             zf.extractall(build_dir)
@@ -314,7 +395,7 @@ def extract_dep(url, filename):
 
 
 def write_script(name, lines):
-    name = os.path.join(script_dir, name)
+    name = os.path.join(build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w") as f:
@@ -350,8 +431,11 @@ def build_dep(name):
         with open(patch_file, "w") as f:
             f.write(text)
 
+    banner = "Building {name} ({dir})".format(**locals())
     lines = [
-        "@echo ---- Building {name} ({dir}) ----".format(**locals()),
+        "@echo " + ("=" * 70),
+        "@echo ==== {:<60} ====".format(banner),
+        "@echo " + ("=" * 70),
         "cd /D %s" % os.path.join(build_dir, dir),
         *prefs["header"],
         *dep.get("build", []),
@@ -363,13 +447,12 @@ def build_dep(name):
 
 
 def build_dep_all():
-    lines = [
-        "$ErrorActionPreference = 'stop'",
-        "cd {script_dir}",
-    ]
+    lines = ["@echo on"]
     for dep_name in deps:
-        lines.append('cmd.exe /c "%s"' % build_dep(dep_name))
-    write_script("build_dep_all.ps1", lines)
+        lines.append(r'cmd.exe /c "{{build_dir}}\{}"'.format(build_dep(dep_name)))
+        lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+    lines.append("@echo All Pillow dependencies built successfully!")
+    write_script("build_dep_all.cmd", lines)
 
 
 def build_pillow(wheel=False):
@@ -379,7 +462,7 @@ def build_pillow(wheel=False):
     lines.extend(prefs["header"])
     lines.extend(
         [
-            "@echo ---- Building Pillow (%s) ----",
+            "@echo ---- Building Pillow (build_ext %*) ----",
             cmd_cd("{pillow_dir}"),
             cmd_append("LIB", r"{python_dir}\tcl"),
             cmd_set("MSSdk", "1"),
@@ -393,39 +476,50 @@ def build_pillow(wheel=False):
 
 
 if __name__ == "__main__":
+    # winbuild directory
     script_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # dependency cache directory
     depends_dir = os.path.join(script_dir, "depends")
+    print("Caching dependencies in:", depends_dir)
+
+    # python bin directory
     python_dir = os.environ.get(
         "PYTHON", os.path.dirname(os.path.realpath(sys.executable))
     )
-
-    print("Target Python: {}".format(python_dir))
+    print("Target Python:", python_dir)
 
     # copy binaries to this directory
     path_dir = os.environ.get("PILLOW_BIN")
+    print("Copying binary files to:", path_dir)
 
     # use PYTHON to select architecture
     arch_prefs = match(architectures, python_dir)
     if arch_prefs is None:
         architecture = "x86"
-        print("WARN: Could not determine architecture, guessing " + architecture)
         arch_prefs = architectures[architecture]
     else:
         architecture = arch_prefs["name"]
-
-    print("Target Architecture: {}".format(architecture))
+    print("Target Architecture:", architecture)
 
     msvs = find_msvs()
     if msvs is None:
         raise RuntimeError(
             "Visual Studio not found. Please install Visual Studio 2017 or newer."
         )
+    print("Found Visual Studio at:", msvs["vs_dir"])
 
-    print("Found Visual Studio at: {}".format(msvs["vs_dir"]))
+    # build root directory
+    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(script_dir, "build"))
+    print("Using output directory:", build_dir)
 
-    build_dir = os.path.join(script_dir, "build", architecture)
-    lib_dir = os.path.join(build_dir, "lib")
+    # build directory for *.h files
     inc_dir = os.path.join(build_dir, "inc")
+
+    # build directory for *.lib files
+    lib_dir = os.path.join(build_dir, "lib")
+
+    # build directory for *.bin files
     bin_dir = os.path.join(build_dir, "bin")
 
     shutil.rmtree(build_dir, ignore_errors=True)
