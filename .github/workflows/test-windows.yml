@@ -26,14 +26,16 @@ jobs:
     name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout Pillow
+      uses: actions/checkout@v1
 
-    - uses: actions/checkout@v1
+    - name: Checkout cached dependencies
+      uses: actions/checkout@v1
       with:
         repository: python-pillow/pillow-depends
         ref: master
 
-    - name: Cache
+    - name: Cache pip
       uses: actions/cache@v1
       with:
         path: ~\AppData\Local\pip\Cache
@@ -50,13 +52,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
 
-    - name: Build system information
+    - name: Print build system information
       run: python .github/workflows/system-info.py
 
     - name: pip install wheel pytest pytest-cov
-      run: |
-        "%pythonLocation%\python.exe" -m pip install wheel pytest pytest-cov
-      shell: cmd
+      run: python -m pip install wheel pytest pytest-cov
 
     - name: Prepare dependencies
       run: |
@@ -76,37 +76,36 @@ jobs:
         & python.exe $env:GITHUB_WORKSPACE\winbuild\build_prepare.py
       shell: pwsh
 
-    - name: Build dependencies / libjpeg
-      run: "& .\\winbuild\\build\\build_dep_libjpeg.cmd"
+    - name: Build dependencies / libjpeg-turbo
+      run: "& winbuild\\build\\build_dep_libjpeg.cmd"
     - name: Build dependencies / zlib
-      run: "& .\\winbuild\\build\\build_dep_zlib.cmd"
+      run: "& winbuild\\build\\build_dep_zlib.cmd"
     - name: Build dependencies / LibTiff
-      run: "& .\\winbuild\\build\\build_dep_libtiff.cmd"
+      run: "& winbuild\\build\\build_dep_libtiff.cmd"
     - name: Build dependencies / WebP
-      run: "& .\\winbuild\\build\\build_dep_libwebp.cmd"
+      run: "& winbuild\\build\\build_dep_libwebp.cmd"
     - name: Build dependencies / FreeType
-      run: "& .\\winbuild\\build\\build_dep_freetype.cmd"
+      run: "& winbuild\\build\\build_dep_freetype.cmd"
     - name: Build dependencies / LCMS2
-      run: "& .\\winbuild\\build\\build_dep_lcms2.cmd"
+      run: "& winbuild\\build\\build_dep_lcms2.cmd"
     - name: Build dependencies / OpenJPEG
-      run: "& .\\winbuild\\build\\build_dep_openjpeg.cmd"
+      run: "& winbuild\\build\\build_dep_openjpeg.cmd"
 
     # GPL licensed; skip if building wheels
     - name: Build dependencies / libimagequant
       if: "github.event_name != 'push' || contains(matrix.python-version, 'pypy')"
-      run: "& .\\winbuild\\build\\build_dep_libimagequant.cmd"
+      run: "& winbuild\\build\\build_dep_libimagequant.cmd"
 
     # Raqm dependencies
     - name: Build dependencies / HarfBuzz
-      run: "& .\\winbuild\\build\\build_dep_harfbuzz.cmd"
+      run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
     - name: Build dependencies / FriBidi
-      run: "& .\\winbuild\\build\\build_dep_fribidi.cmd"
+      run: "& winbuild\\build\\build_dep_fribidi.cmd"
     - name: Build dependencies / Raqm
-      run: "& .\\winbuild\\build\\build_dep_libraqm.cmd"
+      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     - name: Build Pillow
       run: |
-        cd $env:GITHUB_WORKSPACE
         & winbuild\build\build_pillow.cmd install
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
@@ -152,7 +151,7 @@ jobs:
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
-        %GITHUB_WORKSPACE%\\winbuild\\build\\build_pillow.cmd bdist_wheel"
+        winbuild\\build\\build_pillow.cmd bdist_wheel"
       shell: cmd
 
     - uses: actions/upload-artifact@v1
