@@ -841,3 +841,13 @@ class TestFileLibTiff(LibTiffTestCase):
         out.seek(0)
         with Image.open(out) as im:
             im.load()
+
+    def test_realloc_overflow(self):
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:
+            with self.assertRaises(IOError) as e:
+                im.load()
+
+            # Assert that the error code is IMAGING_CODEC_MEMORY
+            self.assertEqual(str(e.exception), "-9")
+        TiffImagePlugin.READ_LIBTIFF = False
