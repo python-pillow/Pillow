@@ -55,11 +55,11 @@ class TestFileWmf(PillowTestCase):
 
     def test_load_set_dpi(self):
         with Image.open("Tests/images/drawing.wmf") as im:
-            self.assertEquals(im.size, (82, 82))
+            self.assertEqual(im.size, (82, 82))
 
             if hasattr(Image.core, "drawwmf"):
                 im.load(144)
-                self.assertEquals(im.size, (164, 164))
+                self.assertEqual(im.size, (164, 164))
 
                 with Image.open("Tests/images/drawing_wmf_ref_144.png") as expected:
                     self.assert_image_similar(im, expected, 2.0)
