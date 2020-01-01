@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Drop support for EOL Python 2.7 #4109
   [hugovk, radarhere, jdufresne]
 
+- Fix rounding error on RGB to L conversion #4320
+  [homm]
+
 - Exif writing fixes: Rational boundaries and signed/unsigned types #3980
   [kkopachev, radarhere]
 
