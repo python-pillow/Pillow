@@ -1,4 +1,5 @@
 version: '{build}'
+image: Visual Studio 2017
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -35,6 +36,8 @@ install:
 - xcopy c:\pillow-depends\*.zip c:\pillow\winbuild\depends\
 - xcopy c:\pillow-depends\*.tar.gz c:\pillow\winbuild\depends\
 - xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
+- 7z x ..\pillow-depends\nasm-2.14.02-win64.zip -oc:\
+- path c:\nasm-2.14.02;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
       if ($env:PYTHON -eq "c:/vp/pypy3")
@@ -67,7 +70,7 @@ build_script:
       }
       else
       {
-        & $env:PYTHON/$env:EXECUTABLE c:\pillow\winbuild\build\build_pillow.cmd install
+        c:\pillow\winbuild\build\build_pillow.cmd install
         $host.SetShouldExit(0)
       }
 - cd c:\pillow
@@ -100,7 +103,7 @@ before_deploy:
   - cd c:\pillow
   - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
   - cd c:\pillow\winbuild\
-  - '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel'
+  - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
   - cd c:\pillow
   - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
