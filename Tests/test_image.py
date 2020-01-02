@@ -598,6 +598,13 @@ class TestImage(PillowTestCase):
                 except OSError as e:
                     self.assertEqual(str(e), "buffer overrun when reading image file")
 
+        with Image.open("Tests/images/fli_overrun2.bin") as im:
+            try:
+                im.seek(1)
+                self.assertFail()
+            except OSError as e:
+                self.assertEqual(str(e), "buffer overrun when reading image file")
+
 
 class MockEncoder:
     pass

@@ -40,8 +40,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	return 0;
 
     /* We don't decode anything unless we have a full chunk in the
-       input buffer (on the other hand, the Python part of the driver
-       makes sure this is always the case) */
+       input buffer */
 
     ptr = buf;
 
@@ -52,6 +51,10 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
     /* Make sure this is a frame chunk.  The Python driver takes
        case of other chunk types. */
 
+    if (bytes < 8) {
+        state->errcode = IMAGING_CODEC_OVERRUN;
+        return -1;
+    }
     if (I16(ptr+4) != 0xF1FA) {
 	state->errcode = IMAGING_CODEC_UNKNOWN;
 	return -1;
