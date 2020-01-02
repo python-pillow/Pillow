@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-7.0.0 (unreleased)
+7.0.0 (2020-01-02)
 ------------------
 
 - Drop support for EOL Python 2.7 #4109
