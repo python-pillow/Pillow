@@ -7,6 +7,7 @@ Release Notes
   :maxdepth: 2
 
   7.0.0
+  6.2.2
   6.2.1
   6.2.0
   6.1.0
