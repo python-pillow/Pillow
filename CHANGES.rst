@@ -92,10 +92,28 @@ Changelog (Pillow)
 - Changed default frombuffer raw decoder args #1730
   [radarhere]
 
-6.2.1 (2019-10-21)
+6.2.2 (2020-01-02)
 ------------------
 
 - This is the last Pillow release to support Python 2.7 #3642
+
+- Overflow checks for realloc for tiff decoding. CVE TBD
+  [wiredfool, radarhere]
+
+- Catch SGI buffer overrun. CVE TBD
+  [radarhere]
+
+- Catch PCX P mode buffer overrun. CVE TBD
+  [radarhere]
+
+- Catch FLI buffer overrun. CVE TBD
+  [radarhere]
+
+- Raise an error for an invalid number of bands in FPX image. CVE-2019-19911
+  [wiredfool, radarhere]
+
+6.2.1 (2019-10-21)
+------------------
 
 - Add support for Python 3.8 #4141
   [hugovk]
