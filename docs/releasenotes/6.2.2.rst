@@ -4,7 +4,7 @@
 Security
 ========
 
-This release addresses several security problems {CVEs TBD), as well as addressing
+This release addresses several security problems (CVEs TBD), as well as addressing
 CVE-2019-19911.
 
 CVE-2019-19911 is regarding FPX images. If an image reports that it has a large number
