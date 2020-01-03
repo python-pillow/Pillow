@@ -10,7 +10,6 @@ exclude_lines =
     if 0:
     if __name__ == .__main__.:
     # Don't complain about debug code
-    if Image.DEBUG:
     if DEBUG:
 
 [run]
