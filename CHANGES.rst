@@ -97,16 +97,16 @@ Changelog (Pillow)
 
 - This is the last Pillow release to support Python 2.7 #3642
 
-- Overflow checks for realloc for tiff decoding. CVE TBD
+- Overflow checks for realloc for tiff decoding. CVE-2020-5310
   [wiredfool, radarhere]
 
-- Catch SGI buffer overrun. CVE TBD
+- Catch SGI buffer overrun. CVE-2020-5311
   [radarhere]
 
-- Catch PCX P mode buffer overrun. CVE TBD
+- Catch PCX P mode buffer overrun. CVE-2020-5312
   [radarhere]
 
-- Catch FLI buffer overrun. CVE TBD
+- Catch FLI buffer overrun. CVE-2020-5313
   [radarhere]
 
 - Raise an error for an invalid number of bands in FPX image. CVE-2019-19911
