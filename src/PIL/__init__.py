@@ -20,6 +20,8 @@ from . import _version
 # Use __version__ instead.
 __version__ = _version.__version__
 
+PILLOW_VERSION = __version__
+
 del _version
 
 
