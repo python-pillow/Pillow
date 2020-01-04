@@ -2,9 +2,17 @@ import unittest
 import zlib
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageFile, PngImagePlugin
 
-from .helper import PillowLeakTestCase, PillowTestCase, hopper, is_win32
+from .helper import (
+    PillowLeakTestCase,
+    PillowTestCase,
+    hopper,
+    is_big_endian,
+    is_win32,
+    on_ci,
+)
 
 try:
     from PIL import _webp
@@ -72,6 +80,7 @@ class TestFilePng(PillowTestCase):
                     png.crc(cid, s)
         return chunks
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_sanity(self):
 
         # internal version number

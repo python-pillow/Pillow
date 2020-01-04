@@ -4,6 +4,7 @@ Helper functions.
 
 import logging
 import os
+import platform
 import subprocess
 import sys
 import tempfile
@@ -346,6 +347,10 @@ def on_ci():
     return (
         "CI" in os.environ or "TF_BUILD" in os.environ or "GITHUB_ACTIONS" in os.environ
     )
+
+
+def is_big_endian():
+    return platform.processor() == "s390x"
 
 
 def is_win32():
