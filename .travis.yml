@@ -8,7 +8,7 @@ notifications:
 # Run fast lint first to get fast feedback.
 # Run slow PyPy next, to give it a headstart and reduce waiting time.
 # Run latest 3.x next, to get quick compatibility results.
-# Then run the remainder, with fastest Docker jobs last.
+# Then run the remainder.
 
 matrix:
   fast_finish: true
@@ -32,31 +32,12 @@ matrix:
       name: "3.5 Xenial PYTHONOPTIMIZE=2"
       env: PYTHONOPTIMIZE=2
       services: xvfb
-    - env: DOCKER="alpine" DOCKER_TAG="master"
-    - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
-    - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
-    - env: DOCKER="ubuntu-18.04-bionic-amd64" DOCKER_TAG="master"
-    - env: DOCKER="debian-9-stretch-x86" DOCKER_TAG="master"
-    - env: DOCKER="debian-10-buster-x86" DOCKER_TAG="master"
-    - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
-    - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
-    - env: DOCKER="centos-8-amd64" DOCKER_TAG="master"
-    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
-    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="master"
-    - env: DOCKER="fedora-30-amd64" DOCKER_TAG="master"
-    - env: DOCKER="fedora-31-amd64" DOCKER_TAG="master"
-
-services:
-  - docker
-
-before_install:
-  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
 
 install:
   - |
     if [ "$LINT" == "true" ]; then
       pip install tox
-    elif [ "$DOCKER" == "" ]; then
+    else
       .travis/install.sh;
     fi
 
@@ -64,13 +45,9 @@ script:
 - |
   if [ "$LINT" == "true" ]; then
     tox -e lint
-  elif [ "$DOCKER" == "" ]; then
+  else
     .travis/build.sh
     .travis/test.sh
-  elif [ "$DOCKER" ]; then
-    # the Pillow user in the docker container is UID 1000
-    sudo chown -R 1000 $TRAVIS_BUILD_DIR
-    docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER:$DOCKER_TAG
   fi
 
 after_success:
