@@ -214,6 +214,18 @@ class TestImageDraw(PillowTestCase):
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
 
+    def test_chord_zero_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.chord(BBOX1, 10, 260, fill="red", outline="yellow", width=0)
+
+        # Assert
+        with Image.open("Tests/images/imagedraw_chord_zero_width.png") as expected:
+            self.assert_image_equal(im, expected)
+
     def helper_ellipse(self, mode, bbox):
         # Arrange
         im = Image.new(mode, (W, H))
@@ -289,6 +301,18 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_ellipse_zero_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.ellipse(BBOX1, fill="green", outline="blue", width=0)
+
+        # Assert
+        with Image.open("Tests/images/imagedraw_ellipse_zero_width.png") as expected:
+            self.assert_image_equal(im, expected)
 
     def helper_line(self, points):
         # Arrange
@@ -391,6 +415,18 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_similar(im, Image.open(expected), 1)
+
+    def test_pieslice_zero_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.pieslice(BBOX1, 10, 260, fill="white", outline="blue", width=0)
+
+        # Assert
+        with Image.open("Tests/images/imagedraw_pieslice_zero_width.png") as expected:
+            self.assert_image_equal(im, expected)
 
     def helper_point(self, points):
         # Arrange
@@ -495,6 +531,18 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         self.assert_image_equal(im, Image.open(expected))
+
+    def test_rectangle_zero_width(self):
+        # Arrange
+        im = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(im)
+
+        # Act
+        draw.rectangle(BBOX1, fill="blue", outline="green", width=0)
+
+        # Assert
+        with Image.open("Tests/images/imagedraw_rectangle_zero_width.png") as expected:
+            self.assert_image_equal(im, expected)
 
     def test_rectangle_I16(self):
         # Arrange
