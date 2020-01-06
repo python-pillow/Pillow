@@ -244,7 +244,7 @@ ImagingResampleVerticalConvolution8u(UINT32 *lineOut, Imaging imIn,
             sss = _mm_add_epi32(sss, _mm_madd_epi16(pix, mmk));
         }
         for (; x < xmax; x++) {
-            __m128i pix = _mm_cvtepu8_epi32(*(__m128i *) &imIn->image32[x + xmin][xx]);
+            __m128i pix = mm_cvtepu8_epi32(&imIn->image32[x + xmin][xx]);
             __m128i mmk = _mm_set1_epi32(k[x]);
             sss = _mm_add_epi32(sss, _mm_madd_epi16(pix, mmk));
         }

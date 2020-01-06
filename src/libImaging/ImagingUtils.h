@@ -40,3 +40,16 @@ static float __attribute__((always_inline)) inline _i2f(int v) {
 #else
 static float inline _i2f(int v) { return (float)v; }
 #endif
+
+
+__m128i inline
+mm_cvtepu8_epi32(void *ptr) {
+    return _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(INT32 *) ptr));
+}
+
+#if defined(__AVX2__)
+__m256i inline
+mm256_cvtepu8_epi32(void *ptr) {
+    return _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(*(int64_t *) ptr));
+}
+#endif
