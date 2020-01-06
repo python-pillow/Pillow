@@ -23,7 +23,7 @@ if [[ $TRAVIS ]]; then
     codecov
 fi
 
-if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ] && [ "$DOCKER" == "" ]; then
+if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then
     # Coverage and quality reports on just the latest diff.
     depends/diffcover-install.sh
     depends/diffcover-run.sh
