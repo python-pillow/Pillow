@@ -17,7 +17,7 @@ pip install test-image-results
 pip install numpy
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
     sudo apt-get -qq install pyqt5-dev-tools
-    pip install pyqt5
+    pip install pyqt5!=5.14.1
 fi
 
 # docs only on Python 3.8
