@@ -82,7 +82,7 @@ class ContainerIO:
         else:
             n = self.length - self.pos
         if not n:  # EOF
-            return b""
+            return b"" if "b" in self.fh.mode else ""
         self.pos = self.pos + n
         return self.fh.read(n)
 
@@ -92,13 +92,13 @@ class ContainerIO:
 
         :returns: An 8-bit string.
         """
-        s = b""
+        s = b"" if "b" in self.fh.mode else ""
         while True:
             c = self.read(1)
             if not c:
                 break
             s = s + c
-            if c == b"\n":
+            if c == (b"\n" if "b" in self.fh.mode else "\n"):
                 break
         return s
 

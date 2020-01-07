@@ -61,73 +61,87 @@ def test_seek_mode_2():
 
 def test_read_n0():
     # Arrange
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 22, 100)
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
+            container = ContainerIO.ContainerIO(fh, 22, 100)
 
-        # Act
-        container.seek(81)
-        data = container.read()
+            # Act
+            container.seek(81)
+            data = container.read()
 
-        # Assert
-        assert data == b"7\nThis is line 8\n"
+            # Assert
+            if bytesmode:
+                data = data.decode()
+            assert data == "7\nThis is line 8\n"
 
 
 def test_read_n():
     # Arrange
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 22, 100)
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
+            container = ContainerIO.ContainerIO(fh, 22, 100)
 
-        # Act
-        container.seek(81)
-        data = container.read(3)
+            # Act
+            container.seek(81)
+            data = container.read(3)
 
-        # Assert
-        assert data == b"7\nT"
+            # Assert
+            if bytesmode:
+                data = data.decode()
+            assert data == "7\nT"
 
 
 def test_read_eof():
     # Arrange
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 22, 100)
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
+            container = ContainerIO.ContainerIO(fh, 22, 100)
 
-        # Act
-        container.seek(100)
-        data = container.read()
+            # Act
+            container.seek(100)
+            data = container.read()
 
-        # Assert
-        assert data == b""
+            # Assert
+            if bytesmode:
+                data = data.decode()
+            assert data == ""
 
 
 def test_readline():
     # Arrange
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 0, 120)
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
+            container = ContainerIO.ContainerIO(fh, 0, 120)
 
-        # Act
-        data = container.readline()
+            # Act
+            data = container.readline()
 
-        # Assert
-        assert data == b"This is line 1\n"
+            # Assert
+            if bytesmode:
+                data = data.decode()
+            assert data == "This is line 1\n"
 
 
 def test_readlines():
     # Arrange
-    expected = [
-        b"This is line 1\n",
-        b"This is line 2\n",
-        b"This is line 3\n",
-        b"This is line 4\n",
-        b"This is line 5\n",
-        b"This is line 6\n",
-        b"This is line 7\n",
-        b"This is line 8\n",
-    ]
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 0, 120)
+    for bytesmode in (True, False):
+        expected = [
+            "This is line 1\n",
+            "This is line 2\n",
+            "This is line 3\n",
+            "This is line 4\n",
+            "This is line 5\n",
+            "This is line 6\n",
+            "This is line 7\n",
+            "This is line 8\n",
+        ]
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
+            container = ContainerIO.ContainerIO(fh, 0, 120)
 
-        # Act
-        data = container.readlines()
+            # Act
+            data = container.readlines()
 
-        # Assert
-
-        assert data == expected
+            # Assert
+            if bytesmode:
+                data = [line.decode() for line in data]
+            assert data == expected
