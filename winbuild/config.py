@@ -77,9 +77,9 @@ libs = {
         "version": "8.6.10",
     },
     "webp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.0.3.tar.gz",
-        "filename": "libwebp-1.0.3.tar.gz",
-        "dir": "libwebp-1.0.3",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",
+        "filename": "libwebp-1.1.0.tar.gz",
+        "dir": "libwebp-1.1.0",
     },
     "openjpeg": {
         "url": "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz",

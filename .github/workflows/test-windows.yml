@@ -172,7 +172,7 @@ jobs:
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        cd /D %BUILD%\libwebp-1.0.3
+        cd /D %BUILD%\libwebp-1.1.0
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         rmdir /S /Q output\release-static
