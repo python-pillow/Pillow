@@ -4,7 +4,6 @@ Helper functions.
 
 import logging
 import os
-import platform
 import subprocess
 import sys
 import tempfile
@@ -350,7 +349,7 @@ def on_ci():
 
 
 def is_big_endian():
-    return platform.processor() == "s390x"
+    return sys.byteorder == "big"
 
 
 def is_win32():
