@@ -26,4 +26,4 @@ global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
 prune .azure-pipelines
-prune .travis
+prune .ci

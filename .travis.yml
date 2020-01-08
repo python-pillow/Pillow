@@ -45,7 +45,7 @@ install:
     if [ "$LINT" == "true" ]; then
       pip install tox
     else
-      .travis/install.sh;
+      .ci/install.sh;
     fi
 
 script:
@@ -53,12 +53,12 @@ script:
   if [ "$LINT" == "true" ]; then
     tox -e lint
   else
-    .travis/build.sh
-    .travis/test.sh
+    .ci/build.sh
+    .ci/test.sh
   fi
 
 after_success:
 - |
   if [ "$LINT" == "" ]; then
-    .travis/after_success.sh
+    .ci/after_success.sh
   fi

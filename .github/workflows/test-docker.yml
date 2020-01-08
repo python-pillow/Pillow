@@ -50,7 +50,7 @@ jobs:
         pip install wheel
         sudo apt-get install -qq ruby-dev
         PATH="$PATH:~/.local/bin"
-        .travis/after_success.sh
+        .ci/after_success.sh
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
