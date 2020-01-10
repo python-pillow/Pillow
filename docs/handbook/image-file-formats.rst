@@ -551,6 +551,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     library before building the Python Imaging Library. See the `installation
     documentation <../installation.html>`_ for details.
 
+.. _apng-sequences:
+
 APNG sequences
 ~~~~~~~~~~~~~~
 

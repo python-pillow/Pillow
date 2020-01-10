@@ -1,0 +1,14 @@
+7.1.0
+-----
+
+API Changes
+===========
+
+Improved APNG support
+^^^^^^^^^^^^^^^^^^^^^
+
+Added support for reading and writing Animated Portable Network Graphics (APNG) images.
+The PNG plugin now supports using the :py:meth:`~PIL.Image.Image.seek` method and the
+:py:class:`~PIL.ImageSequence.Iterator` class to read APNG frame sequences.
+The PNG plugin also now supports using the ``append_images`` argument to write APNG frame
+sequences. See :ref:`apng-sequences` for further details.
