@@ -552,9 +552,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     documentation <../installation.html>`_ for details.
 
 APNG sequences
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
-The PNG loader includes limited support for reading and writing APNG files.
+The PNG loader includes limited support for reading and writing Animated Portable
+Network Graphics (APNG) files.
 When an APNG file is loaded, :py:meth:`~PIL.ImageFile.ImageFile.get_format_mimetype`
 will return ``"image/apng"``, and the :py:attr:`~PIL.Image.Image.is_animated` property
 will be ``True`` (even for single frame APNG files).
@@ -563,7 +564,7 @@ are supported.
 
 ``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the last frame.
 
-The following :py:attr:`~PIL.Image.Image.info` properties will be set for APNG frames,
+These :py:attr:`~PIL.Image.Image.info` properties will be set for APNG frames,
 where applicable:
 
 **default_image**
