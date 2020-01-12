@@ -106,7 +106,7 @@ jobs:
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        cd /D %BUILD%\jpeg-9c
+        cd /D %BUILD%\jpeg-9d
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         nmake -nologo -f makefile.vc setup-vc6
