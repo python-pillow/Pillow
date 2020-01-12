@@ -30,9 +30,9 @@ libs = {
         "dir": "zlib-1.2.11",
     },
     "jpeg": {
-        "url": "http://www.ijg.org/files/jpegsr9c.zip",
-        "filename": "jpegsr9c.zip",
-        "dir": "jpeg-9c",
+        "url": "http://www.ijg.org/files/jpegsr9d.zip",
+        "filename": "jpegsr9d.zip",
+        "dir": "jpeg-9d",
     },
     "tiff": {
         "url": "ftp://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
