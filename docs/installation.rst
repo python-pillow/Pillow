@@ -149,7 +149,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.1**
 
 * **libfreetype** provides type related services
 
