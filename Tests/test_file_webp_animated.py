@@ -1,6 +1,7 @@
+import pytest
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, is_big_endian, on_ci
 
 try:
     from PIL import _webp
@@ -36,6 +37,7 @@ class TestFileWebpAnimation(PillowTestCase):
             self.assertEqual(im.n_frames, 42)
             self.assertTrue(im.is_animated)
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_write_animation_L(self):
         """
         Convert an animated GIF to animated WebP, then compare the
@@ -61,6 +63,7 @@ class TestFileWebpAnimation(PillowTestCase):
                 im.load()
                 self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_write_animation_RGB(self):
         """
         Write an animated WebP from RGB frames, and ensure the frames

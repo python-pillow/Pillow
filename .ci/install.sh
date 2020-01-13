@@ -16,8 +16,12 @@ pip install pyroma
 pip install test-image-results
 pip install numpy
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
+  # arm64, ppc64le, s390x CPUs:
+  # "ERROR: Could not find a version that satisfies the requirement pyqt5"
+  if [[ $TRAVIS_CPU_ARCH == "amd64" ]]; then
     sudo apt-get -qq install pyqt5-dev-tools
     pip install pyqt5!=5.14.1
+  fi
 fi
 
 # docs only on Python 3.8

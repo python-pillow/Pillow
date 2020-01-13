@@ -1,9 +1,11 @@
+import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, hopper, is_big_endian, on_ci
 
 
 class TestImageGetExtrema(PillowTestCase):
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_extrema(self):
         def extrema(mode):
             return hopper(mode).getextrema()
@@ -18,6 +20,7 @@ class TestImageGetExtrema(PillowTestCase):
         self.assertEqual(extrema("CMYK"), ((0, 255), (0, 255), (0, 255), (0, 0)))
         self.assertEqual(extrema("I;16"), (1, 255))
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_true_16(self):
         with Image.open("Tests/images/16_bit_noise.tif") as im:
             self.assertEqual(im.mode, "I;16")

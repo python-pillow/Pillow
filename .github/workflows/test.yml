@@ -36,7 +36,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
         restore-keys: |
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
@@ -46,7 +46,7 @@ jobs:
       with:
         path: ~/Library/Caches/pip
         key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.travis/*.sh') }}
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
         restore-keys: |
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
@@ -61,7 +61,7 @@ jobs:
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        .travis/install.sh
+        .ci/install.sh
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')
@@ -70,11 +70,11 @@ jobs:
 
     - name: Build
       run: |
-        .travis/build.sh
+        .ci/build.sh
 
     - name: Test
       run: |
-        .travis/test.sh
+        .ci/test.sh
 
     - name: Upload errors
       uses: actions/upload-artifact@v1
@@ -86,7 +86,7 @@ jobs:
     - name: After success
       if: success()
       run: |
-        .travis/after_success.sh
+        .ci/after_success.sh
       env:
         MATRIX_OS: ${{ matrix.os }}
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

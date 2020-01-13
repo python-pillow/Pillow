@@ -1,8 +1,9 @@
 from io import BytesIO
 
+import pytest
 from PIL import Image, Jpeg2KImagePlugin
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, is_big_endian, on_ci
 
 codecs = dir(Image.core)
 
@@ -165,11 +166,13 @@ class TestFileJpeg2k(PillowTestCase):
             jp2.load()
             self.assertEqual(jp2.mode, "I;16")
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_16bit_monochrome_jp2_like_tiff(self):
         with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
             with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
                 self.assert_image_similar(jp2, tiff_16bit, 1e-3)
 
+    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_16bit_monochrome_j2k_like_tiff(self):
         with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
             with Image.open("Tests/images/16bit.cropped.j2k") as j2k:

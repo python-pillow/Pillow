@@ -348,6 +348,10 @@ def on_ci():
     )
 
 
+def is_big_endian():
+    return sys.byteorder == "big"
+
+
 def is_win32():
     return sys.platform.startswith("win32")
 
