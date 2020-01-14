@@ -205,11 +205,8 @@ class PillowTestCase(unittest.TestCase):
 
     def skipKnownBadTest(self, msg=None):
         # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
-        if os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
-            print(os.environ.get("PILLOW_RUN_KNOWN_BAD", False))
-            return
-
-        self.skipTest(msg or "Known Bad Test")
+        if not os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
+            self.skipTest(msg or "Known Bad Test")
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
