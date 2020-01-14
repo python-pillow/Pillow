@@ -2,7 +2,7 @@ from io import BytesIO
 
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, hopper
 
 PIL151 = b"""
 #define basic_width 32
@@ -58,3 +58,20 @@ class TestFileXbm(PillowTestCase):
             # Assert
             self.assertEqual(im.mode, "1")
             self.assertEqual(im.size, (128, 128))
+
+    def test_save_wrong_mode(self):
+        im = hopper()
+        out = self.tempfile("temp.xbm")
+
+        with self.assertRaises(OSError):
+            im.save(out)
+
+    def test_hotspot(self):
+        im = hopper("1")
+        out = self.tempfile("temp.xbm")
+
+        hotspot = (0, 7)
+        im.save(out, hotspot=hotspot)
+
+        with Image.open(out) as reloaded:
+            self.assertEqual(reloaded.info["hotspot"], hotspot)

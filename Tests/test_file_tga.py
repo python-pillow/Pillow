@@ -4,7 +4,7 @@ from itertools import product
 
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, hopper
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
@@ -111,6 +111,13 @@ class TestFileTga(PillowTestCase):
             im.convert("RGBA").save(out)
         with Image.open(out) as test_im:
             self.assertEqual(test_im.size, (100, 100))
+
+    def test_save_wrong_mode(self):
+        im = hopper("PA")
+        out = self.tempfile("temp.tga")
+
+        with self.assertRaises(OSError):
+            im.save(out)
 
     def test_save_id_section(self):
         test_file = "Tests/images/rgb32rle.tga"

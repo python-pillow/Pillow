@@ -502,13 +502,9 @@ class CoreResampleBoxTest(PillowTestCase):
             ((40, 50), (10, 0, 50, 50)),
             ((40, 50), (10, 20, 50, 70)),
         ]:
-            try:
-                res = im.resize(size, Image.LANCZOS, box)
-                self.assertEqual(res.size, size)
-                self.assert_image_equal(res, im.crop(box))
-            except AssertionError:
-                print(">>>", size, box)
-                raise
+            res = im.resize(size, Image.LANCZOS, box)
+            self.assertEqual(res.size, size)
+            self.assert_image_equal(res, im.crop(box), ">>> {} {}".format(size, box))
 
     def test_no_passthrough(self):
         # When resize is required
@@ -520,15 +516,13 @@ class CoreResampleBoxTest(PillowTestCase):
             ((40, 50), (10.4, 0.4, 50.4, 50.4)),
             ((40, 50), (10.4, 20.4, 50.4, 70.4)),
         ]:
-            try:
-                res = im.resize(size, Image.LANCZOS, box)
-                self.assertEqual(res.size, size)
-                with self.assertRaisesRegex(AssertionError, r"difference \d"):
-                    # check that the difference at least that much
-                    self.assert_image_similar(res, im.crop(box), 20)
-            except AssertionError:
-                print(">>>", size, box)
-                raise
+            res = im.resize(size, Image.LANCZOS, box)
+            self.assertEqual(res.size, size)
+            with self.assertRaisesRegex(AssertionError, r"difference \d"):
+                # check that the difference at least that much
+                self.assert_image_similar(
+                    res, im.crop(box), 20, ">>> {} {}".format(size, box)
+                )
 
     def test_skip_horizontal(self):
         # Can skip resize for one dimension
@@ -541,14 +535,15 @@ class CoreResampleBoxTest(PillowTestCase):
                 ((40, 50), (10, 0, 50, 90)),
                 ((40, 50), (10, 20, 50, 90)),
             ]:
-                try:
-                    res = im.resize(size, flt, box)
-                    self.assertEqual(res.size, size)
-                    # Borders should be slightly different
-                    self.assert_image_similar(res, im.crop(box).resize(size, flt), 0.4)
-                except AssertionError:
-                    print(">>>", size, box, flt)
-                    raise
+                res = im.resize(size, flt, box)
+                self.assertEqual(res.size, size)
+                # Borders should be slightly different
+                self.assert_image_similar(
+                    res,
+                    im.crop(box).resize(size, flt),
+                    0.4,
+                    ">>> {} {} {}".format(size, box, flt),
+                )
 
     def test_skip_vertical(self):
         # Can skip resize for one dimension
@@ -561,11 +556,12 @@ class CoreResampleBoxTest(PillowTestCase):
                 ((40, 50), (0, 10, 90, 60)),
                 ((40, 50), (20, 10, 90, 60)),
             ]:
-                try:
-                    res = im.resize(size, flt, box)
-                    self.assertEqual(res.size, size)
-                    # Borders should be slightly different
-                    self.assert_image_similar(res, im.crop(box).resize(size, flt), 0.4)
-                except AssertionError:
-                    print(">>>", size, box, flt)
-                    raise
+                res = im.resize(size, flt, box)
+                self.assertEqual(res.size, size)
+                # Borders should be slightly different
+                self.assert_image_similar(
+                    res,
+                    im.crop(box).resize(size, flt),
+                    0.4,
+                    ">>> {} {} {}".format(size, box, flt),
+                )

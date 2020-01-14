@@ -132,8 +132,7 @@ class TestImageSpider(PillowTestCase):
     def test_nonstack_dos(self):
         with Image.open(TEST_FILE) as im:
             for i, frame in enumerate(ImageSequence.Iterator(im)):
-                if i > 1:
-                    self.fail("Non-stack DOS file test failed")
+                self.assertLessEqual(i, 1, "Non-stack DOS file test failed")
 
     # for issue #4093
     def test_odd_size(self):

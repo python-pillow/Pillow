@@ -205,11 +205,8 @@ class PillowTestCase(unittest.TestCase):
 
     def skipKnownBadTest(self, msg=None):
         # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
-        if os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
-            print(os.environ.get("PILLOW_RUN_KNOWN_BAD", False))
-            return
-
-        self.skipTest(msg or "Known Bad Test")
+        if not os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
+            self.skipTest(msg or "Known Bad Test")
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
@@ -366,14 +363,6 @@ if sys.platform == "win32":
         IMCONVERT = os.path.join(IMCONVERT, "convert.exe")
 else:
     IMCONVERT = "convert"
-
-
-def distro():
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release", "r") as f:
-            for line in f:
-                if "ID=" in line:
-                    return line.strip().split("=")[1]
 
 
 class cached_property:

@@ -164,3 +164,11 @@ class TestFileWebpAnimation(PillowTestCase):
                 self.assertEqual(im.info["duration"], dur)
                 self.assertEqual(im.info["timestamp"], ts)
                 ts -= dur
+
+    def test_seek_errors(self):
+        with Image.open("Tests/images/iss634.webp") as im:
+            with self.assertRaises(EOFError):
+                im.seek(-1)
+
+            with self.assertRaises(EOFError):
+                im.seek(42)
