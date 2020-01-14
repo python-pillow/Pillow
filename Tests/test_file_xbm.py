@@ -65,3 +65,13 @@ class TestFileXbm(PillowTestCase):
 
         with self.assertRaises(OSError):
             im.save(out)
+
+    def test_hotspot(self):
+        im = hopper("1")
+        out = self.tempfile("temp.xbm")
+
+        hotspot = (0, 7)
+        im.save(out, hotspot=hotspot)
+
+        with Image.open(out) as reloaded:
+            self.assertEqual(reloaded.info["hotspot"], hotspot)
