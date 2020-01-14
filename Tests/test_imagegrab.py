@@ -15,6 +15,9 @@ try:
             ]:
                 self.assert_image(im, im.mode, im.size)
 
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+            self.assert_image(im, im.mode, (40, 60))
+
         def test_grabclipboard(self):
             if sys.platform == "darwin":
                 subprocess.call(["screencapture", "-cx"])
