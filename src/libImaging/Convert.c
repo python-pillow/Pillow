@@ -251,6 +251,7 @@ rgb2l(UINT8* out, const UINT8* in, int xsize)
         pix0 = _mm_madd_epi16(pix0, coeff);
         pix1 = _mm_madd_epi16(pix1, coeff);
         pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_add_epi32(pix0, _mm_set1_epi32(0x4000));
         pix0 = _mm_srli_epi32(pix0, 15);
         pix0 = _mm_packus_epi32(pix0, pix0);
         pix0 = _mm_packus_epi16(pix0, pix0);
@@ -276,6 +277,7 @@ rgb2la(UINT8* out, const UINT8* in, int xsize)
         pix0 = _mm_madd_epi16(pix0, coeff);
         pix1 = _mm_madd_epi16(pix1, coeff);
         pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_add_epi32(pix0, _mm_set1_epi32(0x4000));
         pix0 = _mm_srli_epi32(pix0, 15);
         pix0 = _mm_shuffle_epi8(pix0, _mm_set_epi8(
             -1,12,12,12, -1,8,8,8, -1,4,4,4, -1,0,0,0));
@@ -304,6 +306,7 @@ rgb2i(UINT8* out_, const UINT8* in, int xsize)
         pix0 = _mm_madd_epi16(pix0, coeff);
         pix1 = _mm_madd_epi16(pix1, coeff);
         pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_add_epi32(pix0, _mm_set1_epi32(0x4000));
         pix0 = _mm_srli_epi32(pix0, 15);
         _mm_storeu_si128((__m128i*)out, pix0);
     }
@@ -499,6 +502,7 @@ rgba2la(UINT8* out, const UINT8* in, int xsize)
         pix0 = _mm_madd_epi16(pix0, coeff);
         pix1 = _mm_madd_epi16(pix1, coeff);
         pix0 = _mm_hadd_epi32(pix0, pix1);
+        pix0 = _mm_add_epi32(pix0, _mm_set1_epi32(0x4000));
         pix0 = _mm_srli_epi32(pix0, 15);
         pix0 = _mm_shuffle_epi8(pix0, _mm_set_epi8(
             -1,12,12,12, -1,8,8,8, -1,4,4,4, -1,0,0,0));
