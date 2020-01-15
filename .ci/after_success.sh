@@ -10,15 +10,10 @@ fi
 lcov --capture --directory . -b . --output-file coverage.info
 #  filter to remove system headers
 lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
-#  convert to json
-sudo gem install coveralls-lcov
-coveralls-lcov -v -n coverage.filtered.info > coverage.c.json
 
 pip install codecov
 coverage report
 
-pip install coveralls-merge
-coveralls-merge coverage.c.json
 if [[ $TRAVIS ]]; then
     codecov
 fi
