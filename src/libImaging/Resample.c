@@ -1,14 +1,6 @@
 #include "Imaging.h"
 
 #include <math.h>
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <smmintrin.h>
-
-#if defined(__AVX2__)
-    #include <immintrin.h>
-#endif
-
 
 #include "ResampleSIMDHorizontalConv.c"
 #include "ResampleSIMDVerticalConv.c"

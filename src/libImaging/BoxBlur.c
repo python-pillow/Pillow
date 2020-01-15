@@ -1,7 +1,4 @@
 #include "Imaging.h"
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <smmintrin.h>
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))

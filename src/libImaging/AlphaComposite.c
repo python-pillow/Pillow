@@ -10,13 +10,6 @@
 
 #include "Imaging.h"
 
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <smmintrin.h>
-#if defined(__AVX2__)
-    #include <immintrin.h>
-#endif
-
 
 #define PRECISION_BITS 7
 

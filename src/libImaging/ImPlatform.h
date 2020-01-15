@@ -9,6 +9,13 @@
 
 #include "Python.h"
 
+#include <emmintrin.h>
+#include <mmintrin.h>
+#include <smmintrin.h>
+#if defined(__AVX2__)
+    #include <immintrin.h>
+#endif
+
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES
 #error Sorry, this library requires support for ANSI prototypes.

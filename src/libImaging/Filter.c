@@ -26,12 +26,6 @@
 
 #include "Imaging.h"
 
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <smmintrin.h>
-#if defined(__AVX2__)
-    #include <immintrin.h>
-#endif
 
 /* 5 is number of bits enought to account all kernel coefficients (1<<5 > 25).
    8 is number of bits in result.
