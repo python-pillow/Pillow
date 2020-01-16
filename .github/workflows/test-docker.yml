@@ -47,8 +47,6 @@ jobs:
     - name: After success
       if: success()
       run: |
-        pip install wheel
-        sudo apt-get install -qq ruby-dev
         PATH="$PATH:~/.local/bin"
         .ci/after_success.sh
       env:
