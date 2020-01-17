@@ -1,6 +1,11 @@
 Changelog (Pillow-SIMD)
 =======================
 
+7.0.0.post1
+-----------
+
+- Bands: access violation in getband in some enviroments
+
 7.0.0.post0
 -----------
 
