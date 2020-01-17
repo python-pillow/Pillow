@@ -9,9 +9,11 @@
 
 #include "Python.h"
 
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <smmintrin.h>
+#if defined(__SSE4_2__)
+    #include <emmintrin.h>
+    #include <mmintrin.h>
+    #include <smmintrin.h>
+#endif
 #if defined(__AVX2__)
     #include <immintrin.h>
 #endif
