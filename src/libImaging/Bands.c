@@ -22,6 +22,7 @@ Imaging
 ImagingGetBand(Imaging imIn, int band) {
     Imaging imOut;
     int x, y;
+    __m128i shuffle_mask;
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
@@ -47,20 +48,22 @@ ImagingGetBand(Imaging imIn, int band) {
         return NULL;
     }
 
+    shuffle_mask = _mm_set_epi8(
+        -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 12+band,8+band,4+band,0+band);
+
     /* Extract band from image */
     for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y] + band;
-        UINT8 *out = imOut->image8[y];
+        UINT8* in = (UINT8*) imIn->image[y];
+        UINT8* out = imOut->image8[y];
         x = 0;
         for (; x < imIn->xsize - 3; x += 4) {
             __m128i source = _mm_loadu_si128((__m128i *) in);
             *((UINT32*) (out + x)) = _mm_cvtsi128_si32(
-                _mm_shuffle_epi8(source, _mm_set_epi8(
-                    -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 12,8,4,0)));
+                _mm_shuffle_epi8(source, shuffle_mask));
             in += 16;
         }
         for (; x < imIn->xsize; x++) {
-            out[x] = *in;
+            out[x] = *(in + band);
             in += 4;
         }
     }
