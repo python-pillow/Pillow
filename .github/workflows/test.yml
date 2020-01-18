@@ -89,7 +89,6 @@ jobs:
         .ci/after_success.sh
       env:
         MATRIX_OS: ${{ matrix.os }}
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
     - name: Prepare coverage token
       if: success() && github.repository == 'python-pillow/Pillow'
