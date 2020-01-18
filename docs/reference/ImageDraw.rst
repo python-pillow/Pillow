@@ -255,7 +255,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
 
     Draws the string at the given position.
 
@@ -306,7 +306,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=0, align="left", direction=None, features=None, language=None)
+.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
 
     Draws the string at the given position.
 
