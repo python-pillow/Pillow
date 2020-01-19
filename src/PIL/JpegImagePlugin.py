@@ -101,39 +101,36 @@ def APP(self, marker):
         # markers appear in the correct sequence.
         self.icclist.append(s)
     elif marker == 0xFFED and s[:14] == b"Photoshop 3.0\x00":
-        # Process this marker only if previous were empty
-        if not self.info.get("photoshop"):
-            # parse the image resource block
-            offset = 14
-            photoshop = {}
-            while s[offset : offset + 4] == b"8BIM":
-                try:
-                    offset += 4
-                    # resource code
-                    code = i16(s, offset)
-                    offset += 2
-                    # resource name (usually empty)
-                    name_len = i8(s[offset])
-                    # name = s[offset+1:offset+1+name_len]
-                    offset += 1 + name_len
-                    offset += offset & 1  # align
-                    # resource data block
-                    size = i32(s, offset)
-                    offset += 4
-                    data = s[offset : offset + size]
-                    if code == 0x03ED:  # ResolutionInfo
-                        data = {
-                            "XResolution": i32(data[:4]) / 65536,
-                            "DisplayedUnitsX": i16(data[4:8]),
-                            "YResolution": i32(data[8:12]) / 65536,
-                            "DisplayedUnitsY": i16(data[12:]),
-                        }
-                    photoshop[code] = data
-                    offset += size
-                    offset += offset & 1  # align
-                except struct.error:
-                    break  # no sufficient data
-            self.info["photoshop"] = photoshop
+        # parse the image resource block
+        offset = 14
+        photoshop = self.info.setdefault("photoshop", {})
+        while s[offset : offset + 4] == b"8BIM":
+            try:
+                offset += 4
+                # resource code
+                code = i16(s, offset)
+                offset += 2
+                # resource name (usually empty)
+                name_len = i8(s[offset])
+                # name = s[offset+1:offset+1+name_len]
+                offset += 1 + name_len
+                offset += offset & 1  # align
+                # resource data block
+                size = i32(s, offset)
+                offset += 4
+                data = s[offset : offset + size]
+                if code == 0x03ED:  # ResolutionInfo
+                    data = {
+                        "XResolution": i32(data[:4]) / 65536,
+                        "DisplayedUnitsX": i16(data[4:8]),
+                        "YResolution": i32(data[8:12]) / 65536,
+                        "DisplayedUnitsY": i16(data[12:]),
+                    }
+                photoshop[code] = data
+                offset += size
+                offset += offset & 1  # align
+            except struct.error:
+                break  # no sufficient data
 
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
