@@ -100,42 +100,39 @@ def APP(self, marker):
         # reassemble the profile, rather than assuming that the APP2
         # markers appear in the correct sequence.
         self.icclist.append(s)
-    elif marker == 0xFFED:
-        if s[:14] == b"Photoshop 3.0\x00":
-            blocks = s[14:]
-            # parse the image resource block
-            offset = 0
-            photoshop = {}
-            while blocks[offset : offset + 4] == b"8BIM":
-                offset += 4
-                # resource code
-                try:
-                    code = i16(blocks, offset)
-                except struct.error:
-                    break
-                offset += 2
-                # resource name (usually empty)
-                name_len = i8(blocks[offset])
-                # name = blocks[offset+1:offset+1+name_len]
-                offset = 1 + offset + name_len
-                if offset & 1:
-                    offset += 1
-                # resource data block
-                size = i32(blocks, offset)
-                offset += 4
-                data = blocks[offset : offset + size]
-                if code == 0x03ED:  # ResolutionInfo
-                    data = {
-                        "XResolution": i32(data[:4]) / 65536,
-                        "DisplayedUnitsX": i16(data[4:8]),
-                        "YResolution": i32(data[8:12]) / 65536,
-                        "DisplayedUnitsY": i16(data[12:]),
-                    }
-                photoshop[code] = data
-                offset = offset + size
-                if offset & 1:
-                    offset += 1
-            self.info["photoshop"] = photoshop
+    elif marker == 0xFFED and s[:14] == b"Photoshop 3.0\x00":
+        # parse the image resource block
+        offset = 14
+        photoshop = {}
+        while s[offset : offset + 4] == b"8BIM":
+            offset += 4
+            # resource code
+            try:
+                code = i16(s, offset)
+            except struct.error:
+                break
+            offset += 2
+            # resource name (usually empty)
+            name_len = i8(s[offset])
+            # name = s[offset+1:offset+1+name_len]
+            offset += 1 + name_len
+            offset += offset & 1  # align
+            # resource data block
+            size = i32(s, offset)
+            offset += 4
+            data = s[offset : offset + size]
+            if code == 0x03ED:  # ResolutionInfo
+                data = {
+                    "XResolution": i32(data[:4]) / 65536,
+                    "DisplayedUnitsX": i16(data[4:8]),
+                    "YResolution": i32(data[8:12]) / 65536,
+                    "DisplayedUnitsY": i16(data[12:]),
+                }
+            photoshop[code] = data
+            offset += size
+            offset += offset & 1  # align
+        self.info["photoshop"] = photoshop
+
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
