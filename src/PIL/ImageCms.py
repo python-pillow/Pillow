@@ -263,6 +263,8 @@ def get_display_profile(handle=None):
         profile = core.get_display_profile_win32(handle, 1)
     else:
         profile = core.get_display_profile_win32(handle or 0)
+    if profile is None:
+        return None
     return ImageCmsProfile(profile)
 
 
