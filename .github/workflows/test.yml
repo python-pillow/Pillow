@@ -87,8 +87,6 @@ jobs:
       if: success()
       run: |
         .ci/after_success.sh
-      env:
-        MATRIX_OS: ${{ matrix.os }}
 
     - name: Prepare coverage token
       if: success() && github.repository == 'python-pillow/Pillow'

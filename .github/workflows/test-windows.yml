@@ -368,8 +368,6 @@ jobs:
       if: success()
       run: |
         .ci/after_success.sh
-      env:
-        MATRIX_OS: ${{ matrix.os }}
       shell: pwsh
 
     - name: Prepare coverage token
