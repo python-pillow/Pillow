@@ -254,20 +254,15 @@ def get_display_profile(handle=None):
     :returns: None if the profile is not known.
     """
 
-    if sys.platform == "win32":
-        from PIL import ImageWin
+    if sys.platform != "win32":
+        return
 
-        if isinstance(handle, ImageWin.HDC):
-            profile = core.get_display_profile_win32(handle, 1)
-        else:
-            profile = core.get_display_profile_win32(handle or 0)
+    from PIL import ImageWin
+
+    if isinstance(handle, ImageWin.HDC):
+        profile = core.get_display_profile_win32(handle, 1)
     else:
-        try:
-            get = _imagingcms.get_display_profile
-        except AttributeError:
-            return None
-        else:
-            profile = get()
+        profile = core.get_display_profile_win32(handle or 0)
     return ImageCmsProfile(profile)
 
 
