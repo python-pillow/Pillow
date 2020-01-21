@@ -464,17 +464,17 @@ Reading from an open file
     with open("hopper.ppm", "rb") as fp:
         im = Image.open(fp)
 
-To read an image from string data, use the :py:class:`~StringIO.StringIO`
+To read an image from binary data, use the :py:class:`~io.BytesIO`
 class:
 
-Reading from a string
-^^^^^^^^^^^^^^^^^^^^^
+Reading from binary data
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
     from PIL import Image
-    import StringIO
-    im = Image.open(StringIO.StringIO(buffer))
+    import io
+    im = Image.open(io.BytesIO(buffer))
 
 Note that the library rewinds the file (using ``seek(0)``) before reading the
 image header. In addition, seek will also be used when the image data is read
