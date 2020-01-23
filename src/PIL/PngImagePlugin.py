@@ -717,7 +717,7 @@ class PngImageFile(ImageFile.ImageFile):
 
     @property
     def is_animated(self):
-        return self._n_frames is not None
+        return self._n_frames is not None and self._n_frames > 1
 
     def verify(self):
         """Verify PNG file"""

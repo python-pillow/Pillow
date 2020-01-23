@@ -559,8 +559,11 @@ APNG sequences
 The PNG loader includes limited support for reading and writing Animated Portable
 Network Graphics (APNG) files.
 When an APNG file is loaded, :py:meth:`~PIL.ImageFile.ImageFile.get_format_mimetype`
-will return ``"image/apng"``, and the :py:attr:`~PIL.Image.Image.is_animated` property
-will be ``True`` (even for single frame APNG files).
+will return ``"image/apng"``. The value of the :py:attr:`~PIL.Image.Image.is_animated`
+property will be ``True`` when the :py:attr:`~PIL.Image.Image.n_frames` property is
+greater than 1. For APNG files, the ``n_frames`` property depends on both the animation
+frame count as well as the presence or absence of a default image. See the
+``default_image`` property documentation below for more details.
 The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell` methods
 are supported.
 

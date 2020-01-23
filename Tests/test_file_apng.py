@@ -12,7 +12,8 @@ class TestFilePng(PillowTestCase):
     # (referenced from https://wiki.mozilla.org/APNG_Specification)
     def test_apng_basic(self):
         with Image.open("Tests/images/apng/single_frame.png") as im:
-            self.assertTrue(im.is_animated)
+            self.assertFalse(im.is_animated)
+            self.assertEqual(im.n_frames, 1)
             self.assertEqual(im.get_format_mimetype(), "image/apng")
             self.assertIsNone(im.info.get("default_image"))
             self.assertEqual(im.getpixel((0, 0)), (0, 255, 0, 255))
@@ -20,6 +21,7 @@ class TestFilePng(PillowTestCase):
 
         with Image.open("Tests/images/apng/single_frame_default.png") as im:
             self.assertTrue(im.is_animated)
+            self.assertEqual(im.n_frames, 2)
             self.assertEqual(im.get_format_mimetype(), "image/apng")
             self.assertTrue(im.info.get("default_image"))
             self.assertEqual(im.getpixel((0, 0)), (255, 0, 0, 255))
@@ -311,7 +313,8 @@ class TestFilePng(PillowTestCase):
 
         with Image.open(test_file) as im:
             im.load()
-            self.assertTrue(im.is_animated)
+            self.assertFalse(im.is_animated)
+            self.assertEqual(im.n_frames, 1)
             self.assertEqual(im.get_format_mimetype(), "image/apng")
             self.assertIsNone(im.info.get("default_image"))
             self.assertEqual(im.getpixel((0, 0)), (0, 255, 0, 255))
@@ -328,6 +331,7 @@ class TestFilePng(PillowTestCase):
         with Image.open(test_file) as im:
             im.load()
             self.assertTrue(im.is_animated)
+            self.assertEqual(im.n_frames, 2)
             self.assertEqual(im.get_format_mimetype(), "image/apng")
             self.assertTrue(im.info.get("default_image"))
             im.seek(1)
