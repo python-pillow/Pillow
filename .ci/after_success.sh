@@ -1,18 +1,12 @@
 #!/bin/bash
 
 # gather the coverage data
-if [[ "$MATRIX_OS" == "macOS-latest" ]]; then
-    brew install lcov
+pip3 install codecov
+if [[ $MATRIX_DOCKER ]]; then
+  coverage xml --ignore-errors
 else
-    sudo apt-get -qq install lcov
+  coverage xml
 fi
-
-lcov --capture --directory . -b . --output-file coverage.info
-#  filter to remove system headers
-lcov --remove coverage.info '/usr/*' -o coverage.filtered.info
-
-pip install codecov
-coverage report
 
 if [[ $TRAVIS ]]; then
     codecov

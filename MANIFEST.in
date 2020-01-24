@@ -18,10 +18,10 @@ graft docs
 # build/src control detritus
 exclude .appveyor.yml
 exclude .coveragerc
-exclude .codecov.yml
 exclude .editorconfig
 exclude .readthedocs.yml
 exclude azure-pipelines.yml
+exclude codecov.yml
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
