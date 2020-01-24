@@ -361,7 +361,7 @@ jobs:
       with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
-          flags: GHAWindows
+          flags: GHA_Windows
           name: ${{ runner.os }} Python ${{ matrix.python-version }}
 
     - name: Build wheel
