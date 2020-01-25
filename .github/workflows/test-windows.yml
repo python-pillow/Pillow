@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.5", "3.6", "3.7", "3.8", "pypy3.6"]
+        python-version: ["3.5", "3.6", "3.7", "3.8", "pypy3"]
         architecture: ["x86", "x64"]
         include:
           - architecture: "x86"
@@ -18,11 +18,9 @@ jobs:
           - architecture: "x64"
             platform-vcvars: "x86_amd64"
             platform-msbuild: "x64"
-          - python-version: "pypy3.6"
-            pypy-version: "pypy3.6-v7.3.0-win32"
-            pypy-url: "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.3.0-win32.zip"
         exclude:
-          - python-version: "pypy3.6"
+          # PyPy does not support 64-bit on Windows
+          - python-version: "pypy3"
             architecture: "x64"
     timeout-minutes: 30
 
@@ -46,25 +44,8 @@ jobs:
           ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-
           ${{ runner.os }}-${{ matrix.python-version }}-
 
-    - name: Install PyPy
-      if: "contains(matrix.python-version, 'pypy')"
-      run: |
-        curl -fsSL -o pypy3.zip "${{ matrix.pypy-url }}"
-        7z x pypy3.zip "-o$env:RUNNER_WORKSPACE\"
-        mv "$env:RUNNER_WORKSPACE\${{ matrix.pypy-version }}" "$env:RUNNER_WORKSPACE\${{ matrix.python-version }}"
-        $env:PYTHON="$env:RUNNER_WORKSPACE\${{ matrix.python-version }}"
-        # set env: pythonLocation
-        Write-Host "`#`#[set-env name=pythonLocation;]$env:PYTHON" # old syntax https://github.com/actions/toolkit/issues/61
-        Write-Host "::set-env name=pythonLocation::$env:PYTHON" # new syntax https://github.com/actions/toolkit/blob/5bb77ec03fea98332e41f9347c8fbb1ce1e48f4a/docs/commands.md
-        New-Item -ItemType SymbolicLink -Path "$env:PYTHON\python.exe" -Target "$env:PYTHON\pypy3.exe"
-        curl -fsSL -o get-pip.py https://bootstrap.pypa.io/get-pip.py
-        $env:PATH = "$env:PYTHON\bin;$env:PATH"
-        & $env:PYTHON\python.exe get-pip.py
-      shell: pwsh
-
     # sets env: pythonLocation
     - name: Set up Python
-      if: "!contains(matrix.python-version, 'pypy')"
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
