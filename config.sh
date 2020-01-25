@@ -51,18 +51,12 @@ function pre_build {
         CPPFLAGS=$ORIGINAL_CPPFLAGS
     fi
 
-    # freetype
-    freetype_args=""
     if [ -n "$IS_OSX" ]; then
-        freetype_args="--with-harfbuzz=no"
+        # Custom freetype build
+        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
-        # bzip2
-        fetch_unpack https://sourceware.org/pub/bzip2/bzip2-${BZIP2_VERSION}.tar.gz
-        (cd bzip2-${BZIP2_VERSION} \
-            && make -f Makefile-libbz2_so \
-            && make install PREFIX=$BUILD_PREFIX)
+        build_freetype
     fi
-    build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz $freetype_args
 }
 
 function run_tests_in_repo {
