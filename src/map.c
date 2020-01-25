@@ -313,14 +313,13 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     Py_buffer view;
     char* mode;
     char* codec;
-    PyObject* bbox;
     Py_ssize_t offset;
     int xsize, ysize;
     int stride;
     int ystep;
 
-    if (!PyArg_ParseTuple(args, "O(ii)sOn(sii)", &target, &xsize, &ysize,
-                          &codec, &bbox, &offset, &mode, &stride, &ystep))
+    if (!PyArg_ParseTuple(args, "O(ii)sn(sii)", &target, &xsize, &ysize,
+                          &codec, &offset, &mode, &stride, &ystep))
         return NULL;
 
     if (!PyImaging_CheckBuffer(target)) {

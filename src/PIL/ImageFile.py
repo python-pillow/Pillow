@@ -194,7 +194,7 @@ class ImageFile(Image.Image):
                                 fp.fileno(), 0, access=mmap.ACCESS_READ
                             )
                         self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, extents, offset, args
+                            self.map, self.size, decoder_name, offset, args
                         )
                     readonly = 1
                     # After trashing self.im,
