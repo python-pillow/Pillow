@@ -241,14 +241,10 @@ class PdfName:
                 result.extend(make_bytes("#%02X" % b))
         return bytes(result)
 
-    __str__ = __bytes__
-
 
 class PdfArray(list):
     def __bytes__(self):
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
-
-    __str__ = __bytes__
 
 
 class PdfDict(collections.UserDict):
