@@ -14,12 +14,11 @@ sample.putdata(sum([
 # fmt: on
 
 
-class TestBoxBlurApi(PillowTestCase):
-    def test_imageops_box_blur(self):
-        i = sample.filter(ImageFilter.BoxBlur(1))
-        self.assertEqual(i.mode, sample.mode)
-        self.assertEqual(i.size, sample.size)
-        self.assertIsInstance(i, Image.Image)
+def test_imageops_box_blur():
+    i = sample.filter(ImageFilter.BoxBlur(1))
+    assert i.mode == sample.mode
+    assert i.size == sample.size
+    assert isinstance(i, Image.Image)
 
 
 class TestBoxBlur(PillowTestCase):
