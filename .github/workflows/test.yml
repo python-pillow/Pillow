@@ -76,6 +76,12 @@ jobs:
       run: |
         .ci/test.sh
 
+    - name: Prepare to upload errors
+      if: failure()
+      run: |
+        mkdir -p Tests/errors
+      shell: pwsh
+
     - name: Upload errors
       uses: actions/upload-artifact@v1
       if: failure()
