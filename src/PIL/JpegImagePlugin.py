@@ -437,7 +437,7 @@ class JpegImageFile(ImageFile.ImageFile):
         self.tile = [(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
-        box = (0, 0, original_size[0] / float(scale), original_size[1] / float(scale))
+        box = (0, 0, original_size[0] / scale, original_size[1] / scale)
         return (self.mode, box)
 
     def load_djpeg(self):

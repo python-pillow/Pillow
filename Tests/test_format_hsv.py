@@ -8,10 +8,10 @@ from .helper import PillowTestCase, hopper
 
 class TestFormatHSV(PillowTestCase):
     def int_to_float(self, i):
-        return float(i) / 255.0
+        return i / 255
 
     def str_to_float(self, i):
-        return float(ord(i)) / 255.0
+        return ord(i) / 255
 
     def tuple_to_ints(self, tp):
         x, y, z = tp

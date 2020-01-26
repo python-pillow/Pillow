@@ -73,7 +73,7 @@ class GradientFile:
 
         for i in range(entries):
 
-            x = i / float(entries - 1)
+            x = i / (entries - 1)
 
             while x1 < x:
                 ix += 1

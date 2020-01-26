@@ -20,11 +20,11 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
         table = [
             [
-                r / float(size1D - 1) if size1D != 1 else 0,
-                g / float(size2D - 1) if size2D != 1 else 0,
-                b / float(size3D - 1) if size3D != 1 else 0,
-                r / float(size1D - 1) if size1D != 1 else 0,
-                g / float(size2D - 1) if size2D != 1 else 0,
+                r / (size1D - 1) if size1D != 1 else 0,
+                g / (size2D - 1) if size2D != 1 else 0,
+                b / (size3D - 1) if size3D != 1 else 0,
+                r / (size1D - 1) if size1D != 1 else 0,
+                g / (size2D - 1) if size2D != 1 else 0,
             ][:channels]
             for b in range(size3D)
             for g in range(size2D)
