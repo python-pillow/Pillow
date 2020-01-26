@@ -119,8 +119,8 @@ class PSDraw:
             else:
                 dpi = 100  # greyscale
         # image size (on paper)
-        x = float(im.size[0] * 72) / dpi
-        y = float(im.size[1] * 72) / dpi
+        x = im.size[0] * 72 / dpi
+        y = im.size[1] * 72 / dpi
         # max allowed size
         xmax = float(box[2] - box[0])
         ymax = float(box[3] - box[1])

@@ -243,7 +243,7 @@ def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     """
 
     im_ratio = image.width / image.height
-    dest_ratio = float(size[0]) / size[1]
+    dest_ratio = size[0] / size[1]
 
     if im_ratio == dest_ratio:
         out = image.resize(size, resample=method)
@@ -420,10 +420,10 @@ def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
     )
 
     # calculate the aspect ratio of the live_size
-    live_size_ratio = float(live_size[0]) / live_size[1]
+    live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image
-    output_ratio = float(size[0]) / size[1]
+    output_ratio = size[0] / size[1]
 
     # figure out if the sides or top/bottom will be cropped off
     if live_size_ratio == output_ratio:

@@ -75,8 +75,8 @@ def Ghostscript(tile, size, fp, scale=1):
     size = (size[0] * scale, size[1] * scale)
     # resolution is dependent on bbox and size
     res = (
-        float((72.0 * size[0]) / (bbox[2] - bbox[0])),
-        float((72.0 * size[1]) / (bbox[3] - bbox[1])),
+        72.0 * size[0] / (bbox[2] - bbox[0]),
+        72.0 * size[1] / (bbox[3] - bbox[1]),
     )
 
     out_fd, outfile = tempfile.mkstemp()

@@ -499,8 +499,8 @@ class TestImageCms(PillowTestCase):
                 # paste pattern with varying offsets to avoid correlation
                 # potentially hiding some bugs (like channels getting mixed).
                 paste_offset = (
-                    int(band_ndx / float(len(bands)) * channel_pattern.size[0]),
-                    int(band_ndx / float(len(bands) * 2) * channel_pattern.size[1]),
+                    int(band_ndx / len(bands) * channel_pattern.size[0]),
+                    int(band_ndx / (len(bands) * 2) * channel_pattern.size[1]),
                 )
                 channel_data = Image.new(channel_type, channel_pattern.size)
                 for delta in nine_grid_deltas:

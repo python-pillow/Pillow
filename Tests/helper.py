@@ -124,7 +124,6 @@ class PillowTestCase(unittest.TestCase):
             self.assert_image_equal(a, img, msg)
 
     def assert_image_similar(self, a, b, epsilon, msg=None):
-        epsilon = float(epsilon)
         self.assertEqual(
             a.mode, b.mode, msg or "got mode {!r}, expected {!r}".format(a.mode, b.mode)
         )
@@ -139,7 +138,7 @@ class PillowTestCase(unittest.TestCase):
             chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
             diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
 
-        ave_diff = float(diff) / (a.size[0] * a.size[1])
+        ave_diff = diff / (a.size[0] * a.size[1])
         try:
             self.assertGreaterEqual(
                 epsilon,

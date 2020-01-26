@@ -164,7 +164,7 @@ class TestImageReduce(PillowTestCase):
             ch_diff = ImageMath.eval("convert(abs(a - b), 'L')", a=ach, b=bch)
             ch_hist = ch_diff.histogram()
 
-            average_diff = sum(i * num for i, num in enumerate(ch_hist)) / float(
+            average_diff = sum(i * num for i, num in enumerate(ch_hist)) / (
                 a.size[0] * a.size[1]
             )
             self.assertGreaterEqual(
