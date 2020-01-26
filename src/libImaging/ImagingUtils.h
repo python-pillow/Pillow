@@ -52,6 +52,6 @@ mm_cvtepu8_epi32(void *ptr) {
 #if defined(__AVX2__)
 static __m256i inline
 mm256_cvtepu8_epi32(void *ptr) {
-    return _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(*(int64_t *) ptr));
+    return _mm256_cvtepu8_epi32(_mm_loadl_epi64((__m128i *) ptr));
 }
 #endif

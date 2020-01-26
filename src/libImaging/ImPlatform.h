@@ -9,6 +9,11 @@
 
 #include "Python.h"
 
+/* Microsoft compiler doesn't limit intrinsics for an architecture.
+   This macro is set only on x86 and means SSE2 and above including AVX2. */
+#if defined(_M_X64) || _M_IX86_FP == 2
+    #define __SSE4_2__
+#endif
 #if defined(__SSE4_2__)
     #include <emmintrin.h>
     #include <mmintrin.h>
