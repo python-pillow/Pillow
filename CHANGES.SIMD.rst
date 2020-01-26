@@ -1,6 +1,11 @@
 Changelog (Pillow-SIMD)
 =======================
 
+7.0.0.post3
+-----------
+
+- ColorLUT: fixed potential access violation, up to 2x faster
+
 7.0.0.post2
 -----------
 
