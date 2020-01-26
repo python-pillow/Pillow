@@ -81,7 +81,7 @@ test_script:
 
 after_test:
 - pip install codecov
-- codecov --file coverage.xml --name %PYTHON%
+- codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
   fast_finish: true

@@ -9,7 +9,7 @@ else
 fi
 
 if [[ $TRAVIS ]]; then
-    codecov
+    codecov --flags TravisCI
 fi
 
 if [ "$TRAVIS_PYTHON_VERSION" == "3.8" ]; then
