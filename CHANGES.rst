@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+7.1.0 (unreleased)
+------------------
+
+- Depends: Update libwebp to 1.1.0 #4342, libjpeg to 9d #4352
+  [radarhere]
+
 7.0.0 (2020-01-02)
 ------------------
 
