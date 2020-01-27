@@ -1,29 +1,28 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 
-class TestImageGetData(PillowTestCase):
-    def test_sanity(self):
+def test_sanity():
+    data = hopper().getdata()
 
-        data = hopper().getdata()
+    len(data)
+    list(data)
 
-        len(data)
-        list(data)
+    assert data[0] == (20, 20, 70)
 
-        self.assertEqual(data[0], (20, 20, 70))
 
-    def test_roundtrip(self):
-        def getdata(mode):
-            im = hopper(mode).resize((32, 30), Image.NEAREST)
-            data = im.getdata()
-            return data[0], len(data), len(list(data))
+def test_roundtrip():
+    def getdata(mode):
+        im = hopper(mode).resize((32, 30), Image.NEAREST)
+        data = im.getdata()
+        return data[0], len(data), len(list(data))
 
-        self.assertEqual(getdata("1"), (0, 960, 960))
-        self.assertEqual(getdata("L"), (17, 960, 960))
-        self.assertEqual(getdata("I"), (17, 960, 960))
-        self.assertEqual(getdata("F"), (17.0, 960, 960))
-        self.assertEqual(getdata("RGB"), ((11, 13, 52), 960, 960))
-        self.assertEqual(getdata("RGBA"), ((11, 13, 52, 255), 960, 960))
-        self.assertEqual(getdata("CMYK"), ((244, 242, 203, 0), 960, 960))
-        self.assertEqual(getdata("YCbCr"), ((16, 147, 123), 960, 960))
+    assert getdata("1") == (0, 960, 960)
+    assert getdata("L") == (17, 960, 960)
+    assert getdata("I") == (17, 960, 960)
+    assert getdata("F") == (17.0, 960, 960)
+    assert getdata("RGB") == ((11, 13, 52), 960, 960)
+    assert getdata("RGBA") == ((11, 13, 52, 255), 960, 960)
+    assert getdata("CMYK") == ((244, 242, 203, 0), 960, 960)
+    assert getdata("YCbCr") == ((16, 147, 123), 960, 960)
