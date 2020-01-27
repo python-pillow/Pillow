@@ -8,10 +8,6 @@ import time
 import zlib
 
 
-def make_bytes(s):
-    return s.encode("us-ascii")
-
-
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
 def encode_text(s):
@@ -179,10 +175,10 @@ class XrefTable:
             else:
                 contiguous_keys = keys
                 keys = None
-            f.write(make_bytes("%d %d\n" % (contiguous_keys[0], len(contiguous_keys))))
+            f.write(b"%d %d\n" % (contiguous_keys[0], len(contiguous_keys)))
             for object_id in contiguous_keys:
                 if object_id in self.new_entries:
-                    f.write(make_bytes("%010d %05d n \n" % self.new_entries[object_id]))
+                    f.write(b"%010d %05d n \n" % self.new_entries[object_id])
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
                     check_format_condition(
@@ -195,10 +191,8 @@ class XrefTable:
                     except IndexError:
                         next_in_linked_list = 0
                     f.write(
-                        make_bytes(
-                            "%010d %05d f \n"
-                            % (next_in_linked_list, self.deleted_entries[object_id])
-                        )
+                        b"%010d %05d f \n"
+                        % (next_in_linked_list, self.deleted_entries[object_id])
                     )
         return startxref
 
@@ -238,7 +232,7 @@ class PdfName:
             if b in self.allowed_chars:
                 result.append(b)
             else:
-                result.extend(make_bytes("#%02X" % b))
+                result.extend(b"#%02X" % b)
         return bytes(result)
 
     __str__ = __bytes__
@@ -304,7 +298,7 @@ class PdfBinary:
         self.data = data
 
     def __bytes__(self):
-        return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
+        return b"<%s>" % b"".join(b"%02X" % b for b in self.data)
 
 
 class PdfStream:
@@ -495,7 +489,7 @@ class PdfParser:
         self.f.write(
             b"trailer\n"
             + bytes(PdfDict(trailer_dict))
-            + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref)
+            + b"\nstartxref\n%d\n%%%%EOF" % start_xref
         )
 
     def write_page(self, ref, *objs, **dict_obj):
