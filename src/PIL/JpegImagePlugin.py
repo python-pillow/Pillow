@@ -130,7 +130,7 @@ def APP(self, marker):
                 offset += size
                 offset += offset & 1  # align
             except struct.error:
-                break  # no sufficient data
+                break  # insufficient data
 
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
