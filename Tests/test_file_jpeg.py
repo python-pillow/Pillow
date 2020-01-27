@@ -676,6 +676,13 @@ class TestFileJpeg(PillowTestCase):
         with Image.open("Tests/images/app13.jpg") as im:
             self.assertNotIn("photoshop", im.info)
 
+    def test_photoshop_malformed_and_multiple(self):
+        with Image.open("Tests/images/app13-multiple.jpg") as im:
+            self.assertIn("photoshop", im.info)
+            self.assertEqual(24, len(im.info["photoshop"]))
+            apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
+            self.assertEqual([65504, 24], apps_13_lengths)
+
 
 @unittest.skipUnless(is_win32(), "Windows only")
 class TestFileCloseW32(PillowTestCase):
