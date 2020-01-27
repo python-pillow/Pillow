@@ -15,8 +15,7 @@ co:
     done
 
 coverage:
-	python3 selftest.py
-	python3 setup.py test
+	pytest -qq
 	rm -r htmlcov || true
 	coverage report
 

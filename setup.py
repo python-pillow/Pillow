@@ -845,9 +845,6 @@ def debug_build():
     return hasattr(sys, "gettotalrefcount")
 
 
-needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
-pytest_runner = ["pytest-runner"] if needs_pytest else []
-
 try:
     setup(
         name=NAME,
@@ -884,8 +881,6 @@ try:
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
         include_package_data=True,
-        setup_requires=pytest_runner,
-        tests_require=["pytest"],
         packages=["PIL"],
         package_dir={"": "src"},
         keywords=["Imaging"],
