@@ -3,7 +3,7 @@ from io import BytesIO
 
 from PIL import Image, ImageWin
 
-from .helper import PillowTestCase, hopper, is_win32
+from .helper import hopper, is_win32
 
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 
@@ -81,34 +81,33 @@ if is_win32():
         memcpy(bp + bf.bfOffBits, pixels, bi.biSizeImage)
         return bytearray(buf)
 
-    class TestImageWinPointers(PillowTestCase):
-        def test_pointer(self):
-            im = hopper()
-            (width, height) = im.size
-            opath = self.tempfile("temp.png")
-            imdib = ImageWin.Dib(im)
+    def test_pointer(tmp_path):
+        im = hopper()
+        (width, height) = im.size
+        opath = str(tmp_path / "temp.png")
+        imdib = ImageWin.Dib(im)
 
-            hdr = BITMAPINFOHEADER()
-            hdr.biSize = ctypes.sizeof(hdr)
-            hdr.biWidth = width
-            hdr.biHeight = height
-            hdr.biPlanes = 1
-            hdr.biBitCount = 32
-            hdr.biCompression = BI_RGB
-            hdr.biSizeImage = width * height * 4
-            hdr.biClrUsed = 0
-            hdr.biClrImportant = 0
+        hdr = BITMAPINFOHEADER()
+        hdr.biSize = ctypes.sizeof(hdr)
+        hdr.biWidth = width
+        hdr.biHeight = height
+        hdr.biPlanes = 1
+        hdr.biBitCount = 32
+        hdr.biCompression = BI_RGB
+        hdr.biSizeImage = width * height * 4
+        hdr.biClrUsed = 0
+        hdr.biClrImportant = 0
 
-            hdc = CreateCompatibleDC(None)
-            pixels = ctypes.c_void_p()
-            dib = CreateDIBSection(
-                hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0
-            )
-            SelectObject(hdc, dib)
+        hdc = CreateCompatibleDC(None)
+        pixels = ctypes.c_void_p()
+        dib = CreateDIBSection(
+            hdc, ctypes.byref(hdr), DIB_RGB_COLORS, ctypes.byref(pixels), None, 0
+        )
+        SelectObject(hdc, dib)
 
-            imdib.expose(hdc)
-            bitmap = serialize_dib(hdr, pixels)
-            DeleteObject(dib)
-            DeleteDC(hdc)
+        imdib.expose(hdc)
+        bitmap = serialize_dib(hdr, pixels)
+        DeleteObject(dib)
+        DeleteDC(hdc)
 
-            Image.open(BytesIO(bitmap)).save(opath)
+        Image.open(BytesIO(bitmap)).save(opath)

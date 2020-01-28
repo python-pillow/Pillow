@@ -1,18 +1,17 @@
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 
-class TestImageHistogram(PillowTestCase):
-    def test_histogram(self):
-        def histogram(mode):
-            h = hopper(mode).histogram()
-            return len(h), min(h), max(h)
+def test_histogram():
+    def histogram(mode):
+        h = hopper(mode).histogram()
+        return len(h), min(h), max(h)
 
-        self.assertEqual(histogram("1"), (256, 0, 10994))
-        self.assertEqual(histogram("L"), (256, 0, 662))
-        self.assertEqual(histogram("I"), (256, 0, 662))
-        self.assertEqual(histogram("F"), (256, 0, 662))
-        self.assertEqual(histogram("P"), (256, 0, 1871))
-        self.assertEqual(histogram("RGB"), (768, 4, 675))
-        self.assertEqual(histogram("RGBA"), (1024, 0, 16384))
-        self.assertEqual(histogram("CMYK"), (1024, 0, 16384))
-        self.assertEqual(histogram("YCbCr"), (768, 0, 1908))
+    assert histogram("1") == (256, 0, 10994)
+    assert histogram("L") == (256, 0, 662)
+    assert histogram("I") == (256, 0, 662)
+    assert histogram("F") == (256, 0, 662)
+    assert histogram("P") == (256, 0, 1871)
+    assert histogram("RGB") == (768, 4, 675)
+    assert histogram("RGBA") == (1024, 0, 16384)
+    assert histogram("CMYK") == (1024, 0, 16384)
+    assert histogram("YCbCr") == (768, 0, 1908)

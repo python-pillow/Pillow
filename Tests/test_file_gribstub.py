@@ -1,42 +1,46 @@
+import pytest
 from PIL import GribStubImagePlugin, Image
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 
 
-class TestFileGribStub(PillowTestCase):
-    def test_open(self):
-        # Act
-        with Image.open(TEST_FILE) as im:
+def test_open():
+    # Act
+    with Image.open(TEST_FILE) as im:
 
-            # Assert
-            self.assertEqual(im.format, "GRIB")
+        # Assert
+        assert im.format == "GRIB"
 
-            # Dummy data from the stub
-            self.assertEqual(im.mode, "F")
-            self.assertEqual(im.size, (1, 1))
+        # Dummy data from the stub
+        assert im.mode == "F"
+        assert im.size == (1, 1)
 
-    def test_invalid_file(self):
-        # Arrange
-        invalid_file = "Tests/images/flower.jpg"
 
-        # Act / Assert
-        self.assertRaises(
-            SyntaxError, GribStubImagePlugin.GribStubImageFile, invalid_file
-        )
+def test_invalid_file():
+    # Arrange
+    invalid_file = "Tests/images/flower.jpg"
 
-    def test_load(self):
-        # Arrange
-        with Image.open(TEST_FILE) as im:
+    # Act / Assert
+    with pytest.raises(SyntaxError):
+        GribStubImagePlugin.GribStubImageFile(invalid_file)
 
-            # Act / Assert: stub cannot load without an implemented handler
-            self.assertRaises(IOError, im.load)
 
-    def test_save(self):
-        # Arrange
-        im = hopper()
-        tmpfile = self.tempfile("temp.grib")
+def test_load():
+    # Arrange
+    with Image.open(TEST_FILE) as im:
 
-        # Act / Assert: stub cannot save without an implemented handler
-        self.assertRaises(IOError, im.save, tmpfile)
+        # Act / Assert: stub cannot load without an implemented handler
+        with pytest.raises(IOError):
+            im.load()
+
+
+def test_save(tmp_path):
+    # Arrange
+    im = hopper()
+    tmpfile = str(tmp_path / "temp.grib")
+
+    # Act / Assert: stub cannot save without an implemented handler
+    with pytest.raises(IOError):
+        im.save(tmpfile)
