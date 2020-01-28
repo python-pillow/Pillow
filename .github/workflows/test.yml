@@ -13,11 +13,7 @@ jobs:
           "macOS-latest",
         ]
         python-version: [
-          "pypy3",
           "3.8",
-          "3.7",
-          "3.6",
-          "3.5",
         ]
         include:
         - python-version: "3.5"
