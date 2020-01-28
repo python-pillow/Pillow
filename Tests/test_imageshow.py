@@ -38,7 +38,7 @@ def test_viewer_show():
 
 
 @pytest.mark.skipif(
-    not on_ci() or not (is_win32() and on_github_actions()),
+    not on_ci() or (is_win32() and on_github_actions()),
     reason="Only run on CIs; hangs on Windows on GitHub Actions",
 )
 def test_show():
