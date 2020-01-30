@@ -1,6 +1,6 @@
 from PIL import Image, ImageSequence, TiffImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImageSequence(PillowTestCase):
@@ -15,7 +15,7 @@ class TestImageSequence(PillowTestCase):
 
         index = 0
         for frame in seq:
-            self.assert_image_equal(im, frame)
+            assert_image_equal(im, frame)
             self.assertEqual(im.tell(), index)
             index += 1
 
@@ -64,7 +64,7 @@ class TestImageSequence(PillowTestCase):
                 if firstFrame is None:
                     firstFrame = frame.copy()
             for frame in ImageSequence.Iterator(im):
-                self.assert_image_equal(frame, firstFrame)
+                assert_image_equal(frame, firstFrame)
                 break
 
     def test_palette_mmap(self):
@@ -85,7 +85,7 @@ class TestImageSequence(PillowTestCase):
                 self.assertFalse(im_frame is im)
 
                 im.seek(i)
-                self.assert_image_equal(im, im_frame)
+                assert_image_equal(im, im_frame)
 
             # Test a series of images
             ims = ImageSequence.all_frames([im, hopper(), im])
@@ -95,4 +95,4 @@ class TestImageSequence(PillowTestCase):
             ims = ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))
             for i, im_frame in enumerate(ims):
                 im.seek(i)
-                self.assert_image_equal(im.rotate(90), im_frame)
+                assert_image_equal(im.rotate(90), im_frame)

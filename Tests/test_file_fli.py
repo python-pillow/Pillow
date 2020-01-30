@@ -2,7 +2,7 @@ import unittest
 
 from PIL import FliImagePlugin, Image
 
-from .helper import PillowTestCase, is_pypy
+from .helper import PillowTestCase, assert_image_equal, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -113,4 +113,4 @@ class TestFileFli(PillowTestCase):
             im.seek(50)
 
             with Image.open("Tests/images/a_fli.png") as expected:
-                self.assert_image_equal(im, expected)
+                assert_image_equal(im, expected)

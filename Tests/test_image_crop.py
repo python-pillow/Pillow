@@ -1,13 +1,13 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImageCrop(PillowTestCase):
     def test_crop(self):
         def crop(mode):
             im = hopper(mode)
-            self.assert_image_equal(im.crop(), im)
+            assert_image_equal(im.crop(), im)
 
             cropped = im.crop((50, 50, 100, 100))
             self.assertEqual(cropped.mode, mode)

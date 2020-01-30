@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_deep_equal, assert_image, hopper
 
 try:
     import numpy
@@ -37,59 +37,59 @@ class TestNumpy(PillowTestCase):
             return i
 
         # Check supported 1-bit integer formats
-        self.assert_image(to_image(numpy.bool, 1, 1), "1", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.bool8, 1, 1), "1", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.bool, 1, 1), "1", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.bool8, 1, 1), "1", TEST_IMAGE_SIZE)
 
         # Check supported 8-bit integer formats
-        self.assert_image(to_image(numpy.uint8), "L", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.uint8, 3), "RGB", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.uint8, 4), "RGBA", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.int8), "I", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.uint8), "L", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.uint8, 3), "RGB", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.uint8, 4), "RGBA", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.int8), "I", TEST_IMAGE_SIZE)
 
         # Check non-fixed-size integer types
         # These may fail, depending on the platform, since we have no native
         # 64 bit int image types.
-        # self.assert_image(to_image(numpy.uint), "I", TEST_IMAGE_SIZE)
-        # self.assert_image(to_image(numpy.int), "I", TEST_IMAGE_SIZE)
+        # assert_image(to_image(numpy.uint), "I", TEST_IMAGE_SIZE)
+        # assert_image(to_image(numpy.int), "I", TEST_IMAGE_SIZE)
 
         # Check 16-bit integer formats
         if Image._ENDIAN == "<":
-            self.assert_image(to_image(numpy.uint16), "I;16", TEST_IMAGE_SIZE)
+            assert_image(to_image(numpy.uint16), "I;16", TEST_IMAGE_SIZE)
         else:
-            self.assert_image(to_image(numpy.uint16), "I;16B", TEST_IMAGE_SIZE)
+            assert_image(to_image(numpy.uint16), "I;16B", TEST_IMAGE_SIZE)
 
-        self.assert_image(to_image(numpy.int16), "I", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.int16), "I", TEST_IMAGE_SIZE)
 
         # Check 32-bit integer formats
-        self.assert_image(to_image(numpy.uint32), "I", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.int32), "I", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.uint32), "I", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.int32), "I", TEST_IMAGE_SIZE)
 
         # Check 64-bit integer formats
         self.assertRaises(TypeError, to_image, numpy.uint64)
         self.assertRaises(TypeError, to_image, numpy.int64)
 
         # Check floating-point formats
-        self.assert_image(to_image(numpy.float), "F", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.float), "F", TEST_IMAGE_SIZE)
         self.assertRaises(TypeError, to_image, numpy.float16)
-        self.assert_image(to_image(numpy.float32), "F", TEST_IMAGE_SIZE)
-        self.assert_image(to_image(numpy.float64), "F", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.float32), "F", TEST_IMAGE_SIZE)
+        assert_image(to_image(numpy.float64), "F", TEST_IMAGE_SIZE)
 
-        self.assert_image(to_image(numpy.uint8, 2), "LA", (10, 10))
-        self.assert_image(to_image(numpy.uint8, 3), "RGB", (10, 10))
-        self.assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
+        assert_image(to_image(numpy.uint8, 2), "LA", (10, 10))
+        assert_image(to_image(numpy.uint8, 3), "RGB", (10, 10))
+        assert_image(to_image(numpy.uint8, 4), "RGBA", (10, 10))
 
     # based on an erring example at
     # https://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
     def test_3d_array(self):
         size = (5, TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1])
         a = numpy.ones(size, dtype=numpy.uint8)
-        self.assert_image(Image.fromarray(a[1, :, :]), "L", TEST_IMAGE_SIZE)
+        assert_image(Image.fromarray(a[1, :, :]), "L", TEST_IMAGE_SIZE)
         size = (TEST_IMAGE_SIZE[0], 5, TEST_IMAGE_SIZE[1])
         a = numpy.ones(size, dtype=numpy.uint8)
-        self.assert_image(Image.fromarray(a[:, 1, :]), "L", TEST_IMAGE_SIZE)
+        assert_image(Image.fromarray(a[:, 1, :]), "L", TEST_IMAGE_SIZE)
         size = (TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], 5)
         a = numpy.ones(size, dtype=numpy.uint8)
-        self.assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
+        assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
 
     def _test_img_equals_nparray(self, img, np):
         self.assertGreaterEqual(len(np.shape), 2)
@@ -98,7 +98,7 @@ class TestNumpy(PillowTestCase):
         px = img.load()
         for x in range(0, img.size[0], int(img.size[0] / 10)):
             for y in range(0, img.size[1], int(img.size[1] / 10)):
-                self.assert_deep_equal(px[x, y], np[y, x])
+                assert_deep_equal(px[x, y], np[y, x])
 
     def test_16bit(self):
         with Image.open("Tests/images/16bit.cropped.tif") as img:

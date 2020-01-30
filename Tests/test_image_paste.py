@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, cached_property
+from .helper import PillowTestCase, assert_image_equal, cached_property
 
 
 class TestImagingPaste(PillowTestCase):
@@ -99,7 +99,7 @@ class TestImagingPaste(PillowTestCase):
             im.paste(im2, (12, 23))
 
             im = im.crop((12, 23, im2.width + 12, im2.height + 23))
-            self.assert_image_equal(im, im2)
+            assert_image_equal(im, im2)
 
     def test_image_mask_1(self):
         for mode in ("RGBA", "RGB", "L"):

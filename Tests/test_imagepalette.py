@@ -1,6 +1,6 @@
 from PIL import Image, ImagePalette
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 
 class TestImagePalette(PillowTestCase):
@@ -129,7 +129,7 @@ class TestImagePalette(PillowTestCase):
         img.save(outfile, format="PNG")
 
         with Image.open(outfile) as reloaded:
-            self.assert_image_equal(img, reloaded)
+            assert_image_equal(img, reloaded)
 
     def test_invalid_palette(self):
         self.assertRaises(IOError, ImagePalette.load, "Tests/images/hopper.jpg")

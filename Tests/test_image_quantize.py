@@ -1,19 +1,19 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image, assert_image_similar, hopper
 
 
 class TestImageQuantize(PillowTestCase):
     def test_sanity(self):
         image = hopper()
         converted = image.quantize()
-        self.assert_image(converted, "P", converted.size)
-        self.assert_image_similar(converted.convert("RGB"), image, 10)
+        assert_image(converted, "P", converted.size)
+        assert_image_similar(converted.convert("RGB"), image, 10)
 
         image = hopper()
         converted = image.quantize(palette=hopper("P"))
-        self.assert_image(converted, "P", converted.size)
-        self.assert_image_similar(converted.convert("RGB"), image, 60)
+        assert_image(converted, "P", converted.size)
+        assert_image_similar(converted.convert("RGB"), image, 60)
 
     def test_libimagequant_quantize(self):
         image = hopper()
@@ -24,15 +24,15 @@ class TestImageQuantize(PillowTestCase):
                 self.skipTest("libimagequant support not available")
             else:
                 raise
-        self.assert_image(converted, "P", converted.size)
-        self.assert_image_similar(converted.convert("RGB"), image, 15)
+        assert_image(converted, "P", converted.size)
+        assert_image_similar(converted.convert("RGB"), image, 15)
         self.assertEqual(len(converted.getcolors()), 100)
 
     def test_octree_quantize(self):
         image = hopper()
         converted = image.quantize(100, Image.FASTOCTREE)
-        self.assert_image(converted, "P", converted.size)
-        self.assert_image_similar(converted.convert("RGB"), image, 20)
+        assert_image(converted, "P", converted.size)
+        assert_image_similar(converted.convert("RGB"), image, 20)
         self.assertEqual(len(converted.getcolors()), 100)
 
     def test_rgba_quantize(self):
@@ -45,8 +45,8 @@ class TestImageQuantize(PillowTestCase):
         with Image.open("Tests/images/caption_6_33_22.png") as image:
             image = image.convert("RGB")
         converted = image.quantize()
-        self.assert_image(converted, "P", converted.size)
-        self.assert_image_similar(converted.convert("RGB"), image, 1)
+        assert_image(converted, "P", converted.size)
+        assert_image_similar(converted.convert("RGB"), image, 1)
 
     def test_quantize_no_dither(self):
         image = hopper()
@@ -54,7 +54,7 @@ class TestImageQuantize(PillowTestCase):
             palette = palette.convert("P")
 
         converted = image.quantize(dither=0, palette=palette)
-        self.assert_image(converted, "P", converted.size)
+        assert_image(converted, "P", converted.size)
 
     def test_quantize_dither_diff(self):
         image = hopper()

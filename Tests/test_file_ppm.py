@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 # sample ppm stream
 test_file = "Tests/images/hopper.ppm"
@@ -23,7 +23,7 @@ class TestFilePpm(PillowTestCase):
             self.assertEqual(im.get_format_mimetype(), "image/x-portable-graymap")
 
             with Image.open("Tests/images/16_bit_binary_pgm.png") as tgt:
-                self.assert_image_equal(im, tgt)
+                assert_image_equal(im, tgt)
 
     def test_16bit_pgm_write(self):
         with Image.open("Tests/images/16_bit_binary.pgm") as im:
@@ -33,17 +33,17 @@ class TestFilePpm(PillowTestCase):
             im.save(f, "PPM")
 
             with Image.open(f) as reloaded:
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)
 
     def test_pnm(self):
         with Image.open("Tests/images/hopper.pnm") as im:
-            self.assert_image_similar(im, hopper(), 0.0001)
+            assert_image_similar(im, hopper(), 0.0001)
 
             f = self.tempfile("temp.pnm")
             im.save(f)
 
             with Image.open(f) as reloaded:
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)
 
     def test_truncated_file(self):
         path = self.tempfile("temp.pgm")

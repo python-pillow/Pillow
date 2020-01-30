@@ -1,6 +1,6 @@
 from PIL import Image, ImageFile, PcxImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestFilePcx(PillowTestCase):
@@ -12,7 +12,7 @@ class TestFilePcx(PillowTestCase):
             self.assertEqual(im2.size, im.size)
             self.assertEqual(im2.format, "PCX")
             self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
-            self.assert_image_equal(im2, im)
+            assert_image_equal(im2, im)
 
     def test_sanity(self):
         for mode in ("1", "L", "P", "RGB"):

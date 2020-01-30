@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 try:
     from PIL import _webp
@@ -36,7 +36,7 @@ class TestFileWebpAlpha(PillowTestCase):
             image.tobytes()
 
             with Image.open("Tests/images/transparent.png") as target:
-                self.assert_image_similar(image, target, 20.0)
+                assert_image_similar(image, target, 20.0)
 
     def test_write_lossless_rgb(self):
         """
@@ -64,7 +64,7 @@ class TestFileWebpAlpha(PillowTestCase):
             image.load()
             image.getdata()
 
-            self.assert_image_equal(image, pil_image)
+            assert_image_equal(image, pil_image)
 
     def test_write_rgba(self):
         """
@@ -92,9 +92,9 @@ class TestFileWebpAlpha(PillowTestCase):
             # early versions of webp are known to produce higher deviations:
             # deal with it
             if _webp.WebPDecoderVersion(self) <= 0x201:
-                self.assert_image_similar(image, pil_image, 3.0)
+                assert_image_similar(image, pil_image, 3.0)
             else:
-                self.assert_image_similar(image, pil_image, 1.0)
+                assert_image_similar(image, pil_image, 1.0)
 
     def test_write_unsupported_mode_PA(self):
         """
@@ -116,4 +116,4 @@ class TestFileWebpAlpha(PillowTestCase):
             with Image.open(file_path) as im:
                 target = im.convert("RGBA")
 
-            self.assert_image_similar(image, target, 25.0)
+            assert_image_similar(image, target, 25.0)

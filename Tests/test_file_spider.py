@@ -4,7 +4,7 @@ from io import BytesIO
 
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
 
 TEST_FILE = "Tests/images/hopper.spider"
 
@@ -143,4 +143,4 @@ class TestImageSpider(PillowTestCase):
 
         data.seek(0)
         with Image.open(data) as im2:
-            self.assert_image_equal(im, im2)
+            assert_image_equal(im, im2)

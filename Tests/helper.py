@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageMath
 
 logger = logging.getLogger(__name__)
@@ -64,103 +65,118 @@ def convert_to_comparable(a, b):
     return new_a, new_b
 
 
+def assert_deep_equal(a, b, msg=None):
+    try:
+        assert len(a) == len(b), msg or "got length {}, expected {}".format(
+            len(a), len(b)
+        )
+    except Exception:
+        assert a == b, msg
+
+
+def assert_image(im, mode, size, msg=None):
+    if mode is not None:
+        assert im.mode == mode, msg or "got mode {!r}, expected {!r}".format(
+            im.mode, mode
+        )
+
+    if size is not None:
+        assert im.size == size, msg or "got size {!r}, expected {!r}".format(
+            im.size, size
+        )
+
+
+def assert_image_equal(a, b, msg=None):
+    assert a.mode == b.mode, msg or "got mode {!r}, expected {!r}".format(
+        a.mode, b.mode
+    )
+    assert a.size == b.size, msg or "got size {!r}, expected {!r}".format(
+        a.size, b.size
+    )
+    if a.tobytes() != b.tobytes():
+        if HAS_UPLOADER:
+            try:
+                url = test_image_results.upload(a, b)
+                logger.error("Url for test images: %s" % url)
+            except Exception:
+                pass
+
+        assert False, msg or "got different content"
+
+
+def assert_image_equal_tofile(a, filename, msg=None, mode=None):
+    with Image.open(filename) as img:
+        if mode:
+            img = img.convert(mode)
+        assert_image_equal(a, img, msg)
+
+
+def assert_image_similar(a, b, epsilon, msg=None):
+    assert a.mode == b.mode, msg or "got mode {!r}, expected {!r}".format(
+        a.mode, b.mode
+    )
+    assert a.size == b.size, msg or "got size {!r}, expected {!r}".format(
+        a.size, b.size
+    )
+
+    a, b = convert_to_comparable(a, b)
+
+    diff = 0
+    for ach, bch in zip(a.split(), b.split()):
+        chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
+        diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
+
+    ave_diff = diff / (a.size[0] * a.size[1])
+    try:
+        assert epsilon >= ave_diff, (
+            msg or ""
+        ) + " average pixel value difference %.4f > epsilon %.4f" % (ave_diff, epsilon)
+    except Exception as e:
+        if HAS_UPLOADER:
+            try:
+                url = test_image_results.upload(a, b)
+                logger.error("Url for test images: %s" % url)
+            except Exception:
+                pass
+        raise e
+
+
+def assert_image_similar_tofile(a, filename, epsilon, msg=None, mode=None):
+    with Image.open(filename) as img:
+        if mode:
+            img = img.convert(mode)
+        assert_image_similar(a, img, epsilon, msg)
+
+
+def assert_all_same(items, msg=None):
+    assert items.count(items[0]) == len(items), msg
+
+
+def assert_not_all_same(items, msg=None):
+    assert items.count(items[0]) != len(items), msg
+
+
+def assert_tuple_approx_equal(actuals, targets, threshold, msg):
+    """Tests if actuals has values within threshold from targets"""
+    value = True
+    for i, target in enumerate(targets):
+        value *= target - threshold <= actuals[i] <= target + threshold
+
+    assert value, msg + ": " + repr(actuals) + " != " + repr(targets)
+
+
+def skip_known_bad_test(msg=None):
+    # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
+    if not os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
+        pytest.skip(msg or "Known bad test")
+
+
 class PillowTestCase(unittest.TestCase):
     def delete_tempfile(self, path):
         try:
             os.remove(path)
         except OSError:
             pass  # report?
-
-    def assert_deep_equal(self, a, b, msg=None):
-        try:
-            self.assertEqual(
-                len(a),
-                len(b),
-                msg or "got length {}, expected {}".format(len(a), len(b)),
-            )
-            self.assertTrue(
-                all(x == y for x, y in zip(a, b)),
-                msg or "got {}, expected {}".format(a, b),
-            )
-        except Exception:
-            self.assertEqual(a, b, msg)
-
-    def assert_image(self, im, mode, size, msg=None):
-        if mode is not None:
-            self.assertEqual(
-                im.mode,
-                mode,
-                msg or "got mode {!r}, expected {!r}".format(im.mode, mode),
-            )
-
-        if size is not None:
-            self.assertEqual(
-                im.size,
-                size,
-                msg or "got size {!r}, expected {!r}".format(im.size, size),
-            )
-
-    def assert_image_equal(self, a, b, msg=None):
-        self.assertEqual(
-            a.mode, b.mode, msg or "got mode {!r}, expected {!r}".format(a.mode, b.mode)
-        )
-        self.assertEqual(
-            a.size, b.size, msg or "got size {!r}, expected {!r}".format(a.size, b.size)
-        )
-        if a.tobytes() != b.tobytes():
-            if HAS_UPLOADER:
-                try:
-                    url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" % url)
-                except Exception:
-                    pass
-
-            self.fail(msg or "got different content")
-
-    def assert_image_equal_tofile(self, a, filename, msg=None, mode=None):
-        with Image.open(filename) as img:
-            if mode:
-                img = img.convert(mode)
-            self.assert_image_equal(a, img, msg)
-
-    def assert_image_similar(self, a, b, epsilon, msg=None):
-        self.assertEqual(
-            a.mode, b.mode, msg or "got mode {!r}, expected {!r}".format(a.mode, b.mode)
-        )
-        self.assertEqual(
-            a.size, b.size, msg or "got size {!r}, expected {!r}".format(a.size, b.size)
-        )
-
-        a, b = convert_to_comparable(a, b)
-
-        diff = 0
-        for ach, bch in zip(a.split(), b.split()):
-            chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
-            diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
-
-        ave_diff = diff / (a.size[0] * a.size[1])
-        try:
-            self.assertGreaterEqual(
-                epsilon,
-                ave_diff,
-                (msg or "")
-                + " average pixel value difference %.4f > epsilon %.4f"
-                % (ave_diff, epsilon),
-            )
-        except Exception as e:
-            if HAS_UPLOADER:
-                try:
-                    url = test_image_results.upload(a, b)
-                    logger.error("Url for test images: %s" % url)
-                except Exception:
-                    pass
-            raise e
-
-    def assert_image_similar_tofile(self, a, filename, epsilon, msg=None, mode=None):
-        with Image.open(filename) as img:
-            if mode:
-                img = img.convert(mode)
-            self.assert_image_similar(a, img, epsilon, msg)
 
     def assert_warning(self, warn_class, func, *args, **kwargs):
         import warnings
@@ -186,26 +202,6 @@ class PillowTestCase(unittest.TestCase):
                         break
                 self.assertTrue(found)
         return result
-
-    def assert_all_same(self, items, msg=None):
-        self.assertEqual(items.count(items[0]), len(items), msg)
-
-    def assert_not_all_same(self, items, msg=None):
-        self.assertNotEqual(items.count(items[0]), len(items), msg)
-
-    def assert_tuple_approx_equal(self, actuals, targets, threshold, msg):
-        """Tests if actuals has values within threshold from targets"""
-
-        value = True
-        for i, target in enumerate(targets):
-            value *= target - threshold <= actuals[i] <= target + threshold
-
-        self.assertTrue(value, msg + ": " + repr(actuals) + " != " + repr(targets))
-
-    def skipKnownBadTest(self, msg=None):
-        # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
-        if not os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
-            self.skipTest(msg or "Known Bad Test")
 
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")

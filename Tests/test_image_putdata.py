@@ -3,7 +3,7 @@ from array import array
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImagePutData(PillowTestCase):
@@ -16,7 +16,7 @@ class TestImagePutData(PillowTestCase):
         im2 = Image.new(im1.mode, im1.size, 0)
         im2.putdata(data)
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
         # readonly
         im2 = Image.new(im1.mode, im2.size, 0)
@@ -24,7 +24,7 @@ class TestImagePutData(PillowTestCase):
         im2.putdata(data)
 
         self.assertFalse(im2.readonly)
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
     def test_long_integers(self):
         # see bug-200802-systemerror

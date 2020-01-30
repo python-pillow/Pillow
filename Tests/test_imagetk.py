@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 try:
     from PIL import ImageTk
@@ -39,11 +39,11 @@ class TestImageTk(PillowTestCase):
 
                 # Test "file"
                 im = ImageTk._get_image_from_kw(kw)
-                self.assert_image_equal(im, im1)
+                assert_image_equal(im, im1)
 
                 # Test "data"
                 im = ImageTk._get_image_from_kw(kw)
-                self.assert_image_equal(im, im2)
+                assert_image_equal(im, im2)
 
         # Test no relevant entry
         im = ImageTk._get_image_from_kw(kw)
@@ -61,7 +61,7 @@ class TestImageTk(PillowTestCase):
             self.assertEqual(im_tk.height(), im.height)
 
             reloaded = ImageTk.getimage(im_tk)
-            self.assert_image_equal(reloaded, im.convert("RGBA"))
+            assert_image_equal(reloaded, im.convert("RGBA"))
 
     def test_photoimage_blank(self):
         # test a image using mode/size:
@@ -72,7 +72,7 @@ class TestImageTk(PillowTestCase):
             self.assertEqual(im_tk.height(), 100)
 
             # reloaded = ImageTk.getimage(im_tk)
-            # self.assert_image_equal(reloaded, im)
+            # assert_image_equal(reloaded, im)
 
     def test_bitmapimage(self):
         im = hopper("1")
@@ -84,4 +84,4 @@ class TestImageTk(PillowTestCase):
         self.assertEqual(im_tk.height(), im.height)
 
         # reloaded = ImageTk.getimage(im_tk)
-        # self.assert_image_equal(reloaded, im)
+        # assert_image_equal(reloaded, im)

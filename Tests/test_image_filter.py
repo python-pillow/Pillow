@@ -1,6 +1,6 @@
 from PIL import Image, ImageFilter
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImageFilter(PillowTestCase):
@@ -114,7 +114,7 @@ class TestImageFilter(PillowTestCase):
                 reference = reference.split() * 2
 
                 for mode in ["L", "LA", "RGB", "CMYK"]:
-                    self.assert_image_equal(
+                    assert_image_equal(
                         Image.merge(mode, source[: len(mode)]).filter(kernel),
                         Image.merge(mode, reference[: len(mode)]),
                     )
@@ -137,7 +137,7 @@ class TestImageFilter(PillowTestCase):
                 reference = reference.split() * 2
 
                 for mode in ["L", "LA", "RGB", "CMYK"]:
-                    self.assert_image_equal(
+                    assert_image_equal(
                         Image.merge(mode, source[: len(mode)]).filter(kernel),
                         Image.merge(mode, reference[: len(mode)]),
                     )

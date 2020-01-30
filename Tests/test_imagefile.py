@@ -3,7 +3,15 @@ from io import BytesIO
 
 from PIL import EpsImagePlugin, Image, ImageFile
 
-from .helper import PillowTestCase, fromstring, hopper, tostring
+from .helper import (
+    PillowTestCase,
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    fromstring,
+    hopper,
+    tostring,
+)
 
 try:
     from PIL import _webp
@@ -40,23 +48,23 @@ class TestImageFile(PillowTestCase):
 
             return im, imOut
 
-        self.assert_image_equal(*roundtrip("BMP"))
+        assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
-        self.assert_image_similar(im1.convert("P"), im2, 1)
-        self.assert_image_equal(*roundtrip("IM"))
-        self.assert_image_equal(*roundtrip("MSP"))
+        assert_image_similar(im1.convert("P"), im2, 1)
+        assert_image_equal(*roundtrip("IM"))
+        assert_image_equal(*roundtrip("MSP"))
         if "zip_encoder" in codecs:
             try:
                 # force multiple blocks in PNG driver
                 ImageFile.MAXBLOCK = 8192
-                self.assert_image_equal(*roundtrip("PNG"))
+                assert_image_equal(*roundtrip("PNG"))
             finally:
                 ImageFile.MAXBLOCK = MAXBLOCK
-        self.assert_image_equal(*roundtrip("PPM"))
-        self.assert_image_equal(*roundtrip("TIFF"))
-        self.assert_image_equal(*roundtrip("XBM"))
-        self.assert_image_equal(*roundtrip("TGA"))
-        self.assert_image_equal(*roundtrip("PCX"))
+        assert_image_equal(*roundtrip("PPM"))
+        assert_image_equal(*roundtrip("TIFF"))
+        assert_image_equal(*roundtrip("XBM"))
+        assert_image_equal(*roundtrip("TGA"))
+        assert_image_equal(*roundtrip("PCX"))
 
         if EpsImagePlugin.has_ghostscript():
             im1, im2 = roundtrip("EPS")
@@ -67,11 +75,11 @@ class TestImageFile(PillowTestCase):
             # md5sum: ba974835ff2d6f3f2fd0053a23521d4a
 
             # EPS comes back in RGB:
-            self.assert_image_similar(im1, im2.convert("L"), 20)
+            assert_image_similar(im1, im2.convert("L"), 20)
 
         if "jpeg_encoder" in codecs:
             im1, im2 = roundtrip("JPEG")  # lossy compression
-            self.assert_image(im1, im2.mode, im2.size)
+            assert_image(im1, im2.mode, im2.size)
 
         self.assertRaises(IOError, roundtrip, "PDF")
 
@@ -94,7 +102,7 @@ class TestImageFile(PillowTestCase):
         finally:
             ImageFile.SAFEBLOCK = SAFEBLOCK
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
     def test_raise_ioerror(self):
         self.assertRaises(IOError, ImageFile.raise_ioerror, 1)

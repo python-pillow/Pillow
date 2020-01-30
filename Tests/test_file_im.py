@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image, ImImagePlugin
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -72,7 +72,7 @@ class TestFileIm(PillowTestCase):
             im.save(out)
             with Image.open(out) as reread:
 
-                self.assert_image_equal(reread, im)
+                assert_image_equal(reread, im)
 
     def test_save_unsupported_mode(self):
         out = self.tempfile("temp.im")

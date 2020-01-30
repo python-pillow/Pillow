@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImageSplit(PillowTestCase):
@@ -33,15 +33,15 @@ class TestImageSplit(PillowTestCase):
         def split_merge(mode):
             return Image.merge(mode, hopper(mode).split())
 
-        self.assert_image_equal(hopper("1"), split_merge("1"))
-        self.assert_image_equal(hopper("L"), split_merge("L"))
-        self.assert_image_equal(hopper("I"), split_merge("I"))
-        self.assert_image_equal(hopper("F"), split_merge("F"))
-        self.assert_image_equal(hopper("P"), split_merge("P"))
-        self.assert_image_equal(hopper("RGB"), split_merge("RGB"))
-        self.assert_image_equal(hopper("RGBA"), split_merge("RGBA"))
-        self.assert_image_equal(hopper("CMYK"), split_merge("CMYK"))
-        self.assert_image_equal(hopper("YCbCr"), split_merge("YCbCr"))
+        assert_image_equal(hopper("1"), split_merge("1"))
+        assert_image_equal(hopper("L"), split_merge("L"))
+        assert_image_equal(hopper("I"), split_merge("I"))
+        assert_image_equal(hopper("F"), split_merge("F"))
+        assert_image_equal(hopper("P"), split_merge("P"))
+        assert_image_equal(hopper("RGB"), split_merge("RGB"))
+        assert_image_equal(hopper("RGBA"), split_merge("RGBA"))
+        assert_image_equal(hopper("CMYK"), split_merge("CMYK"))
+        assert_image_equal(hopper("YCbCr"), split_merge("YCbCr"))
 
     def test_split_open(self):
         codecs = dir(Image.core)

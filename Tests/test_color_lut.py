@@ -3,7 +3,7 @@ from array import array
 
 from PIL import Image, ImageFilter
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 try:
     import numpy
@@ -147,7 +147,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
         # Fast test with small cubes
         for size in [2, 3, 5, 7, 11, 16, 17]:
-            self.assert_image_equal(
+            assert_image_equal(
                 im,
                 im._new(
                     im.im.color_lut_3d(
@@ -157,7 +157,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             )
 
         # Not so fast
-        self.assert_image_equal(
+        assert_image_equal(
             im,
             im._new(
                 im.im.color_lut_3d(
@@ -173,7 +173,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         )
 
         # Red channel copied to alpha
-        self.assert_image_equal(
+        assert_image_equal(
             Image.merge("RGBA", (im.split() * 2)[:4]),
             im._new(
                 im.im.color_lut_3d(
@@ -194,7 +194,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
             ],
         )
 
-        self.assert_image_equal(
+        assert_image_equal(
             im,
             im._new(
                 im.im.color_lut_3d(
@@ -211,7 +211,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
         # Reverse channels by splitting and using table
         # fmt: off
-        self.assert_image_equal(
+        assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
             im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
                     3, 2, 2, 2, [
@@ -368,15 +368,15 @@ class TestColorLut3DFilter(PillowTestCase):
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float16)
-        self.assert_image_equal(im, im.filter(lut))
+        assert_image_equal(im, im.filter(lut))
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float32)
-        self.assert_image_equal(im, im.filter(lut))
+        assert_image_equal(im, im.filter(lut))
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float64)
-        self.assert_image_equal(im, im.filter(lut))
+        assert_image_equal(im, im.filter(lut))
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.int32)

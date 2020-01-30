@@ -2,7 +2,7 @@ import unittest
 
 from PIL import DcxImagePlugin, Image
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
 
 # Created with ImageMagick: convert hopper.ppm hopper.dcx
 TEST_FILE = "Tests/images/hopper.dcx"
@@ -19,7 +19,7 @@ class TestFileDcx(PillowTestCase):
             self.assertEqual(im.size, (128, 128))
             self.assertIsInstance(im, DcxImagePlugin.DcxImageFile)
             orig = hopper()
-            self.assert_image_equal(im, orig)
+            assert_image_equal(im, orig)
 
     @unittest.skipIf(is_pypy(), "Requires CPython")
     def test_unclosed_file(self):

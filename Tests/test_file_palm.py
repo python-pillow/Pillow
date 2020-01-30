@@ -1,6 +1,12 @@
 import os.path
 
-from .helper import PillowTestCase, hopper, imagemagick_available
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    hopper,
+    imagemagick_available,
+    skip_known_bad_test,
+)
 
 
 class TestFilePalm(PillowTestCase):
@@ -27,7 +33,7 @@ class TestFilePalm(PillowTestCase):
 
         im.save(outfile)
         converted = self.open_withImagemagick(outfile)
-        self.assert_image_equal(converted, im)
+        assert_image_equal(converted, im)
 
     def test_monochrome(self):
         # Arrange
@@ -43,7 +49,7 @@ class TestFilePalm(PillowTestCase):
 
         # Act / Assert
         self.helper_save_as_palm(mode)
-        self.skipKnownBadTest("Palm P image is wrong")
+        skip_known_bad_test("Palm P image is wrong")
         self.roundtrip(mode)
 
     def test_l_ioerror(self):

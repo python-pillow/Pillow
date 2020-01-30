@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image, ImagePalette, features
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 try:
     from PIL import MicImagePlugin
@@ -29,7 +29,7 @@ class TestFileMic(PillowTestCase):
             im = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
 
             im2 = hopper("RGBA")
-            self.assert_image_similar(im, im2, 10)
+            assert_image_similar(im, im2, 10)
 
     def test_n_frames(self):
         with Image.open(TEST_FILE) as im:

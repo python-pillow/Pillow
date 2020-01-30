@@ -1,13 +1,13 @@
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 
 class TestUploader(PillowTestCase):
     def check_upload_equal(self):
         result = hopper("P").convert("RGB")
         target = hopper("RGB")
-        self.assert_image_equal(result, target)
+        assert_image_equal(result, target)
 
     def check_upload_similar(self):
         result = hopper("P").convert("RGB")
         target = hopper("RGB")
-        self.assert_image_similar(result, target, 0)
+        assert_image_similar(result, target, 0)

@@ -5,6 +5,9 @@ from PIL import Image, ImageFile, JpegImagePlugin
 
 from .helper import (
     PillowTestCase,
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
     cjpeg_available,
     djpeg_available,
     hopper,
@@ -114,7 +117,7 @@ class TestFileJpeg(PillowTestCase):
             # Roundtrip via memory buffer.
             im1 = self.roundtrip(hopper())
             im2 = self.roundtrip(hopper(), icc_profile=icc_profile)
-            self.assert_image_equal(im1, im2)
+            assert_image_equal(im1, im2)
             self.assertFalse(im1.info.get("icc_profile"))
             self.assertTrue(im2.info.get("icc_profile"))
 
@@ -161,8 +164,8 @@ class TestFileJpeg(PillowTestCase):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), optimize=0)
         im3 = self.roundtrip(hopper(), optimize=1)
-        self.assert_image_equal(im1, im2)
-        self.assert_image_equal(im1, im3)
+        assert_image_equal(im1, im2)
+        assert_image_equal(im1, im3)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
         self.assertGreaterEqual(im1.bytes, im3.bytes)
 
@@ -181,7 +184,7 @@ class TestFileJpeg(PillowTestCase):
         self.assertFalse(im2.info.get("progressive"))
         self.assertTrue(im3.info.get("progressive"))
 
-        self.assert_image_equal(im1, im3)
+        assert_image_equal(im1, im3)
         self.assertGreaterEqual(im1.bytes, im3.bytes)
 
     def test_progressive_large_buffer(self):
@@ -286,8 +289,8 @@ class TestFileJpeg(PillowTestCase):
 
         im2 = self.roundtrip(hopper(), progressive=1)
         im3 = self.roundtrip(hopper(), progression=1)  # compatibility
-        self.assert_image_equal(im1, im2)
-        self.assert_image_equal(im1, im3)
+        assert_image_equal(im1, im2)
+        assert_image_equal(im1, im3)
         self.assertTrue(im2.info.get("progressive"))
         self.assertTrue(im2.info.get("progression"))
         self.assertTrue(im3.info.get("progressive"))
@@ -296,13 +299,13 @@ class TestFileJpeg(PillowTestCase):
     def test_quality(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), quality=50)
-        self.assert_image(im1, im2.mode, im2.size)
+        assert_image(im1, im2.mode, im2.size)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
 
     def test_smooth(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), smooth=100)
-        self.assert_image(im1, im2.mode, im2.size)
+        assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self):
         def getsampling(im):
@@ -398,9 +401,9 @@ class TestFileJpeg(PillowTestCase):
             qtables = im.quantization
             reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
             self.assertEqual(im.quantization, reloaded.quantization)
-            self.assert_image_similar(im, self.roundtrip(im, qtables="web_low"), 30)
-            self.assert_image_similar(im, self.roundtrip(im, qtables="web_high"), 30)
-            self.assert_image_similar(im, self.roundtrip(im, qtables="keep"), 30)
+            assert_image_similar(im, self.roundtrip(im, qtables="web_low"), 30)
+            assert_image_similar(im, self.roundtrip(im, qtables="web_high"), 30)
+            assert_image_similar(im, self.roundtrip(im, qtables="keep"), 30)
 
             # valid bounds for baseline qtable
             bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
@@ -439,7 +442,7 @@ class TestFileJpeg(PillowTestCase):
                 )
             ]
             # list of qtable lists
-            self.assert_image_similar(
+            assert_image_similar(
                 im,
                 self.roundtrip(
                     im, qtables=[standard_l_qtable, standard_chrominance_qtable]
@@ -448,7 +451,7 @@ class TestFileJpeg(PillowTestCase):
             )
 
             # tuple of qtable lists
-            self.assert_image_similar(
+            assert_image_similar(
                 im,
                 self.roundtrip(
                     im, qtables=(standard_l_qtable, standard_chrominance_qtable)
@@ -457,7 +460,7 @@ class TestFileJpeg(PillowTestCase):
             )
 
             # dict of qtable lists
-            self.assert_image_similar(
+            assert_image_similar(
                 im,
                 self.roundtrip(
                     im, qtables={0: standard_l_qtable, 1: standard_chrominance_qtable}
@@ -490,7 +493,7 @@ class TestFileJpeg(PillowTestCase):
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            self.assert_image_similar(img, Image.open(TEST_FILE), 0)
+            assert_image_similar(img, Image.open(TEST_FILE), 0)
 
     @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
     def test_save_cjpeg(self):
@@ -498,7 +501,7 @@ class TestFileJpeg(PillowTestCase):
             tempfile = self.tempfile("temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
-            self.assert_image_similar(img, Image.open(tempfile), 17)
+            assert_image_similar(img, Image.open(tempfile), 17)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
@@ -670,7 +673,7 @@ class TestFileJpeg(PillowTestCase):
             # Test that the image can still load, even with broken Photoshop data
             # This image had the APP13 length hexedited to be smaller
             with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
-                self.assert_image_equal(im_broken, im)
+                assert_image_equal(im_broken, im)
 
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:

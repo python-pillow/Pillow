@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image, PsdImagePlugin
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_similar, hopper, is_pypy
 
 test_file = "Tests/images/hopper.psd"
 
@@ -16,7 +16,7 @@ class TestImagePsd(PillowTestCase):
             self.assertEqual(im.format, "PSD")
 
             im2 = hopper()
-            self.assert_image_similar(im, im2, 4.8)
+            assert_image_similar(im, im2, 4.8)
 
     @unittest.skipIf(is_pypy(), "Requires CPython")
     def test_unclosed_file(self):

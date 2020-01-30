@@ -4,7 +4,7 @@ import struct
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_deep_equal, hopper
 
 tag_ids = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
@@ -149,7 +149,7 @@ class TestFileTiffMetadata(PillowTestCase):
             ):
                 # Need to compare element by element in the tuple,
                 # not comparing tuples of object references
-                self.assert_deep_equal(
+                assert_deep_equal(
                     original[tag],
                     value,
                     "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),

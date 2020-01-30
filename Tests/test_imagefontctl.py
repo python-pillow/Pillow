@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_similar
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
@@ -26,7 +26,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_text.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_y_offset(self):
         ttf = ImageFont.truetype("Tests/fonts/NotoNastaliqUrdu-Regular.ttf", FONT_SIZE)
@@ -37,7 +37,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_y_offset.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 1.7)
+            assert_image_similar(im, target_img, 1.7)
 
     def test_complex_unicode_text(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -48,7 +48,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_complex_unicode_text.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
         ttf = ImageFont.truetype("Tests/fonts/KhmerOSBattambang-Regular.ttf", FONT_SIZE)
 
@@ -58,7 +58,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_complex_unicode_text2.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 2.3)
+            assert_image_similar(im, target_img, 2.3)
 
     def test_text_direction_rtl(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -69,7 +69,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_direction_rtl.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_text_direction_ltr(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -80,7 +80,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_direction_ltr.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_text_direction_rtl2(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -91,7 +91,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_direction_ltr.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_text_direction_ttb(self):
         ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", FONT_SIZE)
@@ -106,7 +106,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_direction_ttb.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 1.15)
+            assert_image_similar(im, target_img, 1.15)
 
     def test_text_direction_ttb_stroke(self):
         ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", 50)
@@ -129,7 +129,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_direction_ttb_stroke.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 12.4)
+            assert_image_similar(im, target_img, 12.4)
 
     def test_ligature_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -139,7 +139,7 @@ class TestImagecomplextext(PillowTestCase):
         draw.text((0, 0), "filling", font=ttf, fill=500, features=["-liga"])
         target = "Tests/images/test_ligature_features.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
         liga_size = ttf.getsize("fi", features=["-liga"])
         self.assertEqual(liga_size, (13, 19))
@@ -153,7 +153,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_kerning_features.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_arabictext_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -170,7 +170,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_arabictext_features.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_x_max_and_y_offset(self):
         ttf = ImageFont.truetype("Tests/fonts/ArefRuqaa-Regular.ttf", 40)
@@ -181,7 +181,7 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_x_max_and_y_offset.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)
 
     def test_language(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -192,4 +192,4 @@ class TestImagecomplextext(PillowTestCase):
 
         target = "Tests/images/test_language.png"
         with Image.open(target) as target_img:
-            self.assert_image_similar(im, target_img, 0.5)
+            assert_image_similar(im, target_img, 0.5)

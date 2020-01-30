@@ -4,7 +4,7 @@ import unittest
 
 from PIL import IcnsImagePlugin, Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -46,12 +46,12 @@ class TestFileIcns(PillowTestCase):
             im.save(temp_file, append_images=[provided_im])
 
             with Image.open(temp_file) as reread:
-                self.assert_image_similar(reread, im, 1)
+                assert_image_similar(reread, im, 1)
 
             with Image.open(temp_file) as reread:
                 reread.size = (16, 16, 2)
                 reread.load()
-                self.assert_image_equal(reread, provided_im)
+                assert_image_equal(reread, provided_im)
 
     def test_sizes(self):
         # Check that we can load all of the sizes, and that the final pixel

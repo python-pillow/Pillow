@@ -5,7 +5,7 @@ from itertools import permutations
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 
 class TestImagingCoreResize(PillowTestCase):
@@ -116,7 +116,7 @@ class TestImagingCoreResize(PillowTestCase):
                     for i, ch in enumerate(resized.split()):
                         # check what resized channel in image is the same
                         # as separately resized channel
-                        self.assert_image_equal(ch, references[channels[i]])
+                        assert_image_equal(ch, references[channels[i]])
 
     def test_enlarge_zero(self):
         for f in [
@@ -145,7 +145,7 @@ class TestReducingGapResize(PillowTestCase):
     def test_reducing_gap_values(self):
         ref = self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=None)
         im = self.gradients_image.resize((52, 34), Image.BICUBIC)
-        self.assert_image_equal(ref, im)
+        assert_image_equal(ref, im)
 
         with self.assertRaises(ValueError):
             self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0)
@@ -165,9 +165,9 @@ class TestReducingGapResize(PillowTestCase):
             )
 
             with self.assertRaises(AssertionError):
-                self.assert_image_equal(ref, im)
+                assert_image_equal(ref, im)
 
-            self.assert_image_similar(ref, im, epsilon)
+            assert_image_similar(ref, im, epsilon)
 
     def test_reducing_gap_2(self):
         for box, epsilon in [
@@ -181,9 +181,9 @@ class TestReducingGapResize(PillowTestCase):
             )
 
             with self.assertRaises(AssertionError):
-                self.assert_image_equal(ref, im)
+                assert_image_equal(ref, im)
 
-            self.assert_image_similar(ref, im, epsilon)
+            assert_image_similar(ref, im, epsilon)
 
     def test_reducing_gap_3(self):
         for box, epsilon in [
@@ -197,9 +197,9 @@ class TestReducingGapResize(PillowTestCase):
             )
 
             with self.assertRaises(AssertionError):
-                self.assert_image_equal(ref, im)
+                assert_image_equal(ref, im)
 
-            self.assert_image_similar(ref, im, epsilon)
+            assert_image_similar(ref, im, epsilon)
 
     def test_reducing_gap_8(self):
         for box in [None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)]:
@@ -208,7 +208,7 @@ class TestReducingGapResize(PillowTestCase):
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=8.0
             )
 
-            self.assert_image_equal(ref, im)
+            assert_image_equal(ref, im)
 
     def test_box_filter(self):
         for box, epsilon in [
@@ -220,7 +220,7 @@ class TestReducingGapResize(PillowTestCase):
                 (52, 34), Image.BOX, box=box, reducing_gap=1.0
             )
 
-            self.assert_image_similar(ref, im, epsilon)
+            assert_image_similar(ref, im, epsilon)
 
 
 class TestImageResize(PillowTestCase):

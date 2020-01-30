@@ -3,7 +3,7 @@ from io import BytesIO
 
 from PIL import Image
 
-from .helper import PillowTestCase, is_pypy
+from .helper import PillowTestCase, assert_image_similar, is_pypy
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
@@ -194,8 +194,8 @@ class TestFileMpo(PillowTestCase):
             with Image.open(test_file) as im:
                 self.assertEqual(im.tell(), 0)
                 jpg0 = self.frame_roundtrip(im)
-                self.assert_image_similar(im, jpg0, 30)
+                assert_image_similar(im, jpg0, 30)
                 im.seek(1)
                 self.assertEqual(im.tell(), 1)
                 jpg1 = self.frame_roundtrip(im)
-                self.assert_image_similar(im, jpg1, 30)
+                assert_image_similar(im, jpg1, 30)

@@ -2,7 +2,12 @@ import unittest
 
 from PIL import Image, WebPImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import (
+    PillowTestCase,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 try:
     from PIL import _webp
@@ -50,9 +55,7 @@ class TestFileWebp(PillowTestCase):
 
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
-            self.assert_image_similar_tofile(
-                image, "Tests/images/hopper_webp_bits.ppm", 1.0
-            )
+            assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
 
     def test_write_rgb(self):
         """
@@ -71,7 +74,7 @@ class TestFileWebp(PillowTestCase):
             image.getdata()
 
             # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
-            self.assert_image_similar_tofile(
+            assert_image_similar_tofile(
                 image, "Tests/images/hopper_webp_write.ppm", 12.0
             )
 
@@ -81,7 +84,7 @@ class TestFileWebp(PillowTestCase):
             # the image. The old lena images for WebP are showing ~16 on
             # Ubuntu, the jpegs are showing ~18.
             target = hopper(self.rgb_mode)
-            self.assert_image_similar(image, target, 12.0)
+            assert_image_similar(image, target, 12.0)
 
     def test_write_unsupported_mode_L(self):
         """
@@ -100,7 +103,7 @@ class TestFileWebp(PillowTestCase):
             image.getdata()
             target = hopper("L").convert(self.rgb_mode)
 
-            self.assert_image_similar(image, target, 10.0)
+            assert_image_similar(image, target, 10.0)
 
     def test_write_unsupported_mode_P(self):
         """
@@ -119,7 +122,7 @@ class TestFileWebp(PillowTestCase):
             image.getdata()
             target = hopper("P").convert(self.rgb_mode)
 
-            self.assert_image_similar(image, target, 50.0)
+            assert_image_similar(image, target, 50.0)
 
     def test_WebPEncode_with_invalid_args(self):
         """

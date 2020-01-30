@@ -7,7 +7,7 @@ from distutils import ccompiler, sysconfig
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper, is_win32, on_ci
+from .helper import PillowTestCase, assert_image_equal, hopper, is_win32, on_ci
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -45,7 +45,7 @@ class TestImagePutPixel(AccessTest):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
         im2.readonly = 1
@@ -56,7 +56,7 @@ class TestImagePutPixel(AccessTest):
                 im2.putpixel(pos, im1.getpixel(pos))
 
         self.assertFalse(im2.readonly)
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
 
@@ -67,7 +67,7 @@ class TestImagePutPixel(AccessTest):
             for x in range(im1.size[0]):
                 pix2[x, y] = pix1[x, y]
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
     def test_sanity_negative_index(self):
         im1 = hopper()
@@ -82,7 +82,7 @@ class TestImagePutPixel(AccessTest):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
         im2.readonly = 1
@@ -93,7 +93,7 @@ class TestImagePutPixel(AccessTest):
                 im2.putpixel(pos, im1.getpixel(pos))
 
         self.assertFalse(im2.readonly)
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
 
@@ -104,7 +104,7 @@ class TestImagePutPixel(AccessTest):
             for x in range(-1, -im1.size[0] - 1, -1):
                 pix2[x, y] = pix1[x, y]
 
-        self.assert_image_equal(im1, im2)
+        assert_image_equal(im1, im2)
 
 
 class TestImageGetPixel(AccessTest):

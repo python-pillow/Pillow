@@ -1,6 +1,6 @@
 from PIL import Image, XpmImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 TEST_FILE = "Tests/images/hopper.xpm"
 
@@ -14,7 +14,7 @@ class TestFileXpm(PillowTestCase):
             self.assertEqual(im.format, "XPM")
 
             # large error due to quantization->44 colors.
-            self.assert_image_similar(im.convert("RGB"), hopper("RGB"), 60)
+            assert_image_similar(im.convert("RGB"), hopper("RGB"), 60)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"

@@ -1,6 +1,6 @@
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar
 
 codecs = dir(Image.core)
 
@@ -27,7 +27,7 @@ class TestFontPcf(PillowTestCase):
 
         with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
             with Image.open("Tests/fonts/10x20.pbm") as target:
-                self.assert_image_equal(loaded, target)
+                assert_image_equal(loaded, target)
 
         with open(tempname, "rb") as f_loaded:
             with open("Tests/fonts/10x20.pil", "rb") as f_target:
@@ -48,7 +48,7 @@ class TestFontPcf(PillowTestCase):
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, "black", font=font)
         with Image.open("Tests/images/test_draw_pbm_target.png") as target:
-            self.assert_image_similar(im, target, 0)
+            assert_image_similar(im, target, 0)
 
     def test_textsize(self):
         tempname = self.save_font()
@@ -68,7 +68,7 @@ class TestFontPcf(PillowTestCase):
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), message, "black", font=font)
         with Image.open("Tests/images/high_ascii_chars.png") as target:
-            self.assert_image_similar(im, target, 0)
+            assert_image_similar(im, target, 0)
 
     def test_high_characters(self):
         message = "".join(chr(i + 1) for i in range(140, 232))

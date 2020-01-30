@@ -2,7 +2,7 @@ from io import BytesIO
 
 from PIL import DdsImagePlugin, Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
@@ -26,7 +26,7 @@ class TestFileDds(PillowTestCase):
             self.assertEqual(im.mode, "RGBA")
             self.assertEqual(im.size, (256, 256))
 
-            self.assert_image_equal(im, target)
+            assert_image_equal(im, target)
 
     def test_sanity_dxt5(self):
         """Check DXT5 images can be opened"""
@@ -39,7 +39,7 @@ class TestFileDds(PillowTestCase):
         self.assertEqual(im.size, (256, 256))
 
         with Image.open(TEST_FILE_DXT5.replace(".dds", ".png")) as target:
-            self.assert_image_equal(target, im)
+            assert_image_equal(target, im)
 
     def test_sanity_dxt3(self):
         """Check DXT3 images can be opened"""
@@ -52,7 +52,7 @@ class TestFileDds(PillowTestCase):
                 self.assertEqual(im.mode, "RGBA")
                 self.assertEqual(im.size, (256, 256))
 
-                self.assert_image_equal(target, im)
+                assert_image_equal(target, im)
 
     def test_dx10_bc7(self):
         """Check DX10 images can be opened"""
@@ -65,7 +65,7 @@ class TestFileDds(PillowTestCase):
             self.assertEqual(im.size, (256, 256))
 
             with Image.open(TEST_FILE_DX10_BC7.replace(".dds", ".png")) as target:
-                self.assert_image_equal(target, im)
+                assert_image_equal(target, im)
 
     def test_dx10_bc7_unorm_srgb(self):
         """Check DX10 unsigned normalized integer images can be opened"""
@@ -81,7 +81,7 @@ class TestFileDds(PillowTestCase):
             with Image.open(
                 TEST_FILE_DX10_BC7_UNORM_SRGB.replace(".dds", ".png")
             ) as target:
-                self.assert_image_equal(target, im)
+                assert_image_equal(target, im)
 
     def test_unimplemented_dxgi_format(self):
         self.assertRaises(
@@ -103,7 +103,7 @@ class TestFileDds(PillowTestCase):
             with Image.open(
                 TEST_FILE_UNCOMPRESSED_RGB.replace(".dds", ".png")
             ) as target:
-                self.assert_image_equal(target, im)
+                assert_image_equal(target, im)
 
     def test__validate_true(self):
         """Check valid prefix"""

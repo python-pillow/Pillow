@@ -8,6 +8,9 @@ from PIL import Image, ImageFile, PngImagePlugin
 from .helper import (
     PillowLeakTestCase,
     PillowTestCase,
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
     hopper,
     is_big_endian,
     is_win32,
@@ -103,7 +106,7 @@ class TestFilePng(PillowTestCase):
             with Image.open(test_file) as reloaded:
                 if mode == "I;16":
                     reloaded = reloaded.convert(mode)
-                self.assert_image_equal(reloaded, im)
+                assert_image_equal(reloaded, im)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -205,14 +208,14 @@ class TestFilePng(PillowTestCase):
 
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
-            self.assert_image(im, "P", (162, 150))
+            assert_image(im, "P", (162, 150))
             self.assertTrue(im.info.get("interlace"))
 
             im.load()
 
         test_file = "Tests/images/pil123rgba.png"
         with Image.open(test_file) as im:
-            self.assert_image(im, "RGBA", (162, 150))
+            assert_image(im, "RGBA", (162, 150))
             self.assertTrue(im.info.get("interlace"))
 
             im.load()
@@ -220,9 +223,9 @@ class TestFilePng(PillowTestCase):
     def test_load_transparent_p(self):
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
-            self.assert_image(im, "P", (162, 150))
+            assert_image(im, "P", (162, 150))
             im = im.convert("RGBA")
-        self.assert_image(im, "RGBA", (162, 150))
+        assert_image(im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
         self.assertEqual(len(im.getchannel("A").getcolors()), 124)
@@ -232,9 +235,9 @@ class TestFilePng(PillowTestCase):
         with Image.open(test_file) as im:
             self.assertEqual(im.info["transparency"], (0, 255, 52))
 
-            self.assert_image(im, "RGB", (64, 64))
+            assert_image(im, "RGB", (64, 64))
             im = im.convert("RGBA")
-        self.assert_image(im, "RGBA", (64, 64))
+        assert_image(im, "RGBA", (64, 64))
 
         # image has 876 transparent pixels
         self.assertEqual(im.getchannel("A").getcolors()[0][0], 876)
@@ -253,9 +256,9 @@ class TestFilePng(PillowTestCase):
         with Image.open(test_file) as im:
             self.assertEqual(len(im.info["transparency"]), 256)
 
-            self.assert_image(im, "P", (162, 150))
+            assert_image(im, "P", (162, 150))
             im = im.convert("RGBA")
-        self.assert_image(im, "RGBA", (162, 150))
+        assert_image(im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
         self.assertEqual(len(im.getchannel("A").getcolors()), 124)
@@ -274,9 +277,9 @@ class TestFilePng(PillowTestCase):
         with Image.open(test_file) as im:
             self.assertEqual(im.info["transparency"], 164)
             self.assertEqual(im.getpixel((31, 31)), 164)
-            self.assert_image(im, "P", (64, 64))
+            assert_image(im, "P", (64, 64))
             im = im.convert("RGBA")
-        self.assert_image(im, "RGBA", (64, 64))
+        assert_image(im, "RGBA", (64, 64))
 
         self.assertEqual(im.getpixel((31, 31)), (0, 255, 52, 0))
 
@@ -296,9 +299,9 @@ class TestFilePng(PillowTestCase):
         # check if saved image contains same transparency
         with Image.open(test_file) as im:
             self.assertEqual(len(im.info["transparency"]), 256)
-            self.assert_image(im, "P", (10, 10))
+            assert_image(im, "P", (10, 10))
             im = im.convert("RGBA")
-        self.assert_image(im, "RGBA", (10, 10))
+        assert_image(im, "RGBA", (10, 10))
         self.assertEqual(im.getcolors(), [(100, (0, 0, 0, 0))])
 
     def test_save_greyscale_transparency(self):
@@ -317,7 +320,7 @@ class TestFilePng(PillowTestCase):
             with Image.open(test_file) as test_im:
                 self.assertEqual(test_im.mode, mode)
                 self.assertEqual(test_im.info["transparency"], 255)
-                self.assert_image_equal(im, test_im)
+                assert_image_equal(im, test_im)
 
             test_im_rgba = test_im.convert("RGBA")
             self.assertEqual(
@@ -500,7 +503,7 @@ class TestFilePng(PillowTestCase):
         with Image.open(f) as im2:
             self.assertIn("transparency", im2.info)
 
-            self.assert_image_equal(im2.convert("RGBA"), im.convert("RGBA"))
+            assert_image_equal(im2.convert("RGBA"), im.convert("RGBA"))
 
     def test_trns_null(self):
         # Check reading images with null tRNS value, issue #1239
@@ -543,7 +546,7 @@ class TestFilePng(PillowTestCase):
 
         with Image.open(BytesIO(im._repr_png_())) as repr_png:
             self.assertEqual(repr_png.format, "PNG")
-            self.assert_image_equal(im, repr_png)
+            assert_image_equal(im, repr_png)
 
     def test_chunk_order(self):
         with Image.open("Tests/images/icc_profile.png") as im:
@@ -638,7 +641,7 @@ class TestFilePng(PillowTestCase):
 
             # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
             with Image.open("Tests/images/iss634.webp") as expected:
-                self.assert_image_similar(im, expected, 0.23)
+                assert_image_similar(im, expected, 0.23)
 
 
 @unittest.skipIf(is_win32(), "requires Unix or macOS")
