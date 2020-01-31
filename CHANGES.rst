@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Add support for shooting situation Exif IFD tags #4398
+  [alexagv]
+
 - Handle multiple and malformed JPEG APP13 markers #4370
   [homm]
 
