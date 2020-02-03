@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, hopper
@@ -38,7 +39,7 @@ class TestDecompressionBomb(PillowTestCase):
             with Image.open(TEST_FILE):
                 pass
 
-        self.assert_warning(Image.DecompressionBombWarning, open)
+        pytest.warns(Image.DecompressionBombWarning, open)
 
     def test_exception(self):
         # Set limit to trigger exception on the test file
@@ -71,7 +72,7 @@ class TestDecompressionCrop(PillowTestCase):
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
         box = (0, 0, self.src.width * 2, self.src.height * 2)
-        self.assert_warning(Image.DecompressionBombWarning, self.src.crop, box)
+        pytest.warns(Image.DecompressionBombWarning, self.src.crop, box)
 
     def test_crop_decompression_checks(self):
 
@@ -87,7 +88,7 @@ class TestDecompressionCrop(PillowTestCase):
             self.assertEqual(im.crop(value).size, (9, 9))
 
         for value in warning_values:
-            self.assert_warning(Image.DecompressionBombWarning, im.crop, value)
+            pytest.warns(Image.DecompressionBombWarning, im.crop, value)
 
         for value in error_values:
             with self.assertRaises(Image.DecompressionBombError):

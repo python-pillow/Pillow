@@ -2,6 +2,7 @@ import os
 from glob import glob
 from itertools import product
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, hopper
@@ -136,7 +137,7 @@ class TestFileTga(PillowTestCase):
 
         # Save with custom id section greater than 255 characters
         id_section = b"Test content" * 25
-        self.assert_warning(UserWarning, lambda: im.save(out, id_section=id_section))
+        pytest.warns(UserWarning, lambda: im.save(out, id_section=id_section))
         with Image.open(out) as test_im:
             self.assertEqual(test_im.info["id_section"], id_section[:255])
 

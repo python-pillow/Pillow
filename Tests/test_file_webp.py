@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from PIL import Image, WebPImagePlugin
 
 from .helper import (
@@ -23,7 +24,7 @@ class TestUnsupportedWebp(PillowTestCase):
             WebPImagePlugin.SUPPORTED = False
 
         file_path = "Tests/images/hopper.webp"
-        self.assert_warning(
+        pytest.warns(
             UserWarning, lambda: self.assertRaises(IOError, Image.open, file_path)
         )
 
@@ -146,7 +147,7 @@ class TestFileWebp(PillowTestCase):
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             temp_file = self.tempfile("temp.webp")
-            self.assert_warning(None, image.save, temp_file)
+            pytest.warns(None, image.save, temp_file)
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"

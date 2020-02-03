@@ -1,5 +1,6 @@
 import os
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_similar
@@ -28,7 +29,7 @@ class TestBmpReference(PillowTestCase):
                     pass
 
             # Assert that there is no unclosed file warning
-            self.assert_warning(None, open, f)
+            pytest.warns(None, open, f)
 
     def test_questionable(self):
         """ These shouldn't crash/dos, but it's not well defined that these

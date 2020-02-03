@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from PIL import Image, PsdImagePlugin
 
 from .helper import PillowTestCase, assert_image_similar, hopper, is_pypy
@@ -24,7 +25,7 @@ class TestImagePsd(PillowTestCase):
             im = Image.open(test_file)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -32,14 +33,14 @@ class TestImagePsd(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(test_file) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"

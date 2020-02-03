@@ -1,5 +1,6 @@
 import io
 
+import pytest
 from PIL import IcoImagePlugin, Image, ImageDraw
 
 from .helper import PillowTestCase, assert_image_equal, hopper
@@ -87,7 +88,7 @@ class TestFileIco(PillowTestCase):
             with Image.open("Tests/images/hopper_unexpected.ico") as im:
                 self.assertEqual(im.size, (16, 16))
 
-        self.assert_warning(UserWarning, open)
+        pytest.warns(UserWarning, open)
 
     def test_draw_reloaded(self):
         with Image.open(TEST_ICO_FILE) as im:

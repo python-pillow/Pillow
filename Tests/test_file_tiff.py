@@ -60,7 +60,7 @@ class TestFileTiff(PillowTestCase):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -68,14 +68,14 @@ class TestFileTiff(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -185,7 +185,7 @@ class TestFileTiff(PillowTestCase):
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            self.assert_warning(UserWarning, i._getexif)
+            pytest.warns(UserWarning, i._getexif)
 
     def test_save_rgba(self):
         im = hopper("RGBA")

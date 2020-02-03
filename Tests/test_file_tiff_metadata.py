@@ -1,6 +1,7 @@
 import io
 import struct
 
+import pytest
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
@@ -174,7 +175,7 @@ class TestFileTiffMetadata(PillowTestCase):
         head = f.read(8)
         info = TiffImagePlugin.ImageFileDirectory(head)
         # Should not raise struct.error.
-        self.assert_warning(UserWarning, info.load, f)
+        pytest.warns(UserWarning, info.load, f)
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
@@ -333,4 +334,4 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd.tagtype[277] = TiffTags.SHORT
 
         # Should not raise ValueError.
-        self.assert_warning(UserWarning, lambda: ifd[277])
+        pytest.warns(UserWarning, lambda: ifd[277])

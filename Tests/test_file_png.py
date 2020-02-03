@@ -338,7 +338,7 @@ class TestFilePng(PillowTestCase):
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            self.assert_warning(None, im.verify)
+            pytest.warns(None, im.verify)
 
         with Image.open(TEST_PNG_FILE) as im:
             im.load()

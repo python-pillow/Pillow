@@ -1,6 +1,7 @@
 import unittest
 from io import BytesIO
 
+import pytest
 from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
 
 from .helper import (
@@ -47,7 +48,7 @@ class TestFileGif(PillowTestCase):
             im = Image.open(TEST_GIF)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -55,14 +56,14 @@ class TestFileGif(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(TEST_GIF) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -684,7 +685,7 @@ class TestFileGif(PillowTestCase):
         # Single frame
         im = Image.new("RGB", (1, 1))
         im.info["transparency"] = (255, 0, 0)
-        self.assert_warning(UserWarning, im.save, out)
+        pytest.warns(UserWarning, im.save, out)
 
         with Image.open(out) as reloaded:
             self.assertNotIn("transparency", reloaded.info)
@@ -693,7 +694,7 @@ class TestFileGif(PillowTestCase):
         im = Image.new("RGB", (1, 1))
         im.info["transparency"] = b""
         ims = [Image.new("RGB", (1, 1))]
-        self.assert_warning(UserWarning, im.save, out, save_all=True, append_images=ims)
+        pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
 
         with Image.open(out) as reloaded:
             self.assertNotIn("transparency", reloaded.info)

@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageFile, JpegImagePlugin
 
 from .helper import (
@@ -531,7 +532,7 @@ class TestFileJpeg(PillowTestCase):
         # Act
         # Shouldn't raise error
         fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        with self.assert_warning(UserWarning, Image.open, fn) as im:
+        with pytest.warns(UserWarning, Image.open, fn) as im:
 
             # Assert
             self.assertEqual(im.format, "JPEG")

@@ -2,6 +2,7 @@ import io
 import sys
 import unittest
 
+import pytest
 from PIL import IcnsImagePlugin, Image
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar
@@ -19,7 +20,7 @@ class TestFileIcns(PillowTestCase):
         with Image.open(TEST_FILE) as im:
 
             # Assert that there is no unclosed file warning
-            self.assert_warning(None, im.load)
+            pytest.warns(None, im.load)
 
             self.assertEqual(im.mode, "RGBA")
             self.assertEqual(im.size, (1024, 1024))

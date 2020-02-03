@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
 from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
@@ -23,7 +24,7 @@ class TestImageSpider(PillowTestCase):
             im = Image.open(TEST_FILE)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -31,14 +32,14 @@ class TestImageSpider(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(TEST_FILE) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_save(self):
         # Arrange

@@ -178,31 +178,6 @@ class PillowTestCase(unittest.TestCase):
         except OSError:
             pass  # report?
 
-    def assert_warning(self, warn_class, func, *args, **kwargs):
-        import warnings
-
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
-
-            # Hopefully trigger a warning.
-            result = func(*args, **kwargs)
-
-            # Verify some things.
-            if warn_class is None:
-                self.assertEqual(
-                    len(w), 0, "Expected no warnings, got %s" % [v.category for v in w]
-                )
-            else:
-                self.assertGreaterEqual(len(w), 1)
-                found = False
-                for v in w:
-                    if issubclass(v.category, warn_class):
-                        found = True
-                        break
-                self.assertTrue(found)
-        return result
-
     def tempfile(self, template):
         assert template[:5] in ("temp.", "temp_")
         fd, path = tempfile.mkstemp(template[4:], template[:4])

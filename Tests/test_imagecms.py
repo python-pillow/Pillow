@@ -2,6 +2,7 @@ import datetime
 import os
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageMode
 
 from .helper import (
@@ -447,7 +448,7 @@ class TestImageCms(PillowTestCase):
         p = o.profile
 
         def helper_deprecated(attr, expected):
-            result = self.assert_warning(DeprecationWarning, getattr, p, attr)
+            result = pytest.warns(DeprecationWarning, getattr, p, attr)
             self.assertEqual(result, expected)
 
         # p.color_space

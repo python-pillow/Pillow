@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image
 
 from .helper import (
@@ -122,7 +123,7 @@ class TestImageConvert(PillowTestCase):
         self.assertIn("transparency", im_p.info)
         im_p.save(f)
 
-        im_p = self.assert_warning(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+        im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
         self.assertNotIn("transparency", im_p.info)
         im_p.save(f)
 
@@ -144,7 +145,7 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn("transparency", im_rgba.info)
         im_rgba.save(f)
 
-        im_p = self.assert_warning(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+        im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
         self.assertNotIn("transparency", im_p.info)
         im_p.save(f)
 

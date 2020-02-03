@@ -1,6 +1,7 @@
 import unittest
 from io import BytesIO
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_similar, is_pypy
@@ -38,7 +39,7 @@ class TestFileMpo(PillowTestCase):
             im = Image.open(test_files[0])
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -46,14 +47,14 @@ class TestFileMpo(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(test_files[0]) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_app(self):
         for test_file in test_files:

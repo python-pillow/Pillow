@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import unittest
 
+import pytest
 from PIL import Image, UnidentifiedImageError
 
 from .helper import (
@@ -576,7 +577,7 @@ class TestImage(PillowTestCase):
 
         # Act/Assert
         with Image.open(test_file) as im:
-            self.assert_warning(None, im.save, temp_file)
+            pytest.warns(None, im.save, temp_file)
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:

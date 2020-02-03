@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_deep_equal, assert_image, hopper
@@ -220,4 +221,4 @@ class TestNumpy(PillowTestCase):
         with Image.open(test_file) as im:
 
             # Act/Assert
-            self.assert_warning(None, lambda: array(im))
+            pytest.warns(None, lambda: array(im))
