@@ -2236,17 +2236,17 @@ class Image:
         :returns: None
         """
 
-        # preserve aspect ratio
         x, y = size
+        if x >= self.width and y >= self.height:
+            return
+
+        # preserve aspect ratio
         aspect = self.width / self.height
         if x / y >= aspect:
             x = max(y * aspect, 1)
         else:
             y = max(x / aspect, 1)
         size = (round(x), round(y))
-
-        if size == self.size:
-            return
 
         box = None
         if reducing_gap is not None:
