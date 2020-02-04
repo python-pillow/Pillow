@@ -34,9 +34,9 @@ def test_aspect():
     im.thumbnail((100, 100))
     assert im.size == (100, 50)
 
-    im = Image.new("L", (256, 128))
-    im.thumbnail((100, 50))
-    assert im.size == (100, 50)
+    im = Image.new("L", (64, 64))
+    im.thumbnail((100, 100))
+    assert im.size == (64, 64)
 
     im = Image.new("L", (128, 128))
     im.thumbnail((100, 100))
