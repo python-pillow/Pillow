@@ -2237,19 +2237,18 @@ class Image:
         """
 
         # preserve aspect ratio
-        x, y = self.size
-        if x > size[0]:
-            y = max(round(y * size[0] / x), 1)
-            x = round(size[0])
-        if y > size[1]:
-            x = max(round(x * size[1] / y), 1)
-            y = round(size[1])
-        size = x, y
-        box = None
+        x, y = size
+        aspect = self.width / self.height
+        if x / y >= aspect:
+            x = max(y * aspect, 1)
+        else:
+            y = max(x / aspect, 1)
+        size = (round(x), round(y))
 
         if size == self.size:
             return
 
+        box = None
         if reducing_gap is not None:
             res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
             if res is not None:

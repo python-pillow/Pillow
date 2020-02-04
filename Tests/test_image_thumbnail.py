@@ -50,6 +50,14 @@ def test_aspect():
     im.thumbnail((33, 33))
     assert im.size == (21, 33)  # ratio is 0.6363636364
 
+    im = Image.new("L", (145, 100))  # ratio is 1.45
+    im.thumbnail((50, 50))
+    assert im.size ==(50, 34)  # ratio is 1.47058823529
+
+    im = Image.new("L", (100, 145))  # ratio is 0.689655172414
+    im.thumbnail((50, 50))
+    assert im.size == (34, 50)  # ratio is 0.68
+
 
 def test_float():
     im = Image.new("L", (128, 128))
