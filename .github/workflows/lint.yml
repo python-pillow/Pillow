@@ -15,6 +15,22 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: pip cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: lint-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          lint-pip-
+
+    - name: pre-commit cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pre-commit
+        key: lint-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
+        restore-keys: |
+          lint-pre-commit-
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
@@ -30,3 +46,4 @@ jobs:
 
     - name: Lint
       run: tox -e lint
+

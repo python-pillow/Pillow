@@ -1,6 +1,9 @@
 dist: xenial
 language: python
-cache: pip
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pre-commit
 
 notifications:
   irc: "chat.freenode.net#pil"
