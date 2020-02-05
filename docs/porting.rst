@@ -3,9 +3,14 @@ Porting
 
 **Porting existing PIL-based code to Pillow**
 
-Pillow is a functional drop-in replacement for the Python Imaging Library. To
-run your existing PIL-compatible code with Pillow, it needs to be modified to
-import the ``Image`` module from the ``PIL`` namespace *instead* of the
+Pillow is a functional drop-in replacement for the Python Imaging Library.
+
+PIL is Python 2 only. Pillow dropped support for Python 2 in Pillow
+7.0. So if you would like to run the latest version of Pillow, you will first
+and foremost need to port your code from Python 2 to 3.
+
+To run your existing PIL-compatible code with Pillow, it needs to be modified
+to import the ``Image`` module from the ``PIL`` namespace *instead* of the
 global namespace. Change this::
 
     import Image
