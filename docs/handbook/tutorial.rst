@@ -441,7 +441,7 @@ More on reading images
 
 As described earlier, the :py:func:`~PIL.Image.open` function of the
 :py:mod:`~PIL.Image` module is used to open an image file. In most cases, you
-simply pass it the filename as an argument. ``Image.open()`` can be used a
+simply pass it the filename as an argument. ``Image.open()`` can be used as a
 context manager::
 
     from PIL import Image
