@@ -2015,8 +2015,8 @@ class Image:
                 x, y = transform(x, y, matrix)
                 xx.append(x)
                 yy.append(y)
-            nw = int(math.ceil(max(xx)) - math.floor(min(xx)))
-            nh = int(math.ceil(max(yy)) - math.floor(min(yy)))
+            nw = math.ceil(max(xx)) - math.floor(min(xx))
+            nh = math.ceil(max(yy)) - math.floor(min(yy))
 
             # We multiply a translation matrix from the right.  Because of its
             # special form, this is the same as taking the image of the
