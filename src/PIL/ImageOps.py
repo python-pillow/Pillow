@@ -298,7 +298,7 @@ def scale(image, factor, resample=Image.BICUBIC):
     elif factor <= 0:
         raise ValueError("the factor must be greater than 0")
     else:
-        size = (int(round(factor * image.width)), int(round(factor * image.height)))
+        size = (round(factor * image.width), round(factor * image.height))
         return image.resize(size, resample)
 
 

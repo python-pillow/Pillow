@@ -614,7 +614,7 @@ def _save(im, fp, filename):
 
     info = im.encoderinfo
 
-    dpi = [int(round(x)) for x in info.get("dpi", (0, 0))]
+    dpi = [round(x) for x in info.get("dpi", (0, 0))]
 
     quality = info.get("quality", 0)
     subsampling = info.get("subsampling", -1)
