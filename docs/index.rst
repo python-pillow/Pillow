@@ -20,7 +20,7 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://travis-ci.org/python-pillow/pillow-wheels
    :alt: Travis CI build status (macOS)
 
-.. image:: https://img.shields.io/appveyor/ci/python-pillow/Pillow/master.svg?label=Windows%20build
+.. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
 
