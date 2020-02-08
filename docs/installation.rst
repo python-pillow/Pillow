@@ -301,10 +301,6 @@ Building on FreeBSD
 
 Make sure you have Python's development libraries installed::
 
-    sudo pkg install python2
-
-Or for Python 3::
-
     sudo pkg install python3
 
 Prerequisites are installed on **FreeBSD 10 or 11** with::
@@ -322,17 +318,9 @@ development libraries installed.
 
 In Debian or Ubuntu::
 
-    sudo apt-get install python-dev python-setuptools
-
-Or for Python 3::
-
     sudo apt-get install python3-dev python3-setuptools
 
 In Fedora, the command is::
-
-    sudo dnf install python-devel redhat-rpm-config
-
-Or for Python 3::
 
     sudo dnf install python3-devel redhat-rpm-config
 
