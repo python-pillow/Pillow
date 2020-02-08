@@ -2236,7 +2236,7 @@ class Image:
         :returns: None
         """
 
-        x, y = size
+        x, y = map(math.floor, size)
         if x >= self.width and y >= self.height:
             return
 
