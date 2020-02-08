@@ -1,6 +1,13 @@
+import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import (
+    PillowTestCase,
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    hopper,
+)
 
 
 class TestImageConvert(PillowTestCase):
@@ -39,11 +46,11 @@ class TestImageConvert(PillowTestCase):
     def test_default(self):
 
         im = hopper("P")
-        self.assert_image(im, "P", im.size)
+        assert_image(im, "P", im.size)
         im = im.convert()
-        self.assert_image(im, "RGB", im.size)
+        assert_image(im, "RGB", im.size)
         im = im.convert()
-        self.assert_image(im, "RGB", im.size)
+        assert_image(im, "RGB", im.size)
 
     # ref https://github.com/python-pillow/Pillow/issues/274
 
@@ -71,7 +78,7 @@ class TestImageConvert(PillowTestCase):
         converted = im.convert("P")
         comparable = converted.convert("RGBA")
 
-        self.assert_image_similar(im, comparable, 20)
+        assert_image_similar(im, comparable, 20)
 
     def test_trns_p(self):
         im = hopper("P")
@@ -116,7 +123,7 @@ class TestImageConvert(PillowTestCase):
         self.assertIn("transparency", im_p.info)
         im_p.save(f)
 
-        im_p = self.assert_warning(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+        im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
         self.assertNotIn("transparency", im_p.info)
         im_p.save(f)
 
@@ -138,7 +145,7 @@ class TestImageConvert(PillowTestCase):
         self.assertNotIn("transparency", im_rgba.info)
         im_rgba.save(f)
 
-        im_p = self.assert_warning(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+        im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
         self.assertNotIn("transparency", im_p.info)
         im_p.save(f)
 
@@ -160,7 +167,7 @@ class TestImageConvert(PillowTestCase):
 
         comparable = im.convert("P").convert("LA").getchannel("A")
 
-        self.assert_image_similar(alpha, comparable, 5)
+        assert_image_similar(alpha, comparable, 5)
 
     def test_matrix_illegal_conversion(self):
         # Arrange
@@ -212,10 +219,10 @@ class TestImageConvert(PillowTestCase):
             self.assertEqual(converted_im.size, im.size)
             with Image.open("Tests/images/hopper-XYZ.png") as target:
                 if converted_im.mode == "RGB":
-                    self.assert_image_similar(converted_im, target, 3)
+                    assert_image_similar(converted_im, target, 3)
                     self.assertEqual(converted_im.info["transparency"], (105, 54, 4))
                 else:
-                    self.assert_image_similar(converted_im, target.getchannel(0), 1)
+                    assert_image_similar(converted_im, target.getchannel(0), 1)
                     self.assertEqual(converted_im.info["transparency"], 105)
 
         matrix_convert("RGB")
@@ -238,4 +245,4 @@ class TestImageConvert(PillowTestCase):
 
         # Assert
         # No change
-        self.assert_image_equal(converted_im, im)
+        assert_image_equal(converted_im, im)

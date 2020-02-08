@@ -3,7 +3,7 @@ import unittest
 
 from PIL import Image, ImageDraw2, features
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -60,7 +60,7 @@ class TestImageDraw(PillowTestCase):
         draw.ellipse(bbox, pen, brush)
 
         # Assert
-        self.assert_image_similar(im, Image.open(expected), 1)
+        assert_image_similar(im, Image.open(expected), 1)
 
     def test_ellipse1(self):
         self.helper_ellipse("RGB", BBOX1)
@@ -78,7 +78,7 @@ class TestImageDraw(PillowTestCase):
         draw.ellipse(((0, 0), (W - 1, H)), brush)
 
         # Assert
-        self.assert_image_similar(
+        assert_image_similar(
             im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1
         )
 
@@ -92,7 +92,7 @@ class TestImageDraw(PillowTestCase):
         draw.line(points, pen)
 
         # Assert
-        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+        assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
     def test_line1_pen(self):
         self.helper_line(POINTS1)
@@ -112,7 +112,7 @@ class TestImageDraw(PillowTestCase):
         draw.line(POINTS1, pen, brush)
 
         # Assert
-        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+        assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
     def helper_polygon(self, points):
         # Arrange
@@ -125,7 +125,7 @@ class TestImageDraw(PillowTestCase):
         draw.polygon(points, pen, brush)
 
         # Assert
-        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+        assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
 
     def test_polygon1(self):
         self.helper_polygon(POINTS1)
@@ -144,7 +144,7 @@ class TestImageDraw(PillowTestCase):
         draw.rectangle(bbox, pen, brush)
 
         # Assert
-        self.assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+        assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
 
     def test_rectangle1(self):
         self.helper_rectangle(BBOX1)
@@ -165,7 +165,7 @@ class TestImageDraw(PillowTestCase):
         draw.rectangle(bbox, brush)
 
         # Assert
-        self.assert_image_similar(im, Image.open(expected), 1)
+        assert_image_similar(im, Image.open(expected), 1)
 
     @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_text(self):
@@ -179,7 +179,7 @@ class TestImageDraw(PillowTestCase):
         draw.text((5, 5), "ImageDraw2", font)
 
         # Assert
-        self.assert_image_similar(im, Image.open(expected), 13)
+        assert_image_similar(im, Image.open(expected), 13)
 
     @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
     def test_textsize(self):
@@ -220,4 +220,4 @@ class TestImageDraw(PillowTestCase):
         im2 = draw.flush()
 
         # Assert
-        self.assert_image_equal(im, im2)
+        assert_image_equal(im, im2)

@@ -2,7 +2,7 @@ import math
 
 from PIL import Image, ImageTransform
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 
 class TestImageTransform(PillowTestCase):
@@ -43,7 +43,7 @@ class TestImageTransform(PillowTestCase):
         scaled = im.resize((w * 2, h * 2), Image.BILINEAR).crop((0, 0, w, h))
 
         # undone -- precision?
-        self.assert_image_similar(transformed, scaled, 23)
+        assert_image_similar(transformed, scaled, 23)
 
     def test_quad(self):
         # one simple quad transform, equivalent to scale & crop upper left quad
@@ -61,7 +61,7 @@ class TestImageTransform(PillowTestCase):
             (w, h), Image.AFFINE, (0.5, 0, 0, 0, 0.5, 0), Image.BILINEAR
         )
 
-        self.assert_image_equal(transformed, scaled)
+        assert_image_equal(transformed, scaled)
 
     def test_fill(self):
         for mode, pixel in [
@@ -104,13 +104,13 @@ class TestImageTransform(PillowTestCase):
         checker.paste(scaled, (0, 0))
         checker.paste(scaled, (w // 2, h // 2))
 
-        self.assert_image_equal(transformed, checker)
+        assert_image_equal(transformed, checker)
 
         # now, check to see that the extra area is (0, 0, 0, 0)
         blank = Image.new("RGBA", (w // 2, h // 2), (0, 0, 0, 0))
 
-        self.assert_image_equal(blank, transformed.crop((w // 2, 0, w, h // 2)))
-        self.assert_image_equal(blank, transformed.crop((0, h // 2, w // 2, h)))
+        assert_image_equal(blank, transformed.crop((w // 2, 0, w, h // 2)))
+        assert_image_equal(blank, transformed.crop((0, h // 2, w // 2, h)))
 
     def _test_alpha_premult(self, op):
         # create image with half white, half black,
@@ -214,7 +214,7 @@ class TestImageTransformAffine(PillowTestCase):
             transformed = im.transform(
                 transposed.size, self.transform, matrix, resample
             )
-            self.assert_image_equal(transposed, transformed)
+            assert_image_equal(transposed, transformed)
 
     def test_rotate_0_deg(self):
         self._test_rotate(0, None)
@@ -244,7 +244,7 @@ class TestImageTransformAffine(PillowTestCase):
             transformed = transformed.transform(
                 im.size, self.transform, matrix_down, resample
             )
-            self.assert_image_similar(transformed, im, epsilon * epsilonscale)
+            assert_image_similar(transformed, im, epsilon * epsilonscale)
 
     def test_resize_1_1x(self):
         self._test_resize(1.1, 6.9)
@@ -277,7 +277,7 @@ class TestImageTransformAffine(PillowTestCase):
             transformed = transformed.transform(
                 im.size, self.transform, matrix_down, resample
             )
-            self.assert_image_similar(transformed, im, epsilon * epsilonscale)
+            assert_image_similar(transformed, im, epsilon * epsilonscale)
 
     def test_translate_0_1(self):
         self._test_translate(0.1, 0, 3.7)

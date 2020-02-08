@@ -3,7 +3,7 @@ import unittest
 
 from PIL import EpsImagePlugin, Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -69,7 +69,7 @@ class TestFileEps(PillowTestCase):
 
             if "jpeg_decoder" in dir(Image.core):
                 with Image.open("Tests/images/pil_sample_rgb.jpg") as target:
-                    self.assert_image_similar(cmyk_image, target, 10)
+                    assert_image_similar(cmyk_image, target, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_showpage(self):
@@ -79,7 +79,7 @@ class TestFileEps(PillowTestCase):
                 # should not crash/hang
                 plot_image.load()
                 #  fonts could be slightly different
-                self.assert_image_similar(plot_image, target, 6)
+                assert_image_similar(plot_image, target, 6)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_file_object(self):
@@ -106,7 +106,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file1_compare) as image1_scale1_compare:
                 image1_scale1_compare = image1_scale1_compare.convert("RGB")
             image1_scale1_compare.load()
-            self.assert_image_similar(img, image1_scale1_compare, 5)
+            assert_image_similar(img, image1_scale1_compare, 5)
 
     def test_image_mode_not_supported(self):
         im = hopper("RGBA")
@@ -126,7 +126,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file1_compare) as image1_scale1_compare:
                 image1_scale1_compare = image1_scale1_compare.convert("RGB")
             image1_scale1_compare.load()
-            self.assert_image_similar(image1_scale1, image1_scale1_compare, 5)
+            assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
         # Non-Zero bounding box
         with Image.open(file2) as image2_scale1:
@@ -134,7 +134,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file2_compare) as image2_scale1_compare:
                 image2_scale1_compare = image2_scale1_compare.convert("RGB")
             image2_scale1_compare.load()
-            self.assert_image_similar(image2_scale1, image2_scale1_compare, 10)
+            assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_render_scale2(self):
@@ -149,7 +149,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file1_compare_scale2) as image1_scale2_compare:
                 image1_scale2_compare = image1_scale2_compare.convert("RGB")
             image1_scale2_compare.load()
-            self.assert_image_similar(image1_scale2, image1_scale2_compare, 5)
+            assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
         # Non-Zero bounding box
         with Image.open(file2) as image2_scale2:
@@ -157,7 +157,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file2_compare_scale2) as image2_scale2_compare:
                 image2_scale2_compare = image2_scale2_compare.convert("RGB")
             image2_scale2_compare.load()
-            self.assert_image_similar(image2_scale2, image2_scale2_compare, 10)
+            assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_resize(self):

@@ -1,9 +1,17 @@
 import unittest
 from io import BytesIO
 
+import pytest
 from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
 
-from .helper import PillowTestCase, hopper, is_pypy, netpbm_available
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    hopper,
+    is_pypy,
+    netpbm_available,
+)
 
 try:
     from PIL import _webp
@@ -40,7 +48,7 @@ class TestFileGif(PillowTestCase):
             im = Image.open(TEST_GIF)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -48,14 +56,14 @@ class TestFileGif(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(TEST_GIF) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
@@ -101,7 +109,7 @@ class TestFileGif(PillowTestCase):
                 )
                 self.assertEqual(expected_palette_length, palette_length)
 
-                self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+                assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
         # These do optimize the palette
         check(128, 511, 128)
@@ -130,7 +138,7 @@ class TestFileGif(PillowTestCase):
         im.save(out)
         with Image.open(out) as reread:
 
-            self.assert_image_similar(reread.convert("RGB"), im, 50)
+            assert_image_similar(reread.convert("RGB"), im, 50)
 
     def test_roundtrip2(self):
         # see https://github.com/python-pillow/Pillow/issues/403
@@ -140,7 +148,7 @@ class TestFileGif(PillowTestCase):
             im2.save(out)
         with Image.open(out) as reread:
 
-            self.assert_image_similar(reread.convert("RGB"), hopper(), 50)
+            assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
     def test_roundtrip_save_all(self):
         # Single frame image
@@ -149,7 +157,7 @@ class TestFileGif(PillowTestCase):
         im.save(out, save_all=True)
         with Image.open(out) as reread:
 
-            self.assert_image_similar(reread.convert("RGB"), im, 50)
+            assert_image_similar(reread.convert("RGB"), im, 50)
 
         # Multiframe image
         with Image.open("Tests/images/dispose_bgnd.gif") as im:
@@ -188,7 +196,7 @@ class TestFileGif(PillowTestCase):
 
         with Image.open(f) as reloaded:
 
-            self.assert_image_similar(im, reloaded.convert("RGB"), 10)
+            assert_image_similar(im, reloaded.convert("RGB"), 10)
 
     def test_palette_434(self):
         # see https://github.com/python-pillow/Pillow/issues/434
@@ -204,15 +212,15 @@ class TestFileGif(PillowTestCase):
         with Image.open(orig) as im:
 
             with roundtrip(im) as reloaded:
-                self.assert_image_similar(im, reloaded, 1)
+                assert_image_similar(im, reloaded, 1)
             with roundtrip(im, optimize=True) as reloaded:
-                self.assert_image_similar(im, reloaded, 1)
+                assert_image_similar(im, reloaded, 1)
 
             im = im.convert("RGB")
             # check automatic P conversion
             with roundtrip(im) as reloaded:
                 reloaded = reloaded.convert("RGB")
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_bmp_mode(self):
@@ -222,7 +230,7 @@ class TestFileGif(PillowTestCase):
             tempfile = self.tempfile("temp.gif")
             GifImagePlugin._save_netpbm(img, 0, tempfile)
             with Image.open(tempfile) as reloaded:
-                self.assert_image_similar(img, reloaded.convert("RGB"), 0)
+                assert_image_similar(img, reloaded.convert("RGB"), 0)
 
     @unittest.skipUnless(netpbm_available(), "netpbm not available")
     def test_save_netpbm_l_mode(self):
@@ -232,7 +240,7 @@ class TestFileGif(PillowTestCase):
             tempfile = self.tempfile("temp.gif")
             GifImagePlugin._save_netpbm(img, 0, tempfile)
             with Image.open(tempfile) as reloaded:
-                self.assert_image_similar(img, reloaded.convert("L"), 0)
+                assert_image_similar(img, reloaded.convert("L"), 0)
 
     def test_seek(self):
         with Image.open("Tests/images/dispose_none.gif") as img:
@@ -260,7 +268,7 @@ class TestFileGif(PillowTestCase):
 
             with Image.open("Tests/images/iss634.gif") as expected:
                 expected.seek(1)
-                self.assert_image_equal(im, expected)
+                assert_image_equal(im, expected)
 
     def test_n_frames(self):
         for path, n_frames in [[TEST_GIF, 1], ["Tests/images/iss634.gif", 42]]:
@@ -592,7 +600,7 @@ class TestFileGif(PillowTestCase):
     def test_zero_comment_subblocks(self):
         with Image.open("Tests/images/hopper_zero_comment_subblocks.gif") as im:
             with Image.open(TEST_GIF) as expected:
-                self.assert_image_equal(im, expected)
+                assert_image_equal(im, expected)
 
     def test_version(self):
         out = self.tempfile("temp.gif")
@@ -677,7 +685,7 @@ class TestFileGif(PillowTestCase):
         # Single frame
         im = Image.new("RGB", (1, 1))
         im.info["transparency"] = (255, 0, 0)
-        self.assert_warning(UserWarning, im.save, out)
+        pytest.warns(UserWarning, im.save, out)
 
         with Image.open(out) as reloaded:
             self.assertNotIn("transparency", reloaded.info)
@@ -686,7 +694,7 @@ class TestFileGif(PillowTestCase):
         im = Image.new("RGB", (1, 1))
         im.info["transparency"] = b""
         ims = [Image.new("RGB", (1, 1))]
-        self.assert_warning(UserWarning, im.save, out, save_all=True, append_images=ims)
+        pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
 
         with Image.open(out) as reloaded:
             self.assertNotIn("transparency", reloaded.info)
@@ -713,7 +721,7 @@ class TestFileGif(PillowTestCase):
 
         with Image.open(out) as reloaded:
 
-            self.assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
+            assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
     def test_palette_save_P(self):
         # pass in a different palette, then construct what the image
@@ -728,7 +736,7 @@ class TestFileGif(PillowTestCase):
 
         with Image.open(out) as reloaded:
             im.putpalette(palette)
-            self.assert_image_equal(reloaded, im)
+            assert_image_equal(reloaded, im)
 
     def test_palette_save_ImagePalette(self):
         # pass in a different palette, as an ImagePalette.ImagePalette
@@ -742,7 +750,7 @@ class TestFileGif(PillowTestCase):
 
         with Image.open(out) as reloaded:
             im.putpalette(palette)
-            self.assert_image_equal(reloaded, im)
+            assert_image_equal(reloaded, im)
 
     def test_save_I(self):
         # Test saving something that would trigger the auto-convert to 'L'
@@ -753,7 +761,7 @@ class TestFileGif(PillowTestCase):
         im.save(out)
 
         with Image.open(out) as reloaded:
-            self.assert_image_equal(reloaded.convert("L"), im.convert("L"))
+            assert_image_equal(reloaded.convert("L"), im.convert("L"))
 
     def test_getdata(self):
         # test getheader/getdata against legacy values

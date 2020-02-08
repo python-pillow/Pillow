@@ -1,8 +1,9 @@
 import io
 
+import pytest
 from PIL import IcoImagePlugin, Image, ImageDraw
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
@@ -33,7 +34,7 @@ class TestFileIco(PillowTestCase):
             self.assertEqual(im.mode, reloaded.mode)
             self.assertEqual((64, 64), reloaded.size)
             self.assertEqual(reloaded.format, "ICO")
-            self.assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
+            assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
 
         # the other one
         output.seek(0)
@@ -43,7 +44,7 @@ class TestFileIco(PillowTestCase):
             self.assertEqual(im.mode, reloaded.mode)
             self.assertEqual((32, 32), reloaded.size)
             self.assertEqual(reloaded.format, "ICO")
-            self.assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
+            assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
 
     def test_incorrect_size(self):
         with Image.open(TEST_ICO_FILE) as im:
@@ -87,7 +88,7 @@ class TestFileIco(PillowTestCase):
             with Image.open("Tests/images/hopper_unexpected.ico") as im:
                 self.assertEqual(im.size, (16, 16))
 
-        self.assert_warning(UserWarning, open)
+        pytest.warns(UserWarning, open)
 
     def test_draw_reloaded(self):
         with Image.open(TEST_ICO_FILE) as im:
@@ -100,4 +101,4 @@ class TestFileIco(PillowTestCase):
         with Image.open(outfile) as im:
             im.save("Tests/images/hopper_draw.ico")
             with Image.open("Tests/images/hopper_draw.ico") as reloaded:
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)

@@ -2,9 +2,10 @@ import os
 from glob import glob
 from itertools import product
 
+import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
@@ -51,7 +52,7 @@ class TestFileTga(PillowTestCase):
                                     original_im.getpalette(), reference_im.getpalette()
                                 )
 
-                            self.assert_image_equal(original_im, reference_im)
+                            assert_image_equal(original_im, reference_im)
 
                             # Generate a new test name every time so the
                             # test will not fail with permission error
@@ -74,7 +75,7 @@ class TestFileTga(PillowTestCase):
                                         saved_im.getpalette(), original_im.getpalette()
                                     )
 
-                                self.assert_image_equal(saved_im, original_im)
+                                assert_image_equal(saved_im, original_im)
 
     def test_id_field(self):
         # tga file with id field
@@ -136,7 +137,7 @@ class TestFileTga(PillowTestCase):
 
         # Save with custom id section greater than 255 characters
         id_section = b"Test content" * 25
-        self.assert_warning(UserWarning, lambda: im.save(out, id_section=id_section))
+        pytest.warns(UserWarning, lambda: im.save(out, id_section=id_section))
         with Image.open(out) as test_im:
             self.assertEqual(test_im.info["id_section"], id_section[:255])
 
@@ -206,4 +207,4 @@ class TestFileTga(PillowTestCase):
             self.assertEqual(test_im.mode, "LA")
             self.assertEqual(test_im.getchannel("A").getcolors()[0][0], num_transparent)
 
-            self.assert_image_equal(im, test_im)
+            assert_image_equal(im, test_im)

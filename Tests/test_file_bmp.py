@@ -2,7 +2,7 @@ import io
 
 from PIL import BmpImagePlugin, Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestFileBmp(PillowTestCase):
@@ -102,7 +102,7 @@ class TestFileBmp(PillowTestCase):
             self.assertEqual(im.get_format_mimetype(), "image/bmp")
 
             with Image.open("Tests/images/clipboard_target.png") as target:
-                self.assert_image_equal(im, target)
+                assert_image_equal(im, target)
 
     def test_save_dib(self):
         outfile = self.tempfile("temp.dib")
@@ -113,7 +113,7 @@ class TestFileBmp(PillowTestCase):
             with Image.open(outfile) as reloaded:
                 self.assertEqual(reloaded.format, "DIB")
                 self.assertEqual(reloaded.get_format_mimetype(), "image/bmp")
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)
 
     def test_rgba_bitfields(self):
         # This test image has been manually hexedited
@@ -125,4 +125,4 @@ class TestFileBmp(PillowTestCase):
             im = Image.merge("RGB", (r, g, b))
 
         with Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp") as target:
-            self.assert_image_equal(im, target)
+            assert_image_equal(im, target)

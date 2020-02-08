@@ -3,7 +3,7 @@ import unittest
 
 from PIL import Image, SunImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 EXTRA_DIR = "Tests/images/sunraster"
 
@@ -20,7 +20,7 @@ class TestFileSun(PillowTestCase):
             # Assert
             self.assertEqual(im.size, (128, 128))
 
-            self.assert_image_similar(im, hopper(), 5)  # visually verified
+            assert_image_similar(im, hopper(), 5)  # visually verified
 
         invalid_file = "Tests/images/flower.jpg"
         self.assertRaises(SyntaxError, SunImagePlugin.SunImageFile, invalid_file)
@@ -28,7 +28,7 @@ class TestFileSun(PillowTestCase):
     def test_im1(self):
         with Image.open("Tests/images/sunraster.im1") as im:
             with Image.open("Tests/images/sunraster.im1.png") as target:
-                self.assert_image_equal(im, target)
+                assert_image_equal(im, target)
 
     @unittest.skipUnless(os.path.exists(EXTRA_DIR), "Extra image files not installed")
     def test_others(self):
@@ -44,4 +44,4 @@ class TestFileSun(PillowTestCase):
                 target_path = "%s.png" % os.path.splitext(path)[0]
                 # im.save(target_file)
                 with Image.open(target_path) as target:
-                    self.assert_image_equal(im, target)
+                    assert_image_equal(im, target)

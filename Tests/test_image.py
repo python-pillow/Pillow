@@ -4,9 +4,17 @@ import shutil
 import tempfile
 import unittest
 
+import pytest
 from PIL import Image, UnidentifiedImageError
 
-from .helper import PillowTestCase, hopper, is_win32
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    assert_not_all_same,
+    hopper,
+    is_win32,
+)
 
 
 class TestImage(PillowTestCase):
@@ -132,7 +140,7 @@ class TestImage(PillowTestCase):
             im.save(fp, "JPEG")
             fp.seek(0)
             with Image.open(fp) as reloaded:
-                self.assert_image_similar(im, reloaded, 20)
+                assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self):
         im = hopper()
@@ -222,12 +230,12 @@ class TestImage(PillowTestCase):
         im = hopper("YCbCr")
         Y, Cb, Cr = im.split()
 
-        self.assert_image_equal(Y, im.getchannel(0))
-        self.assert_image_equal(Y, im.getchannel("Y"))
-        self.assert_image_equal(Cb, im.getchannel(1))
-        self.assert_image_equal(Cb, im.getchannel("Cb"))
-        self.assert_image_equal(Cr, im.getchannel(2))
-        self.assert_image_equal(Cr, im.getchannel("Cr"))
+        assert_image_equal(Y, im.getchannel(0))
+        assert_image_equal(Y, im.getchannel("Y"))
+        assert_image_equal(Cb, im.getchannel(1))
+        assert_image_equal(Cb, im.getchannel("Cb"))
+        assert_image_equal(Cr, im.getchannel(2))
+        assert_image_equal(Cr, im.getchannel("Cr"))
 
     def test_getbbox(self):
         # Arrange
@@ -292,30 +300,26 @@ class TestImage(PillowTestCase):
         # basic
         full = src.copy()
         full.alpha_composite(over)
-        self.assert_image_equal(full, target)
+        assert_image_equal(full, target)
 
         # with offset down to right
         offset = src.copy()
         offset.alpha_composite(over, (64, 64))
-        self.assert_image_equal(
-            offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63))
-        )
+        assert_image_equal(offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63)))
         self.assertEqual(offset.size, (128, 128))
 
         # offset and crop
         box = src.copy()
         box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
-        self.assert_image_equal(box.crop((64, 64, 96, 96)), target.crop((0, 0, 32, 32)))
-        self.assert_image_equal(box.crop((96, 96, 128, 128)), src.crop((0, 0, 32, 32)))
+        assert_image_equal(box.crop((64, 64, 96, 96)), target.crop((0, 0, 32, 32)))
+        assert_image_equal(box.crop((96, 96, 128, 128)), src.crop((0, 0, 32, 32)))
         self.assertEqual(box.size, (128, 128))
 
         # source point
         source = src.copy()
         source.alpha_composite(over, (32, 32), (32, 32, 96, 96))
 
-        self.assert_image_equal(
-            source.crop((32, 32, 96, 96)), target.crop((32, 32, 96, 96))
-        )
+        assert_image_equal(source.crop((32, 32, 96, 96)), target.crop((32, 32, 96, 96)))
         self.assertEqual(source.size, (128, 128))
 
         # errors
@@ -370,7 +374,7 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (512, 512))
         with Image.open("Tests/images/effect_mandelbrot.png") as im2:
-            self.assert_image_equal(im, im2)
+            assert_image_equal(im, im2)
 
     def test_effect_mandelbrot_bad_arguments(self):
         # Arrange
@@ -399,7 +403,7 @@ class TestImage(PillowTestCase):
         p2 = im.getpixel((0, 2))
         p3 = im.getpixel((0, 3))
         p4 = im.getpixel((0, 4))
-        self.assert_not_all_same([p0, p1, p2, p3, p4])
+        assert_not_all_same([p0, p1, p2, p3, p4])
 
     def test_effect_spread(self):
         # Arrange
@@ -412,7 +416,7 @@ class TestImage(PillowTestCase):
         # Assert
         self.assertEqual(im.size, (128, 128))
         with Image.open("Tests/images/effect_spread.png") as im3:
-            self.assert_image_similar(im2, im3, 110)
+            assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
         # Checking that the _check_size function throws value errors
@@ -481,7 +485,7 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.getpixel((255, 255)), 255)
             with Image.open(target_file) as target:
                 target = target.convert(mode)
-            self.assert_image_equal(im, target)
+            assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
         # Arrange
@@ -506,7 +510,7 @@ class TestImage(PillowTestCase):
             self.assertEqual(im.getpixel((128, 128)), 0)
             with Image.open(target_file) as target:
                 target = target.convert(mode)
-            self.assert_image_equal(im, target)
+            assert_image_equal(im, target)
 
     def test_register_extensions(self):
         test_format = "a"
@@ -563,7 +567,7 @@ class TestImage(PillowTestCase):
         ]:
             im = Image.new("P", (100, 100), color)
             expected = Image.new(mode, (100, 100), color)
-            self.assert_image_equal(im.convert(mode), expected)
+            assert_image_equal(im.convert(mode), expected)
 
     def test_no_resource_warning_on_save(self):
         # https://github.com/python-pillow/Pillow/issues/835
@@ -573,7 +577,7 @@ class TestImage(PillowTestCase):
 
         # Act/Assert
         with Image.open(test_file) as im:
-            self.assert_warning(None, im.save, temp_file)
+            pytest.warns(None, im.save, temp_file)
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:

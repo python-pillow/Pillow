@@ -1,6 +1,6 @@
 from PIL import Image, ImageChops
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 BLACK = (0, 0, 0)
 BROWN = (127, 64, 0)
@@ -132,7 +132,7 @@ class TestImageChops(PillowTestCase):
                 new = ImageChops.darker(im1, im2)
 
                 # Assert
-                self.assert_image_equal(new, im2)
+                assert_image_equal(new, im2)
 
     def test_darker_pixel(self):
         # Arrange
@@ -175,7 +175,7 @@ class TestImageChops(PillowTestCase):
         new = ImageChops.duplicate(im)
 
         # Assert
-        self.assert_image_equal(new, im)
+        assert_image_equal(new, im)
 
     def test_invert(self):
         # Arrange
@@ -198,7 +198,7 @@ class TestImageChops(PillowTestCase):
                 new = ImageChops.lighter(im1, im2)
 
         # Assert
-        self.assert_image_equal(new, im1)
+        assert_image_equal(new, im1)
 
     def test_lighter_pixel(self):
         # Arrange
@@ -222,7 +222,7 @@ class TestImageChops(PillowTestCase):
         new = ImageChops.multiply(im1, black)
 
         # Assert
-        self.assert_image_equal(new, black)
+        assert_image_equal(new, black)
 
     def test_multiply_green(self):
         # Arrange
@@ -248,7 +248,7 @@ class TestImageChops(PillowTestCase):
         new = ImageChops.multiply(im1, white)
 
         # Assert
-        self.assert_image_equal(new, im1)
+        assert_image_equal(new, im1)
 
     def test_offset(self):
         # Arrange

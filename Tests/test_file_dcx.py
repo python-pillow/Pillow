@@ -1,8 +1,9 @@
 import unittest
 
+import pytest
 from PIL import DcxImagePlugin, Image
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
 
 # Created with ImageMagick: convert hopper.ppm hopper.dcx
 TEST_FILE = "Tests/images/hopper.dcx"
@@ -19,7 +20,7 @@ class TestFileDcx(PillowTestCase):
             self.assertEqual(im.size, (128, 128))
             self.assertIsInstance(im, DcxImagePlugin.DcxImageFile)
             orig = hopper()
-            self.assert_image_equal(im, orig)
+            assert_image_equal(im, orig)
 
     @unittest.skipIf(is_pypy(), "Requires CPython")
     def test_unclosed_file(self):
@@ -27,7 +28,7 @@ class TestFileDcx(PillowTestCase):
             im = Image.open(TEST_FILE)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -35,14 +36,14 @@ class TestFileDcx(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(TEST_FILE) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:

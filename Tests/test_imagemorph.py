@@ -1,7 +1,7 @@
 # Test the ImageMorphology functionality
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class MorphTests(PillowTestCase):
@@ -52,7 +52,7 @@ class MorphTests(PillowTestCase):
 
     def test_str_to_img(self):
         with Image.open("Tests/images/morph_a.png") as im:
-            self.assert_image_equal(self.A, im)
+            assert_image_equal(self.A, im)
 
     def create_lut(self):
         for op in ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge"):

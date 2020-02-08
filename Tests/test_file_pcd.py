@@ -15,4 +15,4 @@ class TestFilePcd(PillowTestCase):
         # from convert look find on pillow and not imagemagick.
 
         # target = hopper().resize((768,512))
-        # self.assert_image_similar(im, target, 10)
+        # assert_image_similar(im, target, 10)

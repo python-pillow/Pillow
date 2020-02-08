@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image
 
 try:
     from PIL import ImageGrab
@@ -13,10 +13,10 @@ try:
                 ImageGrab.grab(include_layered_windows=True),
                 ImageGrab.grab(all_screens=True),
             ]:
-                self.assert_image(im, im.mode, im.size)
+                assert_image(im, im.mode, im.size)
 
             im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-            self.assert_image(im, im.mode, (40, 60))
+            assert_image(im, im.mode, (40, 60))
 
         def test_grabclipboard(self):
             if sys.platform == "darwin":
@@ -34,7 +34,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
                 p.communicate()
 
             im = ImageGrab.grabclipboard()
-            self.assert_image(im, im.mode, im.size)
+            assert_image(im, im.mode, im.size)
 
 
 except ImportError:

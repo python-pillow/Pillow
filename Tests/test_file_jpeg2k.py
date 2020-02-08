@@ -3,7 +3,13 @@ from io import BytesIO
 import pytest
 from PIL import Image, Jpeg2KImagePlugin
 
-from .helper import PillowTestCase, is_big_endian, on_ci
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    is_big_endian,
+    on_ci,
+)
 
 codecs = dir(Image.core)
 
@@ -57,7 +63,7 @@ class TestFileJpeg2k(PillowTestCase):
             data = BytesIO(f.read())
         with Image.open(data) as im:
             im.load()
-            self.assert_image_similar(im, test_card, 1.0e-3)
+            assert_image_similar(im, test_card, 1.0e-3)
 
     # These two test pre-written JPEG 2000 files that were not written with
     # PIL (they were made using Adobe Photoshop)
@@ -67,30 +73,30 @@ class TestFileJpeg2k(PillowTestCase):
             im.load()
             outfile = self.tempfile("temp_test-card.png")
             im.save(outfile)
-        self.assert_image_similar(im, test_card, 1.0e-3)
+        assert_image_similar(im, test_card, 1.0e-3)
 
     def test_lossy_tiled(self):
         with Image.open("Tests/images/test-card-lossy-tiled.jp2") as im:
             im.load()
-            self.assert_image_similar(im, test_card, 2.0)
+            assert_image_similar(im, test_card, 2.0)
 
     def test_lossless_rt(self):
         im = self.roundtrip(test_card)
-        self.assert_image_equal(im, test_card)
+        assert_image_equal(im, test_card)
 
     def test_lossy_rt(self):
         im = self.roundtrip(test_card, quality_layers=[20])
-        self.assert_image_similar(im, test_card, 2.0)
+        assert_image_similar(im, test_card, 2.0)
 
     def test_tiled_rt(self):
         im = self.roundtrip(test_card, tile_size=(128, 128))
-        self.assert_image_equal(im, test_card)
+        assert_image_equal(im, test_card)
 
     def test_tiled_offset_rt(self):
         im = self.roundtrip(
             test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32)
         )
-        self.assert_image_equal(im, test_card)
+        assert_image_equal(im, test_card)
 
     def test_tiled_offset_too_small(self):
         with self.assertRaises(ValueError):
@@ -100,15 +106,15 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_irreversible_rt(self):
         im = self.roundtrip(test_card, irreversible=True, quality_layers=[20])
-        self.assert_image_similar(im, test_card, 2.0)
+        assert_image_similar(im, test_card, 2.0)
 
     def test_prog_qual_rt(self):
         im = self.roundtrip(test_card, quality_layers=[60, 40, 20], progression="LRCP")
-        self.assert_image_similar(im, test_card, 2.0)
+        assert_image_similar(im, test_card, 2.0)
 
     def test_prog_res_rt(self):
         im = self.roundtrip(test_card, num_resolutions=8, progression="RLCP")
-        self.assert_image_equal(im, test_card)
+        assert_image_equal(im, test_card)
 
     def test_reduce(self):
         with Image.open("Tests/images/test-card-lossless.jp2") as im:
@@ -136,13 +142,13 @@ class TestFileJpeg2k(PillowTestCase):
         with Image.open(out) as im:
             im.layers = 1
             im.load()
-            self.assert_image_similar(im, test_card, 13)
+            assert_image_similar(im, test_card, 13)
 
         out.seek(0)
         with Image.open(out) as im:
             im.layers = 3
             im.load()
-            self.assert_image_similar(im, test_card, 0.4)
+            assert_image_similar(im, test_card, 0.4)
 
     def test_rgba(self):
         # Arrange
@@ -170,23 +176,23 @@ class TestFileJpeg2k(PillowTestCase):
     def test_16bit_monochrome_jp2_like_tiff(self):
         with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
             with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
-                self.assert_image_similar(jp2, tiff_16bit, 1e-3)
+                assert_image_similar(jp2, tiff_16bit, 1e-3)
 
     @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_16bit_monochrome_j2k_like_tiff(self):
         with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
             with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
-                self.assert_image_similar(j2k, tiff_16bit, 1e-3)
+                assert_image_similar(j2k, tiff_16bit, 1e-3)
 
     def test_16bit_j2k_roundtrips(self):
         with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
             im = self.roundtrip(j2k)
-            self.assert_image_equal(im, j2k)
+            assert_image_equal(im, j2k)
 
     def test_16bit_jp2_roundtrips(self):
         with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
             im = self.roundtrip(jp2)
-            self.assert_image_equal(im, jp2)
+            assert_image_equal(im, jp2)
 
     def test_unbound_local(self):
         # prepatch, a malformed jp2 file could cause an UnboundLocalError

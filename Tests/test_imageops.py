@@ -1,6 +1,12 @@
 from PIL import Image, ImageOps
 
-from .helper import PillowTestCase, hopper
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    assert_tuple_approx_equal,
+    hopper,
+)
 
 try:
     from PIL import _webp
@@ -109,7 +115,7 @@ class TestImageOps(PillowTestCase):
                 with Image.open(
                     "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg"
                 ) as target:
-                    self.assert_image_similar(new_im, target, 6)
+                    assert_image_similar(new_im, target, 6)
 
     def test_pil163(self):
         # Division by zero in equalize if < 255 pixels in image (@PIL163)
@@ -150,19 +156,19 @@ class TestImageOps(PillowTestCase):
         left = (0, 1)
         middle = (127, 1)
         right = (255, 1)
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(left),
             (255, 0, 0),
             threshold=1,
             msg="black test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(middle),
             (127, 63, 0),
             threshold=1,
             msg="mid test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(right),
             (0, 127, 0),
             threshold=1,
@@ -185,19 +191,19 @@ class TestImageOps(PillowTestCase):
         left = (25, 1)
         middle = (75, 1)
         right = (125, 1)
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(left),
             (255, 0, 0),
             threshold=1,
             msg="black test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(middle),
             (127, 63, 0),
             threshold=1,
             msg="mid test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(right),
             (0, 127, 0),
             threshold=1,
@@ -228,28 +234,28 @@ class TestImageOps(PillowTestCase):
         middle = (100, 1)
         right_middle = (150, 1)
         right = (225, 1)
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(left),
             (255, 0, 0),
             threshold=1,
             msg="black test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(left_middle),
             (127, 0, 127),
             threshold=1,
             msg="low-mid test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(middle), (0, 0, 255), threshold=1, msg="mid incorrect"
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(right_middle),
             (0, 63, 127),
             threshold=1,
             msg="high-mid test pixel incorrect",
         )
-        self.assert_tuple_approx_equal(
+        assert_tuple_approx_equal(
             im_test.getpixel(right),
             (0, 127, 0),
             threshold=1,
@@ -273,7 +279,7 @@ class TestImageOps(PillowTestCase):
                         else:
                             original_exif = im.info["exif"]
                         transposed_im = ImageOps.exif_transpose(im)
-                        self.assert_image_similar(base_im, transposed_im, 17)
+                        assert_image_similar(base_im, transposed_im, 17)
                         if orientation_im is base_im:
                             self.assertNotIn("exif", im.info)
                         else:
@@ -286,7 +292,7 @@ class TestImageOps(PillowTestCase):
                         # Repeat the operation
                         # to test that it does not keep transposing
                         transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                        self.assert_image_equal(transposed_im2, transposed_im)
+                        assert_image_equal(transposed_im2, transposed_im)
 
                 check(base_im)
                 for i in range(2, 9):

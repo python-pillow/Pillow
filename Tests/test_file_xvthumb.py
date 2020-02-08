@@ -1,6 +1,6 @@
 from PIL import Image, XVThumbImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 TEST_FILE = "Tests/images/hopper.p7"
 
@@ -15,7 +15,7 @@ class TestFileXVThumb(PillowTestCase):
 
             # Create a Hopper image with a similar XV palette
             im_hopper = hopper().quantize(palette=im)
-            self.assert_image_similar(im, im_hopper, 9)
+            assert_image_similar(im, im_hopper, 9)
 
     def test_unexpected_eof(self):
         # Test unexpected EOF reading XV thumbnail file

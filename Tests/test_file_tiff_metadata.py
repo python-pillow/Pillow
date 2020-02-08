@@ -1,10 +1,11 @@
 import io
 import struct
 
+import pytest
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_deep_equal, hopper
 
 tag_ids = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
@@ -149,7 +150,7 @@ class TestFileTiffMetadata(PillowTestCase):
             ):
                 # Need to compare element by element in the tuple,
                 # not comparing tuples of object references
-                self.assert_deep_equal(
+                assert_deep_equal(
                     original[tag],
                     value,
                     "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
@@ -174,7 +175,7 @@ class TestFileTiffMetadata(PillowTestCase):
         head = f.read(8)
         info = TiffImagePlugin.ImageFileDirectory(head)
         # Should not raise struct.error.
-        self.assert_warning(UserWarning, info.load, f)
+        pytest.warns(UserWarning, info.load, f)
 
     def test_iccprofile(self):
         # https://github.com/python-pillow/Pillow/issues/1462
@@ -333,4 +334,4 @@ class TestFileTiffMetadata(PillowTestCase):
         ifd.tagtype[277] = TiffTags.SHORT
 
         # Should not raise ValueError.
-        self.assert_warning(UserWarning, lambda: ifd[277])
+        pytest.warns(UserWarning, lambda: ifd[277])

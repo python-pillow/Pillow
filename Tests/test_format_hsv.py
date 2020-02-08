@@ -3,7 +3,7 @@ import itertools
 
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 
 class TestFormatHSV(PillowTestCase):
@@ -76,29 +76,29 @@ class TestFormatHSV(PillowTestCase):
         im = src.convert("HSV")
         comparable = self.to_hsv_colorsys(src)
 
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(0), comparable.getchannel(0), 1, "Hue conversion is wrong"
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(1),
             comparable.getchannel(1),
             1,
             "Saturation conversion is wrong",
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(2), comparable.getchannel(2), 1, "Value conversion is wrong"
         )
 
         comparable = src
         im = im.convert("RGB")
 
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(0), comparable.getchannel(0), 3, "R conversion is wrong"
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(1), comparable.getchannel(1), 3, "G conversion is wrong"
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(2), comparable.getchannel(2), 3, "B conversion is wrong"
         )
 
@@ -106,16 +106,16 @@ class TestFormatHSV(PillowTestCase):
         im = hopper("RGB").convert("HSV")
         comparable = self.to_hsv_colorsys(hopper("RGB"))
 
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(0), comparable.getchannel(0), 1, "Hue conversion is wrong"
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(1),
             comparable.getchannel(1),
             1,
             "Saturation conversion is wrong",
         )
-        self.assert_image_similar(
+        assert_image_similar(
             im.getchannel(2), comparable.getchannel(2), 1, "Value conversion is wrong"
         )
 
@@ -124,19 +124,19 @@ class TestFormatHSV(PillowTestCase):
         converted = comparable.convert("RGB")
         comparable = self.to_rgb_colorsys(comparable)
 
-        self.assert_image_similar(
+        assert_image_similar(
             converted.getchannel(0),
             comparable.getchannel(0),
             3,
             "R conversion is wrong",
         )
-        self.assert_image_similar(
+        assert_image_similar(
             converted.getchannel(1),
             comparable.getchannel(1),
             3,
             "G conversion is wrong",
         )
-        self.assert_image_similar(
+        assert_image_similar(
             converted.getchannel(2),
             comparable.getchannel(2),
             3,

@@ -7,7 +7,16 @@ import pytest
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
-from .helper import PillowTestCase, hopper, is_pypy, is_win32
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+    is_pypy,
+    is_win32,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +60,7 @@ class TestFileTiff(PillowTestCase):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -59,14 +68,14 @@ class TestFileTiff(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -78,7 +87,7 @@ class TestFileTiff(PillowTestCase):
             self.assertEqual(im.tile, [("raw", (0, 0, 55, 43), 8, ("RGBa", 0, 1))])
             im.load()
 
-            self.assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
+            assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
     def test_wrong_bits_per_sample(self):
         with Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff") as im:
@@ -176,7 +185,7 @@ class TestFileTiff(PillowTestCase):
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            self.assert_warning(UserWarning, i._getexif)
+            pytest.warns(UserWarning, i._getexif)
 
     def test_save_rgba(self):
         im = hopper("RGBA")
@@ -226,7 +235,7 @@ class TestFileTiff(PillowTestCase):
             # imagemagick will auto scale so that a 12bit FFF is 16bit FFF0,
             # so we need to unshift so that the integer values are the same.
 
-            self.assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
+            assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
 
     def test_32bit_float(self):
         # Issue 614, specific 32-bit float format
@@ -409,7 +418,7 @@ class TestFileTiff(PillowTestCase):
         with Image.open(test_file) as im:
             self.assertEqual(im.size, (128, 128))
             self.assertEqual(im.mode, "L")
-            self.assert_image_similar(im, original, 7.3)
+            assert_image_similar(im, original, 7.3)
 
     def test_gray_semibyte_per_pixel(self):
         test_files = (
@@ -437,12 +446,12 @@ class TestFileTiff(PillowTestCase):
             with Image.open(group[0]) as im:
                 self.assertEqual(im.size, (128, 128))
                 self.assertEqual(im.mode, "L")
-                self.assert_image_similar(im, original, epsilon)
+                assert_image_similar(im, original, epsilon)
                 for file in group[1:]:
                     with Image.open(file) as im2:
                         self.assertEqual(im2.size, (128, 128))
                         self.assertEqual(im2.mode, "L")
-                        self.assert_image_equal(im, im2)
+                        assert_image_equal(im, im2)
 
     def test_with_underscores(self):
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
@@ -469,25 +478,25 @@ class TestFileTiff(PillowTestCase):
             im.save(tmpfile)
 
             with Image.open(tmpfile) as reloaded:
-                self.assert_image_equal(im, reloaded)
+                assert_image_equal(im, reloaded)
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
         with Image.open(infile) as im:
-            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw(self):
         # gdal_translate -of GTiff -co INTERLEAVE=BAND \
         # tiff_strip_raw.tif tiff_strip_planar_raw.tiff
         infile = "Tests/images/tiff_strip_planar_raw.tif"
         with Image.open(infile) as im:
-            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw_with_overviews(self):
         # gdaladdo tiff_strip_planar_raw2.tif 2 4 8 16
         infile = "Tests/images/tiff_strip_planar_raw_with_overviews.tif"
         with Image.open(infile) as im:
-            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_tiled_planar_raw(self):
         # gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 \
@@ -495,7 +504,7 @@ class TestFileTiff(PillowTestCase):
         # tiff_tiled_raw.tif tiff_tiled_planar_raw.tiff
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
         with Image.open(infile) as im:
-            self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_palette(self):
         for mode in ["P", "PA"]:
@@ -505,7 +514,7 @@ class TestFileTiff(PillowTestCase):
             im.save(outfile)
 
             with Image.open(outfile) as reloaded:
-                self.assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+                assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_tiff_save_all(self):
         mp = BytesIO()

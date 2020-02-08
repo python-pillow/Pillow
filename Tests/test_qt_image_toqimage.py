@@ -1,6 +1,6 @@
 from PIL import Image, ImageQt
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 from .test_imageqt import PillowQtTestCase
 
 if ImageQt.qt_is_installed:
@@ -26,9 +26,9 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             # reload directly from the qimage
             rt = ImageQt.fromqimage(data)
             if mode in ("L", "P", "1"):
-                self.assert_image_equal(rt, src.convert("RGB"))
+                assert_image_equal(rt, src.convert("RGB"))
             else:
-                self.assert_image_equal(rt, src)
+                assert_image_equal(rt, src)
 
             if mode == "1":
                 # BW appears to not save correctly on QT4 and QT5
@@ -44,7 +44,7 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
 
             # Check that it actually worked.
             with Image.open(tempfile) as reloaded:
-                self.assert_image_equal(reloaded, src)
+                assert_image_equal(reloaded, src)
 
     def test_segfault(self):
         app = QApplication([])

@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_similar
 
 image_font_installed = True
 try:
@@ -42,4 +42,4 @@ class TestImageFontBitmap(PillowTestCase):
             fill=(0, 0, 0),
             font=font_outline,
         )
-        self.assert_image_similar(im_bitmap, im_outline, 20)
+        assert_image_similar(im_bitmap, im_outline, 20)

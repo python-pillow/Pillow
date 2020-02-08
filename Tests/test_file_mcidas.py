@@ -1,6 +1,6 @@
 from PIL import Image, McIdasImagePlugin
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 
 class TestFileMcIdas(PillowTestCase):
@@ -25,4 +25,4 @@ class TestFileMcIdas(PillowTestCase):
             self.assertEqual(im.mode, "I")
             self.assertEqual(im.size, (1800, 400))
             with Image.open(saved_file) as im2:
-                self.assert_image_equal(im, im2)
+                assert_image_equal(im, im2)

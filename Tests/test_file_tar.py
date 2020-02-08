@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from PIL import Image, TarIO
 
 from .helper import PillowTestCase, is_pypy
@@ -33,18 +34,18 @@ class TestFileTar(PillowTestCase):
         def open():
             TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_close(self):
         def open():
             tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
             tar.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_contextmanager(self):
         def open():
             with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
                 pass
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)

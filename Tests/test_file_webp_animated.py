@@ -1,7 +1,13 @@
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, is_big_endian, on_ci
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    is_big_endian,
+    on_ci,
+)
 
 try:
     from PIL import _webp
@@ -56,12 +62,12 @@ class TestFileWebpAnimation(PillowTestCase):
                 # Compare first and last frames to the original animated GIF
                 orig.load()
                 im.load()
-                self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+                assert_image_similar(im, orig.convert("RGBA"), 25.0)
                 orig.seek(orig.n_frames - 1)
                 im.seek(im.n_frames - 1)
                 orig.load()
                 im.load()
-                self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+                assert_image_similar(im, orig.convert("RGBA"), 25.0)
 
     @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_write_animation_RGB(self):
@@ -76,12 +82,12 @@ class TestFileWebpAnimation(PillowTestCase):
 
                 # Compare first frame to original
                 im.load()
-                self.assert_image_equal(im, frame1.convert("RGBA"))
+                assert_image_equal(im, frame1.convert("RGBA"))
 
                 # Compare second frame to original
                 im.seek(1)
                 im.load()
-                self.assert_image_equal(im, frame2.convert("RGBA"))
+                assert_image_equal(im, frame2.convert("RGBA"))
 
         with Image.open("Tests/images/anim_frame1.webp") as frame1:
             with Image.open("Tests/images/anim_frame2.webp") as frame2:

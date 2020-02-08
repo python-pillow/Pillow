@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 try:
     from PIL import _webp
@@ -35,4 +35,4 @@ class TestFileWebpLossless(PillowTestCase):
             image.load()
             image.getdata()
 
-            self.assert_image_equal(image, hopper(self.rgb_mode))
+            assert_image_equal(image, hopper(self.rgb_mode))

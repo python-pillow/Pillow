@@ -1,6 +1,6 @@
 from PIL import Image, PixarImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 TEST_FILE = "Tests/images/hopper.pxr"
 
@@ -15,7 +15,7 @@ class TestFilePixar(PillowTestCase):
             self.assertIsNone(im.get_format_mimetype())
 
             im2 = hopper()
-            self.assert_image_similar(im, im2, 4.8)
+            assert_image_similar(im, im2, 4.8)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"

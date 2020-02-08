@@ -1,6 +1,6 @@
 from PIL import Image, ImageEnhance
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImageEnhance(PillowTestCase):
@@ -32,7 +32,7 @@ class TestImageEnhance(PillowTestCase):
 
     def _check_alpha(self, im, original, op, amount):
         self.assertEqual(im.getbands(), original.getbands())
-        self.assert_image_equal(
+        assert_image_equal(
             im.getchannel("A"),
             original.getchannel("A"),
             "Diff on {}: {}".format(op, amount),

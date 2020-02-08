@@ -1,8 +1,9 @@
 import os
 
+import pytest
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_similar
 
 base = os.path.join("Tests", "images", "bmp")
 
@@ -28,7 +29,7 @@ class TestBmpReference(PillowTestCase):
                     pass
 
             # Assert that there is no unclosed file warning
-            self.assert_warning(None, open, f)
+            pytest.warns(None, open, f)
 
     def test_questionable(self):
         """ These shouldn't crash/dos, but it's not well defined that these
@@ -97,7 +98,7 @@ class TestBmpReference(PillowTestCase):
                             # be differently ordered for an equivalent image.
                             im = im.convert("RGBA")
                             compare = im.convert("RGBA")
-                        self.assert_image_similar(im, compare, 5)
+                        assert_image_similar(im, compare, 5)
 
             except Exception as msg:
                 # there are three here that are unsupported:

@@ -1,8 +1,9 @@
 import unittest
 
+import pytest
 from PIL import FliImagePlugin, Image
 
-from .helper import PillowTestCase, is_pypy
+from .helper import PillowTestCase, assert_image_equal, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -34,7 +35,7 @@ class TestFileFli(PillowTestCase):
             im = Image.open(static_test_file)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -42,14 +43,14 @@ class TestFileFli(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(static_test_file) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_tell(self):
         # Arrange
@@ -113,4 +114,4 @@ class TestFileFli(PillowTestCase):
             im.seek(50)
 
             with Image.open("Tests/images/a_fli.png") as expected:
-                self.assert_image_equal(im, expected)
+                assert_image_equal(im, expected)

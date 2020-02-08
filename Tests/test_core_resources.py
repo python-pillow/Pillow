@@ -1,6 +1,7 @@
 import sys
 import unittest
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, is_pypy
@@ -169,12 +170,12 @@ class TestEnvVars(PillowTestCase):
         self.assertEqual(Image.core.get_block_size(), 2 * 1024 * 1024)
 
     def test_warnings(self):
-        self.assert_warning(
+        pytest.warns(
             UserWarning, Image._apply_env_variables, {"PILLOW_ALIGNMENT": "15"}
         )
-        self.assert_warning(
+        pytest.warns(
             UserWarning, Image._apply_env_variables, {"PILLOW_BLOCK_SIZE": "1024"}
         )
-        self.assert_warning(
+        pytest.warns(
             UserWarning, Image._apply_env_variables, {"PILLOW_BLOCKS_MAX": "wat"}
         )

@@ -9,7 +9,7 @@ from PIL.Image import (
 )
 
 from . import helper
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 
 class TestImageTranspose(PillowTestCase):
@@ -138,22 +138,22 @@ class TestImageTranspose(PillowTestCase):
             def transpose(first, second):
                 return im.transpose(first).transpose(second)
 
-            self.assert_image_equal(im, transpose(FLIP_LEFT_RIGHT, FLIP_LEFT_RIGHT))
-            self.assert_image_equal(im, transpose(FLIP_TOP_BOTTOM, FLIP_TOP_BOTTOM))
-            self.assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
-            self.assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
-            self.assert_image_equal(
+            assert_image_equal(im, transpose(FLIP_LEFT_RIGHT, FLIP_LEFT_RIGHT))
+            assert_image_equal(im, transpose(FLIP_TOP_BOTTOM, FLIP_TOP_BOTTOM))
+            assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
+            assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
+            assert_image_equal(
                 im.transpose(TRANSPOSE), transpose(ROTATE_90, FLIP_TOP_BOTTOM)
             )
-            self.assert_image_equal(
+            assert_image_equal(
                 im.transpose(TRANSPOSE), transpose(ROTATE_270, FLIP_LEFT_RIGHT)
             )
-            self.assert_image_equal(
+            assert_image_equal(
                 im.transpose(TRANSVERSE), transpose(ROTATE_90, FLIP_LEFT_RIGHT)
             )
-            self.assert_image_equal(
+            assert_image_equal(
                 im.transpose(TRANSVERSE), transpose(ROTATE_270, FLIP_TOP_BOTTOM)
             )
-            self.assert_image_equal(
+            assert_image_equal(
                 im.transpose(TRANSVERSE), transpose(ROTATE_180, TRANSPOSE)
             )

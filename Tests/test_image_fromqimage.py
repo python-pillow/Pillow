@@ -1,6 +1,6 @@
 from PIL import Image, ImageQt
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 from .test_imageqt import PillowQtTestCase
 
 
@@ -22,9 +22,9 @@ class TestFromQImage(PillowQtTestCase, PillowTestCase):
         result = ImageQt.fromqimage(intermediate)
 
         if intermediate.hasAlphaChannel():
-            self.assert_image_equal(result, expected.convert("RGBA"))
+            assert_image_equal(result, expected.convert("RGBA"))
         else:
-            self.assert_image_equal(result, expected.convert("RGB"))
+            assert_image_equal(result, expected.convert("RGB"))
 
     def test_sanity_1(self):
         for im in self.files_to_test:

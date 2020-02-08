@@ -1,4 +1,4 @@
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 
 class TestImagePoint(PillowTestCase):
@@ -32,7 +32,7 @@ class TestImagePoint(PillowTestCase):
         out = im.point(lut, "F")
 
         int_lut = [x // 2 for x in range(256)]
-        self.assert_image_equal(out.convert("L"), im.point(int_lut, "L"))
+        assert_image_equal(out.convert("L"), im.point(int_lut, "L"))
 
     def test_f_mode(self):
         im = hopper("F")

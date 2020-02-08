@@ -2,9 +2,16 @@ import datetime
 import os
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageMode
 
-from .helper import PillowTestCase, hopper
+from .helper import (
+    PillowTestCase,
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    hopper,
+)
 
 try:
     from PIL import ImageCms
@@ -48,32 +55,32 @@ class TestImageCms(PillowTestCase):
 
         self.skip_missing()
         i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
-        self.assert_image(i, "RGB", (128, 128))
+        assert_image(i, "RGB", (128, 128))
 
         i = hopper()
         ImageCms.profileToProfile(i, SRGB, SRGB, inPlace=True)
-        self.assert_image(i, "RGB", (128, 128))
+        assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
         i = ImageCms.applyTransform(hopper(), t)
-        self.assert_image(i, "RGB", (128, 128))
+        assert_image(i, "RGB", (128, 128))
 
         with hopper() as i:
             t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
             ImageCms.applyTransform(hopper(), t, inPlace=True)
-            self.assert_image(i, "RGB", (128, 128))
+            assert_image(i, "RGB", (128, 128))
 
         p = ImageCms.createProfile("sRGB")
         o = ImageCms.getOpenProfile(SRGB)
         t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
         i = ImageCms.applyTransform(hopper(), t)
-        self.assert_image(i, "RGB", (128, 128))
+        assert_image(i, "RGB", (128, 128))
 
         t = ImageCms.buildProofTransform(SRGB, SRGB, SRGB, "RGB", "RGB")
         self.assertEqual(t.inputMode, "RGB")
         self.assertEqual(t.outputMode, "RGB")
         i = ImageCms.applyTransform(hopper(), t)
-        self.assert_image(i, "RGB", (128, 128))
+        assert_image(i, "RGB", (128, 128))
 
         # test PointTransform convenience API
         hopper().point(t)
@@ -225,12 +232,12 @@ class TestImageCms(PillowTestCase):
         # findLCMSType, and have that mapping work back to a PIL mode
         # (likely RGB).
         i = ImageCms.applyTransform(hopper(), t)
-        self.assert_image(i, "LAB", (128, 128))
+        assert_image(i, "LAB", (128, 128))
 
         # i.save('temp.lab.tif')  # visually verified vs PS.
 
         with Image.open("Tests/images/hopper.Lab.tif") as target:
-            self.assert_image_similar(i, target, 3.5)
+            assert_image_similar(i, target, 3.5)
 
     def test_lab_srgb(self):
         psRGB = ImageCms.createProfile("sRGB")
@@ -242,7 +249,7 @@ class TestImageCms(PillowTestCase):
 
         # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
-        self.assert_image_similar(hopper(), img_srgb, 30)
+        assert_image_similar(hopper(), img_srgb, 30)
         self.assertTrue(img_srgb.info["icc_profile"])
 
         profile = ImageCmsProfile(BytesIO(img_srgb.info["icc_profile"]))
@@ -262,7 +269,7 @@ class TestImageCms(PillowTestCase):
 
         out = ImageCms.applyTransform(i, t2)
 
-        self.assert_image_similar(hopper(), out, 2)
+        assert_image_similar(hopper(), out, 2)
 
     def test_profile_tobytes(self):
         with Image.open("Tests/images/rgb.jpg") as i:
@@ -441,7 +448,7 @@ class TestImageCms(PillowTestCase):
         p = o.profile
 
         def helper_deprecated(attr, expected):
-            result = self.assert_warning(DeprecationWarning, getattr, p, attr)
+            result = pytest.warns(DeprecationWarning, getattr, p, attr)
             self.assertEqual(result, expected)
 
         # p.color_space
@@ -532,7 +539,7 @@ class TestImageCms(PillowTestCase):
             result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
         result_image_aux = result_image.getchannel(preserved_channel)
 
-        self.assert_image_equal(source_image_aux, result_image_aux)
+        assert_image_equal(source_image_aux, result_image_aux)
 
     def test_preserve_auxiliary_channels_rgba(self):
         self.assert_aux_channel_preserved(
@@ -602,6 +609,6 @@ class TestImageCms(PillowTestCase):
                         source_image.convert(src_format[2]), reference_transform
                     )
 
-                    self.assert_image_equal(
+                    assert_image_equal(
                         test_image.convert(dst_format[2]), reference_image
                     )

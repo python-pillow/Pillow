@@ -1,6 +1,6 @@
 from PIL import Image, WmfImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper
 
 
 class TestFileWmf(PillowTestCase):
@@ -14,7 +14,7 @@ class TestFileWmf(PillowTestCase):
                 # Compare to reference rendering
                 with Image.open("Tests/images/drawing_emf_ref.png") as imref:
                     imref.load()
-                    self.assert_image_similar(im, imref, 0)
+                    assert_image_similar(im, imref, 0)
 
         # Test basic WMF open and rendering
         with Image.open("Tests/images/drawing.wmf") as im:
@@ -24,7 +24,7 @@ class TestFileWmf(PillowTestCase):
                 # Compare to reference rendering
                 with Image.open("Tests/images/drawing_wmf_ref.png") as imref:
                     imref.load()
-                    self.assert_image_similar(im, imref, 2.0)
+                    assert_image_similar(im, imref, 2.0)
 
     def test_register_handler(self):
         class TestHandler:
@@ -62,7 +62,7 @@ class TestFileWmf(PillowTestCase):
                 self.assertEqual(im.size, (164, 164))
 
                 with Image.open("Tests/images/drawing_wmf_ref_144.png") as expected:
-                    self.assert_image_similar(im, expected, 2.0)
+                    assert_image_similar(im, expected, 2.0)
 
     def test_save(self):
         im = hopper()

@@ -3,7 +3,7 @@ import unittest
 
 from PIL import Image, MspImagePlugin
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper
 
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"
@@ -41,13 +41,13 @@ class TestFileMsp(PillowTestCase):
         with Image.open(TEST_FILE) as im:
 
             # Assert
-            self.assert_image_equal(im, hopper("1"))
+            assert_image_equal(im, hopper("1"))
             self.assertIsInstance(im, MspImagePlugin.MspImageFile)
 
     def _assert_file_image_equal(self, source_path, target_path):
         with Image.open(source_path) as im:
             with Image.open(target_path) as target:
-                self.assert_image_equal(im, target)
+                assert_image_equal(im, target)
 
     @unittest.skipUnless(os.path.exists(EXTRA_DIR), "Extra image files not installed")
     def test_open_windows_v2(self):

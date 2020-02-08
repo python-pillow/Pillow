@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 from PIL import Image, ImageDraw
 
-from .helper import PillowTestCase, hopper
+from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
 
 class TestImagingResampleVulnerability(PillowTestCase):
@@ -215,7 +215,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
     def test_box_filter_correct_range(self):
         im = Image.new("RGB", (8, 8), "#1688ff").resize((100, 100), Image.BOX)
         ref = Image.new("RGB", (100, 100), "#1688ff")
-        self.assert_image_equal(im, ref)
+        assert_image_equal(im, ref)
 
 
 class CoreResampleConsistencyTest(PillowTestCase):
@@ -360,7 +360,7 @@ class CoreResamplePassesTest(PillowTestCase):
             with_box = im.resize(im.size, Image.BILINEAR, box)
         with self.count(2):
             cropped = im.crop(box).resize(im.size, Image.BILINEAR)
-        self.assert_image_similar(with_box, cropped, 0.1)
+        assert_image_similar(with_box, cropped, 0.1)
 
     def test_box_vertical(self):
         im = hopper("L")
@@ -370,7 +370,7 @@ class CoreResamplePassesTest(PillowTestCase):
             with_box = im.resize(im.size, Image.BILINEAR, box)
         with self.count(2):
             cropped = im.crop(box).resize(im.size, Image.BILINEAR)
-        self.assert_image_similar(with_box, cropped, 0.1)
+        assert_image_similar(with_box, cropped, 0.1)
 
 
 class CoreResampleCoefficientsTest(PillowTestCase):
@@ -462,7 +462,7 @@ class CoreResampleBoxTest(PillowTestCase):
 
             for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
                 tiled = self.resize_tiled(im, dst_size, *tiles)
-                self.assert_image_similar(reference, tiled, 0.01)
+                assert_image_similar(reference, tiled, 0.01)
 
     def test_subsample(self):
         # This test shows advantages of the subpixel resizing
@@ -479,9 +479,9 @@ class CoreResampleBoxTest(PillowTestCase):
         without_box = supersampled.resize(dst_size, Image.BICUBIC)
 
         # error with box should be much smaller than without
-        self.assert_image_similar(reference, with_box, 6)
+        assert_image_similar(reference, with_box, 6)
         with self.assertRaisesRegex(AssertionError, r"difference 29\."):
-            self.assert_image_similar(reference, without_box, 5)
+            assert_image_similar(reference, without_box, 5)
 
     def test_formats(self):
         for resample in [Image.NEAREST, Image.BILINEAR]:
@@ -490,7 +490,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 box = (20, 20, im.size[0] - 20, im.size[1] - 20)
                 with_box = im.resize((32, 32), resample, box)
                 cropped = im.crop(box).resize((32, 32), resample)
-                self.assert_image_similar(cropped, with_box, 0.4)
+                assert_image_similar(cropped, with_box, 0.4)
 
     def test_passthrough(self):
         # When no resize is required
@@ -504,7 +504,7 @@ class CoreResampleBoxTest(PillowTestCase):
         ]:
             res = im.resize(size, Image.LANCZOS, box)
             self.assertEqual(res.size, size)
-            self.assert_image_equal(res, im.crop(box), ">>> {} {}".format(size, box))
+            assert_image_equal(res, im.crop(box), ">>> {} {}".format(size, box))
 
     def test_no_passthrough(self):
         # When resize is required
@@ -520,7 +520,7 @@ class CoreResampleBoxTest(PillowTestCase):
             self.assertEqual(res.size, size)
             with self.assertRaisesRegex(AssertionError, r"difference \d"):
                 # check that the difference at least that much
-                self.assert_image_similar(
+                assert_image_similar(
                     res, im.crop(box), 20, ">>> {} {}".format(size, box)
                 )
 
@@ -538,7 +538,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 res = im.resize(size, flt, box)
                 self.assertEqual(res.size, size)
                 # Borders should be slightly different
-                self.assert_image_similar(
+                assert_image_similar(
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,
@@ -559,7 +559,7 @@ class CoreResampleBoxTest(PillowTestCase):
                 res = im.resize(size, flt, box)
                 self.assertEqual(res.size, size)
                 # Borders should be slightly different
-                self.assert_image_similar(
+                assert_image_similar(
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,

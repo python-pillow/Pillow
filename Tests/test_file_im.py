@@ -1,8 +1,9 @@
 import unittest
 
+import pytest
 from PIL import Image, ImImagePlugin
 
-from .helper import PillowTestCase, hopper, is_pypy
+from .helper import PillowTestCase, assert_image_equal, hopper, is_pypy
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -22,7 +23,7 @@ class TestFileIm(PillowTestCase):
             im = Image.open(TEST_IM)
             im.load()
 
-        self.assert_warning(ResourceWarning, open)
+        pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
         def open():
@@ -30,14 +31,14 @@ class TestFileIm(PillowTestCase):
             im.load()
             im.close()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_context_manager(self):
         def open():
             with Image.open(TEST_IM) as im:
                 im.load()
 
-        self.assert_warning(None, open)
+        pytest.warns(None, open)
 
     def test_tell(self):
         # Arrange
@@ -72,7 +73,7 @@ class TestFileIm(PillowTestCase):
             im.save(out)
             with Image.open(out) as reread:
 
-                self.assert_image_equal(reread, im)
+                assert_image_equal(reread, im)
 
     def test_save_unsupported_mode(self):
         out = self.tempfile("temp.im")

@@ -1,6 +1,6 @@
 from PIL import GbrImagePlugin, Image
 
-from .helper import PillowTestCase
+from .helper import PillowTestCase, assert_image_equal
 
 
 class TestFileGbr(PillowTestCase):
@@ -12,4 +12,4 @@ class TestFileGbr(PillowTestCase):
     def test_gbr_file(self):
         with Image.open("Tests/images/gbr.gbr") as im:
             with Image.open("Tests/images/gbr.png") as target:
-                self.assert_image_equal(target, im)
+                assert_image_equal(target, im)
