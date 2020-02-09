@@ -52,7 +52,6 @@ true color.
 **SpamImagePlugin.py**::
 
     from PIL import Image, ImageFile
-    import string
 
     class SpamImageFile(ImageFile.ImageFile):
 
@@ -63,10 +62,10 @@ true color.
 
             # check header
             header = self.fp.read(128)
-            if header[:4] != "SPAM":
-                raise SyntaxError, "not a SPAM file"
+            if header[:4] != b"SPAM":
+                raise SyntaxError("not a SPAM file")
 
-            header = string.split(header)
+            header = header.split()
 
             # size in pixels (width, height)
             self._size = int(header[1]), int(header[2])
@@ -80,7 +79,7 @@ true color.
             elif bits == 24:
                 self.mode = "RGB"
             else:
-                raise SyntaxError, "unknown number of bits"
+                raise SyntaxError("unknown number of bits")
 
             # data descriptor
             self.tile = [
