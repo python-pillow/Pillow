@@ -232,9 +232,9 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
-        self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+        with Image.open(out) as reloaded:
+            self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
+            self.assertEqual(1, reloaded.tag_v2[41493].denominator)
 
         # out of bounds of 4 byte unsigned long
         numerator = max_long + 1
@@ -244,9 +244,9 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
-        self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+        with Image.open(out) as reloaded:
+            self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
+            self.assertEqual(1, reloaded.tag_v2[41493].denominator)
 
     def test_ifd_signed_rational(self):
         im = hopper()
@@ -261,9 +261,9 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
-        self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+        with Image.open(out) as reloaded:
+            self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
+            self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
 
         numerator = -(2 ** 31)
         denominator = 2 ** 31 - 1
@@ -273,9 +273,9 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
-        self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+        with Image.open(out) as reloaded:
+            self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
+            self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
 
         # out of bounds of 4 byte signed long
         numerator = -(2 ** 31) - 1
@@ -286,9 +286,9 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(2 ** 31 - 1, reloaded.tag_v2[37380].numerator)
-        self.assertEqual(-1, reloaded.tag_v2[37380].denominator)
+        with Image.open(out) as reloaded:
+            self.assertEqual(2 ** 31 - 1, reloaded.tag_v2[37380].numerator)
+            self.assertEqual(-1, reloaded.tag_v2[37380].denominator)
 
     def test_ifd_signed_long(self):
         im = hopper()
@@ -299,8 +299,8 @@ class TestFileTiffMetadata(PillowTestCase):
         out = self.tempfile("temp.tiff")
         im.save(out, tiffinfo=info, compression="raw")
 
-        reloaded = Image.open(out)
-        self.assertEqual(reloaded.tag_v2[37000], -60000)
+        with Image.open(out) as reloaded:
+            self.assertEqual(reloaded.tag_v2[37000], -60000)
 
     def test_empty_values(self):
         data = io.BytesIO(

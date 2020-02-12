@@ -644,11 +644,11 @@ class TestFileJpeg(PillowTestCase):
 
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
-        im = Image.open("Tests/images/invalid-exif-without-x-resolution.jpg")
+        with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
 
-        # This should return the default, and not a ValueError or
-        # OSError for an unidentified image.
-        self.assertEqual(im.info.get("dpi"), (72, 72))
+            # This should return the default, and not a ValueError or
+            # OSError for an unidentified image.
+            self.assertEqual(im.info.get("dpi"), (72, 72))
 
     def test_ifd_offset_exif(self):
         # Arrange
