@@ -1,8 +1,5 @@
-import unittest
-
+import pytest
 from PIL import Image
-
-from .helper import PillowTestCase
 
 try:
     from PIL import FpxImagePlugin
@@ -11,18 +8,23 @@ except ImportError:
 else:
     olefile_installed = True
 
+pytestmark = pytest.mark.skipif(
+    not olefile_installed, reason="olefile package not installed"
+)
 
-@unittest.skipUnless(olefile_installed, "olefile package not installed")
-class TestFileFpx(PillowTestCase):
-    def test_invalid_file(self):
-        # Test an invalid OLE file
-        invalid_file = "Tests/images/flower.jpg"
-        self.assertRaises(SyntaxError, FpxImagePlugin.FpxImageFile, invalid_file)
 
-        # Test a valid OLE file, but not an FPX file
-        ole_file = "Tests/images/test-ole-file.doc"
-        self.assertRaises(SyntaxError, FpxImagePlugin.FpxImageFile, ole_file)
+def test_invalid_file():
+    # Test an invalid OLE file
+    invalid_file = "Tests/images/flower.jpg"
+    with pytest.raises(SyntaxError):
+        FpxImagePlugin.FpxImageFile(invalid_file)
 
-    def test_fpx_invalid_number_of_bands(self):
-        with self.assertRaisesRegex(IOError, "Invalid number of bands"):
-            Image.open("Tests/images/input_bw_five_bands.fpx")
+    # Test a valid OLE file, but not an FPX file
+    ole_file = "Tests/images/test-ole-file.doc"
+    with pytest.raises(SyntaxError):
+        FpxImagePlugin.FpxImageFile(ole_file)
+
+
+def test_fpx_invalid_number_of_bands():
+    with pytest.raises(IOError, match="Invalid number of bands"):
+        Image.open("Tests/images/input_bw_five_bands.fpx")
