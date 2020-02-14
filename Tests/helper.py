@@ -4,6 +4,7 @@ Helper functions.
 
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -191,9 +192,12 @@ class PillowTestCase(unittest.TestCase):
             raise OSError()
 
         outfile = self.tempfile("temp.png")
-        if command_succeeds([IMCONVERT, f, outfile]):
-            return Image.open(outfile)
-        raise OSError()
+        rc = subprocess.call(
+            [IMCONVERT, f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+        )
+        if rc:
+            raise OSError
+        return Image.open(outfile)
 
 
 @unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
@@ -268,34 +272,20 @@ def hopper(mode=None, cache={}):
     return im.copy()
 
 
-def command_succeeds(cmd):
-    """
-    Runs the command, which must be a list of strings. Returns True if the
-    command succeeds, or False if an OSError was raised by subprocess.Popen.
-    """
-    try:
-        subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    except OSError:
-        return False
-    return True
-
-
 def djpeg_available():
-    return command_succeeds(["djpeg", "-version"])
+    return bool(shutil.which("djpeg"))
 
 
 def cjpeg_available():
-    return command_succeeds(["cjpeg", "-version"])
+    return bool(shutil.which("cjpeg"))
 
 
 def netpbm_available():
-    return command_succeeds(["ppmquant", "--version"]) and command_succeeds(
-        ["ppmtogif", "--version"]
-    )
+    return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
 
 
 def imagemagick_available():
-    return IMCONVERT and command_succeeds([IMCONVERT, "-version"])
+    return bool(IMCONVERT and shutil.which(IMCONVERT))
 
 
 def on_appveyor():
