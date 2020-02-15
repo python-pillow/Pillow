@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Only draw each polygon pixel once #4333
+  [radarhere]
+
 - Add support for shooting situation Exif IFD tags #4398
   [alexagv]
 
