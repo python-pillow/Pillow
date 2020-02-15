@@ -655,13 +655,25 @@ class TestFileJpeg:
             img = Image.new(mode, (20, 20))
             img.save(out, "JPEG")
 
-    def test_save_wrong_modes(self):
+    def test_save_wrong_modes(self, tmp_path):
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
-        for mode in ["LA", "La", "RGBA", "RGBa", "P"]:
+        for mode in ["LA", "La", "RGBA", "RGBa", "P", "I"]:
             img = Image.new(mode, (20, 20))
             with pytest.raises(OSError):
                 img.save(out, "JPEG")
+
+        for mode in ["LA", "RGBA", "P", "I"]:
+            img = Image.new(mode, (20, 20))
+            img.save(out, "JPEG", convert_mode=True)
+
+        temp_file = str(tmp_path / "temp.jpg")
+        with Image.open("Tests/images/pil123rgba.png") as img:
+            img.save(temp_file, convert_mode=True, fill_color="red")
+
+        with Image.open(temp_file) as reloaded:
+            with Image.open("Tests/images/pil123rgba_red.jpg") as target:
+                assert_image_similar(reloaded, target, 4)
 
     def test_save_tiff_with_dpi(self, tmp_path):
         # Arrange

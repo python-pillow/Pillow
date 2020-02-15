@@ -997,6 +997,18 @@ def test_save_I(tmp_path):
         assert_image_equal(reloaded.convert("L"), im.convert("L"))
 
 
+def test_save_wrong_modes():
+    out = BytesIO()
+    for mode in ["CMYK"]:
+        img = Image.new(mode, (20, 20))
+        with pytest.raises(ValueError):
+            img.save(out, "GIF")
+
+    for mode in ["CMYK", "LA"]:
+        img = Image.new(mode, (20, 20))
+        img.save(out, "GIF", convert_mode=True)
+
+
 def test_getdata():
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.

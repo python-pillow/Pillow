@@ -15,6 +15,8 @@ from .helper import (
     skip_unless_feature,
 )
 
+from io import BytesIO
+
 try:
     from PIL import _webp
 
@@ -87,6 +89,12 @@ class TestFileWebp:
             if mode != self.rgb_mode:
                 target = target.convert(self.rgb_mode)
             assert_image_similar(image, target, epsilon)
+
+    def test_save_convert_mode(self):
+        out = BytesIO()
+        for mode in ["CMYK", "I", "L", "LA", "P"]:
+            img = Image.new(mode, (20, 20))
+            img.save(out, "WEBP", convert_mode=True)
 
     def test_write_rgb(self, tmp_path):
         """

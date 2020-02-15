@@ -819,6 +819,17 @@ def jpeg_factory(fp=None, filename=None):
     return im
 
 
+def _convert_mode(im):
+    mode = im.mode
+    if mode == 'P':
+        return 'RGBA' if 'A' in im.im.getpalettemode() else 'RGB'
+    return {
+        'RGBA':'RGB',
+        'LA':'L',
+        'I':'L'
+    }.get(mode)
+
+
 # ---------------------------------------------------------------------
 # Registry stuff
 

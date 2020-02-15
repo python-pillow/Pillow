@@ -2263,10 +2263,6 @@ class Image:
         # may mutate self!
         self._ensure_mutable()
 
-        save_all = params.pop("save_all", False)
-        self.encoderinfo = params
-        self.encoderconfig = ()
-
         preinit()
 
         ext = os.path.splitext(filename)[1].lower()
@@ -2281,10 +2277,19 @@ class Image:
 
         if format.upper() not in SAVE:
             init()
-        if save_all:
+        if params.pop('save_all', False):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
+
+        if params.get('convert_mode'):
+            plugin = sys.modules[save_handler.__module__]
+            converted_im = self._convert_mode(plugin, params)
+            if converted_im:
+                return converted_im.save(fp, format, **params)
+
+        self.encoderinfo = params
+        self.encoderconfig = ()
 
         created = False
         if open_fp:
@@ -2309,6 +2314,37 @@ class Image:
             raise
         if open_fp:
             fp.close()
+
+    def _convert_mode(self, plugin, params):
+        if not hasattr(plugin, '_convert_mode'):
+            return
+        new_mode = plugin._convert_mode(self)
+        if self.mode == 'LA' and new_mode == 'P':
+            alpha = self.getchannel('A')
+            # Convert the image into P mode but only use 255 colors
+            # in the palette out of 256.
+            im = self.convert('L') \
+                .convert('P', palette=Palette.ADAPTIVE, colors=255)
+            # Set all pixel values below 128 to 255, and the rest to 0.
+            mask = eval(alpha, lambda px: 255 if px < 128 else 0)
+            # Paste the color of index 255 and use alpha as a mask.
+            im.paste(255, mask)
+            # The transparency index is 255.
+            im.info['transparency'] = 255
+            return im
+
+        elif self.mode == 'I':
+            im = self.point([i//256 for i in range(65536)], 'L')
+            return im.convert(new_mode) if new_mode != 'L' else im
+
+        elif self.mode in ('RGBA', 'LA') and new_mode in ('RGB', 'L'):
+            fill_color = params.get('fill_color', 'white')
+            background = new(new_mode, self.size, fill_color)
+            background.paste(self, self.getchannel('A'))
+            return background
+
+        elif new_mode:
+            return self.convert(new_mode)
 
     def seek(self, frame):
         """
