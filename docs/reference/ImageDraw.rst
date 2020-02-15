@@ -154,7 +154,7 @@ Methods
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None, width=1)
 
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
@@ -168,7 +168,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
 
     Draws an ellipse inside the given bounding box.
 
@@ -198,7 +198,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
@@ -236,7 +236,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=0)
+.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
 
     Draws a rectangle.
 
