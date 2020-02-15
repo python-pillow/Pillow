@@ -244,7 +244,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         expected = Image.open("Tests/images/imagedraw_ellipse_translucent.png")
-        self.assert_image_similar(im, expected, 1)
+        assert_image_similar(im, expected, 1)
 
     def test_ellipse_edge(self):
         # Arrange
