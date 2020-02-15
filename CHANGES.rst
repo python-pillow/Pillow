@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Allow explicit zero width to hide outline #4334
+  [radarhere]
+
+- Change ContainerIO return type to match file object mode #4297
+  [jdufresne, radarhere]
+
 - Only draw each polygon pixel once #4333
   [radarhere]
 
