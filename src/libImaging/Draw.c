@@ -415,6 +415,35 @@ x_cmp(const void *x0, const void *x1)
 }
 
 
+static void
+draw_horizontal_lines(Imaging im, int n, Edge *e, int ink, int *x_pos, int y, hline_handler hline)
+{
+    int i;
+    for (i = 0; i < n; i++) {
+        if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
+            int xmax;
+            int xmin = e[i].xmin;
+            if (*x_pos < xmin) {
+                // Line would be after the current position
+                continue;
+            }
+
+            xmax = e[i].xmax;
+            if (*x_pos > xmin) {
+                // Line would be partway through x_pos, so increase the starting point
+                xmin = *x_pos;
+                if (xmax < xmin) {
+                    // Line would now end before it started
+                    continue;
+                }
+            }
+
+            (*hline)(im, xmin, e[i].ymin, xmax, ink);
+            *x_pos = xmax+1;
+        }
+    }
+}
+
 /*
  * Filled polygon draw function using scan line algorithm.
  */
@@ -442,10 +471,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     for (i = 0; i < n; i++) {
-        /* This causes the pixels of horizontal edges to be drawn twice :(
-         * but without it there are inconsistencies in ellipses */
         if (e[i].ymin == e[i].ymax) {
-            (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
             continue;
         }
         if (ymin > e[i].ymin) {
@@ -472,6 +498,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
     for (; ymin <= ymax; ymin++) {
         int j = 0;
+        int x_pos = 0;
         for (i = 0; i < edge_count; i++) {
             Edge* current = edge_table[i];
             if (ymin >= current->ymin && ymin <= current->ymax) {
@@ -485,8 +512,30 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
         }
         qsort(xx, j, sizeof(float), x_cmp);
         for (i = 1; i < j; i += 2) {
-            (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
+            int x_end = ROUND_DOWN(xx[i]);
+            if (x_end < x_pos) {
+                // Line would be before the current position
+                continue;
+            }
+            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+            if (x_end < x_pos) {
+                // Line would be before the current position
+                continue;
+            }
+
+            int x_start = ROUND_UP(xx[i-1]);
+            if (x_pos > x_start) {
+                // Line would be partway through x_pos, so increase the starting point
+                x_start = x_pos;
+                if (x_end < x_start) {
+                    // Line would now end before it started
+                    continue;
+                }
+            }
+            (*hline)(im, x_start, ymin, x_end, ink);
+            x_pos = x_end+1;
         }
+        draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
     }
 
     free(xx);
