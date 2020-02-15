@@ -89,7 +89,7 @@ def test_dx10_bc7_unorm_srgb():
 
 def test_unimplemented_dxgi_format():
     with pytest.raises(NotImplementedError):
-        Image.open("Tests/images/unimplemented_dxgi_format.dds",)
+        Image.open("Tests/images/unimplemented_dxgi_format.dds")
 
 
 def test_uncompressed_rgb():
@@ -158,4 +158,4 @@ def test_short_file():
 
 def test_unimplemented_pixel_format():
     with pytest.raises(NotImplementedError):
-        Image.open("Tests/images/unimplemented_pixel_format.dds",)
+        Image.open("Tests/images/unimplemented_pixel_format.dds")
