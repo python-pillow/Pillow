@@ -50,10 +50,10 @@ PyPI
 
 Download wheels from Rackspace::
 
-    wget -m -A 'Pillow-<VERSION>*' \
+    wget -m -A 'Pillow-<VERSION>-*' \
     http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
 
 Upload wheels to PyPI::
 
     cd a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
-    twine upload Pillow-<VERSION>*
+    twine upload Pillow-<VERSION>-*
