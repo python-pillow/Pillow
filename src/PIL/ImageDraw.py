@@ -134,20 +134,20 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_bitmap(xy, bitmap.im, ink)
 
-    def chord(self, xy, start, end, fill=None, outline=None, width=0):
+    def chord(self, xy, start, end, fill=None, outline=None, width=1):
         """Draw a chord."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_chord(xy, start, end, fill, 1)
-        if ink is not None and ink != fill:
+        if ink is not None and ink != fill and width != 0:
             self.draw.draw_chord(xy, start, end, ink, 0, width)
 
-    def ellipse(self, xy, fill=None, outline=None, width=0):
+    def ellipse(self, xy, fill=None, outline=None, width=1):
         """Draw an ellipse."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_ellipse(xy, fill, 1)
-        if ink is not None and ink != fill:
+        if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
     def line(self, xy, fill=None, width=0, joint=None):
@@ -219,12 +219,12 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
-    def pieslice(self, xy, start, end, fill=None, outline=None, width=0):
+    def pieslice(self, xy, start, end, fill=None, outline=None, width=1):
         """Draw a pieslice."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_pieslice(xy, start, end, fill, 1)
-        if ink is not None and ink != fill:
+        if ink is not None and ink != fill and width != 0:
             self.draw.draw_pieslice(xy, start, end, ink, 0, width)
 
     def point(self, xy, fill=None):
@@ -241,12 +241,12 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
-    def rectangle(self, xy, fill=None, outline=None, width=0):
+    def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_rectangle(xy, fill, 1)
-        if ink is not None and ink != fill:
+        if ink is not None and ink != fill and width != 0:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def _multiline_check(self, text):

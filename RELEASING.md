@@ -2,7 +2,7 @@
 
 ## Main Release
 
-Released quarterly on the first day of January, April, July, October.
+Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
 * [ ] Develop and prepare release in `master` branch.

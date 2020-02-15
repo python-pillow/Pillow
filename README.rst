@@ -61,15 +61,19 @@ To report a security vulnerability, please follow the procedure described in the
    :alt: AppVeyor CI build status (Windows)
 
 .. |gha_lint| image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint
    :alt: GitHub Actions build status (Lint)
 
 .. |gha_docker| image:: https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22
    :alt: GitHub Actions build status (Test Docker)
 
 .. |gha| image:: https://github.com/python-pillow/Pillow/workflows/Test/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest
    :alt: GitHub Actions build status (Test Linux and macOS)
 
 .. |gha_windows| image:: https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22
    :alt: GitHub Actions build status (Test Windows)
 
 .. |coverage| image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
