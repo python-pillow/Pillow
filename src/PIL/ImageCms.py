@@ -255,7 +255,7 @@ def get_display_profile(handle=None):
     """
 
     if sys.platform != "win32":
-        return
+        return None
 
     from PIL import ImageWin
 
