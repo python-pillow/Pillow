@@ -26,8 +26,8 @@
 
 struct _Heap {
    void **heap;
-   int heapsize;
-   int heapcount;
+   unsigned int heapsize;
+   unsigned int heapcount;
    HeapCmpFunc cf;
 };
 
@@ -44,7 +44,7 @@ void ImagingQuantHeapFree(Heap *h) {
    free(h);
 }
 
-static int _heap_grow(Heap *h,int newsize) {
+static int _heap_grow(Heap *h,unsigned int newsize) {
    void *newheap;
    if (!newsize) newsize=h->heapsize<<1;
    if (newsize<h->heapsize) return 0;
@@ -64,7 +64,7 @@ static int _heap_grow(Heap *h,int newsize) {
 
 #ifdef DEBUG
 static int _heap_test(Heap *h) {
-   int k;
+   unsigned int k;
    for (k=1;k*2<=h->heapcount;k++) {
       if (h->cf(h,h->heap[k],h->heap[k*2])<0) {
          printf ("heap is bad\n");
@@ -80,7 +80,7 @@ static int _heap_test(Heap *h) {
 #endif
 
 int ImagingQuantHeapRemove(Heap* h,void **r) {
-   int k,l;
+   unsigned int k,l;
    void *v;
 
    if (!h->heapcount) {

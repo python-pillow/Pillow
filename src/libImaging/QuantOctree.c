@@ -44,7 +44,7 @@ typedef struct _ColorCube{
    unsigned int rWidth, gWidth, bWidth, aWidth;
    unsigned int rOffset, gOffset, bOffset, aOffset;
 
-   long size;
+   unsigned long size;
    ColorBucket buckets;
 } *ColorCube;
 
@@ -134,10 +134,10 @@ add_color_to_color_cube(const ColorCube cube, const Pixel *p) {
    bucket->a += p->c.a;
 }
 
-static long
+static unsigned long
 count_used_color_buckets(const ColorCube cube) {
-   long usedBuckets = 0;
-   long i;
+   unsigned long usedBuckets = 0;
+   unsigned long i;
    for (i=0; i < cube->size; i++) {
       if (cube->buckets[i].count > 0) {
          usedBuckets += 1;
@@ -194,7 +194,7 @@ void add_bucket_values(ColorBucket src, ColorBucket dst) {
 
 /* expand or shrink a given cube to level */
 static ColorCube copy_color_cube(const ColorCube cube,
-   int rBits, int gBits, int bBits, int aBits)
+   unsigned int rBits, unsigned int gBits, unsigned int bBits, unsigned int aBits)
 {
    unsigned int r, g, b, a;
    long src_pos, dst_pos;
@@ -302,7 +302,7 @@ void add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long 
 }
 
 ColorBucket
-combined_palette(ColorBucket bucketsA, long nBucketsA, ColorBucket bucketsB, long nBucketsB) {
+combined_palette(ColorBucket bucketsA, unsigned long nBucketsA, ColorBucket bucketsB, unsigned long nBucketsB) {
    ColorBucket result;
    if (nBucketsA > LONG_MAX - nBucketsB ||
        (nBucketsA+nBucketsB) > LONG_MAX / sizeof(struct _ColorBucket)) {
@@ -345,8 +345,8 @@ map_image_pixels(const Pixel *pixelData,
    }
 }
 
-const int CUBE_LEVELS[8]       = {4, 4, 4, 0, 2, 2, 2, 0};
-const int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
+const unsigned int CUBE_LEVELS[8]       = {4, 4, 4, 0, 2, 2, 2, 0};
+const unsigned int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
 
 int quantize_octree(Pixel *pixelData,
           uint32_t nPixels,
@@ -365,8 +365,8 @@ int quantize_octree(Pixel *pixelData,
    ColorBucket paletteBuckets = NULL;
    uint32_t *qp = NULL;
    long i;
-   long nCoarseColors, nFineColors, nAlreadySubtracted;
-   const int *cubeBits;
+   unsigned long nCoarseColors, nFineColors, nAlreadySubtracted;
+   const unsigned int *cubeBits;
 
    if (withAlpha) {
        cubeBits = CUBE_LEVELS_ALPHA;
