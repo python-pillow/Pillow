@@ -5,9 +5,6 @@ Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.
 
 Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pillow&utm_medium=referral&utm_campaign=docs>`_.
 
-.. image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
-   :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
-
 .. image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
@@ -24,6 +21,34 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
 
+.. image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint
+   :alt: GitHub Actions build status (Lint)
+
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22
+   :alt: GitHub Actions build status (Test Docker)
+
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest
+   :alt: GitHub Actions build status (Test Linux and macOS)
+
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22
+   :alt: GitHub Actions build status (Test Windows)
+
+.. image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/python-pillow/Pillow
+   :alt: Code coverage
+
+.. image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
+   :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
+   :alt: Zenodo
+
+.. image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
+   :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=referral&utm_campaign=readme
+   :alt: Tidelift
+
 .. image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.org/project/Pillow/
    :alt: Latest PyPI version
@@ -31,10 +56,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
 .. image:: https://img.shields.io/pypi/dm/pillow.svg
    :target: https://pypi.org/project/Pillow/
    :alt: Number of PyPI downloads
-
-.. image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/python-pillow/Pillow
-   :alt: Code coverage
 
 .. toctree::
    :maxdepth: 2
