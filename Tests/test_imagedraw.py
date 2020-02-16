@@ -224,7 +224,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         with Image.open("Tests/images/imagedraw_chord_zero_width.png") as expected:
-            self.assert_image_equal(im, expected)
+            assert_image_equal(im, expected)
 
     def helper_ellipse(self, mode, bbox):
         # Arrange
@@ -324,7 +324,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         with Image.open("Tests/images/imagedraw_ellipse_zero_width.png") as expected:
-            self.assert_image_equal(im, expected)
+            assert_image_equal(im, expected)
 
     def helper_line(self, points):
         # Arrange
@@ -436,7 +436,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         with Image.open("Tests/images/imagedraw_pieslice_zero_width.png") as expected:
-            self.assert_image_equal(im, expected)
+            assert_image_equal(im, expected)
 
     def helper_point(self, points):
         # Arrange
@@ -552,7 +552,7 @@ class TestImageDraw(PillowTestCase):
 
         # Assert
         with Image.open("Tests/images/imagedraw_rectangle_zero_width.png") as expected:
-            self.assert_image_equal(im, expected)
+            assert_image_equal(im, expected)
 
     def test_rectangle_I16(self):
         # Arrange
