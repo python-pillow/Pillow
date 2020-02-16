@@ -782,9 +782,6 @@ font_render(FontObject* self, PyObject* args)
     im = (Imaging) id;
     /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
     load_flags = FT_LOAD_NO_BITMAP;
-    if (stroker == NULL) {
-        load_flags |= FT_LOAD_RENDER;
-    }
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
@@ -792,7 +789,7 @@ font_render(FontObject* self, PyObject* args)
     ascender = 0;
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
-        error = FT_Load_Glyph(self->face, index, load_flags);
+        error = FT_Load_Glyph(self->face, index, load_flags | FT_LOAD_RENDER);
         if (error) {
             return geterror(error);
         }
@@ -804,6 +801,10 @@ font_render(FontObject* self, PyObject* args)
         temp -= PIXEL(glyph_info[i].y_offset);
         if (temp > ascender)
             ascender = temp;
+    }
+
+    if (stroker == NULL) {
+        load_flags |= FT_LOAD_RENDER;
     }
 
     x = y = 0;
