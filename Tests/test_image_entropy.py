@@ -1,17 +1,16 @@
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 
-class TestImageEntropy(PillowTestCase):
-    def test_entropy(self):
-        def entropy(mode):
-            return hopper(mode).entropy()
+def test_entropy():
+    def entropy(mode):
+        return hopper(mode).entropy()
 
-        self.assertAlmostEqual(entropy("1"), 0.9138803254693582)
-        self.assertAlmostEqual(entropy("L"), 7.063008716585465)
-        self.assertAlmostEqual(entropy("I"), 7.063008716585465)
-        self.assertAlmostEqual(entropy("F"), 7.063008716585465)
-        self.assertAlmostEqual(entropy("P"), 5.0530452472519745)
-        self.assertAlmostEqual(entropy("RGB"), 8.821286587714319)
-        self.assertAlmostEqual(entropy("RGBA"), 7.42724306524488)
-        self.assertAlmostEqual(entropy("CMYK"), 7.4272430652448795)
-        self.assertAlmostEqual(entropy("YCbCr"), 7.698360534903628)
+    assert round(abs(entropy("1") - 0.9138803254693582), 7) == 0
+    assert round(abs(entropy("L") - 7.063008716585465), 7) == 0
+    assert round(abs(entropy("I") - 7.063008716585465), 7) == 0
+    assert round(abs(entropy("F") - 7.063008716585465), 7) == 0
+    assert round(abs(entropy("P") - 5.0530452472519745), 7) == 0
+    assert round(abs(entropy("RGB") - 8.821286587714319), 7) == 0
+    assert round(abs(entropy("RGBA") - 7.42724306524488), 7) == 0
+    assert round(abs(entropy("CMYK") - 7.4272430652448795), 7) == 0
+    assert round(abs(entropy("YCbCr") - 7.698360534903628), 7) == 0

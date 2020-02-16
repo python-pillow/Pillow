@@ -22,7 +22,7 @@ class TestDecompressionBomb(PillowTestCase):
         # Arrange
         # Turn limit off
         Image.MAX_IMAGE_PIXELS = None
-        self.assertIsNone(Image.MAX_IMAGE_PIXELS)
+        assert Image.MAX_IMAGE_PIXELS is None
 
         # Act / Assert
         # Implicit assert: no warning.
@@ -33,7 +33,7 @@ class TestDecompressionBomb(PillowTestCase):
     def test_warning(self):
         # Set limit to trigger warning on the test file
         Image.MAX_IMAGE_PIXELS = 128 * 128 - 1
-        self.assertEqual(Image.MAX_IMAGE_PIXELS, 128 * 128 - 1)
+        assert Image.MAX_IMAGE_PIXELS == 128 * 128 - 1
 
         def open():
             with Image.open(TEST_FILE):
@@ -44,18 +44,18 @@ class TestDecompressionBomb(PillowTestCase):
     def test_exception(self):
         # Set limit to trigger exception on the test file
         Image.MAX_IMAGE_PIXELS = 64 * 128 - 1
-        self.assertEqual(Image.MAX_IMAGE_PIXELS, 64 * 128 - 1)
+        assert Image.MAX_IMAGE_PIXELS == 64 * 128 - 1
 
-        with self.assertRaises(Image.DecompressionBombError):
+        with pytest.raises(Image.DecompressionBombError):
             with Image.open(TEST_FILE):
                 pass
 
     def test_exception_ico(self):
-        with self.assertRaises(Image.DecompressionBombError):
+        with pytest.raises(Image.DecompressionBombError):
             Image.open("Tests/images/decompression_bomb.ico")
 
     def test_exception_gif(self):
-        with self.assertRaises(Image.DecompressionBombError):
+        with pytest.raises(Image.DecompressionBombError):
             Image.open("Tests/images/decompression_bomb.gif")
 
 
@@ -85,11 +85,11 @@ class TestDecompressionCrop(PillowTestCase):
         error_values = ((-99909, -99990, 99999, 99999), (99909, 99990, -99999, -99999))
 
         for value in good_values:
-            self.assertEqual(im.crop(value).size, (9, 9))
+            assert im.crop(value).size == (9, 9)
 
         for value in warning_values:
             pytest.warns(Image.DecompressionBombWarning, im.crop, value)
 
         for value in error_values:
-            with self.assertRaises(Image.DecompressionBombError):
+            with pytest.raises(Image.DecompressionBombError):
                 im.crop(value)

@@ -1,9 +1,9 @@
 import os.path
-import unittest
 
+import pytest
 from PIL import Image, ImageDraw2, features
 
-from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
+from .helper import assert_image_equal, assert_image_similar, hopper
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -34,190 +34,206 @@ HAS_FREETYPE = features.check("freetype2")
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
 
-class TestImageDraw(PillowTestCase):
-    def test_sanity(self):
-        im = hopper("RGB").copy()
+def test_sanity():
+    im = hopper("RGB").copy()
 
-        draw = ImageDraw2.Draw(im)
-        pen = ImageDraw2.Pen("blue", width=7)
-        draw.line(list(range(10)), pen)
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("blue", width=7)
+    draw.line(list(range(10)), pen)
 
-        from PIL import ImageDraw
+    from PIL import ImageDraw
 
-        draw, handler = ImageDraw.getdraw(im)
-        pen = ImageDraw2.Pen("blue", width=7)
-        draw.line(list(range(10)), pen)
+    draw, handler = ImageDraw.getdraw(im)
+    pen = ImageDraw2.Pen("blue", width=7)
+    draw.line(list(range(10)), pen)
 
-    def helper_ellipse(self, mode, bbox):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        pen = ImageDraw2.Pen("blue", width=2)
-        brush = ImageDraw2.Brush("green")
-        expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
 
-        # Act
-        draw.ellipse(bbox, pen, brush)
+def helper_ellipse(mode, bbox):
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("blue", width=2)
+    brush = ImageDraw2.Brush("green")
+    expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
 
-        # Assert
-        assert_image_similar(im, Image.open(expected), 1)
+    # Act
+    draw.ellipse(bbox, pen, brush)
 
-    def test_ellipse1(self):
-        self.helper_ellipse("RGB", BBOX1)
+    # Assert
+    assert_image_similar(im, Image.open(expected), 1)
 
-    def test_ellipse2(self):
-        self.helper_ellipse("RGB", BBOX2)
 
-    def test_ellipse_edge(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        brush = ImageDraw2.Brush("white")
+def test_ellipse1():
+    helper_ellipse("RGB", BBOX1)
 
-        # Act
-        draw.ellipse(((0, 0), (W - 1, H)), brush)
 
-        # Assert
-        assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1
-        )
+def test_ellipse2():
+    helper_ellipse("RGB", BBOX2)
 
-    def helper_line(self, points):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        pen = ImageDraw2.Pen("yellow", width=2)
 
-        # Act
-        draw.line(points, pen)
+def test_ellipse_edge():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    brush = ImageDraw2.Brush("white")
 
-        # Assert
-        assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    # Act
+    draw.ellipse(((0, 0), (W - 1, H)), brush)
 
-    def test_line1_pen(self):
-        self.helper_line(POINTS1)
+    # Assert
+    assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
 
-    def test_line2_pen(self):
-        self.helper_line(POINTS2)
 
-    def test_line_pen_as_brush(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        pen = None
-        brush = ImageDraw2.Pen("yellow", width=2)
+def helper_line(points):
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("yellow", width=2)
 
-        # Act
-        # Pass in the pen as the brush parameter
-        draw.line(POINTS1, pen, brush)
+    # Act
+    draw.line(points, pen)
 
-        # Assert
-        assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
-    def helper_polygon(self, points):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        pen = ImageDraw2.Pen("blue", width=2)
-        brush = ImageDraw2.Brush("red")
 
-        # Act
-        draw.polygon(points, pen, brush)
+def test_line1_pen():
+    helper_line(POINTS1)
 
-        # Assert
-        assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
 
-    def test_polygon1(self):
-        self.helper_polygon(POINTS1)
+def test_line2_pen():
+    helper_line(POINTS2)
 
-    def test_polygon2(self):
-        self.helper_polygon(POINTS2)
 
-    def helper_rectangle(self, bbox):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        pen = ImageDraw2.Pen("green", width=2)
-        brush = ImageDraw2.Brush("black")
+def test_line_pen_as_brush():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = None
+    brush = ImageDraw2.Pen("yellow", width=2)
 
-        # Act
-        draw.rectangle(bbox, pen, brush)
+    # Act
+    # Pass in the pen as the brush parameter
+    draw.line(POINTS1, pen, brush)
 
-        # Assert
-        assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
 
-    def test_rectangle1(self):
-        self.helper_rectangle(BBOX1)
 
-    def test_rectangle2(self):
-        self.helper_rectangle(BBOX2)
+def helper_polygon(points):
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("blue", width=2)
+    brush = ImageDraw2.Brush("red")
 
-    def test_big_rectangle(self):
-        # Test drawing a rectangle bigger than the image
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        bbox = [(-1, -1), (W + 1, H + 1)]
-        brush = ImageDraw2.Brush("orange")
-        draw = ImageDraw2.Draw(im)
-        expected = "Tests/images/imagedraw_big_rectangle.png"
+    # Act
+    draw.polygon(points, pen, brush)
 
-        # Act
-        draw.rectangle(bbox, brush)
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
 
-        # Assert
-        assert_image_similar(im, Image.open(expected), 1)
 
-    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
-    def test_text(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        font = ImageDraw2.Font("white", FONT_PATH)
-        expected = "Tests/images/imagedraw2_text.png"
+def test_polygon1():
+    helper_polygon(POINTS1)
 
-        # Act
-        draw.text((5, 5), "ImageDraw2", font)
 
-        # Assert
-        assert_image_similar(im, Image.open(expected), 13)
+def test_polygon2():
+    helper_polygon(POINTS2)
 
-    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
-    def test_textsize(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        font = ImageDraw2.Font("white", FONT_PATH)
 
-        # Act
-        size = draw.textsize("ImageDraw2", font)
+def helper_rectangle(bbox):
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("green", width=2)
+    brush = ImageDraw2.Brush("black")
 
-        # Assert
-        self.assertEqual(size[1], 12)
+    # Act
+    draw.rectangle(bbox, pen, brush)
 
-    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
-    def test_textsize_empty_string(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        font = ImageDraw2.Font("white", FONT_PATH)
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
 
-        # Act
-        # Should not cause 'SystemError: <built-in method getsize of
-        # ImagingFont object at 0x...> returned NULL without setting an error'
-        draw.textsize("", font)
-        draw.textsize("\n", font)
-        draw.textsize("test\n", font)
 
-    @unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
-    def test_flush(self):
-        # Arrange
-        im = Image.new("RGB", (W, H))
-        draw = ImageDraw2.Draw(im)
-        font = ImageDraw2.Font("white", FONT_PATH)
+def test_rectangle1():
+    helper_rectangle(BBOX1)
 
-        # Act
-        draw.text((5, 5), "ImageDraw2", font)
-        im2 = draw.flush()
 
-        # Assert
-        assert_image_equal(im, im2)
+def test_rectangle2():
+    helper_rectangle(BBOX2)
+
+
+def test_big_rectangle():
+    # Test drawing a rectangle bigger than the image
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    bbox = [(-1, -1), (W + 1, H + 1)]
+    brush = ImageDraw2.Brush("orange")
+    draw = ImageDraw2.Draw(im)
+    expected = "Tests/images/imagedraw_big_rectangle.png"
+
+    # Act
+    draw.rectangle(bbox, brush)
+
+    # Assert
+    assert_image_similar(im, Image.open(expected), 1)
+
+
+@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+def test_text():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+    expected = "Tests/images/imagedraw2_text.png"
+
+    # Act
+    draw.text((5, 5), "ImageDraw2", font)
+
+    # Assert
+    assert_image_similar(im, Image.open(expected), 13)
+
+
+@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+def test_textsize():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+
+    # Act
+    size = draw.textsize("ImageDraw2", font)
+
+    # Assert
+    assert size[1] == 12
+
+
+@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+def test_textsize_empty_string():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+
+    # Act
+    # Should not cause 'SystemError: <built-in method getsize of
+    # ImagingFont object at 0x...> returned NULL without setting an error'
+    draw.textsize("", font)
+    draw.textsize("\n", font)
+    draw.textsize("test\n", font)
+
+
+@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+def test_flush():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+
+    # Act
+    draw.text((5, 5), "ImageDraw2", font)
+    im2 = draw.flush()
+
+    # Assert
+    assert_image_equal(im, im2)

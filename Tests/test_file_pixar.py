@@ -1,23 +1,25 @@
+import pytest
 from PIL import Image, PixarImagePlugin
 
-from .helper import PillowTestCase, assert_image_similar, hopper
+from .helper import assert_image_similar, hopper
 
 TEST_FILE = "Tests/images/hopper.pxr"
 
 
-class TestFilePixar(PillowTestCase):
-    def test_sanity(self):
-        with Image.open(TEST_FILE) as im:
-            im.load()
-            self.assertEqual(im.mode, "RGB")
-            self.assertEqual(im.size, (128, 128))
-            self.assertEqual(im.format, "PIXAR")
-            self.assertIsNone(im.get_format_mimetype())
+def test_sanity():
+    with Image.open(TEST_FILE) as im:
+        im.load()
+        assert im.mode == "RGB"
+        assert im.size == (128, 128)
+        assert im.format == "PIXAR"
+        assert im.get_format_mimetype() is None
 
-            im2 = hopper()
-            assert_image_similar(im, im2, 4.8)
+        im2 = hopper()
+        assert_image_similar(im, im2, 4.8)
 
-    def test_invalid_file(self):
-        invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, PixarImagePlugin.PixarImageFile, invalid_file)
+def test_invalid_file():
+    invalid_file = "Tests/images/flower.jpg"
+
+    with pytest.raises(SyntaxError):
+        PixarImagePlugin.PixarImageFile(invalid_file)
