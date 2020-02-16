@@ -264,6 +264,19 @@ def test_ellipse2():
         helper_ellipse(mode, BBOX2)
 
 
+def test_ellipse_translucent():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.ellipse(BBOX1, fill=(0, 255, 0, 127))
+
+    # Assert
+    expected = Image.open("Tests/images/imagedraw_ellipse_translucent.png")
+    assert_image_similar(im, expected, 1)
+
+
 def test_ellipse_edge():
     # Arrange
     im = Image.new("RGB", (W, H))
