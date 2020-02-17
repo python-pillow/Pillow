@@ -6,7 +6,7 @@ import os
 from collections import namedtuple
 from ctypes import c_float
 
-from PIL import Image, TiffImagePlugin, TiffTags, features
+from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
     PillowTestCase,
@@ -411,8 +411,6 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_blur(self):
         # test case from irc, how to do blur on b/w image
         # and save to compressed tif.
-        from PIL import ImageFilter
-
         out = self.tempfile("temp.tif")
         with Image.open("Tests/images/pport_g4.tif") as im:
             im = im.convert("L")

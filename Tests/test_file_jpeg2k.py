@@ -1,7 +1,7 @@
 from io import BytesIO
 
 import pytest
-from PIL import Image, Jpeg2KImagePlugin
+from PIL import Image, ImageFile, Jpeg2KImagePlugin
 
 from .helper import (
     PillowTestCase,
@@ -202,8 +202,6 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_parser_feed(self):
         # Arrange
-        from PIL import ImageFile
-
         with open("Tests/images/test-card-lossless.jp2", "rb") as f:
             data = f.read()
 
