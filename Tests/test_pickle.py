@@ -1,3 +1,5 @@
+import pickle
+
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -35,30 +37,12 @@ class TestPickle(PillowTestCase):
             self.assertEqual(im, loaded_im)
 
     def test_pickle_image(self):
-        # Arrange
-        import pickle
-
         # Act / Assert
         for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self.helper_pickle_string(pickle, protocol)
             self.helper_pickle_file(pickle, protocol)
 
-    def test_cpickle_image(self):
-        # Arrange
-        try:
-            import cPickle
-        except ImportError:
-            return
-
-        # Act / Assert
-        for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(cPickle, protocol)
-            self.helper_pickle_file(cPickle, protocol)
-
     def test_pickle_p_mode(self):
-        # Arrange
-        import pickle
-
         # Act / Assert
         for test_file in [
             "Tests/images/test-card.png",
@@ -76,18 +60,12 @@ class TestPickle(PillowTestCase):
                 )
 
     def test_pickle_pa_mode(self):
-        # Arrange
-        import pickle
-
         # Act / Assert
         for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self.helper_pickle_string(pickle, protocol, mode="PA")
             self.helper_pickle_file(pickle, protocol, mode="PA")
 
     def test_pickle_l_mode(self):
-        # Arrange
-        import pickle
-
         # Act / Assert
         for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self.helper_pickle_string(pickle, protocol, mode="L")
@@ -95,8 +73,6 @@ class TestPickle(PillowTestCase):
 
     def test_pickle_la_mode_with_palette(self):
         # Arrange
-        import pickle
-
         filename = self.tempfile("temp.pkl")
         with Image.open("Tests/images/hopper.jpg") as im:
             im = im.convert("PA")
@@ -111,15 +87,3 @@ class TestPickle(PillowTestCase):
 
             im.mode = "PA"
             self.assertEqual(im, loaded_im)
-
-    def test_cpickle_l_mode(self):
-        # Arrange
-        try:
-            import cPickle
-        except ImportError:
-            return
-
-        # Act / Assert
-        for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(cPickle, protocol, mode="L")
-            self.helper_pickle_file(cPickle, protocol, mode="L")
