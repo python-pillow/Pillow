@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 import pytest
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
 from .helper import (
     PillowTestCase,
@@ -258,8 +258,6 @@ class TestImage(PillowTestCase):
     def test_alpha_composite(self):
         # https://stackoverflow.com/questions/3374878
         # Arrange
-        from PIL import ImageDraw
-
         expected_colors = sorted(
             [
                 (1122, (128, 127, 0, 255)),
@@ -534,8 +532,6 @@ class TestImage(PillowTestCase):
             self.assertRaises(ValueError, im.remap_palette, None)
 
     def test__new(self):
-        from PIL import ImagePalette
-
         im = hopper("RGB")
         im_p = hopper("P")
 

@@ -2,7 +2,7 @@ import os
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, JpegImagePlugin
+from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
 
 from .helper import (
     PillowTestCase,
@@ -506,8 +506,6 @@ class TestFileJpeg(PillowTestCase):
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
-        from PIL import ExifTags
-
         tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
 
         # Assert

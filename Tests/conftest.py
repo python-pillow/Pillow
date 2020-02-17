@@ -1,6 +1,7 @@
-def pytest_report_header(config):
-    import io
+import io
 
+
+def pytest_report_header(config):
     try:
         from PIL import features
 

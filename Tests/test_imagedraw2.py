@@ -1,7 +1,7 @@
 import os.path
 
 import pytest
-from PIL import Image, ImageDraw2, features
+from PIL import Image, ImageDraw, ImageDraw2, features
 
 from .helper import assert_image_equal, assert_image_similar, hopper
 
@@ -40,8 +40,6 @@ def test_sanity():
     draw = ImageDraw2.Draw(im)
     pen = ImageDraw2.Pen("blue", width=7)
     draw.line(list(range(10)), pen)
-
-    from PIL import ImageDraw
 
     draw, handler = ImageDraw.getdraw(im)
     pen = ImageDraw2.Pen("blue", width=7)

@@ -1,4 +1,4 @@
-from PIL import GimpGradientFile
+from PIL import GimpGradientFile, ImagePalette
 
 
 def test_linear_pos_le_middle():
@@ -99,8 +99,6 @@ def test_sphere_decreasing():
 
 def test_load_via_imagepalette():
     # Arrange
-    from PIL import ImagePalette
-
     test_file = "Tests/images/gimp_gradient.ggr"
 
     # Act
@@ -114,8 +112,6 @@ def test_load_via_imagepalette():
 
 def test_load_1_3_via_imagepalette():
     # Arrange
-    from PIL import ImagePalette
-
     # GIMP 1.3 gradient files contain a name field
     test_file = "Tests/images/gimp_gradient_with_name.ggr"
 
