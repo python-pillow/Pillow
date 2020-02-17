@@ -21,6 +21,16 @@
 
 #endif
 
+void ImagingSectionEnter(ImagingSectionCookie* cookie)
+{
+    *cookie = (PyThreadState *) PyEval_SaveThread();
+}
+
+void ImagingSectionLeave(ImagingSectionCookie* cookie)
+{
+    PyEval_RestoreThread((PyThreadState*) *cookie);
+}
+
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */
@@ -555,6 +565,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t exif_size;
     Py_ssize_t xmp_size;
     size_t ret_size;
+    ImagingSectionCookie cookie;
 
     if (!PyArg_ParseTuple(args, "y#iiifss#s#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
@@ -567,11 +578,15 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
+            ImagingSectionEnter(&cookie);
             ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4 * width, &output);
+            ImagingSectionLeave(&cookie);
         } else
         #endif
         {
+            ImagingSectionEnter(&cookie);
             ret_size = WebPEncodeRGBA(rgb, width, height, 4 * width, quality_factor, &output);
+            ImagingSectionLeave(&cookie);
         }
     } else if (strcmp(mode, "RGB")==0){
         if (size < width * height * 3){
@@ -579,11 +594,15 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
         }
         #if WEBP_ENCODER_ABI_VERSION >= 0x0100
         if (lossless) {
+            ImagingSectionEnter(&cookie);
             ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3 * width, &output);
+            ImagingSectionLeave(&cookie);
         } else
         #endif
         {
+            ImagingSectionEnter(&cookie);
             ret_size = WebPEncodeRGB(rgb, width, height, 3 * width, quality_factor, &output);
+            ImagingSectionLeave(&cookie);
         }
     } else {
         Py_RETURN_NONE;
