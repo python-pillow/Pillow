@@ -20,8 +20,6 @@ try:
 except ImportError:
     HAVE_WEBP = False
 
-codecs = dir(Image.core)
-
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
 
@@ -30,10 +28,6 @@ with open(TEST_GIF, "rb") as f:
 
 
 class TestFileGif(PillowTestCase):
-    def setUp(self):
-        if "gif_encoder" not in codecs or "gif_decoder" not in codecs:
-            self.skipTest("gif support not available")  # can this happen?
-
     def test_sanity(self):
         with Image.open(TEST_GIF) as im:
             im.load()
