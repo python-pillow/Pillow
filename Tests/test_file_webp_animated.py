@@ -7,28 +7,13 @@ from .helper import (
     assert_image_similar,
     is_big_endian,
     on_ci,
+    skip_unless_feature,
 )
 
-try:
-    from PIL import _webp
 
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
-
-
+@skip_unless_feature("webp")
+@skip_unless_feature("webp_anim")
 class TestFileWebpAnimation(PillowTestCase):
-    def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
-
-        if not _webp.HAVE_WEBPANIM:
-            self.skipTest(
-                "WebP library does not contain animation support, "
-                "not testing animation"
-            )
-
     def test_n_frames(self):
         """
         Ensure that WebP format sets n_frames and is_animated

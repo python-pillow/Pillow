@@ -1,7 +1,6 @@
-import unittest
 from io import BytesIO
 
-from PIL import EpsImagePlugin, Image, ImageFile
+from PIL import EpsImagePlugin, Image, ImageFile, features
 
 from .helper import (
     PillowTestCase,
@@ -10,18 +9,9 @@ from .helper import (
     assert_image_similar,
     fromstring,
     hopper,
+    skip_unless_feature,
     tostring,
 )
-
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
-
-
-codecs = dir(Image.core)
 
 # save original block sizes
 MAXBLOCK = ImageFile.MAXBLOCK
@@ -53,7 +43,7 @@ class TestImageFile(PillowTestCase):
         assert_image_similar(im1.convert("P"), im2, 1)
         assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
-        if "zip_encoder" in codecs:
+        if features.check("zlib"):
             try:
                 # force multiple blocks in PNG driver
                 ImageFile.MAXBLOCK = 8192
@@ -77,7 +67,7 @@ class TestImageFile(PillowTestCase):
             # EPS comes back in RGB:
             assert_image_similar(im1, im2.convert("L"), 20)
 
-        if "jpeg_encoder" in codecs:
+        if features.check("jpg"):
             im1, im2 = roundtrip("JPEG")  # lossy compression
             assert_image(im1, im2.mode, im2.size)
 
@@ -90,10 +80,8 @@ class TestImageFile(PillowTestCase):
             p.feed(data)
             self.assertEqual((48, 48), p.image.size)
 
+    @skip_unless_feature("zlib")
     def test_safeblock(self):
-        if "zip_encoder" not in codecs:
-            self.skipTest("PNG (zlib) encoder not available")
-
         im1 = hopper()
 
         try:
@@ -120,10 +108,8 @@ class TestImageFile(PillowTestCase):
         with self.assertRaises(IOError):
             p.close()
 
+    @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
-        if "zip_encoder" not in codecs:
-            self.skipTest("PNG (zlib) encoder not available")
-
         with Image.open("Tests/images/truncated_image.png") as im:
             with self.assertRaises(IOError):
                 im.load()
@@ -132,10 +118,8 @@ class TestImageFile(PillowTestCase):
             with self.assertRaises(IOError):
                 im.load()
 
+    @skip_unless_feature("zlib")
     def test_truncated_without_errors(self):
-        if "zip_encoder" not in codecs:
-            self.skipTest("PNG (zlib) encoder not available")
-
         with Image.open("Tests/images/truncated_image.png") as im:
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             try:
@@ -143,18 +127,14 @@ class TestImageFile(PillowTestCase):
             finally:
                 ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+    @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self):
-        if "zip_encoder" not in codecs:
-            self.skipTest("PNG (zlib) encoder not available")
-
         with Image.open("Tests/images/broken_data_stream.png") as im:
             with self.assertRaises(IOError):
                 im.load()
 
+    @skip_unless_feature("zlib")
     def test_broken_datastream_without_errors(self):
-        if "zip_encoder" not in codecs:
-            self.skipTest("PNG (zlib) encoder not available")
-
         with Image.open("Tests/images/broken_data_stream.png") as im:
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             try:
@@ -292,10 +272,8 @@ class TestPyDecoder(PillowTestCase):
             self.assertEqual(reloaded_exif[40963], 455)
             self.assertEqual(exif[305], "Pillow test")
 
-    @unittest.skipIf(
-        not HAVE_WEBP or not _webp.HAVE_WEBPANIM,
-        "WebP support not installed with animation",
-    )
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
     def test_exif_webp(self):
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()

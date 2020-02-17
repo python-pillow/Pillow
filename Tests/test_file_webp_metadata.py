@@ -2,25 +2,12 @@ from io import BytesIO
 
 from PIL import Image
 
-from .helper import PillowTestCase
-
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
+from .helper import PillowTestCase, skip_unless_feature
 
 
+@skip_unless_feature("webp")
+@skip_unless_feature("webp_mux")
 class TestFileWebpMetadata(PillowTestCase):
-    def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
-
-        if not _webp.HAVE_WEBPMUX:
-            self.skipTest("WebPMux support not installed")
-
     def test_read_exif_metadata(self):
 
         file_path = "Tests/images/flower.webp"
@@ -100,10 +87,8 @@ class TestFileWebpMetadata(PillowTestCase):
         with Image.open(test_buffer) as webp_image:
             self.assertFalse(webp_image._getexif())
 
+    @skip_unless_feature("webp_anim")
     def test_write_animated_metadata(self):
-        if not _webp.HAVE_WEBPANIM:
-            self.skipTest("WebP animation support not available")
-
         iccp_data = b"<iccp_data>"
         exif_data = b"<exif_data>"
         xmp_data = b"<xmp_data>"

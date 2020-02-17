@@ -2,7 +2,7 @@ import unittest
 from io import BytesIO
 
 import pytest
-from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
+from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, features
 
 from .helper import (
     PillowTestCase,
@@ -12,13 +12,6 @@ from .helper import (
     is_pypy,
     netpbm_available,
 )
-
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
 
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
@@ -556,7 +549,7 @@ class TestFileGif(PillowTestCase):
 
             self.assertEqual(reread.info["background"], im.info["background"])
 
-        if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+        if features.check("webp") and features.check("webp_anim"):
             with Image.open("Tests/images/hopper.webp") as im:
                 self.assertIsInstance(im.info["background"], tuple)
                 im.save(out)

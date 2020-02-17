@@ -1,13 +1,8 @@
-import pytest
 from PIL import Image
 
-from .helper import fromstring, tostring
+from .helper import fromstring, skip_unless_feature, tostring
 
-
-def setup_module():
-    codecs = dir(Image.core)
-    if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
-        pytest.skip("jpeg support not available")
+pytestmark = skip_unless_feature("jpg")
 
 
 def draft_roundtrip(in_mode, in_size, req_mode, req_size):

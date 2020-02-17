@@ -3,15 +3,11 @@ from io import BytesIO
 import pytest
 from PIL import Image
 
-from .helper import assert_image_similar, is_pypy
+from .helper import assert_image_similar, is_pypy, skip_unless_feature
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
-
-def setup_module():
-    codecs = dir(Image.core)
-    if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
-        pytest.skip("jpeg support not available")
+pytestmark = skip_unless_feature("jpg")
 
 
 def frame_roundtrip(im, **options):

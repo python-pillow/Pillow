@@ -1,9 +1,7 @@
 import pytest
-from PIL import Image, TarIO
+from PIL import Image, TarIO, features
 
 from .helper import is_pypy
-
-codecs = dir(Image.core)
 
 # Sample tar archive
 TEST_TAR_FILE = "Tests/images/hopper.tar"
@@ -11,10 +9,10 @@ TEST_TAR_FILE = "Tests/images/hopper.tar"
 
 def test_sanity():
     for codec, test_path, format in [
-        ["zip_decoder", "hopper.png", "PNG"],
-        ["jpeg_decoder", "hopper.jpg", "JPEG"],
+        ["zlib", "hopper.png", "PNG"],
+        ["jpg", "hopper.jpg", "JPEG"],
     ]:
-        if codec in codecs:
+        if features.check(codec):
             with TarIO.TarIO(TEST_TAR_FILE, test_path) as tar:
                 with Image.open(tar) as im:
                     im.load()
