@@ -1,13 +1,9 @@
 import pytest
 from PIL import __version__
 
-try:
-    import pyroma
-except ImportError:
-    pyroma = None
+pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")
 
 
-@pytest.mark.skipif(pyroma is None, reason="Pyroma is not installed")
 def test_pyroma():
     # Arrange
     data = pyroma.projectdata.get_data(".")

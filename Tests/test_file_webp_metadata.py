@@ -1,23 +1,15 @@
 from io import BytesIO
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase
 
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
+_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 class TestFileWebpMetadata(PillowTestCase):
     def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
-
         if not _webp.HAVE_WEBPMUX:
             self.skipTest("WebPMux support not installed")
 

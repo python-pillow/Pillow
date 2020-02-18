@@ -1,16 +1,11 @@
-import unittest
-
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
 
-try:
-    from PIL import _webp
-except ImportError:
-    _webp = None
+_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
-@unittest.skipIf(_webp is None, "WebP support not installed")
 class TestFileWebpAlpha(PillowTestCase):
     def setUp(self):
         if _webp.WebPDecoderBuggyAlpha(self):

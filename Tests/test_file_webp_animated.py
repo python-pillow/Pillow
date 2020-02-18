@@ -9,20 +9,11 @@ from .helper import (
     on_ci,
 )
 
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
+_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 class TestFileWebpAnimation(PillowTestCase):
     def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
-
         if not _webp.HAVE_WEBPANIM:
             self.skipTest(
                 "WebP library does not contain animation support, "

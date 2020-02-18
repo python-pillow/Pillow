@@ -1,21 +1,13 @@
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, hopper
 
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
+_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 class TestFileWebpLossless(PillowTestCase):
     def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
-
         if _webp.WebPDecoderVersion() < 0x0200:
             self.skipTest("lossless not included")
 

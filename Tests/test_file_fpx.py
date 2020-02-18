@@ -1,15 +1,8 @@
 import pytest
 from PIL import Image
 
-try:
-    from PIL import FpxImagePlugin
-except ImportError:
-    olefile_installed = False
-else:
-    olefile_installed = True
-
-pytestmark = pytest.mark.skipif(
-    not olefile_installed, reason="olefile package not installed"
+FpxImagePlugin = pytest.importorskip(
+    "PIL.FpxImagePlugin", reason="olefile not installed"
 )
 
 
