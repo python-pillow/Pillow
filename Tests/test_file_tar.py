@@ -9,11 +9,6 @@ codecs = dir(Image.core)
 TEST_TAR_FILE = "Tests/images/hopper.tar"
 
 
-def setup_module():
-    if "zip_decoder" not in codecs and "jpeg_decoder" not in codecs:
-        pytest.skip("neither jpeg nor zip support available")
-
-
 def test_sanity():
     for codec, test_path, format in [
         ["zip_decoder", "hopper.png", "PNG"],
