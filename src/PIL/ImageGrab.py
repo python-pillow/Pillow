@@ -35,7 +35,9 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
         im.load()
         os.unlink(filepath)
         if bbox:
-            im = im.crop(bbox)
+            im_cropped = im.crop(bbox)
+            im.close()
+            return im_cropped
     else:
         offset, size, data = Image.core.grabscreen(include_layered_windows, all_screens)
         im = Image.frombytes(

@@ -71,7 +71,10 @@ class ImageFont:
     def _load_pilfont(self, filename):
 
         with open(filename, "rb") as fp:
+            image = None
             for ext in (".png", ".gif", ".pbm"):
+                if image:
+                    image.close()
                 try:
                     fullname = os.path.splitext(filename)[0] + ext
                     image = Image.open(fullname)
@@ -81,11 +84,14 @@ class ImageFont:
                     if image and image.mode in ("1", "L"):
                         break
             else:
+                if image:
+                    image.close()
                 raise OSError("cannot find glyph data file")
 
             self.file = fullname
 
-            return self._load_pilfont_data(fp, image)
+            self._load_pilfont_data(fp, image)
+            image.close()
 
     def _load_pilfont_data(self, file, image):
 
