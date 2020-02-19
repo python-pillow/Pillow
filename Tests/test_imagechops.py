@@ -213,8 +213,8 @@ def test_lighter_image():
             # Act
             new = ImageChops.lighter(im1, im2)
 
-    # Assert
-    assert_image_equal(new, im1)
+        # Assert
+        assert_image_equal(new, im1)
 
 
 def test_lighter_pixel():
@@ -279,13 +279,13 @@ def test_offset():
         # Act
         new = ImageChops.offset(im, xoffset, yoffset)
 
-    # Assert
-    assert new.getbbox() == (0, 45, 100, 96)
-    assert new.getpixel((50, 50)) == BLACK
-    assert new.getpixel((50 + xoffset, 50 + yoffset)) == DARK_GREEN
+        # Assert
+        assert new.getbbox() == (0, 45, 100, 96)
+        assert new.getpixel((50, 50)) == BLACK
+        assert new.getpixel((50 + xoffset, 50 + yoffset)) == DARK_GREEN
 
-    # Test no yoffset
-    assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
+        # Test no yoffset
+        assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
 
 
 def test_screen():
@@ -323,9 +323,9 @@ def test_subtract_scale_offset():
             # Act
             new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
 
-            # Assert
-            assert new.getbbox() == (0, 0, 100, 100)
-            assert new.getpixel((50, 50)) == (100, 202, 100)
+    # Assert
+    assert new.getbbox() == (0, 0, 100, 100)
+    assert new.getpixel((50, 50)) == (100, 202, 100)
 
 
 def test_subtract_clip():
@@ -336,8 +336,8 @@ def test_subtract_clip():
         # Act
         new = ImageChops.subtract(im1, im2)
 
-        # Assert
-        assert new.getpixel((50, 50)) == (0, 0, 127)
+    # Assert
+    assert new.getpixel((50, 50)) == (0, 0, 127)
 
 
 def test_subtract_modulo():
@@ -348,10 +348,10 @@ def test_subtract_modulo():
             # Act
             new = ImageChops.subtract_modulo(im1, im2)
 
-            # Assert
-            assert new.getbbox() == (25, 50, 76, 76)
-            assert new.getpixel((50, 50)) == GREEN
-            assert new.getpixel((50, 51)) == BLACK
+    # Assert
+    assert new.getbbox() == (25, 50, 76, 76)
+    assert new.getpixel((50, 50)) == GREEN
+    assert new.getpixel((50, 51)) == BLACK
 
 
 def test_subtract_modulo_no_clip():
@@ -362,11 +362,11 @@ def test_subtract_modulo_no_clip():
         # Act
         new = ImageChops.subtract_modulo(im1, im2)
 
-        # Assert
-        self.assertEqual(new.getpixel((50, 50)), (241, 167, 127))
+    # Assert
+    assert new.getpixel((50, 50)) == (241, 167, 127)
 
 
-def test_soft_light(self):
+def test_soft_light():
     # Arrange
     im1 = Image.open("Tests/images/hopper.png")
     im2 = Image.open("Tests/images/hopper-XYZ.png")
@@ -375,11 +375,11 @@ def test_soft_light(self):
     new = ImageChops.soft_light(im1, im2)
 
     # Assert
-    self.assertEqual(new.getpixel((64, 64)), (163, 54, 32))
-    self.assertEqual(new.getpixel((15, 100)), (1, 1, 3))
+    assert new.getpixel((64, 64)) == (163, 54, 32)
+    assert new.getpixel((15, 100)) == (1, 1, 3)
 
 
-def test_hard_light(self):
+def test_hard_light():
     # Arrange
     im1 = Image.open("Tests/images/hopper.png")
     im2 = Image.open("Tests/images/hopper-XYZ.png")
@@ -388,11 +388,11 @@ def test_hard_light(self):
     new = ImageChops.hard_light(im1, im2)
 
     # Assert
-    self.assertEqual(new.getpixel((64, 64)), (144, 50, 27))
-    self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
+    assert new.getpixel((64, 64)) == (144, 50, 27)
+    assert new.getpixel((15, 100)) == (1, 1, 2)
 
 
-def test_overlay(self):
+def test_overlay():
     # Arrange
     im1 = Image.open("Tests/images/hopper.png")
     im2 = Image.open("Tests/images/hopper-XYZ.png")
@@ -401,8 +401,8 @@ def test_overlay(self):
     new = ImageChops.overlay(im1, im2)
 
     # Assert
-    self.assertEqual(new.getpixel((64, 64)), (159, 50, 27))
-    self.assertEqual(new.getpixel((15, 100)), (1, 1, 2))
+    assert new.getpixel((64, 64)) == (159, 50, 27)
+    assert new.getpixel((15, 100)) == (1, 1, 2)
 
 
 def test_logical():
