@@ -3,11 +3,11 @@ import distutils.version
 import os
 import re
 import shutil
-import sys
 import unittest
 from io import BytesIO
+from unittest import mock
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont
 
 from .helper import (
     PillowTestCase,
@@ -16,6 +16,7 @@ from .helper import (
     assert_image_similar_tofile,
     is_pypy,
     is_win32,
+    skip_unless_feature,
 )
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -23,37 +24,8 @@ FONT_SIZE = 20
 
 TEST_TEXT = "hey you\nyou are awesome\nthis looks awkward"
 
-HAS_FREETYPE = features.check("freetype2")
-HAS_RAQM = features.check("raqm")
 
-
-class SimplePatcher:
-    def __init__(self, parent_obj, attr_name, value):
-        self._parent_obj = parent_obj
-        self._attr_name = attr_name
-        self._saved = None
-        self._is_saved = False
-        self._value = value
-
-    def __enter__(self):
-        # Patch the attr on the object
-        if hasattr(self._parent_obj, self._attr_name):
-            self._saved = getattr(self._parent_obj, self._attr_name)
-            setattr(self._parent_obj, self._attr_name, self._value)
-            self._is_saved = True
-        else:
-            setattr(self._parent_obj, self._attr_name, self._value)
-            self._is_saved = False
-
-    def __exit__(self, type, value, traceback):
-        # Restore the original value
-        if self._is_saved:
-            setattr(self._parent_obj, self._attr_name, self._saved)
-        else:
-            delattr(self._parent_obj, self._attr_name)
-
-
-@unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
+@skip_unless_feature("freetype2")
 class TestImageFont(PillowTestCase):
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
@@ -491,7 +463,7 @@ class TestImageFont(PillowTestCase):
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
-        with SimplePatcher(ImageFont, "_FreeTypeFont", free_type_font):
+        with mock.patch.object(ImageFont, "_FreeTypeFont", free_type_font, create=True):
 
             def loadable_font(filepath, size, index, encoding, *args, **kwargs):
                 if filepath == path_to_fake:
@@ -502,7 +474,7 @@ class TestImageFont(PillowTestCase):
                     filepath, size, index, encoding, *args, **kwargs
                 )
 
-            with SimplePatcher(ImageFont, "FreeTypeFont", loadable_font):
+            with mock.patch.object(ImageFont, "FreeTypeFont", loadable_font):
                 font = ImageFont.truetype(fontname)
                 # Make sure it's loaded
                 name = font.getname()
@@ -513,10 +485,9 @@ class TestImageFont(PillowTestCase):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
         font_directory = "/usr/local/share/fonts"
-        with SimplePatcher(sys, "platform", "linux"):
-            patched_env = copy.deepcopy(os.environ)
-            patched_env["XDG_DATA_DIRS"] = "/usr/share/:/usr/local/share/"
-            with SimplePatcher(os, "environ", patched_env):
+        with mock.patch("sys.platform", "linux"):
+            patched_env = {"XDG_DATA_DIRS": "/usr/share/:/usr/local/share/"}
+            with mock.patch.dict(os.environ, patched_env):
 
                 def fake_walker(path):
                     if path == font_directory:
@@ -534,7 +505,7 @@ class TestImageFont(PillowTestCase):
                         ]
                     return [(path, [], ["some_random_font.ttf"])]
 
-                with SimplePatcher(os, "walk", fake_walker):
+                with mock.patch("os.walk", fake_walker):
                     # Test that the font loads both with and without the
                     # extension
                     self._test_fake_loading_font(
@@ -559,7 +530,7 @@ class TestImageFont(PillowTestCase):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
         font_directory = "/System/Library/Fonts"
-        with SimplePatcher(sys, "platform", "darwin"):
+        with mock.patch("sys.platform", "darwin"):
 
             def fake_walker(path):
                 if path == font_directory:
@@ -577,7 +548,7 @@ class TestImageFont(PillowTestCase):
                     ]
                 return [(path, [], ["some_random_font.ttf"])]
 
-            with SimplePatcher(os, "walk", fake_walker):
+            with mock.patch("os.walk", fake_walker):
                 self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial.ttf")
                 self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial")
                 self._test_fake_loading_font(font_directory + "/Single.otf", "Single")
@@ -752,6 +723,6 @@ class TestImageFont(PillowTestCase):
         _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
-@unittest.skipUnless(HAS_RAQM, "Raqm not Available")
+@skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM

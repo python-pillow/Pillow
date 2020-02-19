@@ -1,19 +1,19 @@
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-from .helper import PillowTestCase, assert_image_equal, assert_image_similar
-
-codecs = dir(Image.core)
+from .helper import (
+    PillowTestCase,
+    assert_image_equal,
+    assert_image_similar,
+    skip_unless_feature,
+)
 
 fontname = "Tests/fonts/10x20-ISO8859-1.pcf"
 
 message = "hello, world"
 
 
+@skip_unless_feature("zlib")
 class TestFontPcf(PillowTestCase):
-    def setUp(self):
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zlib support not available")
-
     def save_font(self):
         with open(fontname, "rb") as test_file:
             font = PcfFontFile.PcfFontFile(test_file)

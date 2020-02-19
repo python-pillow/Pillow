@@ -3,12 +3,13 @@ from io import BytesIO
 import pytest
 from PIL import Image
 
+from .helper import skip_unless_feature
+
 _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
-
-
-def setup_module():
-    if not _webp.HAVE_WEBPMUX:
-        pytest.skip("WebPMux support not installed")
+pytestmark = [
+    skip_unless_feature("webp"),
+    skip_unless_feature("webp_mux"),
+]
 
 
 def test_read_exif_metadata():
@@ -93,10 +94,8 @@ def test_read_no_exif():
         assert not webp_image._getexif()
 
 
+@skip_unless_feature("webp_anim")
 def test_write_animated_metadata(tmp_path):
-    if not _webp.HAVE_WEBPANIM:
-        pytest.skip("WebP animation support not available")
-
     iccp_data = b"<iccp_data>"
     exif_data = b"<exif_data>"
     xmp_data = b"<xmp_data>"

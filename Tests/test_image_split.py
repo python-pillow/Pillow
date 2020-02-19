@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, features
 
 from .helper import PillowTestCase, assert_image_equal, hopper
 
@@ -44,9 +44,7 @@ class TestImageSplit(PillowTestCase):
         assert_image_equal(hopper("YCbCr"), split_merge("YCbCr"))
 
     def test_split_open(self):
-        codecs = dir(Image.core)
-
-        if "zip_encoder" in codecs:
+        if features.check("zlib"):
             test_file = self.tempfile("temp.png")
         else:
             test_file = self.tempfile("temp.pcx")
@@ -60,5 +58,5 @@ class TestImageSplit(PillowTestCase):
         self.assertEqual(split_open("L"), 1)
         self.assertEqual(split_open("P"), 1)
         self.assertEqual(split_open("RGB"), 3)
-        if "zip_encoder" in codecs:
+        if features.check("zlib"):
             self.assertEqual(split_open("RGBA"), 4)

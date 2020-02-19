@@ -1,16 +1,18 @@
 import pytest
 from PIL import Image
 
-from .helper import assert_image_equal, assert_image_similar, is_big_endian, on_ci
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    is_big_endian,
+    on_ci,
+    skip_unless_feature,
+)
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
-
-
-def setup_module():
-    if not _webp.HAVE_WEBPANIM:
-        pytest.skip(
-            "WebP library does not contain animation support, not testing animation"
-        )
+pytestmark = [
+    skip_unless_feature("webp"),
+    skip_unless_feature("webp_anim"),
+]
 
 
 def test_n_frames():

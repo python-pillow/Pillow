@@ -15,17 +15,8 @@ from .helper import (
     is_big_endian,
     is_win32,
     on_ci,
+    skip_unless_feature,
 )
-
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
-
-codecs = dir(Image.core)
-
 
 # sample png stream
 
@@ -63,11 +54,8 @@ def roundtrip(im, **options):
     return Image.open(out)
 
 
+@skip_unless_feature("zlib")
 class TestFilePng(PillowTestCase):
-    def setUp(self):
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zip/deflate support not available")
-
     def get_chunks(self, filename):
         chunks = []
         with open(filename, "rb") as fp:
@@ -632,9 +620,8 @@ class TestFilePng(PillowTestCase):
         with Image.open(test_file) as reloaded:
             self.assertEqual(reloaded.info["exif"], b"Exif\x00\x00exifstring")
 
-    @unittest.skipUnless(
-        HAVE_WEBP and _webp.HAVE_WEBPANIM, "WebP support not installed with animation"
-    )
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
     def test_apng(self):
         with Image.open("Tests/images/iss634.apng") as im:
             self.assertEqual(im.get_format_mimetype(), "image/apng")
@@ -645,13 +632,10 @@ class TestFilePng(PillowTestCase):
 
 
 @unittest.skipIf(is_win32(), "requires Unix or macOS")
+@skip_unless_feature("zlib")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2 * 1024  # max increase in K
     iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs
-
-    def setUp(self):
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zip/deflate support not available")
 
     def test_leak_load(self):
         with open("Tests/images/hopper.png", "rb") as f:

@@ -1,9 +1,9 @@
 import io
 import unittest
 
-from PIL import EpsImagePlugin, Image
+from PIL import EpsImagePlugin, Image, features
 
-from .helper import PillowTestCase, assert_image_similar, hopper
+from .helper import PillowTestCase, assert_image_similar, hopper, skip_unless_feature
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -67,7 +67,7 @@ class TestFileEps(PillowTestCase):
             cmyk_image.load()
             self.assertEqual(cmyk_image.mode, "RGB")
 
-            if "jpeg_decoder" in dir(Image.core):
+            if features.check("jpg"):
                 with Image.open("Tests/images/pil_sample_rgb.jpg") as target:
                     assert_image_similar(cmyk_image, target, 10)
 
@@ -114,11 +114,9 @@ class TestFileEps(PillowTestCase):
         self.assertRaises(ValueError, im.save, tmpfile)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
+    @skip_unless_feature("zlib")
     def test_render_scale1(self):
         # We need png support for these render test
-        codecs = dir(Image.core)
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zip/deflate support not available")
 
         # Zero bounding box
         with Image.open(file1) as image1_scale1:
@@ -137,11 +135,9 @@ class TestFileEps(PillowTestCase):
             assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
+    @skip_unless_feature("zlib")
     def test_render_scale2(self):
         # We need png support for these render test
-        codecs = dir(Image.core)
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zip/deflate support not available")
 
         # Zero bounding box
         with Image.open(file1) as image1_scale2:

@@ -1,5 +1,5 @@
 import pytest
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, features
 
 from .helper import (
     assert_image_equal,
@@ -7,13 +7,6 @@ from .helper import (
     assert_tuple_approx_equal,
     hopper,
 )
-
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
 
 
 class Deformer:
@@ -274,7 +267,7 @@ def test_colorize_3color_offset():
 
 def test_exif_transpose():
     exts = [".jpg"]
-    if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+    if features.check("webp") and features.check("webp_anim"):
         exts.append(".webp")
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:
