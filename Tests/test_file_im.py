@@ -72,12 +72,15 @@ def test_eoferror():
 
 
 def test_roundtrip(tmp_path):
-    for mode in ["RGB", "P", "PA"]:
+    def roundtrip(mode):
         out = str(tmp_path / "temp.im")
         im = hopper(mode)
         im.save(out)
         with Image.open(out) as reread:
             assert_image_equal(reread, im)
+
+    for mode in ["RGB", "P", "PA"]:
+        roundtrip(mode)
 
 
 def test_save_unsupported_mode(tmp_path):
