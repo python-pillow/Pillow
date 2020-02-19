@@ -206,7 +206,7 @@ those locations by editing :file:`setup.py` or
 :file:`setup.cfg`, or by adding environment variables on the command
 line::
 
-    CFLAGS="-I/usr/pkg/include" python -m pip install pillow
+    CFLAGS="-I/usr/pkg/include" python -m pip install --upgrade Pillow
 
 If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
@@ -254,7 +254,7 @@ Sample usage::
 
 or using pip::
 
-    python -m pip install pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
 Building on macOS
