@@ -1,6 +1,6 @@
 from fractions import Fraction
 
-from PIL import Image, TiffImagePlugin
+from PIL import Image, TiffImagePlugin, features
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import PillowTestCase, hopper
@@ -43,7 +43,7 @@ class Test_IFDRational(PillowTestCase):
 
     def test_ifd_rational_save(self):
         methods = (True, False)
-        if "libtiff_encoder" not in dir(Image.core):
+        if not features.check("libtiff"):
             methods = (False,)
 
         for libtiff in methods:

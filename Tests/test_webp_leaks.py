@@ -1,14 +1,13 @@
-import unittest
 from io import BytesIO
 
-from PIL import Image, features
+from PIL import Image
 
-from .helper import PillowLeakTestCase
+from .helper import PillowLeakTestCase, skip_unless_feature
 
 test_file = "Tests/images/hopper.webp"
 
 
-@unittest.skipUnless(features.check("webp"), "WebP is not installed")
+@skip_unless_feature("webp")
 class TestWebPLeaks(PillowLeakTestCase):
 
     mem_limit = 3 * 1024  # kb

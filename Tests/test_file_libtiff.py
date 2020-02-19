@@ -6,7 +6,7 @@ import os
 from collections import namedtuple
 from ctypes import c_float
 
-from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
+from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags
 
 from .helper import (
     PillowTestCase,
@@ -15,16 +15,14 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    skip_unless_feature,
 )
 
 logger = logging.getLogger(__name__)
 
 
+@skip_unless_feature("libtiff")
 class LibTiffTestCase(PillowTestCase):
-    def setUp(self):
-        if not features.check("libtiff"):
-            self.skipTest("tiff support not available")
-
     def _assert_noerr(self, im):
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
@@ -727,13 +725,9 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
+    @skip_unless_feature("jpg")
     def test_gimp_tiff(self):
         # Read TIFF JPEG images from GIMP [@PIL168]
-
-        codecs = dir(Image.core)
-        if "jpeg_decoder" not in codecs:
-            self.skipTest("jpeg support not available")
-
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
             self.assertEqual(im.mode, "RGB")

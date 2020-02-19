@@ -2,7 +2,7 @@ import unittest
 from io import BytesIO
 
 import pytest
-from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette
+from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, features
 
 from .helper import (
     PillowTestCase,
@@ -13,15 +13,6 @@ from .helper import (
     netpbm_available,
 )
 
-try:
-    from PIL import _webp
-
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
-
-codecs = dir(Image.core)
-
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
 
@@ -30,10 +21,6 @@ with open(TEST_GIF, "rb") as f:
 
 
 class TestFileGif(PillowTestCase):
-    def setUp(self):
-        if "gif_encoder" not in codecs or "gif_decoder" not in codecs:
-            self.skipTest("gif support not available")  # can this happen?
-
     def test_sanity(self):
         with Image.open(TEST_GIF) as im:
             im.load()
@@ -562,7 +549,7 @@ class TestFileGif(PillowTestCase):
 
             self.assertEqual(reread.info["background"], im.info["background"])
 
-        if HAVE_WEBP and _webp.HAVE_WEBPANIM:
+        if features.check("webp") and features.check("webp_anim"):
             with Image.open("Tests/images/hopper.webp") as im:
                 self.assertIsInstance(im.info["background"], tuple)
                 im.save(out)

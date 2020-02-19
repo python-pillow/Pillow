@@ -7,7 +7,7 @@ import unittest
 from io import BytesIO
 from unittest import mock
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont
 
 from .helper import (
     PillowTestCase,
@@ -16,6 +16,7 @@ from .helper import (
     assert_image_similar_tofile,
     is_pypy,
     is_win32,
+    skip_unless_feature,
 )
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -23,11 +24,8 @@ FONT_SIZE = 20
 
 TEST_TEXT = "hey you\nyou are awesome\nthis looks awkward"
 
-HAS_FREETYPE = features.check("freetype2")
-HAS_RAQM = features.check("raqm")
 
-
-@unittest.skipUnless(HAS_FREETYPE, "ImageFont not available")
+@skip_unless_feature("freetype2")
 class TestImageFont(PillowTestCase):
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
@@ -725,6 +723,6 @@ class TestImageFont(PillowTestCase):
         _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
-@unittest.skipUnless(HAS_RAQM, "Raqm not Available")
+@skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM

@@ -1,9 +1,14 @@
 import os.path
 
 import pytest
-from PIL import Image, ImageColor, ImageDraw, ImageFont, features
+from PIL import Image, ImageColor, ImageDraw, ImageFont
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    hopper,
+    skip_unless_feature,
+)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -29,8 +34,6 @@ POINTS1 = [(10, 10), (20, 40), (30, 30)]
 POINTS2 = [10, 10, 20, 40, 30, 30]
 
 KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
-
-HAS_FREETYPE = features.check("freetype2")
 
 
 def test_sanity():
@@ -912,7 +915,7 @@ def test_textsize_empty_string():
     draw.textsize("test\n")
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_textsize_stroke():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -924,7 +927,7 @@ def test_textsize_stroke():
     assert draw.multiline_textsize("ABC\nAaaa", font, stroke_width=2) == (52, 44)
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_stroke():
     for suffix, stroke_fill in {"same": None, "different": "#0f0"}.items():
         # Arrange
@@ -941,7 +944,7 @@ def test_stroke():
         )
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_stroke_multiline():
     # Arrange
     im = Image.new("RGB", (100, 250))

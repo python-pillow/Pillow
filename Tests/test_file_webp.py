@@ -1,5 +1,3 @@
-import unittest
-
 import pytest
 from PIL import Image, WebPImagePlugin
 
@@ -8,6 +6,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    skip_unless_feature,
 )
 
 try:
@@ -32,7 +31,7 @@ class TestUnsupportedWebp(PillowTestCase):
             WebPImagePlugin.SUPPORTED = True
 
 
-@unittest.skipUnless(HAVE_WEBP, "WebP support not installed")
+@skip_unless_feature("webp")
 class TestFileWebp(PillowTestCase):
     def setUp(self):
         self.rgb_mode = "RGB"
@@ -155,9 +154,8 @@ class TestFileWebp(PillowTestCase):
             Image.open(blob).load()
             Image.open(blob).load()
 
-    @unittest.skipUnless(
-        HAVE_WEBP and _webp.HAVE_WEBPANIM, "WebP save all not available"
-    )
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
     def test_background_from_gif(self):
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))

@@ -1,14 +1,12 @@
-import unittest
+from PIL import Image, ImageDraw, ImageFont
 
-from PIL import Image, ImageDraw, ImageFont, features
-
-from .helper import PillowTestCase, assert_image_similar
+from .helper import PillowTestCase, assert_image_similar, skip_unless_feature
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
 
 
-@unittest.skipUnless(features.check("raqm"), "Raqm Library is not installed.")
+@skip_unless_feature("raqm")
 class TestImagecomplextext(PillowTestCase):
     def test_english(self):
         # smoke test, this should not fail

@@ -13,19 +13,15 @@ from .helper import (
     djpeg_available,
     hopper,
     is_win32,
+    skip_unless_feature,
     unittest,
 )
-
-codecs = dir(Image.core)
 
 TEST_FILE = "Tests/images/hopper.jpg"
 
 
+@skip_unless_feature("jpg")
 class TestFileJpeg(PillowTestCase):
-    def setUp(self):
-        if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
-            self.skipTest("jpeg support not available")
-
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG", **options)
@@ -687,11 +683,8 @@ class TestFileJpeg(PillowTestCase):
 
 
 @unittest.skipUnless(is_win32(), "Windows only")
+@skip_unless_feature("jpg")
 class TestFileCloseW32(PillowTestCase):
-    def setUp(self):
-        if "jpeg_encoder" not in codecs or "jpeg_decoder" not in codecs:
-            self.skipTest("jpeg support not available")
-
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.jpg")
 

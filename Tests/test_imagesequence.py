@@ -1,6 +1,6 @@
 from PIL import Image, ImageSequence, TiffImagePlugin
 
-from .helper import PillowTestCase, assert_image_equal, hopper
+from .helper import PillowTestCase, assert_image_equal, hopper, skip_unless_feature
 
 
 class TestImageSequence(PillowTestCase):
@@ -47,12 +47,8 @@ class TestImageSequence(PillowTestCase):
     def test_tiff(self):
         self._test_multipage_tiff()
 
+    @skip_unless_feature("libtiff")
     def test_libtiff(self):
-        codecs = dir(Image.core)
-
-        if "libtiff_encoder" not in codecs or "libtiff_decoder" not in codecs:
-            self.skipTest("tiff support not available")
-
         TiffImagePlugin.READ_LIBTIFF = True
         self._test_multipage_tiff()
         TiffImagePlugin.READ_LIBTIFF = False

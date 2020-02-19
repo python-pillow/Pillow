@@ -1,9 +1,13 @@
 import os.path
 
-import pytest
-from PIL import Image, ImageDraw, ImageDraw2, features
+from PIL import Image, ImageDraw, ImageDraw2
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    hopper,
+    skip_unless_feature,
+)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -30,7 +34,6 @@ POINTS2 = [10, 10, 20, 40, 30, 30]
 
 KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
 
-HAS_FREETYPE = features.check("freetype2")
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
 
@@ -178,7 +181,7 @@ def test_big_rectangle():
     assert_image_similar(im, Image.open(expected), 1)
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_text():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -193,7 +196,7 @@ def test_text():
     assert_image_similar(im, Image.open(expected), 13)
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_textsize():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -207,7 +210,7 @@ def test_textsize():
     assert size[1] == 12
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_textsize_empty_string():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -222,7 +225,7 @@ def test_textsize_empty_string():
     draw.textsize("test\n", font)
 
 
-@pytest.mark.skipif(not HAS_FREETYPE, reason="ImageFont not available")
+@skip_unless_feature("freetype2")
 def test_flush():
     # Arrange
     im = Image.new("RGB", (W, H))
