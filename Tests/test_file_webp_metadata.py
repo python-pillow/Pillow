@@ -1,11 +1,9 @@
 from io import BytesIO
 
-import pytest
 from PIL import Image
 
 from .helper import skip_unless_feature
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 pytestmark = [
     skip_unless_feature("webp"),
     skip_unless_feature("webp_mux"),
