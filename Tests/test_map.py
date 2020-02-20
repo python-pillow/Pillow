@@ -5,11 +5,6 @@ from PIL import Image
 
 from .helper import is_win32
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 pytestmark = pytest.mark.skipif(is_win32(), reason="Win32 does not call map_buffer")
 
 
@@ -32,8 +27,9 @@ def test_overflow():
 
 
 @pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="Requires 64-bit system")
-@pytest.mark.skipif(numpy is None, reason="NumPy is not installed")
 def test_ysize():
+    numpy = pytest.importorskip("numpy", reason="NumPy not installed")
+
     # Should not raise 'Integer overflow in ysize'
     arr = numpy.zeros((46341, 46341), dtype=numpy.uint8)
     Image.fromarray(arr)

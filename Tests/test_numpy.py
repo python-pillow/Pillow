@@ -3,16 +3,9 @@ from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
+numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
-
-
-pytestmark = pytest.mark.skipif(numpy is None, reason="NumPy is not installed")
 
 
 def test_numpy_to_image():
