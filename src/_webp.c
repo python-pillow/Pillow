@@ -428,12 +428,6 @@ PyObject* _anim_decoder_get_next(PyObject* self)
     return ret;
 }
 
-PyObject* _anim_decoder_has_more_frames(PyObject* self, PyObject* args)
-{
-    WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
-    return Py_BuildValue("i", WebPAnimDecoderHasMoreFrames(decp->dec));
-}
-
 PyObject* _anim_decoder_reset(PyObject* self)
 {
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
@@ -492,7 +486,6 @@ static struct PyMethodDef _anim_decoder_methods[] = {
     {"get_info", (PyCFunction)_anim_decoder_get_info, METH_NOARGS, "get_info"},
     {"get_chunk", (PyCFunction)_anim_decoder_get_chunk, METH_VARARGS, "get_chunk"},
     {"get_next", (PyCFunction)_anim_decoder_get_next, METH_NOARGS, "get_next"},
-    {"has_more_frames", (PyCFunction)_anim_decoder_has_more_frames, METH_VARARGS, "has_more_frames"},
     {"reset", (PyCFunction)_anim_decoder_reset, METH_NOARGS, "reset"},
     {NULL, NULL} /* sentinel */
 };
