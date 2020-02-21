@@ -369,7 +369,7 @@ PyObject* _anim_decoder_dealloc(PyObject* self)
     Py_RETURN_NONE;
 }
 
-PyObject* _anim_decoder_get_info(PyObject* self, PyObject* args)
+PyObject* _anim_decoder_get_info(PyObject* self)
 {
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo* info = &(decp->info);
@@ -406,7 +406,7 @@ PyObject* _anim_decoder_get_chunk(PyObject* self, PyObject* args)
     return ret;
 }
 
-PyObject* _anim_decoder_get_next(PyObject* self, PyObject* args)
+PyObject* _anim_decoder_get_next(PyObject* self)
 {
     uint8_t* buf;
     int timestamp;
@@ -434,7 +434,7 @@ PyObject* _anim_decoder_has_more_frames(PyObject* self, PyObject* args)
     return Py_BuildValue("i", WebPAnimDecoderHasMoreFrames(decp->dec));
 }
 
-PyObject* _anim_decoder_reset(PyObject* self, PyObject* args)
+PyObject* _anim_decoder_reset(PyObject* self)
 {
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject *)self;
     WebPAnimDecoderReset(decp->dec);
@@ -489,11 +489,11 @@ static PyTypeObject WebPAnimEncoder_Type = {
 
 // WebPAnimDecoder methods
 static struct PyMethodDef _anim_decoder_methods[] = {
-    {"get_info", (PyCFunction)_anim_decoder_get_info, METH_VARARGS, "get_info"},
+    {"get_info", (PyCFunction)_anim_decoder_get_info, METH_NOARGS, "get_info"},
     {"get_chunk", (PyCFunction)_anim_decoder_get_chunk, METH_VARARGS, "get_chunk"},
-    {"get_next", (PyCFunction)_anim_decoder_get_next, METH_VARARGS, "get_next"},
+    {"get_next", (PyCFunction)_anim_decoder_get_next, METH_NOARGS, "get_next"},
     {"has_more_frames", (PyCFunction)_anim_decoder_has_more_frames, METH_VARARGS, "has_more_frames"},
-    {"reset", (PyCFunction)_anim_decoder_reset, METH_VARARGS, "reset"},
+    {"reset", (PyCFunction)_anim_decoder_reset, METH_NOARGS, "reset"},
     {NULL, NULL} /* sentinel */
 };
 
@@ -775,7 +775,7 @@ end:
 
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
-PyObject* WebPDecoderVersion_wrapper(PyObject* self, PyObject* args){
+PyObject* WebPDecoderVersion_wrapper() {
     return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
@@ -787,7 +787,7 @@ int WebPDecoderBuggyAlpha(void) {
     return WebPGetDecoderVersion()==0x0103;
 }
 
-PyObject* WebPDecoderBuggyAlpha_wrapper(PyObject* self, PyObject* args){
+PyObject* WebPDecoderBuggyAlpha_wrapper() {
     return Py_BuildValue("i", WebPDecoderBuggyAlpha());
 }
 
@@ -803,8 +803,8 @@ static PyMethodDef webpMethods[] =
 #endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
-    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_VARARGS, "WebPVersion"},
-    {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_VARARGS, "WebPDecoderBuggyAlpha"},
+    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_NOARGS, "WebPVersion"},
+    {"WebPDecoderBuggyAlpha", WebPDecoderBuggyAlpha_wrapper, METH_NOARGS, "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
 };
 
