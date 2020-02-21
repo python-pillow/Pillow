@@ -2240,13 +2240,20 @@ class Image:
         if x >= self.width and y >= self.height:
             return
 
+        def round_aspect(number):
+            if x / y >= aspect:
+                key = lambda n: abs(aspect - n / y)  # noqa: E731
+            else:
+                key = lambda n: abs(aspect - x / n)  # noqa: E731
+            return max(min(math.floor(number), math.ceil(number), key=key), 1)
+
         # preserve aspect ratio
         aspect = self.width / self.height
         if x / y >= aspect:
-            x = max(y * aspect, 1)
+            x = round_aspect(y * aspect)
         else:
-            y = max(x / aspect, 1)
-        size = (round(x), round(y))
+            y = round_aspect(x / aspect)
+        size = (x, y)
 
         box = None
         if reducing_gap is not None:
