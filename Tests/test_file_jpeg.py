@@ -299,6 +299,10 @@ class TestFileJpeg(PillowTestCase):
         assert_image(im1, im2.mode, im2.size)
         self.assertGreaterEqual(im1.bytes, im2.bytes)
 
+        im3 = self.roundtrip(hopper(), quality=0)
+        assert_image(im1, im3.mode, im3.size)
+        self.assertGreater(im2.bytes, im3.bytes)
+
     def test_smooth(self):
         im1 = self.roundtrip(hopper())
         im2 = self.roundtrip(hopper(), smooth=100)
