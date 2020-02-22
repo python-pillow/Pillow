@@ -5,6 +5,7 @@ import sys
 import unittest
 from distutils import ccompiler, sysconfig
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, hopper, is_win32, on_ci
@@ -55,7 +56,7 @@ class TestImagePutPixel(AccessTest):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
-        self.assertFalse(im2.readonly)
+        assert not im2.readonly
         assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
@@ -74,8 +75,8 @@ class TestImagePutPixel(AccessTest):
         im2 = Image.new(im1.mode, im1.size, 0)
 
         width, height = im1.size
-        self.assertEqual(im1.getpixel((0, 0)), im1.getpixel((-width, -height)))
-        self.assertEqual(im1.getpixel((-1, -1)), im1.getpixel((width - 1, height - 1)))
+        assert im1.getpixel((0, 0)) == im1.getpixel((-width, -height))
+        assert im1.getpixel((-1, -1)) == im1.getpixel((width - 1, height - 1))
 
         for y in range(-1, -im1.size[1] - 1, -1):
             for x in range(-1, -im1.size[0] - 1, -1):
@@ -92,7 +93,7 @@ class TestImagePutPixel(AccessTest):
                 pos = x, y
                 im2.putpixel(pos, im1.getpixel(pos))
 
-        self.assertFalse(im2.readonly)
+        assert not im2.readonly
         assert_image_equal(im1, im2)
 
         im2 = Image.new(im1.mode, im1.size, 0)
@@ -123,54 +124,45 @@ class TestImageGetPixel(AccessTest):
         # check putpixel
         im = Image.new(mode, (1, 1), None)
         im.putpixel((0, 0), c)
-        self.assertEqual(
-            im.getpixel((0, 0)),
-            c,
-            "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c),
-        )
+        assert (
+            im.getpixel((0, 0)) == c
+        ), "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c)
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
-        self.assertEqual(
-            im.getpixel((-1, -1)),
-            c,
-            "put/getpixel roundtrip negative index failed"
-            " for mode %s, color %s" % (mode, c),
+        assert im.getpixel((-1, -1)) == c, (
+            "put/getpixel roundtrip negative index failed for mode %s, color %s"
+            % (mode, c)
         )
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.putpixel((0, 0), c)
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.putpixel((-1, -1), c)
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.getpixel((-1, -1))
 
         # check initial color
         im = Image.new(mode, (1, 1), c)
-        self.assertEqual(
-            im.getpixel((0, 0)),
-            c,
-            "initial color failed for mode {}, color {} ".format(mode, c),
-        )
+        assert (
+            im.getpixel((0, 0)) == c
+        ), "initial color failed for mode {}, color {} ".format(mode, c)
         # check initial color negative index
-        self.assertEqual(
-            im.getpixel((-1, -1)),
-            c,
-            "initial color failed with negative index"
-            "for mode %s, color %s " % (mode, c),
-        )
+        assert (
+            im.getpixel((-1, -1)) == c
+        ), "initial color failed with negative index for mode %s, color %s " % (mode, c)
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             im.getpixel((-1, -1))
 
     def test_basic(self):
@@ -205,7 +197,7 @@ class TestImageGetPixel(AccessTest):
         for color in [(255, 0, 0), (255, 0, 0, 255)]:
             im = Image.new("P", (1, 1), 0)
             im.putpixel((0, 0), color)
-            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+            assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
 @unittest.skipIf(cffi is None, "No cffi")
@@ -233,7 +225,7 @@ class TestCffi(AccessTest):
         w, h = im.size
         for x in range(0, w, 10):
             for y in range(0, h, 10):
-                self.assertEqual(access[(x, y)], caccess[(x, y)])
+                assert access[(x, y)] == caccess[(x, y)]
 
         # Access an out-of-range pixel
         self.assertRaises(
@@ -280,11 +272,11 @@ class TestCffi(AccessTest):
         for x in range(0, w, 10):
             for y in range(0, h, 10):
                 access[(x, y)] = color
-                self.assertEqual(color, caccess[(x, y)])
+                assert color == caccess[(x, y)]
 
         # Attempt to set the value on a read-only image
         access = PyAccess.new(im, True)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             access[(0, 0)] = color
 
     def test_set_vs_c(self):
@@ -314,7 +306,7 @@ class TestCffi(AccessTest):
         # self._test_set_access(im, 2**13-1)
 
     def test_not_implemented(self):
-        self.assertIsNone(PyAccess.new(hopper("BGR;15")))
+        assert PyAccess.new(hopper("BGR;15")) is None
 
     # ref https://github.com/python-pillow/Pillow/pull/2009
     def test_reference_counting(self):
@@ -325,14 +317,14 @@ class TestCffi(AccessTest):
             px = Image.new("L", (size, 1), 0).load()
             for i in range(size):
                 # pixels can contain garbage if image is released
-                self.assertEqual(px[i, 0], 0)
+                assert px[i, 0] == 0
 
     def test_p_putpixel_rgb_rgba(self):
         for color in [(255, 0, 0), (255, 0, 0, 255)]:
             im = Image.new("P", (1, 1), 0)
             access = PyAccess.new(im, False)
             access.putpixel((0, 0), color)
-            self.assertEqual(im.convert("RGB").getpixel((0, 0)), (255, 0, 0))
+            assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
 class TestEmbeddable(unittest.TestCase):
@@ -387,4 +379,4 @@ int main(int argc, char* argv[])
 
         process = subprocess.Popen(["embed_pil.exe"], env=env)
         process.communicate()
-        self.assertEqual(process.returncode, 0)
+        assert process.returncode == 0

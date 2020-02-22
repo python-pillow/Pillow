@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image, SgiImagePlugin
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
@@ -11,7 +12,7 @@ class TestFileSgi(PillowTestCase):
 
         with Image.open(test_file) as im:
             assert_image_equal(im, hopper())
-            self.assertEqual(im.get_format_mimetype(), "image/rgb")
+            assert im.get_format_mimetype() == "image/rgb"
 
     def test_rgb16(self):
         test_file = "Tests/images/hopper16.rgb"
@@ -26,7 +27,7 @@ class TestFileSgi(PillowTestCase):
 
         with Image.open(test_file) as im:
             assert_image_similar(im, hopper("L"), 2)
-            self.assertEqual(im.get_format_mimetype(), "image/sgi")
+            assert im.get_format_mimetype() == "image/sgi"
 
     def test_rgba(self):
         # Created with ImageMagick:
@@ -36,7 +37,7 @@ class TestFileSgi(PillowTestCase):
         with Image.open(test_file) as im:
             with Image.open("Tests/images/transparent.png") as target:
                 assert_image_equal(im, target)
-            self.assertEqual(im.get_format_mimetype(), "image/sgi")
+            assert im.get_format_mimetype() == "image/sgi"
 
     def test_rle(self):
         # Created with ImageMagick:
@@ -57,7 +58,8 @@ class TestFileSgi(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(ValueError, SgiImagePlugin.SgiImageFile, invalid_file)
+        with pytest.raises(ValueError):
+            SgiImagePlugin.SgiImageFile(invalid_file)
 
     def test_write(self):
         def roundtrip(img):
@@ -86,4 +88,5 @@ class TestFileSgi(PillowTestCase):
         im = hopper("LA")
         out = self.tempfile("temp.sgi")
 
-        self.assertRaises(ValueError, im.save, out, format="sgi")
+        with pytest.raises(ValueError):
+            im.save(out, format="sgi")

@@ -20,7 +20,7 @@ class TestPickle(PillowTestCase):
                 loaded_im = pickle.load(f)
 
             # Assert
-            self.assertEqual(im, loaded_im)
+            assert im == loaded_im
 
     def helper_pickle_string(
         self, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
@@ -34,7 +34,7 @@ class TestPickle(PillowTestCase):
             loaded_im = pickle.loads(dumped_string)
 
             # Assert
-            self.assertEqual(im, loaded_im)
+            assert im == loaded_im
 
     def test_pickle_image(self):
         # Act / Assert
@@ -86,4 +86,4 @@ class TestPickle(PillowTestCase):
                 loaded_im = pickle.load(f)
 
             im.mode = "PA"
-            self.assertEqual(im, loaded_im)
+            assert im == loaded_im

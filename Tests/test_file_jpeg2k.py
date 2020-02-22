@@ -38,21 +38,22 @@ class TestFileJpeg2k(PillowTestCase):
 
         with Image.open("Tests/images/test-card-lossless.jp2") as im:
             px = im.load()
-            self.assertEqual(px[0, 0], (0, 0, 0))
-            self.assertEqual(im.mode, "RGB")
-            self.assertEqual(im.size, (640, 480))
-            self.assertEqual(im.format, "JPEG2000")
-            self.assertEqual(im.get_format_mimetype(), "image/jp2")
+            assert px[0, 0] == (0, 0, 0)
+            assert im.mode == "RGB"
+            assert im.size == (640, 480)
+            assert im.format == "JPEG2000"
+            assert im.get_format_mimetype() == "image/jp2"
 
     def test_jpf(self):
         with Image.open("Tests/images/balloon.jpf") as im:
-            self.assertEqual(im.format, "JPEG2000")
-            self.assertEqual(im.get_format_mimetype(), "image/jpx")
+            assert im.format == "JPEG2000"
+            assert im.get_format_mimetype() == "image/jpx"
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, Jpeg2KImagePlugin.Jpeg2KImageFile, invalid_file)
+        with pytest.raises(SyntaxError):
+            Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file)
 
     def test_bytesio(self):
         with open("Tests/images/test-card-lossless.jp2", "rb") as f:
@@ -95,7 +96,7 @@ class TestFileJpeg2k(PillowTestCase):
         assert_image_equal(im, test_card)
 
     def test_tiled_offset_too_small(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.roundtrip(
                 test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32)
             )
@@ -116,7 +117,7 @@ class TestFileJpeg2k(PillowTestCase):
         with Image.open("Tests/images/test-card-lossless.jp2") as im:
             im.reduce = 2
             im.load()
-            self.assertEqual(im.size, (160, 120))
+            assert im.size == (160, 120)
 
     def test_layers_type(self):
         outfile = self.tempfile("temp_layers.jp2")
@@ -124,9 +125,8 @@ class TestFileJpeg2k(PillowTestCase):
             test_card.save(outfile, quality_layers=quality_layers)
 
         for quality_layers in ["quality_layers", ("100", "50", "10")]:
-            self.assertRaises(
-                ValueError, test_card.save, outfile, quality_layers=quality_layers
-            )
+            with pytest.raises(ValueError):
+                test_card.save(outfile, quality_layers=quality_layers)
 
     def test_layers(self):
         out = BytesIO()
@@ -156,17 +156,17 @@ class TestFileJpeg2k(PillowTestCase):
                 jp2.load()
 
                 # Assert
-                self.assertEqual(j2k.mode, "RGBA")
-                self.assertEqual(jp2.mode, "RGBA")
+                assert j2k.mode == "RGBA"
+                assert jp2.mode == "RGBA"
 
     def test_16bit_monochrome_has_correct_mode(self):
         with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
             j2k.load()
-            self.assertEqual(j2k.mode, "I;16")
+            assert j2k.mode == "I;16"
 
         with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
             jp2.load()
-            self.assertEqual(jp2.mode, "I;16")
+            assert jp2.mode == "I;16"
 
     @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
     def test_16bit_monochrome_jp2_like_tiff(self):
@@ -193,7 +193,7 @@ class TestFileJpeg2k(PillowTestCase):
     def test_unbound_local(self):
         # prepatch, a malformed jp2 file could cause an UnboundLocalError
         # exception.
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             Image.open("Tests/images/unbound_variable.jp2")
 
     def test_parser_feed(self):
@@ -206,4 +206,4 @@ class TestFileJpeg2k(PillowTestCase):
         p.feed(data)
 
         # Assert
-        self.assertEqual(p.image.size, (640, 480))
+        assert p.image.size == (640, 480)

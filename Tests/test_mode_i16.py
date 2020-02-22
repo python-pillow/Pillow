@@ -9,7 +9,7 @@ class TestModeI16(PillowTestCase):
 
     def verify(self, im1):
         im2 = self.original.copy()
-        self.assertEqual(im1.size, im2.size)
+        assert im1.size == im2.size
         pix1 = im1.load()
         pix2 = im2.load()
         for y in range(im1.size[1]):
@@ -17,14 +17,8 @@ class TestModeI16(PillowTestCase):
                 xy = x, y
                 p1 = pix1[xy]
                 p2 = pix2[xy]
-                self.assertEqual(
-                    p1,
-                    p2,
-                    (
-                        "got {!r} from mode {} at {}, expected {!r}".format(
-                            p1, im1.mode, xy, p2
-                        )
-                    ),
+                assert p1 == p2, "got {!r} from mode {} at {}, expected {!r}".format(
+                    p1, im1.mode, xy, p2
                 )
 
     def test_basic(self):
@@ -63,10 +57,10 @@ class TestModeI16(PillowTestCase):
             self.verify(imOut)
 
             imIn = Image.new(mode, (1, 1), 1)
-            self.assertEqual(imIn.getpixel((0, 0)), 1)
+            assert imIn.getpixel((0, 0)) == 1
 
             imIn.putpixel((0, 0), 2)
-            self.assertEqual(imIn.getpixel((0, 0)), 2)
+            assert imIn.getpixel((0, 0)) == 2
 
             if mode == "L":
                 maximum = 255
@@ -74,10 +68,10 @@ class TestModeI16(PillowTestCase):
                 maximum = 32767
 
             imIn = Image.new(mode, (1, 1), 256)
-            self.assertEqual(imIn.getpixel((0, 0)), min(256, maximum))
+            assert imIn.getpixel((0, 0)) == min(256, maximum)
 
             imIn.putpixel((0, 0), 512)
-            self.assertEqual(imIn.getpixel((0, 0)), min(512, maximum))
+            assert imIn.getpixel((0, 0)) == min(512, maximum)
 
         basic("L")
 
@@ -93,10 +87,10 @@ class TestModeI16(PillowTestCase):
 
         order = 1 if Image._ENDIAN == "<" else -1
 
-        self.assertEqual(tobytes("L"), b"\x01")
-        self.assertEqual(tobytes("I;16"), b"\x01\x00")
-        self.assertEqual(tobytes("I;16B"), b"\x00\x01")
-        self.assertEqual(tobytes("I"), b"\x01\x00\x00\x00"[::order])
+        assert tobytes("L") == b"\x01"
+        assert tobytes("I;16") == b"\x01\x00"
+        assert tobytes("I;16B") == b"\x00\x01"
+        assert tobytes("I") == b"\x01\x00\x00\x00"[::order]
 
     def test_convert(self):
 

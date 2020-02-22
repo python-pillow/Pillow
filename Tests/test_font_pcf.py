@@ -1,3 +1,4 @@
+import pytest
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
@@ -17,9 +18,9 @@ class TestFontPcf(PillowTestCase):
     def save_font(self):
         with open(fontname, "rb") as test_file:
             font = PcfFontFile.PcfFontFile(test_file)
-        self.assertIsInstance(font, FontFile.FontFile)
+        assert isinstance(font, FontFile.FontFile)
         # check the number of characters in the font
-        self.assertEqual(len([_f for _f in font.glyph if _f]), 223)
+        assert len([_f for _f in font.glyph if _f]) == 223
 
         tempname = self.tempfile("temp.pil")
         self.addCleanup(self.delete_tempfile, tempname[:-4] + ".pbm")
@@ -31,7 +32,7 @@ class TestFontPcf(PillowTestCase):
 
         with open(tempname, "rb") as f_loaded:
             with open("Tests/fonts/10x20.pil", "rb") as f_target:
-                self.assertEqual(f_loaded.read(), f_target.read())
+                assert f_loaded.read() == f_target.read()
         return tempname
 
     def test_sanity(self):
@@ -39,7 +40,8 @@ class TestFontPcf(PillowTestCase):
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, PcfFontFile.PcfFontFile, fp)
+            with pytest.raises(SyntaxError):
+                PcfFontFile.PcfFontFile(fp)
 
     def test_draw(self):
         tempname = self.save_font()
@@ -55,11 +57,11 @@ class TestFontPcf(PillowTestCase):
         font = ImageFont.load(tempname)
         for i in range(255):
             (dx, dy) = font.getsize(chr(i))
-            self.assertEqual(dy, 20)
-            self.assertIn(dx, (0, 10))
+            assert dy == 20
+            assert dx in (0, 10)
         for l in range(len(message)):
             msg = message[: l + 1]
-            self.assertEqual(font.getsize(msg), (len(msg) * 10, 20))
+            assert font.getsize(msg) == (len(msg) * 10, 20)
 
     def _test_high_characters(self, message):
         tempname = self.save_font()

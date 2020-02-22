@@ -23,7 +23,7 @@ class TestImagingPaste(PillowTestCase):
             px[self.size // 2, self.size - 1],
             px[self.size - 1, self.size - 1],
         ]
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
     def assert_9points_paste(self, im, im2, mask, expected):
         im3 = im.copy()
@@ -199,8 +199,8 @@ class TestImagingPaste(PillowTestCase):
             hist = im.crop(rect).histogram()
             while hist:
                 head, hist = hist[:256], hist[256:]
-                self.assertEqual(head[255], 128 * 128)
-                self.assertEqual(sum(head[:255]), 0)
+                assert head[255] == 128 * 128
+                assert sum(head[:255]) == 0
 
     def test_color_mask_1(self):
         for mode in ("RGBA", "RGB", "L"):

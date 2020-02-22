@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image, ImageMath, ImageMode
 
 from .helper import PillowTestCase, convert_to_comparable
@@ -39,51 +40,51 @@ class TestImageReduce(PillowTestCase):
     def test_args_factor(self):
         im = Image.new("L", (10, 10))
 
-        self.assertEqual((4, 4), im.reduce(3).size)
-        self.assertEqual((4, 10), im.reduce((3, 1)).size)
-        self.assertEqual((10, 4), im.reduce((1, 3)).size)
+        assert (4, 4) == im.reduce(3).size
+        assert (4, 10) == im.reduce((3, 1)).size
+        assert (10, 4) == im.reduce((1, 3)).size
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(0)
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             im.reduce(2.0)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce((0, 10))
 
     def test_args_box(self):
         im = Image.new("L", (10, 10))
 
-        self.assertEqual((5, 5), im.reduce(2, (0, 0, 10, 10)).size)
-        self.assertEqual((1, 1), im.reduce(2, (5, 5, 6, 6)).size)
+        assert (5, 5) == im.reduce(2, (0, 0, 10, 10)).size
+        assert (1, 1) == im.reduce(2, (5, 5, 6, 6)).size
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             im.reduce(2, "stri")
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             im.reduce(2, 2)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (0, 0, 11, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (0, 0, 10, 11))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (-1, 0, 10, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (0, -1, 10, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (0, 5, 10, 5))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(2, (5, 0, 5, 10))
 
     def test_unsupported_modes(self):
         im = Image.new("P", (10, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(3)
 
         im = Image.new("1", (10, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(3)
 
         im = Image.new("I;16", (10, 10))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.reduce(3)
 
     def get_image(self, mode):
@@ -109,7 +110,7 @@ class TestImageReduce(PillowTestCase):
         box = (11, 13, 146, 164)
         reduced = im.reduce(factor, box=box)
         reference = im.crop(box).reduce(factor)
-        self.assertEqual(reduced, reference)
+        assert reduced == reference
 
     def compare_reduce_with_reference(self, im, factor, average_diff=0.4, max_diff=1):
         """Image.reduce() should look very similar to Image.resize(BOX).
@@ -135,13 +136,13 @@ class TestImageReduce(PillowTestCase):
         reference.paste(area, (0, 0))
 
         if area_size[0] < reduced.size[0]:
-            self.assertEqual(reduced.size[0] - area_size[0], 1)
+            assert reduced.size[0] - area_size[0] == 1
             last_column_box = (area_box[2], 0, im.size[0], area_box[3])
             last_column = im.resize((1, area_size[1]), Image.BOX, last_column_box)
             reference.paste(last_column, (area_size[0], 0))
 
         if area_size[1] < reduced.size[1]:
-            self.assertEqual(reduced.size[1] - area_size[1], 1)
+            assert reduced.size[1] - area_size[1] == 1
             last_row_box = (0, area_box[3], area_box[2], im.size[1])
             last_row = im.resize((area_size[0], 1), Image.BOX, last_row_box)
             reference.paste(last_row, (0, area_size[1]))
@@ -154,8 +155,8 @@ class TestImageReduce(PillowTestCase):
         self.assert_compare_images(reduced, reference, average_diff, max_diff)
 
     def assert_compare_images(self, a, b, max_average_diff, max_diff=255):
-        self.assertEqual(a.mode, b.mode, "got mode %r, expected %r" % (a.mode, b.mode))
-        self.assertEqual(a.size, b.size, "got size %r, expected %r" % (a.size, b.size))
+        assert a.mode == b.mode, "got mode %r, expected %r" % (a.mode, b.mode)
+        assert a.size == b.size, "got size %r, expected %r" % (a.size, b.size)
 
         a, b = convert_to_comparable(a, b)
 
@@ -167,22 +168,15 @@ class TestImageReduce(PillowTestCase):
             average_diff = sum(i * num for i, num in enumerate(ch_hist)) / (
                 a.size[0] * a.size[1]
             )
-            self.assertGreaterEqual(
-                max_average_diff,
-                average_diff,
-                (
-                    "average pixel value difference {:.4f} > expected {:.4f} "
-                    "for '{}' band"
-                ).format(average_diff, max_average_diff, band),
-            )
+            msg = "average pixel value difference {:.4f} > expected {:.4f} "
+            "for '{}' band".format(average_diff, max_average_diff, band)
+            assert max_average_diff >= average_diff, msg
 
             last_diff = [i for i, num in enumerate(ch_hist) if num > 0][-1]
-            self.assertGreaterEqual(
-                max_diff,
-                last_diff,
-                "max pixel value difference {} > expected {} for '{}' band".format(
-                    last_diff, max_diff, band
-                ),
+            assert (
+                max_diff >= last_diff
+            ), "max pixel value difference {} > expected {} for '{}' band".format(
+                last_diff, max_diff, band
             )
 
     def test_mode_L(self):

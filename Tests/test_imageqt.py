@@ -52,14 +52,14 @@ class TestImageQt(PillowQtTestCase, PillowTestCase):
         elif ImageQt.qt_version == "side2":
             from PySide2.QtGui import qRgb
 
-        self.assertEqual(qRgb(0, 0, 0), qRgba(0, 0, 0, 255))
+        assert qRgb(0, 0, 0) == qRgba(0, 0, 0, 255)
 
         def checkrgb(r, g, b):
             val = ImageQt.rgb(r, g, b)
             val = val % 2 ** 24  # drop the alpha
-            self.assertEqual(val >> 16, r)
-            self.assertEqual(((val >> 8) % 2 ** 8), g)
-            self.assertEqual(val % 2 ** 8, b)
+            assert val >> 16 == r
+            assert ((val >> 8) % 2 ** 8) == g
+            assert val % 2 ** 8 == b
 
         checkrgb(0, 0, 0)
         checkrgb(255, 0, 0)

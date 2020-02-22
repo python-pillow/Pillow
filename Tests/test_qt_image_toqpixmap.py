@@ -12,8 +12,8 @@ class TestToQPixmap(PillowQPixmapTestCase, PillowTestCase):
         for mode in ("1", "RGB", "RGBA", "L", "P"):
             data = ImageQt.toqpixmap(hopper(mode))
 
-            self.assertIsInstance(data, QPixmap)
-            self.assertFalse(data.isNull())
+            assert isinstance(data, QPixmap)
+            assert not data.isNull()
 
             # Test saving the file
             tempfile = self.tempfile("temp_{}.png".format(mode))

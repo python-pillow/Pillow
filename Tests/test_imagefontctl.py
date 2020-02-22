@@ -140,7 +140,7 @@ class TestImagecomplextext(PillowTestCase):
             assert_image_similar(im, target_img, 0.5)
 
         liga_size = ttf.getsize("fi", features=["-liga"])
-        self.assertEqual(liga_size, (13, 19))
+        assert liga_size == (13, 19)
 
     def test_kerning_features(self):
         ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)

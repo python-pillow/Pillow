@@ -3,6 +3,7 @@ Tests for resize functionality.
 """
 from itertools import permutations
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
@@ -29,26 +30,23 @@ class TestImagingCoreResize(PillowTestCase):
         ]:  # exotic mode
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.NEAREST)
-            self.assertEqual(r.mode, mode)
-            self.assertEqual(r.size, (15, 12))
-            self.assertEqual(r.im.bands, im.im.bands)
+            assert r.mode == mode
+            assert r.size == (15, 12)
+            assert r.im.bands == im.im.bands
 
     def test_convolution_modes(self):
-        self.assertRaises(
-            ValueError, self.resize, hopper("1"), (15, 12), Image.BILINEAR
-        )
-        self.assertRaises(
-            ValueError, self.resize, hopper("P"), (15, 12), Image.BILINEAR
-        )
-        self.assertRaises(
-            ValueError, self.resize, hopper("I;16"), (15, 12), Image.BILINEAR
-        )
+        with pytest.raises(ValueError):
+            self.resize(hopper("1"), (15, 12), Image.BILINEAR)
+        with pytest.raises(ValueError):
+            self.resize(hopper("P"), (15, 12), Image.BILINEAR)
+        with pytest.raises(ValueError):
+            self.resize(hopper("I;16"), (15, 12), Image.BILINEAR)
         for mode in ["L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr"]:
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.BILINEAR)
-            self.assertEqual(r.mode, mode)
-            self.assertEqual(r.size, (15, 12))
-            self.assertEqual(r.im.bands, im.im.bands)
+            assert r.mode == mode
+            assert r.size == (15, 12)
+            assert r.im.bands == im.im.bands
 
     def test_reduce_filters(self):
         for f in [
@@ -60,8 +58,8 @@ class TestImagingCoreResize(PillowTestCase):
             Image.LANCZOS,
         ]:
             r = self.resize(hopper("RGB"), (15, 12), f)
-            self.assertEqual(r.mode, "RGB")
-            self.assertEqual(r.size, (15, 12))
+            assert r.mode == "RGB"
+            assert r.size == (15, 12)
 
     def test_enlarge_filters(self):
         for f in [
@@ -73,8 +71,8 @@ class TestImagingCoreResize(PillowTestCase):
             Image.LANCZOS,
         ]:
             r = self.resize(hopper("RGB"), (212, 195), f)
-            self.assertEqual(r.mode, "RGB")
-            self.assertEqual(r.size, (212, 195))
+            assert r.mode == "RGB"
+            assert r.size == (212, 195)
 
     def test_endianness(self):
         # Make an image with one colored pixel, in one channel.
@@ -128,12 +126,13 @@ class TestImagingCoreResize(PillowTestCase):
             Image.LANCZOS,
         ]:
             r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), f)
-            self.assertEqual(r.mode, "RGB")
-            self.assertEqual(r.size, (212, 195))
-            self.assertEqual(r.getdata()[0], (0, 0, 0))
+            assert r.mode == "RGB"
+            assert r.size == (212, 195)
+            assert r.getdata()[0] == (0, 0, 0)
 
     def test_unknown_filter(self):
-        self.assertRaises(ValueError, self.resize, hopper(), (10, 10), 9)
+        with pytest.raises(ValueError):
+            self.resize(hopper(), (10, 10), 9)
 
 
 class TestReducingGapResize(PillowTestCase):
@@ -147,10 +146,10 @@ class TestReducingGapResize(PillowTestCase):
         im = self.gradients_image.resize((52, 34), Image.BICUBIC)
         assert_image_equal(ref, im)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0.99)
 
     def test_reducing_gap_1(self):
@@ -164,7 +163,7 @@ class TestReducingGapResize(PillowTestCase):
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=1.0
             )
 
-            with self.assertRaises(AssertionError):
+            with pytest.raises(AssertionError):
                 assert_image_equal(ref, im)
 
             assert_image_similar(ref, im, epsilon)
@@ -180,7 +179,7 @@ class TestReducingGapResize(PillowTestCase):
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=2.0
             )
 
-            with self.assertRaises(AssertionError):
+            with pytest.raises(AssertionError):
                 assert_image_equal(ref, im)
 
             assert_image_similar(ref, im, epsilon)
@@ -196,7 +195,7 @@ class TestReducingGapResize(PillowTestCase):
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=3.0
             )
 
-            with self.assertRaises(AssertionError):
+            with pytest.raises(AssertionError):
                 assert_image_equal(ref, im)
 
             assert_image_similar(ref, im, epsilon)
@@ -227,8 +226,8 @@ class TestImageResize(PillowTestCase):
     def test_resize(self):
         def resize(mode, size):
             out = hopper(mode).resize(size)
-            self.assertEqual(out.mode, mode)
-            self.assertEqual(out.size, size)
+            assert out.mode == mode
+            assert out.size == size
 
         for mode in "1", "P", "L", "RGB", "I", "F":
             resize(mode, (112, 103))
@@ -236,13 +235,14 @@ class TestImageResize(PillowTestCase):
 
         # Test unknown resampling filter
         with hopper() as im:
-            self.assertRaises(ValueError, im.resize, (10, 10), "unknown")
+            with pytest.raises(ValueError):
+                im.resize((10, 10), "unknown")
 
     def test_default_filter(self):
         for mode in "L", "RGB", "I", "F":
             im = hopper(mode)
-            self.assertEqual(im.resize((20, 20), Image.BICUBIC), im.resize((20, 20)))
+            assert im.resize((20, 20), Image.BICUBIC) == im.resize((20, 20))
 
         for mode in "1", "P":
             im = hopper(mode)
-            self.assertEqual(im.resize((20, 20), Image.NEAREST), im.resize((20, 20)))
+            assert im.resize((20, 20), Image.NEAREST) == im.resize((20, 20))

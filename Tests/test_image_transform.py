@@ -1,5 +1,6 @@
 import math
 
+import pytest
 from PIL import Image, ImageTransform
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
@@ -24,11 +25,11 @@ class TestImageTransform(PillowTestCase):
         comment = b"File written by Adobe Photoshop\xa8 4.0"
 
         with Image.open("Tests/images/hopper.gif") as im:
-            self.assertEqual(im.info["comment"], comment)
+            assert im.info["comment"] == comment
 
             transform = ImageTransform.ExtentTransform((0, 0, 0, 0))
             new_im = im.transform((100, 100), transform)
-        self.assertEqual(new_im.info["comment"], comment)
+        assert new_im.info["comment"] == comment
 
     def test_extent(self):
         im = hopper("RGB")
@@ -79,7 +80,7 @@ class TestImageTransform(PillowTestCase):
                 fillcolor="red",
             )
 
-            self.assertEqual(transformed.getpixel((w - 1, h - 1)), pixel)
+            assert transformed.getpixel((w - 1, h - 1)) == pixel
 
     def test_mesh(self):
         # this should be a checkerboard of halfsized hoppers in ul, lr
@@ -126,7 +127,7 @@ class TestImageTransform(PillowTestCase):
         im_background.paste(im, (0, 0), im)
 
         hist = im_background.histogram()
-        self.assertEqual(40 * 10, hist[-1])
+        assert 40 * 10 == hist[-1]
 
     def test_alpha_premult_resize(self):
         def op(im, sz):
@@ -165,20 +166,15 @@ class TestImageTransform(PillowTestCase):
 
     def test_missing_method_data(self):
         with hopper() as im:
-            self.assertRaises(ValueError, im.transform, (100, 100), None)
+            with pytest.raises(ValueError):
+                im.transform((100, 100), None)
 
     def test_unknown_resampling_filter(self):
         with hopper() as im:
             (w, h) = im.size
             for resample in (Image.BOX, "unknown"):
-                self.assertRaises(
-                    ValueError,
-                    im.transform,
-                    (100, 100),
-                    Image.EXTENT,
-                    (0, 0, w, h),
-                    resample,
-                )
+                with pytest.raises(ValueError):
+                    im.transform((100, 100), Image.EXTENT, (0, 0, w, h), resample)
 
 
 class TestImageTransformAffine(PillowTestCase):

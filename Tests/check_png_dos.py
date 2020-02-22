@@ -20,10 +20,10 @@ class TestPngDos(PillowTestCase):
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
         for s in im.text.values():
-            self.assertLess(len(s), 1024 * 1024, "Text chunk larger than 1M")
+            assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
         for s in im.info.values():
-            self.assertLess(len(s), 1024 * 1024, "Text chunk larger than 1M")
+            assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
     def test_dos_text(self):
 
@@ -31,11 +31,11 @@ class TestPngDos(PillowTestCase):
             im = Image.open(TEST_FILE)
             im.load()
         except ValueError as msg:
-            self.assertTrue(msg, "Decompressed Data Too Large")
+            assert msg, "Decompressed Data Too Large"
             return
 
         for s in im.text.values():
-            self.assertLess(len(s), 1024 * 1024, "Text chunk larger than 1M")
+            assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
     def test_dos_total_memory(self):
         im = Image.new("L", (1, 1))
@@ -54,15 +54,13 @@ class TestPngDos(PillowTestCase):
         try:
             im2 = Image.open(b)
         except ValueError as msg:
-            self.assertIn("Too much memory", msg)
+            assert "Too much memory" in msg
             return
 
         total_len = 0
         for txt in im2.text.values():
             total_len += len(txt)
-        self.assertLess(
-            total_len, 64 * 1024 * 1024, "Total text chunks greater than 64M"
-        )
+        assert total_len < 64 * 1024 * 1024, "Total text chunks greater than 64M"
 
 
 if __name__ == "__main__":

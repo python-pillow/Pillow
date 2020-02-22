@@ -9,25 +9,25 @@ class TestImageSplit(PillowTestCase):
             layers = hopper(mode).split()
             return [(i.mode, i.size[0], i.size[1]) for i in layers]
 
-        self.assertEqual(split("1"), [("1", 128, 128)])
-        self.assertEqual(split("L"), [("L", 128, 128)])
-        self.assertEqual(split("I"), [("I", 128, 128)])
-        self.assertEqual(split("F"), [("F", 128, 128)])
-        self.assertEqual(split("P"), [("P", 128, 128)])
-        self.assertEqual(
-            split("RGB"), [("L", 128, 128), ("L", 128, 128), ("L", 128, 128)]
-        )
-        self.assertEqual(
-            split("RGBA"),
-            [("L", 128, 128), ("L", 128, 128), ("L", 128, 128), ("L", 128, 128)],
-        )
-        self.assertEqual(
-            split("CMYK"),
-            [("L", 128, 128), ("L", 128, 128), ("L", 128, 128), ("L", 128, 128)],
-        )
-        self.assertEqual(
-            split("YCbCr"), [("L", 128, 128), ("L", 128, 128), ("L", 128, 128)]
-        )
+        assert split("1") == [("1", 128, 128)]
+        assert split("L") == [("L", 128, 128)]
+        assert split("I") == [("I", 128, 128)]
+        assert split("F") == [("F", 128, 128)]
+        assert split("P") == [("P", 128, 128)]
+        assert split("RGB") == [("L", 128, 128), ("L", 128, 128), ("L", 128, 128)]
+        assert split("RGBA") == [
+            ("L", 128, 128),
+            ("L", 128, 128),
+            ("L", 128, 128),
+            ("L", 128, 128),
+        ]
+        assert split("CMYK") == [
+            ("L", 128, 128),
+            ("L", 128, 128),
+            ("L", 128, 128),
+            ("L", 128, 128),
+        ]
+        assert split("YCbCr") == [("L", 128, 128), ("L", 128, 128), ("L", 128, 128)]
 
     def test_split_merge(self):
         def split_merge(mode):
@@ -54,9 +54,9 @@ class TestImageSplit(PillowTestCase):
             with Image.open(test_file) as im:
                 return len(im.split())
 
-        self.assertEqual(split_open("1"), 1)
-        self.assertEqual(split_open("L"), 1)
-        self.assertEqual(split_open("P"), 1)
-        self.assertEqual(split_open("RGB"), 3)
+        assert split_open("1") == 1
+        assert split_open("L") == 1
+        assert split_open("P") == 1
+        assert split_open("RGB") == 3
         if features.check("zlib"):
-            self.assertEqual(split_open("RGBA"), 4)
+            assert split_open("RGBA") == 4

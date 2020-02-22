@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase
@@ -13,7 +14,7 @@ class TestLibtiffSegfault(PillowTestCase):
             libtiff >= 4.0.0
             """
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             with Image.open(TEST_FILE) as im:
                 im.load()
 

@@ -47,9 +47,9 @@ class TestFileWebp(PillowTestCase):
         """
 
         with Image.open("Tests/images/hopper.webp") as image:
-            self.assertEqual(image.mode, self.rgb_mode)
-            self.assertEqual(image.size, (128, 128))
-            self.assertEqual(image.format, "WEBP")
+            assert image.mode == self.rgb_mode
+            assert image.size == (128, 128)
+            assert image.format == "WEBP"
             image.load()
             image.getdata()
 
@@ -67,9 +67,9 @@ class TestFileWebp(PillowTestCase):
 
         hopper(self.rgb_mode).save(temp_file)
         with Image.open(temp_file) as image:
-            self.assertEqual(image.mode, self.rgb_mode)
-            self.assertEqual(image.size, (128, 128))
-            self.assertEqual(image.format, "WEBP")
+            assert image.mode == self.rgb_mode
+            assert image.size == (128, 128)
+            assert image.format == "WEBP"
             image.load()
             image.getdata()
 
@@ -95,9 +95,9 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
         hopper("L").save(temp_file)
         with Image.open(temp_file) as image:
-            self.assertEqual(image.mode, self.rgb_mode)
-            self.assertEqual(image.size, (128, 128))
-            self.assertEqual(image.format, "WEBP")
+            assert image.mode == self.rgb_mode
+            assert image.size == (128, 128)
+            assert image.format == "WEBP"
 
             image.load()
             image.getdata()
@@ -114,9 +114,9 @@ class TestFileWebp(PillowTestCase):
         temp_file = self.tempfile("temp.webp")
         hopper("P").save(temp_file)
         with Image.open(temp_file) as image:
-            self.assertEqual(image.mode, self.rgb_mode)
-            self.assertEqual(image.size, (128, 128))
-            self.assertEqual(image.format, "WEBP")
+            assert image.mode == self.rgb_mode
+            assert image.size == (128, 128)
+            assert image.format == "WEBP"
 
             image.load()
             image.getdata()
@@ -130,8 +130,10 @@ class TestFileWebp(PillowTestCase):
         """
 
         if _webp.HAVE_WEBPANIM:
-            self.assertRaises(TypeError, _webp.WebPAnimEncoder)
-        self.assertRaises(TypeError, _webp.WebPEncode)
+            with pytest.raises(TypeError):
+                _webp.WebPAnimEncoder()
+        with pytest.raises(TypeError):
+            _webp.WebPEncode()
 
     def test_WebPDecode_with_invalid_args(self):
         """
@@ -139,8 +141,10 @@ class TestFileWebp(PillowTestCase):
         """
 
         if _webp.HAVE_WEBPANIM:
-            self.assertRaises(TypeError, _webp.WebPAnimDecoder)
-        self.assertRaises(TypeError, _webp.WebPDecode)
+            with pytest.raises(TypeError):
+                _webp.WebPAnimDecoder()
+        with pytest.raises(TypeError):
+            _webp.WebPDecode()
 
     def test_no_resource_warning(self):
         file_path = "Tests/images/hopper.webp"
@@ -173,4 +177,4 @@ class TestFileWebp(PillowTestCase):
         difference = sum(
             [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
         )
-        self.assertLess(difference, 5)
+        assert difference < 5

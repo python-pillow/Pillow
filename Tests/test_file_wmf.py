@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image, WmfImagePlugin
 
 from .helper import PillowTestCase, assert_image_similar, hopper
@@ -39,7 +40,7 @@ class TestFileWmf(PillowTestCase):
         im = hopper()
         tmpfile = self.tempfile("temp.wmf")
         im.save(tmpfile)
-        self.assertTrue(handler.methodCalled)
+        assert handler.methodCalled
 
         # Restore the state before this test
         WmfImagePlugin.register_handler(None)
@@ -47,19 +48,19 @@ class TestFileWmf(PillowTestCase):
     def test_load_dpi_rounding(self):
         # Round up
         with Image.open("Tests/images/drawing.emf") as im:
-            self.assertEqual(im.info["dpi"], 1424)
+            assert im.info["dpi"] == 1424
 
         # Round down
         with Image.open("Tests/images/drawing_roundDown.emf") as im:
-            self.assertEqual(im.info["dpi"], 1426)
+            assert im.info["dpi"] == 1426
 
     def test_load_set_dpi(self):
         with Image.open("Tests/images/drawing.wmf") as im:
-            self.assertEqual(im.size, (82, 82))
+            assert im.size == (82, 82)
 
             if hasattr(Image.core, "drawwmf"):
                 im.load(144)
-                self.assertEqual(im.size, (164, 164))
+                assert im.size == (164, 164)
 
                 with Image.open("Tests/images/drawing_wmf_ref_144.png") as expected:
                     assert_image_similar(im, expected, 2.0)
@@ -69,4 +70,5 @@ class TestFileWmf(PillowTestCase):
 
         for ext in [".wmf", ".emf"]:
             tmpfile = self.tempfile("temp" + ext)
-            self.assertRaises(IOError, im.save, tmpfile)
+            with pytest.raises(IOError):
+                im.save(tmpfile)

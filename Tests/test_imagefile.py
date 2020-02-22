@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import pytest
 from PIL import EpsImagePlugin, Image, ImageFile, features
 
 from .helper import (
@@ -71,14 +72,15 @@ class TestImageFile(PillowTestCase):
             im1, im2 = roundtrip("JPEG")  # lossy compression
             assert_image(im1, im2.mode, im2.size)
 
-        self.assertRaises(IOError, roundtrip, "PDF")
+        with pytest.raises(IOError):
+            roundtrip("PDF")
 
     def test_ico(self):
         with open("Tests/images/python.ico", "rb") as f:
             data = f.read()
         with ImageFile.Parser() as p:
             p.feed(data)
-            self.assertEqual((48, 48), p.image.size)
+            assert (48, 48) == p.image.size
 
     @skip_unless_feature("zlib")
     def test_safeblock(self):
@@ -93,10 +95,11 @@ class TestImageFile(PillowTestCase):
         assert_image_equal(im1, im2)
 
     def test_raise_ioerror(self):
-        self.assertRaises(IOError, ImageFile.raise_ioerror, 1)
+        with pytest.raises(IOError):
+            ImageFile.raise_ioerror(1)
 
     def test_raise_typeerror(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             parser = ImageFile.Parser()
             parser.feed(1)
 
@@ -105,17 +108,17 @@ class TestImageFile(PillowTestCase):
             input = f.read()
         p = ImageFile.Parser()
         p.feed(input)
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             p.close()
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
         with Image.open("Tests/images/truncated_image.png") as im:
-            with self.assertRaises(IOError):
+            with pytest.raises(IOError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with self.assertRaises(IOError):
+            with pytest.raises(IOError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -130,7 +133,7 @@ class TestImageFile(PillowTestCase):
     @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self):
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            with self.assertRaises(IOError):
+            with pytest.raises(IOError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -179,12 +182,13 @@ class TestPyDecoder(PillowTestCase):
 
         im.load()
 
-        self.assertEqual(d.state.xoff, xoff)
-        self.assertEqual(d.state.yoff, yoff)
-        self.assertEqual(d.state.xsize, xsize)
-        self.assertEqual(d.state.ysize, ysize)
+        assert d.state.xoff == xoff
+        assert d.state.yoff == yoff
+        assert d.state.xsize == xsize
+        assert d.state.ysize == ysize
 
-        self.assertRaises(ValueError, d.set_as_raw, b"\x00")
+        with pytest.raises(ValueError):
+            d.set_as_raw(b"\x00")
 
     def test_extents_none(self):
         buf = BytesIO(b"\x00" * 255)
@@ -195,10 +199,10 @@ class TestPyDecoder(PillowTestCase):
 
         im.load()
 
-        self.assertEqual(d.state.xoff, 0)
-        self.assertEqual(d.state.yoff, 0)
-        self.assertEqual(d.state.xsize, 200)
-        self.assertEqual(d.state.ysize, 200)
+        assert d.state.xoff == 0
+        assert d.state.yoff == 0
+        assert d.state.xsize == 200
+        assert d.state.ysize == 200
 
     def test_negsize(self):
         buf = BytesIO(b"\x00" * 255)
@@ -207,10 +211,12 @@ class TestPyDecoder(PillowTestCase):
         im.tile = [("MOCK", (xoff, yoff, -10, yoff + ysize), 32, None)]
         self.get_decoder()
 
-        self.assertRaises(ValueError, im.load)
+        with pytest.raises(ValueError):
+            im.load()
 
         im.tile = [("MOCK", (xoff, yoff, xoff + xsize, -10), 32, None)]
-        self.assertRaises(ValueError, im.load)
+        with pytest.raises(ValueError):
+            im.load()
 
     def test_oversize(self):
         buf = BytesIO(b"\x00" * 255)
@@ -219,25 +225,27 @@ class TestPyDecoder(PillowTestCase):
         im.tile = [("MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 32, None)]
         self.get_decoder()
 
-        self.assertRaises(ValueError, im.load)
+        with pytest.raises(ValueError):
+            im.load()
 
         im.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 32, None)]
-        self.assertRaises(ValueError, im.load)
+        with pytest.raises(ValueError):
+            im.load()
 
     def test_no_format(self):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        self.assertIsNone(im.format)
-        self.assertIsNone(im.get_format_mimetype())
+        assert im.format is None
+        assert im.get_format_mimetype() is None
 
     def test_exif_jpeg(self):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
-            self.assertNotIn(258, exif)
-            self.assertIn(40960, exif)
-            self.assertEqual(exif[40963], 450)
-            self.assertEqual(exif[11], "gThumb 3.0.1")
+            assert 258 not in exif
+            assert 40960 in exif
+            assert exif[40963] == 450
+            assert exif[11] == "gThumb 3.0.1"
 
             out = self.tempfile("temp.jpg")
             exif[258] = 8
@@ -247,17 +255,17 @@ class TestPyDecoder(PillowTestCase):
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
-            self.assertEqual(reloaded_exif[258], 8)
-            self.assertNotIn(40960, exif)
-            self.assertEqual(reloaded_exif[40963], 455)
-            self.assertEqual(exif[11], "Pillow test")
+            assert reloaded_exif[258] == 8
+            assert 40960 not in exif
+            assert reloaded_exif[40963] == 455
+            assert exif[11] == "Pillow test"
 
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
             exif = im.getexif()
-            self.assertNotIn(258, exif)
-            self.assertIn(40962, exif)
-            self.assertEqual(exif[40963], 200)
-            self.assertEqual(exif[305], "Adobe Photoshop CC 2017 (Macintosh)")
+            assert 258 not in exif
+            assert 40962 in exif
+            assert exif[40963] == 200
+            assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
             out = self.tempfile("temp.jpg")
             exif[258] = 8
@@ -267,17 +275,17 @@ class TestPyDecoder(PillowTestCase):
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
-            self.assertEqual(reloaded_exif[258], 8)
-            self.assertNotIn(40960, exif)
-            self.assertEqual(reloaded_exif[40963], 455)
-            self.assertEqual(exif[305], "Pillow test")
+            assert reloaded_exif[258] == 8
+            assert 40960 not in exif
+            assert reloaded_exif[40963] == 455
+            assert exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
     def test_exif_webp(self):
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
-            self.assertEqual(exif, {})
+            assert exif == {}
 
             out = self.tempfile("temp.webp")
             exif[258] = 8
@@ -287,9 +295,9 @@ class TestPyDecoder(PillowTestCase):
             def check_exif():
                 with Image.open(out) as reloaded:
                     reloaded_exif = reloaded.getexif()
-                    self.assertEqual(reloaded_exif[258], 8)
-                    self.assertEqual(reloaded_exif[40963], 455)
-                    self.assertEqual(exif[305], "Pillow test")
+                    assert reloaded_exif[258] == 8
+                    assert reloaded_exif[40963] == 455
+                    assert exif[305] == "Pillow test"
 
             im.save(out, exif=exif)
             check_exif()
@@ -299,7 +307,7 @@ class TestPyDecoder(PillowTestCase):
     def test_exif_png(self):
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-            self.assertEqual(exif, {274: 1})
+            assert exif == {274: 1}
 
             out = self.tempfile("temp.png")
             exif[258] = 8
@@ -310,11 +318,14 @@ class TestPyDecoder(PillowTestCase):
 
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
-            self.assertEqual(reloaded_exif, {258: 8, 40963: 455, 305: "Pillow test"})
+            assert reloaded_exif == {258: 8, 40963: 455, 305: "Pillow test"}
 
     def test_exif_interop(self):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
-            self.assertEqual(
-                exif.get_ifd(0xA005), {1: "R98", 2: b"0100", 4097: 2272, 4098: 1704}
-            )
+            assert exif.get_ifd(0xA005) == {
+                1: "R98",
+                2: b"0100",
+                4097: 2272,
+                4098: 1704,
+            }

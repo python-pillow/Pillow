@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image, ImageSequence, TiffImagePlugin
 
 from .helper import PillowTestCase, assert_image_equal, hopper, skip_unless_feature
@@ -16,32 +17,35 @@ class TestImageSequence(PillowTestCase):
         index = 0
         for frame in seq:
             assert_image_equal(im, frame)
-            self.assertEqual(im.tell(), index)
+            assert im.tell() == index
             index += 1
 
-        self.assertEqual(index, 1)
+        assert index == 1
 
-        self.assertRaises(AttributeError, ImageSequence.Iterator, 0)
+        with pytest.raises(AttributeError):
+            ImageSequence.Iterator(0)
 
     def test_iterator(self):
         with Image.open("Tests/images/multipage.tiff") as im:
             i = ImageSequence.Iterator(im)
             for index in range(0, im.n_frames):
-                self.assertEqual(i[index], next(i))
-            self.assertRaises(IndexError, lambda: i[index + 1])
-            self.assertRaises(StopIteration, next, i)
+                assert i[index] == next(i)
+            with pytest.raises(IndexError):
+                i[index + 1]
+            with pytest.raises(StopIteration):
+                next(i)
 
     def test_iterator_min_frame(self):
         with Image.open("Tests/images/hopper.psd") as im:
             i = ImageSequence.Iterator(im)
             for index in range(1, im.n_frames):
-                self.assertEqual(i[index], next(i))
+                assert i[index] == next(i)
 
     def _test_multipage_tiff(self):
         with Image.open("Tests/images/multipage.tiff") as im:
             for index, frame in enumerate(ImageSequence.Iterator(im)):
                 frame.load()
-                self.assertEqual(index, im.tell())
+                assert index == im.tell()
                 frame.convert("RGB")
 
     def test_tiff(self):
@@ -69,23 +73,23 @@ class TestImageSequence(PillowTestCase):
             color1 = im.getpalette()[0:3]
             im.seek(0)
             color2 = im.getpalette()[0:3]
-            self.assertEqual(color1, color2)
+            assert color1 == color2
 
     def test_all_frames(self):
         # Test a single image
         with Image.open("Tests/images/iss634.gif") as im:
             ims = ImageSequence.all_frames(im)
 
-            self.assertEqual(len(ims), 42)
+            assert len(ims) == 42
             for i, im_frame in enumerate(ims):
-                self.assertFalse(im_frame is im)
+                assert im_frame is not im
 
                 im.seek(i)
                 assert_image_equal(im, im_frame)
 
             # Test a series of images
             ims = ImageSequence.all_frames([im, hopper(), im])
-            self.assertEqual(len(ims), 85)
+            assert len(ims) == 85
 
             # Test an operation
             ims = ImageSequence.all_frames(im, lambda im_frame: im_frame.rotate(90))
