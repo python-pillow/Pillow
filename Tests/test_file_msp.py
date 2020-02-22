@@ -1,6 +1,7 @@
 import os
 import unittest
 
+import pytest
 from PIL import Image, MspImagePlugin
 
 from .helper import PillowTestCase, assert_image_equal, hopper
@@ -18,14 +19,15 @@ class TestFileMsp(PillowTestCase):
 
         with Image.open(test_file) as im:
             im.load()
-            self.assertEqual(im.mode, "1")
-            self.assertEqual(im.size, (128, 128))
-            self.assertEqual(im.format, "MSP")
+            assert im.mode == "1"
+            assert im.size == (128, 128)
+            assert im.format == "MSP"
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, MspImagePlugin.MspImageFile, invalid_file)
+        with pytest.raises(SyntaxError):
+            MspImagePlugin.MspImageFile(invalid_file)
 
     def test_bad_checksum(self):
         # Arrange
@@ -33,7 +35,8 @@ class TestFileMsp(PillowTestCase):
         bad_checksum = "Tests/images/hopper_bad_checksum.msp"
 
         # Act / Assert
-        self.assertRaises(SyntaxError, MspImagePlugin.MspImageFile, bad_checksum)
+        with pytest.raises(SyntaxError):
+            MspImagePlugin.MspImageFile(bad_checksum)
 
     def test_open_windows_v1(self):
         # Arrange
@@ -42,7 +45,7 @@ class TestFileMsp(PillowTestCase):
 
             # Assert
             assert_image_equal(im, hopper("1"))
-            self.assertIsInstance(im, MspImagePlugin.MspImageFile)
+            assert isinstance(im, MspImagePlugin.MspImageFile)
 
     def _assert_file_image_equal(self, source_path, target_path):
         with Image.open(source_path) as im:
@@ -76,4 +79,5 @@ class TestFileMsp(PillowTestCase):
         filename = self.tempfile("temp.msp")
 
         # Act/Assert
-        self.assertRaises(IOError, im.save, filename)
+        with pytest.raises(IOError):
+            im.save(filename)

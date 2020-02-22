@@ -1,6 +1,7 @@
 import unittest
 from array import array
 
+import pytest
 from PIL import Image, ImageFilter
 
 from .helper import PillowTestCase, assert_image_equal
@@ -74,10 +75,10 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         with self.assertRaisesRegex(ValueError, r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d("RGB", Image.LINEAR, 3, 2, 2, 2, [0, 0, 0] * 9)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             im.im.color_lut_3d("RGB", Image.LINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             im.im.color_lut_3d("RGB", Image.LINEAR, 3, 2, 2, 2, 16)
 
     def test_correct_args(self):
@@ -240,14 +241,14 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                                   -1,  2,  2,   2,  2,  2,
                               ])).load()
         # fmt: on
-        self.assertEqual(transformed[0, 0], (0, 0, 255))
-        self.assertEqual(transformed[50, 50], (0, 0, 255))
-        self.assertEqual(transformed[255, 0], (0, 255, 255))
-        self.assertEqual(transformed[205, 50], (0, 255, 255))
-        self.assertEqual(transformed[0, 255], (255, 0, 0))
-        self.assertEqual(transformed[50, 205], (255, 0, 0))
-        self.assertEqual(transformed[255, 255], (255, 255, 0))
-        self.assertEqual(transformed[205, 205], (255, 255, 0))
+        assert transformed[0, 0] == (0, 0, 255)
+        assert transformed[50, 50] == (0, 0, 255)
+        assert transformed[255, 0] == (0, 255, 255)
+        assert transformed[205, 50] == (0, 255, 255)
+        assert transformed[0, 255] == (255, 0, 0)
+        assert transformed[50, 205] == (255, 0, 0)
+        assert transformed[255, 255] == (255, 255, 0)
+        assert transformed[205, 205] == (255, 255, 0)
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.LINEAR,
@@ -260,14 +261,14 @@ class TestColorLut3DCoreAPI(PillowTestCase):
                                   -3,  5,  5,   5,  5,  5,
                               ])).load()
         # fmt: on
-        self.assertEqual(transformed[0, 0], (0, 0, 255))
-        self.assertEqual(transformed[50, 50], (0, 0, 255))
-        self.assertEqual(transformed[255, 0], (0, 255, 255))
-        self.assertEqual(transformed[205, 50], (0, 255, 255))
-        self.assertEqual(transformed[0, 255], (255, 0, 0))
-        self.assertEqual(transformed[50, 205], (255, 0, 0))
-        self.assertEqual(transformed[255, 255], (255, 255, 0))
-        self.assertEqual(transformed[205, 205], (255, 255, 0))
+        assert transformed[0, 0] == (0, 0, 255)
+        assert transformed[50, 50] == (0, 0, 255)
+        assert transformed[255, 0] == (0, 255, 255)
+        assert transformed[205, 50] == (0, 255, 255)
+        assert transformed[0, 255] == (255, 0, 0)
+        assert transformed[50, 205] == (255, 0, 0)
+        assert transformed[255, 255] == (255, 255, 0)
+        assert transformed[205, 205] == (255, 255, 0)
 
 
 class TestColorLut3DFilter(PillowTestCase):
@@ -301,20 +302,20 @@ class TestColorLut3DFilter(PillowTestCase):
 
     def test_convert_table(self):
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
-        self.assertEqual(tuple(lut.size), (2, 2, 2))
-        self.assertEqual(lut.name, "Color 3D LUT")
+        assert tuple(lut.size) == (2, 2, 2)
+        assert lut.name == "Color 3D LUT"
 
         # fmt: off
         lut = ImageFilter.Color3DLUT((2, 2, 2), [
             (0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11),
             (12, 13, 14), (15, 16, 17), (18, 19, 20), (21, 22, 23)])
         # fmt: on
-        self.assertEqual(tuple(lut.size), (2, 2, 2))
-        self.assertEqual(lut.table, list(range(24)))
+        assert tuple(lut.size) == (2, 2, 2)
+        assert lut.table == list(range(24))
 
         lut = ImageFilter.Color3DLUT((2, 2, 2), [(0, 1, 2, 3)] * 8, channels=4)
-        self.assertEqual(tuple(lut.size), (2, 2, 2))
-        self.assertEqual(lut.table, list(range(4)) * 8)
+        assert tuple(lut.size) == (2, 2, 2)
+        assert lut.table == list(range(4)) * 8
 
     @unittest.skipIf(numpy is None, "Numpy is not installed")
     def test_numpy_sources(self):
@@ -324,30 +325,30 @@ class TestColorLut3DFilter(PillowTestCase):
 
         table = numpy.ones((7, 6, 5, 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
-        self.assertIsInstance(lut.table, numpy.ndarray)
-        self.assertEqual(lut.table.dtype, table.dtype)
-        self.assertEqual(lut.table.shape, (table.size,))
+        assert isinstance(lut.table, numpy.ndarray)
+        assert lut.table.dtype == table.dtype
+        assert lut.table.shape == (table.size,)
 
         table = numpy.ones((7 * 6 * 5, 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
-        self.assertEqual(lut.table.shape, (table.size,))
+        assert lut.table.shape == (table.size,)
 
         table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
-        self.assertEqual(lut.table.shape, (table.size,))
+        assert lut.table.shape == (table.size,)
 
         # Check application
         Image.new("RGB", (10, 10), 0).filter(lut)
 
         # Check copy
         table[0] = 33
-        self.assertEqual(lut.table[0], 1)
+        assert lut.table[0] == 1
 
         # Check not copy
         table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table, _copy_table=False)
         table[0] = 33
-        self.assertEqual(lut.table[0], 33)
+        assert lut.table[0] == 33
 
     @unittest.skipIf(numpy is None, "Numpy is not installed")
     def test_numpy_formats(self):
@@ -386,7 +387,7 @@ class TestColorLut3DFilter(PillowTestCase):
 
     def test_repr(self):
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
-        self.assertEqual(repr(lut), "<Color3DLUT from list size=2x2x2 channels=3>")
+        assert repr(lut) == "<Color3DLUT from list size=2x2x2 channels=3>"
 
         lut = ImageFilter.Color3DLUT(
             (3, 4, 5),
@@ -395,8 +396,9 @@ class TestColorLut3DFilter(PillowTestCase):
             target_mode="YCbCr",
             _copy_table=False,
         )
-        self.assertEqual(
-            repr(lut), "<Color3DLUT from array size=3x4x5 channels=4 target_mode=YCbCr>"
+        assert (
+            repr(lut)
+            == "<Color3DLUT from array size=3x4x5 channels=4 target_mode=YCbCr>"
         )
 
 
@@ -417,25 +419,25 @@ class TestGenerateColorLut3D(PillowTestCase):
 
     def test_3_channels(self):
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
-        self.assertEqual(tuple(lut.size), (5, 5, 5))
-        self.assertEqual(lut.name, "Color 3D LUT")
+        assert tuple(lut.size) == (5, 5, 5)
+        assert lut.name == "Color 3D LUT"
         # fmt: off
-        self.assertEqual(lut.table[:24], [
+        assert lut.table[:24] == [
             0.0, 0.0, 0.0,  0.25, 0.0, 0.0,  0.5, 0.0, 0.0,  0.75, 0.0, 0.0,
-            1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0])
+            1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0]
         # fmt: on
 
     def test_4_channels(self):
         lut = ImageFilter.Color3DLUT.generate(
             5, channels=4, callback=lambda r, g, b: (b, r, g, (r + g + b) / 2)
         )
-        self.assertEqual(tuple(lut.size), (5, 5, 5))
-        self.assertEqual(lut.name, "Color 3D LUT")
+        assert tuple(lut.size) == (5, 5, 5)
+        assert lut.name == "Color 3D LUT"
         # fmt: off
-        self.assertEqual(lut.table[:24], [
+        assert lut.table[:24] == [
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
             0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125
-        ])
+        ]
         # fmt: on
 
     def test_apply(self):
@@ -445,7 +447,7 @@ class TestGenerateColorLut3D(PillowTestCase):
         im = Image.merge(
             "RGB", [g, g.transpose(Image.ROTATE_90), g.transpose(Image.ROTATE_180)]
         )
-        self.assertEqual(im, im.filter(lut))
+        assert im == im.filter(lut)
 
 
 class TestTransformColorLut3D(PillowTestCase):
@@ -461,7 +463,7 @@ class TestTransformColorLut3D(PillowTestCase):
         with self.assertRaisesRegex(ValueError, "should have either channels"):
             source.transform(lambda r, g, b: (r, g, b, 1))
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             source.transform(lambda r, g, b, a: (r, g, b))
 
     def test_target_mode(self):
@@ -470,31 +472,29 @@ class TestTransformColorLut3D(PillowTestCase):
         )
 
         lut = source.transform(lambda r, g, b: (r, g, b))
-        self.assertEqual(lut.mode, "HSV")
+        assert lut.mode == "HSV"
 
         lut = source.transform(lambda r, g, b: (r, g, b), target_mode="RGB")
-        self.assertEqual(lut.mode, "RGB")
+        assert lut.mode == "RGB"
 
     def test_3_to_3_channels(self):
         source = ImageFilter.Color3DLUT.generate((3, 4, 5), lambda r, g, b: (r, g, b))
         lut = source.transform(lambda r, g, b: (r * r, g * g, b * b))
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
-        self.assertEqual(
-            lut.table[0:10], [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
-        )
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) == len(source.table)
+        assert lut.table != source.table
+        assert lut.table[0:10] == [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
 
     def test_3_to_4_channels(self):
         source = ImageFilter.Color3DLUT.generate((6, 5, 4), lambda r, g, b: (r, g, b))
         lut = source.transform(lambda r, g, b: (r * r, g * g, b * b, 1), channels=4)
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertNotEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) != len(source.table)
+        assert lut.table != source.table
         # fmt: off
-        self.assertEqual(lut.table[0:16], [
+        assert lut.table[0:16] == [
             0.0, 0.0, 0.0, 1,  0.2**2, 0.0, 0.0, 1,
-            0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1])
+            0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1]
         # fmt: on
 
     def test_4_to_3_channels(self):
@@ -504,13 +504,13 @@ class TestTransformColorLut3D(PillowTestCase):
         lut = source.transform(
             lambda r, g, b, a: (a - r * r, a - g * g, a - b * b), channels=3
         )
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertNotEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) != len(source.table)
+        assert lut.table != source.table
         # fmt: off
-        self.assertEqual(lut.table[0:18], [
+        assert lut.table[0:18] == [
             1.0, 1.0, 1.0,  0.75, 1.0, 1.0,  0.0, 1.0, 1.0,
-            1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0])
+            1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0]
         # fmt: on
 
     def test_4_to_4_channels(self):
@@ -518,13 +518,13 @@ class TestTransformColorLut3D(PillowTestCase):
             (6, 5, 4), lambda r, g, b: (r, g, b, 1), channels=4
         )
         lut = source.transform(lambda r, g, b, a: (r * r, g * g, b * b, a - 0.5))
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) == len(source.table)
+        assert lut.table != source.table
         # fmt: off
-        self.assertEqual(lut.table[0:16], [
+        assert lut.table[0:16] == [
             0.0, 0.0, 0.0, 0.5,  0.2**2, 0.0, 0.0, 0.5,
-            0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5])
+            0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5]
         # fmt: on
 
     def test_with_normals_3_channels(self):
@@ -534,13 +534,13 @@ class TestTransformColorLut3D(PillowTestCase):
         lut = source.transform(
             lambda nr, ng, nb, r, g, b: (nr - r, ng - g, nb - b), with_normals=True
         )
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) == len(source.table)
+        assert lut.table != source.table
         # fmt: off
-        self.assertEqual(lut.table[0:18], [
+        assert lut.table[0:18] == [
             0.0, 0.0, 0.0,  0.16, 0.0, 0.0,  0.24, 0.0, 0.0,
-            0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0])
+            0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0]
         # fmt: on
 
     def test_with_normals_4_channels(self):
@@ -551,11 +551,11 @@ class TestTransformColorLut3D(PillowTestCase):
             lambda nr, ng, nb, r, g, b, a: (nr - r, ng - g, nb - b, a - 0.5),
             with_normals=True,
         )
-        self.assertEqual(tuple(lut.size), tuple(source.size))
-        self.assertEqual(len(lut.table), len(source.table))
-        self.assertNotEqual(lut.table, source.table)
+        assert tuple(lut.size) == tuple(source.size)
+        assert len(lut.table) == len(source.table)
+        assert lut.table != source.table
         # fmt: off
-        self.assertEqual(lut.table[0:16], [
+        assert lut.table[0:16] == [
             0.0, 0.0, 0.0, 0.5,  0.25, 0.0, 0.0, 0.5,
-            0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5])
+            0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5]
         # fmt: on

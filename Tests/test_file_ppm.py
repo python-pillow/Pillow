@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image
 
 from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
@@ -10,17 +11,17 @@ class TestFilePpm(PillowTestCase):
     def test_sanity(self):
         with Image.open(test_file) as im:
             im.load()
-            self.assertEqual(im.mode, "RGB")
-            self.assertEqual(im.size, (128, 128))
-            self.assertEqual(im.format, "PPM")
-            self.assertEqual(im.get_format_mimetype(), "image/x-portable-pixmap")
+            assert im.mode == "RGB"
+            assert im.size == (128, 128)
+            assert im.format, "PPM"
+            assert im.get_format_mimetype() == "image/x-portable-pixmap"
 
     def test_16bit_pgm(self):
         with Image.open("Tests/images/16_bit_binary.pgm") as im:
             im.load()
-            self.assertEqual(im.mode, "I")
-            self.assertEqual(im.size, (20, 100))
-            self.assertEqual(im.get_format_mimetype(), "image/x-portable-graymap")
+            assert im.mode == "I"
+            assert im.size == (20, 100)
+            assert im.get_format_mimetype() == "image/x-portable-graymap"
 
             with Image.open("Tests/images/16_bit_binary_pgm.png") as tgt:
                 assert_image_equal(im, tgt)
@@ -50,7 +51,8 @@ class TestFilePpm(PillowTestCase):
         with open(path, "w") as f:
             f.write("P6")
 
-        self.assertRaises(ValueError, Image.open, path)
+        with pytest.raises(ValueError):
+            Image.open(path)
 
     def test_neg_ppm(self):
         # Storage.c accepted negative values for xsize, ysize.  the
@@ -58,7 +60,7 @@ class TestFilePpm(PillowTestCase):
         # has been removed. The default opener doesn't accept negative
         # sizes.
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             Image.open("Tests/images/negative_size.ppm")
 
     def test_mimetypes(self):
@@ -67,9 +69,9 @@ class TestFilePpm(PillowTestCase):
         with open(path, "w") as f:
             f.write("P4\n128 128\n255")
         with Image.open(path) as im:
-            self.assertEqual(im.get_format_mimetype(), "image/x-portable-bitmap")
+            assert im.get_format_mimetype() == "image/x-portable-bitmap"
 
         with open(path, "w") as f:
             f.write("PyCMYK\n128 128\n255")
         with Image.open(path) as im:
-            self.assertEqual(im.get_format_mimetype(), "image/x-portable-anymap")
+            assert im.get_format_mimetype() == "image/x-portable-anymap"

@@ -14,8 +14,8 @@ class TestImageConvert(PillowTestCase):
     def test_sanity(self):
         def convert(im, mode):
             out = im.convert(mode)
-            self.assertEqual(out.mode, mode)
-            self.assertEqual(out.size, im.size)
+            assert out.mode == mode
+            assert out.size == im.size
 
         modes = (
             "1",
@@ -57,7 +57,7 @@ class TestImageConvert(PillowTestCase):
     def _test_float_conversion(self, im):
         orig = im.getpixel((5, 5))
         converted = im.convert("F").getpixel((5, 5))
-        self.assertEqual(orig, converted)
+        assert orig == converted
 
     def test_8bit(self):
         with Image.open("Tests/images/hopper.jpg") as im:
@@ -87,11 +87,11 @@ class TestImageConvert(PillowTestCase):
         f = self.tempfile("temp.png")
 
         im_l = im.convert("L")
-        self.assertEqual(im_l.info["transparency"], 0)  # undone
+        assert im_l.info["transparency"] == 0  # undone
         im_l.save(f)
 
         im_rgb = im.convert("RGB")
-        self.assertEqual(im_rgb.info["transparency"], (0, 0, 0))  # undone
+        assert im_rgb.info["transparency"] == (0, 0, 0)  # undone
         im_rgb.save(f)
 
     # ref https://github.com/python-pillow/Pillow/issues/664
@@ -105,9 +105,9 @@ class TestImageConvert(PillowTestCase):
         im_rgba = im.convert("RGBA")
 
         # Assert
-        self.assertNotIn("transparency", im_rgba.info)
+        assert "transparency" not in im_rgba.info
         # https://github.com/python-pillow/Pillow/issues/2702
-        self.assertIsNone(im_rgba.palette)
+        assert im_rgba.palette is None
 
     def test_trns_l(self):
         im = hopper("L")
@@ -116,15 +116,15 @@ class TestImageConvert(PillowTestCase):
         f = self.tempfile("temp.png")
 
         im_rgb = im.convert("RGB")
-        self.assertEqual(im_rgb.info["transparency"], (128, 128, 128))  # undone
+        assert im_rgb.info["transparency"] == (128, 128, 128)  # undone
         im_rgb.save(f)
 
         im_p = im.convert("P")
-        self.assertIn("transparency", im_p.info)
+        assert "transparency" in im_p.info
         im_p.save(f)
 
         im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
-        self.assertNotIn("transparency", im_p.info)
+        assert "transparency" not in im_p.info
         im_p.save(f)
 
     def test_trns_RGB(self):
@@ -134,19 +134,19 @@ class TestImageConvert(PillowTestCase):
         f = self.tempfile("temp.png")
 
         im_l = im.convert("L")
-        self.assertEqual(im_l.info["transparency"], im_l.getpixel((0, 0)))  # undone
+        assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone
         im_l.save(f)
 
         im_p = im.convert("P")
-        self.assertIn("transparency", im_p.info)
+        assert "transparency" in im_p.info
         im_p.save(f)
 
         im_rgba = im.convert("RGBA")
-        self.assertNotIn("transparency", im_rgba.info)
+        assert "transparency" not in im_rgba.info
         im_rgba.save(f)
 
         im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
-        self.assertNotIn("transparency", im_p.info)
+        assert "transparency" not in im_p.info
         im_p.save(f)
 
     def test_gif_with_rgba_palette_to_p(self):
@@ -154,7 +154,7 @@ class TestImageConvert(PillowTestCase):
         with Image.open("Tests/images/hopper.gif") as im:
             im.info["transparency"] = 255
             im.load()
-            self.assertEqual(im.palette.mode, "RGBA")
+            assert im.palette.mode == "RGBA"
             im_p = im.convert("P")
 
         # Should not raise ValueError: unrecognized raw mode
@@ -178,10 +178,11 @@ class TestImageConvert(PillowTestCase):
             0.212671, 0.715160, 0.072169, 0,
             0.019334, 0.119193, 0.950227, 0)
         # fmt: on
-        self.assertNotEqual(im.mode, "RGB")
+        assert im.mode != "RGB"
 
         # Act / Assert
-        self.assertRaises(ValueError, im.convert, mode="CMYK", matrix=matrix)
+        with pytest.raises(ValueError):
+            im.convert(mode="CMYK", matrix=matrix)
 
     def test_matrix_wrong_mode(self):
         # Arrange
@@ -192,10 +193,11 @@ class TestImageConvert(PillowTestCase):
             0.212671, 0.715160, 0.072169, 0,
             0.019334, 0.119193, 0.950227, 0)
         # fmt: on
-        self.assertEqual(im.mode, "L")
+        assert im.mode == "L"
 
         # Act / Assert
-        self.assertRaises(ValueError, im.convert, mode="L", matrix=matrix)
+        with pytest.raises(ValueError):
+            im.convert(mode="L", matrix=matrix)
 
     def test_matrix_xyz(self):
         def matrix_convert(mode):
@@ -208,22 +210,22 @@ class TestImageConvert(PillowTestCase):
                 0.212671, 0.715160, 0.072169, 0,
                 0.019334, 0.119193, 0.950227, 0)
             # fmt: on
-            self.assertEqual(im.mode, "RGB")
+            assert im.mode == "RGB"
 
             # Act
             # Convert an RGB image to the CIE XYZ colour space
             converted_im = im.convert(mode=mode, matrix=matrix)
 
             # Assert
-            self.assertEqual(converted_im.mode, mode)
-            self.assertEqual(converted_im.size, im.size)
+            assert converted_im.mode == mode
+            assert converted_im.size == im.size
             with Image.open("Tests/images/hopper-XYZ.png") as target:
                 if converted_im.mode == "RGB":
                     assert_image_similar(converted_im, target, 3)
-                    self.assertEqual(converted_im.info["transparency"], (105, 54, 4))
+                    assert converted_im.info["transparency"] == (105, 54, 4)
                 else:
                     assert_image_similar(converted_im, target.getchannel(0), 1)
-                    self.assertEqual(converted_im.info["transparency"], 105)
+                    assert converted_im.info["transparency"] == 105
 
         matrix_convert("RGB")
         matrix_convert("L")
@@ -237,7 +239,7 @@ class TestImageConvert(PillowTestCase):
             0, 1, 0, 0,
             0, 0, 1, 0)
         # fmt: on
-        self.assertEqual(im.mode, "RGB")
+        assert im.mode == "RGB"
 
         # Act
         # Convert with an identity matrix

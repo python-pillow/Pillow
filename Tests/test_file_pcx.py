@@ -1,3 +1,4 @@
+import pytest
 from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import PillowTestCase, assert_image_equal, hopper
@@ -8,10 +9,10 @@ class TestFilePcx(PillowTestCase):
         f = self.tempfile("temp.pcx")
         im.save(f)
         with Image.open(f) as im2:
-            self.assertEqual(im2.mode, im.mode)
-            self.assertEqual(im2.size, im.size)
-            self.assertEqual(im2.format, "PCX")
-            self.assertEqual(im2.get_format_mimetype(), "image/x-pcx")
+            assert im2.mode == im.mode
+            assert im2.size == im.size
+            assert im2.format == "PCX"
+            assert im2.get_format_mimetype() == "image/x-pcx"
             assert_image_equal(im2, im)
 
     def test_sanity(self):
@@ -21,12 +22,14 @@ class TestFilePcx(PillowTestCase):
         # Test an unsupported mode
         f = self.tempfile("temp.pcx")
         im = hopper("RGBA")
-        self.assertRaises(ValueError, im.save, f)
+        with pytest.raises(ValueError):
+            im.save(f)
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, PcxImagePlugin.PcxImageFile, invalid_file)
+        with pytest.raises(SyntaxError):
+            PcxImagePlugin.PcxImageFile(invalid_file)
 
     def test_odd(self):
         # see issue #523, odd sized images should have a stride that's even.
@@ -42,11 +45,11 @@ class TestFilePcx(PillowTestCase):
 
         test_file = "Tests/images/pil184.pcx"
         with Image.open(test_file) as im:
-            self.assertEqual(im.size, (447, 144))
-            self.assertEqual(im.tile[0][1], (0, 0, 447, 144))
+            assert im.size == (447, 144)
+            assert im.tile[0][1] == (0, 0, 447, 144)
 
             # Make sure all pixels are either 0 or 255.
-            self.assertEqual(im.histogram()[0] + im.histogram()[255], 447 * 144)
+            assert im.histogram()[0] + im.histogram()[255] == 447 * 144
 
     def test_1px_width(self):
         im = Image.new("L", (1, 256))

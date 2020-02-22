@@ -20,8 +20,8 @@ class TestToQImage(PillowQtTestCase, PillowTestCase):
             src = hopper(mode)
             data = ImageQt.toqimage(src)
 
-            self.assertIsInstance(data, QImage)
-            self.assertFalse(data.isNull())
+            assert isinstance(data, QImage)
+            assert not data.isNull()
 
             # reload directly from the qimage
             rt = ImageQt.fromqimage(data)

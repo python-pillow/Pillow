@@ -21,7 +21,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
         test_file = "Tests/images/hopper_g4.tif"
         with open(test_file, "rb") as f:
             with Image.open(f) as im:
-                self.assertEqual(im.size, (128, 128))
+                assert im.size == (128, 128)
                 self._assert_noerr(im)
 
     def test_g4_hopper_bytesio(self):
@@ -32,7 +32,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
             s.write(f.read())
             s.seek(0)
         with Image.open(s) as im:
-            self.assertEqual(im.size, (128, 128))
+            assert im.size == (128, 128)
             self._assert_noerr(im)
 
     def test_g4_hopper(self):
@@ -40,5 +40,5 @@ class TestFileLibTiffSmall(LibTiffTestCase):
 
         test_file = "Tests/images/hopper_g4.tif"
         with Image.open(test_file) as im:
-            self.assertEqual(im.size, (128, 128))
+            assert im.size == (128, 128)
             self._assert_noerr(im)

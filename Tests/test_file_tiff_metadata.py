@@ -55,14 +55,14 @@ class TestFileTiffMetadata(PillowTestCase):
 
         with Image.open(f) as loaded:
 
-            self.assertEqual(loaded.tag[ImageJMetaDataByteCounts], (len(bindata),))
-            self.assertEqual(loaded.tag_v2[ImageJMetaDataByteCounts], (len(bindata),))
+            assert loaded.tag[ImageJMetaDataByteCounts] == (len(bindata),)
+            assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bindata),)
 
-            self.assertEqual(loaded.tag[ImageJMetaData], bindata)
-            self.assertEqual(loaded.tag_v2[ImageJMetaData], bindata)
+            assert loaded.tag[ImageJMetaData] == bindata
+            assert loaded.tag_v2[ImageJMetaData] == bindata
 
-            self.assertEqual(loaded.tag[ImageDescription], (reloaded_textdata,))
-            self.assertEqual(loaded.tag_v2[ImageDescription], reloaded_textdata)
+            assert loaded.tag[ImageDescription] == (reloaded_textdata,)
+            assert loaded.tag_v2[ImageDescription] == reloaded_textdata
 
             loaded_float = loaded.tag[tag_ids["RollAngle"]][0]
             self.assertAlmostEqual(loaded_float, floatdata, places=5)
@@ -75,59 +75,49 @@ class TestFileTiffMetadata(PillowTestCase):
         img.save(f, tiffinfo=info)
         with Image.open(f) as loaded:
 
-            self.assertEqual(
-                loaded.tag[ImageJMetaDataByteCounts], (8, len(bindata) - 8)
-            )
-            self.assertEqual(
-                loaded.tag_v2[ImageJMetaDataByteCounts], (8, len(bindata) - 8)
-            )
+            assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
+            assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
 
     def test_read_metadata(self):
         with Image.open("Tests/images/hopper_g4.tif") as img:
 
-            self.assertEqual(
-                {
-                    "YResolution": IFDRational(4294967295, 113653537),
-                    "PlanarConfiguration": 1,
-                    "BitsPerSample": (1,),
-                    "ImageLength": 128,
-                    "Compression": 4,
-                    "FillOrder": 1,
-                    "RowsPerStrip": 128,
-                    "ResolutionUnit": 3,
-                    "PhotometricInterpretation": 0,
-                    "PageNumber": (0, 1),
-                    "XResolution": IFDRational(4294967295, 113653537),
-                    "ImageWidth": 128,
-                    "Orientation": 1,
-                    "StripByteCounts": (1968,),
-                    "SamplesPerPixel": 1,
-                    "StripOffsets": (8,),
-                },
-                img.tag_v2.named(),
-            )
+            assert {
+                "YResolution": IFDRational(4294967295, 113653537),
+                "PlanarConfiguration": 1,
+                "BitsPerSample": (1,),
+                "ImageLength": 128,
+                "Compression": 4,
+                "FillOrder": 1,
+                "RowsPerStrip": 128,
+                "ResolutionUnit": 3,
+                "PhotometricInterpretation": 0,
+                "PageNumber": (0, 1),
+                "XResolution": IFDRational(4294967295, 113653537),
+                "ImageWidth": 128,
+                "Orientation": 1,
+                "StripByteCounts": (1968,),
+                "SamplesPerPixel": 1,
+                "StripOffsets": (8,),
+            } == img.tag_v2.named()
 
-            self.assertEqual(
-                {
-                    "YResolution": ((4294967295, 113653537),),
-                    "PlanarConfiguration": (1,),
-                    "BitsPerSample": (1,),
-                    "ImageLength": (128,),
-                    "Compression": (4,),
-                    "FillOrder": (1,),
-                    "RowsPerStrip": (128,),
-                    "ResolutionUnit": (3,),
-                    "PhotometricInterpretation": (0,),
-                    "PageNumber": (0, 1),
-                    "XResolution": ((4294967295, 113653537),),
-                    "ImageWidth": (128,),
-                    "Orientation": (1,),
-                    "StripByteCounts": (1968,),
-                    "SamplesPerPixel": (1,),
-                    "StripOffsets": (8,),
-                },
-                img.tag.named(),
-            )
+            assert {
+                "YResolution": ((4294967295, 113653537),),
+                "PlanarConfiguration": (1,),
+                "BitsPerSample": (1,),
+                "ImageLength": (128,),
+                "Compression": (4,),
+                "FillOrder": (1,),
+                "RowsPerStrip": (128,),
+                "ResolutionUnit": (3,),
+                "PhotometricInterpretation": (0,),
+                "PageNumber": (0, 1),
+                "XResolution": ((4294967295, 113653537),),
+                "ImageWidth": (128,),
+                "Orientation": (1,),
+                "StripByteCounts": (1968,),
+                "SamplesPerPixel": (1,),
+                "StripOffsets": (8,),
+            } == img.tag.named()
 
     def test_write_metadata(self):
         """ Test metadata writing through the python code """
@@ -156,19 +146,17 @@ class TestFileTiffMetadata(PillowTestCase):
                     "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
                 )
             else:
-                self.assertEqual(
-                    original[tag],
-                    value,
-                    "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
+                assert original[tag] == value, "{} didn't roundtrip, {}, {}".format(
+                    tag, original[tag], value
                 )
 
         for tag, value in original.items():
             if tag not in ignored:
-                self.assertEqual(value, reloaded[tag], "%s didn't roundtrip" % tag)
+                assert value == reloaded[tag], "%s didn't roundtrip" % tag
 
     def test_no_duplicate_50741_tag(self):
-        self.assertEqual(tag_ids["MakerNoteSafety"], 50741)
-        self.assertEqual(tag_ids["BestQualityScale"], 50780)
+        assert tag_ids["MakerNoteSafety"] == 50741
+        assert tag_ids["BestQualityScale"] == 50780
 
     def test_empty_metadata(self):
         f = io.BytesIO(b"II*\x00\x08\x00\x00\x00")
@@ -184,8 +172,8 @@ class TestFileTiffMetadata(PillowTestCase):
             im.save(out)
 
         with Image.open(out) as reloaded:
-            self.assertNotIsInstance(im.info["icc_profile"], tuple)
-            self.assertEqual(im.info["icc_profile"], reloaded.info["icc_profile"])
+            assert not isinstance(im.info["icc_profile"], tuple)
+            assert im.info["icc_profile"] == reloaded.info["icc_profile"]
 
     def test_iccprofile_binary(self):
         # https://github.com/python-pillow/Pillow/issues/1526
@@ -193,8 +181,8 @@ class TestFileTiffMetadata(PillowTestCase):
         # but probably won't be able to save it.
 
         with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
-            self.assertEqual(im.tag_v2.tagtype[34675], 1)
-            self.assertTrue(im.info["icc_profile"])
+            assert im.tag_v2.tagtype[34675] == 1
+            assert im.info["icc_profile"]
 
     def test_iccprofile_save_png(self):
         with Image.open("Tests/images/hopper.iccprofile.tif") as im:
@@ -215,8 +203,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(0, reloaded.tag_v2[41988].numerator)
-            self.assertEqual(0, reloaded.tag_v2[41988].denominator)
+            assert 0 == reloaded.tag_v2[41988].numerator
+            assert 0 == reloaded.tag_v2[41988].denominator
 
     def test_ifd_unsigned_rational(self):
         im = hopper()
@@ -233,8 +221,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
-            self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+            assert max_long == reloaded.tag_v2[41493].numerator
+            assert 1 == reloaded.tag_v2[41493].denominator
 
         # out of bounds of 4 byte unsigned long
         numerator = max_long + 1
@@ -245,8 +233,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(max_long, reloaded.tag_v2[41493].numerator)
-            self.assertEqual(1, reloaded.tag_v2[41493].denominator)
+            assert max_long == reloaded.tag_v2[41493].numerator
+            assert 1 == reloaded.tag_v2[41493].denominator
 
     def test_ifd_signed_rational(self):
         im = hopper()
@@ -262,8 +250,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
-            self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+            assert numerator == reloaded.tag_v2[37380].numerator
+            assert denominator == reloaded.tag_v2[37380].denominator
 
         numerator = -(2 ** 31)
         denominator = 2 ** 31 - 1
@@ -274,8 +262,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(numerator, reloaded.tag_v2[37380].numerator)
-            self.assertEqual(denominator, reloaded.tag_v2[37380].denominator)
+            assert numerator == reloaded.tag_v2[37380].numerator
+            assert denominator == reloaded.tag_v2[37380].denominator
 
         # out of bounds of 4 byte signed long
         numerator = -(2 ** 31) - 1
@@ -287,8 +275,8 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(2 ** 31 - 1, reloaded.tag_v2[37380].numerator)
-            self.assertEqual(-1, reloaded.tag_v2[37380].denominator)
+            assert 2 ** 31 - 1 == reloaded.tag_v2[37380].numerator
+            assert -1 == reloaded.tag_v2[37380].denominator
 
     def test_ifd_signed_long(self):
         im = hopper()
@@ -300,7 +288,7 @@ class TestFileTiffMetadata(PillowTestCase):
         im.save(out, tiffinfo=info, compression="raw")
 
         with Image.open(out) as reloaded:
-            self.assertEqual(reloaded.tag_v2[37000], -60000)
+            assert reloaded.tag_v2[37000] == -60000
 
     def test_empty_values(self):
         data = io.BytesIO(
@@ -314,17 +302,17 @@ class TestFileTiffMetadata(PillowTestCase):
         info.load(data)
         # Should not raise ValueError.
         info = dict(info)
-        self.assertIn(33432, info)
+        assert 33432 in info
 
     def test_PhotoshopInfo(self):
         with Image.open("Tests/images/issue_2278.tif") as im:
-            self.assertEqual(len(im.tag_v2[34377]), 1)
-            self.assertIsInstance(im.tag_v2[34377][0], bytes)
+            assert len(im.tag_v2[34377]) == 1
+            assert isinstance(im.tag_v2[34377][0], bytes)
             out = self.tempfile("temp.tiff")
             im.save(out)
         with Image.open(out) as reloaded:
-            self.assertEqual(len(reloaded.tag_v2[34377]), 1)
-            self.assertIsInstance(reloaded.tag_v2[34377][0], bytes)
+            assert len(reloaded.tag_v2[34377]) == 1
+            assert isinstance(reloaded.tag_v2[34377][0], bytes)
 
     def test_too_many_entries(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()

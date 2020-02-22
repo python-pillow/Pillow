@@ -18,7 +18,7 @@ class TestImageWin(PillowTestCase):
         dc2 = int(hdc)
 
         # Assert
-        self.assertEqual(dc2, 50)
+        assert dc2 == 50
 
     def test_hwnd(self):
         # Arrange
@@ -29,7 +29,7 @@ class TestImageWin(PillowTestCase):
         wnd2 = int(hwnd)
 
         # Assert
-        self.assertEqual(wnd2, 50)
+        assert wnd2 == 50
 
 
 @unittest.skipUnless(is_win32(), "Windows only")
@@ -42,7 +42,7 @@ class TestImageWinDib(PillowTestCase):
         dib = ImageWin.Dib(im)
 
         # Assert
-        self.assertEqual(dib.size, im.size)
+        assert dib.size == im.size
 
     def test_dib_mode_string(self):
         # Arrange
@@ -53,7 +53,7 @@ class TestImageWinDib(PillowTestCase):
         dib = ImageWin.Dib(mode, size)
 
         # Assert
-        self.assertEqual(dib.size, (128, 128))
+        assert dib.size == (128, 128)
 
     def test_dib_paste(self):
         # Arrange
@@ -67,7 +67,7 @@ class TestImageWinDib(PillowTestCase):
         dib.paste(im)
 
         # Assert
-        self.assertEqual(dib.size, (128, 128))
+        assert dib.size == (128, 128)
 
     def test_dib_paste_bbox(self):
         # Arrange
@@ -82,7 +82,7 @@ class TestImageWinDib(PillowTestCase):
         dib.paste(im, bbox)
 
         # Assert
-        self.assertEqual(dib.size, (128, 128))
+        assert dib.size == (128, 128)
 
     def test_dib_frombytes_tobytes_roundtrip(self):
         # Arrange
@@ -95,7 +95,7 @@ class TestImageWinDib(PillowTestCase):
         dib2 = ImageWin.Dib(mode, size)
 
         # Confirm they're different
-        self.assertNotEqual(dib1.tobytes(), dib2.tobytes())
+        assert dib1.tobytes() != dib2.tobytes()
 
         # Act
         # Make one the same as the using tobytes()/frombytes()
@@ -104,4 +104,4 @@ class TestImageWinDib(PillowTestCase):
 
         # Assert
         # Confirm they're the same
-        self.assertEqual(dib1.tobytes(), dib2.tobytes())
+        assert dib1.tobytes() == dib2.tobytes()

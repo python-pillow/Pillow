@@ -1,5 +1,7 @@
 import os.path
 
+import pytest
+
 from .helper import (
     PillowTestCase,
     assert_image_equal,
@@ -21,8 +23,8 @@ class TestFilePalm(PillowTestCase):
         im.save(outfile)
 
         # Assert
-        self.assertTrue(os.path.isfile(outfile))
-        self.assertGreater(os.path.getsize(outfile), 0)
+        assert os.path.isfile(outfile)
+        assert os.path.getsize(outfile) > 0
 
     def roundtrip(self, mode):
         if not self._roundtrip:
@@ -57,11 +59,13 @@ class TestFilePalm(PillowTestCase):
         mode = "L"
 
         # Act / Assert
-        self.assertRaises(IOError, self.helper_save_as_palm, mode)
+        with pytest.raises(IOError):
+            self.helper_save_as_palm(mode)
 
     def test_rgb_ioerror(self):
         # Arrange
         mode = "RGB"
 
         # Act / Assert
-        self.assertRaises(IOError, self.helper_save_as_palm, mode)
+        with pytest.raises(IOError):
+            self.helper_save_as_palm(mode)

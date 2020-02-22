@@ -1,6 +1,7 @@
 import io
 import unittest
 
+import pytest
 from PIL import EpsImagePlugin, Image, features
 
 from .helper import PillowTestCase, assert_image_similar, hopper, skip_unless_feature
@@ -28,44 +29,45 @@ class TestFileEps(PillowTestCase):
         # Regular scale
         with Image.open(file1) as image1:
             image1.load()
-            self.assertEqual(image1.mode, "RGB")
-            self.assertEqual(image1.size, (460, 352))
-            self.assertEqual(image1.format, "EPS")
+            assert image1.mode == "RGB"
+            assert image1.size == (460, 352)
+            assert image1.format == "EPS"
 
         with Image.open(file2) as image2:
             image2.load()
-            self.assertEqual(image2.mode, "RGB")
-            self.assertEqual(image2.size, (360, 252))
-            self.assertEqual(image2.format, "EPS")
+            assert image2.mode == "RGB"
+            assert image2.size == (360, 252)
+            assert image2.format == "EPS"
 
         # Double scale
         with Image.open(file1) as image1_scale2:
             image1_scale2.load(scale=2)
-            self.assertEqual(image1_scale2.mode, "RGB")
-            self.assertEqual(image1_scale2.size, (920, 704))
-            self.assertEqual(image1_scale2.format, "EPS")
+            assert image1_scale2.mode == "RGB"
+            assert image1_scale2.size == (920, 704)
+            assert image1_scale2.format == "EPS"
 
         with Image.open(file2) as image2_scale2:
             image2_scale2.load(scale=2)
-            self.assertEqual(image2_scale2.mode, "RGB")
-            self.assertEqual(image2_scale2.size, (720, 504))
-            self.assertEqual(image2_scale2.format, "EPS")
+            assert image2_scale2.mode == "RGB"
+            assert image2_scale2.size == (720, 504)
+            assert image2_scale2.format == "EPS"
 
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, EpsImagePlugin.EpsImageFile, invalid_file)
+        with pytest.raises(SyntaxError):
+            EpsImagePlugin.EpsImageFile(invalid_file)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
         with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
 
-            self.assertEqual(cmyk_image.mode, "CMYK")
-            self.assertEqual(cmyk_image.size, (100, 100))
-            self.assertEqual(cmyk_image.format, "EPS")
+            assert cmyk_image.mode == "CMYK"
+            assert cmyk_image.size == (100, 100)
+            assert cmyk_image.format == "EPS"
 
             cmyk_image.load()
-            self.assertEqual(cmyk_image.mode, "RGB")
+            assert cmyk_image.mode == "RGB"
 
             if features.check("jpg"):
                 with Image.open("Tests/images/pil_sample_rgb.jpg") as target:
@@ -111,7 +113,8 @@ class TestFileEps(PillowTestCase):
     def test_image_mode_not_supported(self):
         im = hopper("RGBA")
         tmpfile = self.tempfile("temp.eps")
-        self.assertRaises(ValueError, im.save, tmpfile)
+        with pytest.raises(ValueError):
+            im.save(tmpfile)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     @skip_unless_feature("zlib")
@@ -162,7 +165,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(fn) as im:
                 new_size = (100, 100)
                 im = im.resize(new_size)
-                self.assertEqual(im.size, new_size)
+                assert im.size == new_size
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_thumbnail(self):
@@ -173,7 +176,7 @@ class TestFileEps(PillowTestCase):
             with Image.open(file1) as im:
                 new_size = (100, 100)
                 im.thumbnail(new_size)
-                self.assertEqual(max(im.size), max(new_size))
+                assert max(im.size) == max(new_size)
 
     def test_read_binary_preview(self):
         # Issue 302
@@ -185,10 +188,10 @@ class TestFileEps(PillowTestCase):
         ending = "Failure with line ending: %s" % (
             "".join("%s" % ord(s) for s in ending)
         )
-        self.assertEqual(t.readline().strip("\r\n"), "something", ending)
-        self.assertEqual(t.readline().strip("\r\n"), "else", ending)
-        self.assertEqual(t.readline().strip("\r\n"), "baz", ending)
-        self.assertEqual(t.readline().strip("\r\n"), "bif", ending)
+        assert t.readline().strip("\r\n") == "something", ending
+        assert t.readline().strip("\r\n") == "else", ending
+        assert t.readline().strip("\r\n") == "baz", ending
+        assert t.readline().strip("\r\n") == "bif", ending
 
     def _test_readline_io_psfile(self, test_string, ending):
         f = io.BytesIO(test_string.encode("latin-1"))
@@ -228,7 +231,7 @@ class TestFileEps(PillowTestCase):
         # Act / Assert
         for filename in FILES:
             with Image.open(filename) as img:
-                self.assertEqual(img.mode, "RGB")
+                assert img.mode == "RGB"
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_emptyline(self):
@@ -237,6 +240,6 @@ class TestFileEps(PillowTestCase):
 
         with Image.open(emptyline_file) as image:
             image.load()
-        self.assertEqual(image.mode, "RGB")
-        self.assertEqual(image.size, (460, 352))
-        self.assertEqual(image.format, "EPS")
+        assert image.mode == "RGB"
+        assert image.size == (460, 352)
+        assert image.format == "EPS"

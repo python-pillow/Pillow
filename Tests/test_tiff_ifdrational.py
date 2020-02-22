@@ -11,8 +11,8 @@ class Test_IFDRational(PillowTestCase):
 
         t = IFDRational(num, denom)
 
-        self.assertEqual(target, t)
-        self.assertEqual(t, target)
+        assert target == t
+        assert t == target
 
     def test_sanity(self):
 
@@ -33,13 +33,13 @@ class Test_IFDRational(PillowTestCase):
 
         xres = IFDRational(72)
         yres = IFDRational(72)
-        self.assertIsNotNone(xres._val)
-        self.assertIsNotNone(xres.numerator)
-        self.assertIsNotNone(xres.denominator)
-        self.assertIsNotNone(yres._val)
+        assert xres._val is not None
+        assert xres.numerator is not None
+        assert xres.denominator is not None
+        assert yres._val is not None
 
-        self.assertTrue(xres and 1)
-        self.assertTrue(xres and yres)
+        assert xres and 1
+        assert xres and yres
 
     def test_ifd_rational_save(self):
         methods = (True, False)
@@ -55,6 +55,4 @@ class Test_IFDRational(PillowTestCase):
             im.save(out, dpi=(res, res), compression="raw")
 
             with Image.open(out) as reloaded:
-                self.assertEqual(
-                    float(IFDRational(301, 1)), float(reloaded.tag_v2[282])
-                )
+                assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])

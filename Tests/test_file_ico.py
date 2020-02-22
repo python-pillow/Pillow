@@ -12,14 +12,15 @@ class TestFileIco(PillowTestCase):
     def test_sanity(self):
         with Image.open(TEST_ICO_FILE) as im:
             im.load()
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (16, 16))
-        self.assertEqual(im.format, "ICO")
-        self.assertEqual(im.get_format_mimetype(), "image/x-icon")
+        assert im.mode == "RGBA"
+        assert im.size == (16, 16)
+        assert im.format == "ICO"
+        assert im.get_format_mimetype() == "image/x-icon"
 
     def test_invalid_file(self):
         with open("Tests/images/flower.jpg", "rb") as fp:
-            self.assertRaises(SyntaxError, IcoImagePlugin.IcoImageFile, fp)
+            with pytest.raises(SyntaxError):
+                IcoImagePlugin.IcoImageFile(fp)
 
     def test_save_to_bytes(self):
         output = io.BytesIO()
@@ -29,11 +30,11 @@ class TestFileIco(PillowTestCase):
         # the default image
         output.seek(0)
         with Image.open(output) as reloaded:
-            self.assertEqual(reloaded.info["sizes"], {(32, 32), (64, 64)})
+            assert reloaded.info["sizes"] == {(32, 32), (64, 64)}
 
-            self.assertEqual(im.mode, reloaded.mode)
-            self.assertEqual((64, 64), reloaded.size)
-            self.assertEqual(reloaded.format, "ICO")
+            assert im.mode == reloaded.mode
+            assert (64, 64) == reloaded.size
+            assert reloaded.format == "ICO"
             assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
 
         # the other one
@@ -41,14 +42,14 @@ class TestFileIco(PillowTestCase):
         with Image.open(output) as reloaded:
             reloaded.size = (32, 32)
 
-            self.assertEqual(im.mode, reloaded.mode)
-            self.assertEqual((32, 32), reloaded.size)
-            self.assertEqual(reloaded.format, "ICO")
+            assert im.mode == reloaded.mode
+            assert (32, 32) == reloaded.size
+            assert reloaded.format == "ICO"
             assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
 
     def test_incorrect_size(self):
         with Image.open(TEST_ICO_FILE) as im:
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 im.size = (1, 1)
 
     def test_save_256x256(self):
@@ -62,7 +63,7 @@ class TestFileIco(PillowTestCase):
         with Image.open(outfile) as im_saved:
 
             # Assert
-            self.assertEqual(im_saved.size, (256, 256))
+            assert im_saved.size == (256, 256)
 
     def test_only_save_relevant_sizes(self):
         """Issue #2266 https://github.com/python-pillow/Pillow/issues/2266
@@ -77,16 +78,14 @@ class TestFileIco(PillowTestCase):
 
         with Image.open(outfile) as im_saved:
             # Assert
-            self.assertEqual(
-                im_saved.info["sizes"], {(16, 16), (24, 24), (32, 32), (48, 48)}
-            )
+            assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
     def test_unexpected_size(self):
         # This image has been manually hexedited to state that it is 16x32
         # while the image within is still 16x16
         def open():
             with Image.open("Tests/images/hopper_unexpected.ico") as im:
-                self.assertEqual(im.size, (16, 16))
+                assert im.size == (16, 16)
 
         pytest.warns(UserWarning, open)
 
