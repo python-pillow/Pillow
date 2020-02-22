@@ -228,9 +228,8 @@ class TestCffi(AccessTest):
                 assert access[(x, y)] == caccess[(x, y)]
 
         # Access an out-of-range pixel
-        self.assertRaises(
-            ValueError, lambda: access[(access.xsize + 1, access.ysize + 1)]
-        )
+        with pytest.raises(ValueError):
+            access[(access.xsize + 1, access.ysize + 1)]
 
     def test_get_vs_c(self):
         rgb = hopper("RGB")

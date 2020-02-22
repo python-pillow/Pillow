@@ -295,7 +295,9 @@ class TestFileLibTiff(LibTiffTestCase):
                             and libtiff
                         ):
                             # libtiff does not support real RATIONALS
-                            self.assertAlmostEqual(float(reloaded_value), float(value))
+                            assert (
+                                round(abs(float(reloaded_value) - float(value)), 7) == 0
+                            )
                             continue
 
                         if libtiff and isinstance(value, bytes):

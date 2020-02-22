@@ -26,7 +26,7 @@ class TestImagingLeaks(PillowTestCase):
                 mem_limit = mem + 1
                 continue
             msg = "memory usage limit exceeded after %d iterations" % (i + 1)
-            self.assertLessEqual(mem, mem_limit, msg)
+            assert mem <= mem_limit, msg
 
     def test_leak_putdata(self):
         im = Image.new("RGB", (25, 25))

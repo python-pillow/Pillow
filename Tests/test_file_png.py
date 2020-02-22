@@ -1,3 +1,4 @@
+import re
 import unittest
 import zlib
 from io import BytesIO
@@ -75,7 +76,7 @@ class TestFilePng(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegex(Image.core.zlib_version, r"\d+\.\d+\.\d+(\.\d+)?$")
+        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", Image.core.zlib_version)
 
         test_file = self.tempfile("temp.png")
 

@@ -42,37 +42,37 @@ class TestColorLut3DCoreAPI(PillowTestCase):
     def test_wrong_args(self):
         im = Image.new("RGB", (10, 10), 0)
 
-        with self.assertRaisesRegex(ValueError, "filter"):
+        with pytest.raises(ValueError, match="filter"):
             im.im.color_lut_3d("RGB", Image.CUBIC, *self.generate_identity_table(3, 3))
 
-        with self.assertRaisesRegex(ValueError, "image mode"):
+        with pytest.raises(ValueError, match="image mode"):
             im.im.color_lut_3d(
                 "wrong", Image.LINEAR, *self.generate_identity_table(3, 3)
             )
 
-        with self.assertRaisesRegex(ValueError, "table_channels"):
+        with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d("RGB", Image.LINEAR, *self.generate_identity_table(5, 3))
 
-        with self.assertRaisesRegex(ValueError, "table_channels"):
+        with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d("RGB", Image.LINEAR, *self.generate_identity_table(1, 3))
 
-        with self.assertRaisesRegex(ValueError, "table_channels"):
+        with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d("RGB", Image.LINEAR, *self.generate_identity_table(2, 3))
 
-        with self.assertRaisesRegex(ValueError, "Table size"):
+        with pytest.raises(ValueError, match="Table size"):
             im.im.color_lut_3d(
                 "RGB", Image.LINEAR, *self.generate_identity_table(3, (1, 3, 3))
             )
 
-        with self.assertRaisesRegex(ValueError, "Table size"):
+        with pytest.raises(ValueError, match="Table size"):
             im.im.color_lut_3d(
                 "RGB", Image.LINEAR, *self.generate_identity_table(3, (66, 3, 3))
             )
 
-        with self.assertRaisesRegex(ValueError, r"size1D \* size2D \* size3D"):
+        with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d("RGB", Image.LINEAR, 3, 2, 2, 2, [0, 0, 0] * 7)
 
-        with self.assertRaisesRegex(ValueError, r"size1D \* size2D \* size3D"):
+        with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d("RGB", Image.LINEAR, 3, 2, 2, 2, [0, 0, 0] * 9)
 
         with pytest.raises(TypeError):
@@ -105,25 +105,25 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         )
 
     def test_wrong_mode(self):
-        with self.assertRaisesRegex(ValueError, "wrong mode"):
+        with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("L", (10, 10), 0)
             im.im.color_lut_3d("RGB", Image.LINEAR, *self.generate_identity_table(3, 3))
 
-        with self.assertRaisesRegex(ValueError, "wrong mode"):
+        with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("RGB", (10, 10), 0)
             im.im.color_lut_3d("L", Image.LINEAR, *self.generate_identity_table(3, 3))
 
-        with self.assertRaisesRegex(ValueError, "wrong mode"):
+        with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("L", (10, 10), 0)
             im.im.color_lut_3d("L", Image.LINEAR, *self.generate_identity_table(3, 3))
 
-        with self.assertRaisesRegex(ValueError, "wrong mode"):
+        with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("RGB", (10, 10), 0)
             im.im.color_lut_3d(
                 "RGBA", Image.LINEAR, *self.generate_identity_table(3, 3)
             )
 
-        with self.assertRaisesRegex(ValueError, "wrong mode"):
+        with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("RGB", (10, 10), 0)
             im.im.color_lut_3d("RGB", Image.LINEAR, *self.generate_identity_table(4, 3))
 
@@ -273,31 +273,31 @@ class TestColorLut3DCoreAPI(PillowTestCase):
 
 class TestColorLut3DFilter(PillowTestCase):
     def test_wrong_args(self):
-        with self.assertRaisesRegex(ValueError, "should be either an integer"):
+        with pytest.raises(ValueError, match="should be either an integer"):
             ImageFilter.Color3DLUT("small", [1])
 
-        with self.assertRaisesRegex(ValueError, "should be either an integer"):
+        with pytest.raises(ValueError, match="should be either an integer"):
             ImageFilter.Color3DLUT((11, 11), [1])
 
-        with self.assertRaisesRegex(ValueError, r"in \[2, 65\] range"):
+        with pytest.raises(ValueError, match=r"in \[2, 65\] range"):
             ImageFilter.Color3DLUT((11, 11, 1), [1])
 
-        with self.assertRaisesRegex(ValueError, r"in \[2, 65\] range"):
+        with pytest.raises(ValueError, match=r"in \[2, 65\] range"):
             ImageFilter.Color3DLUT((11, 11, 66), [1])
 
-        with self.assertRaisesRegex(ValueError, "table should have .+ items"):
+        with pytest.raises(ValueError, match="table should have .+ items"):
             ImageFilter.Color3DLUT((3, 3, 3), [1, 1, 1])
 
-        with self.assertRaisesRegex(ValueError, "table should have .+ items"):
+        with pytest.raises(ValueError, match="table should have .+ items"):
             ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 2)
 
-        with self.assertRaisesRegex(ValueError, "should have a length of 4"):
+        with pytest.raises(ValueError, match="should have a length of 4"):
             ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 27, channels=4)
 
-        with self.assertRaisesRegex(ValueError, "should have a length of 3"):
+        with pytest.raises(ValueError, match="should have a length of 3"):
             ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8)
 
-        with self.assertRaisesRegex(ValueError, "Only 3 or 4 output"):
+        with pytest.raises(ValueError, match="Only 3 or 4 output"):
             ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8, channels=2)
 
     def test_convert_table(self):
@@ -320,7 +320,7 @@ class TestColorLut3DFilter(PillowTestCase):
     @unittest.skipIf(numpy is None, "Numpy is not installed")
     def test_numpy_sources(self):
         table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
-        with self.assertRaisesRegex(ValueError, "should have either channels"):
+        with pytest.raises(ValueError, match="should have either channels"):
             lut = ImageFilter.Color3DLUT((5, 6, 7), table)
 
         table = numpy.ones((7, 6, 5, 3), dtype=numpy.float16)
@@ -359,12 +359,12 @@ class TestColorLut3DFilter(PillowTestCase):
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float32)[:-1]
-        with self.assertRaisesRegex(ValueError, "should have table_channels"):
+        with pytest.raises(ValueError, match="should have table_channels"):
             im.filter(lut)
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
         lut.table = numpy.array(lut.table, dtype=numpy.float32).reshape((7 * 9 * 11), 3)
-        with self.assertRaisesRegex(ValueError, "should have table_channels"):
+        with pytest.raises(ValueError, match="should have table_channels"):
             im.filter(lut)
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
@@ -404,15 +404,15 @@ class TestColorLut3DFilter(PillowTestCase):
 
 class TestGenerateColorLut3D(PillowTestCase):
     def test_wrong_channels_count(self):
-        with self.assertRaisesRegex(ValueError, "3 or 4 output channels"):
+        with pytest.raises(ValueError, match="3 or 4 output channels"):
             ImageFilter.Color3DLUT.generate(
                 5, channels=2, callback=lambda r, g, b: (r, g, b)
             )
 
-        with self.assertRaisesRegex(ValueError, "should have either channels"):
+        with pytest.raises(ValueError, match="should have either channels"):
             ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b, r))
 
-        with self.assertRaisesRegex(ValueError, "should have either channels"):
+        with pytest.raises(ValueError, match="should have either channels"):
             ImageFilter.Color3DLUT.generate(
                 5, channels=4, callback=lambda r, g, b: (r, g, b)
             )
@@ -454,13 +454,13 @@ class TestTransformColorLut3D(PillowTestCase):
     def test_wrong_args(self):
         source = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
 
-        with self.assertRaisesRegex(ValueError, "Only 3 or 4 output"):
+        with pytest.raises(ValueError, match="Only 3 or 4 output"):
             source.transform(lambda r, g, b: (r, g, b), channels=8)
 
-        with self.assertRaisesRegex(ValueError, "should have either channels"):
+        with pytest.raises(ValueError, match="should have either channels"):
             source.transform(lambda r, g, b: (r, g, b), channels=4)
 
-        with self.assertRaisesRegex(ValueError, "should have either channels"):
+        with pytest.raises(ValueError, match="should have either channels"):
             source.transform(lambda r, g, b: (r, g, b, 1))
 
         with pytest.raises(TypeError):
