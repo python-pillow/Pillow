@@ -2240,19 +2240,15 @@ class Image:
         if x >= self.width and y >= self.height:
             return
 
-        def round_aspect(number):
-            if x / y >= aspect:
-                key = lambda n: abs(aspect - n / y)  # noqa: E731
-            else:
-                key = lambda n: abs(aspect - x / n)  # noqa: E731
+        def round_aspect(number, key):
             return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
         # preserve aspect ratio
         aspect = self.width / self.height
         if x / y >= aspect:
-            x = round_aspect(y * aspect)
+            x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
         else:
-            y = round_aspect(x / aspect)
+            y = round_aspect(x / aspect, key=lambda n: abs(aspect - x / n))
         size = (x, y)
 
         box = None
