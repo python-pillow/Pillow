@@ -1,13 +1,12 @@
-import unittest
 from contextlib import contextmanager
 
 import pytest
 from PIL import Image, ImageDraw
 
-from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
+from .helper import assert_image_equal, assert_image_similar, hopper
 
 
-class TestImagingResampleVulnerability(PillowTestCase):
+class TestImagingResampleVulnerability:
     # see https://github.com/python-pillow/Pillow/issues/1710
     def test_overflow(self):
         im = hopper("L")
@@ -43,7 +42,7 @@ class TestImagingResampleVulnerability(PillowTestCase):
         assert im.tobytes() != copy.tobytes()
 
 
-class TestImagingCoreResampleAccuracy(PillowTestCase):
+class TestImagingCoreResampleAccuracy:
     def make_case(self, mode, size, color):
         """Makes a sample image with two dark and two bright squares.
         For example:
@@ -219,7 +218,7 @@ class TestImagingCoreResampleAccuracy(PillowTestCase):
         assert_image_equal(im, ref)
 
 
-class CoreResampleConsistencyTest(PillowTestCase):
+class CoreResampleConsistencyTest:
     def make_case(self, mode, fill):
         im = Image.new(mode, (512, 9), fill)
         return im.resize((9, 512), Image.LANCZOS), im.load()[0, 0]
@@ -254,7 +253,7 @@ class CoreResampleConsistencyTest(PillowTestCase):
         self.run_case(self.make_case("F", 1.192093e-07))
 
 
-class CoreResampleAlphaCorrectTest(PillowTestCase):
+class CoreResampleAlphaCorrectTest:
     def make_levels_case(self, mode):
         i = Image.new(mode, (256, 16))
         px = i.load()
@@ -275,7 +274,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
                 len(used_colors), y
             )
 
-    @unittest.skip("current implementation isn't precise enough")
+    @pytest.mark.skip("Current implementation isn't precise enough")
     def test_levels_rgba(self):
         case = self.make_levels_case("RGBA")
         self.run_levels_case(case.resize((512, 32), Image.BOX))
@@ -284,7 +283,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
-    @unittest.skip("current implementation isn't precise enough")
+    @pytest.mark.skip("Current implementation isn't precise enough")
     def test_levels_la(self):
         case = self.make_levels_case("LA")
         self.run_levels_case(case.resize((512, 32), Image.BOX))
@@ -330,7 +329,7 @@ class CoreResampleAlphaCorrectTest(PillowTestCase):
         self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
-class CoreResamplePassesTest(PillowTestCase):
+class CoreResamplePassesTest:
     @contextmanager
     def count(self, diff):
         count = Image.core.get_stats()["new_count"]
@@ -373,7 +372,7 @@ class CoreResamplePassesTest(PillowTestCase):
         assert_image_similar(with_box, cropped, 0.1)
 
 
-class CoreResampleCoefficientsTest(PillowTestCase):
+class CoreResampleCoefficientsTest:
     def test_reduce(self):
         test_color = 254
 
@@ -402,7 +401,7 @@ class CoreResampleCoefficientsTest(PillowTestCase):
         assert histogram[0x100 * 3 + 0xFF] == 0x10000
 
 
-class CoreResampleBoxTest(PillowTestCase):
+class CoreResampleBoxTest:
     def test_wrong_arguments(self):
         im = hopper()
         for resample in (

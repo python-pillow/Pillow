@@ -1,10 +1,9 @@
-import unittest
 from array import array
 
 import pytest
 from PIL import Image, ImageFilter
 
-from .helper import PillowTestCase, assert_image_equal
+from .helper import assert_image_equal
 
 try:
     import numpy
@@ -12,7 +11,7 @@ except ImportError:
     numpy = None
 
 
-class TestColorLut3DCoreAPI(PillowTestCase):
+class TestColorLut3DCoreAPI:
     def generate_identity_table(self, channels, size):
         if isinstance(size, tuple):
             size1D, size2D, size3D = size
@@ -271,7 +270,7 @@ class TestColorLut3DCoreAPI(PillowTestCase):
         assert transformed[205, 205] == (255, 255, 0)
 
 
-class TestColorLut3DFilter(PillowTestCase):
+class TestColorLut3DFilter:
     def test_wrong_args(self):
         with pytest.raises(ValueError, match="should be either an integer"):
             ImageFilter.Color3DLUT("small", [1])
@@ -317,7 +316,7 @@ class TestColorLut3DFilter(PillowTestCase):
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.table == list(range(4)) * 8
 
-    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
     def test_numpy_sources(self):
         table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
         with pytest.raises(ValueError, match="should have either channels"):
@@ -350,7 +349,7 @@ class TestColorLut3DFilter(PillowTestCase):
         table[0] = 33
         assert lut.table[0] == 33
 
-    @unittest.skipIf(numpy is None, "Numpy is not installed")
+    @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
     def test_numpy_formats(self):
         g = Image.linear_gradient("L")
         im = Image.merge(
@@ -402,7 +401,7 @@ class TestColorLut3DFilter(PillowTestCase):
         )
 
 
-class TestGenerateColorLut3D(PillowTestCase):
+class TestGenerateColorLut3D:
     def test_wrong_channels_count(self):
         with pytest.raises(ValueError, match="3 or 4 output channels"):
             ImageFilter.Color3DLUT.generate(
@@ -450,7 +449,7 @@ class TestGenerateColorLut3D(PillowTestCase):
         assert im == im.filter(lut)
 
 
-class TestTransformColorLut3D(PillowTestCase):
+class TestTransformColorLut3D:
     def test_wrong_args(self):
         source = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
 
