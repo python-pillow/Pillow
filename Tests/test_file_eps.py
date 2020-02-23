@@ -216,7 +216,7 @@ def test_readline(tmp_path):
         _test_readline(t, ending)
 
     def _test_readline_file_psfile(test_string, ending):
-        f = str(tmp_path / "temp.bufr")
+        f = str(tmp_path / "temp.txt")
         with open(f, "wb") as w:
             w.write(test_string.encode("latin-1"))
 
