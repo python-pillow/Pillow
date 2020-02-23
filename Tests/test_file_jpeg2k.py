@@ -1,3 +1,4 @@
+import re
 from io import BytesIO
 
 import pytest
@@ -34,7 +35,7 @@ class TestFileJpeg2k(PillowTestCase):
 
     def test_sanity(self):
         # Internal version number
-        self.assertRegex(Image.core.jp2klib_version, r"\d+\.\d+\.\d+$")
+        assert re.search(r"\d+\.\d+\.\d+$", Image.core.jp2klib_version)
 
         with Image.open("Tests/images/test-card-lossless.jp2") as im:
             px = im.load()

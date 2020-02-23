@@ -49,7 +49,7 @@ class BenchCffiAccess(PillowTestCase):
         caccess = im.im.pixel_access(False)
         access = PyAccess.new(im, False)
 
-        self.assertEqual(caccess[(0, 0)], access[(0, 0)])
+        assert caccess[(0, 0)] == access[(0, 0)]
 
         print("Size: %sx%s" % im.size)
         timer(iterate_get, "PyAccess - get", im.size, access)

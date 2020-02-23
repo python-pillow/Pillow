@@ -2,13 +2,11 @@ import io
 import os
 import shutil
 import tempfile
-import unittest
 
 import pytest
 from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
 from .helper import (
-    PillowTestCase,
     assert_image_equal,
     assert_image_similar,
     assert_not_all_same,
@@ -17,7 +15,7 @@ from .helper import (
 )
 
 
-class TestImage(PillowTestCase):
+class TestImage:
     def test_image_modes_success(self):
         for mode in [
             "1",
@@ -109,7 +107,7 @@ class TestImage(PillowTestCase):
         with pytest.raises(ValueError):
             Image.open(io.StringIO())
 
-    def test_pathlib(self):
+    def test_pathlib(self, tmp_path):
         from PIL.Image import Path
 
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
@@ -120,13 +118,13 @@ class TestImage(PillowTestCase):
             assert im.mode == "RGB"
             assert im.size == (128, 128)
 
-            temp_file = self.tempfile("temp.jpg")
+            temp_file = str(tmp_path / "temp.jpg")
             if os.path.exists(temp_file):
                 os.remove(temp_file)
             im.save(Path(temp_file))
 
-    def test_fp_name(self):
-        temp_file = self.tempfile("temp.jpg")
+    def test_fp_name(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
             def write(a, b):
@@ -148,9 +146,9 @@ class TestImage(PillowTestCase):
             with Image.open(fp) as reloaded:
                 assert_image_similar(im, reloaded, 20)
 
-    def test_unknown_extension(self):
+    def test_unknown_extension(self, tmp_path):
         im = hopper()
-        temp_file = self.tempfile("temp.unknown")
+        temp_file = str(tmp_path / "temp.unknown")
         with pytest.raises(ValueError):
             im.save(temp_file)
 
@@ -164,25 +162,25 @@ class TestImage(PillowTestCase):
         im.paste(0, (0, 0, 100, 100))
         assert not im.readonly
 
-    @unittest.skipIf(is_win32(), "Test requires opening tempfile twice")
-    def test_readonly_save(self):
-        temp_file = self.tempfile("temp.bmp")
+    @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    def test_readonly_save(self, tmp_path):
+        temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
         with Image.open(temp_file) as im:
             assert im.readonly
             im.save(temp_file)
 
-    def test_dump(self):
+    def test_dump(self, tmp_path):
         im = Image.new("L", (10, 10))
-        im._dump(self.tempfile("temp_L.ppm"))
+        im._dump(str(tmp_path / "temp_L.ppm"))
 
         im = Image.new("RGB", (10, 10))
-        im._dump(self.tempfile("temp_RGB.ppm"))
+        im._dump(str(tmp_path / "temp_RGB.ppm"))
 
         im = Image.new("HSV", (10, 10))
         with pytest.raises(ValueError):
-            im._dump(self.tempfile("temp_HSV.ppm"))
+            im._dump(str(tmp_path / "temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self):
         # Arrange
@@ -434,8 +432,7 @@ class TestImage(PillowTestCase):
             assert_image_similar(im2, im3, 110)
 
     def test_check_size(self):
-        # Checking that the _check_size function throws value errors
-        # when we want it to.
+        # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):
             Image.new("RGB", 0)  # not a tuple
         with pytest.raises(ValueError):
@@ -587,11 +584,11 @@ class TestImage(PillowTestCase):
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_no_resource_warning_on_save(self):
+    def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = "Tests/images/hopper.png"
-        temp_file = self.tempfile("temp.jpg")
+        temp_file = str(tmp_path / "temp.jpg")
 
         # Act/Assert
         with Image.open(test_file) as im:
@@ -623,14 +620,14 @@ class TestImage(PillowTestCase):
             with Image.open(os.path.join("Tests/images", file)) as im:
                 try:
                     im.load()
-                    self.assertFail()
+                    assert False
                 except OSError as e:
                     assert str(e) == "buffer overrun when reading image file"
 
         with Image.open("Tests/images/fli_overrun2.bin") as im:
             try:
                 im.seek(1)
-                self.assertFail()
+                assert False
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
 
@@ -645,7 +642,7 @@ def mock_encode(*args):
     return encoder
 
 
-class TestRegistry(PillowTestCase):
+class TestRegistry:
     def test_encode_registry(self):
 
         Image.register_encoder("MOCK", mock_encode)
