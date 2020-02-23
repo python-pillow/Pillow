@@ -10,14 +10,12 @@ from .helper import (
     PillowTestCase,
     assert_image,
     assert_image_equal,
-    assert_image_similar,
     hopper,
     is_big_endian,
     is_win32,
     on_ci,
     skip_unless_feature,
 )
-
 
 # sample png stream
 

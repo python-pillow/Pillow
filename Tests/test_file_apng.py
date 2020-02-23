@@ -1,6 +1,5 @@
-from PIL import Image, ImageSequence, PngImagePlugin
-
 import pytest
+from PIL import Image, ImageSequence, PngImagePlugin
 
 from .helper import PillowTestCase
 
