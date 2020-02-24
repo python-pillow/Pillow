@@ -1,5 +1,6 @@
 import os
 import shutil
+import struct
 import subprocess
 import sys
 
@@ -176,6 +177,8 @@ deps = {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa E501
+                # freetype doesn't specify SDK version, MSBuild may guess incorrectly
+                '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa E501
             }
         },
         "build": [
@@ -389,8 +392,9 @@ def write_script(name, lines):
     print("Writing " + name)
     with open(name, "w") as f:
         f.write("\n\r".join(lines))
-    for line in lines:
-        print("    " + line)
+    if verbose:
+        for line in lines:
+            print("    " + line)
 
 
 def get_footer(dep):
@@ -438,6 +442,8 @@ def build_dep(name):
 def build_dep_all():
     lines = ["@echo on"]
     for dep_name in deps:
+        if dep_name in disabled:
+            continue
         lines.append(r'cmd.exe /c "{{build_dir}}\{}"'.format(build_dep(dep_name)))
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
     lines.append("@echo All Pillow dependencies built successfully!")
@@ -459,6 +465,28 @@ def build_pillow():
 
 
 if __name__ == "__main__":
+    verbose = False
+    disabled = []
+    for arg in sys.argv[1:]:
+        if arg == "-v":
+            verbose = True
+        elif arg == "--no-imagequant":
+            disabled += ["libimagequant"]
+        elif arg == "--no-raqm":
+            disabled += ["harfbuzz", "fribidi", "libraqm"]
+        elif arg.startswith("--depends="):
+            os.environ["PILLOW_DEPS"] = arg[10:]
+        elif arg.startswith("--python="):
+            os.environ["PYTHON"] = arg[9:]
+        elif arg.startswith("--executable="):
+            os.environ["EXECUTABLE"] = arg[13:]
+        elif arg.startswith("--architecture="):
+            os.environ["ARCHITECTURE"] = arg[15:]
+        elif arg.startswith("--dir="):
+            os.environ["PILLOW_BUILD"] = arg[6:]
+        else:
+            raise ValueError("Unknown parameter: " + arg)
+
     # winbuild directory
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -477,7 +505,7 @@ if __name__ == "__main__":
 
     # use ARCHITECTURE or PYTHON to select architecture
     architecture = os.environ.get(
-        "ARCHITECTURE", "x64" if "x64" in python_dir else "x86"
+        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
     )
     arch_prefs = architectures[architecture]
     print("Target Architecture:", architecture)
@@ -527,6 +555,8 @@ if __name__ == "__main__":
         # script header
         "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
+
+    print()
 
     build_dep_all()
     build_pillow()

@@ -23,18 +23,20 @@ Compilers
 
 Download and install:
 
-* `Microsoft Visual Studio 2017 or newer (with C++ component)
-  <https://visualstudio.microsoft.com/vs/older-downloads/>`_
+* `Microsoft Visual Studio 2017 or newer or Build Tools for Visual Studio 2017 or newer
+  <https://visualstudio.microsoft.com/downloads/>`_
+  (MSVC C++ build tools, and any Windows SDK version required)
 
-* `CMake 3.13 or newer
-  <https://cmake.org/download/>`_
+* `CMake 3.13 or newer <https://cmake.org/download/>`_
+  (also available as Visual Studio component C++ CMake tools for Windows)
 
 * `NASM <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
 Any version of Visual Studio 2017 or newer should be supported,
-including Visual Studio 2017 Community.
+including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
 
-Paths to CMake and NASM must be added to the ``PATH`` environment variable.
+Paths to CMake (if standalone) and NASM must be added to the ``PATH`` environment variable.
+Visual Studio is found automatically with ``vswhere.exe``.
 
 Build configuration
 -------------------
@@ -47,13 +49,24 @@ behaviour of ``build_prepare.py``:
   ``build_prepare.py`` will be used. If only ``PYTHON`` is set,
   ``EXECUTABLE`` defaults to ``python.exe``.
 * ``ARCHITECTURE`` is used to select a ``x86`` or ``x64`` build. By default,
-  ``x86`` is used, unless ``PYTHON`` contains ``x64``, in which case ``x64``
+  uses same architecture as the version of Python used to run ``build_prepare.py``.
   is used.
 * ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
   path, used to store generated build scripts and compiled libraries.
   **Warning:** This directory is wiped when ``build_prepare.py`` is run.
 * ``PILLOW_DEPS`` points to the directory used to store downloaded
   dependencies. By default ``winbuild\depends`` is used.
+
+``build_prepare.py`` also supports the following command line parameters:
+
+* ``-v`` will print generated scripts.
+* ``--no-imagequant`` will skip GPL-licensed ``libimagequant`` optional dependency
+* ``--no-raqm`` will skip optional dependency Raqm (which itself depends on
+  LGPL-licensed ``fribidi``).
+* ``--python=<path>`` and ``--executable=<exe>`` override ``PYTHON`` and ``EXECUTABLE``.
+* ``--architecture=<arch>`` overrides ``ARCHITECTURE``.
+* ``--dir=<path>`` and ``--depends=<path>`` override ``PILLOW_BUILD``
+  and ``PILLOW_DEPS``.
 
 Dependencies
 ------------
@@ -93,7 +106,7 @@ The following is a simplified version of the script used on AppVeyor:
 
     set PYTHON=C:\Python35\bin
     cd /D C:\Pillow\winbuild
-    C:\Python37\bin\python.exe build_prepare.py
+    C:\Python37\bin\python.exe build_prepare.py -v --depends=C:\pillow-depends
     build\build_dep_all.cmd
     build\build_pillow.cmd install
     cd ..

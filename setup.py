@@ -120,7 +120,7 @@ _LIB_IMAGING = (
     "codec_fd",
 )
 
-DEBUG = True
+DEBUG = False
 
 
 class DependencyException(Exception):

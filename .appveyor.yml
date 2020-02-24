@@ -48,8 +48,7 @@ install:
       }
       else
       {
-        $env:PILLOW_DEPS = "C:\pillow-depends\"
-        c:\python37\python.exe c:\pillow\winbuild\build_prepare.py
+        c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
       }

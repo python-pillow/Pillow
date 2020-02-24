@@ -66,12 +66,9 @@ jobs:
         ..\pillow-depends\gs950w32.exe /S
         Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.50\bin"
 
-        $env:PILLOW_DEPS = "$env:RUNNER_WORKSPACE\pillow-depends\"
         xcopy /s ..\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
 
-        $env:PYTHON=$env:pythonLocation
-        cd $env:GITHUB_WORKSPACE/winbuild/
-        & python.exe $env:GITHUB_WORKSPACE\winbuild\build_prepare.py
+        & python.exe $env:GITHUB_WORKSPACE\winbuild\build_prepare.py -v --depends=$env:RUNNER_WORKSPACE\pillow-depends\ --python=$env:pythonLocation
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo
