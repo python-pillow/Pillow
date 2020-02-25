@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Allow saving of zero quality JPEG images #4440
+  [radarhere]
+
 - Allow explicit zero width to hide outline #4334
   [radarhere]
 
