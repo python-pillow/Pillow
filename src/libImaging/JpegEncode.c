@@ -153,7 +153,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    int i;
 	    int quality = 100;
 	    int last_q = 0;
-	    if (context->quality > 0) {
+	    if (context->quality != -1) {
 		quality = context->quality;
 	    }
         for (i = 0; i < context->qtablesLen; i++) {
@@ -171,7 +171,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         for (i = last_q; i < context->cinfo.num_components; i++) {
             context->cinfo.comp_info[i].quant_tbl_no = last_q;
         }
-	} else if (context->quality > 0) {
+	} else if (context->quality != -1) {
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
 	}
 
