@@ -1,3 +1,5 @@
+import filecmp
+
 import pytest
 from PIL import Image, ImImagePlugin
 
@@ -13,6 +15,13 @@ def test_sanity():
         assert im.mode == "RGB"
         assert im.size == (128, 128)
         assert im.format == "IM"
+
+
+def test_name_limit(tmp_path):
+    out = str(tmp_path / ("name_limit_test" * 7 + ".im"))
+    with Image.open(TEST_IM) as im:
+        im.save(out)
+    assert filecmp.cmp(out, "Tests/images/hopper_long_name.im")
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
