@@ -26,6 +26,7 @@
 #
 
 
+import os
 import re
 
 from . import Image, ImageFile, ImagePalette
@@ -347,7 +348,14 @@ def _save(im, fp, filename):
 
     fp.write(("Image type: %s image\r\n" % image_type).encode("ascii"))
     if filename:
-        fp.write(("Name: %s\r\n" % filename).encode("ascii"))
+        # Each line must be 100 characters or less,
+        # or: SyntaxError("not an IM file")
+        # 8 characters are used for "Name: " and "\r\n"
+        # Keep just the filename, ditch the potentially overlong path
+        name, ext = os.path.splitext(os.path.basename(filename))
+        name = "".join([name[: 92 - len(ext)], ext])
+
+        fp.write(("Name: %s\r\n" % name).encode("ascii"))
     fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode("ascii"))
     fp.write(("File size (no of images): %d\r\n" % frames).encode("ascii"))
     if im.mode in ["P", "PA"]:
