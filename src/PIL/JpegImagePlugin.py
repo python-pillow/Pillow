@@ -616,17 +616,17 @@ def _save(im, fp, filename):
 
     dpi = [round(x) for x in info.get("dpi", (0, 0))]
 
-    quality = info.get("quality", 0)
+    quality = info.get("quality", -1)
     subsampling = info.get("subsampling", -1)
     qtables = info.get("qtables")
 
     if quality == "keep":
-        quality = 0
+        quality = -1
         subsampling = "keep"
         qtables = "keep"
     elif quality in presets:
         preset = presets[quality]
-        quality = 0
+        quality = -1
         subsampling = preset.get("subsampling", -1)
         qtables = preset.get("quantization")
     elif not isinstance(quality, int):
@@ -749,8 +749,8 @@ def _save(im, fp, filename):
         # CMYK can be bigger
         if im.mode == "CMYK":
             bufsize = 4 * im.size[0] * im.size[1]
-        # keep sets quality to 0, but the actual value may be high.
-        elif quality >= 95 or quality == 0:
+        # keep sets quality to -1, but the actual value may be high.
+        elif quality >= 95 or quality == -1:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]

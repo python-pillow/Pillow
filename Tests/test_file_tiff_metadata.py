@@ -65,9 +65,9 @@ class TestFileTiffMetadata(PillowTestCase):
             assert loaded.tag_v2[ImageDescription] == reloaded_textdata
 
             loaded_float = loaded.tag[tag_ids["RollAngle"]][0]
-            self.assertAlmostEqual(loaded_float, floatdata, places=5)
+            assert round(abs(loaded_float - floatdata), 5) == 0
             loaded_double = loaded.tag[tag_ids["YawAngle"]][0]
-            self.assertAlmostEqual(loaded_double, doubledata)
+            assert round(abs(loaded_double - doubledata), 7) == 0
 
         # check with 2 element ImageJMetaDataByteCounts, issue #2006
 

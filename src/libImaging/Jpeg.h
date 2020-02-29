@@ -67,7 +67,7 @@ typedef struct {
 
     /* CONFIGURATION */
 
-    /* Quality (1-100, 0 means default) */
+    /* Quality (0-100, -1 means default) */
     int quality;
 
     /* Progressive mode */

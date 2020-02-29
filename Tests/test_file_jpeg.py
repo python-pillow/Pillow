@@ -1,4 +1,5 @@
 import os
+import re
 from io import BytesIO
 
 import pytest
@@ -42,7 +43,7 @@ class TestFileJpeg(PillowTestCase):
     def test_sanity(self):
 
         # internal version number
-        self.assertRegex(Image.core.jpeglib_version, r"\d+\.\d+$")
+        assert re.search(r"\d+\.\d+$", Image.core.jpeglib_version)
 
         with Image.open(TEST_FILE) as im:
             im.load()
@@ -297,6 +298,10 @@ class TestFileJpeg(PillowTestCase):
         im2 = self.roundtrip(hopper(), quality=50)
         assert_image(im1, im2.mode, im2.size)
         assert im1.bytes >= im2.bytes
+
+        im3 = self.roundtrip(hopper(), quality=0)
+        assert_image(im1, im3.mode, im3.size)
+        self.assertGreater(im2.bytes, im3.bytes)
 
     def test_smooth(self):
         im1 = self.roundtrip(hopper())

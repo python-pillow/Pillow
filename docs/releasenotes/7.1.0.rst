@@ -4,6 +4,20 @@
 API Changes
 ===========
 
+Allow saving of zero quality JPEG images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If no quality was specified when saving a JPEG, Pillow internally used a value
+of zero to indicate that the default quality should be used. However, this
+removed the ability to actually save a JPEG with zero quality. This has now
+been resolved.
+
+.. code-block:: python
+
+    from PIL import Image
+    im = Image.open("hopper.jpg")
+    im.save("out.jpg", quality=0)
+
 Improved APNG support
 ^^^^^^^^^^^^^^^^^^^^^
 
