@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Fix Name field length when saving IM images #4424
+  [hugovk, radarhere]
+
 - Allow saving of zero quality JPEG images #4440
   [radarhere]
 
