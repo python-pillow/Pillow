@@ -297,13 +297,10 @@ jobs:
     - name: Build Docker Image
       run: |
         # & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
+        echo "This step takes about 20 minutes, please be patient..."
         docker build -m 2G -t python-pillow-build:latest winbuild\docker
-
-    - name: Create Docker Image
-      run: |
-        docker create --name PillowBuild -t python-pillow-build C:\Pillow\winbuild\docker\build.cmd
-        docker cp . PillowBuild:C:\Pillow
-        docker cp ..\pillow-depends PillowBuild:C:\pillow-depends
+      shell: pwsh
 
     - name: Run Docker
-      run: docker start PillowBuild -a
+      run: docker run --name PillowBuild -v ${env:GITHUB_WORKSPACE}:C:\Pillow -v ${env:RUNNER_WORKSPACE}\pillow-depends:C:\pillow-depends python-pillow-build C:\Pillow\winbuild\docker\build.cmd
+      shell: pwsh
