@@ -1,4 +1,4 @@
-7.0.0
+7.1.0
 -----
 
 Allow saving of zero quality JPEG images
