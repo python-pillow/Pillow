@@ -282,6 +282,19 @@ def is_win32():
     return sys.platform.startswith("win32")
 
 
+def is_win32_docker():
+    try:
+        import winreg
+
+        key = winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control"
+        )
+        winreg.QueryValueEx(key, "ContainerType")  # fails if not in Docker container
+        return True
+    except (ImportError, OSError):
+        return False
+
+
 def is_pypy():
     return hasattr(sys, "pypy_translation_info")
 
