@@ -2,13 +2,12 @@ import ctypes
 import os
 import subprocess
 import sys
-import unittest
 from distutils import ccompiler, sysconfig
 
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, assert_image_equal, hopper, is_win32, on_ci
+from .helper import assert_image_equal, hopper, is_win32, on_ci
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -22,7 +21,7 @@ else:
         cffi = None
 
 
-class AccessTest(PillowTestCase):
+class AccessTest:
     # initial value
     _init_cffi_access = Image.USE_CFFI_ACCESS
     _need_cffi_access = False
@@ -200,17 +199,17 @@ class TestImageGetPixel(AccessTest):
             assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
-@unittest.skipIf(cffi is None, "No cffi")
+@pytest.mark.skipif(cffi is None, reason="No CFFI")
 class TestCffiPutPixel(TestImagePutPixel):
     _need_cffi_access = True
 
 
-@unittest.skipIf(cffi is None, "No cffi")
+@pytest.mark.skipif(cffi is None, reason="No CFFI")
 class TestCffiGetPixel(TestImageGetPixel):
     _need_cffi_access = True
 
 
-@unittest.skipIf(cffi is None, "No cffi")
+@pytest.mark.skipif(cffi is None, reason="No CFFI")
 class TestCffi(AccessTest):
     _need_cffi_access = True
 
@@ -326,10 +325,11 @@ class TestCffi(AccessTest):
             assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
-class TestEmbeddable(unittest.TestCase):
-    @unittest.skipIf(
+class TestEmbeddable:
+    @pytest.mark.skipif(
         not is_win32() or on_ci(),
-        "Failing on AppVeyor / GitHub Actions when run from subprocess, not from shell",
+        reason="Failing on AppVeyor / GitHub Actions when run from subprocess, "
+        "not from shell",
     )
     def test_embeddable(self):
         with open("embed_pil.c", "w") as fh:

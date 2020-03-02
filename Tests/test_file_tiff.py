@@ -1,6 +1,5 @@
 import logging
 import os
-import unittest
 from io import BytesIO
 
 import pytest
@@ -8,7 +7,6 @@ from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
-    PillowTestCase,
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar,
@@ -21,10 +19,10 @@ from .helper import (
 logger = logging.getLogger(__name__)
 
 
-class TestFileTiff(PillowTestCase):
-    def test_sanity(self):
+class TestFileTiff:
+    def test_sanity(self, tmp_path):
 
-        filename = self.tempfile("temp.tif")
+        filename = str(tmp_path / "temp.tif")
 
         hopper("RGB").save(filename)
 
@@ -54,7 +52,7 @@ class TestFileTiff(PillowTestCase):
         with Image.open(filename):
             pass
 
-    @unittest.skipIf(is_pypy(), "Requires CPython")
+    @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self):
         def open():
             im = Image.open("Tests/images/multipage.tiff")
@@ -155,8 +153,8 @@ class TestFileTiff(PillowTestCase):
                 assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
                 assert im.info["dpi"] == (dpi[1], dpi[1])
 
-    def test_save_dpi_rounding(self):
-        outfile = self.tempfile("temp.tif")
+    def test_save_dpi_rounding(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
             for dpi in (72.2, 72.8):
                 im.save(outfile, dpi=(dpi, dpi))
@@ -190,14 +188,14 @@ class TestFileTiff(PillowTestCase):
             # Should not raise struct.error.
             pytest.warns(UserWarning, i._getexif)
 
-    def test_save_rgba(self):
+    def test_save_rgba(self, tmp_path):
         im = hopper("RGBA")
-        outfile = self.tempfile("temp.tif")
+        outfile = str(tmp_path / "temp.tif")
         im.save(outfile)
 
-    def test_save_unsupported_mode(self):
+    def test_save_unsupported_mode(self, tmp_path):
         im = hopper("HSV")
-        outfile = self.tempfile("temp.tif")
+        outfile = str(tmp_path / "temp.tif")
         with pytest.raises(IOError):
             im.save(outfile)
 
@@ -459,9 +457,9 @@ class TestFileTiff(PillowTestCase):
                         assert im2.mode == "L"
                         assert_image_equal(im, im2)
 
-    def test_with_underscores(self):
+    def test_with_underscores(self, tmp_path):
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
-        filename = self.tempfile("temp.tif")
+        filename = str(tmp_path / "temp.tif")
         hopper("RGB").save(filename, **kwargs)
         with Image.open(filename) as im:
 
@@ -473,14 +471,14 @@ class TestFileTiff(PillowTestCase):
             assert im.tag_v2[X_RESOLUTION] == 72
             assert im.tag_v2[Y_RESOLUTION] == 36
 
-    def test_roundtrip_tiff_uint16(self):
+    def test_roundtrip_tiff_uint16(self, tmp_path):
         # Test an image of all '0' values
         pixel_value = 0x1234
         infile = "Tests/images/uint16_1_4660.tif"
         with Image.open(infile) as im:
             assert im.getpixel((0, 0)) == pixel_value
 
-            tmpfile = self.tempfile("temp.tif")
+            tmpfile = str(tmp_path / "temp.tif")
             im.save(tmpfile)
 
             with Image.open(tmpfile) as reloaded:
@@ -512,12 +510,15 @@ class TestFileTiff(PillowTestCase):
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
-    def test_palette(self):
-        for mode in ["P", "PA"]:
-            outfile = self.tempfile("temp.tif")
+    def test_palette(self, tmp_path):
+        def roundtrip(mode):
+            outfile = str(tmp_path / "temp.tif")
 
             im = hopper(mode)
             im.save(outfile)
+
+            for mode in ["P", "PA"]:
+                roundtrip(mode)
 
             with Image.open(outfile) as reloaded:
                 assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
@@ -552,7 +553,7 @@ class TestFileTiff(PillowTestCase):
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
 
-    def test_saving_icc_profile(self):
+    def test_saving_icc_profile(self, tmp_path):
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
         # as libtiff does not support embedded ICC profiles,
@@ -561,14 +562,14 @@ class TestFileTiff(PillowTestCase):
         im.info["icc_profile"] = "Dummy value"
 
         # Try save-load round trip to make sure both handle icc_profile.
-        tmpfile = self.tempfile("temp.tif")
+        tmpfile = str(tmp_path / "temp.tif")
         im.save(tmpfile, "TIFF", compression="raw")
         with Image.open(tmpfile) as reloaded:
             assert b"Dummy value" == reloaded.info["icc_profile"]
 
-    def test_close_on_load_exclusive(self):
+    def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
-        tmpfile = self.tempfile("temp.tif")
+        tmpfile = str(tmp_path / "temp.tif")
 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
@@ -579,8 +580,8 @@ class TestFileTiff(PillowTestCase):
         im.load()
         assert fp.closed
 
-    def test_close_on_load_nonexclusive(self):
-        tmpfile = self.tempfile("temp.tif")
+    def test_close_on_load_nonexclusive(self, tmp_path):
+        tmpfile = str(tmp_path / "temp.tif")
 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
@@ -601,10 +602,10 @@ class TestFileTiff(PillowTestCase):
             Image.open("Tests/images/string_dimension.tiff")
 
 
-@unittest.skipUnless(is_win32(), "Windows only")
-class TestFileTiffW32(PillowTestCase):
-    def test_fd_leak(self):
-        tmpfile = self.tempfile("temp.tif")
+@pytest.mark.skipif(not is_win32(), reason="Windows only")
+class TestFileTiffW32:
+    def test_fd_leak(self, tmp_path):
+        tmpfile = str(tmp_path / "temp.tif")
 
         # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
