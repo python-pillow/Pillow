@@ -908,7 +908,7 @@ font_render(FontObject* self, PyObject* args)
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
     static PyObject*
-    font_getvarnames(FontObject* self, PyObject* args)
+    font_getvarnames(FontObject* self)
     {
         int error;
         FT_UInt i, j, num_namedstyles, name_count;
@@ -947,7 +947,7 @@ font_render(FontObject* self, PyObject* args)
     }
 
     static PyObject*
-    font_getvaraxes(FontObject* self, PyObject* args)
+    font_getvaraxes(FontObject* self)
     {
         int error;
         FT_UInt i, j, num_axis, name_count;
@@ -1077,8 +1077,8 @@ static PyMethodDef font_methods[] = {
 #if FREETYPE_MAJOR > 2 ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
-    {"getvarnames", (PyCFunction) font_getvarnames, METH_VARARGS },
-    {"getvaraxes", (PyCFunction) font_getvaraxes, METH_VARARGS },
+    {"getvarnames", (PyCFunction) font_getvarnames, METH_NOARGS },
+    {"getvaraxes", (PyCFunction) font_getvaraxes, METH_NOARGS },
     {"setvarname", (PyCFunction) font_setvarname, METH_VARARGS},
     {"setvaraxes", (PyCFunction) font_setvaraxes, METH_VARARGS},
 #endif
