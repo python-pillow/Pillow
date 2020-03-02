@@ -165,14 +165,26 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 15:
 	    /* FLI BRUN chunk */
+	    /* data = ptr + 6 */
 	    for (y = 0; y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
 		data += 1; /* ignore packetcount byte */
 		for (x = 0; x < state->xsize; x += i) {
+		    if (data + 2 > ptr + bytes ) {
+			/* Out of Bounds Read issue, guaranteed to try to read 2 from data */
+			state->errcode = IMAGING_CODEC_OVERRUN;
+			return -1;
+		    }
 		    if (data[0] & 0x80) {
 			i = 256 - data[0];
-			if (x + i > state->xsize)
+			if (x + i > state->xsize) {
 			    break; /* safety first */
+			}
+			if (data + i + 1 > ptr + bytes ) {
+			    /* Out of Bounds Read issue */
+			    state->errcode = IMAGING_CODEC_OVERRUN;
+			    return -1;
+			}
 			memcpy(out + x, data + 1, i);
 			data += i + 1;
 		    } else {
