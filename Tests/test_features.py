@@ -44,6 +44,13 @@ def test_check_modules():
         assert features.check_codec(feature) in [True, False]
 
 
+def test_check_warns_on_nonexistent():
+    with pytest.warns(UserWarning) as cm:
+        has_feature = features.check("typo")
+    assert has_feature is False
+    assert str(cm[-1].message) == "Unknown feature 'typo'."
+
+
 def test_supported_modules():
     assert isinstance(features.get_supported_modules(), list)
     assert isinstance(features.get_supported_codecs(), list)

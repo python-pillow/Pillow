@@ -1,6 +1,7 @@
 import collections
 import os
 import sys
+import warnings
 
 import PIL
 
@@ -76,14 +77,14 @@ def get_supported_features():
 
 
 def check(feature):
-    return (
-        feature in modules
-        and check_module(feature)
-        or feature in codecs
-        and check_codec(feature)
-        or feature in features
-        and check_feature(feature)
-    )
+    if feature in modules:
+        return check_module(feature)
+    if feature in codecs:
+        return check_codec(feature)
+    if feature in features:
+        return check_feature(feature)
+    warnings.warn("Unknown feature '%s'." % feature, stacklevel=2)
+    return False
 
 
 def get_supported():
