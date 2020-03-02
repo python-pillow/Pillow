@@ -3,56 +3,58 @@ from fractions import Fraction
 from PIL import Image, TiffImagePlugin, features
 from PIL.TiffImagePlugin import IFDRational
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 
-class Test_IFDRational(PillowTestCase):
-    def _test_equal(self, num, denom, target):
+def _test_equal(num, denom, target):
 
-        t = IFDRational(num, denom)
+    t = IFDRational(num, denom)
 
-        assert target == t
-        assert t == target
+    assert target == t
+    assert t == target
 
-    def test_sanity(self):
 
-        self._test_equal(1, 1, 1)
-        self._test_equal(1, 1, Fraction(1, 1))
+def test_sanity():
 
-        self._test_equal(2, 2, 1)
-        self._test_equal(1.0, 1, Fraction(1, 1))
+    _test_equal(1, 1, 1)
+    _test_equal(1, 1, Fraction(1, 1))
 
-        self._test_equal(Fraction(1, 1), 1, Fraction(1, 1))
-        self._test_equal(IFDRational(1, 1), 1, 1)
+    _test_equal(2, 2, 1)
+    _test_equal(1.0, 1, Fraction(1, 1))
 
-        self._test_equal(1, 2, Fraction(1, 2))
-        self._test_equal(1, 2, IFDRational(1, 2))
+    _test_equal(Fraction(1, 1), 1, Fraction(1, 1))
+    _test_equal(IFDRational(1, 1), 1, 1)
 
-    def test_nonetype(self):
-        # Fails if the _delegate function doesn't return a valid function
+    _test_equal(1, 2, Fraction(1, 2))
+    _test_equal(1, 2, IFDRational(1, 2))
 
-        xres = IFDRational(72)
-        yres = IFDRational(72)
-        assert xres._val is not None
-        assert xres.numerator is not None
-        assert xres.denominator is not None
-        assert yres._val is not None
 
-        assert xres and 1
-        assert xres and yres
+def test_nonetype():
+    # Fails if the _delegate function doesn't return a valid function
 
-    def test_ifd_rational_save(self):
-        methods = (True, False)
-        if not features.check("libtiff"):
-            methods = (False,)
+    xres = IFDRational(72)
+    yres = IFDRational(72)
+    assert xres._val is not None
+    assert xres.numerator is not None
+    assert xres.denominator is not None
+    assert yres._val is not None
 
-        for libtiff in methods:
-            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+    assert xres and 1
+    assert xres and yres
 
-            im = hopper()
-            out = self.tempfile("temp.tiff")
-            res = IFDRational(301, 1)
-            im.save(out, dpi=(res, res), compression="raw")
 
-            with Image.open(out) as reloaded:
-                assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
+def test_ifd_rational_save(tmp_path):
+    methods = (True, False)
+    if not features.check("libtiff"):
+        methods = (False,)
+
+    for libtiff in methods:
+        TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+        im = hopper()
+        out = str(tmp_path / "temp.tiff")
+        res = IFDRational(301, 1)
+        im.save(out, dpi=(res, res), compression="raw")
+
+        with Image.open(out) as reloaded:
+            assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
