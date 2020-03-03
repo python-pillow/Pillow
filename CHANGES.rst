@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Warn if an unknown feature is passed to features.check() #4438
+  [jdufresne]
+
 - Fix Name field length when saving IM images #4424
   [hugovk, radarhere]
 
