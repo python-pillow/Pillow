@@ -27,11 +27,11 @@ class AccessTest:
     _need_cffi_access = False
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         Image.USE_CFFI_ACCESS = cls._need_cffi_access
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         Image.USE_CFFI_ACCESS = cls._init_cffi_access
 
 
