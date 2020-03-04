@@ -517,11 +517,11 @@ class TestFileTiff:
             im = hopper(mode)
             im.save(outfile)
 
-            for mode in ["P", "PA"]:
-                roundtrip(mode)
-
             with Image.open(outfile) as reloaded:
                 assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+
+        for mode in ["P", "PA"]:
+            roundtrip(mode)
 
     def test_tiff_save_all(self):
         mp = BytesIO()
