@@ -10,7 +10,6 @@ import pytest
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags
 
 from .helper import (
-    PillowTestCase,
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar,
@@ -23,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 @skip_unless_feature("libtiff")
-class LibTiffTestCase(PillowTestCase):
-    def _assert_noerr(self, im):
+class LibTiffTestCase:
+    def _assert_noerr(self, tmp_path, im):
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -40,7 +39,7 @@ class LibTiffTestCase(PillowTestCase):
             print(dir(im))
 
         # can we write it back out, in a different form.
-        out = self.tempfile("temp.png")
+        out = str(tmp_path / "temp.png")
         im.save(out)
 
         out_bytes = io.BytesIO()
@@ -48,29 +47,29 @@ class LibTiffTestCase(PillowTestCase):
 
 
 class TestFileLibTiff(LibTiffTestCase):
-    def test_g4_tiff(self):
+    def test_g4_tiff(self, tmp_path):
         """Test the ordinary file path load path"""
 
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as im:
             assert im.size == (500, 500)
-            self._assert_noerr(im)
+            self._assert_noerr(tmp_path, im)
 
-    def test_g4_large(self):
+    def test_g4_large(self, tmp_path):
         test_file = "Tests/images/pport_g4.tif"
         with Image.open(test_file) as im:
-            self._assert_noerr(im)
+            self._assert_noerr(tmp_path, im)
 
-    def test_g4_tiff_file(self):
+    def test_g4_tiff_file(self, tmp_path):
         """Testing the string load path"""
 
         test_file = "Tests/images/hopper_g4_500.tif"
         with open(test_file, "rb") as f:
             with Image.open(f) as im:
                 assert im.size == (500, 500)
-                self._assert_noerr(im)
+                self._assert_noerr(tmp_path, im)
 
-    def test_g4_tiff_bytesio(self):
+    def test_g4_tiff_bytesio(self, tmp_path):
         """Testing the stringio loading code path"""
         test_file = "Tests/images/hopper_g4_500.tif"
         s = io.BytesIO()
@@ -79,9 +78,9 @@ class TestFileLibTiff(LibTiffTestCase):
             s.seek(0)
         with Image.open(s) as im:
             assert im.size == (500, 500)
-            self._assert_noerr(im)
+            self._assert_noerr(tmp_path, im)
 
-    def test_g4_non_disk_file_object(self):
+    def test_g4_non_disk_file_object(self, tmp_path):
         """Testing loading from non-disk non-BytesIO file object"""
         test_file = "Tests/images/hopper_g4_500.tif"
         s = io.BytesIO()
@@ -91,7 +90,7 @@ class TestFileLibTiff(LibTiffTestCase):
         r = io.BufferedReader(s)
         with Image.open(r) as im:
             assert im.size == (500, 500)
-            self._assert_noerr(im)
+            self._assert_noerr(tmp_path, im)
 
     def test_g4_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
@@ -106,18 +105,18 @@ class TestFileLibTiff(LibTiffTestCase):
             with Image.open("Tests/images/g4-fillorder-test.tif") as g4:
                 assert_image_equal(g4, png)
 
-    def test_g4_write(self):
+    def test_g4_write(self, tmp_path):
         """Checking to see that the saved image is the same as what we wrote"""
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
             rot = orig.transpose(Image.ROTATE_90)
             assert rot.size == (500, 500)
             rot.save(out)
 
             with Image.open(out) as reread:
                 assert reread.size == (500, 500)
-                self._assert_noerr(reread)
+                self._assert_noerr(tmp_path, reread)
                 assert_image_equal(reread, rot)
                 assert reread.info["compression"] == "group4"
 
@@ -135,10 +134,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
-    def test_write_metadata(self):
+    def test_write_metadata(self, tmp_path):
         """ Test metadata writing through libtiff """
         for legacy_api in [False, True]:
-            f = self.tempfile("temp.tiff")
+            f = str(tmp_path / "temp.tiff")
             with Image.open("Tests/images/hopper_g4.tif") as img:
                 img.save(f, tiffinfo=img.tag)
 
@@ -183,7 +182,7 @@ class TestFileLibTiff(LibTiffTestCase):
             for field in requested_fields:
                 assert field in reloaded, "%s not in metadata" % field
 
-    def test_additional_metadata(self):
+    def test_additional_metadata(self, tmp_path):
         # these should not crash. Seriously dummy data, most of it doesn't make
         # any sense, so we're running up against limits where we're asking
         # libtiff to do stupid things.
@@ -232,14 +231,14 @@ class TestFileLibTiff(LibTiffTestCase):
             # Extra samples really doesn't make sense in this application.
             del new_ifd[338]
 
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
             TiffImagePlugin.WRITE_LIBTIFF = True
 
             im.save(out, tiffinfo=new_ifd)
 
         TiffImagePlugin.WRITE_LIBTIFF = False
 
-    def test_custom_metadata(self):
+    def test_custom_metadata(self, tmp_path):
         tc = namedtuple("test_case", "value,type,supported_by_default")
         custom = {
             37000 + k: v
@@ -284,7 +283,7 @@ class TestFileLibTiff(LibTiffTestCase):
             def check_tags(tiffinfo):
                 im = hopper()
 
-                out = self.tempfile("temp.tif")
+                out = str(tmp_path / "temp.tif")
                 im.save(out, tiffinfo=tiffinfo)
 
                 with Image.open(out) as reloaded:
@@ -323,26 +322,26 @@ class TestFileLibTiff(LibTiffTestCase):
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
 
-    def test_int_dpi(self):
+    def test_int_dpi(self, tmp_path):
         # issue #1765
         im = hopper("RGB")
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
         TiffImagePlugin.WRITE_LIBTIFF = True
         im.save(out, dpi=(72, 72))
         TiffImagePlugin.WRITE_LIBTIFF = False
         with Image.open(out) as reloaded:
             assert reloaded.info["dpi"] == (72.0, 72.0)
 
-    def test_g3_compression(self):
+    def test_g3_compression(self, tmp_path):
         with Image.open("Tests/images/hopper_g4_500.tif") as i:
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
             i.save(out, compression="group3")
 
             with Image.open(out) as reread:
                 assert reread.info["compression"] == "group3"
                 assert_image_equal(reread, i)
 
-    def test_little_endian(self):
+    def test_little_endian(self, tmp_path):
         with Image.open("Tests/images/16bit.deflate.tif") as im:
             assert im.getpixel((0, 0)) == 480
             assert im.mode == "I;16"
@@ -352,7 +351,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert b[0] == ord(b"\xe0")
             assert b[1] == ord(b"\x01")
 
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
             # out = "temp.le.tif"
             im.save(out)
         with Image.open(out) as reread:
@@ -361,7 +360,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # UNDONE - libtiff defaults to writing in native endian, so
         # on big endian, we'll get back mode = 'I;16B' here.
 
-    def test_big_endian(self):
+    def test_big_endian(self, tmp_path):
         with Image.open("Tests/images/16bit.MM.deflate.tif") as im:
             assert im.getpixel((0, 0)) == 480
             assert im.mode == "I;16B"
@@ -372,17 +371,17 @@ class TestFileLibTiff(LibTiffTestCase):
             assert b[0] == ord(b"\x01")
             assert b[1] == ord(b"\xe0")
 
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
             im.save(out)
             with Image.open(out) as reread:
                 assert reread.info["compression"] == im.info["compression"]
                 assert reread.getpixel((0, 0)) == 480
 
-    def test_g4_string_info(self):
+    def test_g4_string_info(self, tmp_path):
         """Tests String data in info directory"""
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
 
             orig.tag[269] = "temp.tif"
             orig.save(out)
@@ -406,10 +405,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/12in16bit.tif")
 
-    def test_blur(self):
+    def test_blur(self, tmp_path):
         # test case from irc, how to do blur on b/w image
         # and save to compressed tif.
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/pport_g4.tif") as im:
             im = im.convert("L")
 
@@ -421,11 +420,11 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal(im, im2)
 
-    def test_compressions(self):
+    def test_compressions(self, tmp_path):
         # Test various tiff compressions and assert similar image content but reduced
         # file sizes.
         im = hopper("RGB")
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
         im.save(out)
         size_raw = os.path.getsize(out)
 
@@ -449,9 +448,9 @@ class TestFileLibTiff(LibTiffTestCase):
         assert size_compressed > size_jpeg
         assert size_jpeg > size_jpeg_30
 
-    def test_quality(self):
+    def test_quality(self, tmp_path):
         im = hopper("RGB")
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
 
         with pytest.raises(ValueError):
             im.save(out, compression="tiff_lzw", quality=50)
@@ -464,21 +463,21 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="jpeg", quality=0)
         im.save(out, compression="jpeg", quality=100)
 
-    def test_cmyk_save(self):
+    def test_cmyk_save(self, tmp_path):
         im = hopper("CMYK")
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
 
         im.save(out, compression="tiff_adobe_deflate")
         with Image.open(out) as im2:
             assert_image_equal(im, im2)
 
-    def xtest_bw_compression_w_rgb(self):
+    def xtest_bw_compression_w_rgb(self, tmp_path):
         """ This test passes, but when running all tests causes a failure due
             to output on stderr from the error thrown by libtiff. We need to
             capture that but not now"""
 
         im = hopper("RGB")
-        out = self.tempfile("temp.tif")
+        out = str(tmp_path / "temp.tif")
 
         with pytest.raises(IOError):
             im.save(out, compression="tiff_ccitt")
@@ -619,22 +618,22 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
 
-    def test_crashing_metadata(self):
+    def test_crashing_metadata(self, tmp_path):
         # issue 1597
         with Image.open("Tests/images/rdf.tif") as im:
-            out = self.tempfile("temp.tif")
+            out = str(tmp_path / "temp.tif")
 
             TiffImagePlugin.WRITE_LIBTIFF = True
             # this shouldn't crash
             im.save(out, format="TIFF")
         TiffImagePlugin.WRITE_LIBTIFF = False
 
-    def test_page_number_x_0(self):
+    def test_page_number_x_0(self, tmp_path):
         # Issue 973
         # Test TIFF with tag 297 (Page Number) having value of 0 0.
         # The first number is the current page number.
         # The second is the total number of pages, zero means not available.
-        outfile = self.tempfile("temp.tif")
+        outfile = str(tmp_path / "temp.tif")
         # Created by printing a page in Chrome to PDF, then:
         # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
         # -dNOPAUSE /tmp/test.pdf -c quit
@@ -643,10 +642,10 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not divide by zero
             im.save(outfile)
 
-    def test_fd_duplication(self):
+    def test_fd_duplication(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/1651
 
-        tmpfile = self.tempfile("temp.tif")
+        tmpfile = str(tmp_path / "temp.tif")
         with open(tmpfile, "wb") as f:
             with open("Tests/images/g4-multi.tiff", "rb") as src:
                 f.write(src.read())
@@ -685,9 +684,9 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.size == (10, 10)
             im.load()
 
-    def test_save_tiff_with_jpegtables(self):
+    def test_save_tiff_with_jpegtables(self, tmp_path):
         # Arrange
-        outfile = self.tempfile("temp.tif")
+        outfile = str(tmp_path / "temp.tif")
 
         # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
         # Contains JPEGTables (347) tag

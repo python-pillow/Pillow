@@ -1,11 +1,10 @@
-import unittest
-
+import pytest
 from PIL import ImageWin
 
-from .helper import PillowTestCase, hopper, is_win32
+from .helper import hopper, is_win32
 
 
-class TestImageWin(PillowTestCase):
+class TestImageWin:
     def test_sanity(self):
         dir(ImageWin)
 
@@ -32,8 +31,8 @@ class TestImageWin(PillowTestCase):
         assert wnd2 == 50
 
 
-@unittest.skipUnless(is_win32(), "Windows only")
-class TestImageWinDib(PillowTestCase):
+@pytest.mark.skipif(not is_win32(), reason="Windows only")
+class TestImageWinDib:
     def test_dib_image(self):
         # Arrange
         im = hopper()

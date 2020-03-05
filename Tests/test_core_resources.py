@@ -1,10 +1,9 @@
 import sys
-import unittest
 
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, is_pypy
+from .helper import is_pypy
 
 
 def test_get_stats():
@@ -32,8 +31,8 @@ def test_reset_stats():
     assert stats["blocks_cached"] == 0
 
 
-class TestCoreMemory(PillowTestCase):
-    def tearDown(self):
+class TestCoreMemory:
+    def teardown_method(self):
         # Restore default values
         Image.core.set_alignment(1)
         Image.core.set_block_size(1024 * 1024)
@@ -114,7 +113,7 @@ class TestCoreMemory(PillowTestCase):
             with pytest.raises(ValueError):
                 Image.core.set_blocks_max(2 ** 29)
 
-    @unittest.skipIf(is_pypy(), "images are not collected")
+    @pytest.mark.skipif(is_pypy(), reason="Images not collected")
     def test_set_blocks_max_stats(self):
         Image.core.reset_stats()
         Image.core.set_blocks_max(128)
@@ -129,7 +128,7 @@ class TestCoreMemory(PillowTestCase):
         assert stats["freed_blocks"] == 0
         assert stats["blocks_cached"] == 64
 
-    @unittest.skipIf(is_pypy(), "images are not collected")
+    @pytest.mark.skipif(is_pypy(), reason="Images not collected")
     def test_clear_cache_stats(self):
         Image.core.reset_stats()
         Image.core.clear_cache()
@@ -163,8 +162,8 @@ class TestCoreMemory(PillowTestCase):
             assert stats["freed_blocks"] >= 16
 
 
-class TestEnvVars(PillowTestCase):
-    def tearDown(self):
+class TestEnvVars:
+    def teardown_method(self):
         # Restore default values
         Image.core.set_alignment(1)
         Image.core.set_block_size(1024 * 1024)

@@ -5,7 +5,6 @@ Helper functions.
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -192,21 +191,9 @@ class PillowTestCase(unittest.TestCase):
         self.addCleanup(self.delete_tempfile, path)
         return path
 
-    def open_withImagemagick(self, f):
-        if not imagemagick_available():
-            raise OSError()
 
-        outfile = self.tempfile("temp.png")
-        rc = subprocess.call(
-            [IMCONVERT, f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-        )
-        if rc:
-            raise OSError
-        return Image.open(outfile)
-
-
-@unittest.skipIf(sys.platform.startswith("win32"), "requires Unix or macOS")
-class PillowLeakTestCase(PillowTestCase):
+@pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
+class PillowLeakTestCase:
     # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
