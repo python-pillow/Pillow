@@ -140,7 +140,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 12:
 	    /* FLI LC chunk (byte delta) */
-	    /* OOB Check ok, we have 10 bytes here */
+	    /* OOB Check ok, we have 4 bytes min here */
 	    y = I16(data); ymax = y + I16(data+2); data += 4;
 	    for (; y < ymax && y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
@@ -180,19 +180,17 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 15:
 	    /* FLI BRUN chunk */
-	    /* data = ptr + 6 */
+	    /* OOB, ok, we've got 4 bytes min on entry */
 	    for (y = 0; y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
 		data += 1; /* ignore packetcount byte */
 		for (x = 0; x < state->xsize; x += i) {
-		    /* Out of Bounds Read issue, guaranteed to try to read 2 from data */
 		    ERR_IF_DATA_OOB(2)
 		    if (data[0] & 0x80) {
 			i = 256 - data[0];
 			if (x + i > state->xsize) {
 			    break; /* safety first */
 			}
-			/* Out of Bounds read issue */
 			ERR_IF_DATA_OOB(i+1)
 			memcpy(out + x, data + 1, i);
 			data += i + 1;
