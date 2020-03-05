@@ -24,7 +24,12 @@
 #define	I32(ptr)\
     ((ptr)[0] + ((ptr)[1] << 8) + ((ptr)[2] << 16) + ((ptr)[3] << 24))
 
-
+#define ERR_IF_DATA_OOB(offset) \
+  if ((data + (offset)) > ptr + bytes) {\
+    state->errcode = IMAGING_CODEC_OVERRUN; \
+    return -1; \
+  }
+    
 int
 ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
@@ -170,21 +175,15 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 		UINT8* out = (UINT8*) im->image[y];
 		data += 1; /* ignore packetcount byte */
 		for (x = 0; x < state->xsize; x += i) {
-		    if (data + 2 > ptr + bytes ) {
-			/* Out of Bounds Read issue, guaranteed to try to read 2 from data */
-			state->errcode = IMAGING_CODEC_OVERRUN;
-			return -1;
-		    }
+		    /* Out of Bounds Read issue, guaranteed to try to read 2 from data */
+		    ERR_IF_DATA_OOB(2)
 		    if (data[0] & 0x80) {
 			i = 256 - data[0];
 			if (x + i > state->xsize) {
 			    break; /* safety first */
 			}
-			if (data + i + 1 > ptr + bytes ) {
-			    /* Out of Bounds Read issue */
-			    state->errcode = IMAGING_CODEC_OVERRUN;
-			    return -1;
-			}
+			/* Out of Bounds read issue */
+			ERR_IF_DATA_OOB(i+1)
 			memcpy(out + x, data + 1, i);
 			data += i + 1;
 		    } else {
