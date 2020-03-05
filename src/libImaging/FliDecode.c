@@ -86,7 +86,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    /* OOB ok, we've got 4 bytes min on entry */
 	    lines = I16(data); data += 2;
 	    for (l = y = 0; l < lines && y < state->ysize; l++, y++) {
-		UINT8* buf = (UINT8*) im->image[y];
+		UINT8* local_buf = (UINT8*) im->image[y];
 		int p, packets;
 		ERR_IF_DATA_OOB(2)
 		packets = I16(data); data += 2;
@@ -98,10 +98,10 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			    state->errcode = IMAGING_CODEC_OVERRUN;
 			    return -1;
 			}
-			buf = (UINT8*) im->image[y];
+			local_buf = (UINT8*) im->image[y];
 		    } else {
 			/* store last byte (used if line width is odd) */
-			buf[state->xsize-1] = (UINT8) packets;
+			local_buf[state->xsize-1] = (UINT8) packets;
 		    }
 		    ERR_IF_DATA_OOB(2)
 		    packets = I16(data); data += 2;
@@ -115,8 +115,8 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			if (x + i + i > state->xsize)
 			    break;
 			for (j = 0; j < i; j++) {
-			    buf[x++] = data[2];
-			    buf[x++] = data[3];
+			    local_buf[x++] = data[2];
+			    local_buf[x++] = data[3];
 			}
 			data += 2 + 2;
 		    } else {
@@ -124,7 +124,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			if (x + i > state->xsize)
 			    break;
 			ERR_IF_DATA_OOB(2+i)
-			memcpy(buf + x, data + 2, i);
+			memcpy(local_buf + x, data + 2, i);
 			data += 2 + i;
 			x += i;
 		    }
@@ -213,9 +213,13 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 16:
 	    /* COPY chunk */
+	    if (state->xsize > bytes/state->ysize) {
+		/* not enough data for frame */
+		return ptr - buf; /* bytes consumed */
+	    }
 	    for (y = 0; y < state->ysize; y++) {
-		UINT8* buf = (UINT8*) im->image[y];
-		memcpy(buf, data, state->xsize);
+		UINT8* local_buf = (UINT8*) im->image[y];
+		memcpy(local_buf, data, state->xsize);
 		data += state->xsize;
 	    }
 	    break;
