@@ -140,22 +140,26 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 12:
 	    /* FLI LC chunk (byte delta) */
+	    /* OOB Check ok, we have 10 bytes here */
 	    y = I16(data); ymax = y + I16(data+2); data += 4;
 	    for (; y < ymax && y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
 		int p, packets = *data++;
 		for (p = x = 0; p < packets; p++, x += i) {
+		    ERR_IF_DATA_OOB(2)
 		    x += data[0]; /* skip pixels */
 		    if (data[1] & 0x80) {
 			i = 256-data[1]; /* run */
 			if (x + i > state->xsize)
 			    break;
+			ERR_IF_DATA_OOB(3)
 			memset(out + x, data[2], i);
 			data += 3;
 		    } else {
 			i = data[1]; /* chunk */
 			if (x + i > state->xsize)
 			    break;
+			ERR_IF_DATA_OOB(2+i)
 			memcpy(out + x, data + 2, i);
 			data += i + 2;
 		    }
