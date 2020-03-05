@@ -38,9 +38,9 @@ def test_aspect():
     im.thumbnail((100, 50))
     assert im.size == (100, 50)
 
-    im = Image.new("L", (128, 128))
+    im = Image.new("L", (64, 64))
     im.thumbnail((100, 100))
-    assert im.size == (100, 100)
+    assert im.size == (64, 64)
 
     im = Image.new("L", (256, 162))  # ratio is 1.5802469136
     im.thumbnail((33, 33))
@@ -50,11 +50,23 @@ def test_aspect():
     im.thumbnail((33, 33))
     assert im.size == (21, 33)  # ratio is 0.6363636364
 
+    im = Image.new("L", (145, 100))  # ratio is 1.45
+    im.thumbnail((50, 50))
+    assert im.size == (50, 34)  # ratio is 1.47058823529
+
+    im = Image.new("L", (100, 145))  # ratio is 0.689655172414
+    im.thumbnail((50, 50))
+    assert im.size == (34, 50)  # ratio is 0.68
+
+    im = Image.new("L", (100, 30))  # ratio is 3.333333333333
+    im.thumbnail((75, 75))
+    assert im.size == (75, 23)  # ratio is 3.260869565217
+
 
 def test_float():
     im = Image.new("L", (128, 128))
     im.thumbnail((99.9, 99.9))
-    assert im.size == (100, 100)
+    assert im.size == (99, 99)
 
 
 def test_no_resize():
