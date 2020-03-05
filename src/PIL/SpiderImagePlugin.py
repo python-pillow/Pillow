@@ -304,21 +304,21 @@ if __name__ == "__main__":
         print("input image must be in Spider format")
         sys.exit()
 
-    im = Image.open(filename)
-    print("image: " + str(im))
-    print("format: " + str(im.format))
-    print("size: " + str(im.size))
-    print("mode: " + str(im.mode))
-    print("max, min: ", end=" ")
-    print(im.getextrema())
+    with Image.open(filename) as im:
+        print("image: " + str(im))
+        print("format: " + str(im.format))
+        print("size: " + str(im.size))
+        print("mode: " + str(im.mode))
+        print("max, min: ", end=" ")
+        print(im.getextrema())
 
-    if len(sys.argv) > 2:
-        outfile = sys.argv[2]
+        if len(sys.argv) > 2:
+            outfile = sys.argv[2]
 
-        # perform some image operation
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        print(
-            "saving a flipped version of %s as %s "
-            % (os.path.basename(filename), outfile)
-        )
-        im.save(outfile, SpiderImageFile.format)
+            # perform some image operation
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            print(
+                "saving a flipped version of %s as %s "
+                % (os.path.basename(filename), outfile)
+            )
+            im.save(outfile, SpiderImageFile.format)

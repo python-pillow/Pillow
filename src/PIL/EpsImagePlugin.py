@@ -141,8 +141,8 @@ def Ghostscript(tile, size, fp, scale=1):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         subprocess.check_call(command, startupinfo=startupinfo)
-        im = Image.open(outfile)
-        im.load()
+        out_im = Image.open(outfile)
+        out_im.load()
     finally:
         try:
             os.unlink(outfile)
@@ -151,7 +151,9 @@ def Ghostscript(tile, size, fp, scale=1):
         except OSError:
             pass
 
-    return im.im.copy()
+    im = out_im.im.copy()
+    out_im.close()
+    return im
 
 
 class PSFile:

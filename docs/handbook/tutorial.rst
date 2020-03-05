@@ -74,7 +74,8 @@ Convert files to JPEG
         outfile = f + ".jpg"
         if infile != outfile:
             try:
-                Image.open(infile).save(outfile)
+                with Image.open(infile) as im:
+                    im.save(outfile)
             except IOError:
                 print("cannot convert", infile)
 
