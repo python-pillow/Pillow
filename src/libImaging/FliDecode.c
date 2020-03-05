@@ -83,10 +83,12 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break; /* ignored; handled by Python code */
 	case 7:
 	    /* FLI SS2 chunk (word delta) */
+	    /* OOB ok, we've got 10 bytes min on entry */
 	    lines = I16(data); data += 2;
 	    for (l = y = 0; l < lines && y < state->ysize; l++, y++) {
 		UINT8* buf = (UINT8*) im->image[y];
 		int p, packets;
+		ERR_IF_DATA_OOB(2)
 		packets = I16(data); data += 2;
 		while (packets & 0x8000) {
 		    /* flag word */
@@ -101,11 +103,14 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			/* store last byte (used if line width is odd) */
 			buf[state->xsize-1] = (UINT8) packets;
 		    }
+		    ERR_IF_DATA_OOB(2)
 		    packets = I16(data); data += 2;
 		}
 		for (p = x = 0; p < packets; p++) {
+		    ERR_IF_DATA_OOB(2)
 		    x += data[0]; /* pixel skip */
 		    if (data[1] >= 128) {
+			ERR_IF_DATA_OOB(4)
 			i = 256-data[1]; /* run */
 			if (x + i + i > state->xsize)
 			    break;
@@ -118,6 +123,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			i = 2 * (int) data[1]; /* chunk */
 			if (x + i > state->xsize)
 			    break;
+			ERR_IF_DATA_OOB(2+i)
 			memcpy(buf + x, data + 2, i);
 			data += 2 + i;
 			x += i;
