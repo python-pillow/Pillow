@@ -83,7 +83,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break; /* ignored; handled by Python code */
 	case 7:
 	    /* FLI SS2 chunk (word delta) */
-	    /* OOB ok, we've got 10 bytes min on entry */
+	    /* OOB ok, we've got 4 bytes min on entry */
 	    lines = I16(data); data += 2;
 	    for (l = y = 0; l < lines && y < state->ysize; l++, y++) {
 		UINT8* buf = (UINT8*) im->image[y];
@@ -229,6 +229,10 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    return -1;
 	}
 	advance = I32(ptr);
+	if (advance < 0 || advance > bytes) {
+	    state->errcode = IMAGING_CODEC_OVERRUN;
+	    return -1;
+	}
 	ptr += advance;
 	bytes -= advance;
     }
