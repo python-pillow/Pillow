@@ -363,6 +363,13 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         
         state->bytes = row_byte_size * tile_length;
 
+        if (TIFFTileSize(tiff) > state->bytes) {
+            // If the strip size as expected by LibTiff isn't we're expecting, abort.
+            state->errcode = IMAGING_CODEC_MEMORY;
+            TIFFClose(tiff);
+            return -1;
+        }
+
         /* realloc to fit whole tile */
         /* malloc check above */
         new_data = realloc (state->buffer, state->bytes);
@@ -424,10 +431,20 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
             TIFFClose(tiff);
             return -1;
         }
-        
+
         state->bytes = rows_per_strip * row_byte_size;
 
         TRACE(("StripSize: %d \n", state->bytes));
+
+        if (TIFFStripSize(tiff) > state->bytes) {
+            // If the strip size as expected by LibTiff isn't we're expecting, abort.
+            // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
+            //        call to TIFFReadEncodedStrip ...
+
+            state->errcode = IMAGING_CODEC_MEMORY;
+            TIFFClose(tiff);
+            return -1;
+        }
 
         /* realloc to fit whole strip */
         /* malloc check above */
