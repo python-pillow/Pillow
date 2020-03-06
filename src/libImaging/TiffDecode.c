@@ -171,7 +171,7 @@ int ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
 
 
 int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
-    uint16 photometric;
+    uint16 photometric = 0;
 
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
 
@@ -228,7 +228,7 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
 }
 
 int ReadStrip(TIFF* tiff, UINT32 row, UINT32* buffer) {
-    uint16 photometric;
+    uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
 
     // To avoid dealing with YCbCr subsampling, let libtiff handle it
