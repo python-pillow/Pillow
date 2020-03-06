@@ -18,6 +18,15 @@ been resolved.
     im = Image.open("hopper.jpg")
     im.save("out.jpg", quality=0)
 
+API Additions
+=============
+
+Reading JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When opening a JPEG image, the comment may now be read into
+:py:attr:`~PIL.Image.Image.info`.
+
 Other Changes
 =============
 

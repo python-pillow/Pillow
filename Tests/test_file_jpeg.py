@@ -60,6 +60,8 @@ class TestFileJpeg:
             )
             assert len(im.applist) == 2
 
+            assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
+
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
