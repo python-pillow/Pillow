@@ -5,6 +5,15 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Fix size calculation of Image.thumbnail() #4404
+  [orlnub123]
+
+- Fixed stroke on FreeType < 2.9 #4401
+  [radarhere]
+
+- If present, only use alpha channel for bounding box #4454
+  [radarhere]
+
 - Warn if an unknown feature is passed to features.check() #4438
   [jdufresne]
 
