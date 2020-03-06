@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Add JPEG comment to info dictionary #4455
+  [radarhere]
+
 - Fix size calculation of Image.thumbnail() #4404
   [orlnub123]
 
