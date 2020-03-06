@@ -20,3 +20,5 @@ since Pillow 4.3.0.
 :cve: `CVE-2021-25290` : Fix negative size read in TiffDecode.c
 
 :cve: `CVE-2021-23437` : Raise ValueError if color specifier is too long
+
+:cve: `CVE-2020-10379` : In Pillow before 7.1.0, there are two Buffer Overflows in libImaging/TiffDecode.c.
