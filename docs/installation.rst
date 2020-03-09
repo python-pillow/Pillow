@@ -47,8 +47,8 @@ Basic Installation
 
 Install Pillow with :command:`pip`::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 
 Windows Installation
@@ -59,8 +59,8 @@ supported Pythons in both 32 and 64-bit versions in wheel, egg, and
 executable installers. These binaries have all of the optional
 libraries included except for raqm and libimagequant::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 
 macOS Installation
@@ -71,8 +71,8 @@ versions in the wheel format. These include support for all optional
 libraries except libimagequant.  Raqm support requires libraqm,
 fribidi, and harfbuzz to be installed separately::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 Linux Installation
 ^^^^^^^^^^^^^^^^^^
@@ -82,8 +82,8 @@ versions in the manylinux wheel format. These include support for all
 optional libraries except libimagequant. Raqm support requires
 libraqm, fribidi, and harfbuzz to be installed separately::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 Most major Linux distributions, including Fedora, Debian/Ubuntu and
 ArchLinux also include Pillow in packages that previously contained
@@ -195,8 +195,8 @@ Many of Pillow's features require external libraries:
 
 Once you have installed the prerequisites, run::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
@@ -206,7 +206,7 @@ those locations by editing :file:`setup.py` or
 :file:`setup.cfg`, or by adding environment variables on the command
 line::
 
-    CFLAGS="-I/usr/pkg/include" python -m pip install --upgrade Pillow
+    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow
 
 If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
@@ -254,7 +254,7 @@ Sample usage::
 
 or using pip::
 
-    python -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
 Building on macOS
@@ -280,8 +280,8 @@ Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 Now install Pillow with::
 
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
 
 or from within the uncompressed source directory::
 
