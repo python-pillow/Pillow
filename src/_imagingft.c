@@ -782,9 +782,6 @@ font_render(FontObject* self, PyObject* args)
     im = (Imaging) id;
     /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
     load_flags = FT_LOAD_NO_BITMAP;
-    if (stroker == NULL) {
-        load_flags |= FT_LOAD_RENDER;
-    }
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
@@ -792,7 +789,7 @@ font_render(FontObject* self, PyObject* args)
     ascender = 0;
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
-        error = FT_Load_Glyph(self->face, index, load_flags);
+        error = FT_Load_Glyph(self->face, index, load_flags | FT_LOAD_RENDER);
         if (error) {
             return geterror(error);
         }
@@ -804,6 +801,10 @@ font_render(FontObject* self, PyObject* args)
         temp -= PIXEL(glyph_info[i].y_offset);
         if (temp > ascender)
             ascender = temp;
+    }
+
+    if (stroker == NULL) {
+        load_flags |= FT_LOAD_RENDER;
     }
 
     x = y = 0;
@@ -908,7 +909,7 @@ font_render(FontObject* self, PyObject* args)
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
     static PyObject*
-    font_getvarnames(FontObject* self, PyObject* args)
+    font_getvarnames(FontObject* self)
     {
         int error;
         FT_UInt i, j, num_namedstyles, name_count;
@@ -947,7 +948,7 @@ font_render(FontObject* self, PyObject* args)
     }
 
     static PyObject*
-    font_getvaraxes(FontObject* self, PyObject* args)
+    font_getvaraxes(FontObject* self)
     {
         int error;
         FT_UInt i, j, num_axis, name_count;
@@ -1077,8 +1078,8 @@ static PyMethodDef font_methods[] = {
 #if FREETYPE_MAJOR > 2 ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
-    {"getvarnames", (PyCFunction) font_getvarnames, METH_VARARGS },
-    {"getvaraxes", (PyCFunction) font_getvaraxes, METH_VARARGS },
+    {"getvarnames", (PyCFunction) font_getvarnames, METH_NOARGS },
+    {"getvaraxes", (PyCFunction) font_getvaraxes, METH_NOARGS },
     {"setvarname", (PyCFunction) font_setvarname, METH_VARARGS},
     {"setvaraxes", (PyCFunction) font_setvaraxes, METH_VARARGS},
 #endif

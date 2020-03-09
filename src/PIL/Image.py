@@ -2236,20 +2236,22 @@ class Image:
         :returns: None
         """
 
-        # preserve aspect ratio
-        x, y = self.size
-        if x > size[0]:
-            y = max(round(y * size[0] / x), 1)
-            x = round(size[0])
-        if y > size[1]:
-            x = max(round(x * size[1] / y), 1)
-            y = round(size[1])
-        size = x, y
-        box = None
-
-        if size == self.size:
+        x, y = map(math.floor, size)
+        if x >= self.width and y >= self.height:
             return
 
+        def round_aspect(number, key):
+            return max(min(math.floor(number), math.ceil(number), key=key), 1)
+
+        # preserve aspect ratio
+        aspect = self.width / self.height
+        if x / y >= aspect:
+            x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
+        else:
+            y = round_aspect(x / aspect, key=lambda n: abs(aspect - x / n))
+        size = (x, y)
+
+        box = None
         if reducing_gap is not None:
             res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
             if res is not None:

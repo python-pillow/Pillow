@@ -203,4 +203,5 @@ if __name__ == "__main__":
         print("Syntax: python ImageShow.py imagefile [title]")
         sys.exit()
 
-    print(show(Image.open(sys.argv[1]), *sys.argv[2:]))
+    with Image.open(sys.argv[1]) as im:
+        print(show(im, *sys.argv[2:]))

@@ -945,6 +945,22 @@ def test_stroke():
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_descender():
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((10, 0), "y", "#f00", font, stroke_width=2, stroke_fill="#0f0")
+
+    # Assert
+    assert_image_similar(
+        im, Image.open("Tests/images/imagedraw_stroke_descender.png"), 6.76
+    )
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_multiline():
     # Arrange
     im = Image.new("RGB", (100, 250))

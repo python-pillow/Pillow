@@ -1,5 +1,4 @@
 import re
-import unittest
 import zlib
 from io import BytesIO
 
@@ -8,7 +7,6 @@ from PIL import Image, ImageFile, PngImagePlugin
 
 from .helper import (
     PillowLeakTestCase,
-    PillowTestCase,
     assert_image,
     assert_image_equal,
     hopper,
@@ -55,7 +53,7 @@ def roundtrip(im, **options):
 
 
 @skip_unless_feature("zlib")
-class TestFilePng(PillowTestCase):
+class TestFilePng:
     def get_chunks(self, filename):
         chunks = []
         with open(filename, "rb") as fp:
@@ -72,12 +70,12 @@ class TestFilePng(PillowTestCase):
         return chunks
 
     @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
-    def test_sanity(self):
+    def test_sanity(self, tmp_path):
 
         # internal version number
         assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", Image.core.zlib_version)
 
-        test_file = self.tempfile("temp.png")
+        test_file = str(tmp_path / "temp.png")
 
         hopper("RGB").save(test_file)
 
@@ -232,14 +230,14 @@ class TestFilePng(PillowTestCase):
         # image has 876 transparent pixels
         assert im.getchannel("A").getcolors()[0][0] == 876
 
-    def test_save_p_transparent_palette(self):
+    def test_save_p_transparent_palette(self, tmp_path):
         in_file = "Tests/images/pil123p.png"
         with Image.open(in_file) as im:
             # 'transparency' contains a byte string with the opacity for
             # each palette entry
             assert len(im.info["transparency"]) == 256
 
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
         # check if saved image contains same transparency
@@ -253,14 +251,14 @@ class TestFilePng(PillowTestCase):
         # image has 124 unique alpha values
         assert len(im.getchannel("A").getcolors()) == 124
 
-    def test_save_p_single_transparency(self):
+    def test_save_p_single_transparency(self, tmp_path):
         in_file = "Tests/images/p_trns_single.png"
         with Image.open(in_file) as im:
             # pixel value 164 is full transparent
             assert im.info["transparency"] == 164
             assert im.getpixel((31, 31)) == 164
 
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
         # check if saved image contains same transparency
@@ -276,14 +274,14 @@ class TestFilePng(PillowTestCase):
         # image has 876 transparent pixels
         assert im.getchannel("A").getcolors()[0][0] == 876
 
-    def test_save_p_transparent_black(self):
+    def test_save_p_transparent_black(self, tmp_path):
         # check if solid black image with full transparency
         # is supported (check for #1838)
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
         im = im.convert("P")
-        test_file = self.tempfile("temp.png")
+        test_file = str(tmp_path / "temp.png")
         im.save(test_file)
 
         # check if saved image contains same transparency
@@ -294,7 +292,7 @@ class TestFilePng(PillowTestCase):
         assert_image(im, "RGBA", (10, 10))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-    def test_save_greyscale_transparency(self):
+    def test_save_greyscale_transparency(self, tmp_path):
         for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
             in_file = "Tests/images/" + mode.lower() + "_trns.png"
             with Image.open(in_file) as im:
@@ -304,7 +302,7 @@ class TestFilePng(PillowTestCase):
                 im_rgba = im.convert("RGBA")
             assert im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
 
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
             with Image.open(test_file) as test_im:
@@ -315,10 +313,10 @@ class TestFilePng(PillowTestCase):
             test_im_rgba = test_im.convert("RGBA")
             assert test_im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
 
-    def test_save_rgb_single_transparency(self):
+    def test_save_rgb_single_transparency(self, tmp_path):
         in_file = "Tests/images/caption_6_33_22.png"
         with Image.open(in_file) as im:
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
     def test_load_verify(self):
@@ -483,12 +481,12 @@ class TestFilePng(PillowTestCase):
         im = roundtrip(im, transparency=(0, 1, 2))
         assert im.info["transparency"] == (0, 1, 2)
 
-    def test_trns_p(self):
+    def test_trns_p(self, tmp_path):
         # Check writing a transparency of 0, issue #528
         im = hopper("P")
         im.info["transparency"] = 0
 
-        f = self.tempfile("temp.png")
+        f = str(tmp_path / "temp.png")
         im.save(f)
 
         with Image.open(f) as im2:
@@ -539,9 +537,9 @@ class TestFilePng(PillowTestCase):
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
-    def test_chunk_order(self):
+    def test_chunk_order(self, tmp_path):
         with Image.open("Tests/images/icc_profile.png") as im:
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = self.get_chunks(test_file)
@@ -598,34 +596,34 @@ class TestFilePng(PillowTestCase):
             exif = im._getexif()
         assert exif[274] == 1
 
-    def test_exif_save(self):
+    def test_exif_save(self, tmp_path):
         with Image.open("Tests/images/exif.png") as im:
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
         assert exif[274] == 1
 
-    def test_exif_from_jpg(self):
+    def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
         assert exif[305] == "Adobe Photoshop CS Macintosh"
 
-    def test_exif_argument(self):
+    def test_exif_argument(self, tmp_path):
         with Image.open(TEST_PNG_FILE) as im:
-            test_file = self.tempfile("temp.png")
+            test_file = str(tmp_path / "temp.png")
             im.save(test_file, exif=b"exifstring")
 
         with Image.open(test_file) as reloaded:
             assert reloaded.info["exif"] == b"Exif\x00\x00exifstring"
 
 
-@unittest.skipIf(is_win32(), "requires Unix or macOS")
+@pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
 @skip_unless_feature("zlib")
 class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2 * 1024  # max increase in K

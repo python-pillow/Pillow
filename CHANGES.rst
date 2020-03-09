@@ -5,6 +5,21 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Add JPEG comment to info dictionary #4455
+  [radarhere]
+
+- Fix size calculation of Image.thumbnail() #4404
+  [orlnub123]
+
+- Fixed stroke on FreeType < 2.9 #4401
+  [radarhere]
+
+- If present, only use alpha channel for bounding box #4454
+  [radarhere]
+
+- Warn if an unknown feature is passed to features.check() #4438
+  [jdufresne]
+
 - Fix Name field length when saving IM images #4424
   [hugovk, radarhere]
 

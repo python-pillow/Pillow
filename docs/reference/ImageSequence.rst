@@ -14,12 +14,11 @@ Extracting frames from an animation
 
     from PIL import Image, ImageSequence
 
-    im = Image.open("animation.fli")
-
-    index = 1
-    for frame in ImageSequence.Iterator(im):
-        frame.save("frame%d.png" % index)
-        index += 1
+    with Image.open("animation.fli") as im:
+        index = 1
+        for frame in ImageSequence.Iterator(im):
+            frame.save("frame%d.png" % index)
+            index += 1
 
 The :py:class:`~PIL.ImageSequence.Iterator` class
 -------------------------------------------------

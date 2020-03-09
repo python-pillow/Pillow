@@ -298,6 +298,11 @@ The :py:meth:`~PIL.Image.Image.open` method may set the following
 **exif**
     Raw EXIF data from the image.
 
+**comment**
+    A comment about the image.
+
+    .. versionadded:: 7.1.0
+
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 

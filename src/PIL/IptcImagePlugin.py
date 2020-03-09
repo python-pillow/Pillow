@@ -158,9 +158,9 @@ class IptcImageFile(ImageFile.ImageFile):
         o.close()
 
         try:
-            _im = Image.open(outfile)
-            _im.load()
-            self.im = _im.im
+            with Image.open(outfile) as _im:
+                _im.load()
+                self.im = _im.im
         finally:
             try:
                 os.unlink(outfile)

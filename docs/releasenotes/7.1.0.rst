@@ -18,6 +18,27 @@ been resolved.
     im = Image.open("hopper.jpg")
     im.save("out.jpg", quality=0)
 
+API Additions
+=============
+
+Reading JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When opening a JPEG image, the comment may now be read into
+:py:attr:`~PIL.Image.Image.info`.
+
+Other Changes
+=============
+
+If present, only use alpha channel for bounding box
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the :py:meth:`~PIL.Image.Image.getbbox` method calculates the bounding
+box, for an RGB image it trims black pixels. Similarly, for an RGBA image it
+would trim black transparent pixels. This is now changed so that if an image
+has an alpha channel (RGBA, RGBa, PA, LA, La), any transparent pixels are
+trimmed.
+
 Improved APNG support
 ^^^^^^^^^^^^^^^^^^^^^
 

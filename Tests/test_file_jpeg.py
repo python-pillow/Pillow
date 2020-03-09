@@ -6,7 +6,6 @@ import pytest
 from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
 
 from .helper import (
-    PillowTestCase,
     assert_image,
     assert_image_equal,
     assert_image_similar,
@@ -15,14 +14,13 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
-    unittest,
 )
 
 TEST_FILE = "Tests/images/hopper.jpg"
 
 
 @skip_unless_feature("jpg")
-class TestFileJpeg(PillowTestCase):
+class TestFileJpeg:
     def roundtrip(self, im, **options):
         out = BytesIO()
         im.save(out, "JPEG", **options)
@@ -61,6 +59,8 @@ class TestFileJpeg(PillowTestCase):
                 b"File written by Adobe Photoshop\xa8 4.0\x00",
             )
             assert len(im.applist) == 2
+
+            assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
 
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
@@ -101,13 +101,13 @@ class TestFileJpeg(PillowTestCase):
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
-    def test_icc(self):
+    def test_icc(self, tmp_path):
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
             icc_profile = im1.info["icc_profile"]
             assert len(icc_profile) == 3144
             # Roundtrip via physical file.
-            f = self.tempfile("temp.jpg")
+            f = str(tmp_path / "temp.jpg")
             im1.save(f, icc_profile=icc_profile)
         with Image.open(f) as im2:
             assert im2.info.get("icc_profile") == icc_profile
@@ -140,12 +140,12 @@ class TestFileJpeg(PillowTestCase):
         test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
-    def test_large_icc_meta(self):
+    def test_large_icc_meta(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
-            f = self.tempfile("temp.jpg")
+            f = str(tmp_path / "temp.jpg")
             icc_profile = im.info["icc_profile"]
             # Should not raise IOError for image with icc larger than image size.
             im.save(
@@ -166,9 +166,9 @@ class TestFileJpeg(PillowTestCase):
         assert im1.bytes >= im2.bytes
         assert im1.bytes >= im3.bytes
 
-    def test_optimize_large_buffer(self):
+    def test_optimize_large_buffer(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
-        f = self.tempfile("temp.jpg")
+        f = str(tmp_path / "temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", optimize=True)
@@ -184,14 +184,14 @@ class TestFileJpeg(PillowTestCase):
         assert_image_equal(im1, im3)
         assert im1.bytes >= im3.bytes
 
-    def test_progressive_large_buffer(self):
-        f = self.tempfile("temp.jpg")
+    def test_progressive_large_buffer(self, tmp_path):
+        f = str(tmp_path / "temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", progressive=True)
 
-    def test_progressive_large_buffer_highest_quality(self):
-        f = self.tempfile("temp.jpg")
+    def test_progressive_large_buffer_highest_quality(self, tmp_path):
+        f = str(tmp_path / "temp.jpg")
         im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -202,9 +202,9 @@ class TestFileJpeg(PillowTestCase):
         im = self.gen_random_image((256, 256), "CMYK")
         im.save(f, format="JPEG", progressive=True, quality=94)
 
-    def test_large_exif(self):
+    def test_large_exif(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
-        f = self.tempfile("temp.jpg")
+        f = str(tmp_path / "temp.jpg")
         im = hopper()
         im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
 
@@ -301,7 +301,7 @@ class TestFileJpeg(PillowTestCase):
 
         im3 = self.roundtrip(hopper(), quality=0)
         assert_image(im1, im3.mode, im3.size)
-        self.assertGreater(im2.bytes, im3.bytes)
+        assert im2.bytes > im3.bytes
 
     def test_smooth(self):
         im1 = self.roundtrip(hopper())
@@ -346,18 +346,18 @@ class TestFileJpeg(PillowTestCase):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             assert im._getmp() is None
 
-    def test_quality_keep(self):
+    def test_quality_keep(self, tmp_path):
         # RGB
         with Image.open("Tests/images/hopper.jpg") as im:
-            f = self.tempfile("temp.jpg")
+            f = str(tmp_path / "temp.jpg")
             im.save(f, quality="keep")
         # Grayscale
         with Image.open("Tests/images/hopper_gray.jpg") as im:
-            f = self.tempfile("temp.jpg")
+            f = str(tmp_path / "temp.jpg")
             im.save(f, quality="keep")
         # CMYK
         with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
-            f = self.tempfile("temp.jpg")
+            f = str(tmp_path / "temp.jpg")
             im.save(f, quality="keep")
 
     def test_junk_jpeg_header(self):
@@ -389,16 +389,16 @@ class TestFileJpeg(PillowTestCase):
             with pytest.raises(IOError):
                 im.load()
 
-    def _n_qtables_helper(self, n, test_file):
-        with Image.open(test_file) as im:
-            f = self.tempfile("temp.jpg")
-            im.save(f, qtables=[[n] * 64] * n)
-        with Image.open(f) as im:
-            assert len(im.quantization) == n
-            reloaded = self.roundtrip(im, qtables="keep")
-            assert im.quantization == reloaded.quantization
+    def test_qtables(self, tmp_path):
+        def _n_qtables_helper(n, test_file):
+            with Image.open(test_file) as im:
+                f = str(tmp_path / "temp.jpg")
+                im.save(f, qtables=[[n] * 64] * n)
+            with Image.open(f) as im:
+                assert len(im.quantization) == n
+                reloaded = self.roundtrip(im, qtables="keep")
+                assert im.quantization == reloaded.quantization
 
-    def test_qtables(self):
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
             reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
@@ -470,14 +470,14 @@ class TestFileJpeg(PillowTestCase):
                 30,
             )
 
-            self._n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
-            self._n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
-            self._n_qtables_helper(2, "Tests/images/pil_sample_rgb.jpg")
-            self._n_qtables_helper(3, "Tests/images/pil_sample_rgb.jpg")
-            self._n_qtables_helper(1, "Tests/images/pil_sample_cmyk.jpg")
-            self._n_qtables_helper(2, "Tests/images/pil_sample_cmyk.jpg")
-            self._n_qtables_helper(3, "Tests/images/pil_sample_cmyk.jpg")
-            self._n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
+            _n_qtables_helper(1, "Tests/images/hopper_gray.jpg")
+            _n_qtables_helper(1, "Tests/images/pil_sample_rgb.jpg")
+            _n_qtables_helper(2, "Tests/images/pil_sample_rgb.jpg")
+            _n_qtables_helper(3, "Tests/images/pil_sample_rgb.jpg")
+            _n_qtables_helper(1, "Tests/images/pil_sample_cmyk.jpg")
+            _n_qtables_helper(2, "Tests/images/pil_sample_cmyk.jpg")
+            _n_qtables_helper(3, "Tests/images/pil_sample_cmyk.jpg")
+            _n_qtables_helper(4, "Tests/images/pil_sample_cmyk.jpg")
 
             # not a sequence
             with pytest.raises(ValueError):
@@ -496,16 +496,16 @@ class TestFileJpeg(PillowTestCase):
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
-    @unittest.skipUnless(djpeg_available(), "djpeg not available")
+    @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
             assert_image_similar(img, Image.open(TEST_FILE), 0)
 
-    @unittest.skipUnless(cjpeg_available(), "cjpeg not available")
-    def test_save_cjpeg(self):
+    @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
+    def test_save_cjpeg(self, tmp_path):
         with Image.open(TEST_FILE) as img:
-            tempfile = self.tempfile("temp.jpg")
+            tempfile = str(tmp_path / "temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
             assert_image_similar(img, Image.open(tempfile), 17)
@@ -518,9 +518,9 @@ class TestFileJpeg(PillowTestCase):
         assert tag_ids["RelatedImageWidth"] == 0x1001
         assert tag_ids["RelatedImageLength"] == 0x1002
 
-    def test_MAXBLOCK_scaling(self):
+    def test_MAXBLOCK_scaling(self, tmp_path):
         im = self.gen_random_image((512, 512))
-        f = self.tempfile("temp.jpeg")
+        f = str(tmp_path / "temp.jpeg")
         im.save(f, quality=100, optimize=True)
 
         with Image.open(f) as reloaded:
@@ -555,9 +555,9 @@ class TestFileJpeg(PillowTestCase):
             with pytest.raises(IOError):
                 img.save(out, "JPEG")
 
-    def test_save_tiff_with_dpi(self):
+    def test_save_tiff_with_dpi(self, tmp_path):
         # Arrange
-        outfile = self.tempfile("temp.tif")
+        outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
 
             # Act
@@ -577,8 +577,8 @@ class TestFileJpeg(PillowTestCase):
         with Image.open("Tests/images/iptc_roundDown.jpg") as im:
             assert im.info["dpi"] == (2, 2)
 
-    def test_save_dpi_rounding(self):
-        outfile = self.tempfile("temp.jpg")
+    def test_save_dpi_rounding(self, tmp_path):
+        outfile = str(tmp_path / "temp.jpg")
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(outfile, dpi=(72.2, 72.2))
 
@@ -690,11 +690,11 @@ class TestFileJpeg(PillowTestCase):
             assert [65504, 24] == apps_13_lengths
 
 
-@unittest.skipUnless(is_win32(), "Windows only")
+@pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")
-class TestFileCloseW32(PillowTestCase):
-    def test_fd_leak(self):
-        tmpfile = self.tempfile("temp.jpg")
+class TestFileCloseW32:
+    def test_fd_leak(self, tmp_path):
+        tmpfile = str(tmp_path / "temp.jpg")
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(tmpfile)

@@ -370,7 +370,7 @@ if __name__ == "__main__":
         for size in imf.info["sizes"]:
             imf.size = size
             imf.save("out-%s-%s-%s.png" % size)
-        im = Image.open(sys.argv[1])
-        im.save("out.png")
+        with Image.open(sys.argv[1]) as im:
+            im.save("out.png")
         if sys.platform == "windows":
             os.startfile("out.png")
