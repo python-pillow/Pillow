@@ -144,6 +144,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    y = I16(data); ymax = y + I16(data+2); data += 4;
 	    for (; y < ymax && y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
+                ERR_IF_DATA_OOB(1)
 		int p, packets = *data++;
 		for (p = x = 0; p < packets; p++, x += i) {
 		    ERR_IF_DATA_OOB(2)
