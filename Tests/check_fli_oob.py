@@ -17,6 +17,10 @@ repro_lc = ('images/fli_oob/05r/05r00.fli',
             'images/fli_oob/05r/others/05r04.fli',
             'images/fli_oob/05r/others/05r02.fli',
             'images/fli_oob/05r/others/05r07.fli',
+            'images/fli_oob/patch0/000000',
+            'images/fli_oob/patch0/000001',
+            'images/fli_oob/patch0/000002',
+            'images/fli_oob/patch0/000003',
 )
 
 
