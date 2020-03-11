@@ -228,15 +228,20 @@ class PngInfo:
     def __init__(self):
         self.chunks = []
 
-    def add(self, cid, data):
+    def add(self, cid, data, after_idat=False):
         """Appends an arbitrary chunk. Use with caution.
 
         :param cid: a byte string, 4 bytes long.
         :param data: a byte string of the encoded data
+        :param after_idat: for use with private chunks. Whether the chunk
+                           should be written after IDAT
 
         """
 
-        self.chunks.append((cid, data))
+        chunk = [cid, data]
+        if after_idat:
+            chunk.append(True)
+        self.chunks.append(tuple(chunk))
 
     def add_itxt(self, key, value, lang="", tkey="", zip=False):
         """Appends an iTXt chunk.
@@ -641,6 +646,7 @@ class PngImageFile(ImageFile.ImageFile):
         #
         # Parse headers up to the first IDAT or fDAT chunk
 
+        self.private_chunks = []
         self.png = PngStream(self.fp)
 
         while True:
@@ -657,6 +663,8 @@ class PngImageFile(ImageFile.ImageFile):
             except AttributeError:
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
+                if cid[1:2].islower():
+                    self.private_chunks.append((cid, s))
 
             self.png.crc(cid, s)
 
@@ -888,7 +896,9 @@ class PngImageFile(ImageFile.ImageFile):
                 ImageFile._safe_read(self.fp, length)
             except AttributeError:
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
-                ImageFile._safe_read(self.fp, length)
+                s = ImageFile._safe_read(self.fp, length)
+                if cid[1:2].islower():
+                    self.private_chunks.append((cid, s, True))
         self._text = self.png.im_text
         if not self.is_animated:
             self.png.close()
@@ -1217,12 +1227,18 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
     info = im.encoderinfo.get("pnginfo")
     if info:
         chunks_multiple_allowed = [b"sPLT", b"iTXt", b"tEXt", b"zTXt"]
-        for cid, data in info.chunks:
+        for info_chunk in info.chunks:
+            cid, data = info_chunk[:2]
             if cid in chunks:
                 chunks.remove(cid)
                 chunk(fp, cid, data)
             elif cid in chunks_multiple_allowed:
                 chunk(fp, cid, data)
+            elif cid[1:2].islower():
+                # Private chunk
+                after_idat = info_chunk[2:3]
+                if not after_idat:
+                    chunk(fp, cid, data)
 
     if im.mode == "P":
         palette_byte_number = (2 ** bits) * 3
@@ -1272,7 +1288,8 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 
     if info:
         chunks = [b"bKGD", b"hIST"]
-        for cid, data in info.chunks:
+        for info_chunk in info.chunks:
+            cid, data = info_chunk[:2]
             if cid in chunks:
                 chunks.remove(cid)
                 chunk(fp, cid, data)
@@ -1289,6 +1306,15 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         _write_multiple_frames(im, fp, chunk, rawmode)
     else:
         ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
+
+    if info:
+        for info_chunk in info.chunks:
+            cid, data = info_chunk[:2]
+            if cid[1:2].islower():
+                # Private chunk
+                after_idat = info_chunk[2:3]
+                if after_idat:
+                    chunk(fp, cid, data)
 
     chunk(fp, b"IEND", b"")
 
