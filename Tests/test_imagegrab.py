@@ -66,9 +66,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
         else:
             with pytest.raises(NotImplementedError) as e:
                 ImageGrab.grabclipboard()
-            self.assertEqual(
-                str(e.value), "ImageGrab.grabclipboard() is macOS and Windows only"
-            )
+            assert str(e.value) == "ImageGrab.grabclipboard() is macOS and Windows only"
             return
 
         im = ImageGrab.grabclipboard()
