@@ -3,6 +3,8 @@ from PIL import Image, ImageMath, ImageMode
 
 from .helper import PillowTestCase, convert_to_comparable
 
+codecs = dir(Image.core)
+
 
 class TestImageReduce(PillowTestCase):
     # There are several internal implementations
@@ -236,3 +238,10 @@ class TestImageReduce(PillowTestCase):
         for factor in self.remarkable_factors:
             self.compare_reduce_with_reference(im, factor, 0, 0)
             self.compare_reduce_with_box(im, factor)
+
+    @pytest.mark.skipif(
+        "jpeg2k_decoder" not in codecs, reason="JPEG 2000 support not available"
+    )
+    def test_jpeg2k(self):
+        with Image.open("Tests/images/test-card-lossless.jp2") as im:
+            assert im.reduce(2).size == (320, 240)

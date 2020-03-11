@@ -142,6 +142,13 @@ def test_layers_type(tmp_path):
             test_card.save(outfile, quality_layers=quality_layers)
 
 
+def test_load_reduce():
+    with Image.open("Tests/images/test-card-lossless.jp2") as im:
+        im.load_reduce = 2
+        im.load()
+        assert im.size == (160, 120)
+
+
 def test_layers():
     out = BytesIO()
     test_card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
