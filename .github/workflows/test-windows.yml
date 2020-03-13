@@ -357,15 +357,10 @@ jobs:
         .ci/after_success.sh
       shell: pwsh
 
-    - name: Prepare coverage token
-      if: success() && github.repository == 'python-pillow/Pillow'
-      run: cp .github/codecov-upstream.yml codecov.yml
-
     - name: Upload coverage
       if: success()
       uses: codecov/codecov-action@v1
       with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           flags: GHA_Windows
           name: ${{ runner.os }} Python ${{ matrix.python-version }}

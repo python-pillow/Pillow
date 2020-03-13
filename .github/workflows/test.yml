@@ -100,13 +100,8 @@ jobs:
       run: |
         .ci/after_success.sh
 
-    - name: Prepare coverage token
-      if: success() && github.repository == 'python-pillow/Pillow'
-      run: cp .github/codecov-upstream.yml codecov.yml
-
     - name: Upload coverage
       if: success()
       run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}
       env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
