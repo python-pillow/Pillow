@@ -593,9 +593,13 @@ class TestFilePng:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
     def test_exif(self):
-        with Image.open("Tests/images/exif.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+        for test_file in (
+            "Tests/images/exif.png",  # With an EXIF chunk
+            "Tests/images/exif_imagemagick.png",  # With an ImageMagick zTXt chunk
+        ):
+            with Image.open(test_file) as im:
+                exif = im._getexif()
+            assert exif[274] == 1
 
     def test_exif_save(self, tmp_path):
         with Image.open("Tests/images/exif.png") as im:
