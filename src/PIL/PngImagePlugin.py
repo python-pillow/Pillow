@@ -1058,7 +1058,9 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                     base_im = im_frames[-2]["im"]
                 else:
                     base_im = previous["im"]
-                delta = ImageChops.subtract_modulo(im_frame, base_im)
+                delta = ImageChops.subtract_modulo(
+                    im_frame.convert("RGB"), base_im.convert("RGB")
+                )
                 bbox = delta.getbbox()
                 if (
                     not bbox
