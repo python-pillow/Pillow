@@ -250,7 +250,7 @@ Build Options
 
 Sample usage::
 
-    MAX_CONCURRENCY=1 python setup.py build_ext --enable-[feature] install
+    MAX_CONCURRENCY=1 python3 setup.py build_ext --enable-[feature] install
 
 or using pip::
 
@@ -285,7 +285,7 @@ Now install Pillow with::
 
 or from within the uncompressed source directory::
 
-    python setup.py install
+    python3 setup.py install
 
 Building on Windows
 ^^^^^^^^^^^^^^^^^^^
