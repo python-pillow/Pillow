@@ -19,7 +19,7 @@ dist: xenial
 services: docker
 osx_image: xcode9.3
 
-matrix:
+jobs:
   exclude:
       # Exclude the default Python 3.5 build
       - python: 3.5
