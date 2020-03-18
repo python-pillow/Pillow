@@ -20,9 +20,6 @@ services: docker
 osx_image: xcode9.3
 
 jobs:
-  exclude:
-      # Exclude the default Python 3.5 build
-      - python: 3.5
   include:
     - name: "3.5 macOS"
       os: osx
