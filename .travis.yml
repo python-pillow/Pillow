@@ -13,7 +13,7 @@ env:
       - secure: "ky76goiK6n4k8V9/uG340GSFVwmjE7G76l9xbhhGZkcph4eTwN5VRM/tqyJvlNs/HZOhKSILfyGBeaG8qf7gHmwr0touPT+EjWn4TNV8iyVj75ZshgRE9DuaIAfdH89gW2m+BmvBDyzi0JE3KVCu55NcGm8h7Ecl6nmQ/c2iROY="
 
 language: python
-# Default Python version is usually 2.7
+# Default Python version is usually 3.6
 python: 3.5
 dist: xenial
 services: docker
