@@ -52,9 +52,9 @@ install:
         c:\pillow\winbuild\build_deps.cmd
         $host.SetShouldExit(0)
       }
-- curl -fsSL -o gs951.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs951/gs951w32.exe
-- gs951.exe /S
-- path %path%;C:\Program Files (x86)\gs\gs9.51\bin
+- curl -fsSL -o gs952.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w32.exe
+- gs952.exe /S
+- path %path%;C:\Program Files (x86)\gs\gs9.52\bin
 
 build_script:
 - ps: |
