@@ -17,17 +17,18 @@ language: python
 python: 3.5
 dist: xenial
 services: docker
-osx_image: xcode9.3
 
 jobs:
   include:
     - name: "3.5 macOS"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
     - name: "3.6 macOS"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
@@ -53,11 +54,13 @@ jobs:
 
     - name: "3.7 macOS"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.7
     - name: "3.8 macOS"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.8
@@ -83,12 +86,14 @@ jobs:
 
     - name: "3.5 macOS latest"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.5
         - LATEST="true"
     - name: "3.6 macOS latest"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
@@ -119,12 +124,14 @@ jobs:
 
     - name: "3.7 macOS latest"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.7
         - LATEST="true"
     - name: "3.8 macOS latest"
       os: osx
+      osx_image: xcode9.3
       language: generic
       env:
         - MB_PYTHON_VERSION=3.8
