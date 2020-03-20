@@ -206,6 +206,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
     @property
     def reduce(self):
+        # https://github.com/python-pillow/Pillow/issues/4343 found that the
+        # new Image 'reduce' method was shadowed by this plugin's 'reduce'
+        # property. This attempts to allow for both scenarios
         return self._reduce or super().reduce
 
     @reduce.setter
