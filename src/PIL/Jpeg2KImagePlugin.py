@@ -216,7 +216,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self._reduce = value
 
     def load(self):
-        if self._reduce:
+        if self.tile and self._reduce:
             power = 1 << self._reduce
             adjust = power >> 1
             self._size = (
@@ -224,7 +224,6 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 int((self.size[1] + adjust) / power),
             )
 
-        if self.tile:
             # Update the reduce and layers settings
             t = self.tile[0]
             t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
