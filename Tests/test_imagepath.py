@@ -4,10 +4,8 @@ import struct
 import pytest
 from PIL import Image, ImagePath
 
-from .helper import PillowTestCase
 
-
-class TestImagePath(PillowTestCase):
+class TestImagePath:
     def test_path(self):
 
         p = ImagePath.Path(list(range(10)))

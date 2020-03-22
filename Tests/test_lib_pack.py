@@ -3,12 +3,10 @@ import sys
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase
-
 X = 255
 
 
-class TestLibPack(PillowTestCase):
+class TestLibPack:
     def assert_pack(self, mode, rawmode, data, *pixels):
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -223,7 +221,7 @@ class TestLibPack(PillowTestCase):
             )
 
 
-class TestLibUnpack(PillowTestCase):
+class TestLibUnpack:
     def assert_unpack(self, mode, rawmode, data, *pixels):
         """
         data - either raw bytes with data or just number of bytes in rawmode.

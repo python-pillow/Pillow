@@ -3,10 +3,10 @@ import math
 import pytest
 from PIL import Image, ImageTransform
 
-from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
+from .helper import assert_image_equal, assert_image_similar, hopper
 
 
-class TestImageTransform(PillowTestCase):
+class TestImageTransform:
     def test_sanity(self):
         im = Image.new("L", (100, 100))
 
@@ -177,7 +177,7 @@ class TestImageTransform(PillowTestCase):
                     im.transform((100, 100), Image.EXTENT, (0, 0, w, h), resample)
 
 
-class TestImageTransformAffine(PillowTestCase):
+class TestImageTransformAffine:
     transform = Image.AFFINE
 
     def _test_image(self):
