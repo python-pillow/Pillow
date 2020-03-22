@@ -6,6 +6,7 @@ include *.py
 include *.rst
 include *.sh
 include *.txt
+include *.yaml
 include LICENSE
 include Makefile
 include tox.ini
