@@ -3,7 +3,6 @@ import distutils.version
 import os
 import re
 import shutil
-import unittest
 from io import BytesIO
 from unittest import mock
 
@@ -441,7 +440,7 @@ class TestImageFont(PillowTestCase):
         with pytest.raises(UnicodeEncodeError):
             font.getsize("’")
 
-    @unittest.skipIf(is_pypy(), "failing on PyPy")
+    @pytest.mark.skipif(is_pypy(), reason="failing on PyPy")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"
@@ -478,7 +477,7 @@ class TestImageFont(PillowTestCase):
                 name = font.getname()
                 assert ("FreeMono", "Regular") == name
 
-    @unittest.skipIf(is_win32(), "requires Unix or macOS")
+    @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
     def test_find_linux_font(self):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
@@ -523,7 +522,7 @@ class TestImageFont(PillowTestCase):
                         font_directory + "/Duplicate.ttf", "Duplicate"
                     )
 
-    @unittest.skipIf(is_win32(), "requires Unix or macOS")
+    @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.

@@ -4,7 +4,6 @@ import pytest
 from PIL import EpsImagePlugin, Image, ImageFile, features
 
 from .helper import (
-    PillowTestCase,
     assert_image,
     assert_image_equal,
     assert_image_similar,
@@ -19,7 +18,7 @@ MAXBLOCK = ImageFile.MAXBLOCK
 SAFEBLOCK = ImageFile.SAFEBLOCK
 
 
-class TestImageFile(PillowTestCase):
+class TestImageFile:
     def test_parser(self):
         def roundtrip(format):
 
@@ -163,7 +162,7 @@ class MockImageFile(ImageFile.ImageFile):
         self.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)]
 
 
-class TestPyDecoder(PillowTestCase):
+class TestPyDecoder:
     def get_decoder(self):
         decoder = MockPyDecoder(None)
 
@@ -239,7 +238,7 @@ class TestPyDecoder(PillowTestCase):
         assert im.format is None
         assert im.get_format_mimetype() is None
 
-    def test_exif_jpeg(self):
+    def test_exif_jpeg(self, tmp_path):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
             assert 258 not in exif
@@ -247,7 +246,7 @@ class TestPyDecoder(PillowTestCase):
             assert exif[40963] == 450
             assert exif[11] == "gThumb 3.0.1"
 
-            out = self.tempfile("temp.jpg")
+            out = str(tmp_path / "temp.jpg")
             exif[258] = 8
             del exif[40960]
             exif[40963] = 455
@@ -267,7 +266,7 @@ class TestPyDecoder(PillowTestCase):
             assert exif[40963] == 200
             assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
-            out = self.tempfile("temp.jpg")
+            out = str(tmp_path / "temp.jpg")
             exif[258] = 8
             del exif[34665]
             exif[40963] = 455
@@ -282,12 +281,12 @@ class TestPyDecoder(PillowTestCase):
 
     @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
-    def test_exif_webp(self):
+    def test_exif_webp(self, tmp_path):
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
             assert exif == {}
 
-            out = self.tempfile("temp.webp")
+            out = str(tmp_path / "temp.webp")
             exif[258] = 8
             exif[40963] = 455
             exif[305] = "Pillow test"
@@ -304,12 +303,12 @@ class TestPyDecoder(PillowTestCase):
             im.save(out, exif=exif, save_all=True)
             check_exif()
 
-    def test_exif_png(self):
+    def test_exif_png(self, tmp_path):
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
             assert exif == {274: 1}
 
-            out = self.tempfile("temp.png")
+            out = str(tmp_path / "temp.png")
             exif[258] = 8
             del exif[274]
             exif[40963] = 455

@@ -1,12 +1,14 @@
 import subprocess
 import sys
 
-from .helper import PillowTestCase, assert_image
+import pytest
+
+from .helper import assert_image
 
 try:
     from PIL import ImageGrab
 
-    class TestImageGrab(PillowTestCase):
+    class TestImageGrab:
         def test_grab(self):
             for im in [
                 ImageGrab.grab(),
@@ -39,12 +41,13 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 
 except ImportError:
 
-    class TestImageGrab(PillowTestCase):
+    class TestImageGrab:
+        @pytest.mark.skip(reason="ImageGrab ImportError")
         def test_skip(self):
-            self.skipTest("ImportError")
+            pass
 
 
-class TestImageGrabImport(PillowTestCase):
+class TestImageGrabImport:
     def test_import(self):
         # Arrange
         exception = None
