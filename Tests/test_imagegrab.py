@@ -2,24 +2,29 @@ import subprocess
 import sys
 
 import pytest
+from PIL import ImageGrab
 
 from .helper import assert_image
-
-from PIL import ImageGrab
 
 
 class TestImageGrab:
     def test_grab(self):
-        if sys.platform in ["darwin", "win32"] or ImageGrab._has_imagemagick():
-            for im in [
-                ImageGrab.grab(),
-                ImageGrab.grab(include_layered_windows=True),
-                ImageGrab.grab(all_screens=True),
+        native_support = sys.platform in ["darwin", "win32"]
+        if native_support or ImageGrab._has_imagemagick():
+            for args in [
+                {},
+                {"include_layered_windows": True},
+                {"all_screens": True},
+                {"bbox": (10, 20, 50, 80)},
             ]:
-                assert_image(im, im.mode, im.size)
-
-            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-            assert_image(im, im.mode, (40, 60))
+                try:
+                    im = ImageGrab.grab(**args)
+                except IOError as e:
+                    if not native_support and str(e) == "Unable to open X server":
+                        continue
+                    else:
+                        raise
+                assert_image(im, im.mode, (40, 60) if "bbox" in args else im.size)
         else:
             pytest.raises(IOError, ImageGrab.grab)
 
@@ -36,7 +41,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            self.assertRaises(NotImplementedError, ImageGrab.grabclipboard)
+            pytest.raises(NotImplementedError, ImageGrab.grabclipboard)
             return
 
         im = ImageGrab.grabclipboard()

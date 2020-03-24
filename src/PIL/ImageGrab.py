@@ -68,7 +68,12 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False):
             raise IOError("grab requires ImageMagick unless used on macOS or Windows")
         fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)
-        subprocess.call(["import", "-window", "root", filepath])
+
+        p = subprocess.Popen(
+            ["import", "-window", "root", filepath], stderr=subprocess.PIPE
+        )
+        if b"unable to open X server" in p.communicate()[1]:
+            raise IOError("Unable to open X server")
         im = Image.open(filepath)
         im.load()
         os.unlink(filepath)
