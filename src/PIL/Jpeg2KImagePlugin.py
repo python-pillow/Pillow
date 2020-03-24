@@ -176,7 +176,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if self.size is None or self.mode is None:
             raise SyntaxError("unable to determine size/mode")
 
-        self.reduce = 0
+        self._reduce = 0
         self.layers = 0
 
         fd = -1
@@ -200,13 +200,21 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 "jpeg2k",
                 (0, 0) + self.size,
                 0,
-                (self.codec, self.reduce, self.layers, fd, length),
+                (self.codec, self._reduce, self.layers, fd, length),
             )
         ]
 
+    @property
+    def reduce(self):
+        return self._reduce or super().reduce
+
+    @reduce.setter
+    def reduce(self, value):
+        self._reduce = value
+
     def load(self):
-        if self.reduce:
-            power = 1 << self.reduce
+        if self._reduce:
+            power = 1 << self._reduce
             adjust = power >> 1
             self._size = (
                 int((self.size[0] + adjust) / power),
@@ -216,7 +224,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if self.tile:
             # Update the reduce and layers settings
             t = self.tile[0]
-            t3 = (t[3][0], self.reduce, self.layers, t[3][3], t[3][4])
+            t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
             self.tile = [(t[0], (0, 0) + self.size, t[2], t3)]
 
         return ImageFile.ImageFile.load(self)

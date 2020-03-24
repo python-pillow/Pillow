@@ -127,9 +127,18 @@ def test_prog_res_rt():
 
 def test_reduce():
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
+        assert callable(im.reduce)
+
         im.reduce = 2
+        assert im.reduce == 2
+
         im.load()
         assert im.size == (160, 120)
+
+        try:
+            im.thumbnail((40, 40))
+        except ValueError as e:
+            assert str(e) == "box can't exceed original image size"
 
 
 def test_layers_type(tmp_path):
