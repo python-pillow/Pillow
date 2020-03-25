@@ -1,10 +1,8 @@
-import pytest
 from PIL import Image
 
-from .helper import hopper, is_big_endian, on_ci
+from .helper import hopper
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
 def test_extrema():
     def extrema(mode):
         return hopper(mode).getextrema()
@@ -20,7 +18,6 @@ def test_extrema():
     assert extrema("I;16") == (1, 255)
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
 def test_true_16():
     with Image.open("Tests/images/16_bit_noise.tif") as im:
         assert im.mode == "I;16"
