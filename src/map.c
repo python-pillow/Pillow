@@ -354,17 +354,21 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 
     if (view.len < 0) {
         PyErr_SetString(PyExc_ValueError, "buffer has negative size");
+        PyBuffer_Release(&view);
         return NULL;
     }
     if (offset + size > view.len) {
         PyErr_SetString(PyExc_ValueError, "buffer is not large enough");
+        PyBuffer_Release(&view);
         return NULL;
     }
 
     im = ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(ImagingBufferInstance));
-    if (!im)
+    if (!im) {
+        PyBuffer_Release(&view);
         return NULL;
+    }
 
     /* setup file pointers */
     if (ystep > 0)
