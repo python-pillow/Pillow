@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Fixed endian handling for I;16 getextrema #4457
+  [radarhere]
+
+- Release buffer if function returns prematurely #4381
+  [radarhere]
+
 - Add JPEG comment to info dictionary #4455
   [radarhere]
 
