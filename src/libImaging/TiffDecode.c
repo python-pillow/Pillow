@@ -364,7 +364,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         state->bytes = row_byte_size * tile_length;
 
         if (TIFFTileSize(tiff) > state->bytes) {
-            // If the strip size as expected by LibTiff isn't we're expecting, abort.
+            // If the strip size as expected by LibTiff isn't what we're expecting, abort.
             state->errcode = IMAGING_CODEC_MEMORY;
             TIFFClose(tiff);
             return -1;
@@ -437,7 +437,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         TRACE(("StripSize: %d \n", state->bytes));
 
         if (TIFFStripSize(tiff) > state->bytes) {
-            // If the strip size as expected by LibTiff isn't we're expecting, abort.
+            // If the strip size as expected by LibTiff isn't what we're expecting, abort.
             // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
             //        call to TIFFReadEncodedStrip ...
 
