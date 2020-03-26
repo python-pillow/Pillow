@@ -16,8 +16,9 @@
 
 from PIL import Image
 
-repro_read_strip = ('images/crash_1.tif',
-                    'images/crash_2.tif',
+repro_read_strip = (
+    "images/crash_1.tif",
+    "images/crash_2.tif",
 )
 
 for path in repro_read_strip:
