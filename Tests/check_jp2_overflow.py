@@ -11,13 +11,12 @@
 # `valgrind --tool=memcheck python check_jp2_overflow.py  2>&1 | grep Decode.c`
 # the output should be empty. There may be python issues
 # in the valgrind especially if run in a debug python
-# version. 
+# version.
 
 
 from PIL import Image
 
-repro = ('00r0_gray_l.jp2',  '00r1_graya_la.jp2'
-             )
+repro = ("00r0_gray_l.jp2", "00r1_graya_la.jp2")
 
 for path in repro:
     im = Image.open(path)
@@ -25,5 +24,3 @@ for path in repro:
         im.load()
     except Exception as msg:
         print(msg)
-
-    
