@@ -694,14 +694,24 @@ class PngImageFile(ImageFile.ImageFile):
     def _getexif(self):
         if "exif" not in self.info:
             self.load()
-        if "exif" not in self.info:
+        if "exif" not in self.info and "Raw profile type exif" not in self.info:
             return None
         return dict(self.getexif())
 
     def getexif(self):
         if "exif" not in self.info:
             self.load()
-        return ImageFile.ImageFile.getexif(self)
+
+        if self._exif is None:
+            self._exif = Image.Exif()
+
+        exif_info = self.info.get("exif")
+        if exif_info is None and "Raw profile type exif" in self.info:
+            exif_info = bytes.fromhex(
+                "".join(self.info["Raw profile type exif"].split("\n")[3:])
+            )
+        self._exif.load(exif_info)
+        return self._exif
 
 
 # --------------------------------------------------------------------
