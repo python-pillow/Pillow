@@ -465,8 +465,18 @@ def build_pillow():
 
 
 if __name__ == "__main__":
+    # winbuild directory
+    winbuild_dir = os.path.dirname(os.path.realpath(__file__))
+
     verbose = False
     disabled = []
+    depends_dir = os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends"))
+    python_dir = os.environ.get("PYTHON")
+    python_exe = os.environ.get("EXECUTABLE", "python.exe")
+    architecture = os.environ.get(
+        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
+    )
+    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     for arg in sys.argv[1:]:
         if arg == "-v":
             verbose = True
@@ -475,38 +485,27 @@ if __name__ == "__main__":
         elif arg == "--no-raqm":
             disabled += ["harfbuzz", "fribidi", "libraqm"]
         elif arg.startswith("--depends="):
-            os.environ["PILLOW_DEPS"] = arg[10:]
+            depends_dir = arg[10:]
         elif arg.startswith("--python="):
-            os.environ["PYTHON"] = arg[9:]
+            python_dir = arg[9:]
         elif arg.startswith("--executable="):
-            os.environ["EXECUTABLE"] = arg[13:]
+            python_exe = arg[13:]
         elif arg.startswith("--architecture="):
-            os.environ["ARCHITECTURE"] = arg[15:]
+            architecture = arg[15:]
         elif arg.startswith("--dir="):
-            os.environ["PILLOW_BUILD"] = arg[6:]
+            build_dir = arg[6:]
         else:
             raise ValueError("Unknown parameter: " + arg)
 
-    # winbuild directory
-    winbuild_dir = os.path.dirname(os.path.realpath(__file__))
-
     # dependency cache directory
-    depends_dir = os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends"))
     os.makedirs(depends_dir, exist_ok=True)
     print("Caching dependencies in:", depends_dir)
 
-    # Python bin directory
-    python_dir = os.environ.get("PYTHON")
-    python_exe = os.environ.get("EXECUTABLE", "python.exe")
     if python_dir is None:
         python_dir = os.path.dirname(os.path.realpath(sys.executable))
         python_exe = os.path.basename(sys.executable)
     print("Target Python:", os.path.join(python_dir, python_exe))
 
-    # use ARCHITECTURE or PYTHON to select architecture
-    architecture = os.environ.get(
-        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
-    )
     arch_prefs = architectures[architecture]
     print("Target Architecture:", architecture)
 
@@ -517,16 +516,12 @@ if __name__ == "__main__":
         )
     print("Found Visual Studio at:", msvs["vs_dir"])
 
-    # build root directory
-    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     print("Using output directory:", build_dir)
 
     # build directory for *.h files
     inc_dir = os.path.join(build_dir, "inc")
-
     # build directory for *.lib files
     lib_dir = os.path.join(build_dir, "lib")
-
     # build directory for *.bin files
     bin_dir = os.path.join(build_dir, "bin")
 
