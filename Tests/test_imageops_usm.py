@@ -1,8 +1,6 @@
 import pytest
 from PIL import Image, ImageFilter
 
-from .helper import PillowTestCase
-
 
 @pytest.fixture
 def test_images():

@@ -3,7 +3,6 @@ import pytest
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
-    PillowTestCase,
     assert_image_equal,
     assert_image_similar,
     skip_unless_feature,
@@ -15,6 +14,7 @@ message = "hello, world"
 
 
 pytestmark = skip_unless_feature("zlib")
+
 
 def save_font(request, tmp_path):
     with open(fontname, "rb") as test_file:
@@ -30,6 +30,7 @@ def save_font(request, tmp_path):
             os.remove(tempname[:-4] + ".pbm")
         except OSError:
             pass  # report?
+
     request.addfinalizer(delete_tempfile)
     font.save(tempname)
 
@@ -42,13 +43,16 @@ def save_font(request, tmp_path):
             assert f_loaded.read() == f_target.read()
     return tempname
 
+
 def test_sanity(request, tmp_path):
     save_font(request, tmp_path)
+
 
 def test_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
             PcfFontFile.PcfFontFile(fp)
+
 
 def test_draw(request, tmp_path):
     tempname = save_font(request, tmp_path)
@@ -58,6 +62,7 @@ def test_draw(request, tmp_path):
     draw.text((0, 0), message, "black", font=font)
     with Image.open("Tests/images/test_draw_pbm_target.png") as target:
         assert_image_similar(im, target, 0)
+
 
 def test_textsize(request, tmp_path):
     tempname = save_font(request, tmp_path)
@@ -70,6 +75,7 @@ def test_textsize(request, tmp_path):
         msg = message[: l + 1]
         assert font.getsize(msg) == (len(msg) * 10, 20)
 
+
 def _test_high_characters(request, tmp_path, message):
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)
@@ -78,6 +84,7 @@ def _test_high_characters(request, tmp_path, message):
     draw.text((0, 0), message, "black", font=font)
     with Image.open("Tests/images/high_ascii_chars.png") as target:
         assert_image_similar(im, target, 0)
+
 
 def test_high_characters(request, tmp_path):
     message = "".join(chr(i + 1) for i in range(140, 232))
