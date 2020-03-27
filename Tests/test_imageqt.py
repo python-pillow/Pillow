@@ -1,3 +1,4 @@
+import pytest
 from PIL import ImageQt
 
 from .helper import PillowTestCase, hopper
@@ -5,14 +6,14 @@ from .helper import PillowTestCase, hopper
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
 
-    def skip_if_qt_is_not_installed(_):
+    def skip_if_qt_is_not_installed():
         pass
 
 
 else:
 
-    def skip_if_qt_is_not_installed(test_case):
-        test_case.skipTest("Qt bindings are not installed")
+    def skip_if_qt_is_not_installed():
+        return pytest.mark.skip(reason="Qt bindings are not installed")
 
 
 class PillowQtTestCase:

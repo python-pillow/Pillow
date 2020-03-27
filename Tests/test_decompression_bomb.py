@@ -61,9 +61,8 @@ class TestDecompressionBomb(PillowTestCase):
 
 class TestDecompressionCrop(PillowTestCase):
     def setUp(self):
-        self.src = hopper()
-        self.addCleanup(self.src.close)
-        Image.MAX_IMAGE_PIXELS = self.src.height * self.src.width * 4 - 1
+        width, height = 128, 128
+        Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
     def tearDown(self):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
@@ -71,8 +70,9 @@ class TestDecompressionCrop(PillowTestCase):
     def testEnlargeCrop(self):
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
-        box = (0, 0, self.src.width * 2, self.src.height * 2)
-        pytest.warns(Image.DecompressionBombWarning, self.src.crop, box)
+        with hopper() as src:
+            box = (0, 0, src.width * 2, src.height * 2)
+            pytest.warns(Image.DecompressionBombWarning, src.crop, box)
 
     def test_crop_decompression_checks(self):
 
