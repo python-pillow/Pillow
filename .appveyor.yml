@@ -13,11 +13,16 @@ environment:
   DEPLOY: YES
   matrix:
   - PYTHON: C:/Python38
+    ARCHITECTURE: x86
   - PYTHON: C:/Python38-x64
+    ARCHITECTURE: x64
   - PYTHON: C:/Python35
+    ARCHITECTURE: x86
   - PYTHON: C:/Python35-x64
+    ARCHITECTURE: x64
   - PYTHON: C:/msys64/mingw32
     EXECUTABLE: bin/python3
+    ARCHITECTURE: x86
     PIP_DIR: bin
     TEST_OPTIONS: --processes=0
     DEPLOY: NO

@@ -38,7 +38,7 @@ def test_viewer_show():
 
 
 @pytest.mark.skipif(
-    not on_ci() or is_win32(), reason="Only run on CIs; hangs on Windows 10",
+    not on_ci() or is_win32(), reason="Only run on CIs; hangs on Windows CIs",
 )
 def test_show():
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
