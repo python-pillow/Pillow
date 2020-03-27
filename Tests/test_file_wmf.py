@@ -35,6 +35,7 @@ def test_register_handler(tmp_path):
             self.methodCalled = True
 
     handler = TestHandler()
+    original_handler = WmfImagePlugin._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
@@ -43,7 +44,7 @@ def test_register_handler(tmp_path):
     assert handler.methodCalled
 
     # Restore the state before this test
-    WmfImagePlugin.register_handler(None)
+    WmfImagePlugin.register_handler(original_handler)
 
 
 def test_load_dpi_rounding():
