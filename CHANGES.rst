@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Added reading of earlier ImageMagick PNG EXIF data #4471
+  [radarhere]
+
 - Fixed endian handling for I;16 getextrema #4457
   [radarhere]
 
