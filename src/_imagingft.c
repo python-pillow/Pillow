@@ -28,6 +28,9 @@
 #include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
+#ifdef FT_COLOR_H
+#include FT_COLOR_H
+#endif
 
 #define KEEP_PY_UNICODE
 
@@ -350,7 +353,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 
 static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                 const char* lang, GlyphInfo **glyph_info, int mask)
+                 const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
@@ -529,7 +532,7 @@ failed:
 
 static size_t
 text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                     const char* lang, GlyphInfo **glyph_info, int mask)
+                     const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     int error, load_flags;
     FT_ULong ch;
@@ -565,6 +568,11 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -595,14 +603,14 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
 
 static size_t
 text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-            const char* lang, GlyphInfo **glyph_info, int mask)
+            const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t count;
 
     if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask, color);
     } else {
-        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask);
+        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask, color);
     }
     return count;
 }
@@ -624,6 +632,8 @@ font_getsize(FontObject* self, PyObject* args)
     size_t i, count; /* glyph_info index and length */
     int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     const char *anchor = NULL;
@@ -632,11 +642,14 @@ font_getsize(FontObject* self, PyObject* args)
 
     /* calculate size and bearing for a given string */
 
-    if (!PyArg_ParseTuple(args, "O|izOzz:getsize", &string, &mask, &dir, &features, &lang, &anchor)) {
+    if (!PyArg_ParseTuple(args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
 
     if (anchor == NULL) {
         anchor = horizontal_dir ? "la" : "lt";
@@ -645,7 +658,7 @@ font_getsize(FontObject* self, PyObject* args)
         goto bad_anchor;
     }
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -657,6 +670,11 @@ font_getsize(FontObject* self, PyObject* args)
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
 
     /*
      * text bounds are given by:
@@ -834,7 +852,10 @@ font_render(FontObject* self, PyObject* args)
     Py_ssize_t id;
     int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
     int stroke_width = 0;
+    PY_LONG_LONG foreground_ink = 0;
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     PyObject *features = Py_None;
@@ -843,14 +864,28 @@ font_render(FontObject* self, PyObject* args)
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
 
-    if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
-                                                   &stroke_width)) {
+    if (!PyArg_ParseTuple(args, "On|zzOziL:render", &string,  &id, &mode, &dir, &features, &lang,
+                                                   &stroke_width, &foreground_ink)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+#ifdef FT_COLOR_H
+    if (color) {
+        FT_Color foreground_color;
+        foreground_color.red = (FT_Byte) (foreground_ink);
+        foreground_color.green = (FT_Byte) (foreground_ink >> 8);
+        foreground_color.blue = (FT_Byte) (foreground_ink >> 16);
+        foreground_color.alpha = (FT_Byte) 255; /* ink alpha is handled in ImageDraw.text */
+        FT_Palette_Set_Foreground_Color(self->face, foreground_color);
+    }
+#endif
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -874,6 +909,11 @@ font_render(FontObject* self, PyObject* args)
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
 
     /*
      * calculate x_min and y_max
@@ -960,25 +1000,58 @@ font_render(FontObject* self, PyObject* args)
             /* clip glyph bitmap height to target image bounds */
             if (yy >= 0 && yy < im->ysize) {
                 // blend this glyph into the buffer
-                unsigned char *target = im->image8[yy] + xx;
-                if (mask) {
-                    // use monochrome mask (on palette images, etc)
-                    int j, k, m = 128;
-                    for (j = k = 0; j < x1; j++) {
-                        if (j >= x0 && (source[k] & m)) {
-                            target[j] = 255;
+                if (color) {
+                    /* target[RGB] returns the color, target[A] returns the mask */
+                    /* target bands get split again in ImageDraw.text */
+                    unsigned char *target = im->image[yy] + xx * 4;
+#ifdef FT_LOAD_COLOR
+                    if (bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
+                        // paste color glyph
+                        int k;
+                        for (k = x0; k < x1; k++) {
+                            if (target[k * 4 + 3] < source[k * 4 + 3]) {
+                                /* unpremultiply BGRa to RGBA */
+                                target[k * 4 + 0] = CLIP8((255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
+                                target[k * 4 + 1] = CLIP8((255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
+                                target[k * 4 + 2] = CLIP8((255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
+                                target[k * 4 + 3] = source[k * 4 + 3];
+                            }
                         }
-                        if (!(m >>= 1)) {
-                            m = 128;
-                            k++;
+                    } else
+#endif
+                    { // pixel_mode should be FT_PIXEL_MODE_GRAY
+                        // fill with ink
+                        int k;
+                        for (k = x0; k < x1; k++) {
+                            if (target[k * 4 + 3] < source[k]) {
+                                target[k * 4 + 0] = (unsigned char) (foreground_ink);
+                                target[k * 4 + 1] = (unsigned char) (foreground_ink >> 8);
+                                target[k * 4 + 2] = (unsigned char) (foreground_ink >> 16);
+                                target[k * 4 + 3] = source[k];
+                            }
                         }
                     }
                 } else {
-                    // use antialiased rendering
-                    int k;
-                    for (k = x0; k < x1; k++) {
-                        if (target[k] < source[k]) {
-                            target[k] = source[k];
+                    unsigned char *target = im->image8[yy] + xx;
+                    if (mask) {
+                        // use monochrome mask (on palette images, etc)
+                        int j, k, m = 128;
+                        for (j = k = 0; j < x1; j++) {
+                            if (j >= x0 && (source[k] & m)) {
+                                target[j] = 255;
+                            }
+                            if (!(m >>= 1)) {
+                                m = 128;
+                                k++;
+                            }
+                        }
+                    } else {
+                        // use antialiased rendering
+                        int k;
+                        for (k = x0; k < x1; k++) {
+                            if (target[k] < source[k]) {
+                                target[k] = source[k];
+                            }
                         }
                     }
                 }

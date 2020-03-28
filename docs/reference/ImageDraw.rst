@@ -291,7 +291,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
+.. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False)
 
     Draws the string at the given position.
 
@@ -352,7 +352,12 @@ Methods
 
         .. versionadded:: 6.2.0
 
-.. py:method:: ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
+    :param embedded_color: Whether to use embedded color info in COLR and CPAL tables.
+
+                    .. versionadded:: 8.0.0
+
+
+.. py:method:: ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False)
 
     Draws the string at the given position.
 
@@ -398,6 +403,19 @@ Methods
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
+
+    :param stroke_width: The width of the text stroke.
+
+                     .. versionadded:: 6.2.0
+
+    :param stroke_fill: Color to use for the text stroke. If not given, will default to
+                        the ``fill`` parameter.
+
+                     .. versionadded:: 6.2.0
+
+    :param embedded_color: Whether to use embedded color info in COLR and CPAL tables.
+
+                    .. versionadded:: 8.0.0
 
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
