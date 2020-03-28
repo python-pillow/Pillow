@@ -3,8 +3,9 @@ import distutils.version
 import os
 import re
 import shutil
+import sys
+from contextlib import contextmanager
 from io import BytesIO
-from unittest import mock
 
 import pytest
 from PIL import Image, ImageDraw, ImageFont
@@ -23,6 +24,23 @@ FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
 
 TEST_TEXT = "hey you\nyou are awesome\nthis looks awkward"
+
+
+@contextmanager
+def mock_patch(target, property, new_value):
+    created = not hasattr(target, property)
+    if not created:
+        original_value = getattr(target, property)
+
+    setattr(target, property, new_value)
+
+    try:
+        yield
+    finally:
+        if created:
+            delattr(target, property)
+        else:
+            setattr(target, property, original_value)
 
 
 @skip_unless_feature("freetype2")
@@ -460,7 +478,7 @@ class TestImageFont(PillowTestCase):
     def _test_fake_loading_font(self, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
-        with mock.patch.object(ImageFont, "_FreeTypeFont", free_type_font, create=True):
+        with mock_patch(ImageFont, "_FreeTypeFont", free_type_font):
 
             def loadable_font(filepath, size, index, encoding, *args, **kwargs):
                 if filepath == path_to_fake:
@@ -471,7 +489,7 @@ class TestImageFont(PillowTestCase):
                     filepath, size, index, encoding, *args, **kwargs
                 )
 
-            with mock.patch.object(ImageFont, "FreeTypeFont", loadable_font):
+            with mock_patch(ImageFont, "FreeTypeFont", loadable_font):
                 font = ImageFont.truetype(fontname)
                 # Make sure it's loaded
                 name = font.getname()
@@ -482,9 +500,12 @@ class TestImageFont(PillowTestCase):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
         font_directory = "/usr/local/share/fonts"
-        with mock.patch("sys.platform", "linux"):
-            patched_env = {"XDG_DATA_DIRS": "/usr/share/:/usr/local/share/"}
-            with mock.patch.dict(os.environ, patched_env):
+        with mock_patch(sys, "platform", "linux"):
+            created = "XDG_DATA_DIRS" not in os.environ
+            if not created:
+                original_value = os.environ["XDG_DATA_DIRS"]
+            os.environ["XDG_DATA_DIRS"] = "/usr/share/:/usr/local/share/"
+            try:
 
                 def fake_walker(path):
                     if path == font_directory:
@@ -502,7 +523,7 @@ class TestImageFont(PillowTestCase):
                         ]
                     return [(path, [], ["some_random_font.ttf"])]
 
-                with mock.patch("os.walk", fake_walker):
+                with mock_patch(os, "walk", fake_walker):
                     # Test that the font loads both with and without the
                     # extension
                     self._test_fake_loading_font(
@@ -521,13 +542,18 @@ class TestImageFont(PillowTestCase):
                     self._test_fake_loading_font(
                         font_directory + "/Duplicate.ttf", "Duplicate"
                     )
+            finally:
+                if created:
+                    del os.environ["XDG_DATA_DIRS"]
+                else:
+                    os.environ["XDG_DATA_DIRS"] = original_value
 
     @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
     def test_find_macos_font(self):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
         font_directory = "/System/Library/Fonts"
-        with mock.patch("sys.platform", "darwin"):
+        with mock_patch(sys, "platform", "darwin"):
 
             def fake_walker(path):
                 if path == font_directory:
@@ -545,7 +571,7 @@ class TestImageFont(PillowTestCase):
                     ]
                 return [(path, [], ["some_random_font.ttf"])]
 
-            with mock.patch("os.walk", fake_walker):
+            with mock_patch(os, "walk", fake_walker):
                 self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial.ttf")
                 self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial")
                 self._test_fake_loading_font(font_directory + "/Single.otf", "Single")
