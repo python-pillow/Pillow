@@ -1,15 +1,16 @@
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 TEST_FILE = "Tests/images/hopper.ppm"
 
 ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
 
-class TestDecompressionBomb(PillowTestCase):
-    def tearDown(self):
+class TestDecompressionBomb:
+    @classmethod
+    def teardown_class(self):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def test_no_warning_small_file(self):
@@ -59,12 +60,14 @@ class TestDecompressionBomb(PillowTestCase):
             Image.open("Tests/images/decompression_bomb.gif")
 
 
-class TestDecompressionCrop(PillowTestCase):
-    def setUp(self):
+class TestDecompressionCrop:
+    @classmethod
+    def setup_class(self):
         width, height = 128, 128
         Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
-    def tearDown(self):
+    @classmethod
+    def teardown_class(self):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def testEnlargeCrop(self):

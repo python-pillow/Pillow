@@ -7,7 +7,6 @@ import os
 import shutil
 import sys
 import tempfile
-import unittest
 from io import BytesIO
 
 import pytest
@@ -174,22 +173,6 @@ def skip_known_bad_test(msg=None):
 def skip_unless_feature(feature):
     reason = "%s not available" % feature
     return pytest.mark.skipif(not features.check(feature), reason=reason)
-
-
-class PillowTestCase(unittest.TestCase):
-    def delete_tempfile(self, path):
-        try:
-            os.remove(path)
-        except OSError:
-            pass  # report?
-
-    def tempfile(self, template):
-        assert template[:5] in ("temp.", "temp_")
-        fd, path = tempfile.mkstemp(template[4:], template[:4])
-        os.close(fd)
-
-        self.addCleanup(self.delete_tempfile, path)
-        return path
 
 
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")

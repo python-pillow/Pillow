@@ -10,7 +10,6 @@ import pytest
 from PIL import Image, ImageDraw, ImageFont
 
 from .helper import (
-    PillowTestCase,
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
@@ -25,8 +24,10 @@ FONT_SIZE = 20
 TEST_TEXT = "hey you\nyou are awesome\nthis looks awkward"
 
 
-@skip_unless_feature("freetype2")
-class TestImageFont(PillowTestCase):
+pytestmark = skip_unless_feature("freetype2")
+
+
+class TestImageFont:
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
     # Freetype has different metrics depending on the version.
@@ -37,7 +38,8 @@ class TestImageFont(PillowTestCase):
         "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
     }
 
-    def setUp(self):
+    @classmethod
+    def setup_class(self):
         freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
 
         self.metrics = self.METRICS["Default"]
@@ -107,12 +109,12 @@ class TestImageFont(PillowTestCase):
         with open(FONT_PATH, "rb") as f:
             self._render(f)
 
-    def test_non_unicode_path(self):
+    def test_non_unicode_path(self, tmp_path):
+        tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
         try:
-            tempfile = self.tempfile("temp_" + chr(128) + ".ttf")
+            shutil.copy(FONT_PATH, tempfile)
         except UnicodeEncodeError:
-            self.skipTest("Unicode path could not be created")
-        shutil.copy(FONT_PATH, tempfile)
+            pytest.skip("Unicode path could not be created")
 
         ImageFont.truetype(tempfile, FONT_SIZE)
 

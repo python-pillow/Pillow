@@ -1,9 +1,11 @@
+import pytest
 from PIL import Image, ImageQt
 
 from .helper import assert_image_equal, hopper
-from .test_imageqt import skip_if_qt_is_not_installed
 
-pytestmark = skip_if_qt_is_not_installed()
+pytestmark = pytest.mark.skipif(
+    not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
+)
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QImage
