@@ -28,6 +28,7 @@ static void read4B(UINT32* dest, UINT8* buf)
 static int expandrow(UINT8* dest, UINT8* src, int n, int z, int xsize)
 {
     UINT8 pixel, count;
+    int x = 0;
 
     for (;n > 0; n--)
     {
@@ -37,9 +38,10 @@ static int expandrow(UINT8* dest, UINT8* src, int n, int z, int xsize)
         count = pixel & RLE_MAX_RUN;
         if (!count)
             return count;
-        if (count > xsize) {
+        if (x + count > xsize) {
             return -1;
         }
+        x += count;
         if (pixel & RLE_COPY_FLAG) {
             while(count--) {
                 *dest = *src++;
@@ -63,6 +65,7 @@ static int expandrow2(UINT8* dest, const UINT8* src, int n, int z, int xsize)
 {
     UINT8 pixel, count;
 
+    int x = 0;
 
     for (;n > 0; n--)
     {
@@ -73,9 +76,10 @@ static int expandrow2(UINT8* dest, const UINT8* src, int n, int z, int xsize)
         count = pixel & RLE_MAX_RUN;
         if (!count)
             return count;
-        if (count > xsize) {
+        if (x + count > xsize) {
             return -1;
         }
+        x += count;
         if (pixel & RLE_COPY_FLAG) {
             while(count--) {
                 memcpy(dest, src, 2);
