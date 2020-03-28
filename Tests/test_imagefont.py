@@ -3,8 +3,8 @@ import distutils.version
 import os
 import re
 import shutil
+import sys
 from io import BytesIO
-from unittest import mock
 
 import pytest
 from PIL import Image, ImageDraw, ImageFont
@@ -459,10 +459,11 @@ class TestImageFont:
 
         assert_image_similar_tofile(img, target, self.metrics["multiline"])
 
-    def _test_fake_loading_font(self, path_to_fake, fontname):
+    def _test_fake_loading_font(self, monkeypatch, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
-        with mock.patch.object(ImageFont, "_FreeTypeFont", free_type_font, create=True):
+        with monkeypatch.context() as m:
+            m.setattr(ImageFont, "_FreeTypeFont", free_type_font, raising=False)
 
             def loadable_font(filepath, size, index, encoding, *args, **kwargs):
                 if filepath == path_to_fake:
@@ -473,87 +474,84 @@ class TestImageFont:
                     filepath, size, index, encoding, *args, **kwargs
                 )
 
-            with mock.patch.object(ImageFont, "FreeTypeFont", loadable_font):
-                font = ImageFont.truetype(fontname)
-                # Make sure it's loaded
-                name = font.getname()
-                assert ("FreeMono", "Regular") == name
+            m.setattr(ImageFont, "FreeTypeFont", loadable_font)
+            font = ImageFont.truetype(fontname)
+            # Make sure it's loaded
+            name = font.getname()
+            assert ("FreeMono", "Regular") == name
 
     @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
-    def test_find_linux_font(self):
+    def test_find_linux_font(self, monkeypatch):
         # A lot of mocking here - this is more for hitting code and
         # catching syntax like errors
         font_directory = "/usr/local/share/fonts"
-        with mock.patch("sys.platform", "linux"):
-            patched_env = {"XDG_DATA_DIRS": "/usr/share/:/usr/local/share/"}
-            with mock.patch.dict(os.environ, patched_env):
+        monkeypatch.setattr(sys, "platform", "linux")
+        monkeypatch.setenv("XDG_DATA_DIRS", "/usr/share/:/usr/local/share/")
 
-                def fake_walker(path):
-                    if path == font_directory:
-                        return [
-                            (
-                                path,
-                                [],
-                                [
-                                    "Arial.ttf",
-                                    "Single.otf",
-                                    "Duplicate.otf",
-                                    "Duplicate.ttf",
-                                ],
-                            )
-                        ]
-                    return [(path, [], ["some_random_font.ttf"])]
-
-                with mock.patch("os.walk", fake_walker):
-                    # Test that the font loads both with and without the
-                    # extension
-                    self._test_fake_loading_font(
-                        font_directory + "/Arial.ttf", "Arial.ttf"
+        def fake_walker(path):
+            if path == font_directory:
+                return [
+                    (
+                        path,
+                        [],
+                        ["Arial.ttf", "Single.otf", "Duplicate.otf", "Duplicate.ttf"],
                     )
-                    self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial")
+                ]
+            return [(path, [], ["some_random_font.ttf"])]
 
-                    # Test that non-ttf fonts can be found without the
-                    # extension
-                    self._test_fake_loading_font(
-                        font_directory + "/Single.otf", "Single"
-                    )
+        monkeypatch.setattr(os, "walk", fake_walker)
+        # Test that the font loads both with and without the
+        # extension
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Arial.ttf", "Arial.ttf"
+        )
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Arial.ttf", "Arial"
+        )
 
-                    # Test that ttf fonts are preferred if the extension is
-                    # not specified
-                    self._test_fake_loading_font(
-                        font_directory + "/Duplicate.ttf", "Duplicate"
-                    )
+        # Test that non-ttf fonts can be found without the
+        # extension
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Single.otf", "Single"
+        )
+
+        # Test that ttf fonts are preferred if the extension is
+        # not specified
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Duplicate.ttf", "Duplicate"
+        )
 
     @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
-    def test_find_macos_font(self):
+    def test_find_macos_font(self, monkeypatch):
         # Like the linux test, more cover hitting code rather than testing
         # correctness.
         font_directory = "/System/Library/Fonts"
-        with mock.patch("sys.platform", "darwin"):
+        monkeypatch.setattr(sys, "platform", "darwin")
 
-            def fake_walker(path):
-                if path == font_directory:
-                    return [
-                        (
-                            path,
-                            [],
-                            [
-                                "Arial.ttf",
-                                "Single.otf",
-                                "Duplicate.otf",
-                                "Duplicate.ttf",
-                            ],
-                        )
-                    ]
-                return [(path, [], ["some_random_font.ttf"])]
+        def fake_walker(path):
+            if path == font_directory:
+                return [
+                    (
+                        path,
+                        [],
+                        ["Arial.ttf", "Single.otf", "Duplicate.otf", "Duplicate.ttf"],
+                    )
+                ]
+            return [(path, [], ["some_random_font.ttf"])]
 
-            with mock.patch("os.walk", fake_walker):
-                self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial.ttf")
-                self._test_fake_loading_font(font_directory + "/Arial.ttf", "Arial")
-                self._test_fake_loading_font(font_directory + "/Single.otf", "Single")
-                self._test_fake_loading_font(
-                    font_directory + "/Duplicate.ttf", "Duplicate"
-                )
+        monkeypatch.setattr(os, "walk", fake_walker)
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Arial.ttf", "Arial.ttf"
+        )
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Arial.ttf", "Arial"
+        )
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Single.otf", "Single"
+        )
+        self._test_fake_loading_font(
+            monkeypatch, font_directory + "/Duplicate.ttf", "Duplicate"
+        )
 
     def test_imagefont_getters(self):
         # Arrange
