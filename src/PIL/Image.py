@@ -39,11 +39,21 @@ from collections.abc import Callable, MutableMapping
 from pathlib import Path
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION was removed in Pillow 7.0.0.
+# PILLOW_VERSION is deprecated and will be removed in a future release.
 # Use __version__ instead.
-from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
+from . import (
+    PILLOW_VERSION,
+    ImageMode,
+    TiffTags,
+    UnidentifiedImageError,
+    __version__,
+    _plugins,
+)
 from ._binary import i8, i32le
 from ._util import deferred_error, isPath
+
+# Silence warning
+assert PILLOW_VERSION
 
 logger = logging.getLogger(__name__)
 

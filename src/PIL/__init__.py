@@ -16,9 +16,9 @@ Use PIL.__version__ for this Pillow version.
 from . import _version
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION was removed in Pillow 7.0.0.
+# PILLOW_VERSION is deprecated and will be removed in a future release.
 # Use __version__ instead.
-__version__ = _version.__version__
+PILLOW_VERSION = __version__ = _version.__version__
 
 del _version
 
