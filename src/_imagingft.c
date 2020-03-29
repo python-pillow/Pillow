@@ -564,9 +564,10 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         if (kerning && last_index && (*glyph_info)[i].index) {
             FT_Vector delta;
             if (FT_Get_Kerning(self->face, last_index, (*glyph_info)[i].index,
-                           ft_kerning_default,&delta) == 0)
-            (*glyph_info)[i-1].x_advance += PIXEL(delta.x);
-            (*glyph_info)[i-1].y_advance += PIXEL(delta.y);
+                           ft_kerning_default,&delta) == 0) {
+                (*glyph_info)[i-1].x_advance += PIXEL(delta.x);
+                (*glyph_info)[i-1].y_advance += PIXEL(delta.y);
+            }
         }
 
         (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
