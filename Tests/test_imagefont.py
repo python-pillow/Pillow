@@ -840,6 +840,102 @@ class TestImageFont:
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
             )
 
+    def test_standard_embedded_color(self):
+        txt = "Hello World!"
+        ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
+        ttf.getsize(txt)
+
+        img = Image.new("RGB", (300, 64), "white")
+        d = ImageDraw.Draw(img)
+        d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
+
+        with Image.open("Tests/images/standard_embedded.png") as expected:
+            assert_image_similar(img, expected, max(self.metrics["multiline"], 3))
+
+    @pytest.mark.skipif(
+        parse_version(features.version_module("freetype2")) < parse_version("2.5.0"),
+        reason="Freetype 2.5.0 or newer required",
+    )
+    def test_cbdt(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\u263A", embedded_color=True, font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as ex:
+            assert str(ex) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @pytest.mark.skipif(
+        parse_version(features.version_module("freetype2")) < parse_version("2.5.0"),
+        reason="Freetype 2.5.0 or newer required",
+    )
+    def test_cbdt_mask(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\u263A", "black", font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as ex:
+            assert str(ex) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @pytest.mark.skipif(
+        parse_version(features.version_module("freetype2")) < parse_version("2.10.0"),
+        reason="Freetype 2.10.0 or newer required",
+    )
+    def test_colr(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", embedded_color=True, font=font)
+
+        with Image.open("Tests/images/colr_bungee.png") as expected:
+            assert_image_similar(im, expected, 21)
+
+    @pytest.mark.skipif(
+        parse_version(features.version_module("freetype2")) < parse_version("2.10.0"),
+        reason="Freetype 2.10.0 or newer required",
+    )
+    def test_colr_mask(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", "black", font=font)
+
+        with Image.open("Tests/images/colr_bungee_mask.png") as expected:
+            assert_image_similar(im, expected, 22)
+
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):

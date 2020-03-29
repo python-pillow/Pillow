@@ -40,4 +40,4 @@ def test_similar():
         fill=(0, 0, 0),
         font=font_outline,
     )
-    assert_image_similar(im_bitmap, im_outline, 20)
+    assert_image_similar(im_bitmap, im_outline, 44)
