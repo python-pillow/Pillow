@@ -135,10 +135,8 @@ def test_reduce():
         im.load()
         assert im.size == (160, 120)
 
-        try:
-            im.thumbnail((40, 40))
-        except ValueError as e:
-            assert str(e) == "box can't exceed original image size"
+        im.thumbnail((40, 40))
+        assert im.size == (40, 30)
 
 
 def test_layers_type(tmp_path):
