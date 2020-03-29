@@ -26,6 +26,7 @@ def test_similar():
     im_outline = im_bitmap.copy()
     draw_bitmap = ImageDraw.Draw(im_bitmap)
     draw_outline = ImageDraw.Draw(im_outline)
+    draw_outline.fontmode = "1"  # disable anti-aliasing to match bitmap font
 
     # Metrics are different on the bitmap and TTF fonts,
     # more so on some platforms and versions of FreeType than others.

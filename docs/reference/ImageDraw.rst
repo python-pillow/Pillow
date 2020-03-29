@@ -352,7 +352,7 @@ Methods
 
         .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use embedded color info in COLR and CPAL tables.
+    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
                     .. versionadded:: 8.0.0
 
@@ -413,7 +413,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use embedded color info in COLR and CPAL tables.
+    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
                     .. versionadded:: 8.0.0
 
