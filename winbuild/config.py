@@ -103,9 +103,9 @@ libs = {
         "dir": "harfbuzz-2.6.1",
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.7.zip",
-        "filename": "fribidi-1.0.7.zip",
-        "dir": "fribidi-1.0.7",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.9.zip",
+        "filename": "fribidi-1.0.9.zip",
+        "dir": "fribidi-1.0.9",
     },
     "libraqm": {
         "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
