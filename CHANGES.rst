@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.1.0 (unreleased)
 ------------------
 
+- Prevent masking of Image reduce method in Jpeg2KImagePlugin #4474
+  [radarhere, homm]
+
 - Added reading of earlier ImageMagick PNG EXIF data #4471
   [radarhere]
 
