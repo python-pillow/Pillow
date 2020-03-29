@@ -27,13 +27,13 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         repository: python-pillow/pillow-depends
-        ref: master
+        path: winbuild\depends
 
     - name: Cache pip
       uses: actions/cache@v1
@@ -60,15 +60,15 @@ jobs:
 
     - name: Prepare dependencies
       run: |
-        7z x ..\pillow-depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
 
-        ..\pillow-depends\gs950w32.exe /S
+        winbuild\depends\gs950w32.exe /S
         Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.50\bin"
 
-        xcopy /s ..\pillow-depends\test_images\* $env:GITHUB_WORKSPACE\tests\images\
+        xcopy /s winbuild\depends\test_images\* Tests\images\
 
-        & python.exe $env:GITHUB_WORKSPACE\winbuild\build_prepare.py -v --depends=$env:RUNNER_WORKSPACE\pillow-depends\ --python=$env:pythonLocation
+        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo
@@ -149,8 +149,8 @@ jobs:
         winbuild\\build\\build_pillow.cmd bdist_wheel"
       shell: cmd
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2-preview
       if: "github.event_name == 'push' && !contains(matrix.python-version, 'pypy')"
       with:
         name: ${{ steps.wheel.outputs.dist }}
-        path: dist
+        path: dist\*.whl
