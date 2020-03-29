@@ -3,6 +3,9 @@ from PIL import Image, ImageMath, ImageMode
 
 from .helper import convert_to_comparable
 
+codecs = dir(Image.core)
+
+
 # There are several internal implementations
 remarkable_factors = [
     # special implementations
@@ -247,3 +250,11 @@ def test_mode_F():
     for factor in remarkable_factors:
         compare_reduce_with_reference(im, factor, 0, 0)
         compare_reduce_with_box(im, factor)
+
+
+@pytest.mark.skipif(
+    "jpeg2k_decoder" not in codecs, reason="JPEG 2000 support not available"
+)
+def test_jpeg2k():
+    with Image.open("Tests/images/test-card-lossless.jp2") as im:
+        assert im.reduce(2).size == (320, 240)
