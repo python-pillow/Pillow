@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 
+import PIL
 import pytest
 from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
@@ -607,6 +608,13 @@ class TestImage:
                 im.load()
 
             assert not fp.closed
+
+    def test_pillow_version(self):
+        with pytest.warns(DeprecationWarning):
+            assert PIL.__version__ == PIL.PILLOW_VERSION
+
+        with pytest.warns(DeprecationWarning):
+            assert int(PIL.PILLOW_VERSION[0]) >= 7
 
     def test_overrun(self):
         for file in [

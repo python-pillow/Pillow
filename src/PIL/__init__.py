@@ -13,12 +13,35 @@ Use PIL.__version__ for this Pillow version.
 ;-)
 """
 
+import warnings
+
 from . import _version
 
 # VERSION was removed in Pillow 6.0.0.
+__version__ = _version.__version__
+
+
+class _Deprecated_Version(str):
+    def _raise_warning(self):
+        warnings.warn(
+            "PILLOW_VERSION is deprecated and will be removed in a future release. "
+            "Use __version__ instead.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+
+    def __getitem__(self, key):
+        self._raise_warning()
+        return super().__getitem__(key)
+
+    def __eq__(self, other):
+        self._raise_warning()
+        return super().__eq__(other)
+
+
 # PILLOW_VERSION is deprecated and will be removed in a future release.
 # Use __version__ instead.
-PILLOW_VERSION = __version__ = _version.__version__
+PILLOW_VERSION = _Deprecated_Version(__version__)
 
 del _version
 
