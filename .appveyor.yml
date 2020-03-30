@@ -14,10 +14,6 @@ environment:
   matrix:
   - PYTHON: C:/Python38
     ARCHITECTURE: x86
-  - PYTHON: C:/Python38-x64
-    ARCHITECTURE: x64
-  - PYTHON: C:/Python35
-    ARCHITECTURE: x86
   - PYTHON: C:/Python35-x64
     ARCHITECTURE: x64
   - PYTHON: C:/msys64/mingw32
@@ -26,9 +22,6 @@ environment:
     PIP_DIR: bin
     TEST_OPTIONS: --processes=0
     DEPLOY: NO
-  - PYTHON: C:/vp/pypy3
-    EXECUTABLE: bin/pypy.exe
-    VENV: YES
 
 
 install:
@@ -41,11 +34,6 @@ install:
 - gs952.exe /S
 - path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.52\bin;%PATH%
 - cd c:\pillow\winbuild\
-- ps: |
-      if ($env:PYTHON -eq "c:/vp/pypy3")
-      {
-        c:\pillow\winbuild\appveyor_install_pypy3.cmd
-      }
 - ps: |
       if ($env:PYTHON -eq "c:/msys64/mingw32")
       {
