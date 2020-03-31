@@ -27,7 +27,7 @@ Reading JPEG comments
 When opening a JPEG image, the comment may now be read into
 :py:attr:`~PIL.Image.Image.info`.
 
-New Channel Operations
+New channel operations
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Three new channel operations have been added: :py:meth:`~PIL.ImageChops.soft_light`,
