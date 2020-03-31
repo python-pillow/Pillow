@@ -127,9 +127,16 @@ def test_prog_res_rt():
 
 def test_reduce():
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
+        assert callable(im.reduce)
+
         im.reduce = 2
+        assert im.reduce == 2
+
         im.load()
         assert im.size == (160, 120)
+
+        im.thumbnail((40, 40))
+        assert im.size == (40, 30)
 
 
 def test_layers_type(tmp_path):

@@ -139,6 +139,42 @@ def screen(image1, image2):
     return image1._new(image1.im.chop_screen(image2.im))
 
 
+def soft_light(image1, image2):
+    """
+    Superimposes two images on top of each other using the Soft Light algorithm
+
+    :rtype: :py:class:`~PIL.Image.Image`
+    """
+
+    image1.load()
+    image2.load()
+    return image1._new(image1.im.chop_soft_light(image2.im))
+
+
+def hard_light(image1, image2):
+    """
+    Superimposes two images on top of each other using the Hard Light algorithm
+
+    :rtype: :py:class:`~PIL.Image.Image`
+    """
+
+    image1.load()
+    image2.load()
+    return image1._new(image1.im.chop_hard_light(image2.im))
+
+
+def overlay(image1, image2):
+    """
+    Superimposes two images on top of each other using the Overlay algorithm
+
+    :rtype: :py:class:`~PIL.Image.Image`
+    """
+
+    image1.load()
+    image2.load()
+    return image1._new(image1.im.chop_overlay(image2.im))
+
+
 def add(image1, image2, scale=1.0, offset=0):
     """
     Adds two images, dividing the result by scale and adding the

@@ -1,23 +1,14 @@
-import unittest
-
 import pytest
 from PIL import Image
-
-from .helper import PillowTestCase
 
 TEST_FILE = "Tests/images/libtiff_segfault.tif"
 
 
-class TestLibtiffSegfault(PillowTestCase):
-    def test_segfault(self):
-        """ This test should not segfault. It will on Pillow <= 3.1.0 and
-            libtiff >= 4.0.0
-            """
+def test_libtiff_segfault():
+    """ This test should not segfault. It will on Pillow <= 3.1.0 and
+        libtiff >= 4.0.0
+        """
 
-        with pytest.raises(IOError):
-            with Image.open(TEST_FILE) as im:
-                im.load()
-
-
-if __name__ == "__main__":
-    unittest.main()
+    with pytest.raises(IOError):
+        with Image.open(TEST_FILE) as im:
+            im.load()

@@ -146,3 +146,27 @@ ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2)
 {
     CHOP2(in1[x] - in2[x], NULL);
 }
+
+Imaging
+ImagingChopSoftLight(Imaging imIn1, Imaging imIn2)
+{
+    CHOP2( (((255-in1[x]) * (in1[x]*in2[x]) ) / 65536) +
+         (in1[x] * ( 255 - ( (255 - in1[x]) * (255 - in2[x] ) / 255) )) / 255
+         , NULL );
+}
+
+Imaging
+ImagingChopHardLight(Imaging imIn1, Imaging imIn2)
+{
+    CHOP2( (in2[x]<128) ? ( (in1[x]*in2[x])/127)
+                        : 255 - ( ((255-in2[x]) * (255-in1[x])) / 127)
+         , NULL);
+}
+
+Imaging
+ImagingOverlay(Imaging imIn1, Imaging imIn2)
+{
+    CHOP2( (in1[x]<128) ? ( (in1[x]*in2[x])/127)
+                        : 255 - ( ((255-in1[x]) * (255-in2[x])) / 127)
+         , NULL);
+}

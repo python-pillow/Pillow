@@ -8,6 +8,12 @@ codecov:
 
 comment: false
 
+coverage:
+  status:
+    project:
+      default:
+        threshold: 0.01%
+
 # Matches 'omit:' in .coveragerc
 ignore:
   - "Tests/32bit_segfault_check.py"

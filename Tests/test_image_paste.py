@@ -1,9 +1,9 @@
 from PIL import Image
 
-from .helper import PillowTestCase, assert_image_equal, cached_property
+from .helper import assert_image_equal, cached_property
 
 
-class TestImagingPaste(PillowTestCase):
+class TestImagingPaste:
     masks = {}
     size = 128
 

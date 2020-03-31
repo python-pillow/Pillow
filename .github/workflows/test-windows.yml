@@ -251,7 +251,7 @@ jobs:
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
         set INCLUDE=%INCLUDE%;%INCLIB%
         set LIB=%LIB%;%INCLIB%
-        cd /D %BUILD%\harfbuzz-2.6.1
+        cd /D %BUILD%\harfbuzz-2.6.4
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         set CMAKE=cmake.exe -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_RULE_MESSAGES:BOOL=OFF
@@ -269,7 +269,7 @@ jobs:
         set INCLUDE=C:\Program Files (x86)\Microsoft SDKs\Windows\V7.1A\Include
         set INCLIB=%GITHUB_WORKSPACE%\winbuild\depends\msvcr10-x32
         set BUILD=%GITHUB_WORKSPACE%\winbuild\build
-        cd /D %BUILD%\fribidi-1.0.7
+        cd /D %BUILD%\fribidi-1.0.9
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform-vcvars }}
         echo on
         copy /Y /B %GITHUB_WORKSPACE%\winbuild\fribidi.cmake CMakeLists.txt

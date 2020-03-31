@@ -6,10 +6,10 @@ from itertools import permutations
 import pytest
 from PIL import Image
 
-from .helper import PillowTestCase, assert_image_equal, assert_image_similar, hopper
+from .helper import assert_image_equal, assert_image_similar, hopper
 
 
-class TestImagingCoreResize(PillowTestCase):
+class TestImagingCoreResize:
     def resize(self, im, size, f):
         # Image class independent version of resize.
         im.load()
@@ -135,31 +135,36 @@ class TestImagingCoreResize(PillowTestCase):
             self.resize(hopper(), (10, 10), 9)
 
 
-class TestReducingGapResize(PillowTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.gradients_image = Image.open("Tests/images/radial_gradients.png")
-        cls.gradients_image.load()
+@pytest.fixture
+def gradients_image():
+    im = Image.open("Tests/images/radial_gradients.png")
+    im.load()
+    try:
+        yield im
+    finally:
+        im.close()
 
-    def test_reducing_gap_values(self):
-        ref = self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=None)
-        im = self.gradients_image.resize((52, 34), Image.BICUBIC)
+
+class TestReducingGapResize:
+    def test_reducing_gap_values(self, gradients_image):
+        ref = gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=None)
+        im = gradients_image.resize((52, 34), Image.BICUBIC)
         assert_image_equal(ref, im)
 
         with pytest.raises(ValueError):
-            self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0)
+            gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0)
 
         with pytest.raises(ValueError):
-            self.gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0.99)
+            gradients_image.resize((52, 34), Image.BICUBIC, reducing_gap=0.99)
 
-    def test_reducing_gap_1(self):
+    def test_reducing_gap_1(self, gradients_image):
         for box, epsilon in [
             (None, 4),
             ((1.1, 2.2, 510.8, 510.9), 4),
             ((3, 10, 410, 256), 10),
         ]:
-            ref = self.gradients_image.resize((52, 34), Image.BICUBIC, box=box)
-            im = self.gradients_image.resize(
+            ref = gradients_image.resize((52, 34), Image.BICUBIC, box=box)
+            im = gradients_image.resize(
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=1.0
             )
 
@@ -168,14 +173,14 @@ class TestReducingGapResize(PillowTestCase):
 
             assert_image_similar(ref, im, epsilon)
 
-    def test_reducing_gap_2(self):
+    def test_reducing_gap_2(self, gradients_image):
         for box, epsilon in [
             (None, 1.5),
             ((1.1, 2.2, 510.8, 510.9), 1.5),
             ((3, 10, 410, 256), 1),
         ]:
-            ref = self.gradients_image.resize((52, 34), Image.BICUBIC, box=box)
-            im = self.gradients_image.resize(
+            ref = gradients_image.resize((52, 34), Image.BICUBIC, box=box)
+            im = gradients_image.resize(
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=2.0
             )
 
@@ -184,14 +189,14 @@ class TestReducingGapResize(PillowTestCase):
 
             assert_image_similar(ref, im, epsilon)
 
-    def test_reducing_gap_3(self):
+    def test_reducing_gap_3(self, gradients_image):
         for box, epsilon in [
             (None, 1),
             ((1.1, 2.2, 510.8, 510.9), 1),
             ((3, 10, 410, 256), 0.5),
         ]:
-            ref = self.gradients_image.resize((52, 34), Image.BICUBIC, box=box)
-            im = self.gradients_image.resize(
+            ref = gradients_image.resize((52, 34), Image.BICUBIC, box=box)
+            im = gradients_image.resize(
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=3.0
             )
 
@@ -200,29 +205,27 @@ class TestReducingGapResize(PillowTestCase):
 
             assert_image_similar(ref, im, epsilon)
 
-    def test_reducing_gap_8(self):
+    def test_reducing_gap_8(self, gradients_image):
         for box in [None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)]:
-            ref = self.gradients_image.resize((52, 34), Image.BICUBIC, box=box)
-            im = self.gradients_image.resize(
+            ref = gradients_image.resize((52, 34), Image.BICUBIC, box=box)
+            im = gradients_image.resize(
                 (52, 34), Image.BICUBIC, box=box, reducing_gap=8.0
             )
 
             assert_image_equal(ref, im)
 
-    def test_box_filter(self):
+    def test_box_filter(self, gradients_image):
         for box, epsilon in [
             ((0, 0, 512, 512), 5.5),
             ((0.9, 1.7, 128, 128), 9.5),
         ]:
-            ref = self.gradients_image.resize((52, 34), Image.BOX, box=box)
-            im = self.gradients_image.resize(
-                (52, 34), Image.BOX, box=box, reducing_gap=1.0
-            )
+            ref = gradients_image.resize((52, 34), Image.BOX, box=box)
+            im = gradients_image.resize((52, 34), Image.BOX, box=box, reducing_gap=1.0)
 
             assert_image_similar(ref, im, epsilon)
 
 
-class TestImageResize(PillowTestCase):
+class TestImageResize:
     def test_resize(self):
         def resize(mode, size):
             out = hopper(mode).resize(size)
