@@ -9,7 +9,6 @@ from .helper import (
     PillowLeakTestCase,
     assert_image,
     assert_image_equal,
-    assert_image_similar,
     hopper,
     is_big_endian,
     is_win32,
@@ -629,16 +628,6 @@ class TestFilePng:
 
         with Image.open(test_file) as reloaded:
             assert reloaded.info["exif"] == b"Exif\x00\x00exifstring"
-
-    @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
-    def test_apng(self):
-        with Image.open("Tests/images/iss634.apng") as im:
-            assert im.get_format_mimetype() == "image/apng"
-
-            # This also tests reading unknown PNG chunks (fcTL and fdAT) in load_end
-            with Image.open("Tests/images/iss634.webp") as expected:
-                assert_image_similar(im, expected, 0.23)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

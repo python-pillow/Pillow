@@ -556,6 +556,125 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     library before building the Python Imaging Library. See the `installation
     documentation <../installation.html>`_ for details.
 
+.. _apng-sequences:
+
+APNG sequences
+~~~~~~~~~~~~~~
+
+The PNG loader includes limited support for reading and writing Animated Portable
+Network Graphics (APNG) files.
+When an APNG file is loaded, :py:meth:`~PIL.ImageFile.ImageFile.get_format_mimetype`
+will return ``"image/apng"``. The value of the :py:attr:`~PIL.Image.Image.is_animated`
+property will be ``True`` when the :py:attr:`~PIL.Image.Image.n_frames` property is
+greater than 1. For APNG files, the ``n_frames`` property depends on both the animation
+frame count as well as the presence or absence of a default image. See the
+``default_image`` property documentation below for more details.
+The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell` methods
+are supported.
+
+``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the last frame.
+
+These :py:attr:`~PIL.Image.Image.info` properties will be set for APNG frames,
+where applicable:
+
+**default_image**
+    Specifies whether or not this APNG file contains a separate default image,
+    which is not a part of the actual APNG animation.
+
+    When an APNG file contains a default image, the initially loaded image (i.e.
+    the result of ``seek(0)``) will be the default image.
+    To account for the presence of the default image, the
+    :py:attr:`~PIL.Image.Image.n_frames` property will be set to ``frame_count + 1``,
+    where ``frame_count`` is the actual APNG animation frame count.
+    To load the first APNG animation frame, ``seek(1)`` must be called.
+
+    * ``True`` - The APNG contains default image, which is not an animation frame.
+    * ``False`` - The APNG does not contain a default image. The ``n_frames`` property
+      will be set to the actual APNG animation frame count.
+      The initially loaded image (i.e. ``seek(0)``) will be the first APNG animation
+      frame.
+
+**loop**
+    The number of times to loop this APNG, 0 indicates infinite looping.
+
+**duration**
+    The time to display this APNG frame (in milliseconds).
+
+.. note::
+
+    The APNG loader returns images the same size as the APNG file's logical screen size.
+    The returned image contains the pixel data for a given frame, after applying
+    any APNG frame disposal and frame blend operations (i.e. it contains what a web
+    browser would render for this frame - the composite of all previous frames and this
+    frame).
+
+    Any APNG file containing sequence errors is treated as an invalid image. The APNG
+    loader will not attempt to repair and reorder files containing sequence errors.
+
+Saving
+~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save`, by default only a single frame PNG file
+will be saved. To save an APNG file (including a single frame APNG), the ``save_all``
+parameter must be set to ``True``. The following parameters can also be set:
+
+**default_image**
+    Boolean value, specifying whether or not the base image is a default image.
+    If ``True``, the base image will be used as the default image, and the first image
+    from the ``append_images`` sequence will be the first APNG animation frame.
+    If ``False``, the base image will be used as the first APNG animation frame.
+    Defaults to ``False``.
+
+**append_images**
+    A list or tuple of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images. The size of each frame
+    should match the size of the base image. Also note that if a frame's mode does
+    not match that of the base image, the frame will be converted to the base image
+    mode.
+
+**loop**
+    Integer number of times to loop this APNG, 0 indicates infinite looping.
+    Defaults to 0.
+
+**duration**
+    Integer (or list or tuple of integers) length of time to display this APNG frame
+    (in milliseconds).
+    Defaults to 0.
+
+**disposal**
+    An integer (or list or tuple of integers) specifying the APNG disposal
+    operation to be used for this frame before rendering the next frame.
+    Defaults to 0.
+
+    * 0 (:py:data:`~PIL.PngImagePlugin.APNG_DISPOSE_OP_NONE`, default) -
+      No disposal is done on this frame before rendering the next frame.
+    * 1 (:py:data:`PIL.PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND`) -
+      This frame's modified region is cleared to fully transparent black before
+      rendering the next frame.
+    * 2 (:py:data:`~PIL.PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS`) -
+      This frame's modified region is reverted to the previous frame's contents before
+      rendering the next frame.
+
+**blend**
+    An integer (or list or tuple of integers) specifying the APNG blend
+    operation to be used for this frame before rendering the next frame.
+    Defaults to 0.
+
+    * 0 (:py:data:`~PIL.PngImagePlugin.APNG_BLEND_OP_SOURCE`) -
+      All color components of this frame, including alpha, overwrite the previous output
+      image contents.
+    * 1 (:py:data:`~PIL.PngImagePlugin.APNG_BLEND_OP_OVER`) -
+      This frame should be alpha composited with the previous output image contents.
+
+.. note::
+
+    The ``duration``, ``disposal`` and ``blend`` parameters can be set to lists or tuples to
+    specify values for each individual frame in the animation. The length of the list or tuple
+    must be identical to the total number of actual frames in the APNG animation.
+    If the APNG contains a default image (i.e. ``default_image`` is set to ``True``),
+    these list or tuple parameters should not include an entry for the default image.
+
+
 PPM
 ^^^
 

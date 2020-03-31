@@ -54,3 +54,12 @@ box, for an RGB image it trims black pixels. Similarly, for an RGBA image it
 would trim black transparent pixels. This is now changed so that if an image
 has an alpha channel (RGBA, RGBa, PA, LA, La), any transparent pixels are
 trimmed.
+
+Improved APNG support
+^^^^^^^^^^^^^^^^^^^^^
+
+Added support for reading and writing Animated Portable Network Graphics (APNG) images.
+The PNG plugin now supports using the :py:meth:`~PIL.Image.Image.seek` method and the
+:py:class:`~PIL.ImageSequence.Iterator` class to read APNG frame sequences.
+The PNG plugin also now supports using the ``append_images`` argument to write APNG frame
+sequences. See :ref:`apng-sequences` for further details.
