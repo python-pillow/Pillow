@@ -721,7 +721,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         }
 
         /* Sometimes the tile_info.datasize we get back from openjpeg
-           is is less than numcomps*w*h, and we overflow in the
+           is less than numcomps*w*h, and we overflow in the
            shuffle stage */
 
         tile_width = tile_info.x1 - tile_info.x0;
