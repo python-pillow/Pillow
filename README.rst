@@ -4,7 +4,7 @@ Pillow
 Python Imaging Library (Fork)
 -----------------------------
 
-Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors. As of 2019, Pillow development is `supported by Tidelift <https://tidelift.com/subscription/pkg/pypi-pillow>`_.
+Pillow is the friendly PIL fork by `Alex Clark and Contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and Contributors. As of 2019, Pillow development is `supported by Tidelift <https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise>`_.
 
 .. start-badges
 
@@ -84,7 +84,7 @@ To report a security vulnerability, please follow the procedure described in the
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
 
 .. |tidelift| image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
-   :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=referral&utm_campaign=readme
+   :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
 
 .. |version| image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.org/project/Pillow/
