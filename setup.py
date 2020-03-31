@@ -858,7 +858,7 @@ try:
         project_urls={
             "Documentation": "https://pillow.readthedocs.io",
             "Source": "https://github.com/python-pillow/Pillow",
-            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow",
+            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
         },
         classifiers=[
             "Development Status :: 6 - Mature",
