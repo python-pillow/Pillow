@@ -42,18 +42,32 @@ from pathlib import Path
 # PILLOW_VERSION is deprecated and will be removed in a future release.
 # Use __version__ instead.
 from . import (
-    PILLOW_VERSION,
     ImageMode,
     TiffTags,
     UnidentifiedImageError,
     __version__,
     _plugins,
+    _raise_version_warning,
 )
 from ._binary import i8, i32le
 from ._util import deferred_error, isPath
 
-# Silence warning
-assert PILLOW_VERSION
+if sys.version_info >= (3, 7):
+
+    def __getattr__(name):
+        if name == "PILLOW_VERSION":
+            _raise_version_warning()
+            return __version__
+        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, name))
+
+
+else:
+
+    from . import PILLOW_VERSION
+
+    # Silence warning
+    assert PILLOW_VERSION
+
 
 logger = logging.getLogger(__name__)
 
