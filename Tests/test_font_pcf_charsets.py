@@ -1,10 +1,7 @@
-# -*- coding: UTF-8 -*-
 from .helper import PillowTestCase
 
 from PIL import Image, FontFile, PcfFontFile
 from PIL import ImageFont, ImageDraw
-
-# from PIL._util import py3
 
 codecs = dir(Image.core)
 
@@ -13,17 +10,17 @@ fontname = "Tests/fonts/ter-x20b.pcf"
 charsets = {
     "iso8859-1": {
         "glyph_count": 223,
-        "message": u"hello, world",
+        "message": "hello, world",
         "image1": "Tests/images/test_draw_pbm_ter_en_target.png",
     },
     "iso8859-2": {
         "glyph_count": 223,
-        "message": u"witaj świecie",
+        "message": "witaj świecie",
         "image1": "Tests/images/test_draw_pbm_ter_pl_target.png",
     },
     "cp1250": {
         "glyph_count": 250,
-        "message": u"witaj świecie",
+        "message": "witaj świecie",
         "image1": "Tests/images/test_draw_pbm_ter_pl_target.png",
     },
 }
@@ -68,10 +65,6 @@ class TestFontPcf(PillowTestCase):
     def test_sanity_cp1250(self):
         self._test_sanity("cp1250")
 
-    # def test_invalid_file(self):
-    #     with open("Tests/images/flower.jpg", "rb") as fp:
-    #         self.assertRaises(SyntaxError, PcfFontFile.PcfFontFile, fp)
-
     def _test_draw(self, encoding):
         tempname = self.save_font(encoding)
         font = ImageFont.load(tempname)
@@ -112,18 +105,3 @@ class TestFontPcf(PillowTestCase):
     def test_textsize_cp1250(self):
         self._test_textsize("cp1250")
 
-    # def _test_high_characters(self, message, encoding):
-    #     tempname = self.save_font(encoding)
-    #     font = ImageFont.load(tempname)
-    #     im = Image.new("L", (750, 30), "white")
-    #     draw = ImageDraw.Draw(im)
-    #     draw.text((0, 0), message, "black", font=font)
-    #     with Image.open("Tests/images/high_ascii_chars.png") as target:
-    #         self.assert_image_similar(im, target, 0)
-    #
-    # def test_high_characters(self):
-    #     message = "".join(chr(i + 1) for i in range(140, 232))
-    #     self._test_high_characters(message)
-    #     # accept bytes instances in Py3.
-    #     if py3:
-    #         self._test_high_characters(message.encode("latin1"))
