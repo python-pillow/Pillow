@@ -56,6 +56,7 @@ features = {
     "raqm": ("PIL._imagingft", "HAVE_RAQM"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT"),
+    "xcb": ("PIL._imaging", "HAVE_XCB"),
 }
 
 
@@ -132,6 +133,7 @@ def pilinfo(out=None, supported_formats=True):
         ("libtiff", "LIBTIFF"),
         ("raqm", "RAQM (Bidirectional Text)"),
         ("libimagequant", "LIBIMAGEQUANT (Quantization method)"),
+        ("xcb", "XCB (X protocol)"),
     ]:
         if check(name):
             print("---", feature, "support ok", file=out)
