@@ -56,7 +56,9 @@ class PcfFontFile(FontFile.FontFile):
 
     name = "name"
 
-    def __init__(self, fp):
+    def __init__(self, fp, charset_encoding="iso8859-1"):
+
+        self.charset_encoding = charset_encoding
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
@@ -229,12 +231,17 @@ class PcfFontFile(FontFile.FontFile):
 
         nencoding = (lastCol - firstCol + 1) * (lastRow - firstRow + 1)
 
-        for i in range(nencoding):
-            encodingOffset = i16(fp.read(2))
-            if encodingOffset != 0xFFFF:
-                try:
-                    encoding[i + firstCol] = encodingOffset
-                except IndexError:
-                    break  # only load ISO-8859-1 glyphs
+        encodingOffsets = [i16(fp.read(2)) for _ in range(nencoding)]
+
+        for i in range(firstCol, len(encoding)):
+            try:
+                encodingOffset = encodingOffsets[
+                    ord(bytearray([i]).decode(self.charset_encoding))
+                ]
+                if encodingOffset != 0xFFFF:
+                    encoding[i] = encodingOffset
+            except UnicodeDecodeError:
+                # character is not supported in selected encoding
+                pass
 
         return encoding
