@@ -1,9 +1,8 @@
-from .helper import PillowTestCase
+import os
 
-from PIL import Image, FontFile, PcfFontFile
-from PIL import ImageFont, ImageDraw
+from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-codecs = dir(Image.core)
+from .helper import assert_image_equal, assert_image_similar, skip_unless_feature
 
 fontname = "Tests/fonts/ter-x20b.pcf"
 
@@ -26,82 +25,96 @@ charsets = {
 }
 
 
-class TestFontPcf(PillowTestCase):
-    def setUp(self):
-        if "zip_encoder" not in codecs or "zip_decoder" not in codecs:
-            self.skipTest("zlib support not available")
+pytestmark = skip_unless_feature("zlib")
 
-    def save_font(self, encoding):
-        with open(fontname, "rb") as test_file:
-            font = PcfFontFile.PcfFontFile(test_file, encoding)
-        self.assertIsInstance(font, FontFile.FontFile)
-        # check the number of characters in the font
-        self.assertEqual(
-            len([_f for _f in font.glyph if _f]), charsets[encoding]["glyph_count"]
-        )
 
-        tempname = self.tempfile("temp.pil")
-        self.addCleanup(self.delete_tempfile, tempname[:-4] + ".pbm")
-        font.save(tempname)
+def save_font(request, tmp_path, encoding):
+    with open(fontname, "rb") as test_file:
+        font = PcfFontFile.PcfFontFile(test_file, encoding)
+    assert isinstance(font, FontFile.FontFile)
+    # check the number of characters in the font
+    assert len([_f for _f in font.glyph if _f]) == charsets[encoding]["glyph_count"]
 
-        with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
-            with Image.open("Tests/fonts/ter-x20b-%s.pbm" % encoding) as target:
-                self.assert_image_equal(loaded, target)
+    tempname = str(tmp_path / "temp.pil")
 
-        with open(tempname, "rb") as f_loaded:
-            with open("Tests/fonts/ter-x20b-%s.pil" % encoding, "rb") as f_target:
-                self.assertEqual(f_loaded.read(), f_target.read())
-        return tempname
+    def delete_tempfile():
+        try:
+            os.remove(tempname[:-4] + ".pbm")
+        except OSError:
+            pass  # report?
 
-    def _test_sanity(self, encoding):
-        self.save_font(encoding)
+    request.addfinalizer(delete_tempfile)
+    font.save(tempname)
 
-    def test_sanity_iso8859_1(self):
-        self._test_sanity("iso8859-1")
+    with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
+        with Image.open("Tests/fonts/ter-x20b-%s.pbm" % encoding) as target:
+            assert_image_equal(loaded, target)
 
-    def test_sanity_iso8859_2(self):
-        self._test_sanity("iso8859-2")
+    with open(tempname, "rb") as f_loaded:
+        with open("Tests/fonts/ter-x20b-%s.pil" % encoding, "rb") as f_target:
+            assert f_loaded.read() == f_target.read()
+    return tempname
 
-    def test_sanity_cp1250(self):
-        self._test_sanity("cp1250")
 
-    def _test_draw(self, encoding):
-        tempname = self.save_font(encoding)
-        font = ImageFont.load(tempname)
-        im = Image.new("L", (150, 30), "white")
-        draw = ImageDraw.Draw(im)
-        message = charsets[encoding]["message"].encode(encoding)
-        draw.text((0, 0), message, "black", font=font)
-        with Image.open(charsets[encoding]["image1"]) as target:
-            self.assert_image_similar(im, target, 0)
+def _test_sanity(request, tmp_path, encoding):
+    save_font(request, tmp_path, encoding)
 
-    def test_draw_iso8859_1(self):
-        self._test_draw("iso8859-1")
 
-    def test_draw_iso8859_2(self):
-        self._test_draw("iso8859-2")
+def test_sanity_iso8859_1(request, tmp_path):
+    _test_sanity(request, tmp_path, "iso8859-1")
 
-    def test_draw_cp1250(self):
-        self._test_draw("cp1250")
 
-    def _test_textsize(self, encoding):
-        tempname = self.save_font(encoding)
-        font = ImageFont.load(tempname)
-        for i in range(255):
-            (dx, dy) = font.getsize(bytearray([i]))
-            self.assertEqual(dy, 20)
-            self.assertIn(dx, (0, 10))
-        message = charsets[encoding]["message"].encode(encoding)
-        for l in range(len(message)):
-            msg = message[: l + 1]
-            self.assertEqual(font.getsize(msg), (len(msg) * 10, 20))
+def test_sanity_iso8859_2(request, tmp_path):
+    _test_sanity(request, tmp_path, "iso8859-2")
 
-    def test_textsize_iso8859_1(self):
-        self._test_textsize("iso8859-1")
 
-    def test_textsize_iso8859_2(self):
-        self._test_textsize("iso8859-2")
+def test_sanity_cp1250(request, tmp_path):
+    _test_sanity(request, tmp_path, "cp1250")
 
-    def test_textsize_cp1250(self):
-        self._test_textsize("cp1250")
 
+def _test_draw(request, tmp_path, encoding):
+    tempname = save_font(request, tmp_path, encoding)
+    font = ImageFont.load(tempname)
+    im = Image.new("L", (150, 30), "white")
+    draw = ImageDraw.Draw(im)
+    message = charsets[encoding]["message"].encode(encoding)
+    draw.text((0, 0), message, "black", font=font)
+    with Image.open(charsets[encoding]["image1"]) as target:
+        assert_image_similar(im, target, 0)
+
+
+def test_draw_iso8859_1(request, tmp_path):
+    _test_draw(request, tmp_path, "iso8859-1")
+
+
+def test_draw_iso8859_2(request, tmp_path):
+    _test_draw(request, tmp_path, "iso8859-2")
+
+
+def test_draw_cp1250(request, tmp_path):
+    _test_draw(request, tmp_path, "cp1250")
+
+
+def _test_textsize(request, tmp_path, encoding):
+    tempname = save_font(request, tmp_path, encoding)
+    font = ImageFont.load(tempname)
+    for i in range(255):
+        (dx, dy) = font.getsize(bytearray([i]))
+        assert dy == 20
+        assert dx in (0, 10)
+    message = charsets[encoding]["message"].encode(encoding)
+    for l in range(len(message)):
+        msg = message[: l + 1]
+        assert font.getsize(msg) == (len(msg) * 10, 20)
+
+
+def test_textsize_iso8859_1(request, tmp_path):
+    _test_textsize(request, tmp_path, "iso8859-1")
+
+
+def test_textsize_iso8859_2(request, tmp_path):
+    _test_textsize(request, tmp_path, "iso8859-2")
+
+
+def test_textsize_cp1250(request, tmp_path):
+    _test_textsize(request, tmp_path, "cp1250")
