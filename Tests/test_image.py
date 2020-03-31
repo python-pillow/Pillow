@@ -611,10 +611,28 @@ class TestImage:
 
     def test_pillow_version(self):
         with pytest.warns(DeprecationWarning):
-            assert PIL.__version__ == PIL.PILLOW_VERSION
+            assert PIL.PILLOW_VERSION == PIL.__version__
+
+        with pytest.warns(DeprecationWarning):
+            str(PIL.PILLOW_VERSION)
 
         with pytest.warns(DeprecationWarning):
             assert int(PIL.PILLOW_VERSION[0]) >= 7
+
+        with pytest.warns(DeprecationWarning):
+            assert PIL.PILLOW_VERSION < "9.9.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert PIL.PILLOW_VERSION <= "9.9.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert PIL.PILLOW_VERSION != "7.0.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert PIL.PILLOW_VERSION >= "7.0.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert PIL.PILLOW_VERSION > "7.0.0"
 
     def test_overrun(self):
         for file in [
