@@ -21,17 +21,27 @@ been resolved.
 API Additions
 =============
 
+New channel operations
+^^^^^^^^^^^^^^^^^^^^^^
+
+Three new channel operations have been added: :py:meth:`~PIL.ImageChops.soft_light`,
+:py:meth:`~PIL.ImageChops.hard_light` and :py:meth:`~PIL.ImageChops.overlay`.
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been re-added but is deprecated and will be removed in a future
+release. Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
+more time to upgrade.
+
 Reading JPEG comments
 ^^^^^^^^^^^^^^^^^^^^^
 
 When opening a JPEG image, the comment may now be read into
 :py:attr:`~PIL.Image.Image.info`.
 
-New channel operations
-^^^^^^^^^^^^^^^^^^^^^^
-
-Three new channel operations have been added: :py:meth:`~PIL.ImageChops.soft_light`,
-:py:meth:`~PIL.ImageChops.hard_light` and :py:meth:`~PIL.ImageChops.overlay`.
 
 Other Changes
 =============

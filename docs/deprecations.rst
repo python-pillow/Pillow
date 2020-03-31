@@ -12,6 +12,17 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+
+``PILLOW_VERSION`` has been deprecated and will be removed in a future release. Use
+``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
+more time to upgrade.
+
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -68,13 +79,6 @@ Use instead:
 
     with Image.open("hopper.png") as im:
         im.save("out.jpg")
-
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
-
-*Removed in version 7.0.0.*
-
-``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
 
 PIL.*ImagePlugin.__version__ attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
