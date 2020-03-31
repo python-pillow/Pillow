@@ -38,6 +38,10 @@ def test_sanity():
     ImageChops.blend(im, im, 0.5)
     ImageChops.composite(im, im, im)
 
+    ImageChops.soft_light(im, im)
+    ImageChops.hard_light(im, im)
+    ImageChops.overlay(im, im)
+
     ImageChops.offset(im, 10)
     ImageChops.offset(im, 10, 20)
 
@@ -209,8 +213,8 @@ def test_lighter_image():
             # Act
             new = ImageChops.lighter(im1, im2)
 
-    # Assert
-    assert_image_equal(new, im1)
+        # Assert
+        assert_image_equal(new, im1)
 
 
 def test_lighter_pixel():
@@ -275,13 +279,13 @@ def test_offset():
         # Act
         new = ImageChops.offset(im, xoffset, yoffset)
 
-    # Assert
-    assert new.getbbox() == (0, 45, 100, 96)
-    assert new.getpixel((50, 50)) == BLACK
-    assert new.getpixel((50 + xoffset, 50 + yoffset)) == DARK_GREEN
+        # Assert
+        assert new.getbbox() == (0, 45, 100, 96)
+        assert new.getpixel((50, 50)) == BLACK
+        assert new.getpixel((50 + xoffset, 50 + yoffset)) == DARK_GREEN
 
-    # Test no yoffset
-    assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
+        # Test no yoffset
+        assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
 
 
 def test_screen():
@@ -360,6 +364,45 @@ def test_subtract_modulo_no_clip():
 
     # Assert
     assert new.getpixel((50, 50)) == (241, 167, 127)
+
+
+def test_soft_light():
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.soft_light(im1, im2)
+
+    # Assert
+    assert new.getpixel((64, 64)) == (163, 54, 32)
+    assert new.getpixel((15, 100)) == (1, 1, 3)
+
+
+def test_hard_light():
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.hard_light(im1, im2)
+
+    # Assert
+    assert new.getpixel((64, 64)) == (144, 50, 27)
+    assert new.getpixel((15, 100)) == (1, 1, 2)
+
+
+def test_overlay():
+    # Arrange
+    im1 = Image.open("Tests/images/hopper.png")
+    im2 = Image.open("Tests/images/hopper-XYZ.png")
+
+    # Act
+    new = ImageChops.overlay(im1, im2)
+
+    # Assert
+    assert new.getpixel((64, 64)) == (159, 50, 27)
+    assert new.getpixel((15, 100)) == (1, 1, 2)
 
 
 def test_logical():
