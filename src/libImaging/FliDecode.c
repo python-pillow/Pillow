@@ -24,7 +24,12 @@
 #define	I32(ptr)\
     ((ptr)[0] + ((ptr)[1] << 8) + ((ptr)[2] << 16) + ((ptr)[3] << 24))
 
-
+#define ERR_IF_DATA_OOB(offset) \
+  if ((data + (offset)) > ptr + bytes) {\
+    state->errcode = IMAGING_CODEC_OVERRUN; \
+    return -1; \
+  }
+    
 int
 ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
 {
@@ -78,10 +83,12 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break; /* ignored; handled by Python code */
 	case 7:
 	    /* FLI SS2 chunk (word delta) */
+	    /* OOB ok, we've got 4 bytes min on entry */
 	    lines = I16(data); data += 2;
 	    for (l = y = 0; l < lines && y < state->ysize; l++, y++) {
-		UINT8* buf = (UINT8*) im->image[y];
+		UINT8* local_buf = (UINT8*) im->image[y];
 		int p, packets;
+		ERR_IF_DATA_OOB(2)
 		packets = I16(data); data += 2;
 		while (packets & 0x8000) {
 		    /* flag word */
@@ -91,29 +98,33 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 			    state->errcode = IMAGING_CODEC_OVERRUN;
 			    return -1;
 			}
-			buf = (UINT8*) im->image[y];
+			local_buf = (UINT8*) im->image[y];
 		    } else {
 			/* store last byte (used if line width is odd) */
-			buf[state->xsize-1] = (UINT8) packets;
+			local_buf[state->xsize-1] = (UINT8) packets;
 		    }
+		    ERR_IF_DATA_OOB(2)
 		    packets = I16(data); data += 2;
 		}
 		for (p = x = 0; p < packets; p++) {
+		    ERR_IF_DATA_OOB(2)
 		    x += data[0]; /* pixel skip */
 		    if (data[1] >= 128) {
+			ERR_IF_DATA_OOB(4)
 			i = 256-data[1]; /* run */
 			if (x + i + i > state->xsize)
 			    break;
 			for (j = 0; j < i; j++) {
-			    buf[x++] = data[2];
-			    buf[x++] = data[3];
+			    local_buf[x++] = data[2];
+			    local_buf[x++] = data[3];
 			}
 			data += 2 + 2;
 		    } else {
 			i = 2 * (int) data[1]; /* chunk */
 			if (x + i > state->xsize)
 			    break;
-			memcpy(buf + x, data + 2, i);
+			ERR_IF_DATA_OOB(2+i)
+			memcpy(local_buf + x, data + 2, i);
 			data += 2 + i;
 			x += i;
 		    }
@@ -129,22 +140,27 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 12:
 	    /* FLI LC chunk (byte delta) */
+	    /* OOB Check ok, we have 4 bytes min here */
 	    y = I16(data); ymax = y + I16(data+2); data += 4;
 	    for (; y < ymax && y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
+                ERR_IF_DATA_OOB(1)
 		int p, packets = *data++;
 		for (p = x = 0; p < packets; p++, x += i) {
+		    ERR_IF_DATA_OOB(2)
 		    x += data[0]; /* skip pixels */
 		    if (data[1] & 0x80) {
 			i = 256-data[1]; /* run */
 			if (x + i > state->xsize)
 			    break;
+			ERR_IF_DATA_OOB(3)
 			memset(out + x, data[2], i);
 			data += 3;
 		    } else {
 			i = data[1]; /* chunk */
 			if (x + i > state->xsize)
 			    break;
+			ERR_IF_DATA_OOB(2+i)
 			memcpy(out + x, data + 2, i);
 			data += i + 2;
 		    }
@@ -165,14 +181,18 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 15:
 	    /* FLI BRUN chunk */
+	    /* OOB, ok, we've got 4 bytes min on entry */
 	    for (y = 0; y < state->ysize; y++) {
 		UINT8* out = (UINT8*) im->image[y];
 		data += 1; /* ignore packetcount byte */
 		for (x = 0; x < state->xsize; x += i) {
+		    ERR_IF_DATA_OOB(2)
 		    if (data[0] & 0x80) {
 			i = 256 - data[0];
-			if (x + i > state->xsize)
+			if (x + i > state->xsize) {
 			    break; /* safety first */
+			}
+			ERR_IF_DATA_OOB(i+1)
 			memcpy(out + x, data + 1, i);
 			data += i + 1;
 		    } else {
@@ -192,9 +212,13 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    break;
 	case 16:
 	    /* COPY chunk */
+	    if (state->xsize > bytes/state->ysize) {
+		/* not enough data for frame */
+		return ptr - buf; /* bytes consumed */
+	    }
 	    for (y = 0; y < state->ysize; y++) {
-		UINT8* buf = (UINT8*) im->image[y];
-		memcpy(buf, data, state->xsize);
+		UINT8* local_buf = (UINT8*) im->image[y];
+		memcpy(local_buf, data, state->xsize);
 		data += state->xsize;
 	    }
 	    break;
@@ -208,6 +232,10 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 	    return -1;
 	}
 	advance = I32(ptr);
+	if (advance < 0 || advance > bytes) {
+	    state->errcode = IMAGING_CODEC_OVERRUN;
+	    return -1;
+	}
 	ptr += advance;
 	bytes -= advance;
     }
