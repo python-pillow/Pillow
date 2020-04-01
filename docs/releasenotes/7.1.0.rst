@@ -42,6 +42,18 @@ Reading JPEG comments
 When opening a JPEG image, the comment may now be read into
 :py:attr:`~PIL.Image.Image.info`.
 
+X11 ImageGrab.grab()
+^^^^^^^^^^^^^^^^^^^^
+Support has been added for ``ImageGrab.grab()`` on Linux using the X server
+with the XCB library.
+
+An optional ``xdisplay`` parameter has been added to select the X server,
+with the default value of ``None`` using the default X server.
+
+Passing a different value on Windows or macOS will force taking a snapshot
+using the selected X server; pass an empty string to use the default X server.
+XCB support is not included in pre-compiled wheels for Windows and macOS.
+
 
 Other Changes
 =============
