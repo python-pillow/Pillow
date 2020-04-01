@@ -629,6 +629,10 @@ class TestFilePng:
         with Image.open(test_file) as reloaded:
             assert reloaded.info["exif"] == b"Exif\x00\x00exifstring"
 
+    def test_seek(self, tmp_path):
+        with Image.open(TEST_PNG_FILE) as im:
+            im.seek(0)
+
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
 @skip_unless_feature("zlib")
