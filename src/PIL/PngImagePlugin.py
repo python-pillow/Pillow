@@ -630,6 +630,7 @@ class PngImageFile(ImageFile.ImageFile):
 
     format = "PNG"
     format_description = "Portable network graphics"
+    __frame = 0
 
     def _open(self):
 
