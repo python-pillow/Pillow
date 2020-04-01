@@ -638,6 +638,9 @@ class TestImage:
             assert test_module.PILLOW_VERSION > "7.0.0"
 
     def test_overrun(self):
+        """ For overrun completeness, test as:
+        valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
+        """
         for file in [
             "fli_overrun.bin",
             "sgi_overrun.bin",
@@ -645,6 +648,7 @@ class TestImage:
             "sgi_overrun_expandrow2.bin",
             "pcx_overrun.bin",
             "pcx_overrun2.bin",
+            "01r_00.pcx",
         ]:
             with Image.open(os.path.join("Tests/images", file)) as im:
                 try:
