@@ -639,7 +639,7 @@ class TestImage:
 
     def test_overrun(self):
         """ For overrun completeness, test as:
-        `valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c`
+        valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
         for file in [
             "fli_overrun.bin",
