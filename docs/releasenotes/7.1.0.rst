@@ -54,7 +54,7 @@ constructor. By default, it generates a PIL font file with ISO 8859-1 as before.
 generated PIL font file still contains up to 256 characters, but the character set is
 different depending on the selected encoding.
 
-To use such a font with ``ImageDraw.text``, called it with a bytes object with the same
+To use such a font with ``ImageDraw.text``, call it with a bytes object with the same
 encoding as the font file.
 
 X11 ImageGrab.grab()
