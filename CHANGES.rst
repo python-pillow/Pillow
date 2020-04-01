@@ -2,8 +2,29 @@
 Changelog (Pillow)
 ==================
 
-7.1.0 (unreleased)
+7.1.0 (2020-04-01)
 ------------------
+
+- Fix multiple OOB reads in FLI decoding #4503
+  [wiredfool]
+
+- Fix buffer overflow in SGI-RLE decoding #4504
+  [wiredfool, hugovk]
+
+- Fix bounds overflow in JPEG 2000 decoding #4505
+  [wiredfool]
+
+- Fix bounds overflow in PCX decoding #4506
+  [wiredfool]
+
+- Fix 2 buffer overflows in TIFF decoding #4507
+  [wiredfool]
+
+- Add APNG support #4243
+  [pmrowla, radarhere, hugovk]
+
+- ImageGrab.grab() for Linux with XCB #4260
+  [nulano, radarhere]
 
 - Added three new channel operations #4230
   [dwastberg, radarhere]
