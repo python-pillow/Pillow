@@ -42,6 +42,21 @@ Reading JPEG comments
 When opening a JPEG image, the comment may now be read into
 :py:attr:`~PIL.Image.Image.info`.
 
+Support for different charset encodings in PcfFontFile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously ``PcfFontFile`` output only bitmap PIL fonts with ISO 8859-1 encoding, even
+though the PCF format supports Unicode, making it hard to work with Pillow with bitmap
+fonts in languages which use different character sets.
+
+Now it's possible to set a different charset encoding in ``PcfFontFile``'s class
+constructor. By default, it generates a PIL font file with ISO 8859-1 as before. The
+generated PIL font file still contains up to 256 characters, but the character set is
+different depending on the selected encoding.
+
+To use such a font with ``ImageDraw.text``, called it with a bytes object with the same
+encoding as the font file.
+
 X11 ImageGrab.grab()
 ^^^^^^^^^^^^^^^^^^^^
 Support has been added for ``ImageGrab.grab()`` on Linux using the X server
