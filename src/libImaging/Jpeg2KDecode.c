@@ -110,6 +110,7 @@ j2ku_gray_l(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     if (shift < 0)
         offset += 1 << (-shift - 1);
 
+    /* csiz*h*w + offset = tileinfo.datasize */
     switch (csiz) {
     case 1:
         for (y = 0; y < h; ++y) {
@@ -557,8 +558,10 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
-    size_t buffer_size = 0;
-    unsigned n;
+    size_t buffer_size = 0, tile_bytes = 0;
+    unsigned n, tile_height, tile_width;
+    int components;
+
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -703,8 +706,44 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         tile_info.x1 = (tile_info.x1 + correction) >> context->reduce;
         tile_info.y1 = (tile_info.y1 + correction) >> context->reduce;
 
+        /* Check the tile bounds; if the tile is outside the image area,
+           or if it has a negative width or height (i.e. the coordinates are
+           swapped), bail. */
+        if (tile_info.x0 >= tile_info.x1
+            || tile_info.y0 >= tile_info.y1
+            || tile_info.x0 < image->x0
+            || tile_info.y0 < image->y0
+            || tile_info.x1 - image->x0 > im->xsize
+            || tile_info.y1 - image->y0 > im->ysize) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        /* Sometimes the tile_info.datasize we get back from openjpeg
+           is less than numcomps*w*h, and we overflow in the
+           shuffle stage */
+
+        tile_width = tile_info.x1 - tile_info.x0;
+        tile_height = tile_info.y1 - tile_info.y0;
+        components = tile_info.nb_comps == 3 ? 4 : tile_info.nb_comps;
+        if (( tile_width > UINT_MAX / components ) ||
+            ( tile_height > UINT_MAX / components ) ||
+            ( tile_width > UINT_MAX / (tile_height * components )) ||
+            ( tile_height > UINT_MAX / (tile_width * components ))) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        tile_bytes = tile_width * tile_height * components;
+
+        if (tile_bytes > tile_info.data_size) {
+            tile_info.data_size = tile_bytes;
+        }
+
         if (buffer_size < tile_info.data_size) {
-            /* malloc check ok, tile_info.data_size from openjpeg */
+            /* malloc check ok, overflow and tile size sanity check above */
             UINT8 *new = realloc (state->buffer, tile_info.data_size);
             if (!new) {
                 state->errcode = IMAGING_CODEC_MEMORY;
@@ -715,25 +754,12 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
             buffer_size = tile_info.data_size;
         }
 
+
         if (!opj_decode_tile_data(codec,
                                   tile_info.tile_index,
                                   (OPJ_BYTE *)state->buffer,
                                   tile_info.data_size,
                                   stream)) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
-        }
-
-        /* Check the tile bounds; if the tile is outside the image area,
-           or if it has a negative width or height (i.e. the coordinates are
-           swapped), bail. */
-        if (tile_info.x0 >= tile_info.x1
-            || tile_info.y0 >= tile_info.y1
-            || tile_info.x0 < image->x0
-            || tile_info.y0 < image->y0
-            || tile_info.x1 - image->x0 > im->xsize
-            || tile_info.y1 - image->y0 > im->ysize) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
