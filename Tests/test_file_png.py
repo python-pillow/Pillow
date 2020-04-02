@@ -629,11 +629,11 @@ class TestFilePng:
         with Image.open(test_file) as reloaded:
             assert reloaded.info["exif"] == b"Exif\x00\x00exifstring"
 
-    def test_tell(self, tmp_path):
+    def test_tell(self):
         with Image.open(TEST_PNG_FILE) as im:
             assert im.tell() == 0
 
-    def test_seek(self, tmp_path):
+    def test_seek(self):
         with Image.open(TEST_PNG_FILE) as im:
             im.seek(0)
 
