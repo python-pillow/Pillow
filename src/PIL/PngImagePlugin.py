@@ -636,6 +636,7 @@ class PngImageFile(ImageFile.ImageFile):
         if self.fp.read(8) != _MAGIC:
             raise SyntaxError("not a PNG file")
         self.__fp = self.fp
+        self.__frame = 0
 
         #
         # Parse headers up to the first IDAT or fDAT chunk
