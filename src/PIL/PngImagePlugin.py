@@ -630,13 +630,13 @@ class PngImageFile(ImageFile.ImageFile):
 
     format = "PNG"
     format_description = "Portable network graphics"
-    __frame = 0
 
     def _open(self):
 
         if self.fp.read(8) != _MAGIC:
             raise SyntaxError("not a PNG file")
         self.__fp = self.fp
+        self.__frame = 0
 
         #
         # Parse headers up to the first IDAT or fDAT chunk
