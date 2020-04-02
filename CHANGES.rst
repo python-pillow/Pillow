@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+7.1.1 (2020-04-02)
+------------------
+
+- Fix regression seeking and telling PNGs #4512 #4514
+  [hugovk, radarhere]
+
 7.1.0 (2020-04-01)
 ------------------
 
