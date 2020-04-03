@@ -53,6 +53,7 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Create tag for release e.g.:
   ```bash
   git tag 5.2.1
+  git push
   git push --tags
   ```
 * [ ] Create source distributions e.g.:
