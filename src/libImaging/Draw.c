@@ -1047,78 +1047,76 @@ int8_t quarter_next(quarter_state* s, int32_t* ret_x, int32_t* ret_y) {
 typedef struct {
     quarter_state st_o, st_i;
     int32_t py, pl, pr;
-    int32_t cy, cl, cr;
-    // 0 - ready to take next quarter piece, 1, 2, 3 - returned 1, 2, 3 hlines
-    int8_t state;
+    int32_t cy[4], cl[4], cr[4];
+    int8_t bufcnt;
     int8_t finished;
+    int8_t leftmost;
 } ellipse_state;
 
 void ellipse_init(ellipse_state* s, int32_t a, int32_t b, int32_t w) {
-    s->state = 0;
+    s->bufcnt = 0;
+    s->leftmost = a % 2;
     quarter_init(&s->st_o, a, b);
     if (w < 1 || quarter_next(&s->st_o, &s->pr, &s->py) == -1) {
         s->finished = 1;
     } else {
         s->finished = 0;
         quarter_init(&s->st_i, a - 2 * (w - 1), b - 2 * (w - 1));
-        s->pl = a % 2;
+        s->pl = s->leftmost;
     }
 }
 
 int8_t ellipse_next(ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* ret_x1) {
-    switch (s->state) {
-        case 0: {
-            if (s->finished) {
-                return -1;
-            }
-            s->cy = s->py;
-            s->cl = s->pl;
-            s->cr = s->pr;
-            int32_t cx = 0, cy = 0;
-            int8_t next_ret;
-            while ((next_ret = quarter_next(&s->st_o, &cx, &cy)) != -1 && cy <= s->cy) {
-            }
-            s->pr = cx;
-            s->py = cy;
-            if (next_ret == -1) {
-                s->finished = 1;
-            }
-            while ((next_ret = quarter_next(&s->st_i, &cx, &cy)) != -1 && cy <= s->cy) {
-                s->cl = cx;
-            }
-            s->pl = next_ret == -1 ? 0 : cx;
-            *ret_x0 = -s->cr;
-            *ret_y = -s->cy;
-            *ret_x1 = -s->cl;
-            s->state = 1;
-            return 0;
-        }
-        case 1: {
-            *ret_x0 = s->cl;
-            *ret_y = -s->cy;
-            *ret_x1 = s->cr;
-            s->state = 2;
-            return 0;
-        }
-        case 2: {
-            *ret_x0 = -s->cr;
-            *ret_y = s->cy;
-            *ret_x1 = -s->cl;
-            s->state = 3;
-            return 0;
-        }
-        case 3: {
-            *ret_x0 = s->cl;
-            *ret_y = s->cy;
-            *ret_x1 = s->cr;
-            s->state = 0;
-            return 0;
-        }
-        default: {
-            assert(0);
+    if (s->bufcnt == 0) {
+        if (s->finished) {
             return -1;
         }
+        int32_t y = s->py;
+        int32_t l = s->pl;
+        int32_t r = s->pr;
+        int32_t cx = 0, cy = 0;
+        int8_t next_ret;
+        while ((next_ret = quarter_next(&s->st_o, &cx, &cy)) != -1 && cy <= y) {
+        }
+        if (next_ret == -1) {
+            s->finished = 1;
+        } else {
+            s->pr = cx;
+            s->py = cy;
+        }
+        while ((next_ret = quarter_next(&s->st_i, &cx, &cy)) != -1 && cy <= y) {
+            l = cx;
+        }
+        s->pl = next_ret == -1 ? s->leftmost : cx;
+
+        if ((l > 0 || l < r) && y > 0) {
+            s->cl[s->bufcnt] = l == 0 ? 2 : l;
+            s->cy[s->bufcnt] = y;
+            s->cr[s->bufcnt] = r;
+            ++s->bufcnt;
+        }
+        if (y > 0) {
+            s->cl[s->bufcnt] = -r;
+            s->cy[s->bufcnt] = y;
+            s->cr[s->bufcnt] = -l;
+            ++s->bufcnt;
+        }
+        if (l > 0 || l < r) {
+            s->cl[s->bufcnt] = l == 0 ? 2 : l;
+            s->cy[s->bufcnt] = -y;
+            s->cr[s->bufcnt] = r;
+            ++s->bufcnt;
+        }
+        s->cl[s->bufcnt] = -r;
+        s->cy[s->bufcnt] = -y;
+        s->cr[s->bufcnt] = -l;
+        ++s->bufcnt;
     }
+    --s->bufcnt;
+    *ret_x0 = s->cl[s->bufcnt];
+    *ret_y = s->cy[s->bufcnt];
+    *ret_x1 = s->cr[s->bufcnt];
+    return 0;
 }
 
 static int
