@@ -286,14 +286,14 @@ def test_ellipse_edge():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.ellipse(((0, 0), (W - 1, H)), fill="white")
+    draw.ellipse(((0, 0), (W - 1, H - 1)), fill="white")
 
     # Assert
     assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
 
 
 def test_ellipse_symmetric():
-    for bbox in [(25, 25, 76, 76), (25, 25, 75, 75)]:
+    for bbox in [(24, 25, 76, 75), (25, 25, 75, 75), (25, 24, 75, 76)]:
         im = Image.new("RGB", (101, 101))
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill="green", outline="blue")
