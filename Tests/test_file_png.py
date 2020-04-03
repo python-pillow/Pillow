@@ -85,6 +85,8 @@ class TestFilePng:
             assert im.size == (128, 128)
             assert im.format == "PNG"
             assert im.get_format_mimetype() == "image/png"
+            assert im.n_frames == 1
+            assert not im.is_animated
 
         for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
             im = hopper(mode)
@@ -635,7 +637,6 @@ class TestFilePng:
 
     def test_seek(self):
         with Image.open(TEST_PNG_FILE) as im:
-            assert im.n_frames == 1
             im.seek(0)
             with pytest.raises(EOFError):
                 im.seek(1)
