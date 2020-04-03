@@ -969,6 +969,184 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     return 0;
 }
 
+// Imagine 2D plane and ellipse with center in (0, 0) and semi-major axes a and b.
+// Then quarter_* stuff approximates its top right quarter (x, y >= 0) with integer
+// points from set {(2x+x0, 2y+y0) | x,y in Z} where x0, y0 are from {0, 1} and
+// are such that point (a, b) is in the set.
+
+typedef struct {
+    int32_t a, b, cx, cy, ex, ey;
+    int64_t a2, b2, a2b2;
+    int8_t finished;
+} quarter_state;
+
+void quarter_init(quarter_state* s, int32_t a, int32_t b) {
+    if (a < 0 || b < 0) {
+        s->finished = 1;
+    } else {
+        s->a = a;
+        s->b = b;
+        s->cx = a;
+        s->cy = b % 2;
+        s->ex = a % 2;
+        s->ey = b;
+        s->a2 = a * a;
+        s->b2 = b * b;
+        s->a2b2 = s->a2 * s->b2;
+        s->finished = 0;
+    }
+}
+
+// deviation of the point from ellipse curve, basically a substitution
+// of the point into the ellipse equation
+int64_t quarter_delta(quarter_state* s, int64_t x, int64_t y) {
+    return llabs(s->a2 * y * y + s->b2 * x * x - s->a2b2);
+}
+
+int8_t quarter_next(quarter_state* s, int32_t* ret_x, int32_t* ret_y) {
+    if (s->finished) {
+        return -1;
+    }
+    *ret_x = s->cx;
+    *ret_y = s->cy;
+    if (s->cx == s->ex && s->cy == s->ey) {
+        s->finished = 1;
+    } else {
+        // bresenham's algorithm, possible optimization: only consider 2 of 3
+        // next points depending on current slope
+        int32_t nx = s->cx;
+        int32_t ny = s->cy + 2;
+        int64_t ndelta = quarter_delta(s, nx, ny);
+        if (nx > 1) {
+            int64_t newdelta = quarter_delta(s, s->cx - 2, s->cy + 2);
+            if (ndelta > newdelta) {
+                nx = s->cx - 2;
+                ny = s->cy + 2;
+                ndelta = newdelta;
+            }
+            newdelta = quarter_delta(s, s->cx - 2, s->cy);
+            if (ndelta > newdelta) {
+                nx = s->cx - 2;
+                ny = s->cy;
+            }
+        }
+        s->cx = nx;
+        s->cy = ny;
+    }
+    return 0;
+}
+
+// quarter_* stuff can "draw" a quarter of an ellipse with thickness 1, great.
+// Now we use ellipse_* stuff to join all four quarters of two different sized
+// ellipses and recieve horizontal segments of a complete ellipse with
+// specified thickness.
+//
+// Still using integer grid with step 2 at this point (like in quarter_*)
+// to ease angle clipping in future.
+
+typedef struct {
+    quarter_state st_o, st_i;
+    int32_t py, pl, pr;
+    int32_t cy, cl, cr;
+    // 0 - ready to take next quarter piece, 1, 2, 3 - returned 1, 2, 3 hlines
+    int8_t state;
+    int8_t finished;
+} ellipse_state;
+
+void ellipse_init(ellipse_state* s, int32_t a, int32_t b, int32_t w) {
+    s->state = 0;
+    quarter_init(&s->st_o, a, b);
+    if (w < 1 || quarter_next(&s->st_o, &s->pr, &s->py) == -1) {
+        s->finished = 1;
+    } else {
+        s->finished = 0;
+        quarter_init(&s->st_i, a - 2 * (w - 1), b - 2 * (w - 1));
+        s->pl = a % 2;
+    }
+}
+
+int8_t ellipse_next(ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* ret_x1) {
+    switch (s->state) {
+        case 0: {
+            if (s->finished) {
+                return -1;
+            }
+            s->cy = s->py;
+            s->cl = s->pl;
+            s->cr = s->pr;
+            int32_t cx = 0, cy = 0;
+            int8_t next_ret;
+            while ((next_ret = quarter_next(&s->st_o, &cx, &cy)) != -1 && cy <= s->cy) {
+            }
+            s->pr = cx;
+            s->py = cy;
+            if (next_ret == -1) {
+                s->finished = 1;
+            }
+            while ((next_ret = quarter_next(&s->st_i, &cx, &cy)) != -1 && cy <= s->cy) {
+                s->cl = cx;
+            }
+            s->pl = next_ret == -1 ? 0 : cx;
+            *ret_x0 = -s->cr;
+            *ret_y = -s->cy;
+            *ret_x1 = -s->cl;
+            s->state = 1;
+            return 0;
+        }
+        case 1: {
+            *ret_x0 = s->cl;
+            *ret_y = -s->cy;
+            *ret_x1 = s->cr;
+            s->state = 2;
+            return 0;
+        }
+        case 2: {
+            *ret_x0 = -s->cr;
+            *ret_y = s->cy;
+            *ret_x1 = -s->cl;
+            s->state = 3;
+            return 0;
+        }
+        case 3: {
+            *ret_x0 = s->cl;
+            *ret_y = s->cy;
+            *ret_x1 = s->cr;
+            s->state = 0;
+            return 0;
+        }
+        default: {
+            assert(0);
+            return -1;
+        }
+    }
+}
+
+static int
+ellipseNew(Imaging im, int x0, int y0, int x1, int y1,
+        const void* ink_, int fill,
+        int width, int op)
+{
+    DRAW* draw;
+    INT32 ink;
+    DRAWINIT();
+
+    int a = x1 - x0;
+    int b = y1 - y0;
+    if (a < 0 || b < 0)
+        return 0;
+    if (fill) {
+      width = a + b;
+    }
+
+    ellipse_state st;
+    ellipse_init(&st, a, b, width);
+    int32_t X0, Y, X1;
+    while (ellipse_next(&st, &X0, &Y, &X1) != -1) {
+        draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
+    }
+    return 0;
+}
+
 int
 ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
                float start, float end, const void* ink, int width, int op)
@@ -988,7 +1166,7 @@ int
 ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
                    const void* ink, int fill, int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, 0, 360, ink, fill, width, CHORD, op);
+    return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
 }
 
 int
