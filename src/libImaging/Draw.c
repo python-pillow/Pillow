@@ -35,6 +35,7 @@
 #include "Imaging.h"
 
 #include <math.h>
+#include <stdint.h>
 
 #define CEIL(v)  (int) ceil(v)
 #define FLOOR(v) ((v) >= 0.0 ? (int) (v) : (int) floor(v))
