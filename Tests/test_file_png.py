@@ -635,7 +635,10 @@ class TestFilePng:
 
     def test_seek(self):
         with Image.open(TEST_PNG_FILE) as im:
+            assert im.n_frames == 1
             im.seek(0)
+            with pytest.raises(EOFError):
+                im.seek(1)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

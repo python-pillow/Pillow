@@ -636,7 +636,6 @@ class PngImageFile(ImageFile.ImageFile):
         if self.fp.read(8) != _MAGIC:
             raise SyntaxError("not a PNG file")
         self.__fp = self.fp
-        self.__frame = 0
 
         #
         # Parse headers up to the first IDAT or fDAT chunk
@@ -685,7 +684,12 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             self.__prepare_idat = length  # used by load_prepare()
 
-        if self._n_frames is not None:
+        if self._n_frames is None:
+            # standard PNG image, frame-related attributes still need to be
+            # initialized for seek()/_seek_check() to behave as expected
+            self.__frame = 0
+            self._n_frames = 1
+        else:
             self._close_exclusive_fp_after_loading = False
             self.png.save_rewind()
             self.__rewind_idat = self.__prepare_idat
