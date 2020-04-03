@@ -6,7 +6,10 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
 * [ ] Develop and prepare release in `master` branch.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) and [AppVeyor CI](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `master` branch.
+* [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions),
+      [Travis CI](https://travis-ci.org/github/python-pillow/Pillow) and
+      [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm
+      passing tests in `master` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
@@ -38,7 +41,13 @@ Released as needed for security, installation or critical bug fixes.
   git checkout -t remotes/origin/5.2.x
   ```
 * [ ] Cherry pick individual commits from `master` branch to release branch e.g. `5.2.x`.
-* [ ] Check [Travis CI](https://travis-ci.org/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
+
+
+
+* [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions),
+      [Travis CI](https://travis-ci.org/github/python-pillow/Pillow) and
+      [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm
+      passing tests in release branch e.g. `5.2.x`.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
