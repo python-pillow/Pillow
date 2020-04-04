@@ -325,9 +325,10 @@ def _save(im, fp, filename):
     size_str = ["ic07", "ic08", "ic09", "ic11", "ic12", "ic13", "ic14", "ic10"]
     file_size = 0
     entries = []
+    provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
     for index, s in enumerate(sizes):
         temp = io.BytesIO()
-        nb = im.resize((s, s))
+        nb = provided_images[s] if s in provided_images else im.resize((s, s))
         nb.save(temp, "png")
         file_size += len(temp.getvalue())
         entries.append(
