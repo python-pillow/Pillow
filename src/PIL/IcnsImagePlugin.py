@@ -6,11 +6,13 @@
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
+# 2020-04-04 Save in icns format to support all operating systems.
 #
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
 # Copyright (c) 2004 by Fredrik Lundh.
 # Copyright (c) 2014 by Alastair Houghton.
+# Copyright (c) 2020 by Pan Jing.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -130,7 +132,6 @@ def read_png_or_jpeg2000(fobj, start_length, size):
 
 
 class IcnsFile:
-
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],
         (512, 512, 1): [(b"ic09", read_png_or_jpeg2000)],
@@ -302,65 +303,71 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
+def to_int(s):
+    b = s.encode('ascii')
+    return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
+
+
+MAGIC = to_int("icns")
+HEADER_SIZE = 8
+TOC = 'TOC '
+
+
 def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
     that are then converted to a .icns file
-    using the macOS command line utility 'iconutil'.
 
-    macOS only.
+    Support for arbitrary systems
     """
     if hasattr(fp, "flush"):
         fp.flush()
 
-    # create the temporary set of pngs
-    with tempfile.TemporaryDirectory(".iconset") as iconset:
-        provided_images = {
-            im.width: im for im in im.encoderinfo.get("append_images", [])
-        }
-        last_w = None
-        second_path = None
-        for w in [16, 32, 128, 256, 512]:
-            prefix = "icon_{}x{}".format(w, w)
+    # size
+    sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
+    size_str = ['ic07', 'ic08', 'ic09', 'ic11', 'ic12', 'ic13', 'ic14', 'ic10']
+    file_size = 0
+    entries = []
+    for index, s in enumerate(sizes):
+        temp = io.BytesIO()
+        nb = im.resize((s, s))
+        nb.save(temp, 'png')
+        file_size += len(temp.getvalue())
+        entries.append({
+            'type': size_str[index],
+            'size': len(temp.getvalue()),
+            'stream': temp
+        })
 
-            first_path = os.path.join(iconset, prefix + ".png")
-            if last_w == w:
-                shutil.copyfile(second_path, first_path)
-            else:
-                im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
-                im_w.save(first_path)
+    # Header
+    fp.write(struct.pack('i', MAGIC)[::-1])
+    fp.write(struct.pack('i', file_size)[::-1])
 
-            second_path = os.path.join(iconset, prefix + "@2x.png")
-            im_w2 = provided_images.get(w * 2, im.resize((w * 2, w * 2), Image.LANCZOS))
-            im_w2.save(second_path)
-            last_w = w * 2
+    # TOC
+    toc_size = HEADER_SIZE + (len(entries) * HEADER_SIZE)
+    fp.write(struct.pack('i', to_int(TOC))[::-1])
+    fp.write(struct.pack('i', toc_size)[::-1])
+    for e in entries:
+        fp.write(struct.pack('i', to_int(e.get('type')))[::-1])
+        fp.write(struct.pack('i', HEADER_SIZE + e.get('size'))[::-1])
 
-        # iconutil -c icns -o {} {}
+    # Data
+    for index, e in enumerate(entries):
+        fp.write(struct.pack('i', to_int(e.get('type')))[::-1])
+        fp.write(struct.pack('i', HEADER_SIZE + e.get('size'))[::-1])
+        fp.write(e.get('stream').getvalue())
 
-        convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-        convert_proc = subprocess.Popen(
-            convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-        )
-
-        convert_proc.stdout.close()
-
-        retcode = convert_proc.wait()
-
-        if retcode:
-            raise subprocess.CalledProcessError(retcode, convert_cmd)
+    fp.flush()
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
 Image.register_extension(IcnsImageFile.format, ".icns")
 
-if sys.platform == "darwin":
-    Image.register_save(IcnsImageFile.format, _save)
-
-    Image.register_mime(IcnsImageFile.format, "image/icns")
-
+# if sys.platform == "darwin":
+Image.register_save(IcnsImageFile.format, _save)
+Image.register_mime(IcnsImageFile.format, "image/icns")
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print("Syntax: python IcnsImagePlugin.py [file]")
         sys.exit()
