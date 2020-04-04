@@ -1039,7 +1039,7 @@ int8_t quarter_next(quarter_state* s, int32_t* ret_x, int32_t* ret_y) {
 
 // quarter_* stuff can "draw" a quarter of an ellipse with thickness 1, great.
 // Now we use ellipse_* stuff to join all four quarters of two different sized
-// ellipses and recieve horizontal segments of a complete ellipse with
+// ellipses and receive horizontal segments of a complete ellipse with
 // specified thickness.
 //
 // Still using integer grid with step 2 at this point (like in quarter_*)
