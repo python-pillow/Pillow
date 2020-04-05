@@ -637,6 +637,9 @@ class TestFilePng:
         with Image.open(TEST_PNG_FILE) as im:
             im.seek(0)
 
+            with pytest.raises(EOFError):
+                im.seek(1)
+
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
 @skip_unless_feature("zlib")
