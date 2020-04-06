@@ -289,4 +289,4 @@ texinfo_documents = [
 
 
 def setup(app):
-    app.add_javascript("js/script.js")
+    app.add_js_file("js/script.js")
