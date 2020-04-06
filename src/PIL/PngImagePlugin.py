@@ -673,7 +673,7 @@ class PngImageFile(ImageFile.ImageFile):
         self._text = None
         self.tile = self.png.im_tile
         self.custom_mimetype = self.png.im_custom_mimetype
-        self._n_frames = self.png.im_n_frames
+        self.n_frames = self.png.im_n_frames or 1
         self.default_image = self.info.get("default_image", False)
 
         if self.png.im_palette:
@@ -685,15 +685,16 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             self.__prepare_idat = length  # used by load_prepare()
 
-        if self._n_frames is not None:
+        if self.png.im_n_frames is not None:
             self._close_exclusive_fp_after_loading = False
             self.png.save_rewind()
             self.__rewind_idat = self.__prepare_idat
             self.__rewind = self.__fp.tell()
             if self.default_image:
                 # IDAT chunk contains default image and not first animation frame
-                self._n_frames += 1
+                self.n_frames += 1
             self._seek(0)
+        self.is_animated = self.n_frames > 1
 
     @property
     def text(self):
@@ -709,16 +710,6 @@ class PngImageFile(ImageFile.ImageFile):
             if self.is_animated:
                 self.seek(frame)
         return self._text
-
-    @property
-    def n_frames(self):
-        if self._n_frames is None:
-            return 1
-        return self._n_frames
-
-    @property
-    def is_animated(self):
-        return self._n_frames is not None and self._n_frames > 1
 
     def verify(self):
         """Verify PNG file"""
