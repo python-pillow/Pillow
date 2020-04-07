@@ -336,21 +336,21 @@ def _save(im, fp, filename):
         )
 
     # Header
-    fp.write(struct.pack("i", MAGIC)[::-1])
-    fp.write(struct.pack("i", file_size)[::-1])
+    fp.write(struct.pack("<i", MAGIC)[::-1])
+    fp.write(struct.pack("<i", file_size)[::-1])
 
     # TOC
     toc_size = HEADER_SIZE + (len(entries) * HEADER_SIZE)
-    fp.write(struct.pack("i", to_int(TOC))[::-1])
-    fp.write(struct.pack("i", toc_size)[::-1])
+    fp.write(struct.pack("<i", to_int(TOC))[::-1])
+    fp.write(struct.pack("<i", toc_size)[::-1])
     for e in entries:
-        fp.write(struct.pack("i", to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("i", HEADER_SIZE + e.get("size"))[::-1])
+        fp.write(struct.pack("<i", to_int(e.get("type")))[::-1])
+        fp.write(struct.pack("<i", HEADER_SIZE + e.get("size"))[::-1])
 
     # Data
     for index, e in enumerate(entries):
-        fp.write(struct.pack("i", to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("i", HEADER_SIZE + e.get("size"))[::-1])
+        fp.write(struct.pack("<i", to_int(e.get("type")))[::-1])
+        fp.write(struct.pack("<i", HEADER_SIZE + e.get("size"))[::-1])
         fp.write(e.get("stream").getvalue())
 
     fp.flush()
