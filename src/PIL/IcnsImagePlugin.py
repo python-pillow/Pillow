@@ -325,10 +325,12 @@ def _save(im, fp, filename):
     file_size = 0
     entries = []
     provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
-    for index, s in enumerate(sizes):
-        temp = io.BytesIO()
+    temp_sizes = {s: io.BytesIO() for s in set(sizes)}
+    for s, temp in temp_sizes.items():
         nb = provided_images[s] if s in provided_images else im.resize((s, s))
         nb.save(temp, "png")
+    for index, s in enumerate(sizes):
+        temp = temp_sizes[s]
         file_size += len(temp.getvalue())
         entries.append(
             {"type": size_str[index], "size": len(temp.getvalue()), "stream": temp}
@@ -343,14 +345,14 @@ def _save(im, fp, filename):
     fp.write(struct.pack("<i", _to_int(TOC))[::-1])
     fp.write(struct.pack("<i", toc_size)[::-1])
     for e in entries:
-        fp.write(struct.pack("<i", _to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("<i", HEADERSIZE + e.get("size"))[::-1])
+        fp.write(struct.pack("<i", _to_int(e["type"]))[::-1])
+        fp.write(struct.pack("<i", HEADERSIZE + e["size"])[::-1])
 
     # Data
     for index, e in enumerate(entries):
-        fp.write(struct.pack("<i", _to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("<i", HEADERSIZE + e.get("size"))[::-1])
-        fp.write(e.get("stream").getvalue())
+        fp.write(struct.pack("<i", _to_int(e["type"]))[::-1])
+        fp.write(struct.pack("<i", HEADERSIZE + e["size"])[::-1])
+        fp.write(e["stream"].getvalue())
 
     fp.flush()
 
