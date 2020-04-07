@@ -200,11 +200,15 @@ attributes before loading the file::
 ICNS
 ^^^^
 
-Pillow reads and (macOS only) writes macOS ``.icns`` files.  By default, the
+Pillow reads and writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
 :py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.Image.open` method
 sets the following :py:attr:`~PIL.Image.Image.info` property:
+
+.. note::
+
+    Prior to version 7.2.0, Pillow could only write ICNS files on macOS.
 
 **sizes**
     A list of supported sizes found in this icon file; these are a
