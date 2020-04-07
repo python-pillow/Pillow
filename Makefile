@@ -67,7 +67,7 @@ debug:
 	CFLAGS='-g -O0' python3 setup.py build_ext install > /dev/null
 
 install-req:
-	pip install -r requirements.txt
+	python3 -m pip install -r requirements.txt
 
 install-venv:
 	virtualenv .
