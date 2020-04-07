@@ -301,13 +301,13 @@ class IcnsImageFile(ImageFile.ImageFile):
 
 
 def to_int(s):
-    b = s.encode('ascii')
+    b = s.encode("ascii")
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
 
 
 MAGIC = to_int("icns")
 HEADER_SIZE = 8
-TOC = 'TOC '
+TOC = "TOC "
 
 
 def _save(im, fp, filename):
@@ -322,37 +322,36 @@ def _save(im, fp, filename):
 
     # size
     sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
-    size_str = ['ic07', 'ic08', 'ic09', 'ic11', 'ic12', 'ic13', 'ic14', 'ic10']
+    size_str = ["ic07", "ic08", "ic09", "ic11", "ic12", "ic13", "ic14", "ic10"]
     file_size = 0
     entries = []
+    provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
     for index, s in enumerate(sizes):
         temp = io.BytesIO()
-        nb = im.resize((s, s))
-        nb.save(temp, 'png')
+        nb = provided_images[s] if s in provided_images else im.resize((s, s))
+        nb.save(temp, "png")
         file_size += len(temp.getvalue())
-        entries.append({
-            'type': size_str[index],
-            'size': len(temp.getvalue()),
-            'stream': temp
-        })
+        entries.append(
+            {"type": size_str[index], "size": len(temp.getvalue()), "stream": temp}
+        )
 
     # Header
-    fp.write(struct.pack('i', MAGIC)[::-1])
-    fp.write(struct.pack('i', file_size)[::-1])
+    fp.write(struct.pack("i", MAGIC)[::-1])
+    fp.write(struct.pack("i", file_size)[::-1])
 
     # TOC
     toc_size = HEADER_SIZE + (len(entries) * HEADER_SIZE)
-    fp.write(struct.pack('i', to_int(TOC))[::-1])
-    fp.write(struct.pack('i', toc_size)[::-1])
+    fp.write(struct.pack("i", to_int(TOC))[::-1])
+    fp.write(struct.pack("i", toc_size)[::-1])
     for e in entries:
-        fp.write(struct.pack('i', to_int(e.get('type')))[::-1])
-        fp.write(struct.pack('i', HEADER_SIZE + e.get('size'))[::-1])
+        fp.write(struct.pack("i", to_int(e.get("type")))[::-1])
+        fp.write(struct.pack("i", HEADER_SIZE + e.get("size"))[::-1])
 
     # Data
     for index, e in enumerate(entries):
-        fp.write(struct.pack('i', to_int(e.get('type')))[::-1])
-        fp.write(struct.pack('i', HEADER_SIZE + e.get('size'))[::-1])
-        fp.write(e.get('stream').getvalue())
+        fp.write(struct.pack("i", to_int(e.get("type")))[::-1])
+        fp.write(struct.pack("i", HEADER_SIZE + e.get("size"))[::-1])
+        fp.write(e.get("stream").getvalue())
 
     fp.flush()
 
