@@ -19,11 +19,8 @@
 
 import io
 import os
-import shutil
 import struct
-import subprocess
 import sys
-import tempfile
 
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._binary import i8
@@ -363,7 +360,6 @@ def _save(im, fp, filename):
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
 Image.register_extension(IcnsImageFile.format, ".icns")
 
-# if sys.platform == "darwin":
 Image.register_save(IcnsImageFile.format, _save)
 Image.register_mime(IcnsImageFile.format, "image/icns")
 
