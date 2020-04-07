@@ -30,7 +30,7 @@ def test_load():
     with Image.open(TEST_FILE) as im:
 
         # Act / Assert: stub cannot load without an implemented handler
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.load()
 
 
@@ -41,7 +41,7 @@ def test_save():
         dummy_filename = "dummy.filename"
 
         # Act / Assert: stub cannot save without an implemented handler
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(dummy_filename)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             FitsStubImagePlugin._save(im, dummy_fp, dummy_filename)

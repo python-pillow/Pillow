@@ -74,7 +74,7 @@ def open(fp, mode="r"):
     :param mode: Optional mode.  In this version, if the mode argument
         is given, it must be "r".
     :returns: An image instance.
-    :raises IOError: If the image could not be read.
+    :raises OSError: If the image could not be read.
     """
     if mode != "r":
         raise ValueError("bad mode")

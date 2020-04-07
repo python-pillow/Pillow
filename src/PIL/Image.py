@@ -2080,7 +2080,7 @@ class Image:
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
-        :exception IOError: If the file could not be written.  The file
+        :exception OSError: If the file could not be written.  The file
            may have been created, and may contain partial data.
         """
 

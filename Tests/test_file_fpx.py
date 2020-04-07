@@ -19,5 +19,5 @@ def test_invalid_file():
 
 
 def test_fpx_invalid_number_of_bands():
-    with pytest.raises(IOError, match="Invalid number of bands"):
+    with pytest.raises(OSError, match="Invalid number of bands"):
         Image.open("Tests/images/input_bw_five_bands.fpx")

@@ -393,14 +393,14 @@ class TestImageFont:
         filename = "somefilenamethatdoesntexist.ttf"
 
         # Act/Assert
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             ImageFont.load_path(filename)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             ImageFont.truetype(filename)
 
     def test_load_non_font_bytes(self):
         with open("Tests/images/hopper.jpg", "rb") as f:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 ImageFont.truetype(f)
 
     def test_default_font(self):
@@ -615,9 +615,9 @@ class TestImageFont:
                 font.get_variation_axes()
             return
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             font.get_variation_names()
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             font.get_variation_axes()
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
@@ -669,7 +669,7 @@ class TestImageFont:
                 font.set_variation_by_name("Bold")
             return
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             font.set_variation_by_name("Bold")
 
         def _check_text(font, path, epsilon):
@@ -701,7 +701,7 @@ class TestImageFont:
                 font.set_variation_by_axes([100])
             return
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             font.set_variation_by_axes([500, 50])
 
         def _check_text(font, path, epsilon):

@@ -1226,7 +1226,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **append**
     Set to True to append pages to an existing PDF file. If the file doesn't
-    exist, an :py:exc:`IOError` will be raised.
+    exist, an :py:exc:`OSError` will be raised.
 
     .. versionadded:: 5.1.0
 

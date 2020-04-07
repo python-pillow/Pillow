@@ -105,7 +105,7 @@ class TestFilePng:
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open(test_file)
 
     def test_bad_text(self):
@@ -334,7 +334,7 @@ class TestFilePng:
     def test_verify_struct_error(self):
         # Check open/load/verify exception (#1755)
 
-        # offsets to test, -10: breaks in i32() in read. (IOError)
+        # offsets to test, -10: breaks in i32() in read. (OSError)
         #                  -13: breaks in crc, txt chunk.
         #                  -14: malformed chunk
 
@@ -344,7 +344,7 @@ class TestFilePng:
 
             with Image.open(BytesIO(test_file)) as im:
                 assert im.fp is not None
-                with pytest.raises((IOError, SyntaxError)):
+                with pytest.raises((OSError, SyntaxError)):
                     im.verify()
 
     def test_verify_ignores_crc_error(self):
@@ -463,7 +463,7 @@ class TestFilePng:
             data = b"\x89" + fd.read()
 
         pngfile = BytesIO(data)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open(pngfile)
 
     def test_trns_rgb(self):
@@ -575,13 +575,13 @@ class TestFilePng:
 
         # Raises a SyntaxError in load_end
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
         # Raises a UnicodeDecodeError in load_end
         with Image.open("Tests/images/truncated_image.png") as im:
             # The file is truncated
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.text()
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             assert isinstance(im.text, dict)

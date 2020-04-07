@@ -172,7 +172,7 @@ def test_pdf_open(tmp_path):
 def test_pdf_append_fails_on_nonexistent_file():
     im = hopper("RGB")
     with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(os.path.join(temp_dir, "nonexistent.pdf"), append=True)
 
 

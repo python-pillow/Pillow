@@ -196,7 +196,7 @@ class TestFileTiff:
     def test_save_unsupported_mode(self, tmp_path):
         im = hopper("HSV")
         outfile = str(tmp_path / "temp.tif")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(outfile)
 
     def test_little_endian(self):
@@ -249,7 +249,7 @@ class TestFileTiff:
             assert im.getextrema() == (-3.140936851501465, 3.140684127807617)
 
     def test_unknown_pixel_mode(self):
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open("Tests/images/hopper_unknown_pixel_mode.tif")
 
     def test_n_frames(self):
@@ -614,7 +614,7 @@ class TestFileTiffW32:
         im = Image.open(tmpfile)
         fp = im.fp
         assert not fp.closed
-        with pytest.raises(WindowsError):
+        with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
         assert fp.closed

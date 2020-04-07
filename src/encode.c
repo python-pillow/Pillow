@@ -201,7 +201,7 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
             if (write(fh, buf, status) < 0) {
                 ImagingSectionLeave(&cookie);
                 free(buf);
-                return PyErr_SetFromErrno(PyExc_IOError);
+                return PyErr_SetFromErrno(PyExc_OSError);
             }
 
     } while (encoder->state.errcode == 0);

@@ -64,7 +64,7 @@ def test_neg_ppm():
     # has been removed. The default opener doesn't accept negative
     # sizes.
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open("Tests/images/negative_size.ppm")
 
 

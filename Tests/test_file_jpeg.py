@@ -147,7 +147,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
             f = str(tmp_path / "temp.jpg")
             icc_profile = im.info["icc_profile"]
-            # Should not raise IOError for image with icc larger than image size.
+            # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
                 format="JPEG",
@@ -379,14 +379,14 @@ class TestFileJpeg:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
             assert im.getbbox() is not None
 
-    def test_truncated_jpeg_throws_IOError(self):
+    def test_truncated_jpeg_throws_oserror(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         with Image.open(filename) as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     def test_qtables(self, tmp_path):
@@ -552,7 +552,7 @@ class TestFileJpeg:
         out = BytesIO()
         for mode in ["LA", "La", "RGBA", "RGBa", "P"]:
             img = Image.new(mode, (20, 20))
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 img.save(out, "JPEG")
 
     def test_save_tiff_with_dpi(self, tmp_path):
@@ -702,7 +702,7 @@ class TestFileCloseW32:
         im = Image.open(tmpfile)
         fp = im.fp
         assert not fp.closed
-        with pytest.raises(WindowsError):
+        with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
         assert fp.closed

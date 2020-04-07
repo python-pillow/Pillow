@@ -218,7 +218,7 @@ def test_16bit_jp2_roundtrips():
 
 def test_unbound_local():
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open("Tests/images/unbound_variable.jp2")
 
 

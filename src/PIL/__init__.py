@@ -131,5 +131,5 @@ _plugins = [
 ]
 
 
-class UnidentifiedImageError(IOError):
+class UnidentifiedImageError(OSError):
     pass
