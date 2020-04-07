@@ -12,6 +12,15 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+
+IOError was merged into OSError in Python 3.3. So, ``ImageFile.raise_ioerror``
+is now deprecated and will be removed in a future released. Use
+``ImageFile.raise_oserror`` instead.
+
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~
 
