@@ -306,7 +306,6 @@ def _to_int(s):
 
 
 MAGIC = _to_int("icns")
-HEADER_SIZE = 8
 TOC = "TOC "
 
 
@@ -340,17 +339,17 @@ def _save(im, fp, filename):
     fp.write(struct.pack("<i", file_size)[::-1])
 
     # TOC
-    toc_size = HEADER_SIZE + (len(entries) * HEADER_SIZE)
+    toc_size = HEADERSIZE + (len(entries) * HEADERSIZE)
     fp.write(struct.pack("<i", _to_int(TOC))[::-1])
     fp.write(struct.pack("<i", toc_size)[::-1])
     for e in entries:
         fp.write(struct.pack("<i", _to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("<i", HEADER_SIZE + e.get("size"))[::-1])
+        fp.write(struct.pack("<i", HEADERSIZE + e.get("size"))[::-1])
 
     # Data
     for index, e in enumerate(entries):
         fp.write(struct.pack("<i", _to_int(e.get("type")))[::-1])
-        fp.write(struct.pack("<i", HEADER_SIZE + e.get("size"))[::-1])
+        fp.write(struct.pack("<i", HEADERSIZE + e.get("size"))[::-1])
         fp.write(e.get("stream").getvalue())
 
     fp.flush()
