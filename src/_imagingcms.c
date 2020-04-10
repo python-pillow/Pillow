@@ -107,7 +107,7 @@ cms_profile_open(PyObject* self, PyObject* args)
 
     hProfile = cmsOpenProfileFromFile(sProfile, "r");
     if (!hProfile) {
-        PyErr_SetString(PyExc_IOError, "cannot open profile file");
+        PyErr_SetString(PyExc_OSError, "cannot open profile file");
         return NULL;
     }
 
@@ -126,7 +126,7 @@ cms_profile_fromstring(PyObject* self, PyObject* args)
 
     hProfile = cmsOpenProfileFromMem(pProfile, nProfile);
     if (!hProfile) {
-        PyErr_SetString(PyExc_IOError, "cannot open profile from string");
+        PyErr_SetString(PyExc_OSError, "cannot open profile from string");
         return NULL;
     }
 
@@ -150,18 +150,18 @@ cms_profile_tobytes(PyObject* self, PyObject* args)
     profile = ((CmsProfileObject*)CmsProfile)->profile;
 
     if (!cmsSaveProfileToMem(profile, pProfile, &nProfile)) {
-        PyErr_SetString(PyExc_IOError, "Could not determine profile size");
+        PyErr_SetString(PyExc_OSError, "Could not determine profile size");
         return NULL;
     }
 
     pProfile = (char*)malloc(nProfile);
     if (!pProfile) {
-        PyErr_SetString(PyExc_IOError, "Out of Memory");
+        PyErr_SetString(PyExc_OSError, "Out of Memory");
         return NULL;
     }
 
     if (!cmsSaveProfileToMem(profile, pProfile, &nProfile)) {
-        PyErr_SetString(PyExc_IOError, "Could not get profile");
+        PyErr_SetString(PyExc_OSError, "Could not get profile");
         free(pProfile);
         return NULL;
     }
@@ -655,7 +655,7 @@ _profile_read_mlu(CmsProfileObject* self, cmsTagSignature info)
 
     buf = malloc(len);
     if (!buf) {
-        PyErr_SetString(PyExc_IOError, "Out of Memory");
+        PyErr_SetString(PyExc_OSError, "Out of Memory");
         return NULL;
     }
     /* Just in case the next call fails.  */

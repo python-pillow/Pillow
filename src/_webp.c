@@ -70,7 +70,7 @@ PyObject* HandleMuxError(WebPMuxError err, char* chunk) {
 
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
-            PyErr_SetString(PyExc_IOError, message);
+            PyErr_SetString(PyExc_OSError, message);
             break;
 
         default:
@@ -423,7 +423,7 @@ PyObject* _anim_decoder_get_next(PyObject* self)
     WebPAnimDecoderObject* decp = (WebPAnimDecoderObject*)self;
 
     if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
-        PyErr_SetString(PyExc_IOError, "failed to read next frame");
+        PyErr_SetString(PyExc_OSError, "failed to read next frame");
         return NULL;
     }
 

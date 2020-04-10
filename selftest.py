@@ -47,7 +47,7 @@ def testimage():
     ('PPM', 'RGB', (128, 128))
     >>> try:
     ...  _info(Image.open("Tests/images/hopper.jpg"))
-    ... except IOError as v:
+    ... except OSError as v:
     ...  print(v)
     ('JPEG', 'RGB', (128, 128))
 

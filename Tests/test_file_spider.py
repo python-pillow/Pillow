@@ -134,7 +134,7 @@ def test_is_int_not_a_number():
 def test_invalid_file():
     invalid_file = "Tests/images/invalid.spider"
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open(invalid_file)
 
 

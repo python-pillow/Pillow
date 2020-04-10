@@ -59,7 +59,7 @@ ImagingSavePPM(Imaging im, const char* outfile)
 
     fp = fopen(outfile, "wb");
     if (!fp) {
-        (void) ImagingError_IOError();
+        (void) ImagingError_OSError();
         return 0;
     }
 

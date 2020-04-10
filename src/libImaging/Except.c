@@ -26,7 +26,7 @@
 /* exception state */
 
 void *
-ImagingError_IOError(void)
+ImagingError_OSError(void)
 {
     fprintf(stderr, "*** exception: file access error\n");
     return NULL;

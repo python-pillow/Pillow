@@ -139,11 +139,11 @@ geterror(int code)
 
     for (i = 0; ft_errors[i].message; i++)
         if (ft_errors[i].code == code) {
-            PyErr_SetString(PyExc_IOError, ft_errors[i].message);
+            PyErr_SetString(PyExc_OSError, ft_errors[i].message);
             return NULL;
         }
 
-    PyErr_SetString(PyExc_IOError, "unknown freetype error");
+    PyErr_SetString(PyExc_OSError, "unknown freetype error");
     return NULL;
 }
 
@@ -259,7 +259,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 
     if (!library) {
         PyErr_SetString(
-            PyExc_IOError,
+            PyExc_OSError,
             "failed to initialize FreeType library"
             );
         return NULL;

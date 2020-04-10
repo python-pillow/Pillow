@@ -255,7 +255,7 @@ class GifImageFile(ImageFile.ImageFile):
 
             else:
                 pass
-                # raise IOError, "illegal GIF tag `%x`" % i8(s)
+                # raise OSError, "illegal GIF tag `%x`" % i8(s)
 
         try:
             if self.disposal_method < 2:

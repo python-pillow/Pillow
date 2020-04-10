@@ -579,7 +579,7 @@ class pil_build_ext(build_ext):
                 try:
                     listdir = os.listdir(directory)
                 except Exception:
-                    # WindowsError, FileNotFoundError
+                    # OSError, FileNotFoundError
                     continue
                 for name in listdir:
                     if name.startswith("openjpeg-") and os.path.isfile(

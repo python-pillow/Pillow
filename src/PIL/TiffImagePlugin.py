@@ -1123,7 +1123,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if hasattr(self.fp, "flush"):
                 self.fp.flush()
         except OSError:
-            # io.BytesIO have a fileno, but returns an IOError if
+            # io.BytesIO have a fileno, but returns an OSError if
             # it doesn't use a file descriptor.
             fp = False
 
@@ -1147,7 +1147,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # underlying string for stringio.
             #
             # Rearranging for supporting byteio items, since they have a fileno
-            # that returns an IOError if there's no underlying fp. Easier to
+            # that returns an OSError if there's no underlying fp. Easier to
             # deal with here by reordering.
             if DEBUG:
                 print("have getvalue. just sending in a string from getvalue")

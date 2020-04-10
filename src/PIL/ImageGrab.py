@@ -60,7 +60,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:
-        raise IOError("Pillow was built without XCB support")
+        raise OSError("Pillow was built without XCB support")
     size, data = Image.core.grabscreen_x11(xdisplay)
     im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
     if bbox:

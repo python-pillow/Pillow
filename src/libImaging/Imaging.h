@@ -229,7 +229,7 @@ extern void ImagingSectionLeave(ImagingSectionCookie* cookie);
 /* Exceptions */
 /* ---------- */
 
-extern void* ImagingError_IOError(void);
+extern void* ImagingError_OSError(void);
 extern void* ImagingError_MemoryError(void);
 extern void* ImagingError_ModeError(void); /* maps to ValueError by default */
 extern void* ImagingError_Mismatch(void); /* maps to ValueError by default */
