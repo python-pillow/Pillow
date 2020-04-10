@@ -46,7 +46,6 @@ jobs:
         sudo chown -R runner $GITHUB_WORKSPACE
 
     - name: After success
-      if: success()
       run: |
         PATH="$PATH:~/.local/bin"
         docker start pillow_container
@@ -59,7 +58,6 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      if: success()
       uses: codecov/codecov-action@v1
       with:
         flags: GHA_Docker

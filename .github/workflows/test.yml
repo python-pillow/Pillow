@@ -102,12 +102,10 @@ jobs:
         make doccheck
 
     - name: After success
-      if: success()
       run: |
         .ci/after_success.sh
 
     - name: Upload coverage
-      if: success()
       run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}
       env:
         CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}

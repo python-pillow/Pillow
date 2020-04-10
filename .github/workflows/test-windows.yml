@@ -352,13 +352,11 @@ jobs:
         path: Tests/errors
 
     - name: After success
-      if: success()
       run: |
         .ci/after_success.sh
       shell: pwsh
 
     - name: Upload coverage
-      if: success()
       uses: codecov/codecov-action@v1
       with:
           file: ./coverage.xml
