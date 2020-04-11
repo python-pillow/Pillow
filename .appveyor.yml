@@ -24,7 +24,6 @@ environment:
     DEPLOY: NO
   - PYTHON: C:/vp/pypy3
     EXECUTABLE: bin/pypy.exe
-    PIP_DIR: bin
     VENV: YES
 
 
