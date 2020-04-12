@@ -24,7 +24,10 @@ Download and install:
 * `CMake 3.13 or newer <https://cmake.org/download/>`_
   (also available as Visual Studio component C++ CMake tools for Windows)
 
-* x86/x64: `NASM <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
+* `Ninja <https://ninja-build.org/>`_
+  (optional, use ``--nmake`` if not available; bundled in Visual Studio CMake component)
+
+* x86/x64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
 Any version of Visual Studio 2017 or newer should be supported,
 including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
@@ -53,6 +56,7 @@ behaviour of ``build_prepare.py``:
 ``build_prepare.py`` also supports the following command line parameters:
 
 * ``-v`` will print generated scripts.
+* ``--nmake`` will use NMake instead of Ninja for CMake dependencies
 * ``--no-imagequant`` will skip GPL-licensed ``libimagequant`` optional dependency
 * ``--no-fribidi`` or ``--no-raqm`` will skip optional LGPL-licensed dependency FriBiDi
   (required for Raqm text shaping).

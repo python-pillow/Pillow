@@ -55,24 +55,28 @@ def cmd_nmake(makefile=None, target="", params=None):
     )
 
 
-def cmd_cmake(params=None, file="."):
-    if params is None:
-        params = ""
-    elif isinstance(params, (list, tuple)):
-        params = " ".join(params)
+def cmds_cmake(target, *params):
+    if isinstance(target, str):
+        targets = ("clean", target)
     else:
-        params = str(params)
-    return " ".join(
-        [
-            "{cmake}",
-            "-DCMAKE_VERBOSE_MAKEFILE=ON",
-            "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
-            "-DCMAKE_BUILD_TYPE=Release",
-            f"{params}",
-            '-G "NMake Makefiles"',
-            f'"{file}"',
-        ]
-    )
+        targets = ("clean", *target)
+
+    return [
+        " ".join(
+            [
+                "{cmake}",
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_VERBOSE_MAKEFILE=ON",
+                "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
+                "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_CXX_COMPILER=cl.exe",  # for Ninja
+                *params,
+                '-G "{cmake_generator}"',
+                ".",
+            ]
+        ),
+        *(f"{{cmake}} --build . --target {tgt}" for tgt in targets),
+    ]
 
 
 def cmd_msbuild(
@@ -118,19 +122,14 @@ deps = {
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
         "build": [
-            cmd_cmake(
-                [
-                    "-DENABLE_SHARED:BOOL=FALSE",
-                    "-DWITH_JPEG8:BOOL=TRUE",
-                    "-DWITH_CRT_DLL:BOOL=TRUE",
-                ]
+            *cmds_cmake(
+                ("jpeg-static", "cjpeg-static", "djpeg-static"),
+                "-DENABLE_SHARED:BOOL=FALSE",
+                "-DWITH_JPEG8:BOOL=TRUE",
+                "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="jpeg-static"),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_nmake(target="cjpeg-static"),
             cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
-            cmd_nmake(target="djpeg-static"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["j*.h"],
@@ -157,9 +156,7 @@ deps = {
         "dir": "xz-5.4.1",
         "license": "COPYING",
         "build": [
-            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="liblzma"),
+            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
@@ -205,11 +202,11 @@ deps = {
             },
         },
         "build": [
-            cmd_cmake(
-                "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DCMAKE_C_FLAGS=-DLZMA_API_STATIC"
-            ),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="tiff"),
+            *cmds_cmake(
+                "tiff",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                "-DCMAKE_C_FLAGS=-DLZMA_API_STATIC",
+            )
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
@@ -221,10 +218,7 @@ deps = {
         "dir": "lpng1639",
         "license": "LICENSE",
         "build": [
-            # lint: do not inline
-            cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(),
+            *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
             cmd_copy("libpng16_static.lib", "libpng16.lib"),
         ],
         "headers": [r"png*.h"],
@@ -236,10 +230,7 @@ deps = {
         "dir": "brotli-1.0.9",
         "license": "LICENSE",
         "build": [
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="brotlicommon-static"),
-            cmd_nmake(target="brotlidec-static"),
+            *cmds_cmake(("brotlicommon-static", "brotlidec-static")),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
@@ -317,9 +308,9 @@ deps = {
             }
         },
         "build": [
-            cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="openjp2"),
+            *cmds_cmake(
+                "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
+            ),
             cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
             cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
@@ -338,10 +329,7 @@ deps = {
             }
         },
         "build": [
-            # lint: do not inline
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="imagequant_a"),
+            *cmds_cmake("imagequant_a"),
             cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
@@ -354,9 +342,7 @@ deps = {
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),
-            cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="harfbuzz"),
+            *cmds_cmake("harfbuzz", "-DHB_HAVE_FREETYPE:BOOL=TRUE"),
         ],
         "headers": [r"src\*.h"],
         "libs": [r"*.lib"],
@@ -369,9 +355,7 @@ deps = {
         "build": [
             cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.12-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="fribidi"),
+            *cmds_cmake("fribidi"),
         ],
         "bins": [r"*.dll"],
     },
@@ -600,10 +584,13 @@ if __name__ == "__main__":
         else ("x86" if struct.calcsize("P") == 4 else "x64"),
     )
     build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
+    cmake_generator = "Ninja"
     sources_dir = ""
     for arg in sys.argv[1:]:
         if arg == "-v":
             verbose = True
+        elif arg == "--nmake":
+            cmake_generator = "NMake Makefiles"
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
         elif arg == "--no-raqm" or arg == "--no-fribidi":
@@ -679,6 +666,7 @@ if __name__ == "__main__":
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
+        "cmake_generator": cmake_generator,
         # TODO find NASM automatically
         # script header
         "header": sum([header, msvs["header"], ["@echo on"]], []),
