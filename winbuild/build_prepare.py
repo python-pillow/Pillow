@@ -102,7 +102,7 @@ header = [
     cmd_append("PATH", "{bin_dir}"),
 ]
 
-# dependencies
+# dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
         "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
@@ -154,9 +154,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.0.3.tar.gz",  # noqa: E501
-        "filename": "libwebp-1.0.3.tar.gz",
-        "dir": "libwebp-1.0.3",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",  # noqa: E501
+        "filename": "libwebp-1.1.0.tar.gz",
+        "dir": "libwebp-1.1.0",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -176,9 +176,9 @@ deps = {
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa E501
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # freetype doesn't specify SDK version, MSBuild may guess incorrectly
-                '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa E501
+                '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa: E501
             }
         },
         "build": [
@@ -201,11 +201,11 @@ deps = {
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
-                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa E501
+                "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa E501
+                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa E501
+                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
@@ -231,10 +231,10 @@ deps = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # ba653c8: Merge tag '2.12.5' into msvc
-        "url": "https://github.com/ImageOptim/libimagequant/archive/ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",  # noqa: E501
-        "filename": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971.zip",
-        "dir": "libimagequant-ba653c8ccb34dde4e21c6076d85a72d21ed9d971",
+        # e5d454b: Merge tag '2.12.6' into msvc
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",  # noqa: E501
+        "filename": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",
+        "dir": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4",
         "patch": {
             "CMakeLists.txt": {
                 "add_library": "add_compile_options(-openmp-)\r\nadd_library",
@@ -251,9 +251,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.1.zip",
-        "filename": "harfbuzz-2.6.1.zip",
-        "dir": "harfbuzz-2.6.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.4.zip",
+        "filename": "harfbuzz-2.6.4.zip",
+        "dir": "harfbuzz-2.6.4",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -263,9 +263,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.7.zip",
-        "filename": "fribidi-1.0.7.zip",
-        "dir": "fribidi-1.0.7",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.9.zip",
+        "filename": "fribidi-1.0.9.zip",
+        "dir": "fribidi-1.0.9",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
