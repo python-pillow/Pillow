@@ -612,12 +612,13 @@ font_getsize(FontObject* self, PyObject* args)
     int position, advanced;
     int x_max, x_min, y_max, y_min;
     FT_Face face;
-    int xoffset, yoffset;
+    int x_anchor, y_anchor;
     int horizontal_dir;
     int mask = 0;
     int load_flags;
     const char *dir = NULL;
     const char *lang = NULL;
+    const char *anchor = NULL;
     size_t i, count;
     GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
@@ -625,8 +626,17 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|izOzzz:getsize", &string, &mask, &dir, &features, &lang, &anchor)) {
         return NULL;
+    }
+
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    if (anchor == NULL) {
+        anchor = horizontal_dir ? "la" : "lt";
+    }
+    if (strlen(anchor) != 2) {
+        goto bad_anchor;
     }
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
@@ -636,7 +646,6 @@ font_getsize(FontObject* self, PyObject* args)
 
     face = NULL;
     position = x_max = x_min = y_max = y_min = 0;
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
     for (i = 0; i < count; i++) {
         int index, error, offset;
         FT_BBox bbox;
@@ -733,21 +742,90 @@ font_getsize(FontObject* self, PyObject* args)
         glyph_info = NULL;
     }
 
+    x_anchor = y_anchor = 0;
     if (face) {
         if (horizontal_dir) {
-            xoffset = 0;
-            yoffset = self->face->size->metrics.ascender - y_max;
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = 0;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = position / 2;
+                break;
+            case 'r':  // right
+                x_anchor = position;
+                break;
+            case 's':  // vertical baseline
+            default:
+                goto bad_anchor;
+            }
+            switch (anchor[1]) {
+            case 'a':  // ascender
+                y_anchor = self->face->size->metrics.ascender;
+                break;
+            case 't':  // top
+                y_anchor = y_max;
+                break;
+            case 'm':  // middle (ascender + descender) / 2
+                y_anchor = (self->face->size->metrics.ascender + self->face->size->metrics.descender) / 2;
+                break;
+            case 's':  // horizontal baseline
+                y_anchor = 0;
+                break;
+            case 'b':  // bottom
+                y_anchor = y_min;
+                break;
+            case 'd':  // descender
+                y_anchor = self->face->size->metrics.descender;
+                break;
+            default:
+                goto bad_anchor;
+            }
         } else {
-            xoffset = 0;
-            yoffset = -y_max;
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = x_min;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = (x_min + x_max) / 2;
+                break;
+            case 'r':  // right
+                x_anchor = x_max;
+                break;
+            case 's':  // vertical baseline
+                x_anchor = 0;
+                break;
+            default:
+                goto bad_anchor;
+            }
+            switch (anchor[1]) {
+            case 't':  // top
+                y_anchor = 0;
+                break;
+            case 'm':  // middle (top + bottom) / 2
+                y_anchor = position / 2;
+                break;
+            case 'b':  // bottom
+                y_anchor = position;
+                break;
+            case 'a':  // ascender
+            case 's':  // horizontal baseline
+            case 'd':  // descender
+            default:
+                goto bad_anchor;
+            }
         }
     }
 
     return Py_BuildValue(
         "(ii)(ii)",
         PIXEL(x_max - x_min), PIXEL(y_max - y_min),
-        PIXEL(xoffset), PIXEL(yoffset)
-        );
+        PIXEL(-x_anchor + x_min), PIXEL(y_anchor - y_max)
+    );
+
+bad_anchor:
+    PyErr_Format(PyExc_ValueError, "bad anchor specified: %s", anchor);
+    return NULL;
 }
 
 static PyObject*
