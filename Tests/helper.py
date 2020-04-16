@@ -272,12 +272,8 @@ def on_github_actions():
 
 
 def on_ci():
-    # Travis and AppVeyor have "CI"
-    # Azure Pipelines has "TF_BUILD"
-    # GitHub Actions has "GITHUB_ACTIONS"
-    return (
-        "CI" in os.environ or "TF_BUILD" in os.environ or "GITHUB_ACTIONS" in os.environ
-    )
+    # GitHub Actions, Travis and AppVeyor have "CI"
+    return "CI" in os.environ
 
 
 def is_big_endian():
