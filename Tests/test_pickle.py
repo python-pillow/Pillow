@@ -62,8 +62,8 @@ def helper_pickle_string(
 def test_pickle_image(tmp_path, test_file, test_mode):
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, test_file)
-        helper_pickle_file(tmp_path, pickle, protocol, test_file)
+        helper_pickle_string(pickle, protocol, test_file, test_mode)
+        helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
 
 
 def test_pickle_la_mode_with_palette(tmp_path):
