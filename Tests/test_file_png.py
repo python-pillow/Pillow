@@ -591,19 +591,23 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
-    @pytest.mark.parametrize(
-        "test_file",
-        [
-            "Tests/images/exif.png",  # With an EXIF chunk
-            "Tests/images/exif_imagemagick.png",  # With an ImageMagick zTXt chunk
-        ],
-    )
-    def test_exif(self, test_file):
-        with Image.open(test_file) as im:
+    def test_exif(self):
+        # With an EXIF chunk
+        with Image.open("Tests/images/exif.png") as im:
             exif = im._getexif()
         assert exif[274] == 1
 
-    def test_xmp_tags_orientation(self):
+        # With an ImageMagick zTXt chunk
+        with Image.open("Tests/images/exif_imagemagick.png") as im:
+            exif = im._getexif()
+            assert exif[274] == 1
+
+            # Assert that info still can be extracted
+            # when the image is no longer a PngImageFile instance
+            exif = im.copy().getexif()
+            assert exif[274] == 1
+
+        # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:
             exif = im.getexif()
         assert exif[274] == 3

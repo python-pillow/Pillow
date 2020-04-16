@@ -1298,30 +1298,31 @@ class Image:
             return tuple(extrema)
         return self.im.getextrema()
 
-    def _parse_xmp_tags(self):
-        if 0x0112 in self._exif:
-            return
-
-        xmp_tags = self.info.get("XML:com.adobe.xmp")
-        if not xmp_tags:
-            return
-
-        root = xml.etree.ElementTree.fromstring(xmp_tags)
-        for elem in root.iter():
-            if elem.tag.endswith("}Description"):
-                break
-        else:
-            return
-
-        orientation = elem.attrib.get("{http://ns.adobe.com/tiff/1.0/}Orientation")
-        if orientation:
-            self._exif[0x0112] = int(orientation)
-
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
-        self._exif.load(self.info.get("exif"))
-        self._parse_xmp_tags()
+
+        exif_info = self.info.get("exif")
+        if exif_info is None and "Raw profile type exif" in self.info:
+            exif_info = bytes.fromhex(
+                "".join(self.info["Raw profile type exif"].split("\n")[3:])
+            )
+        self._exif.load(exif_info)
+
+        # XMP tags
+        if 0x0112 not in self._exif:
+            xmp_tags = self.info.get("XML:com.adobe.xmp")
+            if xmp_tags:
+                root = xml.etree.ElementTree.fromstring(xmp_tags)
+                for elem in root.iter():
+                    if elem.tag.endswith("}Description"):
+                        orientation = elem.attrib.get(
+                            "{http://ns.adobe.com/tiff/1.0/}Orientation"
+                        )
+                        if orientation:
+                            self._exif[0x0112] = int(orientation)
+                        break
+
         return self._exif
 
     def getim(self):
