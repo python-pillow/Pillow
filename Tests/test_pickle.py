@@ -39,43 +39,26 @@ def helper_pickle_string(
 
 
 @pytest.mark.parametrize(
-    "test_file", ["Tests/images/hopper.jpg"],
+    ("test_file", "test_mode"),
+    [
+        ("Tests/images/hopper.jpg", None),
+        ("Tests/images/hopper.jpg", "L"),
+        ("Tests/images/hopper.jpg", "PA"),
+        ("Tests/images/test-card.png", None),
+        ("Tests/images/zero_bb.png", None),
+        ("Tests/images/zero_bb_scale2.png", None),
+        ("Tests/images/non_zero_bb.png", None),
+        ("Tests/images/non_zero_bb_scale2.png", None),
+        ("Tests/images/p_trns_single.png", None),
+        ("Tests/images/pil123p.png", None),
+        ("Tests/images/itxt_chunks.png", None),
+    ],
 )
-def test_pickle_image(test_file, tmp_path):
+def test_pickle_image(tmp_path, test_file, test_mode):
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
         helper_pickle_string(pickle, protocol, test_file)
         helper_pickle_file(tmp_path, pickle, protocol, test_file)
-
-
-def test_pickle_p_mode():
-    # Act / Assert
-    for test_file in [
-        "Tests/images/test-card.png",
-        "Tests/images/zero_bb.png",
-        "Tests/images/zero_bb_scale2.png",
-        "Tests/images/non_zero_bb.png",
-        "Tests/images/non_zero_bb_scale2.png",
-        "Tests/images/p_trns_single.png",
-        "Tests/images/pil123p.png",
-        "Tests/images/itxt_chunks.png",
-    ]:
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            helper_pickle_string(pickle, protocol=protocol, test_file=test_file)
-
-
-def test_pickle_pa_mode(tmp_path):
-    # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, mode="PA")
-        helper_pickle_file(tmp_path, pickle, protocol, mode="PA")
-
-
-def test_pickle_l_mode(tmp_path):
-    # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, mode="L")
-        helper_pickle_file(tmp_path, pickle, protocol, mode="L")
 
 
 def test_pickle_la_mode_with_palette(tmp_path):
