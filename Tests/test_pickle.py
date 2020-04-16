@@ -3,6 +3,8 @@ import pickle
 import pytest
 from PIL import Image
 
+from .helper import skip_unless_feature
+
 
 def helper_pickle_file(
     tmp_path, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
@@ -44,7 +46,9 @@ def helper_pickle_string(
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),
         ("Tests/images/hopper.jpg", "PA"),
-        ("Tests/images/hopper.webp", None),
+        pytest.param(
+            "Tests/images/hopper.webp", None, marks=skip_unless_feature("webp")
+        ),
         ("Tests/images/test-card.png", None),
         ("Tests/images/zero_bb.png", None),
         ("Tests/images/zero_bb_scale2.png", None),
