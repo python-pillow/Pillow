@@ -1,11 +1,14 @@
 import pickle
 
+import pytest
 from PIL import Image
 
 
-def helper_pickle_file(tmp_path, pickle, protocol=0, mode=None):
+def helper_pickle_file(
+    tmp_path, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
+):
     # Arrange
-    with Image.open("Tests/images/hopper.jpg") as im:
+    with Image.open(test_file) as im:
         filename = str(tmp_path / "temp.pkl")
         if mode:
             im = im.convert(mode)
@@ -35,11 +38,14 @@ def helper_pickle_string(
         assert im == loaded_im
 
 
-def test_pickle_image(tmp_path):
+@pytest.mark.parametrize(
+    "test_file", ["Tests/images/hopper.jpg"],
+)
+def test_pickle_image(test_file, tmp_path):
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol)
-        helper_pickle_file(tmp_path, pickle, protocol)
+        helper_pickle_string(pickle, protocol, test_file)
+        helper_pickle_file(tmp_path, pickle, protocol, test_file)
 
 
 def test_pickle_p_mode():
