@@ -44,6 +44,7 @@ def helper_pickle_string(
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),
         ("Tests/images/hopper.jpg", "PA"),
+        ("Tests/images/hopper.webp", None),
         ("Tests/images/test-card.png", None),
         ("Tests/images/zero_bb.png", None),
         ("Tests/images/zero_bb_scale2.png", None),
