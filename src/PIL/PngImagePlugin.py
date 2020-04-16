@@ -940,6 +940,7 @@ class PngImageFile(ImageFile.ImageFile):
                 "".join(self.info["Raw profile type exif"].split("\n")[3:])
             )
         self._exif.load(exif_info)
+        self._parse_xmp_tags()
         return self._exif
 
     def _close__fp(self):

@@ -603,6 +603,11 @@ class TestFilePng:
             exif = im._getexif()
         assert exif[274] == 1
 
+    def test_xmp_tags_orientation(self):
+        with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+            exif = im.getexif()
+        assert exif[274] == 3
+
     def test_exif_save(self, tmp_path):
         with Image.open("Tests/images/exif.png") as im:
             test_file = str(tmp_path / "temp.png")
