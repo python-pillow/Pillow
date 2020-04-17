@@ -100,14 +100,8 @@ class WebPImageFile(ImageFile.ImageFile):
         return dict(self.getexif())
 
     def seek(self, frame):
-        if not _webp.HAVE_WEBPANIM:
-            return super().seek(frame)
-
-        # Perform some simple checks first
-        if frame >= self._n_frames:
-            raise EOFError("attempted to seek beyond end of sequence")
-        if frame < 0:
-            raise EOFError("negative frame index is not valid")
+        if not self._seek_check(frame):
+            return
 
         # Set logical frame to requested position
         self.__logical_frame = frame
