@@ -84,6 +84,7 @@ def test_pickle_la_mode_with_palette(tmp_path):
         assert im == loaded_im
 
 
+@skip_unless_feature("webp")
 def test_pickle_tell():
     # Arrange
     image = Image.open("Tests/images/hopper.webp")
