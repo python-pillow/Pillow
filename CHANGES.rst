@@ -2,6 +2,18 @@
 Changelog (Pillow)
 ==================
 
+7.2.0 (unreleased)
+------------------
+
+- Fixed bug when unpickling TIFF images #4565
+  [radarhere]
+
+- Fix pickling WebP #4561
+  [hugovk, radarhere]
+
+- Raise an EOFError when seeking too far in PNG #4528
+  [radarhere]
+
 7.1.1 (2020-04-02)
 ------------------
 
