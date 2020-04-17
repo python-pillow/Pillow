@@ -82,3 +82,14 @@ def test_pickle_la_mode_with_palette(tmp_path):
 
         im.mode = "PA"
         assert im == loaded_im
+
+
+def test_pickle_tell():
+    # Arrange
+    image = Image.open("Tests/images/hopper.webp")
+
+    # Act: roundtrip
+    unpickled_image = pickle.loads(pickle.dumps(image))
+
+    # Assert
+    assert unpickled_image.tell() == 0
