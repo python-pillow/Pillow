@@ -38,6 +38,8 @@ class WebPImageFile(ImageFile.ImageFile):
 
     format = "WEBP"
     format_description = "WebP image"
+    __loaded = 0
+    __logical_frame = 0
 
     def _open(self):
         if not _webp.HAVE_WEBPANIM:
