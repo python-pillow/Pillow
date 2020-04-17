@@ -54,7 +54,8 @@ class WebPImageFile(ImageFile.ImageFile):
             self._size = width, height
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
-            self._n_frames = 1
+            self.n_frames = 1
+            self.is_animated = False
             return
 
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
@@ -72,7 +73,8 @@ class WebPImageFile(ImageFile.ImageFile):
             bgcolor & 0xFF,
         )
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
-        self._n_frames = frame_count
+        self.n_frames = frame_count
+        self.is_animated = self.n_frames > 1
         self.mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
@@ -90,30 +92,15 @@ class WebPImageFile(ImageFile.ImageFile):
 
         # Initialize seek state
         self._reset(reset=False)
-        self.seek(0)
 
     def _getexif(self):
         if "exif" not in self.info:
             return None
         return dict(self.getexif())
 
-    @property
-    def n_frames(self):
-        return self._n_frames
-
-    @property
-    def is_animated(self):
-        return self._n_frames > 1
-
     def seek(self, frame):
-        if not _webp.HAVE_WEBPANIM:
-            return super().seek(frame)
-
-        # Perform some simple checks first
-        if frame >= self._n_frames:
-            raise EOFError("attempted to seek beyond end of sequence")
-        if frame < 0:
-            raise EOFError("negative frame index is not valid")
+        if not self._seek_check(frame):
+            return
 
         # Set logical frame to requested position
         self.__logical_frame = frame
