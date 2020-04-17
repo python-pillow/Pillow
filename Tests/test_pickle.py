@@ -6,9 +6,7 @@ from PIL import Image
 from .helper import skip_unless_feature
 
 
-def helper_pickle_file(
-    tmp_path, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
-):
+def helper_pickle_file(tmp_path, pickle, protocol, test_file, mode):
     # Arrange
     with Image.open(test_file) as im:
         filename = str(tmp_path / "temp.pkl")
@@ -25,9 +23,7 @@ def helper_pickle_file(
         assert im == loaded_im
 
 
-def helper_pickle_string(
-    pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
-):
+def helper_pickle_string(pickle, protocol, test_file, mode):
     with Image.open(test_file) as im:
         if mode:
             im = im.convert(mode)
