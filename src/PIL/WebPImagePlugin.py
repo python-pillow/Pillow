@@ -92,7 +92,6 @@ class WebPImageFile(ImageFile.ImageFile):
 
         # Initialize seek state
         self._reset(reset=False)
-        self.seek(0)
 
     def _getexif(self):
         if "exif" not in self.info:
