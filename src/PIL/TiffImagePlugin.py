@@ -1066,7 +1066,7 @@ class TiffImageFile(ImageFile.ImageFile):
         return self.__frame
 
     def load(self):
-        if self.use_load_libtiff:
+        if self.tile and self.use_load_libtiff:
             return self._load_libtiff()
         return super().load()
 
@@ -1094,12 +1094,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """ Overload method triggered when we detect a compressed tiff
             Calls out to libtiff """
 
-        if self.tile is None:
-            raise OSError("cannot load this image")
-
-        pixel = Image.Image.load(self)
-        if not self.tile:
-            return pixel
+        Image.Image.load(self)
 
         self.load_prepare()
 

@@ -45,6 +45,7 @@ def helper_pickle_string(pickle, protocol, test_file, mode):
         pytest.param(
             "Tests/images/hopper.webp", None, marks=skip_unless_feature("webp")
         ),
+        ("Tests/images/hopper.tif", None),
         ("Tests/images/test-card.png", None),
         ("Tests/images/zero_bb.png", None),
         ("Tests/images/zero_bb_scale2.png", None),
