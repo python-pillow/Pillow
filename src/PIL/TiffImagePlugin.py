@@ -1094,10 +1094,10 @@ class TiffImageFile(ImageFile.ImageFile):
         """ Overload method triggered when we detect a compressed tiff
             Calls out to libtiff """
 
-        pixel = Image.Image.load(self)
-
         if self.tile is None:
             raise OSError("cannot load this image")
+
+        pixel = Image.Image.load(self)
         if not self.tile:
             return pixel
 

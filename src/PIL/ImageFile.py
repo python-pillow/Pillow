@@ -150,10 +150,10 @@ class ImageFile(Image.Image):
     def load(self):
         """Load image data based on tile list"""
 
-        pixel = Image.Image.load(self)
-
         if self.tile is None:
             raise OSError("cannot load this image")
+
+        pixel = Image.Image.load(self)
         if not self.tile:
             return pixel
 
