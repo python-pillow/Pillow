@@ -52,9 +52,7 @@ def _save(im, fp, filename):
     sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
-    alt_images = {
-        im.size: im for im in im.encoderinfo.get("append_images", [])
-    }
+    alt_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
     for size in sizes:
         width, height = size
         # 0 means 256
