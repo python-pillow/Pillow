@@ -85,6 +85,24 @@ def test_only_save_relevant_sizes(tmp_path):
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
+def test_only_save_append_images(tmp_path):
+    """append_images should work to provide alternative sizes"""
+    im = hopper()
+    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 255))
+    outfile = str(tmp_path / "temp_saved_multi_icon.ico")
+    im.save(outfile, sizes = [(32, 32), (64, 64)], append_images = [provided_im])
+
+    with Image.open(outfile) as reread:
+        reread.size = (64, 64)
+        reread.load()
+        assert_image_equal(reread, hopper().resize((64, 64), Image.LANCZOS))
+
+    with Image.open(outfile) as reread:
+        reread.size = (32, 32)
+        reread.load()
+        assert_image_equal(reread, provided_im)
+
+
 def test_unexpected_size():
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
