@@ -95,7 +95,7 @@ class TestImageFile:
 
     def test_raise_ioerror(self):
         with pytest.raises(IOError):
-            with pytest.raises(DeprecationWarning):
+            with pytest.warns(DeprecationWarning):
                 ImageFile.raise_ioerror(1)
 
     def test_raise_oserror(self):
