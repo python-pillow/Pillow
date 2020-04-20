@@ -64,9 +64,8 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
-        if size in alt_images:
-            tmp = alt_images[size]
-        else:
+        tmp = alt_images.get(size)
+        if not tmp:
             # TODO: invent a more convenient method for proportional scalings
             tmp = im.copy()
             tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
