@@ -380,7 +380,13 @@ fill_mask_L(Imaging imOut, const UINT8* ink, Imaging imMask,
             for (x = 0; x < xsize; x++) {
                 for (i = 0; i < pixelsize; i++) {
                     UINT8 channel_mask = *mask;
-                    if (strcmp(imOut->mode, "RGBA") == 0 && i != 3) {
+                    if ((
+                        strcmp(imOut->mode, "RGBa") == 0 ||
+                        strcmp(imOut->mode, "RGBA") == 0 ||
+                        strcmp(imOut->mode, "La") == 0 ||
+                        strcmp(imOut->mode, "LA") == 0 ||
+                        strcmp(imOut->mode, "PA") == 0
+                    ) && i != 3) {
                         channel_mask = 255 - (255 - channel_mask) * (1 - (255 - out[3]) / 255);
                     }
                     out[i] = BLEND(channel_mask, out[i], ink[i], tmp1);
