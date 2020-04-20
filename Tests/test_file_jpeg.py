@@ -314,8 +314,6 @@ class TestFileJpeg:
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
         # experimental API
-        im = self.roundtrip(hopper(), subsampling=-1)  # default
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
         im = self.roundtrip(hopper(), subsampling=0)  # 4:4:4
         assert getsampling(im) == (1, 1, 1, 1, 1, 1)
         im = self.roundtrip(hopper(), subsampling=1)  # 4:2:2

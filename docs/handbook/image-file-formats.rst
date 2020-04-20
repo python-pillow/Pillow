@@ -334,7 +334,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present, the image will be stored with the provided raw EXIF data.
 
 **subsampling**
-    If present, sets the subsampling for the encoder.
+    If present, sets the subsampling for the encoder. Otherwise, ``4:2:0`` is
+    the default subsampling.
 
     * ``keep``: Only valid for JPEG files, will retain the original image setting.
     * ``4:4:4``, ``4:2:2``, ``4:2:0``: Specific sampling values

@@ -618,7 +618,7 @@ def _save(im, fp, filename):
     dpi = [round(x) for x in info.get("dpi", (0, 0))]
 
     quality = info.get("quality", -1)
-    subsampling = info.get("subsampling", -1)
+    subsampling = info.get("subsampling", -2)
     qtables = info.get("qtables")
 
     if quality == "keep":
@@ -628,13 +628,13 @@ def _save(im, fp, filename):
     elif quality in presets:
         preset = presets[quality]
         quality = -1
-        subsampling = preset.get("subsampling", -1)
+        subsampling = preset.get("subsampling", -2)
         qtables = preset.get("quantization")
     elif not isinstance(quality, int):
         raise ValueError("Invalid quality setting")
     else:
         if subsampling in presets:
-            subsampling = presets[subsampling].get("subsampling", -1)
+            subsampling = presets[subsampling].get("subsampling", -2)
         if isinstance(qtables, str) and qtables in presets:
             qtables = presets[qtables].get("quantization")
 
@@ -648,7 +648,7 @@ def _save(im, fp, filename):
         # For compatibility. Before Pillow 4.3, 4:1:1 actually meant 4:2:0.
         # Set 4:2:0 if someone is still using that value.
         subsampling = 2
-    elif subsampling == "keep":
+    elif subsampling == "keep" or subsampling == -1:
         if im.format != "JPEG":
             raise ValueError("Cannot use 'keep' when original image is not a JPEG")
         subsampling = get_sampling(im)
