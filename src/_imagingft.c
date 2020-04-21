@@ -622,6 +622,7 @@ font_getsize(FontObject* self, PyObject* args)
     size_t i, count;
     GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
+    FT_Vector pen;
 
     /* calculate size and bearing for a given string */
 
@@ -652,6 +653,29 @@ font_getsize(FontObject* self, PyObject* args)
         FT_Glyph glyph;
         face = self->face;
         index = glyph_info[i].index;
+
+        if (horizontal_dir) {
+            pen.x = position + glyph_info[i].x_offset;
+            pen.y = glyph_info[i].y_offset;
+
+            position += glyph_info[i].x_advance;
+            advanced = PIXEL(position);
+            if (advanced > x_max) {
+                x_max = advanced;
+            }
+        } else {
+            pen.x = glyph_info[i].x_offset;
+            pen.y = position + glyph_info[i].y_offset;
+
+            position += glyph_info[i].y_advance;
+            advanced = PIXEL(position);
+            if (advanced < y_min) {
+                y_min = advanced;
+            }
+        }
+
+        FT_Set_Transform(face, NULL, &pen);
+
         /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
          *   Yifu Yu<root@jackyyf.com>, 2014-10-15
          */
@@ -660,79 +684,23 @@ font_getsize(FontObject* self, PyObject* args)
             load_flags |= FT_LOAD_TARGET_MONO;
         }
         error = FT_Load_Glyph(face, index, load_flags);
-        if (error) {
+        if (error)
             return geterror(error);
-        }
 
-        FT_Get_Glyph(face->glyph, &glyph);
-        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
-        if (horizontal_dir) {
-            // adjust start position if glyph bearing extends before origin
-            offset = position + face->glyph->metrics.horiBearingX + glyph_info[i].x_offset;
-            if (offset < x_min) {
-                x_min = offset;
-            }
-            
-            position += glyph_info[i].x_advance;
-            advanced = position;
+        error = FT_Get_Glyph(face->glyph, &glyph);
+        if (error)
+            return geterror(error);
 
-            // adjust glyph end position if bearing extends past advanced point
-            offset = glyph_info[i].x_advance -
-                    glyph_info[i].x_offset -
-                    face->glyph->metrics.horiBearingX -
-                    face->glyph->metrics.width;
-            if (offset < 0) {
-                advanced -= offset;
-            }
-            if (advanced > x_max) {
-                x_max = advanced;
-            }
+        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
 
-            bbox.yMax += glyph_info[i].y_offset;
-            bbox.yMin += glyph_info[i].y_offset;
-            if (bbox.yMax > y_max) {
-                y_max = bbox.yMax;
-            }
-            if (bbox.yMin < y_min) {
-                y_min = bbox.yMin;
-            }
-        } else {
-            // NOTE: harfbuzz (called from raqm) assumes that we are using horizontal
-            // bearings even for vertical text and adjusts offsets to compensate as follows:
-            //   hb-ft.cc: hb_ft_get_glyph_v_origin():
-            //     x_offset += horiBearingX - vertBearingX;
-            //     y_offset += horiBearingY - (-vertBearingY);
-
-            // adjust start position if glyph bearing extends before origin
-            offset = position + face->glyph->metrics.horiBearingY + glyph_info[i].y_offset;
-            if (offset > y_max) {
-                y_max = offset;
-            }
-
-            position += glyph_info[i].y_advance;
-            advanced = position;
-
-            // adjust glyph end position if bearing extends past advanced point
-            offset = glyph_info[i].y_advance -
-                glyph_info[i].y_offset -    
-                face->glyph->metrics.horiBearingY +
-                face->glyph->metrics.height;
-            if (offset > 0) {
-                advanced -= offset;
-            }
-            if (advanced < y_min) {
-                y_min = advanced;
-            }
-
-            bbox.xMax += glyph_info[i].x_offset;
-            bbox.xMin += glyph_info[i].x_offset;
-            if (bbox.xMax > x_max) {
-                x_max = bbox.xMax;
-            }
-            if (bbox.xMin < x_min) {
-                x_min = bbox.xMin;
-            }
-        }
+        if (bbox.xMax > x_max)
+            x_max = bbox.xMax;
+        if (bbox.xMin < x_min)
+            x_min = bbox.xMin;
+        if (bbox.yMax > y_max)
+            y_max = bbox.yMax;
+        if (bbox.yMin < y_min)
+            y_min = bbox.yMin;
 
         FT_Done_Glyph(glyph);
     }
@@ -744,16 +712,17 @@ font_getsize(FontObject* self, PyObject* args)
 
     x_anchor = y_anchor = 0;
     if (face) {
+        FT_Set_Transform(face, NULL, NULL);
         if (horizontal_dir) {
             switch (anchor[0]) {
             case 'l':  // left
                 x_anchor = 0;
                 break;
             case 'm':  // middle (left + right) / 2
-                x_anchor = position / 2;
+                x_anchor = PIXEL(position / 2);
                 break;
             case 'r':  // right
-                x_anchor = position;
+                x_anchor = PIXEL(position);
                 break;
             case 's':  // vertical baseline
             default:
@@ -761,13 +730,13 @@ font_getsize(FontObject* self, PyObject* args)
             }
             switch (anchor[1]) {
             case 'a':  // ascender
-                y_anchor = self->face->size->metrics.ascender;
+                y_anchor = PIXEL(self->face->size->metrics.ascender);
                 break;
             case 't':  // top
                 y_anchor = y_max;
                 break;
             case 'm':  // middle (ascender + descender) / 2
-                y_anchor = (self->face->size->metrics.ascender + self->face->size->metrics.descender) / 2;
+                y_anchor = PIXEL((self->face->size->metrics.ascender + self->face->size->metrics.descender) / 2);
                 break;
             case 's':  // horizontal baseline
                 y_anchor = 0;
@@ -776,7 +745,7 @@ font_getsize(FontObject* self, PyObject* args)
                 y_anchor = y_min;
                 break;
             case 'd':  // descender
-                y_anchor = self->face->size->metrics.descender;
+                y_anchor = PIXEL(self->face->size->metrics.descender);
                 break;
             default:
                 goto bad_anchor;
@@ -803,10 +772,10 @@ font_getsize(FontObject* self, PyObject* args)
                 y_anchor = 0;
                 break;
             case 'm':  // middle (top + bottom) / 2
-                y_anchor = position / 2;
+                y_anchor = PIXEL(position / 2);
                 break;
             case 'b':  // bottom
-                y_anchor = position;
+                y_anchor = PIXEL(position);
                 break;
             case 'a':  // ascender
             case 's':  // horizontal baseline
@@ -819,8 +788,8 @@ font_getsize(FontObject* self, PyObject* args)
 
     return Py_BuildValue(
         "(ii)(ii)",
-        PIXEL(x_max - x_min), PIXEL(y_max - y_min),
-        PIXEL(-x_anchor + x_min), PIXEL(y_anchor - y_max)
+        (x_max - x_min), (y_max - y_min),
+        (-x_anchor + x_min), -(-y_anchor + y_max)
     );
 
 bad_anchor:
@@ -855,6 +824,7 @@ font_render(FontObject* self, PyObject* args)
     size_t i, count;
     GlyphInfo *glyph_info;
     PyObject *features = NULL;
+    FT_Vector pen;
 
     if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
                                                    &stroke_width)) {
@@ -886,10 +856,15 @@ font_render(FontObject* self, PyObject* args)
         load_flags |= FT_LOAD_TARGET_MONO;
     }
 
-    x = y = baseline = offset = 0;
+    pen.x = pen.y = x = y = baseline = offset = 0;
     horizontal_dir = (dir && strcmp(dir, "ttb") == 0) ? 0 : 1;
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
+
+        pen.x = x + glyph_info[i].x_offset;
+        pen.y = y + glyph_info[i].y_offset;
+        FT_Set_Transform(self->face, NULL, &pen);
+
         error = FT_Load_Glyph(self->face, index, load_flags | FT_LOAD_RENDER);
         if (error) {
             return geterror(error);
@@ -900,40 +875,26 @@ font_render(FontObject* self, PyObject* args)
 
         // compute baseline and adjust start position if glyph bearing extends before origin
         if (horizontal_dir) {
-            temp = glyph_slot->metrics.horiBearingY + glyph_info[i].y_offset;
-            if (temp > baseline) {
-                baseline = temp;
-            }
-
-            temp = x + glyph_slot->metrics.horiBearingX + glyph_info[i].x_offset;
-            if (temp < offset) {
-                offset = temp;
-            }
+            if (glyph_slot->bitmap_top > baseline)
+                baseline = glyph_slot->bitmap_top;
+            if (glyph_slot->bitmap_left < offset)
+                offset = glyph_slot->bitmap_left;
             x += glyph_info[i].x_advance;
         } else {
-            // NOTE: harfbuzz (called from raqm) assumes that we are using horizontal
-            // bearings even for vertical text and adjusts offsets to compensate as follows:
-            //   hb-ft.cc: hb_ft_get_glyph_v_origin():
-            //     x_offset += horiBearingX - vertBearingX;
-            //     y_offset += horiBearingY - (-vertBearingY);
-
-            temp = -(glyph_slot->metrics.horiBearingX + glyph_info[i].x_offset);
-            if (temp > baseline) {
-                baseline = temp;
-            }
-
-            temp = y + glyph_slot->metrics.horiBearingY + glyph_info[i].y_offset;
-            if (temp > offset) {
-                offset = temp;
-            }
+            if (glyph_slot->bitmap_top > offset)
+                offset = glyph_slot->bitmap_top;
+            if (glyph_slot->bitmap_left < baseline)
+                baseline = glyph_slot->bitmap_left;
             y += glyph_info[i].y_advance;
         }
     }
 
     if (horizontal_dir) {
-        x = -offset;
+        x = (-offset + stroke_width) * 64;
+        y = (-baseline + (-stroke_width)) * 64;
     } else {
-        y = -offset;
+        x = (-baseline + stroke_width) * 64;
+        y = (-offset + (-stroke_width)) * 64;
     }
 
     if (stroker == NULL) {
@@ -942,6 +903,11 @@ font_render(FontObject* self, PyObject* args)
 
     for (i = 0; i < count; i++) {
         index = glyph_info[i].index;
+
+        pen.x = x + glyph_info[i].x_offset;
+        pen.y = y + glyph_info[i].y_offset;
+        FT_Set_Transform(self->face, NULL, &pen);
+
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error) {
             return geterror(error);
@@ -964,19 +930,12 @@ font_render(FontObject* self, PyObject* args)
             bitmap_glyph = (FT_BitmapGlyph)glyph;
 
             bitmap = bitmap_glyph->bitmap;
+            xx = bitmap_glyph->left;
+            yy = -bitmap_glyph->top;
         } else {
             bitmap = glyph_slot->bitmap;
-        }
-
-        // NOTE: harfbuzz (called from raqm) assumes that we are using horizontal
-        // bearings even for vertical text and adjusts offsets to compensate as follows:
-        //   hb-ft.cc: hb_ft_get_glyph_v_origin():
-        //     x_offset += horiBearingX - vertBearingX;
-        //     y_offset += horiBearingY - (-vertBearingY);
-        if (horizontal_dir) {
-            xx = PIXEL(x + glyph_slot->metrics.horiBearingX + glyph_info[i].x_offset);
-        } else {
-            xx = PIXEL(baseline + glyph_slot->metrics.horiBearingX + glyph_info[i].x_offset);
+            xx = glyph_slot->bitmap_left;
+            yy = -glyph_slot->bitmap_top;
         }
 
         x0 = 0;
@@ -989,17 +948,7 @@ font_render(FontObject* self, PyObject* args)
         }
 
         source = (unsigned char*) bitmap.buffer;
-        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++) {
-            // NOTE: harfbuzz (called from raqm) assumes that we are using horizontal
-            // bearings even for vertical text and adjusts offsets to compensate as follows:
-            //   hb-ft.cc: hb_ft_get_glyph_v_origin():
-            //     x_offset += horiBearingX - vertBearingX;
-            //     y_offset += horiBearingY - (-vertBearingY);
-            if (horizontal_dir) {
-                yy = PIXEL(baseline - glyph_slot->metrics.horiBearingY - glyph_info[i].y_offset) + bitmap_y;
-            } else {
-                yy = PIXEL(-(y + glyph_slot->metrics.horiBearingY + glyph_info[i].y_offset)) + bitmap_y;
-            }
+        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
             if (yy >= 0 && yy < im->ysize) {
                 // blend this glyph into the buffer
                 unsigned char *target = im->image8[yy] + xx;
@@ -1034,6 +983,7 @@ font_render(FontObject* self, PyObject* args)
         }
     }
 
+    FT_Set_Transform(self->face, NULL, NULL);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
