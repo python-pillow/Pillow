@@ -585,7 +585,8 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         }
 
         (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
-        (*glyph_info)[i].y_advance = glyph->metrics.vertAdvance;
+        // y_advance is only used in ttb, which is not supported by basic layout
+        (*glyph_info)[i].y_advance = 0;
         last_index = (*glyph_info)[i].index;
         (*glyph_info)[i].cluster = ch;
     }
