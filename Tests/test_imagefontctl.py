@@ -1,6 +1,7 @@
 import pytest
+from packaging.version import parse as parse_version
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import assert_image_similar, skip_unless_feature
 
@@ -123,7 +124,7 @@ def test_text_direction_ttb_stroke():
     draw = ImageDraw.Draw(im)
     try:
         draw.text(
-            (25, 25),
+            (27, 27),
             "あい",
             font=ttf,
             fill=500,
@@ -206,3 +207,118 @@ def test_language():
     target = "Tests/images/test_language.png"
     with Image.open(target) as target_img:
         assert_image_similar(im, target_img, 0.5)
+
+
+@pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
+def test_anchor_ttb(anchor):
+    if parse_version(features.version_module("freetype2")) < parse_version("2.5.1"):
+        # FreeType 2.5.1 README: Miscellaneous Changes:
+        # Improved computation of emulated vertical metrics for TrueType fonts.
+        pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
+
+    text = "f"
+    path = "Tests/images/test_anchor_ttb_%s_%s.png" % (text, anchor)
+    f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
+
+    im = Image.new("RGB", (200, 400), "white")
+    d = ImageDraw.Draw(im)
+    d.line(((0, 200), (200, 200)), "gray")
+    d.line(((100, 0), (100, 400)), "gray")
+    try:
+        d.text((100, 200), text, fill="black", anchor=anchor, direction="ttb", font=f)
+    except ValueError as ex:
+        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
+            pytest.skip("libraqm 0.7 or greater not available")
+
+    with Image.open(path) as expected:
+        assert_image_similar(im, expected, 1)  # fails at 5
+
+
+combine_tests = (
+    # extends above (e.g. issue #4553)
+    ("caron", "a\u030C\u030C\u030C\u030C\u030Cb", None, None, 0.08),
+    ("caron_la", "a\u030C\u030C\u030C\u030C\u030Cb", "la", None, 0.08),
+    ("caron_lt", "a\u030C\u030C\u030C\u030C\u030Cb", "lt", None, 0.08),
+    ("caron_ls", "a\u030C\u030C\u030C\u030C\u030Cb", "ls", None, 0.08),
+    ("caron_ttb", "ca" + ("\u030C" * 15) + "b", None, "ttb", 0.3),
+    ("caron_ttb_lt", "ca" + ("\u030C" * 15) + "b", "lt", "ttb", 0.3),
+    # extends below
+    ("caron_below", "a\u032C\u032C\u032C\u032C\u032Cb", None, None, 0.02),
+    ("caron_below_ld", "a\u032C\u032C\u032C\u032C\u032Cb", "ld", None, 0.02),
+    ("caron_below_lb", "a\u032C\u032C\u032C\u032C\u032Cb", "lb", None, 0.02),
+    ("caron_below_ls", "a\u032C\u032C\u032C\u032C\u032Cb", "ls", None, 0.02),
+    ("caron_below_ttb", "a" + ("\u032C" * 15) + "b", None, "ttb", 0.03),
+    ("caron_below_ttb_lb", "a" + ("\u032C" * 15) + "b", "lb", "ttb", 0.03),
+    # extends to the right (e.g. issue #3745)
+    ("double_breve_below", "a\u035Ci", None, None, 0.02),
+    ("double_breve_below_ma", "a\u035Ci", "ma", None, 0.02),
+    ("double_breve_below_ra", "a\u035Ci", "ra", None, 0.02),
+    ("double_breve_below_ttb", "a\u035Cb", None, "ttb", 0.02),
+    ("double_breve_below_ttb_rt", "a\u035Cb", "rt", "ttb", 0.02),
+    ("double_breve_below_ttb_mt", "a\u035Cb", "mt", "ttb", 0.02),
+    ("double_breve_below_ttb_st", "a\u035Cb", "st", "ttb", 0.02),
+    # extends to the left (fail=0.064)
+    ("overline", "i\u0305", None, None, 0.02),
+    ("overline_la", "i\u0305", "la", None, 0.02),
+    ("overline_ra", "i\u0305", "ra", None, 0.02),
+    ("overline_ttb", "i\u0305", None, "ttb", 0.02),
+    ("overline_ttb_rt", "i\u0305", "rt", "ttb", 0.02),
+    ("overline_ttb_mt", "i\u0305", "mt", "ttb", 0.02),
+    ("overline_ttb_st", "i\u0305", "st", "ttb", 0.02),
+)
+
+
+# this tests various combining characters for anchor alignment and clipping
+@pytest.mark.parametrize(
+    "name,text,anchor,dir,epsilon", combine_tests, ids=[r[0] for r in combine_tests]
+)
+def test_combine(name, text, dir, anchor, epsilon):
+    if (
+        parse_version(features.version_module("freetype2")) < parse_version("2.5.1")
+        and dir == "ttb"
+    ):
+        # FreeType 2.5.1 README: Miscellaneous Changes:
+        # Improved computation of emulated vertical metrics for TrueType fonts.
+        pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
+
+    path = "Tests/images/test_combine_%s.png" % name
+    f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
+
+    im = Image.new("RGB", (400, 400), "white")
+    d = ImageDraw.Draw(im)
+    d.line(((0, 200), (400, 200)), "gray")
+    d.line(((200, 0), (200, 400)), "gray")
+    try:
+        d.text((200, 200), text, fill="black", anchor=anchor, direction=dir, font=f)
+    except ValueError as ex:
+        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
+            pytest.skip("libraqm 0.7 or greater not available")
+
+    with Image.open(path) as expected:
+        assert_image_similar(im, expected, epsilon)
+
+
+def test_anchor_invalid_ttb():
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    im = Image.new("RGB", (100, 100), "white")
+    d = ImageDraw.Draw(im)
+    d.font = font
+
+    for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
+        pytest.raises(
+            ValueError, lambda: font.getmask2("hello", anchor=anchor, direction="ttb")
+        )
+        pytest.raises(
+            ValueError, lambda: d.text((0, 0), "hello", anchor=anchor, direction="ttb")
+        )
+        pytest.raises(
+            ValueError,
+            lambda: d.multiline_text(
+                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
+            ),
+        )
+    # ttb multiline text does not support anchors at all
+    pytest.raises(
+        ValueError,
+        lambda: d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
+    )

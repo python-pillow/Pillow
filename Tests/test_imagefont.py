@@ -750,6 +750,54 @@ class TestImageFont:
         font.set_variation_by_axes([100])
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
+    @pytest.mark.parametrize(
+        "anchor",
+        (
+            # test horizontal anchors
+            "ls",
+            "ms",
+            "rs",
+            # test vertical anchors
+            "ma",
+            "mt",
+            "mm",
+            "mb",
+            "md",
+        ),
+    )
+    def test_anchor(self, anchor):
+        name, text = "quick", "Quick"
+        path = "Tests/images/test_anchor_%s_%s.png" % (name, anchor)
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        im = Image.new("RGB", (200, 200), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 100), (200, 100)), "gray")
+        d.line(((100, 0), (100, 200)), "gray")
+        d.text((100, 100), text, fill="black", anchor=anchor, font=f)
+
+        with Image.open(path) as expected:
+            assert_image_similar(im, expected, 7)
+
+    def test_anchor_invalid(self):
+        font = self.get_font()
+        im = Image.new("RGB", (100, 100), "white")
+        d = ImageDraw.Draw(im)
+        d.font = font
+
+        for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
+            pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+        for anchor in ["lt", "lb"]:
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
