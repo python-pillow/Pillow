@@ -5,7 +5,7 @@ from .helper import PillowLeakTestCase, skip_unless_feature
 
 class TestTTypeFontLeak(PillowLeakTestCase):
     # fails at iteration 3 in master
-    iterations = 10
+    iterations = 40
     mem_limit = 4096  # k
 
     def _test_font(self, font):
@@ -13,7 +13,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
         draw = ImageDraw.ImageDraw(im)
         self._test_leak(
             lambda: draw.text(
-                (0, 0), "some text " * 1024, font=font, fill="black"  # ~10k
+                (0, 0), "some text " * 256, font=font, fill="black"  # ~10k
             )
         )
 
@@ -25,7 +25,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
 
 class TestDefaultFontLeak(TestTTypeFontLeak):
     # fails at iteration 37 in master
-    iterations = 100
+    iterations = 400
     mem_limit = 1024  # k
 
     def test_leak(self):

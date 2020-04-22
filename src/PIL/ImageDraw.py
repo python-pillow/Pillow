@@ -398,9 +398,9 @@ class ImageDraw:
             max_width = max(max_width, line_width)
 
         top = xy[1]
-        if anchor[1] == 'm':
+        if anchor[1] == "m":
             top -= (len(lines) - 1) * line_spacing / 2.0
-        elif anchor[1] == 'd':
+        elif anchor[1] == "d":
             top -= (len(lines) - 1) * line_spacing
 
         for idx, line in enumerate(lines):
@@ -408,9 +408,9 @@ class ImageDraw:
             width_difference = max_width - widths[idx]
 
             # first align left by anchor
-            if anchor[0] == 'm':
+            if anchor[0] == "m":
                 left -= width_difference / 2.0
-            elif anchor[0] == 'r':
+            elif anchor[0] == "r":
                 left -= width_difference
 
             # then align by align parameter

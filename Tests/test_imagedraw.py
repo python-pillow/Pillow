@@ -1015,7 +1015,7 @@ def test_stroke():
         font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
 
         # Act
-        draw.text((10, 10), "A", "#f00", font, stroke_width=2, stroke_fill=stroke_fill)
+        draw.text((12, 12), "A", "#f00", font, stroke_width=2, stroke_fill=stroke_fill)
 
         # Assert
         assert_image_similar(
@@ -1031,11 +1031,11 @@ def test_stroke_descender():
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
 
     # Act
-    draw.text((10, 0), "y", "#f00", font, stroke_width=2, stroke_fill="#0f0")
+    draw.text((12, 2), "y", "#f00", font, stroke_width=2, stroke_fill="#0f0")
 
     # Assert
     assert_image_similar(
-        im, Image.open("Tests/images/imagedraw_stroke_descender.png"), 6.76
+        im, Image.open("Tests/images/imagedraw_stroke_descender.png"), 6.78
     )
 
 
@@ -1048,7 +1048,7 @@ def test_stroke_multiline():
 
     # Act
     draw.multiline_text(
-        (10, 10), "A\nB", "#f00", font, stroke_width=2, stroke_fill="#0f0"
+        (12, 12), "A\nB", "#f00", font, stroke_width=2, stroke_fill="#0f0"
     )
 
     # Assert
