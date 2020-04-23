@@ -2325,7 +2325,7 @@ class Image:
           It may also be an object with a :py:meth:`~method.getdata` method
           that returns a tuple supplying new **method** and **data** values::
 
-            class Example(object):
+            class Example:
                 def getdata(self):
                     method = Image.EXTENT
                     data = (0, 0, 100, 100)
