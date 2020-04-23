@@ -2247,6 +2247,7 @@ class Image:
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
            (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
+           See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
            using :py:meth:`~PIL.Image.Image.reduce` or
@@ -2336,6 +2337,7 @@ class Image:
            environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+           See: :ref:`concept-filters`.
         :param fill: If **method** is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
