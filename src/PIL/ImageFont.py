@@ -398,7 +398,7 @@ class FreeTypeFont:
 
         :param anchor:  The text anchor alignment. Determines the relative location of
                         the anchor to the text. The default alignment is top left.
-                        See :ref:`Text anchors` for valid values.
+                        See :ref:`text-anchors` for valid values.
 
                          .. versionadded:: 8.0.0
 
@@ -477,7 +477,7 @@ class FreeTypeFont:
 
         :param anchor:  The text anchor alignment. Determines the relative location of
                         the anchor to the text. The default alignment is top left.
-                        See :ref:`Text anchors` for valid values.
+                        See :ref:`text-anchors` for valid values.
 
                          .. versionadded:: 8.0.0
 

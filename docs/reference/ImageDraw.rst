@@ -74,61 +74,6 @@ To load a OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
 libraries, and may not available in all PIL builds.
 
-Text anchors
-^^^^^^^^^^^^
-
-The ``anchor`` parameter determines the position of the ``xy`` coordinates relative to the text.
-It consists of two characters, the horizontal and vertical alignment.
-
-The default value is ``la`` for horizontal text and ``lt`` for vertical text.
-
-This parameter is ignored for legacy PIL fonts, where the anchor is always top-left.
-
-+---+-----------------------+-------------------------------------------------------+
-|                            Horizontal anchor alignment                            |
-+===+=======================+=======================================================+
-| l | left                  | Anchor is to the left of the text.                    |
-+---+-----------------------+-------------------------------------------------------+
-| m | middle                | Anchor is horizontally centered with the text.        |
-+---+-----------------------+-------------------------------------------------------+
-| r | right                 | Anchor is to the right of the text.                   |
-+---+-----------------------+-------------------------------------------------------+
-| s | baseline              | **(vertical text only)**                              |
-|   |                       | Anchor is at the baseline (middle) of the text.       |
-|   |                       | The exact alignment depends on the font.              |
-+---+-----------------------+-------------------------------------------------------+
-
-+---+-----------------------+-------------------------------------------------------+
-|                           Vertical anchor alignment                               |
-+===+=======================+=======================================================+
-| a | ascender (top)        | **(horizontal text only)**                            |
-|   |                       | Anchor is at the ascender line (top)                  |
-|   |                       | of the first line of text.                            |
-+---+-----------------------+-------------------------------------------------------+
-| t | top                   | **(single-line text only)**                           |
-|   |                       | Anchor is at the top of the text.                     |
-+---+-----------------------+-------------------------------------------------------+
-| m | middle                | Anchor is vertically centered with the text.          |
-|   |                       | For horizontal text this is the midpoint of the       |
-|   |                       | first ascender line and the last descender line.      |
-+---+-----------------------+-------------------------------------------------------+
-| s | baseline              | **(horizontal text only)**                            |
-|   |                       | Anchor is at the baseline (bottom)                    |
-|   |                       | of the first line of text, only                       |
-|   |                       | descenders extend below the anchor.                   |
-+---+-----------------------+-------------------------------------------------------+
-| b | bottom                | **(single-line text only)**                           |
-|   |                       | Anchor is at the bottom of the text.                  |
-+---+-----------------------+-------------------------------------------------------+
-| d | descender (bottom)    | **(horizontal text only)**                            |
-|   |                       | Anchor is at the descender line (bottom)              |
-|   |                       | of the last line of text.                             |
-+---+-----------------------+-------------------------------------------------------+
-
-See `Font metrics on Wikipedia <https://en.wikipedia.org/wiki/Typeface#Font_metrics>`_
-for more information on the specific terms used.
-
-
 Example: Draw Partial Opacity Text
 ----------------------------------
 
@@ -358,8 +303,8 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left.
-                   See :ref:`Text anchors` for valid values. This parameter is
-                   ignored for legacy PIL fonts.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
                               of Pillow, but implemented only in version 7.2.0.
@@ -418,8 +363,8 @@ Methods
 
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left.
-                   See :ref:`Text anchors` for valid values. This parameter is
-                   ignored for legacy PIL fonts.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
                               of Pillow, but implemented only in version 7.2.0.
