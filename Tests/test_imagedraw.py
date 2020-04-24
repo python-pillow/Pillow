@@ -874,31 +874,93 @@ def test_wide_line_dot():
 
 
 def test_line_joint():
-    im = Image.new("RGB", (500, 325))
-    draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_line_joint_curve.png"
+    for xy in [
+        [
+            (400, 280),
+            (380, 280),
+            (450, 280),
+            (440, 120),
+            (350, 200),
+            (310, 280),
+            (300, 280),
+            (250, 280),
+            (250, 200),
+            (150, 200),
+            (150, 260),
+            (50, 200),
+            (150, 50),
+            (250, 100),
+        ],
+        (
+            400,
+            280,
+            380,
+            280,
+            450,
+            280,
+            440,
+            120,
+            350,
+            200,
+            310,
+            280,
+            300,
+            280,
+            250,
+            280,
+            250,
+            200,
+            150,
+            200,
+            150,
+            260,
+            50,
+            200,
+            150,
+            50,
+            250,
+            100,
+        ),
+        [
+            400,
+            280,
+            380,
+            280,
+            450,
+            280,
+            440,
+            120,
+            350,
+            200,
+            310,
+            280,
+            300,
+            280,
+            250,
+            280,
+            250,
+            200,
+            150,
+            200,
+            150,
+            260,
+            50,
+            200,
+            150,
+            50,
+            250,
+            100,
+        ],
+    ]:
+        im = Image.new("RGB", (500, 325))
+        draw = ImageDraw.Draw(im)
+        expected = "Tests/images/imagedraw_line_joint_curve.png"
 
-    # Act
-    xy = [
-        (400, 280),
-        (380, 280),
-        (450, 280),
-        (440, 120),
-        (350, 200),
-        (310, 280),
-        (300, 280),
-        (250, 280),
-        (250, 200),
-        (150, 200),
-        (150, 260),
-        (50, 200),
-        (150, 50),
-        (250, 100),
-    ]
-    draw.line(xy, GRAY, 50, "curve")
+        # Act
+        draw.line(xy, GRAY, 50, "curve")
 
-    # Assert
-    assert_image_similar(im, Image.open(expected), 3)
+        # Assert
+        assert_image_similar(im, Image.open(expected), 3)
 
 
 def test_textsize_empty_string():
