@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+7.1.2 (2020-04-25)
+------------------
+
+- Raise an EOFError when seeking too far in PNG #4528
+  [radarhere]
+
 7.1.1 (2020-04-02)
 ------------------
 
