@@ -1,5 +1,5 @@
 # Define custom utilities
-# Test for OSX with [ -n "$IS_OSX" ]
+# Test for OS X with [ -n "$IS_OSX" ]
 
 ARCHIVE_SDIR=pillow-depends-master
 
@@ -22,7 +22,7 @@ function pre_build {
     curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
     untar pillow-depends-master.zip
     if [ -n "$IS_OSX" ]; then
-        # Update to latest zlib for OSX build
+        # Update to latest zlib for OS X build
         build_new_zlib
     fi
     
