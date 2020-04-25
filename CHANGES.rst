@@ -11,6 +11,9 @@ Changelog (Pillow)
 - Fix pickling WebP #4561
   [hugovk, radarhere]
 
+7.1.2 (2020-04-25)
+------------------
+
 - Raise an EOFError when seeking too far in PNG #4528
   [radarhere]
 
