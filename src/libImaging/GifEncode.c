@@ -5,11 +5,11 @@
  * encoder for uncompressed GIF data
  *
  * history:
- * 97-01-05 fl	created (writes uncompressed data)
- * 97-08-27 fl	fixed off-by-one error in buffer size test
- * 98-07-09 fl	added interlace write support
- * 99-02-07 fl	rewritten, now uses a run-length encoding strategy
- * 99-02-08 fl	improved run-length encoding for long runs
+ * 97-01-05 fl created (writes uncompressed data)
+ * 97-08-27 fl fixed off-by-one error in buffer size test
+ * 98-07-09 fl added interlace write support
+ * 99-02-07 fl rewritten, now uses a run-length encoding strategy
+ * 99-02-08 fl improved run-length encoding for long runs
  *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1997.
@@ -145,17 +145,17 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     if (!state->state) {
 
-	/* place a clear code in the output buffer */
-	context->bitbuffer = CLEAR_CODE;
-	context->bitcount = 9;
+        /* place a clear code in the output buffer */
+        context->bitbuffer = CLEAR_CODE;
+        context->bitcount = 9;
 
-	state->count = FIRST_CODE;
+        state->count = FIRST_CODE;
 
-	if (context->interlace) {
-	    context->interlace = 1;
-	    context->step = 8;
-	} else
-	    context->step = 1;
+        if (context->interlace) {
+            context->interlace = 1;
+            context->step = 8;
+        } else
+            context->step = 1;
 
         context->last = -1;
 
@@ -169,152 +169,152 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     for (;;)
 
-	switch (state->state) {
+        switch (state->state) {
 
-        case INIT:
-        case ENCODE:
+            case INIT:
+            case ENCODE:
 
-            /* identify and store a run of pixels */
+                /* identify and store a run of pixels */
 
-            if (state->x == 0 || state->x >= state->xsize) {
+                if (state->x == 0 || state->x >= state->xsize) {
 
-                if (!context->interlace && state->y >= state->ysize) {
-                    state->state = ENCODE_EOF;
-                    break;
-                }
-
-                if (context->flush) {
-                    state->state = FLUSH;
-                    break;
-                }
-
-                /* get another line of data */
-                state->shuffle(
-                    state->buffer,
-                    (UINT8*) im->image[state->y + state->yoff] +
-                    state->xoff * im->pixelsize, state->xsize
-                    );
-
-                state->x = 0;
-
-                if (state->state == INIT) {
-                    /* preload the run-length buffer and get going */
-                    context->last = state->buffer[0];
-                    context->count = state->x = 1;
-                    state->state = ENCODE;
-                }
-
-                /* step forward, according to the interlace settings */
-                state->y += context->step;
-                while (context->interlace && state->y >= state->ysize)
-                    switch (context->interlace) {
-                    case 1:
-                        state->y = 4;
-                        context->interlace = 2;
+                    if (!context->interlace && state->y >= state->ysize) {
+                        state->state = ENCODE_EOF;
                         break;
-                    case 2:
-                        context->step = 4;
-                        state->y = 2;
-                        context->interlace = 3;
-                        break;
-                    case 3:
-                        context->step = 2;
-                        state->y = 1;
-                        context->interlace = 0;
-                        break;
-                    default:
-                        /* just make sure we don't loop forever */
-                        context->interlace = 0;
                     }
 
-            }
+                    if (context->flush) {
+                        state->state = FLUSH;
+                        break;
+                    }
 
-            this = state->buffer[state->x++];
+                    /* get another line of data */
+                    state->shuffle(
+                        state->buffer,
+                        (UINT8*) im->image[state->y + state->yoff] +
+                        state->xoff * im->pixelsize, state->xsize
+                    );
 
-            if (this == context->last)
-                context->count++;
-            else {
-                EMIT_RUN(label1);
-                context->last = this;
-                context->count = 1;
-            }
-	    break;
+                    state->x = 0;
 
+                    if (state->state == INIT) {
+                        /* preload the run-length buffer and get going */
+                        context->last = state->buffer[0];
+                        context->count = state->x = 1;
+                        state->state = ENCODE;
+                    }
 
-        case ENCODE_EOF:
+                    /* step forward, according to the interlace settings */
+                    state->y += context->step;
+                    while (context->interlace && state->y >= state->ysize)
+                        switch (context->interlace) {
+                            case 1:
+                                state->y = 4;
+                                context->interlace = 2;
+                                break;
+                            case 2:
+                                context->step = 4;
+                                state->y = 2;
+                                context->interlace = 3;
+                                break;
+                            case 3:
+                                context->step = 2;
+                                state->y = 1;
+                                context->interlace = 0;
+                                break;
+                            default:
+                                /* just make sure we don't loop forever */
+                                context->interlace = 0;
+                        }
 
-            /* write the final run */
-            EMIT_RUN(label2);
-
-            /* write an end of image marker */
-            EMIT(EOF_CODE);
-
-            /* empty the bit buffer */
-            while (context->bitcount > 0) {
-                if (!emit(context, (UINT8) context->bitbuffer)) {
-                    state->errcode = IMAGING_CODEC_MEMORY;
-                    return 0;
                 }
-                context->bitbuffer >>= 8;
-                context->bitcount -= 8;
-            }
 
-            /* flush the last block, and exit */
-            if (context->block) {
-                GIFENCODERBLOCK* block;
-                block = context->flush;
-                while (block && block->next)
-                    block = block->next;
-                if (block)
-                    block->next = context->block;
-                else
-                    context->flush = context->block;
-                context->block = NULL;
-            }
+                this = state->buffer[state->x++];
 
-            state->state = EXIT;
+                if (this == context->last)
+                    context->count++;
+                else {
+                    EMIT_RUN(label1);
+                    context->last = this;
+                    context->count = 1;
+                }
+                break;
 
-            /* fall through... */
 
-	case EXIT:
-	case FLUSH:
+            case ENCODE_EOF:
 
-            while (context->flush) {
+                /* write the final run */
+                EMIT_RUN(label2);
 
-                /* get a block from the flush queue */
-                block = context->flush;
+                /* write an end of image marker */
+                EMIT(EOF_CODE);
 
-                if (block->size > 0) {
+                /* empty the bit buffer */
+                while (context->bitcount > 0) {
+                    if (!emit(context, (UINT8) context->bitbuffer)) {
+                        state->errcode = IMAGING_CODEC_MEMORY;
+                        return 0;
+                    }
+                    context->bitbuffer >>= 8;
+                    context->bitcount -= 8;
+                }
 
-                    /* make sure it fits into the output buffer */
-                    if (bytes < block->size+1)
+                /* flush the last block, and exit */
+                if (context->block) {
+                    GIFENCODERBLOCK* block;
+                    block = context->flush;
+                    while (block && block->next)
+                        block = block->next;
+                    if (block)
+                        block->next = context->block;
+                    else
+                        context->flush = context->block;
+                    context->block = NULL;
+                }
+
+                state->state = EXIT;
+
+                /* fall through... */
+
+            case EXIT:
+            case FLUSH:
+
+                    while (context->flush) {
+
+                        /* get a block from the flush queue */
+                        block = context->flush;
+
+                        if (block->size > 0) {
+
+                            /* make sure it fits into the output buffer */
+                            if (bytes < block->size+1)
+                                return ptr - buf;
+
+                            ptr[0] = block->size;
+                            memcpy(ptr+1, block->data, block->size);
+
+                            ptr += block->size+1;
+                            bytes -= block->size+1;
+
+                        }
+
+                        context->flush = block->next;
+
+                        if (context->free)
+                            free(context->free);
+                        context->free = block;
+
+                    }
+
+                    if (state->state == EXIT) {
+                        /* this was the last block! */
+                        if (context->free)
+                            free(context->free);
+                        state->errcode = IMAGING_CODEC_END;
                         return ptr - buf;
+                    }
 
-                    ptr[0] = block->size;
-                    memcpy(ptr+1, block->data, block->size);
-
-                    ptr += block->size+1;
-                    bytes -= block->size+1;
-
-                }
-
-                context->flush = block->next;
-
-                if (context->free)
-                    free(context->free);
-                context->free = block;
-
-            }
-
-            if (state->state == EXIT) {
-                /* this was the last block! */
-                if (context->free)
-                    free(context->free);
-                state->errcode = IMAGING_CODEC_END;
-                return ptr - buf;
-            }
-
-            state->state = ENCODE;
-	    break;
-        }
+                    state->state = ENCODE;
+                    break;
+    }
 }

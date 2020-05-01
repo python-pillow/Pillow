@@ -998,7 +998,7 @@ unpackI16N_I16B(UINT8* out, const UINT8* in, int pixels){
     UINT8* tmp = (UINT8*) out;
     for (i = 0; i < pixels; i++) {
         C16B;
-		in += 2; tmp += 2;
+        in += 2; tmp += 2;
     }
 
 }
@@ -1008,7 +1008,7 @@ unpackI16N_I16(UINT8* out, const UINT8* in, int pixels){
     UINT8* tmp = (UINT8*) out;
     for (i = 0; i < pixels; i++) {
         C16L;
-		in += 2; tmp += 2;
+        in += 2; tmp += 2;
     }
 }
 
@@ -1053,7 +1053,7 @@ unpackI12_I16(UINT8* out, const UINT8* in, int pixels){
         memcpy(out, &pixel, sizeof(pixel));
 #endif
 
-		in += 3; out+=2;
+        in += 3; out+=2;
     }
     if (i == pixels-1) {
         pixel = (((UINT16) in[0]) << 4 ) + (in[1] >>4);
@@ -1306,7 +1306,7 @@ static struct {
     /* greyscale w. alpha */
     {"LA",      "LA",           16,     unpackLA},
     {"LA",      "LA;L",         16,     unpackLAL},
-    
+
     /* greyscale w. alpha premultiplied */
     {"La",      "La",           16,     unpackLA},
 
@@ -1447,16 +1447,16 @@ static struct {
     {"YCbCr",   "YCbCrK",       32,     copy4},
 
     /* LAB Color */
-    {"LAB",	    "LAB",	        24,	    ImagingUnpackLAB},
-    {"LAB",  	"L",            8,      band0},
-    {"LAB",  	"A",            8,      band1},
-    {"LAB",  	"B",            8,      band2},
+    {"LAB",     "LAB",          24,     ImagingUnpackLAB},
+    {"LAB",     "L",            8,      band0},
+    {"LAB",     "A",            8,      band1},
+    {"LAB",     "B",            8,      band2},
 
     /* HSV Color */
-    {"HSV",	    "HSV",	        24,	    ImagingUnpackRGB},
-    {"HSV",  	"H",            8,      band0},
-    {"HSV",  	"S",            8,      band1},
-    {"HSV",  	"V",            8,      band2},
+    {"HSV",     "HSV",          24,     ImagingUnpackRGB},
+    {"HSV",     "H",            8,      band0},
+    {"HSV",     "S",            8,      band1},
+    {"HSV",     "V",            8,      band2},
 
     /* integer variations */
     {"I",       "I",            32,     copy4},
@@ -1505,11 +1505,11 @@ static struct {
     {"I;16B",   "I;16B",        16,     copy2},
     {"I;16L",   "I;16L",        16,     copy2},
 
-    {"I;16", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
-    {"I;16L", 	"I;16N",	    16,	    unpackI16N_I16}, // LibTiff native->image endian.
-    {"I;16B", 	"I;16N",	    16,	    unpackI16N_I16B},
+    {"I;16",    "I;16N",        16,     unpackI16N_I16}, // LibTiff native->image endian.
+    {"I;16L",   "I;16N",        16,     unpackI16N_I16}, // LibTiff native->image endian.
+    {"I;16B",   "I;16N",        16,     unpackI16N_I16B},
 
-    {"I;16", 	"I;12",	        12,	    unpackI12_I16}, // 12 bit Tiffs stored in 16bits.
+    {"I;16",    "I;12",         12,     unpackI12_I16}, // 12 bit Tiffs stored in 16bits.
 
     {NULL} /* sentinel */
 };
