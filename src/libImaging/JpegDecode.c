@@ -301,14 +301,14 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
 /* -------------------------------------------------------------------- */
 
 int ImagingJpegDecodeCleanup(ImagingCodecState state){
-	/* called to free the decompression engine when the decode terminates
-	   due to a corrupt or truncated image
-	*/
+    /* called to free the decompression engine when the decode terminates
+       due to a corrupt or truncated image
+    */
     JPEGSTATE* context = (JPEGSTATE*) state->context;
 
-	/* Clean up */
-	jpeg_destroy_decompress(&context->cinfo);
-	return -1;
+    /* Clean up */
+    jpeg_destroy_decompress(&context->cinfo);
+    return -1;
 }
 
 #endif

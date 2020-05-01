@@ -12,10 +12,10 @@
 
 
 /* modes */
-#define	ZIP_PNG	0		/* continuous, filtered image data */
-#define	ZIP_PNG_PALETTE	1	/* non-continuous data, disable filtering */
-#define	ZIP_TIFF_PREDICTOR 2	/* TIFF, with predictor */
-#define	ZIP_TIFF 3		/* TIFF, without predictor */
+#define ZIP_PNG 0            /* continuous, filtered image data */
+#define ZIP_PNG_PALETTE 1    /* non-continuous data, disable filtering */
+#define ZIP_TIFF_PREDICTOR 2 /* TIFF, with predictor */
+#define ZIP_TIFF 3           /* TIFF, without predictor */
 
 
 typedef struct {
@@ -39,24 +39,24 @@ typedef struct {
 
     /* PRIVATE CONTEXT (set by decoder/encoder) */
 
-    z_stream z_stream;		/* (de)compression stream */
+    z_stream z_stream;      /* (de)compression stream */
 
-    UINT8* previous;		/* previous line (allocated) */
+    UINT8* previous;        /* previous line (allocated) */
 
-    int last_output;		/* # bytes last output by inflate */
+    int last_output;        /* # bytes last output by inflate */
 
     /* Compressor specific stuff */
-    UINT8* prior;		/* filter storage (allocated) */
+    UINT8* prior;           /* filter storage (allocated) */
     UINT8* up;
     UINT8* average;
     UINT8* paeth;
 
-    UINT8* output;		/* output data */
+    UINT8* output;          /* output data */
 
-    int prefix;			/* size of filter prefix (0 for TIFF data) */
+    int prefix;             /* size of filter prefix (0 for TIFF data) */
 
-    int interlaced;		/* is the image interlaced? (PNG) */
+    int interlaced;         /* is the image interlaced? (PNG) */
 
-    int pass;			/* current pass of the interlaced image (PNG) */
+    int pass;               /* current pass of the interlaced image (PNG) */
 
 } ZIPSTATE;

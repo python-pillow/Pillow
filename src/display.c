@@ -28,7 +28,7 @@
 #include "Imaging.h"
 
 /* -------------------------------------------------------------------- */
-/* Windows DIB support	*/
+/* Windows DIB support */
 
 #ifdef _WIN32
 
@@ -57,12 +57,12 @@ _new(const char* mode, int xsize, int ysize)
 
     display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL)
-	return NULL;
+        return NULL;
 
     display->dib = ImagingNewDIB(mode, xsize, ysize);
     if (!display->dib) {
-	Py_DECREF(display);
-	return NULL;
+        Py_DECREF(display);
+        return NULL;
     }
 
     return display;
@@ -72,7 +72,7 @@ static void
 _delete(ImagingDisplayObject* display)
 {
     if (display->dib)
-	ImagingDeleteDIB(display->dib);
+        ImagingDeleteDIB(display->dib);
     PyObject_Del(display);
 }
 
@@ -81,7 +81,7 @@ _expose(ImagingDisplayObject* display, PyObject* args)
 {
     HDC hdc;
     if (!PyArg_ParseTuple(args, F_HANDLE, &hdc))
-	return NULL;
+        return NULL;
 
     ImagingExposeDIB(display->dib, hdc);
 
@@ -98,7 +98,7 @@ _draw(ImagingDisplayObject* display, PyObject* args)
     if (!PyArg_ParseTuple(args, F_HANDLE "(iiii)(iiii)", &hdc,
                           dst+0, dst+1, dst+2, dst+3,
                           src+0, src+1, src+2, src+3))
-	return NULL;
+        return NULL;
 
     ImagingDrawDIB(display->dib, hdc, dst, src);
 
@@ -117,15 +117,15 @@ _paste(ImagingDisplayObject* display, PyObject* args)
     int xy[4];
     xy[0] = xy[1] = xy[2] = xy[3] = 0;
     if (!PyArg_ParseTuple(args, "O|(iiii)", &op, xy+0, xy+1, xy+2, xy+3))
-	return NULL;
+        return NULL;
     im = PyImaging_AsImaging(op);
     if (!im)
-	return NULL;
+        return NULL;
 
     if (xy[2] <= xy[0])
-	xy[2] = xy[0] + im->xsize;
+        xy[2] = xy[0] + im->xsize;
     if (xy[3] <= xy[1])
-	xy[3] = xy[1] + im->ysize;
+        xy[3] = xy[1] + im->ysize;
 
     ImagingPasteDIB(display->dib, im, xy);
 
@@ -140,7 +140,7 @@ _query_palette(ImagingDisplayObject* display, PyObject* args)
     int status;
 
     if (!PyArg_ParseTuple(args, F_HANDLE, &hdc))
-	return NULL;
+        return NULL;
 
     status = ImagingQueryPaletteDIB(display->dib, hdc);
 
@@ -154,7 +154,7 @@ _getdc(ImagingDisplayObject* display, PyObject* args)
     HDC dc;
 
     if (!PyArg_ParseTuple(args, F_HANDLE, &window))
-	return NULL;
+        return NULL;
 
     dc = GetDC(window);
     if (!dc) {
@@ -172,7 +172,7 @@ _releasedc(ImagingDisplayObject* display, PyObject* args)
     HDC dc;
 
     if (!PyArg_ParseTuple(args, F_HANDLE F_HANDLE, &window, &dc))
-	return NULL;
+        return NULL;
 
     ReleaseDC(window, dc);
 
@@ -228,13 +228,13 @@ static struct PyMethodDef methods[] = {
 static PyObject*
 _getattr_mode(ImagingDisplayObject* self, void* closure)
 {
-	return Py_BuildValue("s", self->dib->mode);
+    return Py_BuildValue("s", self->dib->mode);
 }
 
 static PyObject*
 _getattr_size(ImagingDisplayObject* self, void* closure)
 {
-	return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
+    return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
 }
 
 static struct PyGetSetDef getsetters[] = {
@@ -244,13 +244,13 @@ static struct PyGetSetDef getsetters[] = {
 };
 
 static PyTypeObject ImagingDisplayType = {
-	PyVarObject_HEAD_INIT(NULL, 0)
-	"ImagingDisplay",		/*tp_name*/
-	sizeof(ImagingDisplayObject),	/*tp_size*/
-	0,				/*tp_itemsize*/
-	/* methods */
-	(destructor)_delete,		/*tp_dealloc*/
-	0,				/*tp_print*/
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "ImagingDisplay",            /*tp_name*/
+    sizeof(ImagingDisplayObject),/*tp_size*/
+    0,                           /*tp_itemsize*/
+    /* methods */
+    (destructor)_delete,        /*tp_dealloc*/
+    0,                          /*tp_print*/
     0,                          /*tp_getattr*/
     0,                          /*tp_setattr*/
     0,                          /*tp_compare*/
@@ -285,11 +285,11 @@ PyImaging_DisplayWin32(PyObject* self, PyObject* args)
     int xsize, ysize;
 
     if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize))
-	return NULL;
+        return NULL;
 
     display = _new(mode, xsize, ysize);
     if (display == NULL)
-	return NULL;
+        return NULL;
 
     return (PyObject*) display;
 }
@@ -647,7 +647,7 @@ PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
     PyObject* callback;
     int width = 0, height = 0;
     if (!PyArg_ParseTuple(args, "sO|ii", &title, &callback, &width, &height))
-	return NULL;
+        return NULL;
 
     if (width <= 0)
         width = CW_USEDEFAULT;
@@ -817,7 +817,7 @@ error:
 #endif /* _WIN32 */
 
 /* -------------------------------------------------------------------- */
-/* X11 support	*/
+/* X11 support */
 
 #ifdef HAVE_XCB
 #include <xcb/xcb.h>

@@ -5,9 +5,9 @@
  * cut region from image
  *
  * history:
- * 95-11-27 fl	Created
- * 98-07-10 fl	Fixed "null result" error
- * 99-02-05 fl	Rewritten to use Paste primitive
+ * 95-11-27 fl Created
+ * 98-07-10 fl Fixed "null result" error
+ * 99-02-05 fl Rewritten to use Paste primitive
  *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1995.
@@ -28,7 +28,7 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
     INT32 zero = 0;
 
     if (!imIn)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     xsize = sx1 - sx0;
     if (xsize < 0)
@@ -39,12 +39,12 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
 
     imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     ImagingCopyPalette(imOut, imIn);
 
     if (sx0 < 0 || sy0 < 0 || sx1 > imIn->xsize || sy1 > imIn->ysize)
-	(void) ImagingFill(imOut, &zero);
+        (void) ImagingFill(imOut, &zero);
 
     dx0 = -sx0;
     dy0 = -sy0;

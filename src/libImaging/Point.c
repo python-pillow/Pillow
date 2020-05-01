@@ -139,7 +139,7 @@ ImagingPoint(Imaging imIn, const char* mode, const void* table)
     void (*point)(Imaging imIn, Imaging imOut, im_point_context* context);
 
     if (!imIn)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     if (!mode)
         mode = imIn->mode;
@@ -152,7 +152,7 @@ ImagingPoint(Imaging imIn, const char* mode, const void* table)
 
     imOut = ImagingNew(mode, imIn->xsize, imIn->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     /* find appropriate handler */
     if (imIn->type == IMAGING_TYPE_UINT8) {
@@ -210,11 +210,11 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
     if (!imIn || (strcmp(imIn->mode, "I") != 0 &&
                   strcmp(imIn->mode, "I;16") != 0 &&
                   strcmp(imIn->mode, "F") != 0))
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     switch (imIn->type) {
     case IMAGING_TYPE_INT32:
@@ -254,7 +254,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
             }
             ImagingSectionLeave(&cookie);
             break;
-	}
+        }
         /* FALL THROUGH */
     default:
         ImagingDelete(imOut);

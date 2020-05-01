@@ -5,7 +5,7 @@
  * decoder for packed bitfields (converts to floating point)
  *
  * history:
- *	97-05-31 fl	created (much more than originally intended)
+ * 97-05-31 fl created (much more than originally intended)
  *
  * Copyright (c) Fredrik Lundh 1997.
  * Copyright (c) Secret Labs AB 1997.
@@ -27,18 +27,18 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     if (state->state == 0) {
 
-	/* Initialize context variables */
+        /* Initialize context variables */
 
         /* this decoder only works for float32 image buffers */
         if (im->type != IMAGING_TYPE_FLOAT32) {
-	    state->errcode = IMAGING_CODEC_CONFIG;
-	    return -1;
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
         }
 
         /* sanity check */
         if (bitstate->bits < 1 || bitstate->bits >= 32) {
-	    state->errcode = IMAGING_CODEC_CONFIG;
-	    return -1;
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
         }
 
         bitstate->mask = (1<<bitstate->bits)-1;
@@ -46,14 +46,14 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         if (bitstate->sign)
             bitstate->signmask = (1<<(bitstate->bits-1));
 
-	/* check image orientation */
-	if (state->ystep < 0) {
-	    state->y = state->ysize-1;
-	    state->ystep = -1;
-	} else
-	    state->ystep = 1;
+        /* check image orientation */
+        if (state->ystep < 0) {
+            state->y = state->ysize-1;
+            state->ystep = -1;
+        } else
+            state->ystep = 1;
 
-	state->state = 1;
+        state->state = 1;
 
     }
 
@@ -119,7 +119,7 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
             *(FLOAT32*)(&im->image32[state->y][state->x]) = pixel;
 
             /* step forward */
-	    if (++state->x >= state->xsize) {
+            if (++state->x >= state->xsize) {
                 /* new line */
                 state->y += state->ystep;
                 if (state->y < 0 || state->y >= state->ysize) {

@@ -5,7 +5,7 @@
  * code to convert YCbCr data
  *
  * history:
- * 98-07-01 hk	Created
+ * 98-07-01 hk Created
  *
  * Copyright (c) Secret Labs AB 1998
  *

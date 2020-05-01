@@ -6,7 +6,7 @@
  *
  * history:
  * 2017-07-28 mb    fixed for images larger than 64KB
- * 2017-07-20 mb	created
+ * 2017-07-20 mb    created
  *
  * Copyright (c) Mickael Bonfill 2017.
  *
@@ -101,7 +101,7 @@ static int expandrow2(UINT8* dest, const UINT8* src, int n, int z, int xsize)
 
 int
 ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
-		    UINT8* buf, Py_ssize_t bytes)
+            UINT8* buf, Py_ssize_t bytes)
 {
     UINT8 *ptr;
     SGISTATE *c;

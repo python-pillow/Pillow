@@ -57,7 +57,7 @@ void *
 ImagingError_ValueError(const char *message)
 {
     if (!message)
-	message = "exception: bad argument to function";
+        message = "exception: bad argument to function";
     fprintf(stderr, "*** %s\n", message);
     return NULL;
 }
