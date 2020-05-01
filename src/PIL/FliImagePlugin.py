@@ -51,7 +51,8 @@ class FliImageFile(ImageFile.ImageFile):
             raise SyntaxError("not an FLI/FLC file")
 
         # frames
-        self.__framecount = i16(s[6:8])
+        self.n_frames = i16(s[6:8])
+        self.is_animated = self.n_frames > 1
 
         # image characteristics
         self.mode = "P"
@@ -109,14 +110,6 @@ class FliImageFile(ImageFile.ImageFile):
                 b = i8(s[n + 2]) << shift
                 palette[i] = (r, g, b)
                 i += 1
-
-    @property
-    def n_frames(self):
-        return self.__framecount
-
-    @property
-    def is_animated(self):
-        return self.__framecount > 1
 
     def seek(self, frame):
         if not self._seek_check(frame):

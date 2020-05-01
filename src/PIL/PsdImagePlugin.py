@@ -119,6 +119,8 @@ class PsdImageFile(ImageFile.ImageFile):
             if size:
                 self.layers = _layerinfo(self.fp)
             self.fp.seek(end)
+        self.n_frames = len(self.layers)
+        self.is_animated = self.n_frames > 1
 
         #
         # image descriptor
@@ -129,14 +131,6 @@ class PsdImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self.frame = 1
         self._min_frame = 1
-
-    @property
-    def n_frames(self):
-        return len(self.layers)
-
-    @property
-    def is_animated(self):
-        return len(self.layers) > 1
 
     def seek(self, layer):
         if not self._seek_check(layer):

@@ -64,19 +64,13 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         self.__fp = self.fp
         self.frame = None
+        self._n_frames = len(self.images)
+        self.is_animated = self._n_frames > 1
 
         if len(self.images) > 1:
             self.category = Image.CONTAINER
 
         self.seek(0)
-
-    @property
-    def n_frames(self):
-        return len(self.images)
-
-    @property
-    def is_animated(self):
-        return len(self.images) > 1
 
     def seek(self, frame):
         if not self._seek_check(frame):

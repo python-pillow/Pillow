@@ -5,7 +5,7 @@
  * offset an image in x and y directions
  *
  * history:
- * 96-07-22 fl:	Created
+ * 96-07-22 fl: Created
  * 98-11-01 cgw@pgt.com: Fixed negative-array index bug
  *
  * Copyright (c) Fredrik Lundh 1996.
@@ -25,11 +25,11 @@ ImagingOffset(Imaging im, int xoffset, int yoffset)
     Imaging imOut;
 
     if (!im)
-	return (Imaging) ImagingError_ModeError();
+        return (Imaging) ImagingError_ModeError();
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
     if (!imOut)
-	return NULL;
+        return NULL;
 
     ImagingCopyPalette(imOut, im);
 
@@ -37,25 +37,25 @@ ImagingOffset(Imaging im, int xoffset, int yoffset)
     xoffset %= im->xsize;
     xoffset = im->xsize - xoffset;
     if (xoffset < 0)
-	xoffset += im->xsize;
+        xoffset += im->xsize;
 
     yoffset %= im->ysize;
     yoffset = im->ysize - yoffset;
     if (yoffset < 0)
-	yoffset += im->ysize;
+        yoffset += im->ysize;
 
-#define	OFFSET(image)\
+#define OFFSET(image)\
     for (y = 0; y < im->ysize; y++)\
-	for (x = 0; x < im->xsize; x++) {\
-	    int yi = (y + yoffset) % im->ysize;\
-	    int xi = (x + xoffset) % im->xsize;\
-	    imOut->image[y][x] = im->image[yi][xi];\
-	}
+        for (x = 0; x < im->xsize; x++) {\
+            int yi = (y + yoffset) % im->ysize;\
+            int xi = (x + xoffset) % im->xsize;\
+            imOut->image[y][x] = im->image[yi][xi];\
+    }
 
     if (im->image8)
-	OFFSET(image8)
+        OFFSET(image8)
     else
-	OFFSET(image32)
+        OFFSET(image32)
 
     return imOut;
 }

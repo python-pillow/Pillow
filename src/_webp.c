@@ -836,7 +836,7 @@ void addAnimFlagToModule(PyObject* m) {
 
 void addTransparencyFlagToModule(PyObject* m) {
     PyModule_AddObject(m, "HAVE_TRANSPARENCY",
-		       PyBool_FromLong(!WebPDecoderBuggyAlpha()));
+               PyBool_FromLong(!WebPDecoderBuggyAlpha()));
 }
 
 static int setup_module(PyObject* m) {

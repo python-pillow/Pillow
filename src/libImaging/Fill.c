@@ -5,9 +5,9 @@
  * fill image with constant pixel value
  *
  * history:
- * 95-11-26 fl	moved from Imaging.c
- * 96-05-17 fl	added radial fill, renamed wedge to linear
- * 98-06-23 fl	changed ImageFill signature
+ * 95-11-26 fl moved from Imaging.c
+ * 96-05-17 fl added radial fill, renamed wedge to linear
+ * 98-06-23 fl changed ImageFill signature
  *
  * Copyright (c) Secret Labs AB 1997-98.  All rights reserved.
  * Copyright (c) Fredrik Lundh 1995-96.

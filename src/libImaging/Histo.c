@@ -30,7 +30,7 @@ void
 ImagingHistogramDelete(ImagingHistogram h)
 {
     if (h->histogram)
-	free(h->histogram);
+        free(h->histogram);
     free(h);
 }
 
@@ -60,115 +60,115 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
     FLOAT32 fmin, fmax, scale;
 
     if (!im)
-	return ImagingError_ModeError();
+        return ImagingError_ModeError();
 
     if (imMask) {
-	/* Validate mask */
-	if (im->xsize != imMask->xsize || im->ysize != imMask->ysize)
-	    return ImagingError_Mismatch();
-	if (strcmp(imMask->mode, "1") != 0 && strcmp(imMask->mode, "L") != 0)
-	    return ImagingError_ValueError("bad transparency mask");
+        /* Validate mask */
+        if (im->xsize != imMask->xsize || im->ysize != imMask->ysize)
+            return ImagingError_Mismatch();
+        if (strcmp(imMask->mode, "1") != 0 && strcmp(imMask->mode, "L") != 0)
+            return ImagingError_ValueError("bad transparency mask");
     }
 
     h = ImagingHistogramNew(im);
 
     if (imMask) {
-	/* mask */
-	if (im->image8) {
-            ImagingSectionEnter(&cookie);
-	    for (y = 0; y < im->ysize; y++)
-		for (x = 0; x < im->xsize; x++)
-		    if (imMask->image8[y][x] != 0)
-			h->histogram[im->image8[y][x]]++;
-            ImagingSectionLeave(&cookie);
-	} else { /* yes, we need the braces. C isn't Python! */
+        /* mask */
+        if (im->image8) {
+                ImagingSectionEnter(&cookie);
+            for (y = 0; y < im->ysize; y++)
+                for (x = 0; x < im->xsize; x++)
+                    if (imMask->image8[y][x] != 0)
+                    h->histogram[im->image8[y][x]]++;
+                    ImagingSectionLeave(&cookie);
+        } else { /* yes, we need the braces. C isn't Python! */
             if (im->type != IMAGING_TYPE_UINT8) {
                 ImagingHistogramDelete(h);
                 return ImagingError_ModeError();
             }
             ImagingSectionEnter(&cookie);
-	    for (y = 0; y < im->ysize; y++) {
-		UINT8* in = (UINT8*) im->image32[y];
-		for (x = 0; x < im->xsize; x++)
-		    if (imMask->image8[y][x] != 0) {
-			h->histogram[(*in++)]++;
-			h->histogram[(*in++)+256]++;
-			h->histogram[(*in++)+512]++;
-			h->histogram[(*in++)+768]++;
-		    } else
-			in += 4;
-	    }
-            ImagingSectionLeave(&cookie);
-	}
-    } else {
-	/* mask not given; process pixels in image */
-	if (im->image8) {
-            ImagingSectionEnter(&cookie);
-	    for (y = 0; y < im->ysize; y++)
-		for (x = 0; x < im->xsize; x++)
-		    h->histogram[im->image8[y][x]]++;
-            ImagingSectionLeave(&cookie);
-	} else {
-            switch (im->type) {
-            case IMAGING_TYPE_UINT8:
-                ImagingSectionEnter(&cookie);
-                for (y = 0; y < im->ysize; y++) {
-                    UINT8* in = (UINT8*) im->image[y];
-                    for (x = 0; x < im->xsize; x++) {
+            for (y = 0; y < im->ysize; y++) {
+                UINT8* in = (UINT8*) im->image32[y];
+                for (x = 0; x < im->xsize; x++)
+                    if (imMask->image8[y][x] != 0) {
                         h->histogram[(*in++)]++;
                         h->histogram[(*in++)+256]++;
                         h->histogram[(*in++)+512]++;
                         h->histogram[(*in++)+768]++;
-                    }
-                }
-                ImagingSectionLeave(&cookie);
-                break;
-            case IMAGING_TYPE_INT32:
-                if (!minmax) {
-                    ImagingHistogramDelete(h);
-                    return ImagingError_ValueError("min/max not given");
-                }
-                if (!im->xsize || !im->ysize)
-                    break;
-                memcpy(&imin, minmax, sizeof(imin));
-                memcpy(&imax, ((char*)minmax) + sizeof(imin), sizeof(imax));
-                if (imin >= imax)
-                    break;
+                    } else
+                        in += 4;
+            }
+            ImagingSectionLeave(&cookie);
+        }
+    } else {
+        /* mask not given; process pixels in image */
+        if (im->image8) {
                 ImagingSectionEnter(&cookie);
-                scale = 255.0F / (imax - imin);
-                for (y = 0; y < im->ysize; y++) {
-                    INT32* in = im->image32[y];
-                    for (x = 0; x < im->xsize; x++) {
-                        i = (int) (((*in++)-imin)*scale);
-                        if (i >= 0 && i < 256)
-                            h->histogram[i]++;
+            for (y = 0; y < im->ysize; y++)
+                for (x = 0; x < im->xsize; x++)
+                    h->histogram[im->image8[y][x]]++;
+                    ImagingSectionLeave(&cookie);
+        } else {
+            switch (im->type) {
+                case IMAGING_TYPE_UINT8:
+                    ImagingSectionEnter(&cookie);
+                    for (y = 0; y < im->ysize; y++) {
+                        UINT8* in = (UINT8*) im->image[y];
+                        for (x = 0; x < im->xsize; x++) {
+                            h->histogram[(*in++)]++;
+                            h->histogram[(*in++)+256]++;
+                            h->histogram[(*in++)+512]++;
+                            h->histogram[(*in++)+768]++;
+                        }
                     }
-                }
-                ImagingSectionLeave(&cookie);
-                break;
-            case IMAGING_TYPE_FLOAT32:
-                if (!minmax) {
-                    ImagingHistogramDelete(h);
-                    return ImagingError_ValueError("min/max not given");
-                }
-                if (!im->xsize || !im->ysize)
+                    ImagingSectionLeave(&cookie);
                     break;
-                memcpy(&fmin, minmax, sizeof(fmin));
-                memcpy(&fmax, ((char*)minmax) + sizeof(fmin), sizeof(fmax));
-                if (fmin >= fmax)
-                    break;
-                ImagingSectionEnter(&cookie);
-                scale = 255.0F / (fmax - fmin);
-                for (y = 0; y < im->ysize; y++) {
-                    FLOAT32* in = (FLOAT32*) im->image32[y];
-                    for (x = 0; x < im->xsize; x++) {
-                        i = (int) (((*in++)-fmin)*scale);
-                        if (i >= 0 && i < 256)
-                            h->histogram[i]++;
+                case IMAGING_TYPE_INT32:
+                    if (!minmax) {
+                        ImagingHistogramDelete(h);
+                        return ImagingError_ValueError("min/max not given");
                     }
-                }
-                ImagingSectionLeave(&cookie);
-                break;
+                    if (!im->xsize || !im->ysize)
+                        break;
+                    memcpy(&imin, minmax, sizeof(imin));
+                    memcpy(&imax, ((char*)minmax) + sizeof(imin), sizeof(imax));
+                    if (imin >= imax)
+                        break;
+                    ImagingSectionEnter(&cookie);
+                    scale = 255.0F / (imax - imin);
+                    for (y = 0; y < im->ysize; y++) {
+                        INT32* in = im->image32[y];
+                        for (x = 0; x < im->xsize; x++) {
+                            i = (int) (((*in++)-imin)*scale);
+                            if (i >= 0 && i < 256)
+                                h->histogram[i]++;
+                        }
+                    }
+                    ImagingSectionLeave(&cookie);
+                    break;
+                case IMAGING_TYPE_FLOAT32:
+                    if (!minmax) {
+                        ImagingHistogramDelete(h);
+                        return ImagingError_ValueError("min/max not given");
+                    }
+                    if (!im->xsize || !im->ysize)
+                        break;
+                    memcpy(&fmin, minmax, sizeof(fmin));
+                    memcpy(&fmax, ((char*)minmax) + sizeof(fmin), sizeof(fmax));
+                    if (fmin >= fmax)
+                        break;
+                    ImagingSectionEnter(&cookie);
+                    scale = 255.0F / (fmax - fmin);
+                    for (y = 0; y < im->ysize; y++) {
+                        FLOAT32* in = (FLOAT32*) im->image32[y];
+                        for (x = 0; x < im->xsize; x++) {
+                            i = (int) (((*in++)-fmin)*scale);
+                            if (i >= 0 && i < 256)
+                                h->histogram[i]++;
+                        }
+                    }
+                    ImagingSectionLeave(&cookie);
+                    break;
             }
         }
     }
