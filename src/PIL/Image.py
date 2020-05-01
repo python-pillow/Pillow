@@ -3281,7 +3281,7 @@ class Exif(MutableMapping):
             self._data.update(ifd)
             self._ifds[0x8769] = ifd
 
-    def tobytes(self, offset=0):
+    def tobytes(self, offset=8):
         from . import TiffImagePlugin
 
         if self.endian == "<":
