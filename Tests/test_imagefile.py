@@ -261,9 +261,9 @@ class TestPyDecoder:
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 40960 not in exif
+            assert 40960 not in reloaded_exif
             assert reloaded_exif[40963] == 455
-            assert exif[11] == "Pillow test"
+            assert reloaded_exif[11] == "Pillow test"
 
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
             exif = im.getexif()
@@ -281,9 +281,9 @@ class TestPyDecoder:
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 40960 not in exif
+            assert 34665 not in reloaded_exif
             assert reloaded_exif[40963] == 455
-            assert exif[305] == "Pillow test"
+            assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
@@ -302,7 +302,7 @@ class TestPyDecoder:
                     reloaded_exif = reloaded.getexif()
                     assert reloaded_exif[258] == 8
                     assert reloaded_exif[40963] == 455
-                    assert exif[305] == "Pillow test"
+                    assert reloaded_exif[305] == "Pillow test"
 
             im.save(out, exif=exif)
             check_exif()
