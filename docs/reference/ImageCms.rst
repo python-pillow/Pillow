@@ -413,10 +413,10 @@ can be easily displayed in a chromaticity diagram, for example).
         with :py:attr:`.intent_supported`.
 
         :param intent: One of ``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``,
-    		   ``ImageCms.INTENT_PERCEPTUAL``,
-    		   ``ImageCms.INTENT_RELATIVE_COLORIMETRIC``
-    		   and ``ImageCms.INTENT_SATURATION``.
+               ``ImageCms.INTENT_PERCEPTUAL``,
+               ``ImageCms.INTENT_RELATIVE_COLORIMETRIC``
+               and ``ImageCms.INTENT_SATURATION``.
         :param direction: One of ``ImageCms.DIRECTION_INPUT``,
-    		      ``ImageCms.DIRECTION_OUTPUT``
-    		      and ``ImageCms.DIRECTION_PROOF``
+                  ``ImageCms.DIRECTION_OUTPUT``
+                  and ``ImageCms.DIRECTION_PROOF``
         :return: Boolean if the intent and direction is supported.
