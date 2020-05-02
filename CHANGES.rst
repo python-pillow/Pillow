@@ -5310,23 +5310,23 @@ Pre-fork
     + Added keyword options to the "save" method.  The following options
       are currently supported:
 
-          format	option		description
+          Format    Option          Description
           --------------------------------------------------------
-          JPEG	optimize	minimize output file at the
-                    expense of compression speed.
+          JPEG      optimize        Minimize output file at the
+                                    expense of compression speed.
 
-          JPEG	progressive	enable progressive output. the
-                    option value is ignored.
+          JPEG      progressive     Enable progressive output.
+                                    The option value is ignored.
 
-          JPEG	quality		set compression quality (1-100).
-                    the default value is 75.
+          JPEG      quality         Set compression quality (1-100).
+                                    The default value is 75.
 
-          JPEG	smooth		smooth dithered images.  value
-                    is strength (1-100).  default is
-                    off (0).
+          JPEG      smooth          Smooth dithered images.
+                                    Value is strength (1-100).
+                                    Default is off (0).
 
-          PNG	optimize	minimize output file at the
-                    expense of compression speed.
+          PNG       optimize        Minimize output file at the
+                                    expense of compression speed.
 
       Expect more options in future releases.  Also note that
       file writers silently ignore unknown options.
@@ -5347,31 +5347,31 @@ Pre-fork
     + Various improvements to the sample scripts:
 
       "pilconvert"  Carries out some extra tricks in order to make
-            the resulting file as small as possible.
+                    the resulting file as small as possible.
 
-      "explode"	(NEW) Split an image sequence into individual frames.
+      "explode"     (NEW) Split an image sequence into individual frames.
 
-      "gifmaker"	(NEW) Convert a sequence file into a GIF animation.
-            Note that the GIF encoder create "uncompressed" GIF
-            files, so animations created by this script are
-            rather large (typically 2-5 times the compressed
-            sizes).
+      "gifmaker"    (NEW) Convert a sequence file into a GIF animation.
+                    Note that the GIF encoder create "uncompressed" GIF
+                    files, so animations created by this script are
+                    rather large (typically 2-5 times the compressed
+                    sizes).
 
-      "image2py"	(NEW) Convert a single image to a python module.  See
-            comments in this script for details.
+      "image2py"    (NEW) Convert a single image to a python module.  See
+                    comments in this script for details.
 
-      "player"	If multiple images are given on the command line,
-            they are interpreted as frames in a sequence.  The
-            script assumes that they all have the same size.
-            Also note that this script now can play FLI/FLC
-            and GIF animations.
+      "player"      If multiple images are given on the command line,
+                    they are interpreted as frames in a sequence.  The
+                    script assumes that they all have the same size.
+                    Also note that this script now can play FLI/FLC
+                    and GIF animations.
 
             This player can also execute embedded Python
             animation applets (ARG format only).
 
-      "viewer"	Transparent images ("P" with transparency property,
-            and "RGBA") are superimposed on the standard Tk back-
-            ground.
+      "viewer"  Transparent images ("P" with transparency property,
+                and "RGBA") are superimposed on the standard Tk back-
+                ground.
 
     + Fixed colour argument to "new".  For multilayer images, pass a
       tuple: (Red, Green, Blue), (Red, Green, Blue, Alpha), or (Cyan,

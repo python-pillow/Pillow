@@ -30,3 +30,9 @@ repos:
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.1.7
+    hooks:
+      - id: remove-tabs
+        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)

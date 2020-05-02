@@ -179,7 +179,7 @@ complete list, see the table in the :py:mod:`Unpack.c` module. The following
 table describes some commonly used **raw modes**:
 
 +-----------+-----------------------------------------------------------------+
-| mode	    | description                                                     |
+| mode      | description                                                     |
 +===========+=================================================================+
 | ``1``     | 1-bit bilevel, stored with the leftmost pixel in the most       |
 |           | significant bit. 0 means black, 1 means white.                  |
@@ -223,7 +223,7 @@ You can use the ``raw`` decoder to read images where data is packed in any
 standard machine data type, using one of the following raw modes:
 
 ============ =======================================
-mode	     description
+mode         description
 ============ =======================================
 ``F``        32-bit native floating point.
 ``F;8``      8-bit unsigned integer.

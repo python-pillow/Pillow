@@ -58,8 +58,8 @@ Functions
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
         documentation`_ to have warnings output to the logging facility instead of stderr.
 
-	.. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
-	.. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
+    .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
+    .. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
 
 Image processing
 ^^^^^^^^^^^^^^^^
