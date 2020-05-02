@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Fixes default offset for Exif #4594
+  [rodrigob, radarhere]
+
 - Fixed bug when unpickling TIFF images #4565
   [radarhere]
 
