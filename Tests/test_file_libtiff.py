@@ -299,7 +299,11 @@ class TestFileLibTiff(LibTiffTestCase):
                             )
                             continue
 
-                        if libtiff and isinstance(value, bytes):
+                        if (
+                            libtiff
+                            and isinstance(value, bytes)
+                            and isinstance(tiffinfo, dict)
+                        ):
                             value = value.decode()
 
                         assert reloaded_value == value
@@ -321,6 +325,17 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_xmlpacket_tag(self, tmp_path):
+        TiffImagePlugin.WRITE_LIBTIFF = True
+
+        out = str(tmp_path / "temp.tif")
+        hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            if 700 in reloaded.tag_v2:
+                assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, tmp_path):
         # issue #1765

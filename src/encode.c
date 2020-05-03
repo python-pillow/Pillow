@@ -761,8 +761,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         }
 
-        if (PyBytes_Check(value) &&
-                (type == TIFF_BYTE || type == TIFF_UNDEFINED)) {
+        if (PyBytes_Check(value) && type == TIFF_UNDEFINED) {
             // For backwards compatibility
             type = TIFF_ASCII;
         }
