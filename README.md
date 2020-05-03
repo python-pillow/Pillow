@@ -96,6 +96,7 @@ So there is no easy way to compile such library, especially with setuptools.
 
 If there's a copy of the original Pillow installed, it has to be removed first
 with `$ pip uninstall -y pillow`.
+Please install [prerequisites]((https://pillow.readthedocs.io/en/stable/installation.html#building-from-source) for your platform.
 The installation itself is simple just as running `$ pip install pillow-simd`, 
 and if you're using SSE4-capable CPU everything should run smoothly.
 If you'd like to install the AVX2-enabled version, 
