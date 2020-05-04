@@ -2727,7 +2727,7 @@ def fromarray(obj, mode=None):
     if ndim > ndmax:
         raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
 
-    size = shape[1], shape[0]
+    size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
         if hasattr(obj, "tobytes"):
             obj = obj.tobytes()

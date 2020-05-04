@@ -89,6 +89,11 @@ def test_3d_array():
     assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
 
 
+def test_1d_array():
+    a = numpy.ones(5, dtype=numpy.uint8)
+    assert_image(Image.fromarray(a), "L", (1, 5))
+
+
 def _test_img_equals_nparray(img, np):
     assert len(np.shape) >= 2
     np_size = np.shape[1], np.shape[0]
