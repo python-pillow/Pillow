@@ -573,8 +573,10 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (info.length == 1) or (
-            info.length is None and len(values) == 1 and not legacy_api
+        if (
+            (info.length == 1)
+            or self.tagtype[tag] == TiffTags.BYTE
+            or (info.length is None and len(values) == 1 and not legacy_api)
         ):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [
