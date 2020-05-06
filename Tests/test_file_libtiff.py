@@ -299,13 +299,6 @@ class TestFileLibTiff(LibTiffTestCase):
                             )
                             continue
 
-                        if (
-                            libtiff
-                            and isinstance(value, bytes)
-                            and isinstance(tiffinfo, dict)
-                        ):
-                            value = value.decode()
-
                         assert reloaded_value == value
 
             # Test with types
@@ -681,6 +674,26 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         TiffImagePlugin.READ_LIBTIFF = False
         assert icc == icc_libtiff
+
+    def test_write_icc(self, tmp_path):
+        def check_write(libtiff):
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+            with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+                icc_profile = img.info["icc_profile"]
+
+                out = str(tmp_path / "temp.tif")
+                img.save(out, icc_profile=icc_profile)
+            with Image.open(out) as reloaded:
+                assert icc_profile == reloaded.info["icc_profile"]
+
+        libtiffs = []
+        if Image.core.libtiff_support_custom_tags:
+            libtiffs.append(True)
+        libtiffs.append(False)
+
+        for libtiff in libtiffs:
+            check_write(libtiff)
 
     def test_multipage_compression(self):
         with Image.open("Tests/images/compression.tif") as im:

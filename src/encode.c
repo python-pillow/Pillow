@@ -761,11 +761,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         }
 
-        if (PyBytes_Check(value) && type == TIFF_UNDEFINED) {
-            // For backwards compatibility
-            type = TIFF_ASCII;
-        }
-
         if (PyTuple_Check(value)) {
             Py_ssize_t len;
             len = PyTuple_Size(value);
@@ -797,7 +792,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         }
 
-        if (type == TIFF_BYTE) {
+        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
             status = ImagingLibTiffSetField(&encoder->state,
                     (ttag_t) key_int,
                     PyBytes_Size(value), PyBytes_AsString(value));
