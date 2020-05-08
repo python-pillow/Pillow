@@ -7,6 +7,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
+pip install --upgrade pip
 PYTHONOPTIMIZE=0 pip install cffi
 pip install coverage
 pip install olefile
@@ -20,7 +21,7 @@ if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"
   if [[ $TRAVIS_CPU_ARCH == "amd64" ]]; then
     sudo apt-get -qq install pyqt5-dev-tools
-    pip install pyqt5!=5.14.1
+    pip install pyqt5
   fi
 fi
 
