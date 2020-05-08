@@ -61,12 +61,12 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
+        if s[:4] != b"8BPS" or i16(s, 4) != 1:
             raise SyntaxError("not a PSD file")
 
-        psd_bits = i16(s[22:])
-        psd_channels = i16(s[12:])
-        psd_mode = i16(s[24:])
+        psd_bits = i16(s, 22)
+        psd_channels = i16(s, 12)
+        psd_mode = i16(s, 24)
 
         mode, channels = MODES[(psd_mode, psd_bits)]
 
@@ -74,7 +74,7 @@ class PsdImageFile(ImageFile.ImageFile):
             raise OSError("not enough channels")
 
         self.mode = mode
-        self._size = i32(s[18:]), i32(s[14:])
+        self._size = i32(s, 18), i32(s, 14)
 
         #
         # color mode data
@@ -289,7 +289,7 @@ def _maketile(file, mode, bbox, channels):
                 layer += ";I"
             tile.append(("packbits", bbox, offset, layer))
             for y in range(ysize):
-                offset = offset + i16(bytecount[i : i + 2])
+                offset = offset + i16(bytecount, i)
                 i += 2
 
     file.seek(offset)

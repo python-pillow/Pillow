@@ -98,7 +98,7 @@ class IcoFile:
         self.entry = []
 
         # Number of items in file
-        self.nb_items = i16(s[4:])
+        self.nb_items = i16(s, 4)
 
         # Get headers for each item
         for i in range(self.nb_items):
@@ -109,10 +109,10 @@ class IcoFile:
                 "height": s[1],
                 "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
                 "reserved": s[3],
-                "planes": i16(s[4:]),
-                "bpp": i16(s[6:]),
-                "size": i32(s[8:]),
-                "offset": i32(s[12:]),
+                "planes": i16(s, 4),
+                "bpp": i16(s, 6),
+                "size": i32(s, 8),
+                "offset": i32(s, 12),
             }
 
             # See Wikipedia

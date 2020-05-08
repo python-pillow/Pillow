@@ -3303,7 +3303,7 @@ class Exif(MutableMapping):
 
                 if self[0x927C][:8] == b"FUJIFILM":
                     exif_data = self[0x927C]
-                    ifd_offset = i32le(exif_data[8:12])
+                    ifd_offset = i32le(exif_data, 8)
                     ifd_data = exif_data[ifd_offset:]
 
                     makernote = {}

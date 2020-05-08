@@ -62,7 +62,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         flags = s[17]
 
-        self._size = i16(s[12:]), i16(s[14:])
+        self._size = i16(s, 12), i16(s, 14)
 
         # validate header fields
         if (
@@ -108,7 +108,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         if colormaptype:
             # read palette
-            start, size, mapdepth = i16(s[3:]), i16(s[5:]), i16(s[7:])
+            start, size, mapdepth = i16(s, 3), i16(s, 5), i16(s, 7)
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
                     "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size)

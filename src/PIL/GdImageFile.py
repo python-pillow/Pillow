@@ -43,17 +43,17 @@ class GdImageFile(ImageFile.ImageFile):
         # Header
         s = self.fp.read(1037)
 
-        if not i16(s[:2]) in [65534, 65535]:
+        if not i16(s) in [65534, 65535]:
             raise SyntaxError("Not a valid GD 2.x .gd file")
 
         self.mode = "L"  # FIXME: "P"
-        self._size = i16(s[2:4]), i16(s[4:6])
+        self._size = i16(s, 2), i16(s, 4)
 
         trueColor = s[6]
         trueColorOffset = 2 if trueColor else 0
 
         # transparency index
-        tindex = i32(s[7 + trueColorOffset : 7 + trueColorOffset + 4])
+        tindex = i32(s, 7 + trueColorOffset)
         if tindex < 256:
             self.info["transparency"] = tindex
 
