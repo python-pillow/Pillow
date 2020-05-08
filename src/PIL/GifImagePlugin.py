@@ -69,7 +69,7 @@ class GifImageFile(ImageFile.ImageFile):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
-        self._size = i16(s[6:]), i16(s[8:])
+        self._size = i16(s, 6), i16(s, 8)
         self.tile = []
         flags = s[10]
         bits = (flags & 7) + 1
@@ -193,7 +193,7 @@ class GifImageFile(ImageFile.ImageFile):
                     flags = block[0]
                     if flags & 1:
                         info["transparency"] = block[3]
-                    info["duration"] = i16(block[1:3]) * 10
+                    info["duration"] = i16(block, 1) * 10
 
                     # disposal method - find the value of bits 4 - 6
                     dispose_bits = 0b00011100 & flags
@@ -223,7 +223,7 @@ class GifImageFile(ImageFile.ImageFile):
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
                         if len(block) >= 3 and block[0] == 1:
-                            info["loop"] = i16(block[1:3])
+                            info["loop"] = i16(block, 1)
                 while self.data():
                     pass
 
@@ -234,8 +234,8 @@ class GifImageFile(ImageFile.ImageFile):
                 s = self.fp.read(9)
 
                 # extent
-                x0, y0 = i16(s[0:]), i16(s[2:])
-                x1, y1 = x0 + i16(s[4:]), y0 + i16(s[6:])
+                x0, y0 = i16(s, 0), i16(s, 2)
+                x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if x1 > self.size[0] or y1 > self.size[1]:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
                 self.dispose_extent = x0, y0, x1, y1

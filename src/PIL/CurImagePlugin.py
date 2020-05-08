@@ -47,7 +47,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
 
         # pick the largest cursor in the file
         m = b""
-        for i in range(i16(s[4:])):
+        for i in range(i16(s, 4)):
             s = self.fp.read(16)
             if not m:
                 m = s
@@ -57,7 +57,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
             raise TypeError("No cursors were found")
 
         # load as bitmap
-        self._bitmap(i32(m[12:]) + offset)
+        self._bitmap(i32(m, 12) + offset)
 
         # patch up the bitmap height
         self._size = self.size[0], self.size[1] // 2

@@ -69,16 +69,16 @@ class SgiImageFile(ImageFile.ImageFile):
         bpc = s[3]
 
         # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
-        dimension = i16(s[4:])
+        dimension = i16(s, 4)
 
         # xsize : width
-        xsize = i16(s[6:])
+        xsize = i16(s, 6)
 
         # ysize : height
-        ysize = i16(s[8:])
+        ysize = i16(s, 8)
 
         # zsize : channels count
-        zsize = i16(s[10:])
+        zsize = i16(s, 10)
 
         # layout
         layout = bpc, dimension, zsize

@@ -26,7 +26,7 @@ from ._binary import o8
 
 
 def _accept(prefix):
-    return len(prefix) >= 6 and i16(prefix[4:6]) in [0xAF11, 0xAF12]
+    return len(prefix) >= 6 and i16(prefix, 4) in [0xAF11, 0xAF12]
 
 
 ##
@@ -46,22 +46,22 @@ class FliImageFile(ImageFile.ImageFile):
         s = self.fp.read(128)
         if not (
             _accept(s)
-            and i16(s[14:16]) in [0, 3]  # flags
+            and i16(s, 14) in [0, 3]  # flags
             and s[20:22] == b"\x00\x00"  # reserved
         ):
             raise SyntaxError("not an FLI/FLC file")
 
         # frames
-        self.n_frames = i16(s[6:8])
+        self.n_frames = i16(s, 6)
         self.is_animated = self.n_frames > 1
 
         # image characteristics
         self.mode = "P"
-        self._size = i16(s[8:10]), i16(s[10:12])
+        self._size = i16(s, 8), i16(s, 10)
 
         # animation speed
-        duration = i32(s[16:20])
-        magic = i16(s[4:6])
+        duration = i32(s, 16)
+        magic = i16(s, 4)
         if magic == 0xAF11:
             duration = (duration * 1000) // 70
         self.info["duration"] = duration
@@ -73,17 +73,17 @@ class FliImageFile(ImageFile.ImageFile):
 
         self.__offset = 128
 
-        if i16(s[4:6]) == 0xF100:
+        if i16(s, 4) == 0xF100:
             # prefix chunk; ignore it
             self.__offset = self.__offset + i32(s)
             s = self.fp.read(16)
 
-        if i16(s[4:6]) == 0xF1FA:
+        if i16(s, 4) == 0xF1FA:
             # look for palette chunk
             s = self.fp.read(6)
-            if i16(s[4:6]) == 11:
+            if i16(s, 4) == 11:
                 self._palette(palette, 2)
-            elif i16(s[4:6]) == 4:
+            elif i16(s, 4) == 4:
                 self._palette(palette, 0)
 
         palette = [o8(r) + o8(g) + o8(b) for (r, g, b) in palette]

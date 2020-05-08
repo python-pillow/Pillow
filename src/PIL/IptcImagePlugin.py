@@ -77,7 +77,7 @@ class IptcImageFile(ImageFile.ImageFile):
         elif size > 128:
             size = i(self.fp.read(size - 128))
         else:
-            size = i16(s[3:])
+            size = i16(s, 3)
 
         return tag, size
 

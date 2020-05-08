@@ -409,7 +409,7 @@ class PngStream(ChunkStream):
 
         # image header
         s = ImageFile._safe_read(self.fp, length)
-        self.im_size = i32(s), i32(s[4:])
+        self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
         except Exception:
@@ -464,7 +464,7 @@ class PngStream(ChunkStream):
         elif self.im_mode in ("1", "L", "I"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
-            self.im_info["transparency"] = i16(s), i16(s[2:]), i16(s[4:])
+            self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
 
     def chunk_gAMA(self, pos, length):
@@ -497,7 +497,7 @@ class PngStream(ChunkStream):
 
         # pixels per unit
         s = ImageFile._safe_read(self.fp, length)
-        px, py = i32(s), i32(s[4:])
+        px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
         if unit == 1:  # meter
             dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
@@ -618,7 +618,7 @@ class PngStream(ChunkStream):
             warnings.warn("Invalid APNG, will use default PNG image if possible")
             return s
         self.im_n_frames = n_frames
-        self.im_info["loop"] = i32(s[4:])
+        self.im_info["loop"] = i32(s, 4)
         self.im_custom_mimetype = "image/apng"
         return s
 
@@ -630,13 +630,13 @@ class PngStream(ChunkStream):
         ):
             raise SyntaxError("APNG contains frame sequence errors")
         self._seq_num = seq
-        width, height = i32(s[4:]), i32(s[8:])
-        px, py = i32(s[12:]), i32(s[16:])
+        width, height = i32(s, 4), i32(s, 8)
+        px, py = i32(s, 12), i32(s, 16)
         im_w, im_h = self.im_size
         if px + width > im_w or py + height > im_h:
             raise SyntaxError("APNG contains invalid frames")
         self.im_info["bbox"] = (px, py, px + width, py + height)
-        delay_num, delay_den = i16(s[20:]), i16(s[22:])
+        delay_num, delay_den = i16(s, 20), i16(s, 22)
         if delay_den == 0:
             delay_den = 100
         self.im_info["duration"] = float(delay_num) / float(delay_den) * 1000

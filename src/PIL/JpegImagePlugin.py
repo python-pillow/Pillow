@@ -124,10 +124,10 @@ def APP(self, marker):
                 data = s[offset : offset + size]
                 if code == 0x03ED:  # ResolutionInfo
                     data = {
-                        "XResolution": i32(data[:4]) / 65536,
-                        "DisplayedUnitsX": i16(data[4:8]),
-                        "YResolution": i32(data[8:12]) / 65536,
-                        "DisplayedUnitsY": i16(data[12:]),
+                        "XResolution": i32(data, 0) / 65536,
+                        "DisplayedUnitsX": i16(data, 4),
+                        "YResolution": i32(data, 8) / 65536,
+                        "DisplayedUnitsY": i16(data, 12),
                     }
                 photoshop[code] = data
                 offset += size
@@ -194,7 +194,7 @@ def SOF(self, marker):
 
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
-    self._size = i16(s[3:]), i16(s[1:])
+    self._size = i16(s, 3), i16(s, 1)
 
     self.bits = s[0]
     if self.bits != 8:
