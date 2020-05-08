@@ -355,6 +355,41 @@ def test_ellipse_zero_width():
         assert_image_equal(im, expected)
 
 
+def ellipse_various_sizes_helper(filled):
+    ellipse_sizes = range(32)
+    image_size = sum(ellipse_sizes) + len(ellipse_sizes) + 1
+    im = Image.new("RGB", (image_size, image_size))
+    draw = ImageDraw.Draw(im)
+
+    x = 1
+    for w in ellipse_sizes:
+        y = 1
+        for h in ellipse_sizes:
+            border = [x, y, x + w - 1, y + h - 1]
+            if filled:
+                draw.ellipse(border, fill="white")
+            else:
+                draw.ellipse(border, outline="white")
+            y += h + 1
+        x += w + 1
+
+    return im
+
+
+def test_ellipse_various_sizes():
+    im = ellipse_various_sizes_helper(False)
+
+    with Image.open("Tests/images/imagedraw_ellipse_various_sizes.png") as expected:
+        assert_image_equal(im, expected)
+
+
+def test_ellipse_various_sizes_filled():
+    im = ellipse_various_sizes_helper(True)
+
+    with Image.open("Tests/images/imagedraw_ellipse_various_sizes_filled.png") as expected:
+        assert_image_equal(im, expected)
+
+
 def helper_line(points):
     # Arrange
     im = Image.new("RGB", (W, H))
