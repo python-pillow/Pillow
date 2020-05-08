@@ -26,7 +26,7 @@ import os
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, o8
+from ._binary import i16be as i16, o8
 
 
 def _accept(prefix):
@@ -63,10 +63,10 @@ class SgiImageFile(ImageFile.ImageFile):
             raise ValueError("Not an SGI image file")
 
         # compression : verbatim or RLE
-        compression = i8(s[2])
+        compression = s[2]
 
         # bpc : 1 or 2 bytes (8bits or 16bits)
-        bpc = i8(s[3])
+        bpc = s[3]
 
         # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
         dimension = i16(s[4:])

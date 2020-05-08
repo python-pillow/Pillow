@@ -24,7 +24,7 @@
 
 
 from . import ImageFile, ImagePalette, UnidentifiedImageError
-from ._binary import i8, i16be as i16, i32be as i32
+from ._binary import i16be as i16, i32be as i32
 
 ##
 # Image plugin for the GD uncompressed format.  Note that this format
@@ -49,7 +49,7 @@ class GdImageFile(ImageFile.ImageFile):
         self.mode = "L"  # FIXME: "P"
         self._size = i16(s[2:4]), i16(s[4:6])
 
-        trueColor = i8(s[6])
+        trueColor = s[6]
         trueColorOffset = 2 if trueColor else 0
 
         # transparency index

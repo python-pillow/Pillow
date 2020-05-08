@@ -28,7 +28,7 @@ from io import BytesIO
 from math import ceil, log
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
-from ._binary import i8, i16le as i16, i32le as i32
+from ._binary import i16le as i16, i32le as i32
 
 #
 # --------------------------------------------------------------------
@@ -105,10 +105,10 @@ class IcoFile:
             s = buf.read(16)
 
             icon_header = {
-                "width": i8(s[0]),
-                "height": i8(s[1]),
-                "nb_color": i8(s[2]),  # No. of colors in image (0 if >=8bpp)
-                "reserved": i8(s[3]),
+                "width": s[0],
+                "height": s[1],
+                "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
+                "reserved": s[3],
                 "planes": i16(s[4:]),
                 "bpp": i16(s[6:]),
                 "size": i32(s[8:]),

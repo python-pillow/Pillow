@@ -40,7 +40,7 @@ import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, i16be as i16, i32be as i32, o8
+from ._binary import i16be as i16, i32be as i32, o8
 from .JpegPresets import presets
 
 #
@@ -71,7 +71,7 @@ def APP(self, marker):
         self.info["jfif_version"] = divmod(version, 256)
         # extract JFIF properties
         try:
-            jfif_unit = i8(s[7])
+            jfif_unit = s[7]
             jfif_density = i16(s, 8), i16(s, 10)
         except Exception:
             pass
@@ -111,7 +111,7 @@ def APP(self, marker):
                 code = i16(s, offset)
                 offset += 2
                 # resource name (usually empty)
-                name_len = i8(s[offset])
+                name_len = s[offset]
                 # name = s[offset+1:offset+1+name_len]
                 offset += 1 + name_len
                 offset += offset & 1  # align
@@ -136,7 +136,7 @@ def APP(self, marker):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
-            adobe_transform = i8(s[1])
+            adobe_transform = s[1]
         except Exception:
             pass
         else:
@@ -193,11 +193,11 @@ def SOF(self, marker):
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s[3:]), i16(s[1:])
 
-    self.bits = i8(s[0])
+    self.bits = s[0]
     if self.bits != 8:
         raise SyntaxError("cannot handle %d-bit layers" % self.bits)
 
-    self.layers = i8(s[5])
+    self.layers = s[5]
     if self.layers == 1:
         self.mode = "L"
     elif self.layers == 3:
@@ -213,7 +213,7 @@ def SOF(self, marker):
     if self.icclist:
         # fixup icc profile
         self.icclist.sort()  # sort by sequence number
-        if i8(self.icclist[0][13]) == len(self.icclist):
+        if self.icclist[0][13] == len(self.icclist):
             profile = []
             for p in self.icclist:
                 profile.append(p[14:])
@@ -226,7 +226,7 @@ def SOF(self, marker):
     for i in range(6, len(s), 3):
         t = s[i : i + 3]
         # 4-tuples: id, vsamp, hsamp, qtable
-        self.layer.append((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
+        self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
 def DQT(self, marker):
@@ -243,7 +243,7 @@ def DQT(self, marker):
     while len(s):
         if len(s) < 65:
             raise SyntaxError("bad quantization table marker")
-        v = i8(s[0])
+        v = s[0]
         if v // 16 == 0:
             self.quantization[v & 15] = array.array("B", s[1:65])
             s = s[65:]
@@ -339,7 +339,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(1)
 
-        if i8(s) != 255:
+        if s[0] != 255:
             raise SyntaxError("not a JPEG file")
 
         # Create attributes
@@ -356,7 +356,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         while True:
 
-            i = i8(s)
+            i = s[0]
             if i == 0xFF:
                 s = s + self.fp.read(1)
                 i = i16(s)

@@ -27,7 +27,7 @@ import io
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16le as i16, o16le as o16
+from ._binary import i16le as i16, o16le as o16
 
 #
 # read MSP files
@@ -131,7 +131,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     )
                 idx = 0
                 while idx < rowlen:
-                    runtype = i8(row[idx])
+                    runtype = row[idx]
                     idx += 1
                     if runtype == 0:
                         (runcount, runval) = struct.unpack_from("Bc", row, idx)

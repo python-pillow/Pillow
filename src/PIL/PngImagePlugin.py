@@ -39,7 +39,7 @@ import warnings
 import zlib
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
-from ._binary import i8, i16be as i16, i32be as i32, o8, o16be as o16, o32be as o32
+from ._binary import i16be as i16, i32be as i32, o8, o16be as o16, o32be as o32
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ class ChunkStream:
         # Skip CRC checks for ancillary chunks if allowed to load truncated
         # images
         # 5th byte of first char is 1 [specs, section 5.4]
-        if ImageFile.LOAD_TRUNCATED_IMAGES and (i8(cid[0]) >> 5 & 1):
+        if ImageFile.LOAD_TRUNCATED_IMAGES and (cid[0] >> 5 & 1):
             self.crc_skip(cid, data)
             return
 
@@ -347,8 +347,8 @@ class PngStream(ChunkStream):
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
         logger.debug("iCCP profile name %r", s[:i])
-        logger.debug("Compression method %s", i8(s[i]))
-        comp_method = i8(s[i])
+        logger.debug("Compression method %s", s[i])
+        comp_method = s[i]
         if comp_method != 0:
             raise SyntaxError(
                 "Unknown compression method %s in iCCP chunk" % comp_method
@@ -371,12 +371,12 @@ class PngStream(ChunkStream):
         s = ImageFile._safe_read(self.fp, length)
         self.im_size = i32(s), i32(s[4:])
         try:
-            self.im_mode, self.im_rawmode = _MODES[(i8(s[8]), i8(s[9]))]
+            self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
         except Exception:
             pass
-        if i8(s[12]):
+        if s[12]:
             self.im_info["interlace"] = 1
-        if i8(s[11]):
+        if s[11]:
             raise SyntaxError("unknown filter category")
         return s
 
@@ -450,7 +450,7 @@ class PngStream(ChunkStream):
         # 3 absolute colorimetric
 
         s = ImageFile._safe_read(self.fp, length)
-        self.im_info["srgb"] = i8(s)
+        self.im_info["srgb"] = s[0]
         return s
 
     def chunk_pHYs(self, pos, length):
@@ -458,7 +458,7 @@ class PngStream(ChunkStream):
         # pixels per unit
         s = ImageFile._safe_read(self.fp, length)
         px, py = i32(s), i32(s[4:])
-        unit = i8(s[8])
+        unit = s[8]
         if unit == 1:  # meter
             dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
             self.im_info["dpi"] = dpi
@@ -495,7 +495,7 @@ class PngStream(ChunkStream):
             k = s
             v = b""
         if v:
-            comp_method = i8(v[0])
+            comp_method = v[0]
         else:
             comp_method = 0
         if comp_method != 0:
@@ -531,7 +531,7 @@ class PngStream(ChunkStream):
             return s
         if len(r) < 2:
             return s
-        cf, cm, r = i8(r[0]), i8(r[1]), r[2:]
+        cf, cm, r = r[0], r[1], r[2:]
         try:
             lang, tk, v = r.split(b"\0", 2)
         except ValueError:
@@ -601,8 +601,8 @@ class PngStream(ChunkStream):
         if delay_den == 0:
             delay_den = 100
         self.im_info["duration"] = float(delay_num) / float(delay_den) * 1000
-        self.im_info["disposal"] = i8(s[24])
-        self.im_info["blend"] = i8(s[25])
+        self.im_info["disposal"] = s[24]
+        self.im_info["blend"] = s[25]
         return s
 
     def chunk_fdAT(self, pos, length):

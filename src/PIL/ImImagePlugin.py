@@ -30,7 +30,6 @@ import os
 import re
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -223,14 +222,14 @@ class ImImageFile(ImageFile.ImageFile):
             linear = 1  # linear greyscale palette
             for i in range(256):
                 if palette[i] == palette[i + 256] == palette[i + 512]:
-                    if i8(palette[i]) != i:
+                    if palette[i] != i:
                         linear = 0
                 else:
                     greyscale = 0
             if self.mode in ["L", "LA", "P", "PA"]:
                 if greyscale:
                     if not linear:
-                        self.lut = [i8(c) for c in palette[:256]]
+                        self.lut = list(palette[:256])
                 else:
                     if self.mode in ["L", "P"]:
                         self.mode = self.rawmode = "P"
@@ -240,7 +239,7 @@ class ImImageFile(ImageFile.ImageFile):
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
-                    self.lut = [i8(c) for c in palette]
+                    self.lut = list(palette)
 
         self.frame = 0
 
