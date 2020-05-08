@@ -221,7 +221,7 @@ def SOF(self, marker):
         else:
             icc_profile = None  # wrong number of fragments
         self.info["icc_profile"] = icc_profile
-        self.icclist = None
+        self.icclist = []
 
     for i in range(6, len(s), 3):
         t = s[i : i + 3]

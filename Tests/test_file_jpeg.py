@@ -689,6 +689,10 @@ class TestFileJpeg:
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
 
+    def test_icc_after_SOF(self):
+        with Image.open("Tests/images/icc-after-SOF.jpg") as im:
+            assert im.info["icc_profile"] == b"profile"
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")
