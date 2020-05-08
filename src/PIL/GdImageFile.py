@@ -28,7 +28,6 @@
 
 
 from . import ImageFile, ImagePalette, UnidentifiedImageError
-from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 
@@ -55,7 +54,7 @@ class GdImageFile(ImageFile.ImageFile):
         self.mode = "L"  # FIXME: "P"
         self._size = i16(s[2:4]), i16(s[4:6])
 
-        trueColor = i8(s[6])
+        trueColor = s[6]
         trueColorOffset = 2 if trueColor else 0
 
         # transparency index

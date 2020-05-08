@@ -16,7 +16,6 @@
 # See the README file for information on usage and redistribution.
 #
 from . import BmpImagePlugin, Image
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 
@@ -52,7 +51,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
             s = self.fp.read(16)
             if not m:
                 m = s
-            elif i8(s[0]) > i8(m[0]) and i8(s[1]) > i8(m[1]):
+            elif s[0] > m[0] and s[1] > m[1]:
                 m = s
         if not m:
             raise TypeError("No cursors were found")

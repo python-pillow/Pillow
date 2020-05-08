@@ -25,7 +25,6 @@
 
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
@@ -97,7 +96,7 @@ class BmpImageFile(ImageFile.ImageFile):
         # --------------------------------------------- Windows Bitmap v2 to v5
         # v3, OS/2 v2, v4, v5
         elif file_info["header_size"] in (40, 64, 108, 124):
-            file_info["y_flip"] = i8(header_data[7]) == 0xFF
+            file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
             file_info["width"] = i32(header_data[0:4])
             file_info["height"] = (

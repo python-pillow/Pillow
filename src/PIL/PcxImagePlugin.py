@@ -29,7 +29,6 @@ import io
 import logging
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
@@ -38,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 def _accept(prefix):
-    return i8(prefix[0]) == 10 and i8(prefix[1]) in [0, 2, 3, 5]
+    return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 
 ##
@@ -64,9 +63,9 @@ class PcxImageFile(ImageFile.ImageFile):
         logger.debug("BBox: %s %s %s %s", *bbox)
 
         # format
-        version = i8(s[1])
-        bits = i8(s[3])
-        planes = i8(s[65])
+        version = s[1]
+        bits = s[3]
+        planes = s[65]
         stride = i16(s, 66)
         logger.debug(
             "PCX version %s, bits %s, planes %s, stride %s",
@@ -91,7 +90,7 @@ class PcxImageFile(ImageFile.ImageFile):
             # FIXME: hey, this doesn't work with the incremental loader !!!
             self.fp.seek(-769, io.SEEK_END)
             s = self.fp.read(769)
-            if len(s) == 769 and i8(s[0]) == 12:
+            if len(s) == 769 and s[0] == 12:
                 # check if the palette is linear greyscale
                 for i in range(256):
                     if s[i * 3 + 1 : i * 3 + 4] != o8(i) * 3:

@@ -50,7 +50,7 @@ from . import (
     _plugins,
     _raise_version_warning,
 )
-from ._binary import i8, i32le
+from ._binary import i32le
 from ._util import deferred_error, isPath
 
 if sys.version_info >= (3, 7):
@@ -1378,7 +1378,7 @@ class Image:
 
         self.load()
         x, y = self.im.getprojection()
-        return [i8(c) for c in x], [i8(c) for c in y]
+        return list(x), list(y)
 
     def histogram(self, mask=None, extrema=None):
         """

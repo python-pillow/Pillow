@@ -49,7 +49,7 @@ from fractions import Fraction
 from numbers import Number, Rational
 
 from . import Image, ImageFile, ImagePalette, TiffTags
-from ._binary import i8, o8
+from ._binary import o8
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -1518,7 +1518,7 @@ def _save(im, fp, filename):
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
+        ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
