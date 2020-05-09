@@ -32,7 +32,6 @@
 
 #ifdef _WIN32
 
-#include <Shlobj.h>
 #include "ImDib.h"
 
 #if SIZEOF_VOID_P == 8
@@ -502,27 +501,6 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     if (!handle) {
         CloseClipboard();
         return Py_BuildValue("zO", NULL, Py_None);
-    }
-
-    if (formats[format] == CF_HDROP) {
-        LPDROPFILES files = (LPDROPFILES)GlobalLock(handle);
-        size = GlobalSize(handle);
-
-        if (files->fWide) {
-            LPCWSTR filename = (LPCWSTR)(((char*)files) + files->pFiles);
-            size = wcsnlen(filename, (size - files->pFiles) / 2);
-            result = Py_BuildValue("zu#", "file", filename, size);
-        }
-        else {
-            LPCSTR filename = (LPCSTR)(((char*)files) + files->pFiles);
-            size = strnlen(filename, size - files->pFiles);
-            result = Py_BuildValue("zs#", "file", filename, size);
-        }
-
-        GlobalUnlock(handle);
-        CloseClipboard();
-
-        return result;
     }
 
     data = GlobalLock(handle);

@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -79,7 +80,8 @@ $bmp = New-Object Drawing.Bitmap 200, 200
         p.communicate()
 
         im = ImageGrab.grabclipboard()
-        assert_image_equal_tofile(im, "Tests/images/hopper.gif")
+        assert len(im) == 1
+        assert os.path.samefile(im[0], "Tests/images/hopper.gif")
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_png(self):
