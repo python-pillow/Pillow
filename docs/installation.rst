@@ -292,7 +292,10 @@ or from within the uncompressed source directory::
 Building on Windows
 ^^^^^^^^^^^^^^^^^^^
 
-There are build scripts and notes for the Windows build in the ``winbuild`` directory.
+We recommend you use prebuilt wheels from PyPI.
+If you wish to compile Pillow manually, you can use the build scripts
+in the ``winbuild`` directory used for CI testing and development.
+These scripts require Visual Studio 2017 or newer and NASM.
 
 Building on FreeBSD
 ^^^^^^^^^^^^^^^^^^^
