@@ -31,13 +31,15 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t 
 
     for (;;) {
 
-        if (bytes < 1)
+        if (bytes < 1) {
             return ptr - buf;
+        }
 
         if (ptr[0] == 0x80) {
 
-            if (bytes < 2)
+            if (bytes < 2) {
                 break;
+            }
 
             n = ptr[1];
 
@@ -55,8 +57,9 @@ ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t 
             } else {
 
                 /* Run (3 bytes) */
-                if (bytes < 3)
+                if (bytes < 3) {
                     break;
+                }
 
                 /* from (https://www.fileformat.info/format/sunraster/egff.htm)
 

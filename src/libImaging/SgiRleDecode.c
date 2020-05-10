@@ -33,11 +33,13 @@ static int expandrow(UINT8* dest, UINT8* src, int n, int z, int xsize)
     for (;n > 0; n--)
     {
         pixel = *src++;
-        if (n == 1 && pixel != 0)
+        if (n == 1 && pixel != 0) {
             return n;
+        }
         count = pixel & RLE_MAX_RUN;
-        if (!count)
+        if (!count) {
             return count;
+        }
         if (x + count > xsize) {
             return -1;
         }
@@ -71,11 +73,13 @@ static int expandrow2(UINT8* dest, const UINT8* src, int n, int z, int xsize)
     {
         pixel = src[1];
         src+=2;
-        if (n == 1 && pixel != 0)
+        if (n == 1 && pixel != 0) {
             return n;
+        }
         count = pixel & RLE_MAX_RUN;
-        if (!count)
+        if (!count) {
             return count;
+        }
         if (x + count > xsize) {
             return -1;
         }
@@ -151,11 +155,13 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
         goto sgi_finish_decode;
     }
     /* populate offsets table */
-    for (c->tabindex = 0, c->bufindex = 0; c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
+    for (c->tabindex = 0, c->bufindex = 0; c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4) {
         read4B(&c->starttab[c->tabindex], &ptr[c->bufindex]);
+    }
     /* populate lengths table */
-    for (c->tabindex = 0, c->bufindex = c->tablen * sizeof(UINT32); c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4)
+    for (c->tabindex = 0, c->bufindex = c->tablen * sizeof(UINT32); c->tabindex < c->tablen; c->tabindex++, c->bufindex+=4) {
         read4B(&c->lengthtab[c->tabindex], &ptr[c->bufindex]);
+    }
 
     state->count += c->tablen * sizeof(UINT32) * 2;
 

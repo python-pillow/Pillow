@@ -36,7 +36,7 @@ ImagingGetBBox(Imaging im, int bbox[4])
 #define GETBBOX(image, mask)\
     for (y = 0; y < im->ysize; y++) {\
         has_data = 0;\
-        for (x = 0; x < im->xsize; x++)\
+        for (x = 0; x < im->xsize; x++) {\
             if (im->image[y][x] & mask) {\
                 has_data = 1;\
                 if (x < bbox[0])\
@@ -44,6 +44,7 @@ ImagingGetBBox(Imaging im, int bbox[4])
                 if (x >= bbox[2])\
                     bbox[2] = x+1;\
             }\
+        }\
         if (has_data) {\
             if (bbox[1] < 0)\
             bbox[1] = y;\
@@ -72,8 +73,9 @@ ImagingGetBBox(Imaging im, int bbox[4])
     }
 
     /* Check that we got a box */
-    if (bbox[1] < 0)
+    if (bbox[1] < 0) {
         return 0; /* no data */
+    }
 
     return 1; /* ok */
 }
@@ -94,21 +96,24 @@ ImagingGetProjection(Imaging im, UINT8* xproj, UINT8* yproj)
     #define GETPROJ(image, mask)\
         for (y = 0; y < im->ysize; y++) {\
             has_data = 0;\
-            for (x = 0; x < im->xsize; x++)\
+            for (x = 0; x < im->xsize; x++) {\
                 if (im->image[y][x] & mask) {\
                     has_data = 1;\
                     xproj[x] = 1;\
                 }\
-                if (has_data)\
-                    yproj[y] = 1;\
-                }
+            }\
+            if (has_data) {\
+                yproj[y] = 1;\
+            }\
+        }
 
     if (im->image8) {
         GETPROJ(image8, 0xff);
     } else {
         INT32 mask = 0xffffffff;
-        if (im->bands == 3)
+        if (im->bands == 3) {
             ((UINT8*) &mask)[3] = 0;
+        }
         GETPROJ(image32, mask);
     }
 
@@ -128,8 +133,9 @@ ImagingGetExtrema(Imaging im, void *extrema)
         return -1; /* mismatch */
     }
 
-    if (!im->xsize || !im->ysize)
+    if (!im->xsize || !im->ysize) {
         return 0; /* zero size */
+    }
 
     switch (im->type) {
     case IMAGING_TYPE_UINT8:
@@ -137,10 +143,11 @@ ImagingGetExtrema(Imaging im, void *extrema)
         for (y = 0; y < im->ysize; y++) {
             UINT8* in = im->image8[y];
             for (x = 0; x < im->xsize; x++) {
-                if (imin > in[x])
+                if (imin > in[x]) {
                     imin = in[x];
-                else if (imax < in[x])
+                } else if (imax < in[x]) {
                     imax = in[x];
+                }
             }
         }
         ((UINT8*) extrema)[0] = (UINT8) imin;
@@ -151,10 +158,11 @@ ImagingGetExtrema(Imaging im, void *extrema)
         for (y = 0; y < im->ysize; y++) {
             INT32* in = im->image32[y];
             for (x = 0; x < im->xsize; x++) {
-                if (imin > in[x])
+                if (imin > in[x]) {
                     imin = in[x];
-                else if (imax < in[x])
+                } else if (imax < in[x]) {
                     imax = in[x];
+                }
             }
         }
         memcpy(extrema, &imin, sizeof(imin));
@@ -165,10 +173,11 @@ ImagingGetExtrema(Imaging im, void *extrema)
         for (y = 0; y < im->ysize; y++) {
             FLOAT32* in = (FLOAT32*) im->image32[y];
             for (x = 0; x < im->xsize; x++) {
-                if (fmin > in[x])
+                if (fmin > in[x]) {
                     fmin = in[x];
-                else if (fmax < in[x])
+                } else if (fmax < in[x]) {
                     fmax = in[x];
+                }
             }
         }
         memcpy(extrema, &fmin, sizeof(fmin));
@@ -192,10 +201,11 @@ ImagingGetExtrema(Imaging im, void *extrema)
 #else
                   memcpy(&v, pixel, sizeof(v));
 #endif
-                  if (imin > v)
+                  if (imin > v) {
                       imin = v;
-                  else if (imax < v)
+                  } else if (imax < v) {
                       imax = v;
+                  }
               }
           }
           v = (UINT16) imin;
@@ -264,19 +274,23 @@ getcolors32(Imaging im, int maxcolors, int* size)
     /* printf("code_size=%d\n", code_size); */
     /* printf("code_poly=%d\n", code_poly); */
 
-    if (!code_size)
+    if (!code_size) {
         return ImagingError_MemoryError(); /* just give up */
+    }
 
-    if (!im->image32)
+    if (!im->image32) {
         return ImagingError_ModeError();
+    }
 
     table = calloc(code_size + 1, sizeof(ImagingColorItem));
-    if (!table)
+    if (!table) {
         return ImagingError_MemoryError();
+    }
 
     pixel_mask = 0xffffffff;
-    if (im->bands == 3)
+    if (im->bands == 3) {
         ((UINT8*) &pixel_mask)[3] = 0;
+    }
 
     colors = 0;
 
@@ -289,8 +303,9 @@ getcolors32(Imaging im, int maxcolors, int* size)
             v = &table[i];
             if (!v->count) {
                 /* add to table */
-                if (colors++ == maxcolors)
+                if (colors++ == maxcolors) {
                     goto overflow;
+                }
                 v->x = x; v->y = y;
                 v->pixel = pixel;
                 v->count = 1;
@@ -300,15 +315,17 @@ getcolors32(Imaging im, int maxcolors, int* size)
                 continue;
             }
             incr = (h ^ (h >> 3)) & code_mask;
-            if (!incr)
+            if (!incr) {
                 incr = code_mask;
+            }
             for (;;) {
                 i = (i + incr) & code_mask;
                 v = &table[i];
                 if (!v->count) {
                     /* add to table */
-                    if (colors++ == maxcolors)
+                    if (colors++ == maxcolors) {
                         goto overflow;
+                    }
                     v->x = x; v->y = y;
                     v->pixel = pixel;
                     v->count = 1;
@@ -318,8 +335,9 @@ getcolors32(Imaging im, int maxcolors, int* size)
                     break;
                 }
                 incr = incr << 1;
-                if (incr > code_mask)
+                if (incr > code_mask) {
                     incr = incr ^ code_poly;
+                }
             }
         }
     }
@@ -329,8 +347,9 @@ overflow:
     /* pack the table */
     for (x = y = 0; x < (int) code_size; x++)
         if (table[x].count) {
-            if (x != y)
+            if (x != y) {
                 table[y] = table[x];
+            }
             y++;
         }
     table[y].count = 0; /* mark end of table */

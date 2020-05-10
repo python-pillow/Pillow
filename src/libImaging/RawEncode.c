@@ -49,8 +49,9 @@ ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         if (state->ystep < 0) {
             state->y = state->ysize-1;
             state->ystep = -1;
-        } else
+        } else {
             state->ystep = 1;
+        }
 
         state->state = 1;
 
@@ -68,9 +69,10 @@ ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         state->shuffle(ptr, (UINT8*) im->image[state->y + state->yoff] +
                    state->xoff * im->pixelsize, state->xsize);
 
-        if (state->bytes > state->count)
+        if (state->bytes > state->count) {
             /* zero-pad the buffer, if necessary */
             memset(ptr + state->count, 0, state->bytes - state->count);
+        }
 
         ptr += state->bytes;
         bytes -= state->bytes;

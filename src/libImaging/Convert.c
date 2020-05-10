@@ -123,8 +123,9 @@ static void
 l2bit(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++)
+    for (x = 0; x < xsize; x++) {
         *out++ = (*in++ >= 128) ? 255 : 0;
+    }
 }
 
 static void
@@ -206,8 +207,9 @@ static void
 la2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = in[0];
+    }
 }
 
 static void
@@ -240,18 +242,20 @@ static void
 rgb2bit(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
         *out++ = (L(in) >= 128000) ? 255 : 0;
+    }
 }
 
 static void
 rgb2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
         *out++ = L24(in) >> 16;
+    }
 }
 
 static void
@@ -653,12 +657,13 @@ i2l(UINT8* out, const UINT8* in_, int xsize)
     for (x = 0; x < xsize; x++, out++, in_ += 4) {
         INT32 v;
         memcpy(&v, in_, sizeof(v));
-        if (v <= 0)
+        if (v <= 0) {
             *out = 0;
-        else if (v >= 255)
+        } else if (v >= 255) {
             *out = 255;
-        else
+        } else {
             *out = (UINT8) v;
+        }
     }
 }
 
@@ -681,12 +686,13 @@ i2rgb(UINT8* out, const UINT8* in_, int xsize)
     int x;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++, out+=4) {
-        if (*in <= 0)
+        if (*in <= 0) {
             out[0] = out[1] = out[2] = 0;
-        else if (*in >= 255)
+        } else if (*in >= 255) {
             out[0] = out[1] = out[2] = 255;
-        else
+        } else {
             out[0] = out[1] = out[2] = (UINT8) *in;
+        }
         out[3] = 255;
     }
 }
@@ -741,12 +747,13 @@ f2l(UINT8* out, const UINT8* in_, int xsize)
     for (x = 0; x < xsize; x++, out++, in_ += 4) {
         FLOAT32 v;
         memcpy(&v, in_, sizeof(v));
-        if (v <= 0.0)
+        if (v <= 0.0) {
             *out = 0;
-        else if (v >= 255.0)
+        } else if (v >= 255.0) {
             *out = 255;
-        else
+        } else {
             *out = (UINT8) v;
+        }
     }
 }
 
@@ -797,8 +804,9 @@ static void
 ycbcr2l(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = in[0];
+    }
 }
 
 static void
@@ -908,22 +916,26 @@ static void
 I16L_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 2)
-        if (in[1] != 0)
+    for (x = 0; x < xsize; x++, in += 2) {
+        if (in[1] != 0) {
             *out++ = 255;
-        else
+        } else {
             *out++ = in[0];
+        }
+    }
 }
 
 static void
 I16B_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    for (x = 0; x < xsize; x++, in += 2)
-        if (in[0] != 0)
+    for (x = 0; x < xsize; x++, in += 2) {
+        if (in[0] != 0) {
             *out++ = 255;
-        else
+        } else {
             *out++ = in[1];
+        }
+    }
 }
 
 static struct {
@@ -1056,8 +1068,9 @@ p2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
-    for (x = 0; x < xsize; x++)
+    for (x = 0; x < xsize; x++) {
         *out++ = (L(&palette[in[x]*4]) >= 128000) ? 255 : 0;
+    }
 }
 
 static void
@@ -1065,8 +1078,9 @@ pa2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = (L(&palette[in[0]*4]) >= 128000) ? 255 : 0;
+    }
 }
 
 static void
@@ -1074,8 +1088,9 @@ p2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
-    for (x = 0; x < xsize; x++)
+    for (x = 0; x < xsize; x++) {
         *out++ = L(&palette[in[x]*4]) / 1000;
+    }
 }
 
 static void
@@ -1083,8 +1098,9 @@ pa2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     /* FIXME: precalculate greyscale palette? */
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = L(&palette[in[0]*4]) / 1000;
+    }
 }
 
 static void
@@ -1138,8 +1154,9 @@ pa2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = L(&palette[in[0]*4]) / 1000;
+    }
 }
 
 static void
@@ -1157,8 +1174,9 @@ pa2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
     FLOAT32* out = (FLOAT32*) out_;
-    for (x = 0; x < xsize; x++, in += 4)
+    for (x = 0; x < xsize; x++, in += 4) {
         *out++ = (float) L(&palette[in[0]*4]) / 1000.0F;
+    }
 }
 
 static void
@@ -1273,46 +1291,50 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
 
     /* Map palette image to L, RGB, RGBA, or CMYK */
 
-    if (!imIn->palette)
+    if (!imIn->palette) {
         return (Imaging) ImagingError_ValueError("no palette");
+    }
 
     alpha = !strcmp(imIn->mode, "PA");
 
-    if (strcmp(mode, "1") == 0)
+    if (strcmp(mode, "1") == 0) {
         convert = alpha ? pa2bit : p2bit;
-    else if (strcmp(mode, "L") == 0)
+    } else if (strcmp(mode, "L") == 0) {
         convert = alpha ? pa2l : p2l;
-    else if (strcmp(mode, "LA") == 0)
+    } else if (strcmp(mode, "LA") == 0) {
         convert = alpha ? pa2la : p2la;
-    else if (strcmp(mode, "PA") == 0)
+    } else if (strcmp(mode, "PA") == 0) {
         convert = p2pa;
-    else if (strcmp(mode, "I") == 0)
+    } else if (strcmp(mode, "I") == 0) {
         convert = alpha ? pa2i : p2i;
-    else if (strcmp(mode, "F") == 0)
+    } else if (strcmp(mode, "F") == 0) {
         convert = alpha ? pa2f : p2f;
-    else if (strcmp(mode, "RGB") == 0)
+    } else if (strcmp(mode, "RGB") == 0) {
         convert = alpha ? pa2rgb : p2rgb;
-    else if (strcmp(mode, "RGBA") == 0)
+    } else if (strcmp(mode, "RGBA") == 0) {
         convert = alpha ? pa2rgba : p2rgba;
-    else if (strcmp(mode, "RGBX") == 0)
+    } else if (strcmp(mode, "RGBX") == 0) {
         convert = alpha ? pa2rgba : p2rgba;
-    else if (strcmp(mode, "CMYK") == 0)
+    } else if (strcmp(mode, "CMYK") == 0) {
         convert = alpha ? pa2cmyk : p2cmyk;
-    else if (strcmp(mode, "YCbCr") == 0)
+    } else if (strcmp(mode, "YCbCr") == 0) {
         convert = alpha ? pa2ycbcr : p2ycbcr;
-    else if (strcmp(mode, "HSV") == 0)
+    } else if (strcmp(mode, "HSV") == 0) {
         convert = alpha ? pa2hsv : p2hsv;
-    else
+    } else {
         return (Imaging) ImagingError_ValueError("conversion not supported");
+    }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++)
+    for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
                    imIn->xsize, imIn->palette->palette);
+    }
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -1330,26 +1352,30 @@ topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalett
     ImagingPalette palette = inpalette;;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
-    if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0)
+    if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0) {
         return (Imaging) ImagingError_ValueError("conversion not supported");
+    }
 
     alpha = !strcmp(mode, "PA");
 
     if (palette == NULL) {
       /* FIXME: make user configurable */
-      if (imIn->bands == 1)
+      if (imIn->bands == 1) {
         palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
-      else
+      } else {
         palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
+      }
     }
 
-    if (!palette)
+    if (!palette) {
         return (Imaging) ImagingError_ValueError("no palette");
+    }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
     if (!imOut) {
-      if (palette != inpalette)
+      if (palette != inpalette) {
         ImagingPaletteDelete(palette);
+      }
       return NULL;
     }
 
@@ -1376,8 +1402,9 @@ topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalett
         /* Create mapping cache */
         if (ImagingPaletteCachePrepare(palette) < 0) {
             ImagingDelete(imOut);
-            if (palette != inpalette)
+            if (palette != inpalette) {
               ImagingPaletteDelete(palette);
+            }
             return NULL;
         }
 
@@ -1415,8 +1442,9 @@ topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalett
 
                     /* get closest colour */
                     cache = &ImagingPaletteCache(palette, r, g, b);
-                    if (cache[0] == 0x100)
+                    if (cache[0] == 0x100) {
                         ImagingPaletteCacheUpdate(palette, r, g, b);
+                    }
                     if (alpha) {
                         out[x*4] = out[x*4+1] = out[x*4+2] = (UINT8) cache[0];
                         out[x*4+3] = 255;
@@ -1464,8 +1492,9 @@ topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalett
 
                     /* get closest colour */
                     cache = &ImagingPaletteCache(palette, r, g, b);
-                    if (cache[0] == 0x100)
+                    if (cache[0] == 0x100) {
                         ImagingPaletteCacheUpdate(palette, r, g, b);
+                    }
                     if (alpha) {
                         out[x*4] = out[x*4+1] = out[x*4+2] = (UINT8) cache[0];
                         out[x*4+3] = 255;
@@ -1477,12 +1506,14 @@ topalette(Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalett
             ImagingSectionLeave(&cookie);
 
         }
-        if (inpalette != palette)
+        if (inpalette != palette) {
           ImagingPaletteCacheDelete(palette);
+        }
     }
 
-    if (inpalette != palette)
+    if (inpalette != palette) {
       ImagingPaletteDelete(palette);
+    }
 
     return imOut;
 }
@@ -1495,12 +1526,14 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
     int* errors;
 
     /* Map L or RGB to dithered 1 image */
-    if (strcmp(imIn->mode, "L") != 0 && strcmp(imIn->mode, "RGB") != 0)
+    if (strcmp(imIn->mode, "L") != 0 && strcmp(imIn->mode, "RGB") != 0) {
         return (Imaging) ImagingError_ValueError("conversion not supported");
+    }
 
     imOut = ImagingNew2Dirty("1", imOut, imIn);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     errors = calloc(imIn->xsize + 1, sizeof(int));
     if (!errors) {
@@ -1582,42 +1615,50 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
     ImagingShuffler convert;
     int y;
 
-    if (!imIn)
+    if (!imIn) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     if (!mode) {
         /* Map palette image to full depth */
-        if (!imIn->palette)
+        if (!imIn->palette) {
             return (Imaging) ImagingError_ModeError();
+        }
         mode = imIn->palette->mode;
-    } else
+    } else {
         /* Same mode? */
-        if (!strcmp(imIn->mode, mode))
+        if (!strcmp(imIn->mode, mode)) {
             return ImagingCopy2(imOut, imIn);
+        }
+    }
 
 
     /* test for special conversions */
 
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0)
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0) {
         return frompalette(imOut, imIn, mode);
+    }
 
-    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0)
+    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0) {
         return topalette(imOut, imIn, mode, palette, dither);
+    }
 
-    if (dither && strcmp(mode, "1") == 0)
+    if (dither && strcmp(mode, "1") == 0) {
         return tobilevel(imOut, imIn, dither);
+    }
 
 
     /* standard conversion machinery */
 
     convert = NULL;
 
-    for (y = 0; converters[y].from; y++)
+    for (y = 0; converters[y].from; y++) {
         if (!strcmp(imIn->mode, converters[y].from) &&
             !strcmp(mode, converters[y].to)) {
             convert = converters[y].convert;
             break;
         }
+    }
 
     if (!convert)
 #ifdef notdef
@@ -1632,13 +1673,15 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 #endif
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++)
+    for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
                    imIn->xsize);
+    }
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -1727,17 +1770,19 @@ ImagingConvertInPlace(Imaging imIn, const char* mode)
     int y;
 
     /* limited support for inplace conversion */
-    if (strcmp(imIn->mode, "L") == 0 && strcmp(mode, "1") == 0)
+    if (strcmp(imIn->mode, "L") == 0 && strcmp(mode, "1") == 0) {
         convert = l2bit;
-    else if (strcmp(imIn->mode, "1") == 0 && strcmp(mode, "L") == 0)
+    } else if (strcmp(imIn->mode, "1") == 0 && strcmp(mode, "L") == 0) {
         convert = bit2l;
-    else
+    } else {
         return ImagingError_ModeError();
+    }
 
     ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++)
+    for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8*) imIn->image[y], (UINT8*) imIn->image[y],
                    imIn->xsize);
+    }
     ImagingSectionLeave(&cookie);
 
     return imIn;

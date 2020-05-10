@@ -38,8 +38,9 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
     for (;;) {
 
         /* We need data for two full lines before we can do anything */
-        if (bytes < chunk)
+        if (bytes < chunk) {
             return ptr - buf;
+        }
 
         /* Unpack first line */
         out = state->buffer;
@@ -53,8 +54,9 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         state->shuffle((UINT8*) im->image[state->y],
                    state->buffer, state->xsize);
 
-        if (++state->y >= state->ysize)
+        if (++state->y >= state->ysize) {
             return -1; /* This can hardly happen */
+        }
 
         /* Unpack second line */
         out = state->buffer;
@@ -68,8 +70,9 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         state->shuffle((UINT8*) im->image[state->y],
                    state->buffer, state->xsize);
 
-        if (++state->y >= state->ysize)
+        if (++state->y >= state->ysize) {
             return -1;
+        }
 
         ptr += chunk;
         bytes -= chunk;

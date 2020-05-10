@@ -128,12 +128,13 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         if (err < 0) {
             /* Something went wrong inside the compression library */
-            if (err == Z_DATA_ERROR)
+            if (err == Z_DATA_ERROR) {
                 state->errcode = IMAGING_CODEC_BROKEN;
-            else if (err == Z_MEM_ERROR)
+            } else if (err == Z_MEM_ERROR) {
                 state->errcode = IMAGING_CODEC_MEMORY;
-            else
+            } else {
                 state->errcode = IMAGING_CODEC_CONFIG;
+            }
             free(context->paeth);
             free(context->average);
             free(context->up);
@@ -282,12 +283,13 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 if (err < 0) {
                     /* Something went wrong inside the compression library */
-                    if (err == Z_DATA_ERROR)
+                    if (err == Z_DATA_ERROR) {
                         state->errcode = IMAGING_CODEC_BROKEN;
-                    else if (err == Z_MEM_ERROR)
+                    } else if (err == Z_MEM_ERROR) {
                         state->errcode = IMAGING_CODEC_MEMORY;
-                    else
+                    } else {
                         state->errcode = IMAGING_CODEC_CONFIG;
+                    }
                     free(context->paeth);
                     free(context->average);
                     free(context->up);
@@ -331,8 +333,9 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     break;
                 }
 
-                if (context->z_stream.avail_out == 0)
+                if (context->z_stream.avail_out == 0) {
                     break; /* Buffer full */
+                }
 
             }
 

@@ -610,15 +610,21 @@ static int bc6_unquantize(UINT16 v, int prec, int sign) {
     int x;
     if (!sign) {
         x = v;
-        if (prec >= 15) return x;
-        if (x == 0) return 0;
+        if (prec >= 15) {
+            return x;
+        }
+        if (x == 0) {
+            return 0;
+        }
         if (x == ((1 << prec) - 1)) {
             return 0xffff;
         }
         return ((x << 15) + 0x4000) >> (prec - 1);
     } else {
         x = (INT16)v;
-        if (prec >= 16) return x;
+        if (prec >= 16) {
+            return x;
+        }
         if (x < 0) {
             s = 1;
             x = -x;
@@ -820,7 +826,9 @@ static int decode_bcn(Imaging im, ImagingCodecState state, const UINT8* src, int
             put_block(im, state, (const char *)col, sizeof(col[0]), C); \
             ptr += SZ; \
             bytes -= SZ; \
-            if (state->y >= ymax) return -1; \
+            if (state->y >= ymax) {\
+                return -1; \
+            }\
         } \
         break
 
@@ -836,7 +844,9 @@ static int decode_bcn(Imaging im, ImagingCodecState state, const UINT8* src, int
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
-                if (state->y >= ymax) return -1; \
+                if (state->y >= ymax) {\
+                    return -1; \
+                }\
             }
             break;
         DECODE_LOOP(7, 16, rgba);

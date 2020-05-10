@@ -30,8 +30,9 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     for (;;) {
 
-        if (bytes < 2)
+        if (bytes < 2) {
             return ptr - buf;
+        }
 
         a = HEX(ptr[0]);
         b = HEX(ptr[1]);

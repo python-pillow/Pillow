@@ -37,8 +37,9 @@ paste(Imaging imOut, Imaging imIn, int dx, int dy, int sx, int sy,
 
     xsize *= pixelsize;
 
-    for (y = 0; y < ysize; y++)
+    for (y = 0; y < ysize; y++) {
         memcpy(imOut->image[y+dy]+dx, imIn->image[y+sy]+sx, xsize);
+    }
 }
 
 static inline void
@@ -57,8 +58,9 @@ paste_mask_1(Imaging imOut, Imaging imIn, Imaging imMask,
             UINT8* in = imIn->image8[y+sy]+sx;
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++)
+                if (*mask++) {
                     *out = *in;
+                }
                 out++, in++;
             }
         }
@@ -70,8 +72,9 @@ paste_mask_1(Imaging imOut, Imaging imIn, Imaging imMask,
             INT32* in = imIn->image32[y+sy]+sx;
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++)
+                if (*mask++) {
                     *out = *in;
+                }
                 out++, in++;
             }
         }
@@ -231,17 +234,22 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
 
     /* Determine which region to copy */
     sx0 = sy0 = 0;
-    if (dx0 < 0)
+    if (dx0 < 0) {
         xsize += dx0, sx0 = -dx0, dx0 = 0;
-    if (dx0 + xsize > imOut->xsize)
+    }
+    if (dx0 + xsize > imOut->xsize) {
         xsize = imOut->xsize - dx0;
-    if (dy0 < 0)
+    }
+    if (dy0 < 0) {
         ysize += dy0, sy0 = -dy0, dy0 = 0;
-    if (dy0 + ysize > imOut->ysize)
+    }
+    if (dy0 + ysize > imOut->ysize) {
         ysize = imOut->ysize - dy0;
+    }
 
-    if (xsize <= 0 || ysize <= 0)
+    if (xsize <= 0 || ysize <= 0) {
         return 0;
+    }
 
     if (!imMask) {
         ImagingSectionEnter(&cookie);
@@ -297,15 +305,17 @@ fill(Imaging imOut, const void* ink_, int dx, int dy,
 
         dx *= pixelsize;
         xsize *= pixelsize;
-        for (y = 0; y < ysize; y++)
+        for (y = 0; y < ysize; y++) {
             memset(imOut->image[y+dy]+dx, ink8, xsize);
+        }
 
     } else {
 
         for (y = 0; y < ysize; y++) {
             INT32* out = imOut->image32[y+dy]+dx;
-            for (x = 0; x < xsize; x++)
+            for (x = 0; x < xsize; x++) {
                 out[x] = ink32;
+            }
         }
 
     }
@@ -331,8 +341,9 @@ fill_mask_1(Imaging imOut, const void* ink_, Imaging imMask,
             UINT8* out = imOut->image8[y+dy]+dx;
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++)
+                if (*mask++) {
                     *out = ink8;
+                }
                 out++;
             }
         }
@@ -343,8 +354,9 @@ fill_mask_1(Imaging imOut, const void* ink_, Imaging imMask,
             INT32* out = imOut->image32[y+dy]+dx;
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++)
+                if (*mask++) {
                     *out = ink32;
+                }
                 out++;
             }
         }
@@ -494,17 +506,22 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
 
     /* Determine which region to fill */
     sx0 = sy0 = 0;
-    if (dx0 < 0)
+    if (dx0 < 0) {
         xsize += dx0, sx0 = -dx0, dx0 = 0;
-    if (dx0 + xsize > imOut->xsize)
+    }
+    if (dx0 + xsize > imOut->xsize) {
         xsize = imOut->xsize - dx0;
-    if (dy0 < 0)
+    }
+    if (dy0 < 0) {
         ysize += dy0, sy0 = -dy0, dy0 = 0;
-    if (dy0 + ysize > imOut->ysize)
+    }
+    if (dy0 + ysize > imOut->ysize) {
         ysize = imOut->ysize - dy0;
+    }
 
-    if (xsize <= 0 || ysize <= 0)
+    if (xsize <= 0 || ysize <= 0) {
         return 0;
+    }
 
     if (!imMask) {
         ImagingSectionEnter(&cookie);

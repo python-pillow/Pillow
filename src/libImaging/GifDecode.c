@@ -142,11 +142,13 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                     /* New GIF block */
 
                     /* We don't start decoding unless we have a full block */
-                    if (bytes < 1)
+                    if (bytes < 1) {
                         return ptr - buffer;
+                    }
                     c = *ptr;
-                    if (bytes < c+1)
+                    if (bytes < c+1) {
                         return ptr - buffer;
+                    }
 
                     context->blocksize = c;
 
@@ -167,13 +169,15 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                expanded. */
 
             if (c == context->clear) {
-                if (state->state != 2)
+                if (state->state != 2) {
                     state->state = 1;
+                }
                 continue;
             }
 
-            if (c == context->end)
+            if (c == context->end) {
                 break;
+            }
 
             i = 1;
             p = &context->lastdata;
