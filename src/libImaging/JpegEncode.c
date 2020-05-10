@@ -277,8 +277,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 } else {
                     break;
                 }
-            } else
+            } else {
                 state->state++;
+            }
 
         case 4:
             if (1024 > context->destination.pub.free_in_buffer){
