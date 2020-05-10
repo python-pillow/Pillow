@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- JPEG: Truncate icclist instead of setting to None #4613
+  [homm]
+
 - Fixes default offset for Exif #4594
   [rodrigob, radarhere]
 
