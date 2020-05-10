@@ -941,8 +941,9 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
             }
             lx = x, ly = y;
         }
-        if (n == 0)
+        if (n == 0) {
             return 0;
+        }
 
         if (inner) {
             // Inner circle

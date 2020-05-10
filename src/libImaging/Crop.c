@@ -32,11 +32,13 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
     }
 
     xsize = sx1 - sx0;
-    if (xsize < 0)
+    if (xsize < 0) {
         xsize = 0;
+    }
     ysize = sy1 - sy0;
-    if (ysize < 0)
+    if (ysize < 0) {
         ysize = 0;
+    }
 
     imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {

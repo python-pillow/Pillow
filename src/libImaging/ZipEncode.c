@@ -307,8 +307,9 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
             }
 
-            if (context->z_stream.avail_out == 0)
+            if (context->z_stream.avail_out == 0) {
                 break; /* Buffer full */
+            }
 
         case 2:
 

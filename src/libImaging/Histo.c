@@ -179,8 +179,9 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                         FLOAT32* in = (FLOAT32*) im->image32[y];
                         for (x = 0; x < im->xsize; x++) {
                             i = (int) (((*in++)-fmin)*scale);
-                            if (i >= 0 && i < 256)
+                            if (i >= 0 && i < 256) {
                                 h->histogram[i]++;
+                            }
                         }
                     }
                     ImagingSectionLeave(&cookie);

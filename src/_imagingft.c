@@ -406,11 +406,11 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
 
     direction = RAQM_DIRECTION_DEFAULT;
     if (dir) {
-        if (strcmp(dir, "rtl") == 0)
+        if (strcmp(dir, "rtl") == 0) {
             direction = RAQM_DIRECTION_RTL;
-        else if (strcmp(dir, "ltr") == 0)
+        } else if (strcmp(dir, "ltr") == 0) {
             direction = RAQM_DIRECTION_LTR;
-        else if (strcmp(dir, "ttb") == 0) {
+        } else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
             if (p_raqm.version_atleast == NULL || !(*p_raqm.version_atleast)(0, 7, 0)) {
                 PyErr_SetString(PyExc_ValueError, "libraqm 0.7 or greater required for 'ttb' direction");
@@ -694,8 +694,9 @@ font_getsize(FontObject* self, PyObject* args)
                 offset = -glyph_info[i].y_advance -
                         face->glyph->metrics.height -
                         face->glyph->metrics.vertBearingY;
-                if (offset < 0)
+                if (offset < 0) {
                     y_max -= offset;
+                }
             }
 
             if (bbox.xMax > x_max) {

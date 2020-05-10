@@ -41,8 +41,9 @@ ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             }
             state->count = state->bytes;
             state->bytes = bytes;
-        } else
+        } else {
             state->count = state->bytes;
+        }
 
         /* The "ystep" field specifies the orientation */
 

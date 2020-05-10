@@ -39,15 +39,18 @@ ImagingGetBBox(Imaging im, int bbox[4])
         for (x = 0; x < im->xsize; x++) {\
             if (im->image[y][x] & mask) {\
                 has_data = 1;\
-                if (x < bbox[0])\
+                if (x < bbox[0]) {\
                     bbox[0] = x;\
-                if (x >= bbox[2])\
+                }\
+                if (x >= bbox[2]) {\
                     bbox[2] = x+1;\
+                }\
             }\
         }\
         if (has_data) {\
-            if (bbox[1] < 0)\
-            bbox[1] = y;\
+            if (bbox[1] < 0) {\
+                bbox[1] = y;\
+            }\
             bbox[3] = y+1;\
         }\
     }

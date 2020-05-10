@@ -490,8 +490,9 @@ getpixel(Imaging im, ImagingAccess access, int x, int y)
     case IMAGING_TYPE_FLOAT32:
         return PyFloat_FromDouble(pixel.f);
     case IMAGING_TYPE_SPECIAL:
-        if (strncmp(im->mode, "I;16", 4) == 0)
+        if (strncmp(im->mode, "I;16", 4) == 0) {
             return PyLong_FromLong(pixel.h);
+        }
         break;
     }
 
@@ -1456,8 +1457,9 @@ _point(ImagingObject* self, PyObject* args)
                 lut[i*4] = CLIP8(data[i]);
                 lut[i*4+1] = CLIP8(data[i+256]);
                 lut[i*4+2] = CLIP8(data[i+512]);
-                if (n > 768)
+                if (n > 768) {
                     lut[i*4+3] = CLIP8(data[i+768]);
+                }
             }
             im = ImagingPoint(self->image, mode, (void*) lut);
         } else {
@@ -1523,16 +1525,18 @@ _putdata(ImagingObject* self, PyObject* args)
                 /* Plain string data */
                 for (i = y = 0; i < n; i += image->xsize, y++) {
                     x = n - i;
-                    if (x > (int) image->xsize)
+                    if (x > (int) image->xsize) {
                         x = image->xsize;
+                    }
                     memcpy(image->image8[y], p+i, x);
                 }
             } else {
                 /* Scaled and clipped string data */
                 for (i = x = y = 0; i < n; i++) {
                     image->image8[y][x] = CLIP8((int) (p[i] * scale + offset));
-                    if (++x >= (int) image->xsize)
+                    if (++x >= (int) image->xsize) {
                         x = 0, y++;
+                    }
                 }
             }
         } else {
@@ -1932,12 +1936,14 @@ im_setmode(ImagingObject* self, PyObject* args)
         /* color to color */
         strcpy(im->mode, mode);
         im->bands = modelen;
-        if (!strcmp(mode, "RGBA"))
+        if (!strcmp(mode, "RGBA")) {
             (void) ImagingFillBand(im, 3, 255);
+        }
     } else {
         /* trying doing an in-place conversion */
-        if (!ImagingConvertInPlace(im, mode))
+        if (!ImagingConvertInPlace(im, mode)) {
             return NULL;
+        }
     }
 
     if (self->access) {

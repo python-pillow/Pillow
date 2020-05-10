@@ -52,8 +52,9 @@
             default:\
                 return -1;\
         }\
-    if (state->y < state->ysize)\
+    if (state->y < state->ysize) {\
         out = im->image8[state->y + state->yoff] + state->xoff;\
+    }\
 }
 
 
@@ -70,24 +71,25 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
 
     if (!state->state) {
 
-    /* Initialise state */
-    if (context->bits < 0 || context->bits > 12) {
-        state->errcode = IMAGING_CODEC_CONFIG;
-        return -1;
-    }
+        /* Initialise state */
+        if (context->bits < 0 || context->bits > 12) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
+        }
 
-    /* Clear code */
-    context->clear = 1 << context->bits;
+        /* Clear code */
+        context->clear = 1 << context->bits;
 
-    /* End code */
-    context->end = context->clear + 1;
+        /* End code */
+        context->end = context->clear + 1;
 
-    /* Interlace */
-    if (context->interlace) {
-        context->interlace = 1;
-        context->step = context->repeat = 8;
-    } else
-        context->step = 1;
+        /* Interlace */
+        if (context->interlace) {
+            context->interlace = 1;
+            context->step = context->repeat = 8;
+        } else {
+            context->step = 1;
+        }
 
         state->state = 1;
     }

@@ -689,8 +689,12 @@ static void
 free_box_tree(BoxNode *n)
 {
    PixelList *p,*pp;
-   if (n->l) free_box_tree(n->l);
-   if (n->r) free_box_tree(n->r);
+   if (n->l) {
+      free_box_tree(n->l);
+   }
+   if (n->r) {
+      free_box_tree(n->r);
+   }
    for (p=n->head[0];p;p=pp) {
       pp=p->next[0];
       free(p);
@@ -1008,7 +1012,9 @@ compute_palette_from_median_cut(
       /* malloc check ok, using calloc */
       if (!(avg[i]=calloc(nPaletteEntries, sizeof(uint32_t)))) {
          for(i=0;i<3;i++) {
-            if (avg[i]) free (avg[i]);
+            if (avg[i]) {
+               free (avg[i]);
+            }
          }
          free(count);
          return 0;
