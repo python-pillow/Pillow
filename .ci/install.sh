@@ -25,7 +25,7 @@ pip install --upgrade pip
 PYTHONOPTIMIZE=0 pip install cffi
 pip install coverage
 pip install olefile
-pip install -U pytest
+pip install -U pytest!=5.4.2
 pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
