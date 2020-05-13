@@ -174,8 +174,10 @@ def assert_compare_images(a, b, max_average_diff, max_diff=255):
         average_diff = sum(i * num for i, num in enumerate(ch_hist)) / (
             a.size[0] * a.size[1]
         )
-        msg = "average pixel value difference {:.4f} > expected {:.4f} "
-        "for '{}' band".format(average_diff, max_average_diff, band)
+        msg = (
+            "average pixel value difference {:.4f} > expected {:.4f} "
+            "for '{}' band".format(average_diff, max_average_diff, band)
+        )
         assert max_average_diff >= average_diff, msg
 
         last_diff = [i for i, num in enumerate(ch_hist) if num > 0][-1]
