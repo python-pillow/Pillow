@@ -724,8 +724,9 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
         WebPData exif_data = {0};
 
         WebPMux* mux = WebPMuxCreate(&data, copy_data);
-        if (NULL == mux)
+        if (NULL == mux) {
             goto end;
+        }
 
         if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image))
         {
@@ -738,11 +739,13 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 
         vp8_status_code = WebPDecode(webp, size, &config);
 
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data))
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data)) {
             icc_profile = PyBytes_FromStringAndSize((const char*)icc_profile_data.bytes, icc_profile_data.size);
+        }
 
-        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data))
+        if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data)) {
             exif = PyBytes_FromStringAndSize((const char*)exif_data.bytes, exif_data.size);
+        }
 
         WebPDataClear(&image.bitstream);
         WebPMuxDelete(mux);
@@ -750,8 +753,9 @@ PyObject* WebPDecode_wrapper(PyObject* self, PyObject* args)
 #endif
     }
 
-    if (vp8_status_code != VP8_STATUS_OK)
+    if (vp8_status_code != VP8_STATUS_OK) {
         goto end;
+    }
 
     if (config.output.colorspace < MODE_YUV) {
         bytes = PyBytes_FromStringAndSize((char*)config.output.u.RGBA.rgba,
@@ -777,8 +781,9 @@ end:
     Py_XDECREF(icc_profile);
     Py_XDECREF(exif);
 
-    if (Py_None == ret)
+    if (Py_None == ret) {
         Py_RETURN_NONE;
+    }
 
     return ret;
 }
@@ -847,8 +852,9 @@ static int setup_module(PyObject* m) {
 #ifdef HAVE_WEBPANIM
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
-        PyType_Ready(&WebPAnimEncoder_Type) < 0)
+        PyType_Ready(&WebPAnimEncoder_Type) < 0) {
         return -1;
+    }
 #endif
     return 0;
 }
@@ -866,8 +872,9 @@ PyInit__webp(void) {
     };
 
     m = PyModule_Create(&module_def);
-    if (setup_module(m) < 0)
+    if (setup_module(m) < 0) {
         return NULL;
+    }
 
     return m;
 }

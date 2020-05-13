@@ -33,8 +33,9 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
         if (state->ystep < 0) {
             state->y = state->ysize-1;
             state->ystep = -1;
-        } else
+        } else {
             state->ystep = 1;
+        }
 
         state->state = 1;
 
@@ -44,15 +45,17 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
 
     for (;;) {
 
-        if (bytes < 1)
+        if (bytes < 1) {
             return ptr - buf;
+        }
 
         if (ptr[0] & 0x80) {
 
             /* Run (1 + pixelsize bytes) */
 
-            if (bytes < 1 + depth)
+            if (bytes < 1 + depth) {
                 break;
+            }
 
             n = depth * ((ptr[0] & 0x7f) + 1);
 
@@ -61,12 +64,13 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
                 return -1;
             }
 
-            if (depth == 1)
+            if (depth == 1) {
                 memset(state->buffer + state->x, ptr[1], n);
-            else {
+            } else {
                 int i;
-                for (i = 0; i < n; i += depth)
+                for (i = 0; i < n; i += depth) {
                     memcpy(state->buffer + state->x + i, ptr+1, depth);
+                }
             }
 
             ptr += 1 + depth;
@@ -77,8 +81,9 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state,
             /* Literal (1+n+1 bytes block) */
             n = depth * (ptr[0] + 1);
 
-            if (bytes < 1 + n)
+            if (bytes < 1 + n) {
                 break;
+            }
 
             if (state->x + n > state->bytes) {
                 state->errcode = IMAGING_CODEC_OVERRUN;

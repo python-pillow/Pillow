@@ -47,8 +47,9 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         if (state->ystep < 0) {
             state->y = state->ysize-1;
             state->ystep = -1;
-        } else
+        } else {
             state->ystep = 1;
+        }
 
         state->state = LINE;
 
@@ -62,8 +63,9 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
             /* Skip padding between lines */
 
-            if (bytes < rawstate->skip)
+            if (bytes < rawstate->skip) {
                 return ptr - buf;
+            }
 
             ptr += rawstate->skip;
             bytes -= rawstate->skip;
@@ -72,8 +74,9 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
         }
 
-        if (bytes < state->bytes)
+        if (bytes < state->bytes) {
             return ptr - buf;
+        }
 
         /* Unpack data */
         state->shuffle((UINT8*) im->image[state->y + state->yoff] +

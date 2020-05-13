@@ -350,8 +350,9 @@ unpackLI(UINT8* out, const UINT8* in, int pixels)
 {
     /* negative */
     int i;
-    for (i = 0; i < pixels; i++)
+    for (i = 0; i < pixels; i++) {
         out[i] = ~in[i];
+    }
 }
 
 static void
@@ -1115,8 +1116,9 @@ static void NAME(UINT8* out_, const UINT8* in, int pixels)\
 {\
     int i;\
     OUTTYPE* out = (OUTTYPE*) out_;\
-    for (i = 0; i < pixels; i++, in += sizeof(INTYPE))\
+    for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {\
         out[i] = (OUTTYPE) ((INTYPE) GET);\
+    }\
 }
 
 #define UNPACK(NAME, COPY, INTYPE, OUTTYPE)\
@@ -1521,13 +1523,15 @@ ImagingFindUnpacker(const char* mode, const char* rawmode, int* bits_out)
     int i;
 
     /* find a suitable pixel unpacker */
-    for (i = 0; unpackers[i].rawmode; i++)
+    for (i = 0; unpackers[i].rawmode; i++) {
         if (strcmp(unpackers[i].mode, mode) == 0 &&
             strcmp(unpackers[i].rawmode, rawmode) == 0) {
-            if (bits_out)
+            if (bits_out) {
                 *bits_out = unpackers[i].bits;
+            }
             return unpackers[i].unpack;
         }
+    }
 
     /* FIXME: configure a general unpacker based on the type codes... */
 

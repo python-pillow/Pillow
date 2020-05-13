@@ -48,12 +48,14 @@ emit(GIFENCODERSTATE *context, int byte)
         /* add current block to end of flush queue */
         if (context->block) {
             block = context->flush;
-            while (block && block->next)
+            while (block && block->next) {
                 block = block->next;
-            if (block)
+            }
+            if (block) {
                 block->next = context->block;
-            else
+            } else {
                 context->flush = context->block;
+            }
         }
 
         /* get a new block */
@@ -63,8 +65,9 @@ emit(GIFENCODERSTATE *context, int byte)
         } else {
             /* malloc check ok, small constant allocation */
             block = malloc(sizeof(GIFENCODERBLOCK));
-            if (!block)
+            if (!block) {
                 return 0;
+            }
         }
 
         block->size = 0;
@@ -154,14 +157,16 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         if (context->interlace) {
             context->interlace = 1;
             context->step = 8;
-        } else
+        } else {
             context->step = 1;
+        }
 
         context->last = -1;
 
         /* sanity check */
-        if (state->xsize <= 0 || state->ysize <= 0)
+        if (state->xsize <= 0 || state->ysize <= 0) {
             state->state = ENCODE_EOF;
+        }
 
     }
 
@@ -231,9 +236,9 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 this = state->buffer[state->x++];
 
-                if (this == context->last)
+                if (this == context->last) {
                     context->count++;
-                else {
+                } else {
                     EMIT_RUN(label1);
                     context->last = this;
                     context->count = 1;
@@ -263,12 +268,14 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 if (context->block) {
                     GIFENCODERBLOCK* block;
                     block = context->flush;
-                    while (block && block->next)
+                    while (block && block->next) {
                         block = block->next;
-                    if (block)
+                    }
+                    if (block) {
                         block->next = context->block;
-                    else
+                    } else {
                         context->flush = context->block;
+                    }
                     context->block = NULL;
                 }
 
@@ -287,8 +294,9 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                         if (block->size > 0) {
 
                             /* make sure it fits into the output buffer */
-                            if (bytes < block->size+1)
+                            if (bytes < block->size+1) {
                                 return ptr - buf;
+                            }
 
                             ptr[0] = block->size;
                             memcpy(ptr+1, block->data, block->size);
@@ -300,16 +308,18 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                         context->flush = block->next;
 
-                        if (context->free)
+                        if (context->free) {
                             free(context->free);
+                        }
                         context->free = block;
 
                     }
 
                     if (state->state == EXIT) {
                         /* this was the last block! */
-                        if (context->free)
+                        if (context->free) {
                             free(context->free);
+                        }
                         state->errcode = IMAGING_CODEC_END;
                         return ptr - buf;
                     }

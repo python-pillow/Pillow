@@ -27,14 +27,16 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[])
     int x, y;
 
     /* Assume there's enough data in the buffer */
-    if (!im)
+    if (!im) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     if (strcmp(mode, "L") == 0 && im->bands == 3) {
 
         imOut = ImagingNewDirty("L", im->xsize, im->ysize);
-        if (!imOut)
+        if (!imOut) {
             return NULL;
+        }
 
         for (y = 0; y < im->ysize; y++) {
             UINT8* in = (UINT8*) im->image[y];
@@ -50,8 +52,9 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[])
     } else if (strlen(mode) == 3 && im->bands == 3) {
 
         imOut = ImagingNewDirty(mode, im->xsize, im->ysize);
-        if (!imOut)
+        if (!imOut) {
             return NULL;
+        }
 
         for (y = 0; y < im->ysize; y++) {
             UINT8* in = (UINT8*) im->image[y];
@@ -67,8 +70,9 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[])
                 in += 4; out += 4;
             }
         }
-    } else
+    } else {
         return (Imaging) ImagingError_ModeError();
+    }
 
     return imOut;
 }

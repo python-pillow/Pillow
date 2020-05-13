@@ -52,8 +52,9 @@
             default:\
                 return -1;\
         }\
-    if (state->y < state->ysize)\
+    if (state->y < state->ysize) {\
         out = im->image8[state->y + state->yoff] + state->xoff;\
+    }\
 }
 
 
@@ -70,24 +71,25 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
 
     if (!state->state) {
 
-    /* Initialise state */
-    if (context->bits < 0 || context->bits > 12) {
-        state->errcode = IMAGING_CODEC_CONFIG;
-        return -1;
-    }
+        /* Initialise state */
+        if (context->bits < 0 || context->bits > 12) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
+        }
 
-    /* Clear code */
-    context->clear = 1 << context->bits;
+        /* Clear code */
+        context->clear = 1 << context->bits;
 
-    /* End code */
-    context->end = context->clear + 1;
+        /* End code */
+        context->end = context->clear + 1;
 
-    /* Interlace */
-    if (context->interlace) {
-        context->interlace = 1;
-        context->step = context->repeat = 8;
-    } else
-        context->step = 1;
+        /* Interlace */
+        if (context->interlace) {
+            context->interlace = 1;
+            context->step = context->repeat = 8;
+        } else {
+            context->step = 1;
+        }
 
         state->state = 1;
     }
@@ -142,11 +144,13 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                     /* New GIF block */
 
                     /* We don't start decoding unless we have a full block */
-                    if (bytes < 1)
+                    if (bytes < 1) {
                         return ptr - buffer;
+                    }
                     c = *ptr;
-                    if (bytes < c+1)
+                    if (bytes < c+1) {
                         return ptr - buffer;
+                    }
 
                     context->blocksize = c;
 
@@ -167,13 +171,15 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                expanded. */
 
             if (c == context->clear) {
-                if (state->state != 2)
+                if (state->state != 2) {
                     state->state = 1;
+                }
                 continue;
             }
 
-            if (c == context->end)
+            if (c == context->end) {
                 break;
+            }
 
             i = 1;
             p = &context->lastdata;

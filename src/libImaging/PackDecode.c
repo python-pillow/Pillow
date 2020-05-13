@@ -28,8 +28,9 @@ ImagingPackbitsDecode(Imaging im, ImagingCodecState state,
 
     for (;;) {
 
-        if (bytes < 1)
+        if (bytes < 1) {
             return ptr - buf;
+        }
 
         if (ptr[0] & 0x80) {
 
@@ -40,8 +41,9 @@ ImagingPackbitsDecode(Imaging im, ImagingCodecState state,
             }
 
             /* Run */
-            if (bytes < 2)
+            if (bytes < 2) {
                 return ptr - buf;
+            }
 
             for (n = 257 - ptr[0]; n > 0; n--) {
                 if (state->x >= state->bytes) {
@@ -58,8 +60,9 @@ ImagingPackbitsDecode(Imaging im, ImagingCodecState state,
             /* Literal */
             n = ptr[0]+2;
 
-            if (bytes < n)
+            if (bytes < n) {
                 return ptr - buf;
+            }
 
             for (i = 1; i < n; i++) {
                 if (state->x >= state->bytes) {

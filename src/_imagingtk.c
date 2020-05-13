@@ -38,12 +38,13 @@ _tkinit(PyObject* self, PyObject* args)
 
     PyObject* arg;
     int is_interp;
-    if (!PyArg_ParseTuple(args, "Oi", &arg, &is_interp))
+    if (!PyArg_ParseTuple(args, "Oi", &arg, &is_interp)) {
         return NULL;
+    }
 
-    if (is_interp)
+    if (is_interp) {
         interp = (Tcl_Interp*)PyLong_AsVoidPtr(arg);
-    else {
+    } else {
         TkappObject* app;
         /* Do it the hard way.  This will break if the TkappObject
         layout changes */

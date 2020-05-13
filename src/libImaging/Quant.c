@@ -157,7 +157,9 @@ create_pixel_hash(Pixel *pixelData,uint32_t nPixels)
 
    /* malloc check ok, small constant allocation */
    d=malloc(sizeof(PixelHashData));
-   if (!d) return NULL;
+   if (!d) {
+       return NULL;
+   }
    hash=hashtable_new(pixel_hash,pixel_cmp);
    hashtable_set_user_data(hash,d);
    d->scale=0;
@@ -197,7 +199,9 @@ static void
 destroy_pixel_hash(HashTable *hash)
 {
    PixelHashData *d=(PixelHashData *)hashtable_get_user_data(hash);
-   if (d) free(d);
+   if (d) {
+       free(d);
+   }
    hashtable_free(hash);
 }
 
@@ -214,7 +218,9 @@ static int
 compute_box_volume(BoxNode *b)
 {
    unsigned char rl,rh,gl,gh,bl,bh;
-   if (b->volume>=0) return b->volume;
+   if (b->volume>=0) {
+      return b->volume;
+   }
    if (!b->head[0]) {
       b->volume=0;
    } else {
@@ -242,7 +248,9 @@ hash_to_list(const HashTable *h, const Pixel pixel, const uint32_t count, void *
 
    /* malloc check ok, small constant allocation */
    p=malloc(sizeof(PixelList));
-   if (!p) return;
+   if (!p) {
+      return;
+   }
 
    p->flag=0;
    p->p=q;
@@ -250,7 +258,9 @@ hash_to_list(const HashTable *h, const Pixel pixel, const uint32_t count, void *
    for (i=0;i<3;i++) {
       p->next[i]=pl[i];
       p->prev[i]=NULL;
-      if (pl[i]) pl[i]->prev[i]=p;
+      if (pl[i]) {
+         pl[i]->prev[i]=p;
+      }
       pl[i]=p;
    }
 }
@@ -268,7 +278,9 @@ mergesort_pixels(PixelList *head, int i)
    }
    for (c=t=head;c&&t;c=c->next[i],t=(t->next[i])?t->next[i]->next[i]:NULL);
    if (c) {
-      if (c->prev[i]) c->prev[i]->next[i]=NULL;
+      if (c->prev[i]) {
+         c->prev[i]->next[i]=NULL;
+      }
       c->prev[i]=NULL;
    }
    a=mergesort_pixels(head,i);
@@ -285,9 +297,13 @@ mergesort_pixels(PixelList *head, int i)
       }
       c->prev[i]=p;
       c->next[i]=NULL;
-      if (p) p->next[i]=c;
+      if (p) {
+         p->next[i]=c;
+      }
       p=c;
-      if (!head) head=c;
+      if (!head) {
+         head=c;
+      }
    }
    if (a) {
       c->next[i]=a;
@@ -442,17 +458,29 @@ splitlists(PixelList *h[3],
       for (c=h[i];c;c=n) {
          n=c->next[i];
          if (c->flag) {    /* move pixel to right  list*/
-            if (r) r->next[i]=c; else nh[1][i]=c;
+            if (r) {
+               r->next[i]=c;
+            } else {
+               nh[1][i]=c;
+            }
             c->prev[i]=r;
             r=c;
          } else {          /* move pixel to left list */
-            if (l) l->next[i]=c; else nh[0][i]=c;
+            if (l) {
+               l->next[i]=c;
+            } else {
+               nh[0][i]=c;
+            }
             c->prev[i]=l;
             l=c;
          }
       }
-      if (l) l->next[i]=NULL;
-      if (r) r->next[i]=NULL;
+      if (l) {
+         l->next[i]=NULL;
+      }
+      if (r) {
+         r->next[i]=NULL;
+      }
       nt[0][i]=l;
       nt[1][i]=r;
    }
@@ -661,8 +689,12 @@ static void
 free_box_tree(BoxNode *n)
 {
    PixelList *p,*pp;
-   if (n->l) free_box_tree(n->l);
-   if (n->r) free_box_tree(n->r);
+   if (n->l) {
+      free_box_tree(n->l);
+   }
+   if (n->r) {
+      free_box_tree(n->r);
+   }
    for (p=n->head[0];p;p=pp) {
       pp=p->next[0];
       free(p);
@@ -720,7 +752,9 @@ annotate_hash_table(BoxNode *n,HashTable *h,uint32_t *box)
          return 0;
       }
    }
-   if (n->head[0]) (*box)++;
+   if (n->head[0]) {
+      (*box)++;
+   }
    return 1;
 }
 
@@ -756,7 +790,9 @@ resort_distance_tables(uint32_t *avgDist,
          for (k=j;k&&(*(skRow[k-1])>*(skRow[k]));k--) {
             skRow[k]=skRow[k-1];
          }
-         if (k!=j) skRow[k]=skElt;
+         if (k!=j) {
+            skRow[k]=skElt;
+         }
       }
    }
    return 1;
@@ -976,7 +1012,9 @@ compute_palette_from_median_cut(
       /* malloc check ok, using calloc */
       if (!(avg[i]=calloc(nPaletteEntries, sizeof(uint32_t)))) {
          for(i=0;i<3;i++) {
-            if (avg[i]) free (avg[i]);
+            if (avg[i]) {
+               free (avg[i]);
+            }
          }
          free(count);
          return 0;
@@ -987,7 +1025,9 @@ compute_palette_from_median_cut(
       if (!(i%100)) { printf ("%05d\r",i); fflush(stdout); }
       if (checkContained(root,pixelData+i)>1) {
          printf ("pixel in two boxes\n");
-         for(i=0;i<3;i++) free (avg[i]);
+         for(i=0;i<3;i++) {
+            free (avg[i]);
+         }
          free(count);
          return 0;
       }
@@ -996,7 +1036,9 @@ compute_palette_from_median_cut(
 #ifndef NO_OUTPUT
          printf ("pixel lookup failed\n");
 #endif
-         for(i=0;i<3;i++) free (avg[i]);
+         for(i=0;i<3;i++) {
+            free (avg[i]);
+         }
          free(count);
          return 0;
       }
@@ -1004,7 +1046,9 @@ compute_palette_from_median_cut(
 #ifndef NO_OUTPUT
          printf ("panic - paletteEntry>=nPaletteEntries (%d>=%d)\n",(int)paletteEntry,(int)nPaletteEntries);
 #endif
-         for(i=0;i<3;i++) free (avg[i]);
+         for(i=0;i<3;i++) {
+            free (avg[i]);
+         }
          free(count);
          return 0;
       }
@@ -1016,7 +1060,9 @@ compute_palette_from_median_cut(
    /* malloc check ok, using calloc */
    p=calloc(nPaletteEntries, sizeof(Pixel));
    if (!p) {
-      for(i=0;i<3;i++) free (avg[i]);
+      for(i=0;i<3;i++) {
+         free (avg[i]);
+      }
       free(count);
       return 0;
    }
@@ -1026,7 +1072,9 @@ compute_palette_from_median_cut(
       p[i].c.b=(int)(.5+(double)avg[2][i]/(double)count[i]);
    }
    *palette=p;
-   for(i=0;i<3;i++) free (avg[i]);
+   for(i=0;i<3;i++) {
+      free (avg[i]);
+   }
    free(count);
    return 1;
 }
@@ -1156,24 +1204,46 @@ k_means(Pixel *pixelData,
 #ifndef NO_OUTPUT
       printf (".(%d)",changes);fflush(stdout);
 #endif
-      if (changes<=threshold) break;
+      if (changes<=threshold) {
+         break;
+      }
    }
 #ifndef NO_OUTPUT
    printf("]\n");
 #endif
-   if (avgDistSortKey) free(avgDistSortKey);
-   if (avgDist) free(avgDist);
-   for(i=0;i<3;i++) if (avg[i]) free (avg[i]);
-   if (count) free(count);
+   if (avgDistSortKey) {
+      free(avgDistSortKey);
+   }
+   if (avgDist) {
+      free(avgDist);
+   }
+   for(i=0;i<3;i++) {
+      if (avg[i]) {
+         free (avg[i]);
+      }
+   }
+   if (count) {
+      free(count);
+   }
    return 1;
 
 error_3:
-   if (avgDistSortKey) free(avgDistSortKey);
+   if (avgDistSortKey) {
+      free(avgDistSortKey);
+   }
 error_2:
-   if (avgDist) free(avgDist);
+   if (avgDist) {
+      free(avgDist);
+   }
 error_1:
-   for(i=0;i<3;i++) if (avg[i]) free (avg[i]);
-   if (count) free(count);
+   for(i=0;i<3;i++) {
+      if (avg[i]) {
+         free (avg[i]);
+      }
+   }
+   if (count) {
+      free(count);
+   }
    return 0;
 }
 
@@ -1345,7 +1415,9 @@ quantize(Pixel *pixelData,
 #ifndef NO_OUTPUT
    printf ("k means...\n"); fflush(stdout); timer=clock();
 #endif
-   if (kmeans) k_means(pixelData,nPixels,p,nPaletteEntries,qp,kmeans-1);
+   if (kmeans) {
+      k_means(pixelData,nPixels,p,nPaletteEntries,qp,kmeans-1);
+   }
 #ifndef NO_OUTPUT
    printf ("done (%f)\n",(clock()-timer)/(double)CLOCKS_PER_SEC);
 #endif
@@ -1357,8 +1429,12 @@ quantize(Pixel *pixelData,
 #ifndef NO_OUTPUT
    printf ("cleanup..."); fflush(stdout); timer=clock();
 #endif
-   if (avgDist) free(avgDist);
-   if (avgDistSortKey) free(avgDistSortKey);
+   if (avgDist) {
+      free(avgDist);
+   }
+   if (avgDistSortKey) {
+      free(avgDistSortKey);
+   }
    destroy_pixel_hash(h);
 #ifndef NO_OUTPUT
    printf ("done (%f)\n",(clock()-timer)/(double)CLOCKS_PER_SEC);
@@ -1367,15 +1443,25 @@ quantize(Pixel *pixelData,
    return 1;
 
 error_7:
-   if (avgDistSortKey) free(avgDistSortKey);
+   if (avgDistSortKey) {
+      free(avgDistSortKey);
+   }
 error_6:
-   if (avgDist) free(avgDist);
+   if (avgDist) {
+      free(avgDist);
+   }
 error_5:
-   if (qp) free(qp);
+   if (qp) {
+      free(qp);
+   }
 error_4:
-   if (p) free(p);
+   if (p) {
+      free(p);
+   }
 error_3:
-   if (root) free_box_tree(root);
+   if (root) {
+      free_box_tree(root);
+   }
 error_1:
    destroy_pixel_hash(h);
 error_0:
@@ -1430,7 +1516,9 @@ quantize2(Pixel *pixelData,
 
    /* malloc check ok, using calloc */
    p=calloc(nQuantPixels, sizeof(Pixel));
-   if (!p) return 0;
+   if (!p) {
+      return 0;
+   }
    mean[0]=mean[1]=mean[2]=0;
    h=hashtable_new(unshifted_pixel_hash,unshifted_pixel_cmp);
    for (i=0;i<nPixels;i++) {
@@ -1474,7 +1562,9 @@ quantize2(Pixel *pixelData,
    if (!map_image_pixels(pixelData,nPixels,p,nQuantPixels,avgDist,avgDistSortKey,qp)) {
       goto error_4;
    }
-   if (kmeans) k_means(pixelData,nPixels,p,nQuantPixels,qp,kmeans-1);
+   if (kmeans) {
+      k_means(pixelData,nPixels,p,nQuantPixels,qp,kmeans-1);
+   }
 
    *paletteLength=nQuantPixels;
    *palette=p;
@@ -1509,28 +1599,33 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
     int withAlpha = 0;
     ImagingSectionCookie cookie;
 
-    if (!im)
+    if (!im) {
         return ImagingError_ModeError();
-    if (colors < 1 || colors > 256)
+    }
+    if (colors < 1 || colors > 256) {
         /* FIXME: for colors > 256, consider returning an RGB image
            instead (see @PIL205) */
         return (Imaging) ImagingError_ValueError("bad number of colors");
+    }
 
     if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
-        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0)
+        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") !=0) {
         return ImagingError_ModeError();
+    }
 
     /* only octree and imagequant supports RGBA */
-    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3)
+    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3) {
        return ImagingError_ModeError();
+    }
 
     if (im->xsize > INT_MAX / im->ysize) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */
     p = calloc(im->xsize * im->ysize, sizeof(Pixel));
-    if (!p)
+    if (!p) {
         return ImagingError_MemoryError();
+    }
 
     /* collect statistics */
 
@@ -1543,18 +1638,19 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
 
-        for (i = y = 0; y < im->ysize; y++)
+        for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].c.r = p[i].c.g = p[i].c.b = im->image8[y][x];
                 p[i].c.a = 255;
             }
+        }
 
     } else if (!strcmp(im->mode, "P")) {
         /* palette */
 
         pp = im->palette->palette;
 
-        for (i = y = 0; y < im->ysize; y++)
+        for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 v = im->image8[y][x];
                 p[i].c.r = pp[v*4+0];
@@ -1562,13 +1658,16 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
                 p[i].c.b = pp[v*4+2];
                 p[i].c.a = pp[v*4+3];
             }
+        }
 
     } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
         /* true colour */
 
-        for (i = y = 0; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++, i++)
+        for (i = y = 0; y < im->ysize; y++) {
+            for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
+            }
+        }
 
     } else {
         free(p);
@@ -1647,9 +1746,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
         imOut = ImagingNewDirty("P", im->xsize, im->ysize);
         ImagingSectionEnter(&cookie);
 
-        for (i = y = 0; y < im->ysize; y++)
-            for (x = 0; x < im->xsize; x++)
+        for (i = y = 0; y < im->ysize; y++) {
+            for (x = 0; x < im->xsize; x++) {
                 imOut->image8[y][x] = (unsigned char) newData[i++];
+            }
+        }
 
         free(newData);
 
