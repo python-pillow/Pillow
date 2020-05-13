@@ -40,9 +40,9 @@ libs = {
         "dir": "tiff-4.1.0",
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.10.1.tar.gz",
-        "dir": "freetype-2.10.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.2.tar.gz",  # noqa: E501
+        "filename": "freetype-2.10.2.tar.gz",
+        "dir": "freetype-2.10.2",
     },
     "lcms-2.7": {
         "url": SF_MIRROR + "/project/lcms/lcms/2.7/lcms2-2.7.zip",
