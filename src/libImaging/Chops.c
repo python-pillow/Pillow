@@ -19,10 +19,10 @@
 
 #include "Imaging.h"
 
-#define CHOP(operation, mode)\
+#define CHOP(operation)\
     int x, y;\
     Imaging imOut;\
-    imOut = create(imIn1, imIn2, mode);\
+    imOut = create(imIn1, imIn2, NULL);\
     if (!imOut) {\
         return NULL;\
     }\
@@ -83,43 +83,43 @@ create(Imaging im1, Imaging im2, char* mode)
 Imaging
 ImagingChopLighter(Imaging imIn1, Imaging imIn2)
 {
-    CHOP((in1[x] > in2[x]) ? in1[x] : in2[x], NULL);
+    CHOP((in1[x] > in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
 ImagingChopDarker(Imaging imIn1, Imaging imIn2)
 {
-    CHOP((in1[x] < in2[x]) ? in1[x] : in2[x], NULL);
+    CHOP((in1[x] < in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
 ImagingChopDifference(Imaging imIn1, Imaging imIn2)
 {
-    CHOP(abs((int) in1[x] - (int) in2[x]), NULL);
+    CHOP(abs((int) in1[x] - (int) in2[x]));
 }
 
 Imaging
 ImagingChopMultiply(Imaging imIn1, Imaging imIn2)
 {
-    CHOP((int) in1[x] * (int) in2[x] / 255, NULL);
+    CHOP((int) in1[x] * (int) in2[x] / 255);
 }
 
 Imaging
 ImagingChopScreen(Imaging imIn1, Imaging imIn2)
 {
-    CHOP(255 - ((int) (255 - in1[x]) * (int) (255 - in2[x])) / 255, NULL);
+    CHOP(255 - ((int) (255 - in1[x]) * (int) (255 - in2[x])) / 255);
 }
 
 Imaging
 ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset)
 {
-    CHOP(((int) in1[x] + (int) in2[x]) / scale + offset, NULL);
+    CHOP(((int) in1[x] + (int) in2[x]) / scale + offset);
 }
 
 Imaging
 ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset)
 {
-    CHOP(((int) in1[x] - (int) in2[x]) / scale + offset, NULL);
+    CHOP(((int) in1[x] - (int) in2[x]) / scale + offset);
 }
 
 Imaging
