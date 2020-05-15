@@ -2277,7 +2277,9 @@ class Image:
         if x / y >= aspect:
             x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
         else:
-            y = round_aspect(x / aspect, key=lambda n: abs(aspect - x / n))
+            y = round_aspect(
+                x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
+            )
         size = (x, y)
 
         box = None
