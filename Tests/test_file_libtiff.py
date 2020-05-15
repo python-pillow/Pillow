@@ -448,6 +448,14 @@ class TestFileLibTiff(LibTiffTestCase):
         assert size_compressed > size_jpeg
         assert size_jpeg > size_jpeg_30
 
+    def test_tiff_jpeg_compression(self, tmp_path):
+        im = hopper("RGB")
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_jpeg")
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["compression"] == "jpeg"
+
     def test_quality(self, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")

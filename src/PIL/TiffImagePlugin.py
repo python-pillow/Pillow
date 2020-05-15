@@ -1427,6 +1427,9 @@ def _save(im, fp, filename):
     compression = im.encoderinfo.get("compression", im.info.get("compression"))
     if compression is None:
         compression = "raw"
+    elif compression == "tiff_jpeg":
+        # OJPEG is obsolete, so use new-style JPEG compression instead
+        compression = "jpeg"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
