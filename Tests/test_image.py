@@ -65,6 +65,8 @@ class TestImage:
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
         assert im.size == (100, 100)
+        assert not im.is_animated
+        assert im.n_frames == 1
 
         im = Image.new("RGB", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "

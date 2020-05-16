@@ -538,6 +538,10 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+        if "is_animated" not in dir(self):
+            self.is_animated = False
+        if "n_frames" not in dir(self):
+            self.n_frames = 1
 
     @property
     def width(self):
