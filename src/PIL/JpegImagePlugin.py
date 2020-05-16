@@ -593,9 +593,9 @@ def convert_dict_qtables(qtables):
 
 
 def get_sampling(im):
-    # There's no subsampling when image have only 1 layer
+    # There's no subsampling when images have only 1 layer
     # (grayscale images) or when they are CMYK (4 layers),
-    # so set subsampling to default value.
+    # so set subsampling to the default value.
     #
     # NOTE: currently Pillow can't encode JPEG to YCCK format.
     # If YCCK support is added in the future, subsampling code will have
