@@ -17,8 +17,8 @@ itself. Such plug-ins usually have names like
 Pillow decodes files in 2 stages:
 
 1. It loops over the available image plugins in the loaded order, and
-   calls the plugin's ``accept`` function with the first 16 bytes of
-   the file. If the ``accept`` function returns true, the plugin's
+   calls the plugin's ``_accept`` function with the first 16 bytes of
+   the file. If the ``_accept`` function returns true, the plugin's
    ``_open`` method is called to set up the image metadata and image
    tiles. The ``_open`` method is not for decoding the actual image
    data.
