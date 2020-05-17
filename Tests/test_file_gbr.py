@@ -17,8 +17,9 @@ def test_gbr_file():
             assert_image_equal(target, im)
 
 
-def test_multiples_operation():
+def test_multiple_load_operations():
     with Image.open("Tests/images/gbr.gbr") as im:
-        rect = (0, 0, 10, 10)
-        im.crop(rect)
-        im.crop(rect)
+        im.load()
+        im.load()
+        with Image.open("Tests/images/gbr.png") as target:
+            assert_image_equal(target, im)
