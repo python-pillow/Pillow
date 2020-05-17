@@ -17,8 +17,8 @@ itself. Such plug-ins usually have names like
 Pillow decodes files in 2 stages:
 
 1. It loops over the available image plugins in the loaded order, and
-   calls the plugin's ``accept`` function with the first 16 bytes of
-   the file. If the ``accept`` function returns true, the plugin's
+   calls the plugin's ``_accept`` function with the first 16 bytes of
+   the file. If the ``_accept`` function returns true, the plugin's
    ``_open`` method is called to set up the image metadata and image
    tiles. The ``_open`` method is not for decoding the actual image
    data.
@@ -53,6 +53,11 @@ true color.
 
     from PIL import Image, ImageFile
 
+
+    def _accept(prefix):
+        return prefix[:4] == b"SPAM"
+
+
     class SpamImageFile(ImageFile.ImageFile):
 
         format = "SPAM"
@@ -60,12 +65,7 @@ true color.
 
         def _open(self):
 
-            # check header
-            header = self.fp.read(128)
-            if header[:4] != b"SPAM":
-                raise SyntaxError("not a SPAM file")
-
-            header = header.split()
+            header = self.fp.read(128).split()
 
             # size in pixels (width, height)
             self._size = int(header[1]), int(header[2])
@@ -86,7 +86,7 @@ true color.
                 ("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))
             ]
 
-    Image.register_open(SpamImageFile.format, SpamImageFile)
+    Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
 
     Image.register_extension(SpamImageFile.format, ".spam")
     Image.register_extension(SpamImageFile.format, ".spa") # dos version
