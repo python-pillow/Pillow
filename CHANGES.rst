@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Fix repeatedly loading .gbr #4620
+  [ElinksFr, radarhere]
+
 - JPEG: Truncate icclist instead of setting to None #4613
   [homm]
 
