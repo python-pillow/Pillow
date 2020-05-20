@@ -9,13 +9,14 @@ this class store bitmap fonts, and are used with the
 :py:meth:`PIL.ImageDraw.Draw.text` method.
 
 PIL uses its own font file format to store bitmap fonts. You can use the
-:command:`pilfont` utility to convert BDF and PCF font descriptors (X window
-font formats) to this format.
+:command:`pilfont` utility from
+`pillow-scripts <https://pypi.org/project/pillow-scripts/>`_
+to convert BDF and PCF font descriptors (X window font formats) to this format.
 
 Starting with version 1.1.4, PIL can be configured to support TrueType and
 OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
-the imToolkit package
+the imToolkit package.
 
 Example
 -------
