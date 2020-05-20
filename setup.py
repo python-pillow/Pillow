@@ -731,9 +731,9 @@ class pil_build_ext(build_ext):
             defs.append(("WORDS_BIGENDIAN", None))
 
         if (
-            sys.platform == "win32" and
-            sys.version_info < (3, 9) and
-            not (PLATFORM_PYPY or PLATFORM_MINGW)
+            sys.platform == "win32"
+            and sys.version_info < (3, 9)
+            and not (PLATFORM_PYPY or PLATFORM_MINGW)
         ):
             defs.append(("PILLOW_VERSION", '"\\"%s\\""' % PILLOW_VERSION))
         else:
