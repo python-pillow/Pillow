@@ -288,6 +288,12 @@ def is_pypy():
     return hasattr(sys, "pypy_translation_info")
 
 
+def is_mingw():
+    import sysconfig
+
+    return sysconfig.get_platform() == "mingw"
+
+
 if sys.platform == "win32":
     IMCONVERT = os.environ.get("MAGICK_HOME", "")
     if IMCONVERT:
