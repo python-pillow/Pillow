@@ -181,7 +181,7 @@ int ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
 }
 
 
-int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
+int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT8 plane, UINT32* buffer) {
     uint16 photometric = 0;
 
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
@@ -228,7 +228,7 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
         return 0;
     }
 
-    if (TIFFReadTile(tiff, (tdata_t)buffer, col, row, 0, 0) == -1) {
+    if (TIFFReadTile(tiff, (tdata_t)buffer, col, row, 0, plane) == -1) {
         TRACE(("Decode Error, Tile at %dx%d\n", col, row));
         return -1;
     }
@@ -238,7 +238,7 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
     return 0;
 }
 
-int ReadStrip(TIFF* tiff, UINT32 row, UINT32* buffer) {
+int ReadStrip(TIFF* tiff, UINT32 row, UINT8 plane, UINT32* buffer) {
     uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
 
@@ -259,6 +259,8 @@ int ReadStrip(TIFF* tiff, UINT32 row, UINT32* buffer) {
         if (TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg)) {
             TRACE(("Initialized RGBAImage\n"));
 
+            // Using TIFFRGBAImageGet instead of TIFFReadRGBAStrip
+            // just to get strip in TOP_LEFT orientation
             img.req_orientation = ORIENTATION_TOPLEFT;
             img.row_offset = row;
             img.col_offset = 0;
@@ -281,7 +283,7 @@ int ReadStrip(TIFF* tiff, UINT32 row, UINT32* buffer) {
         return 0;
     }
 
-    if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, row, 0), (tdata_t)buffer, -1) == -1) {
+    if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, row, plane), (tdata_t)buffer, -1) == -1) {
         TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, row, 0)));
         return -1;
     }
@@ -294,6 +296,10 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     char *filename = "tempfile.tif";
     char *mode = "r";
     TIFF *tiff;
+    uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
+    UINT8 planarconfig;
+    UINT8 planes = 1;
+    ImagingShuffler unpackers[4];
 
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
@@ -350,8 +356,38 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         rv = TIFFSetSubDirectory(tiff, ifdoffset);
         if (!rv){
             TRACE(("error in TIFFSetSubDirectory"));
+            state->errcode = IMAGING_CODEC_BROKEN;
+            TIFFClose(tiff);
             return -1;
         }
+    }
+
+    TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
+    TIFFGetFieldDefaulted(tiff, TIFFTAG_PLANARCONFIG, &planarconfig);
+    // YCbCr data is read as RGB by libtiff and we don't need to worry about planar storage in that case
+    // if number of bands is 1, there is no difference with contig case
+    if (planarconfig == PLANARCONFIG_SEPARATE && im->bands > 1 && photometric != PHOTOMETRIC_YCBCR) {
+        uint16 bps = 8;
+
+        TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bps);
+        if (bps != 8 && bps != 16) {
+            TRACE(("Invalid value for bits per sample: %d\n", bps));
+            state->errcode = IMAGING_CODEC_BROKEN;
+            TIFFClose(tiff);
+            return -1;
+        }
+
+        planes = im->bands;
+
+        // We'll pick appropriate set of unpackers depending on planar_configuration
+        // It does not matter if data is RGB(A), CMYK or LUV really,
+        // we just copy it plane by plane
+        unpackers[0] = ImagingFindUnpacker("RGBA", bps == 16 ? "R;16N" : "R", NULL);
+        unpackers[1] = ImagingFindUnpacker("RGBA", bps == 16 ? "G;16N" : "G", NULL);
+        unpackers[2] = ImagingFindUnpacker("RGBA", bps == 16 ? "B;16N" : "B", NULL);
+        unpackers[3] = ImagingFindUnpacker("RGBA", bps == 16 ? "A;16N" : "A", NULL);
+    } else {
+        unpackers[0] = state->shuffle;
     }
 
     if (TIFFIsTiled(tiff)) {
@@ -370,7 +406,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         }
 
         // We could use TIFFTileSize, but for YCbCr data it returns subsampled data size
-        row_byte_size = (tile_width * state->bits + 7) / 8;
+        row_byte_size = (tile_width * state->bits / planes + 7) / 8;
 
         /* overflow check for realloc */
         if (INT_MAX / row_byte_size < tile_length) {
@@ -378,11 +414,11 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
             TIFFClose(tiff);
             return -1;
         }
-        
+
         state->bytes = row_byte_size * tile_length;
 
         if (TIFFTileSize(tiff) > state->bytes) {
-            // If the strip size as expected by LibTiff isn't what we're expecting, abort.
+            // If the tile size as expected by LibTiff isn't what we're expecting, abort.
             state->errcode = IMAGING_CODEC_MEMORY;
             TIFFClose(tiff);
             return -1;
@@ -402,29 +438,33 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         TRACE(("TIFFTileSize: %d\n", state->bytes));
 
         for (y = state->yoff; y < state->ysize; y += tile_length) {
-            for (x = state->xoff; x < state->xsize; x += tile_width) {
-                if (ReadTile(tiff, x, y, (UINT32*) state->buffer) == -1) {
-                    TRACE(("Decode Error, Tile at %dx%d\n", x, y));
-                    state->errcode = IMAGING_CODEC_BROKEN;
-                    TIFFClose(tiff);
-                    return -1;
-                }
+            UINT8 plane;
+            for (plane = 0; plane < planes; plane++) {
+                ImagingShuffler shuffler = unpackers[plane];
+                for (x = state->xoff; x < state->xsize; x += tile_width) {
+                    if (ReadTile(tiff, x, y, plane, (UINT32*) state->buffer) == -1) {
+                        TRACE(("Decode Error, Tile at %dx%d\n", x, y));
+                        state->errcode = IMAGING_CODEC_BROKEN;
+                        TIFFClose(tiff);
+                        return -1;
+                    }
 
-                TRACE(("Read tile at %dx%d; \n\n", x, y));
+                    TRACE(("Read tile at %dx%d; \n\n", x, y));
 
-                current_tile_width = min((INT32) tile_width, state->xsize - x);
+                    current_tile_width = min((INT32) tile_width, state->xsize - x);
 
-                // iterate over each line in the tile and stuff data into image
-                for (tile_y = 0; tile_y < min((INT32) tile_length, state->ysize - y); tile_y++) {
-                    TRACE(("Writing tile data at %dx%d using tile_width: %d; \n", tile_y + y, x, current_tile_width));
+                    // iterate over each line in the tile and stuff data into image
+                    for (tile_y = 0; tile_y < min((INT32) tile_length, state->ysize - y); tile_y++) {
+                        TRACE(("Writing tile data at %dx%d using tile_width: %d; \n", tile_y + y, x, current_tile_width));
 
-                    // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
-                    // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+                        // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
+                        // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
-                    state->shuffle((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
-                       state->buffer + tile_y * row_byte_size,
-                       current_tile_width
-                    );
+                        shuffler((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
+                           state->buffer + tile_y * row_byte_size,
+                           current_tile_width
+                        );
+                    }
                 }
             }
         }
@@ -441,7 +481,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         TRACE(("RowsPerStrip: %u \n", rows_per_strip));
 
         // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
-        row_byte_size = (state->xsize * state->bits + 7) / 8;
+        row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
 
         /* overflow check for realloc */
         if (INT_MAX / row_byte_size < rows_per_strip) {
@@ -476,26 +516,55 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         state->buffer = new_data;
 
         for (; state->y < state->ysize; state->y += rows_per_strip) {
-            if (ReadStrip(tiff, state->y, (UINT32 *)state->buffer) == -1) {
-                TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
-                state->errcode = IMAGING_CODEC_BROKEN;
-                TIFFClose(tiff);
-                return -1;
-            }
+            UINT8 plane;
+            for (plane = 0; plane < planes; plane++) {
+                ImagingShuffler shuffler = unpackers[plane];
+                if (ReadStrip(tiff, state->y, plane, (UINT32 *)state->buffer) == -1) {
+                    TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
+                    state->errcode = IMAGING_CODEC_BROKEN;
+                    TIFFClose(tiff);
+                    return -1;
+                }
 
-            TRACE(("Decoded strip for row %d \n", state->y));
+                TRACE(("Decoded strip for row %d \n", state->y));
 
-            // iterate over each row in the strip and stuff data into image
-            for (strip_row = 0; strip_row < min((INT32) rows_per_strip, state->ysize - state->y); strip_row++) {
+                // iterate over each row in the strip and stuff data into image
+                for (strip_row = 0; strip_row < min((INT32) rows_per_strip, state->ysize - state->y); strip_row++) {
                 TRACE(("Writing data into line %d ; \n", state->y + strip_row));
 
-                // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
-                // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+                    // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
+                    // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
-                state->shuffle((UINT8*) im->image[state->y + state->yoff + strip_row] +
-                               state->xoff * im->pixelsize,
-                               state->buffer + strip_row * row_byte_size,
-                               state->xsize);
+                    shuffler((UINT8*) im->image[state->y + state->yoff + strip_row] +
+                                   state->xoff * im->pixelsize,
+                                   state->buffer + strip_row * row_byte_size,
+                                   state->xsize);
+                }
+            }
+        }
+    }
+
+
+    // Check if raw mode was RGBa and it was stored on separate planes
+    // so we have to convert it to RGBA
+    if (planes > 3 && strcmp(im->mode, "RGBA") == 0) {
+        uint16 extrasamples;
+        uint16* sampleinfo;
+        ImagingShuffler shuffle;
+        INT32 y;
+
+        TIFFGetFieldDefaulted(tiff, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo);
+
+        if (extrasamples >= 1 &&
+            (sampleinfo[0] == EXTRASAMPLE_UNSPECIFIED || sampleinfo[0] == EXTRASAMPLE_ASSOCALPHA)
+        ) {
+            shuffle = ImagingFindUnpacker("RGBA", "RGBa", NULL);
+
+            for (y = state->yoff; y < state->ysize; y++) {
+                UINT8* ptr = (UINT8*) im->image[y + state->yoff] +
+                   state->xoff * im->pixelsize;
+
+                shuffle(ptr, ptr, state->xsize);
             }
         }
     }
