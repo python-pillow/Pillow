@@ -432,6 +432,7 @@ jobs:
               ${{ matrix.package }}-lcms2 \
               ${{ matrix.package }}-libwebp \
               ${{ matrix.package }}-libjpeg-turbo \
+              ${{ matrix.package }}-openjpeg2 \
               ${{ matrix.package }}-libimagequant \
               ${{ matrix.package }}-libraqm \
               ${{ matrix.package }}-ghostscript \
@@ -444,8 +445,7 @@ jobs:
       - name: Build Pillow
         run: |
           # libtiff is unable to open files
-          # OpenJPEG fails due to link error (#2848)
-          python3 setup.py build_ext --disable-tiff --disable-jpeg2000 install
+          python3 setup.py build_ext --disable-tiff install
 
       - name: Test Pillow
         run: |
