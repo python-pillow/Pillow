@@ -1363,6 +1363,94 @@ band3I(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+band016B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 0 only, big endian */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[0];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band116B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 1 only, big endian */
+    for (i = 0; i < pixels; i++) {
+        out[1] = in[0];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band216B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 2 only, big endian */
+    for (i = 0; i < pixels; i++) {
+        out[2] = in[0];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band316B(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 3 only, big endian */
+    for (i = 0; i < pixels; i++) {
+        out[3] = in[0];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band016L(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 0 only, little endian */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[1];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band116L(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 1 only, little endian */
+    for (i = 0; i < pixels; i++) {
+        out[1] = in[1];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band216L(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 2 only, little endian */
+    for (i = 0; i < pixels; i++) {
+        out[2] = in[1];
+        out += 4; in += 2;
+    }
+}
+
+static void
+band316L(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* band 3 only, little endian */
+    for (i = 0; i < pixels; i++) {
+        out[3] = in[1];
+        out += 4; in += 2;
+    }
+}
+
 static struct {
     const char *mode;
     const char *rawmode;
@@ -1448,6 +1536,12 @@ static struct {
     {"RGB", "R", 8, band0},
     {"RGB", "G", 8, band1},
     {"RGB", "B", 8, band2},
+    {"RGB", "R;16L", 16, band016L},
+    {"RGB", "G;16L", 16, band116L},
+    {"RGB", "B;16L", 16, band216L},
+    {"RGB", "R;16B", 16, band016B},
+    {"RGB", "G;16B", 16, band116B},
+    {"RGB", "B;16B", 16, band216B},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},
@@ -1476,17 +1570,42 @@ static struct {
     {"RGBA", "G", 8, band1},
     {"RGBA", "B", 8, band2},
     {"RGBA", "A", 8, band3},
+    {"RGBA", "R;16L", 16, band016L},
+    {"RGBA", "G;16L", 16, band116L},
+    {"RGBA", "B;16L", 16, band216L},
+    {"RGBA", "A;16L", 16, band316L},
+    {"RGBA", "R;16B", 16, band016B},
+    {"RGBA", "G;16B", 16, band116B},
+    {"RGBA", "B;16B", 16, band216B},
+    {"RGBA", "A;16B", 16, band316B},
 
 #ifdef WORDS_BIGENDIAN
     {"RGB", "RGB;16N", 48, unpackRGB16B},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16B},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16B},
     {"RGBX", "RGBX;16N", 64, unpackRGBA16B},
+    {"RGB", "R;16N", 16, band016B},
+    {"RGB", "G;16N", 16, band116B},
+    {"RGB", "B;16N", 16, band216B},
+
+    {"RGBA", "R;16N", 16, band016B},
+    {"RGBA", "G;16N", 16, band116B},
+    {"RGBA", "B;16N", 16, band216B},
+    {"RGBA", "A;16N", 16, band316B},
 #else
     {"RGB", "RGB;16N", 48, unpackRGB16L},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16L},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16L},
-    {"RGBX", "RGBX;16N", 64, unpackRGBA16B},
+    {"RGBX", "RGBX;16N", 64, unpackRGBA16L},
+    {"RGB", "R;16N", 16, band016L},
+    {"RGB", "G;16N", 16, band116L},
+    {"RGB", "B;16N", 16, band216L},
+
+
+    {"RGBA", "R;16N", 16, band016L},
+    {"RGBA", "G;16N", 16, band116L},
+    {"RGBA", "B;16N", 16, band216L},
+    {"RGBA", "A;16N", 16, band316L},
 #endif
 
     /* true colour w. alpha premultiplied */
