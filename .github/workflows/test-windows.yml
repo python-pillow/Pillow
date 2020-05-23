@@ -426,7 +426,6 @@ jobs:
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-libjpeg-turbo \
               ${{ matrix.package }}-libimagequant
-          python3 -m pip install -U pip codecov
 
       - name: Build Pillow
         run: |
@@ -436,4 +435,14 @@ jobs:
         run: |
           python3 selftest.py --installed
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-          codecov --file coverage.xml --name MSYS2 ${{ matrix.mingw }}
+
+      - name: After success
+        run: |
+          .ci/after_success.sh
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          flags: GHA_Windows
+          name: MSYS2 ${{ matrix.mingw }}
