@@ -385,3 +385,55 @@ jobs:
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist
+
+  msys:
+    runs-on: windows-2019
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mingw: ["MINGW32", "MINGW64"]
+        include:
+          - mingw: "MINGW32"
+            package: "mingw-w64-i686"
+          - mingw: "MINGW64"
+            package: "mingw-w64-x86_64"
+
+    defaults:
+      run:
+        shell: bash.exe --login "{0}"
+    env:
+      MSYSTEM: ${{ matrix.mingw }}
+      CHERE_INVOKING: 1
+
+    timeout-minutes: 30
+    name: MSYS2 ${{ matrix.mingw }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up MSYS
+        run: echo ::add-path::C:\msys64\usr\bin\
+        shell: pwsh
+
+      - name: Install MinGW packages
+        run: |
+          pacman -S --noconfirm \
+              ${{ matrix.package }}-python3-pip \
+              ${{ matrix.package }}-python3-setuptools \
+              ${{ matrix.package }}-python3-pytest \
+              ${{ matrix.package }}-python3-pytest-cov \
+              ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-libjpeg-turbo \
+              ${{ matrix.package }}-libimagequant
+          python3 -m pip install -U pip codecov
+
+      - name: Build Pillow
+        run: |
+          python3 setup.py install
+
+      - name: Test Pillow
+        run: |
+          python3 selftest.py --installed
+          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+          codecov --file coverage.xml --name MSYS2 ${{ matrix.mingw }}

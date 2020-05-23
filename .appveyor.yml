@@ -17,11 +17,6 @@ environment:
   - PYTHON: C:/Python38-x64
   - PYTHON: C:/Python35
   - PYTHON: C:/Python35-x64
-  - PYTHON: C:/msys64/mingw32
-    EXECUTABLE: bin/python3
-    PIP_DIR: bin
-    TEST_OPTIONS: --processes=0
-    DEPLOY: NO
   - PYTHON: C:/vp/pypy3
     EXECUTABLE: bin/pypy.exe
     VENV: YES
@@ -41,33 +36,17 @@ install:
         c:\pillow\winbuild\appveyor_install_pypy3.cmd
       }
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_install_msys2_deps.sh
-      }
-      else
-      {
         c:\python37\python.exe c:\pillow\winbuild\build_dep.py
         c:\pillow\winbuild\build_deps.cmd
         $host.SetShouldExit(0)
-      }
 - curl -fsSL -o gs952.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w32.exe
 - gs952.exe /S
 - path %path%;C:\Program Files (x86)\gs\gs9.52\bin
 
 build_script:
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_build_msys2.sh
-        Write-Host "through install"
-        $host.SetShouldExit(0)
-      }
-      else
-      {
         & $env:PYTHON/$env:EXECUTABLE c:\pillow\winbuild\build.py
         $host.SetShouldExit(0)
-      }
 - cd c:\pillow
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
