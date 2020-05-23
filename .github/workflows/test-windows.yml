@@ -412,24 +412,40 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up MSYS
+      - name: Set up shell
         run: echo ::add-path::C:\msys64\usr\bin\
         shell: pwsh
 
-      - name: Install MinGW packages
+      - name: Install Dependencies
         run: |
           pacman -S --noconfirm \
               ${{ matrix.package }}-python3-pip \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-python3-pytest \
               ${{ matrix.package }}-python3-pytest-cov \
+              ${{ matrix.package }}-python3-cffi \
               ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-python3-pyqt5 \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-freetype \
+              ${{ matrix.package }}-lcms2 \
+              ${{ matrix.package }}-libwebp \
               ${{ matrix.package }}-libjpeg-turbo \
-              ${{ matrix.package }}-libimagequant
+              ${{ matrix.package }}-libimagequant \
+              ${{ matrix.package }}-libraqm \
+              ${{ matrix.package }}-ghostscript \
+              subversion
+
+          python3 -m pip install pyroma
+
+          pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
         run: |
-          python3 setup.py install
+          # libtiff is unable to open files
+          # OpenJPEG fails due to link error (#2848)
+          python3 setup.py build_ext --disable-tiff --disable-jpeg2000 install
 
       - name: Test Pillow
         run: |
