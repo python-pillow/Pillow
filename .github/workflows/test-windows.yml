@@ -445,20 +445,16 @@ jobs:
       - name: Build Pillow
         run: |
           # libtiff is unable to open files
-          python3 setup.py build_ext --disable-tiff install
+          CFLAGS="-coverage" python3 setup.py build_ext --disable-tiff install
 
       - name: Test Pillow
         run: |
           python3 selftest.py --installed
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
-      - name: After success
-        run: |
-          .ci/after_success.sh
-
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage.xml
-          flags: GHA_Windows
-          name: MSYS2 ${{ matrix.mingw }}
+        run: |
+          python3 -m pip install codecov
+          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
+        env:
+          CODECOV_NAME: MSYS2 ${{ matrix.mingw }}
