@@ -13,7 +13,7 @@ jobs:
     name: Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: pip cache
       uses: actions/cache@v1
