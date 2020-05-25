@@ -2172,8 +2172,14 @@ class Image:
 
         :param title: Optional title to use for the image window,
            where possible.
-        :param command: command used to show the image
         """
+
+        if command is not None:
+            warnings.warn(
+                "The command parameter was deprecated and will be removed in a future"
+                "release. Use a subclass of ImageShow.Viewer instead.",
+                DeprecationWarning,
+            )
 
         _show(self, title=title, command=command)
 

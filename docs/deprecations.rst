@@ -12,6 +12,14 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+Image.show
+~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+
+The ``command`` parameter was deprecated and will be removed in a future release.
+Use a subclass of ``ImageShow.Viewer`` instead.
+
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
