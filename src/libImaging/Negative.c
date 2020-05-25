@@ -26,16 +26,20 @@ ImagingNegative(Imaging im)
     Imaging imOut;
     int x, y;
 
-    if (!im)
+    if (!im) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
-    for (y = 0; y < im->ysize; y++)
-        for (x = 0; x < im->linesize; x++)
+    for (y = 0; y < im->ysize; y++) {
+        for (x = 0; x < im->linesize; x++) {
             imOut->image[y][x] = ~im->image[y][x];
+        }
+    }
 
     return imOut;
 }

@@ -500,7 +500,7 @@ class TestFileJpeg:
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 0)
+            assert_image_similar(img, Image.open(TEST_FILE), 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -688,6 +688,10 @@ class TestFileJpeg:
             assert 24 == len(im.info["photoshop"])
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
+
+    def test_icc_after_SOF(self):
+        with Image.open("Tests/images/icc-after-SOF.jpg") as im:
+            assert im.info["icc_profile"] == b"profile"
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

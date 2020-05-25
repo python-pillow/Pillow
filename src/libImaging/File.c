@@ -31,15 +31,18 @@ ImagingSaveRaw(Imaging im, FILE* fp)
         /* @PIL227: FIXME: for mode "1", map != 0 to 255 */
 
         /* PGM "L" */
-        for (y = 0; y < im->ysize; y++)
+        for (y = 0; y < im->ysize; y++) {
             fwrite(im->image[y], 1, im->xsize, fp);
+        }
 
     } else {
 
         /* PPM "RGB" or other internal format */
-        for (y = 0; y < im->ysize; y++)
-            for (x = i = 0; x < im->xsize; x++, i += im->pixelsize)
+        for (y = 0; y < im->ysize; y++) {
+            for (x = i = 0; x < im->xsize; x++, i += im->pixelsize) {
                 fwrite(im->image[y]+i, 1, im->bands, fp);
+            }
+        }
 
     }
 

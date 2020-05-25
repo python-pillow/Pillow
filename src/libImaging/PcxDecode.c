@@ -31,14 +31,16 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     for (;;) {
 
-        if (bytes < 1)
+        if (bytes < 1) {
             return ptr - buf;
+        }
 
         if ((*ptr & 0xC0) == 0xC0) {
 
             /* Run */
-            if (bytes < 2)
+            if (bytes < 2) {
                 return ptr - buf;
+            }
 
             n = ptr[0] & 0x3F;
 

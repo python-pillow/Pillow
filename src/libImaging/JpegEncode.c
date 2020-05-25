@@ -127,17 +127,19 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     break;
                 case 24:
                     context->cinfo.input_components = 3;
-                    if (strcmp(im->mode, "YCbCr") == 0)
+                    if (strcmp(im->mode, "YCbCr") == 0) {
                         context->cinfo.in_color_space = JCS_YCbCr;
-                    else
+                    } else {
                         context->cinfo.in_color_space = JCS_RGB;
+                    }
                     break;
                 case 32:
                     context->cinfo.input_components = 4;
                     context->cinfo.in_color_space = JCS_CMYK;
                 #ifdef JCS_EXTENSIONS
-                    if (strcmp(context->rawmode, "RGBX") == 0)
+                    if (strcmp(context->rawmode, "RGBX") == 0) {
                         context->cinfo.in_color_space = JCS_EXT_RGBX;
+                    }
                 #endif
                     break;
                 default:
@@ -214,8 +216,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     break;
                 }
                 }
-            if (context->progressive)
-                jpeg_simple_progression(&context->cinfo);
+                if (context->progressive) {
+                    jpeg_simple_progression(&context->cinfo);
+                }
                 context->cinfo.smoothing_factor = context->smooth;
                 context->cinfo.optimize_coding = (boolean) context->optimize;
                 if (context->xdpi > 0 && context->ydpi > 0) {
@@ -261,19 +264,22 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             if (context->extra) {
                 /* copy extra buffer to output buffer */
                 unsigned int n = context->extra_size - context->extra_offset;
-                if (n > context->destination.pub.free_in_buffer)
+                if (n > context->destination.pub.free_in_buffer) {
                     n = context->destination.pub.free_in_buffer;
+                }
                 memcpy(context->destination.pub.next_output_byte,
                        context->extra + context->extra_offset, n);
                 context->destination.pub.next_output_byte += n;
                 context->destination.pub.free_in_buffer -= n;
                 context->extra_offset += n;
-                if (context->extra_offset >= context->extra_size)
+                if (context->extra_offset >= context->extra_size) {
                     state->state++;
-                else
+                } else {
                     break;
-            } else
+                }
+            } else {
                 state->state++;
+            }
 
         case 4:
             if (1024 > context->destination.pub.free_in_buffer){
@@ -286,21 +292,24 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                        (UINT8*) im->image[state->y + state->yoff] +
                        state->xoff * im->pixelsize, state->xsize);
                 ok = jpeg_write_scanlines(&context->cinfo, &state->buffer, 1);
-                if (ok != 1)
+                if (ok != 1) {
                     break;
+                }
                 state->y++;
             }
 
-            if (ok != 1)
+            if (ok != 1) {
                 break;
+            }
             state->state++;
             /* fall through */
 
         case 5:
 
             /* Finish compression */
-            if (context->destination.pub.free_in_buffer < 100)
+            if (context->destination.pub.free_in_buffer < 100) {
                 break;
+            }
             jpeg_finish_compress(&context->cinfo);
 
             /* Clean up */

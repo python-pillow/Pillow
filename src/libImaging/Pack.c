@@ -80,16 +80,18 @@ pack1(UINT8* out, const UINT8* in, int pixels)
     /* bilevel (black is 0) */
     b = 0; m = 128;
     for (i = 0; i < pixels; i++) {
-        if (in[i] != 0)
+        if (in[i] != 0) {
             b |= m;
+        }
         m >>= 1;
         if (m == 0) {
             *out++ = b;
             b = 0; m = 128;
         }
     }
-    if (m != 128)
+    if (m != 128) {
         *out++ = b;
+    }
 }
 
 static void
@@ -99,16 +101,18 @@ pack1I(UINT8* out, const UINT8* in, int pixels)
     /* bilevel (black is 1) */
     b = 0; m = 128;
     for (i = 0; i < pixels; i++) {
-        if (in[i] == 0)
+        if (in[i] == 0) {
             b |= m;
+        }
         m >>= 1;
         if (m == 0) {
             *out++ = b;
             b = 0; m = 128;
         }
     }
-    if (m != 128)
+    if (m != 128) {
         *out++ = b;
+    }
 }
 
 static void
@@ -118,16 +122,18 @@ pack1R(UINT8* out, const UINT8* in, int pixels)
     /* bilevel, lsb first (black is 0) */
     b = 0; m = 1;
     for (i = 0; i < pixels; i++) {
-        if (in[i] != 0)
+        if (in[i] != 0) {
             b |= m;
+        }
         m <<= 1;
         if (m == 256){
             *out++ = b;
             b = 0; m = 1;
         }
     }
-    if (m != 1)
+    if (m != 1) {
         *out++ = b;
+    }
 }
 
 static void
@@ -137,16 +143,18 @@ pack1IR(UINT8* out, const UINT8* in, int pixels)
     /* bilevel, lsb first (black is 1) */
     b = 0; m = 1;
     for (i = 0; i < pixels; i++) {
-        if (in[i] == 0)
+        if (in[i] == 0) {
             b |= m;
+        }
         m <<= 1;
         if (m == 256){
             *out++ = b;
             b = 0; m = 1;
         }
     }
-    if (m != 1)
+    if (m != 1) {
         *out++ = b;
+    }
 }
 
 static void
@@ -154,8 +162,9 @@ pack1L(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
     /* bilevel, stored as bytes */
-    for (i = 0; i < pixels; i++)
+    for (i = 0; i < pixels; i++) {
         out[i] = (in[i] != 0) ? 255 : 0;
+    }
 }
 
 static void
@@ -167,8 +176,9 @@ packP4(UINT8* out, const UINT8* in, int pixels)
         in += 2; pixels -= 2;
     }
 
-    if (pixels)
+    if (pixels) {
         out[0] = (in[0] << 4);
+    }
 }
 
 static void
@@ -407,12 +417,13 @@ packI16B(UINT8* out, const UINT8* in_, int pixels)
     for (i = 0; i < pixels; i++) {
         INT32 in;
         memcpy(&in, in_, sizeof(in));
-        if (in <= 0)
+        if (in <= 0) {
             tmp_ = 0;
-        else if (in > 65535)
+        } else if (in > 65535) {
             tmp_ = 65535;
-        else
+        } else {
             tmp_ = in;
+        }
         C16B;
         out += 2; in_ += sizeof(in);
     }
@@ -496,40 +507,45 @@ copy4I(UINT8* out, const UINT8* in, int pixels)
 {
     /* RGBA, CMYK quadruples, inverted */
     int i;
-    for (i = 0; i < pixels*4; i++)
+    for (i = 0; i < pixels*4; i++) {
         out[i] = ~in[i];
+    }
 }
 
 static void
 band0(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
-    for (i = 0; i < pixels; i++, in += 4)
+    for (i = 0; i < pixels; i++, in += 4) {
         out[i] = in[0];
+    }
 }
 
 static void
 band1(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
-    for (i = 0; i < pixels; i++, in += 4)
+    for (i = 0; i < pixels; i++, in += 4) {
         out[i] = in[1];
+    }
 }
 
 static void
 band2(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
-    for (i = 0; i < pixels; i++, in += 4)
+    for (i = 0; i < pixels; i++, in += 4) {
         out[i] = in[2];
+    }
 }
 
 static void
 band3(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
-    for (i = 0; i < pixels; i++, in += 4)
+    for (i = 0; i < pixels; i++, in += 4) {
         out[i] = in[3];
+    }
 }
 
 static struct {
@@ -673,12 +689,14 @@ ImagingFindPacker(const char* mode, const char* rawmode, int* bits_out)
     int i;
 
     /* find a suitable pixel packer */
-    for (i = 0; packers[i].rawmode; i++)
+    for (i = 0; packers[i].rawmode; i++) {
         if (strcmp(packers[i].mode, mode) == 0 &&
             strcmp(packers[i].rawmode, rawmode) == 0) {
-            if (bits_out)
+            if (bits_out) {
                 *bits_out = packers[i].bits;
+            }
             return packers[i].pack;
         }
+    }
     return NULL;
 }

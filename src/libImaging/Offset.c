@@ -24,38 +24,44 @@ ImagingOffset(Imaging im, int xoffset, int yoffset)
     int x, y;
     Imaging imOut;
 
-    if (!im)
+    if (!im) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     ImagingCopyPalette(imOut, im);
 
     /* make offsets positive to avoid negative coordinates */
     xoffset %= im->xsize;
     xoffset = im->xsize - xoffset;
-    if (xoffset < 0)
+    if (xoffset < 0) {
         xoffset += im->xsize;
+    }
 
     yoffset %= im->ysize;
     yoffset = im->ysize - yoffset;
-    if (yoffset < 0)
+    if (yoffset < 0) {
         yoffset += im->ysize;
+    }
 
 #define OFFSET(image)\
-    for (y = 0; y < im->ysize; y++)\
+    for (y = 0; y < im->ysize; y++) {\
         for (x = 0; x < im->xsize; x++) {\
             int yi = (y + yoffset) % im->ysize;\
             int xi = (x + xoffset) % im->xsize;\
             imOut->image[y][x] = im->image[yi][xi];\
+        }\
     }
 
-    if (im->image8)
+    if (im->image8) {
         OFFSET(image8)
-    else
+    } else {
         OFFSET(image32)
+    }
 
     return imOut;
 }

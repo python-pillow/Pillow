@@ -22,8 +22,9 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         if (state->ystep < 0) {
             state->ystep = -1;
             state->y = state->ysize - 1;
-        } else
+        } else {
             state->ystep = 1;
+        }
 
         state->state = 1;
     }
@@ -46,8 +47,9 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             assert(state->x <= state->xsize);
 
             /* Make sure we have space for the descriptor. */
-            if (bytes < 1)
+            if (bytes < 1) {
                 break;
+            }
 
             if (state->x == state->xsize) {
                 state->x = 0;
@@ -59,12 +61,13 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 }
             }
 
-            if (state->x == 0)
+            if (state->x == 0) {
                 state->shuffle(
                     state->buffer,
                     (UINT8*)im->image[state->y + state->yoff]
                         + state->xoff * im->pixelsize,
                     state->xsize);
+            }
 
             row = state->buffer;
 
@@ -87,28 +90,32 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                  */
                 maxLookup = state->x + 126;
                 /* A packet must not span multiple rows. */
-                if (maxLookup > state->xsize - 1)
+                if (maxLookup > state->xsize - 1) {
                     maxLookup = state->xsize - 1;
+                }
 
                 if (isRaw) {
-                    while (state->x < maxLookup)
-                        if (!comparePixels(row, state->x, bytesPerPixel))
+                    while (state->x < maxLookup) {
+                        if (!comparePixels(row, state->x, bytesPerPixel)) {
                             ++state->x;
-                        else {
+                        } else {
                             /* Two identical pixels will go to RLE packet. */
                             --state->x;
                             break;
                         }
+                    }
 
                     state->count += (state->x - startX) * bytesPerPixel;
                 } else {
                     descriptor |= 0x80;
 
-                    while (state->x < maxLookup)
-                        if (comparePixels(row, state->x, bytesPerPixel))
+                    while (state->x < maxLookup) {
+                        if (comparePixels(row, state->x, bytesPerPixel)) {
                             ++state->x;
-                        else
+                        } else {
                             break;
+                        }
+                    }
                 }
             }
 
@@ -132,12 +139,14 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         assert(state->x > 0);
         assert(state->count <= state->x * bytesPerPixel);
 
-        if (bytes == 0)
+        if (bytes == 0) {
             break;
+        }
 
         flushCount = state->count;
-        if (flushCount > bytes)
+        if (flushCount > bytes) {
             flushCount = bytes;
+        }
 
         memcpy(
             dst,

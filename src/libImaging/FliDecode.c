@@ -41,8 +41,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     /* If not even the chunk size is present, we'd better leave */
 
-    if (bytes < 4)
+    if (bytes < 4) {
         return 0;
+    }
 
     /* We don't decode anything unless we have a full chunk in the
        input buffer */
@@ -50,8 +51,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
     ptr = buf;
 
     framesize = I32(ptr);
-    if (framesize < I32(ptr))
+    if (framesize < I32(ptr)) {
         return 0;
+    }
 
     /* Make sure this is a frame chunk.  The Python driver takes
        case of other chunk types. */
@@ -112,8 +114,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                         if (data[1] >= 128) {
                             ERR_IF_DATA_OOB(4)
                             i = 256-data[1]; /* run */
-                            if (x + i + i > state->xsize)
+                            if (x + i + i > state->xsize) {
                                 break;
+                            }
                             for (j = 0; j < i; j++) {
                                 local_buf[x++] = data[2];
                                 local_buf[x++] = data[3];
@@ -121,16 +124,18 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                             data += 2 + 2;
                         } else {
                             i = 2 * (int) data[1]; /* chunk */
-                            if (x + i > state->xsize)
+                            if (x + i > state->xsize) {
                                 break;
+                            }
                             ERR_IF_DATA_OOB(2+i)
                             memcpy(local_buf + x, data + 2, i);
                             data += 2 + i;
                             x += i;
                         }
                     }
-                    if (p < packets)
+                    if (p < packets) {
                         break; /* didn't process all packets */
+                    }
                 }
                 if (l < lines) {
                     /* didn't process all lines */
@@ -151,22 +156,25 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                         x += data[0]; /* skip pixels */
                         if (data[1] & 0x80) {
                             i = 256-data[1]; /* run */
-                            if (x + i > state->xsize)
+                            if (x + i > state->xsize) {
                                 break;
+                            }
                             ERR_IF_DATA_OOB(3)
                             memset(out + x, data[2], i);
                             data += 3;
                         } else {
                             i = data[1]; /* chunk */
-                            if (x + i > state->xsize)
+                            if (x + i > state->xsize) {
                                 break;
+                            }
                             ERR_IF_DATA_OOB(2+i)
                             memcpy(out + x, data + 2, i);
                             data += i + 2;
                         }
                     }
-                    if (p < packets)
+                    if (p < packets) {
                         break; /* didn't process all packets */
+                    }
                 }
                 if (y < ymax) {
                     /* didn't process all lines */
@@ -176,8 +184,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                 break;
             case 13:
                 /* FLI BLACK chunk */
-                for (y = 0; y < state->ysize; y++)
+                for (y = 0; y < state->ysize; y++) {
                     memset(im->image[y], 0, state->xsize);
+                }
                 break;
             case 15:
                 /* FLI BRUN chunk */
@@ -197,8 +206,9 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                             data += i + 1;
                         } else {
                             i = data[0];
-                            if (x + i > state->xsize)
+                            if (x + i > state->xsize) {
                                 break; /* safety first */
+                            }
                             memset(out + x, data[1], i);
                             data += 2;
                         }

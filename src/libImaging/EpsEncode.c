@@ -40,15 +40,17 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     for (;;) {
 
         if (state->state == NEWLINE) {
-            if (bytes < 1)
+            if (bytes < 1) {
                 break;
+            }
             *ptr++ = '\n';
             bytes--;
             state->state = HEXBYTE;
         }
 
-        if (bytes < 2)
+        if (bytes < 2) {
             break;
+        }
 
         i = in[state->x++];
         *ptr++ = hex[(i>>4)&15];
@@ -56,8 +58,9 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         bytes -= 2;
 
         /* Skip junk bytes */
-        if (im->bands == 3 && (state->x & 3) == 3)
+        if (im->bands == 3 && (state->x & 3) == 3) {
             state->x++;
+        }
 
         if (++state->count >= 79/2) {
             state->state = NEWLINE;

@@ -84,6 +84,10 @@ class GbrImageFile(ImageFile.ImageFile):
         self._data_size = width * height * color_depth
 
     def load(self):
+        if self.im:
+            # Already loaded
+            return
+
         self.im = Image.core.new(self.mode, self.size)
         self.frombytes(self.fp.read(self._data_size))
 

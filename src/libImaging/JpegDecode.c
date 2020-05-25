@@ -176,8 +176,9 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
 
     if (context->source.skip > 0) {
         skip_input_data(&context->cinfo, context->source.skip);
-        if (context->source.skip > 0)
+        if (context->source.skip > 0) {
             return context->source.pub.next_input_byte - buf;
+        }
     }
 
     switch (state->state) {
@@ -193,43 +194,46 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
 
         } while (ok == JPEG_HEADER_TABLES_ONLY);
 
-        if (ok == JPEG_SUSPENDED)
+        if (ok == JPEG_SUSPENDED) {
             break;
+        }
 
         /* Decoder settings */
 
         /* jpegmode indicates whats in the file; if not set, we'll
            trust the decoder */
-        if (strcmp(context->jpegmode, "L") == 0)
+        if (strcmp(context->jpegmode, "L") == 0) {
             context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
-        else if (strcmp(context->jpegmode, "RGB") == 0)
+        } else if (strcmp(context->jpegmode, "RGB") == 0) {
             context->cinfo.jpeg_color_space = JCS_RGB;
-        else if (strcmp(context->jpegmode, "CMYK") == 0)
+        } else if (strcmp(context->jpegmode, "CMYK") == 0) {
             context->cinfo.jpeg_color_space = JCS_CMYK;
-        else if (strcmp(context->jpegmode, "YCbCr") == 0)
+        } else if (strcmp(context->jpegmode, "YCbCr") == 0) {
             context->cinfo.jpeg_color_space = JCS_YCbCr;
-        else if (strcmp(context->jpegmode, "YCbCrK") == 0) {
+        } else if (strcmp(context->jpegmode, "YCbCrK") == 0) {
             context->cinfo.jpeg_color_space = JCS_YCCK;
         }
 
         /* rawmode indicates what we want from the decoder.  if not
            set, conversions are disabled */
-        if (strcmp(context->rawmode, "L") == 0)
+        if (strcmp(context->rawmode, "L") == 0) {
             context->cinfo.out_color_space = JCS_GRAYSCALE;
-        else if (strcmp(context->rawmode, "RGB") == 0)
+        } else if (strcmp(context->rawmode, "RGB") == 0) {
             context->cinfo.out_color_space = JCS_RGB;
+        }
     #ifdef JCS_EXTENSIONS
-        else if (strcmp(context->rawmode, "RGBX") == 0)
+        else if (strcmp(context->rawmode, "RGBX") == 0) {
                 context->cinfo.out_color_space = JCS_EXT_RGBX;
+        }
     #endif
         else if (strcmp(context->rawmode, "CMYK") == 0 ||
-                 strcmp(context->rawmode, "CMYK;I") == 0)
+                 strcmp(context->rawmode, "CMYK;I") == 0) {
             context->cinfo.out_color_space = JCS_CMYK;
-        else if (strcmp(context->rawmode, "YCbCr") == 0)
+        } else if (strcmp(context->rawmode, "YCbCr") == 0) {
             context->cinfo.out_color_space = JCS_YCbCr;
-        else if (strcmp(context->rawmode, "YCbCrK") == 0)
+        } else if (strcmp(context->rawmode, "YCbCrK") == 0) {
             context->cinfo.out_color_space = JCS_YCCK;
-        else {
+        } else {
             /* Disable decoder conversions */
             context->cinfo.jpeg_color_space = JCS_UNKNOWN;
             context->cinfo.out_color_space = JCS_UNKNOWN;
@@ -251,8 +255,9 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
 
         /* Set things up for decompression (this processes the entire
            file if necessary to return data line by line) */
-        if (!jpeg_start_decompress(&context->cinfo))
+        if (!jpeg_start_decompress(&context->cinfo)) {
             break;
+        }
 
         state->state++;
         /* fall through */
@@ -263,15 +268,17 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
         ok = 1;
         while (state->y < state->ysize) {
             ok = jpeg_read_scanlines(&context->cinfo, &state->buffer, 1);
-            if (ok != 1)
+            if (ok != 1) {
                 break;
+            }
             state->shuffle((UINT8*) im->image[state->y + state->yoff] +
                            state->xoff * im->pixelsize, state->buffer,
                            state->xsize);
             state->y++;
         }
-        if (ok != 1)
+        if (ok != 1) {
             break;
+        }
         state->state++;
         /* fall through */
 
@@ -280,8 +287,9 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t by
         /* Finish decompression */
         if (!jpeg_finish_decompress(&context->cinfo)) {
             /* FIXME: add strictness mode test */
-            if (state->y < state->ysize)
+            if (state->y < state->ysize) {
                 break;
+            }
         }
 
         /* Clean up */

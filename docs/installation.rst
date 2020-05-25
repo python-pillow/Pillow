@@ -329,7 +329,7 @@ In Fedora, the command is::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites are installed on **Ubuntu 16.04 LTS** with::
+Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
 
     sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
@@ -434,7 +434,7 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
-| macOS 10.15 Catalina             | 3.5, 3.6, 3.7, 3.8           | 7.0.0                          |x86-64                 |
+| macOS 10.15 Catalina             | 3.5, 3.6, 3.7, 3.8           | 7.1.2                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.14 Mojave               | 2.7, 3.5, 3.6, 3.7           | 6.0.0                          |x86-64                 |
 |                                  +------------------------------+--------------------------------+                       +

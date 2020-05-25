@@ -85,8 +85,9 @@ apply(PyObject *self, PyObject* args)
         /* zero boundary conditions. TBD support other modes */
         outrow[0] = outrow[width-1] = 0;
         if (row_idx==0 || row_idx == height-1) {
-            for(col_idx=0; col_idx<width; col_idx++)
+            for(col_idx=0; col_idx<width; col_idx++) {
                 outrow[col_idx] = 0;
+            }
             continue;
         }
 
@@ -286,8 +287,9 @@ PyInit__imagingmorph(void) {
 
     m = PyModule_Create(&module_def);
 
-    if (setup_module(m) < 0)
+    if (setup_module(m) < 0) {
         return NULL;
+    }
 
     return m;
 }

@@ -27,8 +27,9 @@ ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     UINT8* ptr;
 
-    if (!state->state)
+    if (!state->state) {
         state->state = SKIP;
+    }
 
     ptr = buf;
 
@@ -39,21 +40,24 @@ ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
             /* Skip forward until next 'x' */
 
             while (bytes > 0) {
-                if (*ptr == 'x')
+                if (*ptr == 'x') {
                     break;
+                }
                 ptr++;
                 bytes--;
             }
 
-            if (bytes == 0)
+            if (bytes == 0) {
                 return ptr - buf;
+            }
 
             state->state = BYTE;
 
         }
 
-        if (bytes < 3)
+        if (bytes < 3) {
             return ptr - buf;
+        }
 
         state->buffer[state->x] = (HEX(ptr[1])<<4) + HEX(ptr[2]);
 

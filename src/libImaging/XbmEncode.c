@@ -90,8 +90,9 @@ ImagingXbmEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     bytes--;
                     state->count = 0;
                     }
-                } else
+                } else {
                     *ptr++ = '\n';
+                }
 
                 bytes -= 5;
 
