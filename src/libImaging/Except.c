@@ -43,14 +43,12 @@ void *
 ImagingError_ModeError(void)
 {
     return ImagingError_ValueError("bad image mode");
-    return NULL;
 }
 
 void *
 ImagingError_Mismatch(void)
 {
     return ImagingError_ValueError("images don't match");
-    return NULL;
 }
 
 void *
