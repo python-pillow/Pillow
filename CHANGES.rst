@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Fixed ZeroDivisionError in Image.thumbnail #4625
+  [radarhere]
+
+- Replaced TiffImagePlugin DEBUG with logging #4550
+  [radarhere]
+
 - Fix repeatedly loading .gbr #4620
   [ElinksFr, radarhere]
 
