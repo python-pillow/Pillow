@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import sys
+import sysconfig
 import tempfile
 from io import BytesIO
 
@@ -289,8 +290,6 @@ def is_pypy():
 
 
 def is_mingw():
-    import sysconfig
-
     return sysconfig.get_platform() == "mingw"
 
 
