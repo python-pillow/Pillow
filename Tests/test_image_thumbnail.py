@@ -63,6 +63,12 @@ def test_aspect():
     assert im.size == (75, 23)  # ratio is 3.260869565217
 
 
+def test_division_by_zero():
+    im = Image.new("L", (200, 2))
+    im.thumbnail((75, 75))
+    assert im.size == (75, 1)
+
+
 def test_float():
     im = Image.new("L", (128, 128))
     im.thumbnail((99.9, 99.9))
