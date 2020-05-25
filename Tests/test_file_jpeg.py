@@ -90,18 +90,19 @@ class TestFileJpeg:
             ]
             assert k > 0.9
 
-    def test_dpi(self):
-        for test_image_path in [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"]:
+    @pytest.mark.parametrize(
+        "test_image_path", [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
+    )
+    def test_dpi(self, test_image_path):
+        def test(xdpi, ydpi=None):
+            with Image.open(test_image_path) as im:
+                im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
+            return im.info.get("dpi")
 
-            def test(xdpi, ydpi=None):
-                with Image.open(test_image_path) as im:
-                    im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
-                return im.info.get("dpi")
-
-            assert test(72) == (72, 72)
-            assert test(300) == (300, 300)
-            assert test(100, 200) == (100, 200)
-            assert test(0) is None  # square pixels
+        assert test(72) == (72, 72)
+        assert test(300) == (300, 300)
+        assert test(100, 200) == (100, 200)
+        assert test(0) is None  # square pixels
 
     def test_icc(self, tmp_path):
         # Test ICC support
