@@ -170,7 +170,7 @@ jobs:
 
     defaults:
       run:
-        shell: bash.exe --login "{0}"
+        shell: bash.exe --login -eo pipefail "{0}"
     env:
       MSYSTEM: ${{ matrix.mingw }}
       CHERE_INVOKING: 1
