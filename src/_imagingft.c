@@ -605,6 +605,8 @@ font_getsize(FontObject* self, PyObject* args)
     FT_Face face;
     int xoffset, yoffset;
     int horizontal_dir;
+    int mask = 0;
+    int load_flags;
     const char *dir = NULL;
     const char *lang = NULL;
     size_t i, count;
@@ -614,11 +616,11 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
         return NULL;
     }
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -637,7 +639,11 @@ font_getsize(FontObject* self, PyObject* args)
         /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
          *   Yifu Yu<root@jackyyf.com>, 2014-10-15
          */
-        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
+        load_flags = FT_LOAD_NO_BITMAP;
+        if (mask) {
+            load_flags |= FT_LOAD_TARGET_MONO;
+        }
+        error = FT_Load_Glyph(face, index, load_flags);
         if (error) {
             return geterror(error);
         }
