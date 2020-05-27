@@ -553,7 +553,7 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         return 0;
     }
 
-    load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_NO_BITMAP;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
