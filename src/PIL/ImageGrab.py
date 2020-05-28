@@ -100,10 +100,9 @@ def grabclipboard():
             o = struct.unpack_from("I", data)[0]
             if data[16] != 0:
                 files = data[o:].decode("utf-16le").split("\0")
-                return files[: files.index("")]
             else:
                 files = data[o:].decode("mbcs").split("\0")
-                return files[: files.index("")]
+            return files[: files.index("")]
         if isinstance(data, bytes):
             import io
 
