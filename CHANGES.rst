@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Speed up text layout by not rendering glyphs #4652
+  [nulano]
+
 - Fixed ZeroDivisionError in Image.thumbnail #4625
   [radarhere]
 
