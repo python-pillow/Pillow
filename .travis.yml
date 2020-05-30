@@ -189,6 +189,28 @@ jobs:
         - MB_ML_VER=2010
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
         - LATEST="true"
+    - os: linux
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.6
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+    - os: linux
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.8
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+    - os: linux
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.7
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+
 
 before_install:
     - source multibuild/common_utils.sh
