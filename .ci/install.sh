@@ -34,7 +34,7 @@ if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"
   if [[ $TRAVIS_CPU_ARCH == "amd64" ]]; then
-    sudo apt-get -qq install pyqt5-dev-tools
+    sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools
     pip install pyqt5
   fi
 fi
