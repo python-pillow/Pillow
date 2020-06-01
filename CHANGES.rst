@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Parse orientation from XMP tags #4560
+  [radarhere]
+
 - Speed up text layout by not rendering glyphs #4652
   [nulano]
 
