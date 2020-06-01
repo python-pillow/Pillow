@@ -931,16 +931,7 @@ class PngImageFile(ImageFile.ImageFile):
         if "exif" not in self.info:
             self.load()
 
-        if self._exif is None:
-            self._exif = Image.Exif()
-
-        exif_info = self.info.get("exif")
-        if exif_info is None and "Raw profile type exif" in self.info:
-            exif_info = bytes.fromhex(
-                "".join(self.info["Raw profile type exif"].split("\n")[3:])
-            )
-        self._exif.load(exif_info)
-        return self._exif
+        return super().getexif()
 
     def _close__fp(self):
         try:

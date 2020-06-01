@@ -35,6 +35,7 @@ import struct
 import sys
 import tempfile
 import warnings
+import xml.etree.ElementTree
 from collections.abc import Callable, MutableMapping
 from pathlib import Path
 
@@ -1300,7 +1301,28 @@ class Image:
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
-        self._exif.load(self.info.get("exif"))
+
+        exif_info = self.info.get("exif")
+        if exif_info is None and "Raw profile type exif" in self.info:
+            exif_info = bytes.fromhex(
+                "".join(self.info["Raw profile type exif"].split("\n")[3:])
+            )
+        self._exif.load(exif_info)
+
+        # XMP tags
+        if 0x0112 not in self._exif:
+            xmp_tags = self.info.get("XML:com.adobe.xmp")
+            if xmp_tags:
+                root = xml.etree.ElementTree.fromstring(xmp_tags)
+                for elem in root.iter():
+                    if elem.tag.endswith("}Description"):
+                        orientation = elem.attrib.get(
+                            "{http://ns.adobe.com/tiff/1.0/}Orientation"
+                        )
+                        if orientation:
+                            self._exif[0x0112] = int(orientation)
+                        break
+
         return self._exif
 
     def getim(self):
