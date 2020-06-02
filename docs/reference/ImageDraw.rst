@@ -280,12 +280,15 @@ Methods
 
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
-                 the text is passed on to ``multiline_text()``
+                 the text is passed on to
+                 :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: If the text is passed on to ``multiline_text()``,
+    :param spacing: If the text is passed on to
+                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
                     the number of pixels between lines.
-    :param align: If the text is passed on to ``multiline_text()``,
+    :param align: If the text is passed on to
+                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
                   "left", "center" or "right".
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
@@ -365,9 +368,10 @@ Methods
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to ``multiline_textsize()``
+                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.size`
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: If the text is passed on to ``multiline_textsize()``,
+    :param spacing: If the text is passed on to
+                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`,
                     the number of pixels between lines.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
