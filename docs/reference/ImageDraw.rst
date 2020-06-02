@@ -300,8 +300,7 @@ Methods
                      used to turn off default font features, for
                      example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -347,8 +346,7 @@ Methods
                      used to turn off default font features, for
                      example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -383,8 +381,7 @@ Methods
                      used to turn off default font features, for
                      example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -421,8 +418,7 @@ Methods
                      used to turn off default font features, for
                      example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -470,3 +466,4 @@ Methods
         homogeneous, but similar, colors.
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
+.. _OpenType docs: https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
