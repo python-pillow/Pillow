@@ -212,8 +212,8 @@ Methods
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
-    :param joint: Joint type between a sequence of lines. It can be "curve",
-                  for rounded edges, or None.
+    :param joint: Joint type between a sequence of lines. It can be "curve", for rounded
+        edges, or ``None``.
 
         .. versionadded:: 5.3.0
 
@@ -281,7 +281,7 @@ Methods
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
                  the text is passed on to
-                 :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`
+                 :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: If the text is passed on to
@@ -322,9 +322,9 @@ Methods
                      .. versionadded:: 6.2.0
 
     :param stroke_fill: Color to use for the text stroke. If not given, will default to
-                        the ``fill`` parameter.
+        the ``fill`` parameter.
 
-                     .. versionadded:: 6.2.0
+        .. versionadded:: 6.2.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
 
@@ -368,7 +368,7 @@ Methods
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.size`
+                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.size`.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: If the text is passed on to
                     :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`,
