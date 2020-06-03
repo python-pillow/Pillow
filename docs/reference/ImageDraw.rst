@@ -368,7 +368,7 @@ Methods
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.size`.
+                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: If the text is passed on to
                     :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`,
