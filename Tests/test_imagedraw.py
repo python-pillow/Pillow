@@ -873,8 +873,9 @@ def test_wide_line_dot():
     assert_image_similar(im, Image.open(expected), 1)
 
 
-def test_line_joint():
-    for xy in [
+@pytest.mark.parametrize(
+    "xy",
+    [
         [
             (400, 280),
             (380, 280),
@@ -951,16 +952,18 @@ def test_line_joint():
             250,
             100,
         ],
-    ]:
-        im = Image.new("RGB", (500, 325))
-        draw = ImageDraw.Draw(im)
-        expected = "Tests/images/imagedraw_line_joint_curve.png"
+    ],
+)
+def test_line_joint(xy):
+    im = Image.new("RGB", (500, 325))
+    draw = ImageDraw.Draw(im)
+    expected = "Tests/images/imagedraw_line_joint_curve.png"
 
-        # Act
-        draw.line(xy, GRAY, 50, "curve")
+    # Act
+    draw.line(xy, GRAY, 50, "curve")
 
-        # Assert
-        assert_image_similar(im, Image.open(expected), 3)
+    # Assert
+    assert_image_similar(im, Image.open(expected), 3)
 
 
 def test_textsize_empty_string():
