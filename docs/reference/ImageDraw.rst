@@ -81,13 +81,13 @@ Example: Draw Partial Opacity Text
 
     from PIL import Image, ImageDraw, ImageFont
     # get an image
-    base = Image.open('Pillow/Tests/images/hopper.png').convert('RGBA')
+    base = Image.open("Pillow/Tests/images/hopper.png").convert("RGBA")
 
     # make a blank image for the text, initialized to transparent text color
-    txt = Image.new('RGBA', base.size, (255,255,255,0))
+    txt = Image.new("RGBA", base.size, (255,255,255,0))
 
     # get a font
-    fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+    fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
     # get a drawing context
     d = ImageDraw.Draw(txt)
 
@@ -212,8 +212,8 @@ Methods
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
-    :param joint: Joint type between a sequence of lines. It can be "curve",
-                  for rounded edges, or None.
+    :param joint: Joint type between a sequence of lines. It can be ``"curve"``,
+         for rounded edges, or ``None``.
 
         .. versionadded:: 5.3.0
 
@@ -280,15 +280,18 @@ Methods
 
     :param xy: Top left corner of the text.
     :param text: Text to be drawn. If it contains any newline characters,
-                 the text is passed on to multiline_text()
+                 the text is passed on to
+                 :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: If the text is passed on to multiline_text(),
+    :param spacing: If the text is passed on to
+                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
                     the number of pixels between lines.
-    :param align: If the text is passed on to multiline_text(),
-                  "left", "center" or "right".
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+    :param align: If the text is passed on to
+                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
+                  ``"left"``, ``"center"`` or ``"right"``.
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
@@ -296,12 +299,11 @@ Methods
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -310,8 +312,7 @@ Methods
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code
-                     <https://www.w3.org/International/articles/language-tags/>`
+                     It should be a `BCP 47 language code`_.
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
@@ -321,9 +322,9 @@ Methods
                      .. versionadded:: 6.2.0
 
     :param stroke_fill: Color to use for the text stroke. If not given, will default to
-                        the ``fill`` parameter.
+        the ``fill`` parameter.
 
-                     .. versionadded:: 6.2.0
+        .. versionadded:: 6.2.0
 
 .. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
 
@@ -334,9 +335,9 @@ Methods
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
-    :param align: "left", "center" or "right".
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+    :param align: ``"left"``, ``"center"`` or ``"right"``.
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
@@ -344,12 +345,11 @@ Methods
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -358,8 +358,7 @@ Methods
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code
-                     <https://www.w3.org/International/articles/language-tags/>`
+                     It should be a `BCP 47 language code`_.
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
@@ -369,24 +368,24 @@ Methods
     Return the size of the given string, in pixels.
 
     :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to multiline_textsize()
+                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: If the text is passed on to multiline_textsize(),
+    :param spacing: If the text is passed on to
+                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`,
                     the number of pixels between lines.
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -394,8 +393,7 @@ Methods
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code
-                     <https://www.w3.org/International/articles/language-tags/>`
+                     It should be a `BCP 47 language code`_.
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
@@ -411,8 +409,8 @@ Methods
     :param text: Text to be measured.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
 
                       .. versionadded:: 4.2.0
@@ -420,12 +418,11 @@ Methods
     :param features: A list of OpenType font features to be used during text
                      layout. This is usually used to turn on optional
                      font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
                      to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                     features, see `OpenType docs`_.
                      Requires libraqm.
 
                      .. versionadded:: 4.2.0
@@ -434,8 +431,7 @@ Methods
                      different glyph shapes or ligatures. This parameter tells
                      the font which language the text is in, and to apply the
                      correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code
-                     <https://www.w3.org/International/articles/language-tags/>`
+                     It should be a `BCP 47 language code`_.
                      Requires libraqm.
 
                      .. versionadded:: 6.0.0
@@ -472,3 +468,6 @@ Methods
         tolerable difference of a pixel value from the 'background' in
         order for it to be replaced. Useful for filling regions of non-
         homogeneous, but similar, colors.
+
+.. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
+.. _OpenType docs: https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
