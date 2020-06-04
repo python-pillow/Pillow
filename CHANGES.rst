@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Added support for 1-D NumPy arrays #4608
+  [radarhere]
+
 - Parse orientation from XMP tags #4560
   [radarhere]
 
