@@ -212,8 +212,8 @@ Methods
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
-    :param joint: Joint type between a sequence of lines. It can be "curve", for rounded
-        edges, or ``None``.
+    :param joint: Joint type between a sequence of lines. It can be ``"curve"``,
+         for rounded edges, or ``None``.
 
         .. versionadded:: 5.3.0
 
@@ -289,7 +289,7 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to
                   :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
-                  "left", "center" or "right".
+                  ``"left"``, ``"center"`` or ``"right"``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
