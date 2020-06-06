@@ -154,7 +154,7 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",  # noqa: E501
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",
         "filename": "libwebp-1.1.0.tar.gz",
         "dir": "libwebp-1.1.0",
         "build": [
