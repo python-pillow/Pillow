@@ -103,8 +103,8 @@ def _test_textsize(request, tmp_path, encoding):
         assert dy == 20
         assert dx in (0, 10)
     message = charsets[encoding]["message"].encode(encoding)
-    for j in range(len(message)):
-        msg = message[: j + 1]
+    for i in range(len(message)):
+        msg = message[: i + 1]
         assert font.getsize(msg) == (len(msg) * 10, 20)
 
 
