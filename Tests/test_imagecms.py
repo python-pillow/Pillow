@@ -486,8 +486,8 @@ def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
         # fmt: off
         nine_grid_deltas = [  # noqa: E131
             (-1, -1), (-1, 0), (-1, 1),
-             (0, -1),  (0, 0),  (0, 1),
-             (1, -1),  (1, 0),  (1, 1),
+            (0,  -1),  (0, 0),  (0, 1),
+            (1,  -1),  (1, 0),  (1, 1),
         ]
         # fmt: on
         chans = []
