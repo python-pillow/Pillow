@@ -15,6 +15,7 @@ LCMS2_VERSION=2.10
 GIFLIB_VERSION=5.1.4
 LIBWEBP_VERSION=1.1.0
 BZIP2_VERSION=1.0.8
+LIBXCB_VERSION=1.14
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
@@ -24,6 +25,12 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         # Update to latest zlib for OS X build
         build_new_zlib
+        
+        build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
+        build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
+        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+        build_simple xcb-proto $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+        build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     fi
     
     # Custom flags to include both multibuild and jpeg defaults
