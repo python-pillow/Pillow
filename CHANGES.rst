@@ -5,6 +5,12 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Corrected reading EXIF metadata without prefix #4677
+  [radarhere]
+
+- Fixed drawing a jointed line with a sequence of numeric values #4580
+  [radarhere]
+
 - Added support for 1-D NumPy arrays #4608
   [radarhere]
 
