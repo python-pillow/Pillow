@@ -3289,7 +3289,9 @@ class Exif(MutableMapping):
         if not data:
             return
 
-        self.fp = io.BytesIO(data[6:])
+        if data.startswith(b"Exif\x00\x00"):
+            data = data[6:]
+        self.fp = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
