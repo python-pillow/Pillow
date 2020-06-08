@@ -74,14 +74,17 @@ function run_tests_in_repo {
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
+EXP_FEATURES="transp_webp webp_anim webp_mux"
+if [ -n "$IS_OSX" ]; then
+    EXP_FEATURES="$EXP_FEATURES xcb"
+fi
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
-    # Show supported codecs and modules
-    local codecs=$(python -c 'from PIL.features import *; print(" ".join(sorted(get_supported_codecs())))')
-    # Test against expected codecs and modules
+    # Test against expected codecs, modules and features
     local ret=0
+    local codecs=$(python -c 'from PIL.features import *; print(" ".join(sorted(get_supported_codecs())))')
     if [ "$codecs" != "$EXP_CODECS" ]; then
         echo "Codecs should be: '$EXP_CODECS'; but are '$codecs'"
         ret=1
@@ -89,6 +92,11 @@ function run_tests {
     local modules=$(python -c 'from PIL.features import *; print(" ".join(sorted(get_supported_modules())))')
     if [ "$modules" != "$EXP_MODULES" ]; then
         echo "Modules should be: '$EXP_MODULES'; but are '$modules'"
+        ret=1
+    fi
+    local features=$(python -c 'from PIL.features import *; print(" ".join(sorted(get_supported_features())))')
+    if [ "$features" != "$EXP_FEATURES" ]; then
+        echo "Features should be: '$EXP_FEATURES'; but are '$features'"
         ret=1
     fi
     return $ret
