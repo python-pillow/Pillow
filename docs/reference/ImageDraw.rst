@@ -212,8 +212,7 @@ Methods
         .. versionadded:: 1.1.5
 
         .. note:: This option was broken until version 1.1.6.
-    :param joint: Joint type between a sequence of lines. It can be ``"curve"``,
-         for rounded edges, or ``None``.
+    :param joint: Joint type between a sequence of lines. It can be ``"curve"``, for rounded edges, or ``None``.
 
         .. versionadded:: 5.3.0
 
