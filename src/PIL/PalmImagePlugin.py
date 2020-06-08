@@ -11,7 +11,7 @@ from . import Image, ImageFile
 from ._binary import o8, o16be as o16b
 
 # fmt: off
-_Palm8BitColormapValues = (  # noqa: E131
+_Palm8BitColormapValues = (
     (255, 255, 255), (255, 204, 255), (255, 153, 255), (255, 102, 255),
     (255,  51, 255), (255,   0, 255), (255, 255, 204), (255, 204, 204),
     (255, 153, 204), (255, 102, 204), (255,  51, 204), (255,   0, 204),

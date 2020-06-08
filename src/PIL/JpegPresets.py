@@ -71,7 +71,7 @@ https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/li
 """
 
 # fmt: off
-presets = {  # noqa: E128
+presets = {
             'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [20, 16, 25, 39, 50, 46, 62, 68,
