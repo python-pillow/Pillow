@@ -489,14 +489,14 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill,
     }
 
     for (i = 0; i < n; i++) {
-        if (e[i].ymin == e[i].ymax) {
-            continue;
-        }
         if (ymin > e[i].ymin) {
             ymin = e[i].ymin;
         }
         if (ymax < e[i].ymax) {
             ymax = e[i].ymax;
+        }
+        if (e[i].ymin == e[i].ymax) {
+            continue;
         }
         edge_table[edge_count++] = (e + i);
     }

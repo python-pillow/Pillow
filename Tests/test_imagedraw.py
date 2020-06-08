@@ -531,6 +531,20 @@ def test_polygon_kite():
         assert_image_equal(im, Image.open(expected))
 
 
+def test_polygon_1px_high():
+    # Test drawing a 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (3, 3))
+    draw = ImageDraw.Draw(im)
+    expected = "Tests/images/imagedraw_polygon_1px_high.png"
+
+    # Act
+    draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
+
+    # Assert
+    assert_image_equal(im, Image.open(expected))
+
+
 def helper_rectangle(bbox):
     # Arrange
     im = Image.new("RGB", (W, H))
