@@ -25,13 +25,17 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         # Update to latest zlib for OS X build
         build_new_zlib
-        
+    fi
+
+    build_simple xcb-proto $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+    if [ -n "$IS_OSX" ]; then
         build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
-        build_simple xcb-proto $LIBXCB_VERSION https://xcb.freedesktop.org/dist
-        build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+    else
+        sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
+    build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     
     # Custom flags to include both multibuild and jpeg defaults
     ORIGINAL_CFLAGS=$CFLAGS
@@ -74,10 +78,7 @@ function run_tests_in_repo {
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="transp_webp webp_anim webp_mux"
-if [ -n "$IS_OSX" ]; then
-    EXP_FEATURES="$EXP_FEATURES xcb"
-fi
+EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
 
 function run_tests {
     # Runs tests on installed distribution from an empty directory
