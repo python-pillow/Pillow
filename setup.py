@@ -391,9 +391,12 @@ class pil_build_ext(build_ext):
                     _dbg("Looking for `%s` using pkg-config." % lib_name)
                     root = pkg_config(lib_name)
 
-            winbuil_root = os.path.join('.', 'winbuild', 'build')
-            if root is None and os.path.isdir(winbuil_root):
-                root = os.path.join(winbuil_root, 'lib'), os.path.join(winbuil_root, 'inc')
+            winbuild_root = os.path.join(".", "winbuild", "build")
+            if root is None and os.path.isdir(winbuild_root):
+                root = (
+                    os.path.join(winbuild_root, "lib"),
+                    os.path.join(winbuild_root, "inc")
+                )
 
             if isinstance(root, tuple):
                 lib_root, include_root = root
