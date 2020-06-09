@@ -395,7 +395,7 @@ class pil_build_ext(build_ext):
             if root is None and os.path.isdir(winbuild_root):
                 root = (
                     os.path.join(winbuild_root, "lib"),
-                    os.path.join(winbuild_root, "inc")
+                    os.path.join(winbuild_root, "inc"),
                 )
 
             if isinstance(root, tuple):
