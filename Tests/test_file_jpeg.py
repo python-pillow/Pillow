@@ -219,7 +219,7 @@ class TestFileJpeg:
             gps_index = 34853
             expected_exif_gps = {
                 0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
+                2: 4294967295,
                 5: b"\x01",
                 30: 65535,
                 29: "1999:99:99 99:99:99",
@@ -241,7 +241,7 @@ class TestFileJpeg:
             36867: "2099:09:29 10:10:10",
             34853: {
                 0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
+                2: 4294967295,
                 5: b"\x01",
                 30: 65535,
                 29: "1999:99:99 99:99:99",
@@ -253,11 +253,11 @@ class TestFileJpeg:
             271: "Make",
             272: "XXX-XXX",
             305: "PIL",
-            42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
+            42034: (1, 1, 1, 1),
             42035: "LensMake",
             34856: b"\xaa\xaa\xaa\xaa\xaa\xaa",
-            282: (4294967295, 1),
-            33434: (4294967295, 1),
+            282: 4294967295,
+            33434: 4294967295,
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
@@ -646,6 +646,19 @@ class TestFileJpeg:
             # This should return the default, and not a SyntaxError or
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
+
+    def test_exif_x_resolution(self, tmp_path):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif[282] == 180
+
+            out = str(tmp_path / "out.jpg")
+            with pytest.warns(None) as record:
+                im.save(out, exif=exif)
+            assert len(record) == 0
+
+        with Image.open(out) as reloaded:
+            assert reloaded.getexif()[282] == 180
 
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
