@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Use ImageFileDirectory_v2 in Image.Exif #4637
+  [radarhere]
+
 - Corrected reading EXIF metadata without prefix #4677
   [radarhere]
 
