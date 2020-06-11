@@ -26,8 +26,7 @@ or the clipboard to a PIL image memory.
 
         .. versionadded:: 6.2.0
 
-    :param xdisplay: X11 Display address. Pass ``None`` to grab the default system screen.
-                     Pass ``""`` to grab the default X11 screen on Windows or macOS.
+    :param xdisplay: X11 Display address. Pass ``None`` to grab the default system screen. Pass ``""`` to grab the default X11 screen on Windows or macOS.
 
         .. versionadded:: 7.1.0
     :return: An image
