@@ -649,7 +649,7 @@ def createProfile(colorSpace, colorTemp=-1):
     """
     (pyCMS) Creates a profile.
 
-    If colorSpace not in ``["LAB", "XYZ", "sRGB"]``, a **PyCMSError** is raised
+    If colorSpace not in ``["LAB", "XYZ", "sRGB"]``, a **PyCMSError** is raised.
 
     If using LAB and ``colorTemp`` is not a positive integer, a **PyCMSError** is
     raised.
@@ -783,7 +783,7 @@ def getProfileCopyright(profile):
     **PyCMSError** is raised.
 
     If an error occurs while trying to obtain the copyright tag, a **PyCMSError**
-    is raised
+    is raised.
 
     Use this function to obtain the information stored in the profile's
     copyright tag.
@@ -811,7 +811,7 @@ def getProfileManufacturer(profile):
     **PyCMSError** is raised.
 
     If an error occurs while trying to obtain the manufacturer tag, a
-    **PyCMSError** is raised
+    **PyCMSError** is raised.
 
     Use this function to obtain the information stored in the profile's
     manufacturer tag.
@@ -839,7 +839,7 @@ def getProfileModel(profile):
     **PyCMSError** is raised.
 
     If an error occurs while trying to obtain the model tag, a **PyCMSError**
-    is raised
+    is raised.
 
     Use this function to obtain the information stored in the profile's
     model tag.
@@ -868,7 +868,7 @@ def getProfileDescription(profile):
     **PyCMSError** is raised.
 
     If an error occurs while trying to obtain the description tag, a **PyCMSError**
-    is raised
+    is raised.
 
     Use this function to obtain the information stored in the profile's
     description tag.
