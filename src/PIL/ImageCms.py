@@ -743,7 +743,7 @@ def getProfileInfo(profile):
     a **PyCMSError** is raised.
 
     If an error occurs while trying to obtain the info tag, a **PyCMSError**
-    is raised
+    is raised.
 
     Use this function to obtain the information stored in the profile's
     info tag.  This often contains details about the profile, and how it
