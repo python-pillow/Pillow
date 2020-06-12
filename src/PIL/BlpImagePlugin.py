@@ -357,13 +357,6 @@ class BLP1Decoder(_BLPBaseDecoder):
         image.tile = [("jpeg", (0, 0) + self.size, 0, ("RGBA", ""))]
 
         b, g, r, a = image.split()
-        if not any(
-            [a.getpixel((x, y)) for x in range(a.width) for y in range(a.height)]
-        ):
-            # try to unprotect completely transparent pictures
-            from PIL import ImageOps
-
-            a = ImageOps.invert(a)
         image = Image.merge("RGBA", (r, g, b, a))
         self.set_as_raw(image.tobytes())
 
