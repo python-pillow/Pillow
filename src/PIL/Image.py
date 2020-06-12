@@ -2163,7 +2163,7 @@ class Image:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
-        **EOFError** exception. When a sequence file is opened, the
+        ``EOFError`` exception. When a sequence file is opened, the
         library automatically seeks to frame 0.
 
         See :py:meth:`~PIL.Image.Image.tell`.
