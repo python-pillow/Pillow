@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import sys
+import sysconfig
 import tempfile
 from io import BytesIO
 
@@ -286,6 +287,10 @@ def is_win32():
 
 def is_pypy():
     return hasattr(sys, "pypy_translation_info")
+
+
+def is_mingw():
+    return sysconfig.get_platform() == "mingw"
 
 
 if sys.platform == "win32":

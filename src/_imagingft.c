@@ -31,7 +31,7 @@
 
 #define KEEP_PY_UNICODE
 
-#if !defined(_MSC_VER)
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
@@ -155,20 +155,24 @@ setraqm(void)
     p_raqm.raqm = NULL;
 
     /* Microsoft needs a totally different system */
-#if !defined(_MSC_VER)
+#ifndef _WIN32
     p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
     if (!p_raqm.raqm) {
         p_raqm.raqm = dlopen("libraqm.dylib", RTLD_LAZY);
     }
 #else
     p_raqm.raqm = LoadLibrary("libraqm");
+    /* MSYS */
+    if (!p_raqm.raqm) {
+        p_raqm.raqm = LoadLibrary("libraqm-0");
+    }
 #endif
 
     if (!p_raqm.raqm) {
         return 1;
     }
 
-#if !defined(_MSC_VER)
+#ifndef _WIN32
     p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");

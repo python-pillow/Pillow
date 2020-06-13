@@ -154,3 +154,76 @@ jobs:
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
+
+  msys:
+    runs-on: windows-2019
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mingw: ["MINGW32", "MINGW64"]
+        include:
+          - mingw: "MINGW32"
+            package: "mingw-w64-i686"
+          - mingw: "MINGW64"
+            package: "mingw-w64-x86_64"
+
+    defaults:
+      run:
+        shell: bash.exe --login -eo pipefail "{0}"
+    env:
+      MSYSTEM: ${{ matrix.mingw }}
+      CHERE_INVOKING: 1
+
+    timeout-minutes: 30
+    name: MSYS2 ${{ matrix.mingw }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up shell
+        run: echo ::add-path::C:\msys64\usr\bin\
+        shell: pwsh
+
+      - name: Install Dependencies
+        run: |
+          pacman -S --noconfirm \
+              ${{ matrix.package }}-python3-pip \
+              ${{ matrix.package }}-python3-setuptools \
+              ${{ matrix.package }}-python3-pytest \
+              ${{ matrix.package }}-python3-pytest-cov \
+              ${{ matrix.package }}-python3-cffi \
+              ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-python3-pyqt5 \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-freetype \
+              ${{ matrix.package }}-lcms2 \
+              ${{ matrix.package }}-libwebp \
+              ${{ matrix.package }}-libjpeg-turbo \
+              ${{ matrix.package }}-openjpeg2 \
+              ${{ matrix.package }}-libimagequant \
+              ${{ matrix.package }}-libraqm \
+              ${{ matrix.package }}-ghostscript \
+              subversion
+
+          python3 -m pip install pyroma
+
+          pushd depends && ./install_extra_test_images.sh && popd
+
+      - name: Build Pillow
+        run: |
+          # libtiff is unable to open files
+          CFLAGS="-coverage" python3 setup.py build_ext --disable-tiff install
+
+      - name: Test Pillow
+        run: |
+          python3 selftest.py --installed
+          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+
+      - name: Upload coverage
+        run: |
+          python3 -m pip install codecov
+          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
+        env:
+          CODECOV_NAME: MSYS2 ${{ matrix.mingw }}

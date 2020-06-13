@@ -16,12 +16,6 @@ environment:
     ARCHITECTURE: x86
   - PYTHON: C:/Python35-x64
     ARCHITECTURE: x64
-  - PYTHON: C:/msys64/mingw32
-    EXECUTABLE: bin/python3
-    ARCHITECTURE: x86
-    PIP_DIR: bin
-    TEST_OPTIONS: --processes=0
-    DEPLOY: NO
 
 
 install:
@@ -35,31 +29,15 @@ install:
 - path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.52\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_install_msys2_deps.sh
-      }
-      else
-      {
         c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
-      }
 - path C:\pillow\winbuild\build\bin;%PATH%
 
 build_script:
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_build_msys2.sh
-        Write-Host "through install"
-        $host.SetShouldExit(0)
-      }
-      else
-      {
         c:\pillow\winbuild\build\build_pillow.cmd install
         $host.SetShouldExit(0)
-      }
 - cd c:\pillow
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
