@@ -142,12 +142,7 @@ def _toqclass_helper(im):
         data = im.tobytes("raw", "BGRX")
         format = QImage.Format_RGB32
     elif im.mode == "RGBA":
-        try:
-            data = im.tobytes("raw", "BGRA")
-        except SystemError:
-            # workaround for earlier versions
-            r, g, b, a = im.split()
-            im = Image.merge("RGBA", (b, g, r, a))
+        data = im.tobytes("raw", "BGRA")
         format = QImage.Format_ARGB32
     else:
         raise ValueError("unsupported image mode %r" % im.mode)
