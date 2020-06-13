@@ -21,7 +21,7 @@ def check_module(feature):
     Checks if a module is available.
 
     :param feature: The module to check for.
-    :returns: True if available, False otherwise.
+    :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
     if not (feature in modules):
@@ -51,7 +51,7 @@ def check_codec(feature):
     Checks if a codec is available.
 
     :param feature: The codec to check for.
-    :returns: True if available, False otherwise.
+    :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the codec is not defined in this version of Pillow.
     """
     if feature not in codecs:
@@ -85,7 +85,7 @@ def check_feature(feature):
     Checks if a feature is available.
 
     :param feature: The feature to check for.
-    :returns: True if available, False if unavailable, None if unknown.
+    :returns: ``True`` if available, ``False`` if unavailable, ``None`` if unknown.
     :raises ValueError: If the feature is not defined in this version of Pillow.
     """
     if feature not in features:
@@ -111,7 +111,8 @@ def check(feature):
     """
     :param feature: A module, feature, or codec name.
     :returns:
-        True if the module, feature, or codec is available, False or None otherwise.
+        ``True`` if the module, feature, or codec is available,
+        ``False`` or ``None`` otherwise.
     """
 
     if feature in modules:
@@ -141,9 +142,9 @@ def pilinfo(out=None, supported_formats=True):
     This function can be called with ``python -m PIL``.
 
     :param out:
-        The output stream to print to. Defaults to ``sys.stdout`` if None.
+        The output stream to print to. Defaults to ``sys.stdout`` if ``None``.
     :param supported_formats:
-        If True, a list of all supported image file formats will be printed.
+        If ``True``, a list of all supported image file formats will be printed.
     """
 
     if out is None:

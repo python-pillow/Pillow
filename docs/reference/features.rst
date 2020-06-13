@@ -1,3 +1,4 @@
+.. py:module:: PIL.features
 .. py:currentmodule:: PIL.features
 
 :py:mod:`features` Module
@@ -17,7 +18,7 @@ Support for the following modules can be checked:
 * ``pil``: The Pillow core module, required for all functionality.
 * ``tkinter``: Tkinter support.
 * ``freetype2``: FreeType font support via :py:func:`PIL.ImageFont.truetype`.
-* ``littlecms2``: LittleCMS2 support via :py:mod:`PIL.ImageCms`.
+* ``littlecms2``: LittleCMS 2 support via :py:mod:`PIL.ImageCms`.
 * ``webp``: WebP image support.
 
 .. autofunction:: PIL.features.check_module
@@ -31,10 +32,10 @@ If the required library was uninstalled from the system, the ``pil`` core module
 
 Support for the following codecs can be checked:
 
-* ``jpg``: (compile time) LibJpeg support, required for JPEG based image formats.
-* ``jpg_2000``: (compile time) OpenJpeg support, required for JPEG 2000 image formats.
-* ``zlib``: (compile time) ZLib support, required for ZLib compressed formats, such as PNG.
-* ``libtiff``: (compile time) LibTiff support, required for Tiff based image formats.
+* ``jpg``: (compile time) Libjpeg support, required for JPEG based image formats.
+* ``jpg_2000``: (compile time) OpenJPEG support, required for JPEG 2000 image formats.
+* ``zlib``: (compile time) Zlib support, required for zlib compressed formats, such as PNG.
+* ``libtiff``: (compile time) LibTIFF support, required for TIFF based image formats.
 
 .. autofunction:: PIL.features.check_codec
 .. autofunction:: PIL.features.get_supported_codecs
@@ -47,7 +48,7 @@ If the required library was uninstalled from the system, the relevant module may
 
 Support for the following features can be checked:
 
-* ``libjpeg_turbo``: Whether Pillow was compiled against the libjpeg-turbo version of libjpeg.
+* ``libjpeg_turbo``: (compile time) Whether Pillow was compiled against the libjpeg-turbo version of libjpeg.
 * ``transp_webp``: Support for transparency in WebP images.
 * ``webp_mux``: (compile time) Support for EXIF data in WebP images.
 * ``webp_anim``: (compile time) Support for animated WebP images.
