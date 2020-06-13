@@ -162,8 +162,7 @@ setraqm(void)
     }
 #else
     p_raqm.raqm = LoadLibrary("libraqm");
-
-    /* Cygwin / MinGW */
+    /* MSYS */
     if (!p_raqm.raqm) {
         p_raqm.raqm = LoadLibrary("libraqm-0");
     }
