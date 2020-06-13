@@ -17,6 +17,13 @@ modules = {
 
 
 def check_module(feature):
+    """
+    Checks if a module is available.
+
+    :param feature: The module to check for.
+    :returns: True if available, False otherwise.
+    :raises ValueError: If the module is not defined in this version of Pillow.
+    """
     if not (feature in modules):
         raise ValueError("Unknown module %s" % feature)
 
@@ -30,6 +37,9 @@ def check_module(feature):
 
 
 def get_supported_modules():
+    """
+    :returns: A list of all supported modules.
+    """
     return [f for f in modules if check_module(f)]
 
 
@@ -37,6 +47,13 @@ codecs = {"jpg": "jpeg", "jpg_2000": "jpeg2k", "zlib": "zip", "libtiff": "libtif
 
 
 def check_codec(feature):
+    """
+    Checks if a codec is available.
+
+    :param feature: The codec to check for.
+    :returns: True if available, False otherwise.
+    :raises ValueError: If the codec is not defined in this version of Pillow.
+    """
     if feature not in codecs:
         raise ValueError("Unknown codec %s" % feature)
 
@@ -46,6 +63,9 @@ def check_codec(feature):
 
 
 def get_supported_codecs():
+    """
+    :returns: A list of all supported codecs.
+    """
     return [f for f in codecs if check_codec(f)]
 
 
@@ -61,6 +81,13 @@ features = {
 
 
 def check_feature(feature):
+    """
+    Checks if a feature is available.
+
+    :param feature: The feature to check for.
+    :returns: True if available, False if unavailable, None if unknown.
+    :raises ValueError: If the feature is not defined in this version of Pillow.
+    """
     if feature not in features:
         raise ValueError("Unknown feature %s" % feature)
 
@@ -74,10 +101,19 @@ def check_feature(feature):
 
 
 def get_supported_features():
+    """
+    :returns: A list of all supported features.
+    """
     return [f for f in features if check_feature(f)]
 
 
 def check(feature):
+    """
+    :param feature: A module, feature, or codec name.
+    :returns:
+        True if the module, feature, or codec is available, False or None otherwise.
+    """
+
     if feature in modules:
         return check_module(feature)
     if feature in codecs:
@@ -89,6 +125,10 @@ def check(feature):
 
 
 def get_supported():
+    """
+    :returns: A list of all supported modules, features, and codecs.
+    """
+
     ret = get_supported_modules()
     ret.extend(get_supported_features())
     ret.extend(get_supported_codecs())
@@ -96,6 +136,16 @@ def get_supported():
 
 
 def pilinfo(out=None, supported_formats=True):
+    """
+    Prints information about this installation of Pillow.
+    This function can be called with ``python -m PIL``.
+
+    :param out:
+        The output stream to print to. Defaults to ``sys.stdout`` if None.
+    :param supported_formats:
+        If True, a list of all supported image file formats will be printed.
+    """
+
     if out is None:
         out = sys.stdout
 
