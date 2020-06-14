@@ -3142,13 +3142,12 @@ def register_encoder(name, encoder):
 
 def _show(image, **options):
     # override me, as necessary
-    _showxv(image, **options)
-
-
-def _showxv(image, title=None, **options):
     from . import ImageShow
 
-    ImageShow.show(image, title, **options)
+    ImageShow.show(image, **options)
+
+
+_showxv = _show
 
 
 # --------------------------------------------------------------------
