@@ -70,14 +70,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`JpegPresets` Module
--------------------------
-
-.. automodule:: PIL.JpegPresets
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`PaletteFile` Module
 -------------------------
 

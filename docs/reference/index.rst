@@ -28,6 +28,7 @@ Reference
    ImageWin
    ExifTags
    TiffTags
+   JpegPresets
    PSDraw
    PixelAccess
    PyAccess
