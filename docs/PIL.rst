@@ -123,12 +123,3 @@ can be found here.
     :members:
     :undoc-members:
     :show-inheritance:
-
-:mod:`_binary` Module
----------------------
-
-.. automodule:: PIL._binary
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
