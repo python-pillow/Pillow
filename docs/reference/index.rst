@@ -7,8 +7,8 @@ Reference
 
    Image
    ImageChops
-   ImageColor
    ImageCms
+   ImageColor
    ImageDraw
    ImageEnhance
    ImageFile
