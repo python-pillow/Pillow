@@ -661,6 +661,22 @@ class TestImageFont:
             {"name": b"Size", "minimum": 0, "maximum": 300, "default": 0}
         ]
 
+    def _check_text(self, font, path, epsilon):
+        im = Image.new("RGB", (100, 75), "white")
+        d = ImageDraw.Draw(im)
+        d.text((10, 10), "Text", font=font, fill="black")
+
+        try:
+            with Image.open(path) as expected:
+                assert_image_similar(im, expected, epsilon)
+        except AssertionError:
+            if "_adobe" in path:
+                path = path.replace("_adobe", "_adobe_older_harfbuzz")
+                with Image.open(path) as expected:
+                    assert_image_similar(im, expected, epsilon)
+            else:
+                raise
+
     @pytest.mark.skipif(is_mingw(), reason="epsilon too high for meaningful test")
     def test_variation_set_by_name(self):
         font = self.get_font()
@@ -674,25 +690,17 @@ class TestImageFont:
         with pytest.raises(OSError):
             font.set_variation_by_name("Bold")
 
-        def _check_text(font, path, epsilon):
-            im = Image.new("RGB", (100, 75), "white")
-            d = ImageDraw.Draw(im)
-            d.text((10, 10), "Text", font=font, fill="black")
-
-            with Image.open(path) as expected:
-                assert_image_similar(im, expected, epsilon)
-
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
-        _check_text(font, "Tests/images/variation_adobe.png", 11)
+        self._check_text(font, "Tests/images/variation_adobe.png", 11)
         for name in ["Bold", b"Bold"]:
             font.set_variation_by_name(name)
-        _check_text(font, "Tests/images/variation_adobe_name.png", 11)
+        self._check_text(font, "Tests/images/variation_adobe_name.png", 11)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
-        _check_text(font, "Tests/images/variation_tiny.png", 40)
+        self._check_text(font, "Tests/images/variation_tiny.png", 40)
         for name in ["200", b"200"]:
             font.set_variation_by_name(name)
-        _check_text(font, "Tests/images/variation_tiny_name.png", 40)
+        self._check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
     @pytest.mark.skipif(is_mingw(), reason="epsilon too high for meaningful test")
     def test_variation_set_by_axes(self):
@@ -707,21 +715,13 @@ class TestImageFont:
         with pytest.raises(OSError):
             font.set_variation_by_axes([500, 50])
 
-        def _check_text(font, path, epsilon):
-            im = Image.new("RGB", (100, 75), "white")
-            d = ImageDraw.Draw(im)
-            d.text((10, 10), "Text", font=font, fill="black")
-
-            with Image.open(path) as expected:
-                assert_image_similar(im, expected, epsilon)
-
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
-        _check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
+        self._check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         font.set_variation_by_axes([100])
-        _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+        self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
 @skip_unless_feature("raqm")
