@@ -25,5 +25,5 @@ Moved to ImageFileDirectory_v2 in Image.Exif
 Moved from the legacy :py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v1` to
 :py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v2` in
 :py:class:`PIL.Image.Exif`. This means that Exif RATIONALs and SIGNED_RATIONALs
-as now read as :py:class:`PIL.TiffImagePlugin.IFDRational`, instead of as a
+are now read as :py:class:`PIL.TiffImagePlugin.IFDRational`, instead of as a
 tuple with a numerator and a denominator.
