@@ -6,6 +6,6 @@
 .. automodule:: PIL.JpegPresets
 
     .. data:: presets
-        :annotation:
+        :type: dict
 
-        A dict of all supported presets.
+        A dictionary of all supported presets.
