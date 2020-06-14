@@ -4,7 +4,7 @@ import sys
 import pytest
 from PIL import Image, ImageGrab
 
-from .helper import assert_image
+from .helper import assert_image, skip_unless_feature
 
 
 class TestImageGrab:
@@ -22,7 +22,7 @@ class TestImageGrab:
         im = ImageGrab.grab(bbox=(10, 20, 50, 80))
         assert_image(im, im.mode, (40, 60))
 
-    @pytest.mark.skipif(not Image.core.HAVE_XCB, reason="requires XCB")
+    @skip_unless_feature("xcb")
     def test_grab_x11(self):
         try:
             if sys.platform not in ("win32", "darwin"):
@@ -45,7 +45,7 @@ class TestImageGrab:
             ImageGrab.grab(xdisplay="")
         assert str(e.value).startswith("Pillow was built without XCB support")
 
-    @pytest.mark.skipif(not Image.core.HAVE_XCB, reason="requires XCB")
+    @skip_unless_feature("xcb")
     def test_grab_invalid_xdisplay(self):
         with pytest.raises(OSError) as e:
             ImageGrab.grab(xdisplay="error.test:0.0")

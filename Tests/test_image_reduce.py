@@ -1,7 +1,7 @@
 import pytest
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import convert_to_comparable
+from .helper import convert_to_comparable, skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -254,9 +254,7 @@ def test_mode_F():
         compare_reduce_with_box(im, factor)
 
 
-@pytest.mark.skipif(
-    "jpeg2k_decoder" not in codecs, reason="JPEG 2000 support not available"
-)
+@skip_unless_feature("jpg_2000")
 def test_jpeg2k():
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.reduce(2).size == (320, 240)
