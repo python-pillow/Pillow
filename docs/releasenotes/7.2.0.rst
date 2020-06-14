@@ -1,0 +1,29 @@
+7.2.0
+-----
+
+API Changes
+===========
+
+Replaced TiffImagePlugin DEBUG with logging
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``TiffImagePlugin.DEBUG = True`` has been a way to print various debugging
+information when interacting with TIFF images. This has now been removed
+in favour of Python's ``logging`` module, already used in other places in the
+Pillow source code.
+
+Corrected default offset when writing EXIF data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the default ``offset`` argument for
+:py:meth:`~PIL.Image.Exif.tobytes` was 0, which did not include the magic
+header. It is now 8.
+
+Moved to ImageFileDirectory_v2 in Image.Exif
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Moved from the legacy :py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v1` to
+:py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v2` in
+:py:class:`PIL.Image.Exif`. This means that Exif RATIONALs and SIGNED_RATIONALs
+as now read as :py:class:`PIL.TiffImagePlugin.IFDRational`, instead of as a
+tuple with a numerator and a denominator.
