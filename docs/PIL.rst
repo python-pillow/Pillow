@@ -52,13 +52,12 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-.. intentionally skipped documenting this because it's not documented anywhere
-
 :mod:`ImageDraw2` Module
 ------------------------
 
 .. automodule:: PIL.ImageDraw2
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
