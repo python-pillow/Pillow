@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar,
     assert_not_all_same,
     hopper,
+    is_mingw,
     is_win32,
 )
 
@@ -608,6 +609,24 @@ class TestImage:
                 im.load()
 
             assert not fp.closed
+
+    def test_show_command(self, tmp_path):
+        # Arrange
+        temp_file = str(tmp_path / "opened")
+        with open(temp_file, "a") as f:
+            f.close()
+        assert os.path.exists(temp_file)
+        im = hopper()
+
+        # Act
+        im.show(
+            command=("del" if (is_win32() and not is_mingw()) else "rm")
+            + " "
+            + temp_file
+        )
+
+        # Assert
+        assert not os.path.exists(temp_file)
 
     @pytest.mark.parametrize(
         "test_module", [PIL, Image],

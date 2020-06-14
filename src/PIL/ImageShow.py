@@ -44,9 +44,19 @@ def show(image, title=None, **options):
     :param \**options: Additional viewer options.
     :returns: True if a suitable viewer was found, false otherwise.
     """
-    for viewer in _viewers:
-        if viewer.show(image, title=title, **options):
-            return 1
+    command = options.get("command")
+    if command:
+
+        class CommandViewer(Viewer):
+            def get_command(self, file):
+                return command + " " + file
+
+        CommandViewer().show(image)
+        return 1
+    else:
+        for viewer in _viewers:
+            if viewer.show(image, title=title, **options):
+                return 1
     return 0
 
 
