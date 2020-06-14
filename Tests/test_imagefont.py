@@ -13,7 +13,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
-    is_mingw,
     is_pypy,
     is_win32,
     skip_unless_feature,
@@ -677,7 +676,6 @@ class TestImageFont:
             else:
                 raise
 
-    @pytest.mark.skipif(is_mingw(), reason="epsilon too high for meaningful test")
     def test_variation_set_by_name(self):
         font = self.get_font()
 
@@ -702,7 +700,6 @@ class TestImageFont:
             font.set_variation_by_name(name)
         self._check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
-    @pytest.mark.skipif(is_mingw(), reason="epsilon too high for meaningful test")
     def test_variation_set_by_axes(self):
         font = self.get_font()
 
