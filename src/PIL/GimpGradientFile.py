@@ -13,17 +13,19 @@
 # See the README file for information on usage and redistribution.
 #
 
+"""
+Stuff to translate curve segments to palette values (derived from
+the corresponding code in GIMP, written by Federico Mena Quintero.
+See the GIMP distribution for more information.)
+"""
+
+
 from math import log, pi, sin, sqrt
 
 from ._binary import o8
 
-# --------------------------------------------------------------------
-# Stuff to translate curve segments to palette values (derived from
-# the corresponding code in GIMP, written by Federico Mena Quintero.
-# See the GIMP distribution for more information.)
-#
-
 EPSILON = 1e-10
+""""""  # Enable auto-doc for data member
 
 
 def linear(middle, pos):
@@ -58,6 +60,7 @@ def sphere_decreasing(middle, pos):
 
 
 SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
+""""""  # Enable auto-doc for data member
 
 
 class GradientFile:
@@ -98,11 +101,9 @@ class GradientFile:
         return b"".join(palette), "RGBA"
 
 
-##
-# File handler for GIMP's gradient format.
-
-
 class GimpGradientFile(GradientFile):
+    """File handler for GIMP's gradient format."""
+
     def __init__(self, fp):
 
         if fp.readline()[:13] != b"GIMP Gradient":

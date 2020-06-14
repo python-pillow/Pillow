@@ -14,26 +14,30 @@
 #
 
 
-# NOTE: This format cannot be automatically recognized, so the
-# class is not registered for use with Image.open().  To open a
-# gd file, use the GdImageFile.open() function instead.
+"""
+.. note::
+    This format cannot be automatically recognized, so the
+    class is not registered for use with :py:func:`PIL.Image.open()`.  To open a
+    gd file, use the :py:func:`PIL.GdImageFile.open()` function instead.
 
-# THE GD FORMAT IS NOT DESIGNED FOR DATA INTERCHANGE.  This
-# implementation is provided for convenience and demonstrational
-# purposes only.
+.. warning::
+    THE GD FORMAT IS NOT DESIGNED FOR DATA INTERCHANGE.  This
+    implementation is provided for convenience and demonstrational
+    purposes only.
+"""
 
 
 from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i8, i16be as i16, i32be as i32
 
-##
-# Image plugin for the GD uncompressed format.  Note that this format
-# is not supported by the standard <b>Image.open</b> function.  To use
-# this plugin, you have to import the <b>GdImageFile</b> module and
-# use the <b>GdImageFile.open</b> function.
-
 
 class GdImageFile(ImageFile.ImageFile):
+    """
+    Image plugin for the GD uncompressed format.  Note that this format
+    is not supported by the standard :py:func:`PIL.Image.open()` function.  To use
+    this plugin, you have to import the :py:mod:`PIL.GdImageFile` module and
+    use the :py:func:`PIL.GdImageFile.open()` function.
+    """
 
     format = "GD"
     format_description = "GD uncompressed images"

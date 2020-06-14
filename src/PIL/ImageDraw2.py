@@ -16,6 +16,10 @@
 # See the README file for information on usage and redistribution.
 #
 
+
+"""WCK-style drawing interface operations"""
+
+
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 
 
