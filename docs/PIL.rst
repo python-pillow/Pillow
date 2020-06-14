@@ -62,14 +62,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageShow` Module
------------------------
-
-.. automodule:: PIL.ImageShow
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ImageTransform` Module
 ----------------------------
 

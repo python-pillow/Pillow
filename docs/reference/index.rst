@@ -22,6 +22,7 @@ Reference
    ImagePath
    ImageQt
    ImageSequence
+   ImageShow
    ImageStat
    ImageTk
    ImageWin
