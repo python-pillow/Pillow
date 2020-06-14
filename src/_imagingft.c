@@ -81,6 +81,7 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
+typedef const char* (*t_raqm_version_string) (void);
 typedef bool (*t_raqm_version_atleast)(unsigned int major,
                                        unsigned int minor,
                                        unsigned int micro);
@@ -112,6 +113,7 @@ typedef void (*t_raqm_destroy) (raqm_t *rq);
 typedef struct {
     void* raqm;
     int version;
+    t_raqm_version_string version_string;
     t_raqm_version_atleast version_atleast;
     t_raqm_create create;
     t_raqm_set_text set_text;
@@ -173,6 +175,7 @@ setraqm(void)
     }
 
 #ifndef _WIN32
+    p_raqm.version_string = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
@@ -206,6 +209,7 @@ setraqm(void)
         return 2;
     }
 #else
+    p_raqm.version_string = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
@@ -1251,6 +1255,9 @@ setup_module(PyObject* m) {
     setraqm();
     v = PyBool_FromLong(!!p_raqm.raqm);
     PyDict_SetItemString(d, "HAVE_RAQM", v);
+    if (p_raqm.version_string) {
+        PyDict_SetItemString(d, "raqm_version", PyUnicode_FromString(p_raqm.version_string()));
+    }
 
     return 0;
 }

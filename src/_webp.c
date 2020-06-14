@@ -821,6 +821,16 @@ PyObject* WebPDecoderVersion_wrapper() {
     return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
+// Version as string
+const char*
+WebPDecoderVersion_str(void)
+{
+    static char version[20];
+    int version_number = WebPGetDecoderVersion();
+    sprintf(version, "%d.%d.%d", version_number >> 16, (version_number >> 8) % 0x100, version_number % 0x100);
+    return version;
+}
+
 /*
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
  * Files that are valid with 0.3 are reported as being invalid.
@@ -872,9 +882,12 @@ void addTransparencyFlagToModule(PyObject* m) {
 }
 
 static int setup_module(PyObject* m) {
+    PyObject* d = PyModule_GetDict(m);
     addMuxFlagToModule(m);
     addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
+
+    PyDict_SetItemString(d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
 
 #ifdef HAVE_WEBPANIM
     /* Ready object types */
