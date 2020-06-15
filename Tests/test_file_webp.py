@@ -1,7 +1,8 @@
 import io
+import re
 
 import pytest
-from PIL import Image, WebPImagePlugin
+from PIL import Image, WebPImagePlugin, features
 
 from .helper import (
     assert_image_similar,
@@ -38,6 +39,7 @@ class TestFileWebp:
     def test_version(self):
         _webp.WebPDecoderVersion()
         _webp.WebPDecoderBuggyAlpha()
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("webp"))
 
     def test_read_rgb(self):
         """
