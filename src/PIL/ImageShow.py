@@ -48,8 +48,9 @@ def show(image, title=None, **options):
     if command:
 
         class CommandViewer(Viewer):
-            def get_command(self, file):
-                return command + " " + file
+            def show_file(self, file, **options):
+                subprocess.Popen([command, file])
+                return 1
 
         CommandViewer().show(image)
         return 1
