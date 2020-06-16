@@ -1120,6 +1120,279 @@ int8_t ellipse_next(ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* 
     return 0;
 }
 
+typedef enum {
+  CT_AND,
+  CT_OR,
+  CT_CLIP
+} clip_type;
+
+typedef struct clip_node {
+  clip_type type;
+  double a, b, c;
+  struct clip_node* l;
+  struct clip_node* r;
+} clip_node;
+
+typedef struct event_list {
+  int32_t x;
+  int8_t type;
+  struct event_list* next;
+} event_list;
+
+void clip_tree_transpose(clip_node* root) {
+  if (root != NULL) {
+    if (root->type == CT_CLIP) {
+      double t = root->a;
+      root->a = root->b;
+      root->b = t;
+    }
+    clip_tree_transpose(root->l);
+    clip_tree_transpose(root->r);
+  }
+}
+
+void clip_tree_free(clip_node* root) {
+  if (root != NULL) {
+    clip_tree_free(root->l);
+    clip_tree_free(root->r);
+    free(root);
+  }
+}
+
+// Outputs a sequence of open-close events (types -1 and 1) for non-intersecting
+// segments sorted by X coordinate.
+// Merging nodes (AND, OR) may also accept sequences for intersecting segments,
+// i.e. something like correct bracket sequences.
+event_list* clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1) {
+  if (root == NULL) {
+    event_list* start = malloc(sizeof(event_list));
+    event_list* end = malloc(sizeof(event_list));
+    start->x = x0;
+    start->type = 1;
+    start->next = end;
+    end->x = x1;
+    end->type = -1;
+    end->next = NULL;
+    return start;
+  }
+  if (root->type == CT_CLIP) {
+    double eps = 1e-9;
+    double A = root->a;
+    double B = root->b;
+    double C = root->c;
+    if (fabs(A) < eps) {
+      if (B * y + C < -eps) {
+        x0 = 1;
+        x1 = 0;
+      }
+    } else {
+      // X of intersection
+      double ix = - (B * y + C) / A;
+      if (A * x0 + B * y + C < eps) {
+        x0 = round(fmax(x0, ix));
+      }
+      if (A * x1 + B * y + C < eps) {
+        x1 = round(fmin(x1, ix));
+      }
+    }
+    if (x0 <= x1) {
+      event_list* start = malloc(sizeof(event_list));
+      event_list* end = malloc(sizeof(event_list));
+      start->x = x0;
+      start->type = 1;
+      start->next = end;
+      end->x = x1;
+      end->type = -1;
+      end->next = NULL;
+      return start;
+    } else {
+      return NULL;
+    }
+  }
+  if (root->type == CT_OR || root->type == CT_AND) {
+    event_list* l1 = clip_tree_do_clip(root->l, x0, y, x1);
+    event_list* l2 = clip_tree_do_clip(root->r, x0, y, x1);
+    event_list* ret = NULL;
+    event_list* tail = NULL;
+    int32_t k1 = 0;
+    int32_t k2 = 0;
+    while (l1 != NULL || l2 != NULL) {
+      event_list* t;
+      if (l2 == NULL || (l1 != NULL && (l1->x < l2->x || (l1->x == l2->x && l1->type > l2->type)))) {
+        t = l1;
+        k1 += t->type;
+        assert(k1 >= 0);
+        l1 = l1->next;
+      } else {
+        t = l2;
+        k2 += t->type;
+        assert(k2 >= 0);
+        l2 = l2->next;
+      }
+      t->next = NULL;
+      if ((root->type == CT_OR && (
+              (t->type == 1 && (tail == NULL || tail->type == -1)) ||
+              (t->type == -1 && k1 == 0 && k2 == 0)
+          )) || 
+          (root->type == CT_AND && (
+              (t->type == 1 && (tail == NULL || tail->type == -1) && k1 > 0 && k2 > 0) ||
+              (t->type == -1 && tail != NULL && tail->type == 1 && (k1 == 0 || k2 == 0))
+          ))) {
+        if (tail == NULL) {
+          ret = t;
+        } else {
+          tail->next = t;
+        }
+        tail = t;
+      } else {
+        free(t);
+      }
+    }
+    return ret;
+  }
+  return NULL;
+}
+
+typedef struct {
+  ellipse_state st;
+  clip_node* root;
+  event_list* head;
+  int32_t y;
+} clip_ellipse_state;
+
+void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al, int32_t ar) {
+  if (a < b) {
+    // transpose the coordinate system
+    arc_init(s, b, a, w, 90 - ar, 90 - al);
+    ellipse_init(&s->st, a, b, w);
+    clip_tree_transpose(s->root);
+  } else {
+    ellipse_init(&s->st, a, b, w);
+
+    s->head = NULL;
+
+    // normalize angles: 0 <= al < 360, al <= ar <= al + 360
+    if (ar - al >= 360) {
+      al = 0;
+      ar = 360;
+    } else {
+      al = (al < 0 ? 360 - (-al % 360) : al) % 360;
+      ar = al + (ar < al ? 360 - ((al - ar) % 360) : ar - al) % 360;
+    }
+
+    if (ar == al + 360) {
+      s->root = NULL;
+    } else {
+      clip_node* lc = malloc(sizeof(clip_node));
+      clip_node* rc = malloc(sizeof(clip_node));
+      lc->l = lc->r = rc->l = rc->r = NULL;
+      lc->type = rc->type = CT_CLIP;
+      lc->a = -a * sin(al * M_PI / 180.0);
+      lc->b = b * cos(al * M_PI / 180.0);
+      lc->c = (a * a - b * b) * sin(al * M_PI / 90.0) / 2.0;
+      rc->a = a * sin(ar * M_PI / 180.0);
+      rc->b = -b * cos(ar * M_PI / 180.0);
+      rc->c = (b * b - a * a) * sin(ar * M_PI / 90.0) / 2.0;
+      if (al % 180 == 0 || ar % 180 == 0 || al == ar) {
+        s->root = malloc(sizeof(clip_node));
+        s->root->l = lc;
+        s->root->r = rc;
+        s->root->type = ar - al < 180 ? CT_AND : CT_OR;
+        if (al == ar) {
+          lc = malloc(sizeof(clip_node));
+          lc->l = lc->r = NULL;
+          lc->type = CT_CLIP;
+          lc->a = al == 0 ? 1 : al == 180 ? -1 : 0;
+          lc->b = al % 180 ? (al < 180 ? 1 : -1) : 0;
+          lc->c = 0;
+          rc = s->root;
+          s->root = malloc(sizeof(clip_node));
+          s->root->l = lc;
+          s->root->r = rc;
+          s->root->type = CT_AND;
+        }
+      } else if ((al / 180 + ar / 180) % 2 == 1) {
+        s->root = malloc(sizeof(clip_node));
+        s->root->l = malloc(sizeof(clip_node));
+        s->root->l->l = malloc(sizeof(clip_node));
+        s->root->l->r = lc;
+        s->root->r = malloc(sizeof(clip_node));
+        s->root->r->l = malloc(sizeof(clip_node));
+        s->root->r->r = rc;
+        s->root->type = CT_OR;
+        s->root->l->type = CT_AND;
+        s->root->r->type = CT_AND;
+        s->root->l->l->type = CT_CLIP;
+        s->root->r->l->type = CT_CLIP;
+        s->root->l->l->l = s->root->l->l->r = NULL;
+        s->root->r->l->l = s->root->r->l->r = NULL;
+        s->root->l->l->a = s->root->l->l->c = 0;
+        s->root->r->l->a = s->root->r->l->c = 0;
+        s->root->l->l->b = (al / 180) % 2 == 0 ? 1 : -1;
+        s->root->r->l->b = (ar / 180) % 2 == 0 ? 1 : -1;
+      } else {
+        s->root = malloc(sizeof(clip_node));
+        s->root->l = malloc(sizeof(clip_node));
+        s->root->r = malloc(sizeof(clip_node));
+        s->root->type = s->root->l->type = ar - al < 180 ? CT_AND : CT_OR;
+        s->root->l->l = lc;
+        s->root->l->r = rc;
+        s->root->r->type = CT_CLIP;
+        s->root->r->l = s->root->r->r = NULL;
+        s->root->r->a = s->root->r->c = 0;
+        s->root->r->b = ar < 180 || ar > 540 ? 1 : -1;
+      }
+    }
+  }
+}
+
+void chord_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al, int32_t ar) {
+  ellipse_init(&s->st, a, b, w);
+
+  s->head = NULL;
+
+  // line equation for chord
+  double xl = a * cos(al * M_PI / 180.0), xr = a * cos(ar * M_PI / 180.0);
+  double yl = b * sin(al * M_PI / 180.0), yr = b * sin(ar * M_PI / 180.0);
+  s->root = malloc(sizeof(clip_node));
+  s->root->l = s->root->r = NULL;
+  s->root->type = CT_CLIP;
+  s->root->a = yr - yl;
+  s->root->b = xl - xr;
+  s->root->c = -(s->root->a * xl + s->root->b * yl);
+}
+
+void clip_ellipse_free(clip_ellipse_state* s) {
+  clip_tree_free(s->root);
+  while (s->head != NULL) {
+    event_list* t = s->head;
+    s->head = s->head->next;
+    free(t);
+  }
+}
+
+int8_t clip_ellipse_next(clip_ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* ret_x1) {
+  int32_t x0, y, x1;
+  while (s->head == NULL && ellipse_next(&s->st, &x0, &y, &x1) >= 0) {
+    s->head = clip_tree_do_clip(s->root, x0, y, x1);
+    s->y = y;
+  }
+  if (s->head != NULL) {
+    *ret_y = s->y;
+    event_list* t = s->head;
+    s->head = s->head->next;
+    *ret_x0 = t->x;
+    free(t);
+    t = s->head;
+    assert(t != NULL);
+    s->head = s->head->next;
+    *ret_x1 = t->x;
+    free(t);
+    return 0;
+  }
+  return -1;
+}
+
 static int
 ellipseNew(Imaging im, int x0, int y0, int x1, int y1,
         const void* ink_, int fill,
