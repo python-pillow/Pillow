@@ -378,10 +378,10 @@ def extract_dep(url, filename):
     print("Extracting " + filename)
     if filename.endswith(".zip"):
         with zipfile.ZipFile(file) as zf:
-            zf.extractall(build_dir)
+            zf.extractall(sources_dir)
     elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
         with tarfile.open(file, "r:gz") as tgz:
-            tgz.extractall(build_dir)
+            tgz.extractall(sources_dir)
     else:
         raise RuntimeError("Unknown archive type: " + filename)
 
@@ -416,7 +416,7 @@ def build_dep(name):
     extract_dep(dep["url"], dep["filename"])
 
     for patch_file, patch_list in dep.get("patch", {}).items():
-        patch_file = os.path.join(build_dir, dir, patch_file.format(**prefs))
+        patch_file = os.path.join(sources_dir, dir, patch_file.format(**prefs))
         with open(patch_file, "r") as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
@@ -429,7 +429,7 @@ def build_dep(name):
         "@echo " + ("=" * 70),
         "@echo ==== {:<60} ====".format(banner),
         "@echo " + ("=" * 70),
-        "cd /D %s" % os.path.join(build_dir, dir),
+        "cd /D %s" % os.path.join(sources_dir, dir),
         *prefs["header"],
         *dep.get("build", []),
         *get_footer(dep),
@@ -477,6 +477,7 @@ if __name__ == "__main__":
         "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
     )
     build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
+    sources_dir = ""
     for arg in sys.argv[1:]:
         if arg == "-v":
             verbose = True
@@ -494,6 +495,8 @@ if __name__ == "__main__":
             architecture = arg[15:]
         elif arg.startswith("--dir="):
             build_dir = arg[6:]
+        elif arg == "--srcdir":
+            sources_dir = os.path.sep + "src"
         else:
             raise ValueError("Unknown parameter: " + arg)
 
@@ -524,10 +527,13 @@ if __name__ == "__main__":
     lib_dir = os.path.join(build_dir, "lib")
     # build directory for *.bin files
     bin_dir = os.path.join(build_dir, "bin")
+    # directory for storing project files
+    sources_dir = build_dir + sources_dir
 
     shutil.rmtree(build_dir, ignore_errors=True)
-    for path in [build_dir, inc_dir, lib_dir, bin_dir]:
-        os.makedirs(path)
+    os.makedirs(build_dir, exist_ok=False)
+    for path in [inc_dir, lib_dir, bin_dir, sources_dir]:
+        os.makedirs(path, exist_ok=True)
 
     prefs = {
         # Python paths / preferences
@@ -543,6 +549,7 @@ if __name__ == "__main__":
         "inc_dir": inc_dir,
         "lib_dir": lib_dir,
         "bin_dir": bin_dir,
+        "src_dir": sources_dir,
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
