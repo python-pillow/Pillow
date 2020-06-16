@@ -479,11 +479,11 @@ class TestFileLibTiff(LibTiffTestCase):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="tiff_ccitt")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="group3")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="group4")
 
     def test_fp_leak(self):
@@ -831,7 +831,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_realloc_overflow(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:
-            with pytest.raises(IOError) as e:
+            with pytest.raises(OSError) as e:
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY

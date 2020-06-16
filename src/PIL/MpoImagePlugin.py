@@ -48,15 +48,16 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     def _after_jpeg_open(self, mpheader=None):
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
-        self.__framecount = self.mpinfo[0xB001]
+        self.n_frames = self.mpinfo[0xB001]
         self.__mpoffsets = [
             mpent["DataOffset"] + self.info["mpoffset"] for mpent in self.mpinfo[0xB002]
         ]
         self.__mpoffsets[0] = 0
         # Note that the following assertion will only be invalid if something
         # gets broken within JpegImagePlugin.
-        assert self.__framecount == len(self.__mpoffsets)
+        assert self.n_frames == len(self.__mpoffsets)
         del self.info["mpoffset"]  # no longer needed
+        self.is_animated = self.n_frames > 1
         self.__fp = self.fp  # FIXME: hack
         self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
@@ -66,14 +67,6 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     def load_seek(self, pos):
         self.__fp.seek(pos)
-
-    @property
-    def n_frames(self):
-        return self.__framecount
-
-    @property
-    def is_animated(self):
-        return self.__framecount > 1
 
     def seek(self, frame):
         if not self._seek_check(frame):

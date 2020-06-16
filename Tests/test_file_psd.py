@@ -125,5 +125,5 @@ def test_combined_larger_than_size():
 
     # If we instead take the 'size' of the extra data field as the source of truth,
     # then the seek can't be negative
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open("Tests/images/combined_larger_than_size.psd")

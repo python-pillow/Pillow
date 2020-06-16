@@ -30,6 +30,7 @@
 import io
 import struct
 import sys
+import warnings
 
 from . import Image
 from ._util import isPath
@@ -49,7 +50,12 @@ ERRORS = {
 }
 
 
-def raise_ioerror(error):
+#
+# --------------------------------------------------------------------
+# Helpers
+
+
+def raise_oserror(error):
     try:
         message = Image.core.getcodecstatus(error)
     except AttributeError:
@@ -59,9 +65,13 @@ def raise_ioerror(error):
     raise OSError(message + " when reading image file")
 
 
-#
-# --------------------------------------------------------------------
-# Helpers
+def raise_ioerror(error):
+    warnings.warn(
+        "raise_ioerror is deprecated and will be removed in a future release. "
+        "Use raise_oserror instead.",
+        DeprecationWarning,
+    )
+    return raise_oserror(error)
 
 
 def _tilesort(t):
@@ -140,10 +150,10 @@ class ImageFile(Image.Image):
     def load(self):
         """Load image data based on tile list"""
 
-        pixel = Image.Image.load(self)
-
         if self.tile is None:
             raise OSError("cannot load this image")
+
+        pixel = Image.Image.load(self)
         if not self.tile:
             return pixel
 
@@ -267,7 +277,7 @@ class ImageFile(Image.Image):
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
-            raise_ioerror(err_code)
+            raise_oserror(err_code)
 
         return Image.Image.load(self)
 
@@ -358,7 +368,7 @@ class Parser:
         (Consumer) Feed data to the parser.
 
         :param data: A string buffer.
-        :exception IOError: If the parser failed to parse the image file.
+        :exception OSError: If the parser failed to parse the image file.
         """
         # collect data
 
@@ -390,7 +400,7 @@ class Parser:
                 if e < 0:
                     # decoding error
                     self.image = None
-                    raise_ioerror(e)
+                    raise_oserror(e)
                 else:
                     # end of image
                     return
@@ -444,7 +454,7 @@ class Parser:
         (Consumer) Close the stream.
 
         :returns: An image object.
-        :exception IOError: If the parser failed to parse the image file either
+        :exception OSError: If the parser failed to parse the image file either
                             because it cannot be identified or cannot be
                             decoded.
         """

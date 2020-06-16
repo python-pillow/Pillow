@@ -69,6 +69,16 @@ Passing a different value on Windows or macOS will force taking a snapshot
 using the selected X server; pass an empty string to use the default X server.
 XCB support is not included in pre-compiled wheels for Windows and macOS.
 
+Security
+========
+
+This release includes security fixes.
+
+* CVE-2020-10177 Fix multiple OOB reads in FLI decoding
+* CVE-2020-10378 Fix bounds overflow in PCX decoding
+* CVE-2020-10379 Fix two buffer overflows in TIFF decoding
+* CVE-2020-10994 Fix bounds overflow in JPEG 2000 decoding
+* CVE-2020-11538 Fix buffer overflow in SGI-RLE decoding
 
 Other Changes
 =============

@@ -569,6 +569,20 @@ def test_polygon_kite():
         assert_image_equal(im, Image.open(expected))
 
 
+def test_polygon_1px_high():
+    # Test drawing a 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (3, 3))
+    draw = ImageDraw.Draw(im)
+    expected = "Tests/images/imagedraw_polygon_1px_high.png"
+
+    # Act
+    draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
+
+    # Assert
+    assert_image_equal(im, Image.open(expected))
+
+
 def helper_rectangle(bbox):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -911,28 +925,93 @@ def test_wide_line_dot():
     assert_image_similar(im, Image.open(expected), 1)
 
 
-def test_line_joint():
+@pytest.mark.parametrize(
+    "xy",
+    [
+        [
+            (400, 280),
+            (380, 280),
+            (450, 280),
+            (440, 120),
+            (350, 200),
+            (310, 280),
+            (300, 280),
+            (250, 280),
+            (250, 200),
+            (150, 200),
+            (150, 260),
+            (50, 200),
+            (150, 50),
+            (250, 100),
+        ],
+        (
+            400,
+            280,
+            380,
+            280,
+            450,
+            280,
+            440,
+            120,
+            350,
+            200,
+            310,
+            280,
+            300,
+            280,
+            250,
+            280,
+            250,
+            200,
+            150,
+            200,
+            150,
+            260,
+            50,
+            200,
+            150,
+            50,
+            250,
+            100,
+        ),
+        [
+            400,
+            280,
+            380,
+            280,
+            450,
+            280,
+            440,
+            120,
+            350,
+            200,
+            310,
+            280,
+            300,
+            280,
+            250,
+            280,
+            250,
+            200,
+            150,
+            200,
+            150,
+            260,
+            50,
+            200,
+            150,
+            50,
+            250,
+            100,
+        ],
+    ],
+)
+def test_line_joint(xy):
     im = Image.new("RGB", (500, 325))
     draw = ImageDraw.Draw(im)
     expected = "Tests/images/imagedraw_line_joint_curve.png"
 
     # Act
-    xy = [
-        (400, 280),
-        (380, 280),
-        (450, 280),
-        (440, 120),
-        (350, 200),
-        (310, 280),
-        (300, 280),
-        (250, 280),
-        (250, 200),
-        (150, 200),
-        (150, 260),
-        (50, 200),
-        (150, 50),
-        (250, 100),
-    ]
     draw.line(xy, GRAY, 50, "curve")
 
     # Assert

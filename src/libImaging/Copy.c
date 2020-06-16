@@ -25,21 +25,25 @@ _copy(Imaging imOut, Imaging imIn)
     ImagingSectionCookie cookie;
     int y;
 
-    if (!imIn)
-	return (Imaging) ImagingError_ValueError(NULL);
+    if (!imIn) {
+        return (Imaging) ImagingError_ValueError(NULL);
+    }
 
     imOut = ImagingNew2Dirty(imIn->mode, imOut, imIn);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
-    if (imIn->block != NULL && imOut->block != NULL)
-	memcpy(imOut->block, imIn->block, imIn->ysize * imIn->linesize);
-    else
-        for (y = 0; y < imIn->ysize; y++)
+    if (imIn->block != NULL && imOut->block != NULL) {
+        memcpy(imOut->block, imIn->block, imIn->ysize * imIn->linesize);
+    } else {
+        for (y = 0; y < imIn->ysize; y++) {
             memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+        }
+    }
     ImagingSectionLeave(&cookie);
 
     return imOut;

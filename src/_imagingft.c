@@ -31,7 +31,7 @@
 
 #define KEEP_PY_UNICODE
 
-#if !defined(_MSC_VER)
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
@@ -137,13 +137,14 @@ geterror(int code)
 {
     int i;
 
-    for (i = 0; ft_errors[i].message; i++)
+    for (i = 0; ft_errors[i].message; i++) {
         if (ft_errors[i].code == code) {
-            PyErr_SetString(PyExc_IOError, ft_errors[i].message);
+            PyErr_SetString(PyExc_OSError, ft_errors[i].message);
             return NULL;
         }
+    }
 
-    PyErr_SetString(PyExc_IOError, "unknown freetype error");
+    PyErr_SetString(PyExc_OSError, "unknown freetype error");
     return NULL;
 }
 
@@ -154,20 +155,24 @@ setraqm(void)
     p_raqm.raqm = NULL;
 
     /* Microsoft needs a totally different system */
-#if !defined(_MSC_VER)
+#ifndef _WIN32
     p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
     if (!p_raqm.raqm) {
         p_raqm.raqm = dlopen("libraqm.dylib", RTLD_LAZY);
     }
 #else
     p_raqm.raqm = LoadLibrary("libraqm");
+    /* MSYS */
+    if (!p_raqm.raqm) {
+        p_raqm.raqm = LoadLibrary("libraqm-0");
+    }
 #endif
 
     if (!p_raqm.raqm) {
         return 1;
     }
 
-#if !defined(_MSC_VER)
+#ifndef _WIN32
     p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
@@ -259,7 +264,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 
     if (!library) {
         PyErr_SetString(
-            PyExc_IOError,
+            PyExc_OSError,
             "failed to initialize FreeType library"
             );
         return NULL;
@@ -274,8 +279,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
-        if (filename)
+        if (filename) {
             PyMem_Free(filename);
+        }
         return NULL;
     }
 
@@ -299,8 +305,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         }
     }
 
-    if (!error)
+    if (!error) {
         error = FT_Set_Pixel_Sizes(self->face, 0, size);
+    }
 
     if (!error && encoding && strlen((char*) encoding) == 4) {
         FT_Encoding encoding_tag = FT_MAKE_TAG(
@@ -308,8 +315,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
             );
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
-    if (filename)
+    if (filename) {
       PyMem_Free(filename);
+    }
 
     if (error) {
         if (self->font_bytes) {
@@ -327,8 +335,9 @@ static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
     if (PyUnicode_Check(string)) {
-        if (index >= PyUnicode_GET_LENGTH(string))
+        if (index >= PyUnicode_GET_LENGTH(string)) {
             return 0;
+        }
         *char_out = PyUnicode_READ_CHAR(string, index);
         return 1;
     }
@@ -401,11 +410,11 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
 
     direction = RAQM_DIRECTION_DEFAULT;
     if (dir) {
-        if (strcmp(dir, "rtl") == 0)
+        if (strcmp(dir, "rtl") == 0) {
             direction = RAQM_DIRECTION_RTL;
-        else if (strcmp(dir, "ltr") == 0)
+        } else if (strcmp(dir, "ltr") == 0) {
             direction = RAQM_DIRECTION_LTR;
-        else if (strcmp(dir, "ttb") == 0) {
+        } else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
             if (p_raqm.version_atleast == NULL || !(*p_raqm.version_atleast)(0, 7, 0)) {
                 PyErr_SetString(PyExc_ValueError, "libraqm 0.7 or greater required for 'ttb' direction");
@@ -443,8 +452,9 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
 
             if (PyUnicode_Check(item)) {
                 bytes = PyUnicode_AsUTF8String(item);
-                if (bytes == NULL)
+                if (bytes == NULL) {
                     goto failed;
+                }
                 feature = PyBytes_AS_STRING(bytes);
                 size = PyBytes_GET_SIZE(bytes);
             }
@@ -547,7 +557,7 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         return 0;
     }
 
-    load_flags = FT_LOAD_RENDER|FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_NO_BITMAP;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
@@ -608,8 +618,9 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang))
+    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang)) {
         return NULL;
+    }
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
     if (PyErr_Occurred()) {
@@ -631,8 +642,9 @@ font_getsize(FontObject* self, PyObject* args)
          *   Yifu Yu<root@jackyyf.com>, 2014-10-15
          */
         error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         if (i == 0) {
             if (horizontal_dir) {
@@ -657,21 +669,26 @@ font_getsize(FontObject* self, PyObject* args)
             offset = glyph_info[i].x_advance -
                     face->glyph->metrics.width -
                     face->glyph->metrics.horiBearingX;
-            if (offset < 0)
+            if (offset < 0) {
                 x_advanced -= offset;
-            if (x_advanced > x_max)
+            }
+            if (x_advanced > x_max) {
                 x_max = x_advanced;
+            }
 
             bbox.yMax += glyph_info[i].y_offset;
             bbox.yMin += glyph_info[i].y_offset;
-            if (bbox.yMax > y_max)
+            if (bbox.yMax > y_max) {
                 y_max = bbox.yMax;
-            if (bbox.yMin < y_min)
+            }
+            if (bbox.yMin < y_min) {
                 y_min = bbox.yMin;
+            }
 
             // find max distance of baseline from top
-            if (face->glyph->metrics.horiBearingY > yoffset)
+            if (face->glyph->metrics.horiBearingY > yoffset) {
                 yoffset = face->glyph->metrics.horiBearingY;
+            }
         } else {
             y_max -= glyph_info[i].y_advance;
 
@@ -681,14 +698,17 @@ font_getsize(FontObject* self, PyObject* args)
                 offset = -glyph_info[i].y_advance -
                         face->glyph->metrics.height -
                         face->glyph->metrics.vertBearingY;
-                if (offset < 0)
+                if (offset < 0) {
                     y_max -= offset;
+                }
             }
 
-            if (bbox.xMax > x_max)
+            if (bbox.xMax > x_max) {
                 x_max = bbox.xMax;
-            if (i == 0 || bbox.xMin < x_min)
+            }
+            if (i == 0 || bbox.xMin < x_min) {
                 x_min = bbox.xMin;
+            }
         }
 
         FT_Done_Glyph(glyph);
@@ -702,20 +722,22 @@ font_getsize(FontObject* self, PyObject* args)
     if (face) {
         if (horizontal_dir) {
             // left bearing
-            if (xoffset < 0)
+            if (xoffset < 0) {
                 x_max -= xoffset;
-            else
+            } else {
                 xoffset = 0;
+            }
 
             /* difference between the font ascender and the distance of
              * the baseline from the top */
             yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
         } else {
             // top bearing
-            if (yoffset < 0)
+            if (yoffset < 0) {
                 y_max -= yoffset;
-            else
+            } else {
                 yoffset = 0;
+            }
         }
     }
 
@@ -800,8 +822,9 @@ font_render(FontObject* self, PyObject* args)
 
         temp = bitmap.rows - glyph_slot->bitmap_top;
         temp -= PIXEL(glyph_info[i].y_offset);
-        if (temp > ascender)
+        if (temp > ascender) {
             ascender = temp;
+        }
     }
 
     if (stroker == NULL) {
@@ -855,10 +878,12 @@ font_render(FontObject* self, PyObject* args)
 
         x0 = 0;
         x1 = bitmap.width;
-        if (xx < 0)
+        if (xx < 0) {
             x0 = -xx;
-        if (xx + x1 > im->xsize)
+        }
+        if (xx + x1 > im->xsize) {
             x1 = im->xsize - xx;
+        }
 
         source = (unsigned char*) bitmap.buffer;
         for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++) {
@@ -876,8 +901,9 @@ font_render(FontObject* self, PyObject* args)
                     // use monochrome mask (on palette images, etc)
                     int j, k, m = 128;
                     for (j = k = 0; j < x1; j++) {
-                        if (j >= x0 && (source[k] & m))
+                        if (j >= x0 && (source[k] & m)) {
                             target[j] = 255;
+                        }
                         if (!(m >>= 1)) {
                             m = 128;
                             k++;
@@ -887,8 +913,9 @@ font_render(FontObject* self, PyObject* args)
                     // use antialiased rendering
                     int k;
                     for (k = x0; k < x1; k++) {
-                        if (target[k] < source[k])
+                        if (target[k] < source[k]) {
                             target[k] = source[k];
+                        }
                     }
                 }
             }
@@ -919,8 +946,9 @@ font_render(FontObject* self, PyObject* args)
         PyObject *list_names, *list_name;
 
         error = FT_Get_MM_Var(self->face, &master);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         num_namedstyles = master->num_namedstyles;
         list_names = PyList_New(num_namedstyles);
@@ -928,12 +956,14 @@ font_render(FontObject* self, PyObject* args)
         name_count = FT_Get_Sfnt_Name_Count(self->face);
         for (i = 0; i < name_count; i++) {
             error = FT_Get_Sfnt_Name(self->face, i, &name);
-            if (error)
+            if (error) {
                 return geterror(error);
+            }
 
             for (j = 0; j < num_namedstyles; j++) {
-                if (PyList_GetItem(list_names, j) != NULL)
+                if (PyList_GetItem(list_names, j) != NULL) {
                     continue;
+                }
 
                 if (master->namedstyle[j].strid == name.name_id) {
                     list_name = Py_BuildValue("y#", name.string, name.string_len);
@@ -958,8 +988,9 @@ font_render(FontObject* self, PyObject* args)
         FT_SfntName name;
         PyObject *list_axes, *list_axis, *axis_name;
         error = FT_Get_MM_Var(self->face, &master);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         num_axis = master->num_axis;
         name_count = FT_Get_Sfnt_Name_Count(self->face);
@@ -978,8 +1009,9 @@ font_render(FontObject* self, PyObject* args)
 
             for (j = 0; j < name_count; j++) {
                 error = FT_Get_Sfnt_Name(self->face, j, &name);
-                if (error)
+                if (error) {
                     return geterror(error);
+                }
 
                 if (name.name_id == axis.strid) {
                     axis_name = Py_BuildValue("y#", name.string, name.string_len);
@@ -1002,12 +1034,14 @@ font_render(FontObject* self, PyObject* args)
         int error;
 
         int instance_index;
-        if (!PyArg_ParseTuple(args, "i", &instance_index))
+        if (!PyArg_ParseTuple(args, "i", &instance_index)) {
             return NULL;
+        }
 
         error = FT_Set_Named_Instance(self->face, instance_index);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         Py_INCREF(Py_None);
         return Py_None;
@@ -1022,8 +1056,9 @@ font_render(FontObject* self, PyObject* args)
         Py_ssize_t i, num_coords;
         FT_Fixed *coords;
         FT_Fixed coord;
-        if (!PyArg_ParseTuple(args, "O", &axes))
+        if (!PyArg_ParseTuple(args, "O", &axes)) {
             return NULL;
+        }
 
         if (!PyList_Check(axes)) {
             PyErr_SetString(PyExc_TypeError, "argument must be a list");
@@ -1037,13 +1072,13 @@ font_render(FontObject* self, PyObject* args)
         }
         for (i = 0; i < num_coords; i++) {
             item = PyList_GET_ITEM(axes, i);
-            if (PyFloat_Check(item))
+            if (PyFloat_Check(item)) {
                 coord = PyFloat_AS_DOUBLE(item);
-            else if (PyLong_Check(item))
+            } else if (PyLong_Check(item)) {
                 coord = (float) PyLong_AS_LONG(item);
-            else if (PyNumber_Check(item))
+            } else if (PyNumber_Check(item)) {
                 coord = PyFloat_AsDouble(item);
-            else {
+            } else {
                 free(coords);
                 PyErr_SetString(PyExc_TypeError, "list must contain numbers");
                 return NULL;
@@ -1053,8 +1088,9 @@ font_render(FontObject* self, PyObject* args)
 
         error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);
         free(coords);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         Py_INCREF(Py_None);
         return Py_None;
@@ -1090,16 +1126,18 @@ static PyMethodDef font_methods[] = {
 static PyObject*
 font_getattr_family(FontObject* self, void* closure)
 {
-    if (self->face->family_name)
+    if (self->face->family_name) {
         return PyUnicode_FromString(self->face->family_name);
+    }
     Py_RETURN_NONE;
 }
 
 static PyObject*
 font_getattr_style(FontObject* self, void* closure)
 {
-    if (self->face->style_name)
+    if (self->face->style_name) {
         return PyUnicode_FromString(self->face->style_name);
+    }
     Py_RETURN_NONE;
 }
 
@@ -1200,8 +1238,9 @@ setup_module(PyObject* m) {
     /* Ready object type */
     PyType_Ready(&Font_Type);
 
-    if (FT_Init_FreeType(&library))
+    if (FT_Init_FreeType(&library)) {
         return 0; /* leave it uninitialized */
+    }
 
     FT_Library_Version(library, &major, &minor, &patch);
 
@@ -1230,8 +1269,9 @@ PyInit__imagingft(void) {
 
     m = PyModule_Create(&module_def);
 
-    if (setup_module(m) < 0)
+    if (setup_module(m) < 0) {
         return NULL;
+    }
 
     return m;
 }

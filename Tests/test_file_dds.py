@@ -138,7 +138,7 @@ def test_short_header():
     def short_header():
         Image.open(BytesIO(img_file[:119]))
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         short_header()
 
 
@@ -152,7 +152,7 @@ def test_short_file():
         with Image.open(BytesIO(img_file[:-100])) as im:
             im.load()
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         short_file()
 
 

@@ -22,8 +22,9 @@ static inline UINT32
 hash(const char* mode)
 {
     UINT32 i = ACCESS_TABLE_HASH;
-    while (*mode)
+    while (*mode) {
         i = ((i<<5) + i) ^ (UINT8) *mode++;
+    }
     return i % ACCESS_TABLE_SIZE;
 }
 
@@ -149,10 +150,11 @@ get_pixel_32B(Imaging im, int x, int y, void* color)
 static void
 put_pixel(Imaging im, int x, int y, const void* color)
 {
-    if (im->image8)
+    if (im->image8) {
         im->image8[y][x] = *((UINT8*) color);
-    else
+    } else {
         memcpy(&im->image32[y][x], color, sizeof(INT32));
+    }
 }
 
 static void
@@ -237,8 +239,9 @@ ImagingAccess
 ImagingAccessNew(Imaging im)
 {
     ImagingAccess access = &access_table[hash(im->mode)];
-    if (im->mode[0] != access->mode[0] || strcmp(im->mode, access->mode) != 0)
+    if (im->mode[0] != access->mode[0] || strcmp(im->mode, access->mode) != 0) {
         return NULL;
+    }
     return access;
 }
 

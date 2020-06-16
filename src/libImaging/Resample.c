@@ -13,28 +13,34 @@ struct filter {
 
 static inline double box_filter(double x)
 {
-    if (x > -0.5 && x <= 0.5)
+    if (x > -0.5 && x <= 0.5) {
         return 1.0;
+    }
     return 0.0;
 }
 
 static inline double bilinear_filter(double x)
 {
-    if (x < 0.0)
+    if (x < 0.0) {
         x = -x;
-    if (x < 1.0)
+    }
+    if (x < 1.0) {
         return 1.0-x;
+    }
     return 0.0;
 }
 
 static inline double hamming_filter(double x)
 {
-    if (x < 0.0)
+    if (x < 0.0) {
         x = -x;
-    if (x == 0.0)
+    }
+    if (x == 0.0) {
         return 1.0;
-    if (x >= 1.0)
+    }
+    if (x >= 1.0) {
         return 0.0;
+    }
     x = x * M_PI;
     return sin(x) / x * (0.54f + 0.46f * cos(x));
 }
@@ -43,20 +49,24 @@ static inline double bicubic_filter(double x)
 {
     /* https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm */
 #define a -0.5
-    if (x < 0.0)
+    if (x < 0.0) {
         x = -x;
-    if (x < 1.0)
+    }
+    if (x < 1.0) {
         return ((a + 2.0) * x - (a + 3.0)) * x*x + 1;
-    if (x < 2.0)
+    }
+    if (x < 2.0) {
         return (((x - 5) * x + 8) * x - 4) * a;
+    }
     return 0.0;
 #undef a
 }
 
 static inline double sinc_filter(double x)
 {
-    if (x == 0.0)
+    if (x == 0.0) {
         return 1.0;
+    }
     x = x * M_PI;
     return sin(x) / x;
 }
@@ -64,8 +74,9 @@ static inline double sinc_filter(double x)
 static inline double lanczos_filter(double x)
 {
     /* truncated sinc */
-    if (-3.0 <= x && x < 3.0)
+    if (-3.0 <= x && x < 3.0) {
         return sinc_filter(x) * sinc_filter(x/3);
+    }
     return 0.0;
 }
 
@@ -224,12 +235,14 @@ precompute_coeffs(int inSize, float in0, float in1, int outSize,
         ss = 1.0 / filterscale;
         // Round the value
         xmin = (int) (center - support + 0.5);
-        if (xmin < 0)
+        if (xmin < 0) {
             xmin = 0;
+        }
         // Round the value
         xmax = (int) (center + support + 0.5);
-        if (xmax > inSize)
+        if (xmax > inSize) {
             xmax = inSize;
+        }
         xmax -= xmin;
         k = &kk[xx * ksize];
         for (x = 0; x < xmax; x++) {
@@ -238,8 +251,9 @@ precompute_coeffs(int inSize, float in0, float in1, int outSize,
             ww += w;
         }
         for (x = 0; x < xmax; x++) {
-            if (ww != 0.0)
+            if (ww != 0.0) {
                 k[x] /= ww;
+            }
         }
         // Remaining values should stay empty if they are used despite of xmax.
         for (; x < ksize; x++) {
@@ -295,8 +309,9 @@ ImagingResampleHorizontal_8bpc(Imaging imOut, Imaging imIn, int offset,
                 xmax = bounds[xx * 2 + 1];
                 k = &kk[xx * ksize];
                 ss0 = 1 << (PRECISION_BITS -1);
-                for (x = 0; x < xmax; x++)
+                for (x = 0; x < xmax; x++) {
                     ss0 += ((UINT8) imIn->image8[yy + offset][x + xmin]) * k[x];
+                }
                 imOut->image8[yy][xx] = clip8(ss0);
             }
         }
@@ -379,8 +394,9 @@ ImagingResampleVertical_8bpc(Imaging imOut, Imaging imIn, int offset,
             ymax = bounds[yy * 2 + 1];
             for (xx = 0; xx < imOut->xsize; xx++) {
                 ss0 = 1 << (PRECISION_BITS -1);
-                for (y = 0; y < ymax; y++)
+                for (y = 0; y < ymax; y++) {
                     ss0 += ((UINT8) imIn->image8[y + ymin][xx]) * k[y];
+                }
                 imOut->image8[yy][xx] = clip8(ss0);
             }
         }
@@ -460,8 +476,9 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, int offset,
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss = 0.0;
-                    for (x = 0; x < xmax; x++)
+                    for (x = 0; x < xmax; x++) {
                         ss += IMAGING_PIXEL_I(imIn, x + xmin, yy + offset) * k[x];
+                    }
                     IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
                 }
             }
@@ -474,8 +491,9 @@ ImagingResampleHorizontal_32bpc(Imaging imOut, Imaging imIn, int offset,
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss = 0.0;
-                    for (x = 0; x < xmax; x++)
+                    for (x = 0; x < xmax; x++) {
                         ss += IMAGING_PIXEL_F(imIn, x + xmin, yy + offset) * k[x];
+                    }
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
             }
@@ -503,8 +521,9 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, int offset,
                 k = &kk[yy * ksize];
                 for (xx = 0; xx < imOut->xsize; xx++) {
                     ss = 0.0;
-                    for (y = 0; y < ymax; y++)
+                    for (y = 0; y < ymax; y++) {
                         ss += IMAGING_PIXEL_I(imIn, xx, y + ymin) * k[y];
+                    }
                     IMAGING_PIXEL_I(imOut, xx, yy) = ROUND_UP(ss);
                 }
             }
@@ -517,8 +536,9 @@ ImagingResampleVertical_32bpc(Imaging imOut, Imaging imIn, int offset,
                 k = &kk[yy * ksize];
                 for (xx = 0; xx < imOut->xsize; xx++) {
                     ss = 0.0;
-                    for (y = 0; y < ymax; y++)
+                    for (y = 0; y < ymax; y++) {
                         ss += IMAGING_PIXEL_F(imIn, xx, y + ymin) * k[y];
+                    }
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
             }
@@ -546,8 +566,9 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4])
     ResampleFunction ResampleHorizontal;
     ResampleFunction ResampleVertical;
 
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0)
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     if (imIn->type == IMAGING_TYPE_SPECIAL) {
         return (Imaging) ImagingError_ModeError();

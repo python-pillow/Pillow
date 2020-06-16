@@ -5,7 +5,7 @@
  * code to convert and unpack PhotoYCC data
  *
  * history:
- * 97-01-25 fl	Moved from PcdDecode.c
+ * 97-01-25 fl Moved from PcdDecode.c
  *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997.
@@ -116,12 +116,12 @@ static INT16 GR[] = { 127, 126, 125, 124, 123, 122, 121, 121, 120, 119,
 -85, -86, -87, -88, -89, -90, -91, -92, -93, -94, -94, -95, -96, -97,
 -98, -99, -100, -101, -102, -103, -104, -105, -106, -107, -107, -108 };
 
-#define	R 0
-#define	G 1
-#define	B 2
-#define	A 3
+#define R 0
+#define G 1
+#define B 2
+#define A 3
 
-#define	YCC2RGB(rgb, y, cb, cr) {\
+#define YCC2RGB(rgb, y, cb, cr) {\
     int l = L[y];\
     int r = l + CR[cr];\
     int g = l + GR[cr] + GB[cb];\
@@ -137,9 +137,9 @@ ImagingUnpackYCC(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* PhotoYCC triplets */
     for (i = 0; i < pixels; i++) {
-	YCC2RGB(out, in[0], in[1], in[2]);
-	out[A] = 255;
-	out += 4; in += 3;
+        YCC2RGB(out, in[0], in[1], in[2]);
+        out[A] = 255;
+        out += 4; in += 3;
     }
 }
 
@@ -149,14 +149,14 @@ ImagingUnpackYCCA(UINT8* out, const UINT8* in, int pixels)
     int i;
     /* PhotoYCC triplets plus premultiplied alpha */
     for (i = 0; i < pixels; i++) {
-	/* Divide by alpha */
-	UINT8 rgb[3];
-	rgb[0] = (in[3] == 0) ? 0 : (((int) in[0] * 255) / in[3]);
-	rgb[1] = (in[3] == 0) ? 0 : (((int) in[1] * 255) / in[3]);
-	rgb[2] = (in[3] == 0) ? 0 : (((int) in[2] * 255) / in[3]);
-	/* Convert non-multiplied data to RGB */
-	YCC2RGB(out, rgb[0], rgb[1], rgb[2]);
-	out[A] = in[3];
-	out += 4; in += 4;
+        /* Divide by alpha */
+        UINT8 rgb[3];
+        rgb[0] = (in[3] == 0) ? 0 : (((int) in[0] * 255) / in[3]);
+        rgb[1] = (in[3] == 0) ? 0 : (((int) in[1] * 255) / in[3]);
+        rgb[2] = (in[3] == 0) ? 0 : (((int) in[2] * 255) / in[3]);
+        /* Convert non-multiplied data to RGB */
+        YCC2RGB(out, rgb[0], rgb[1], rgb[2]);
+        out[A] = in[3];
+        out += 4; in += 4;
     }
 }

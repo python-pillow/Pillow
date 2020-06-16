@@ -47,12 +47,14 @@ PyImaging_MapperNew(const char* filename, int readonly)
 {
     ImagingMapperObject *mapper;
 
-    if (PyType_Ready(&ImagingMapperType) < 0)
+    if (PyType_Ready(&ImagingMapperType) < 0) {
         return NULL;
+    }
 
     mapper = PyObject_New(ImagingMapperObject, &ImagingMapperType);
-    if (mapper == NULL)
+    if (mapper == NULL) {
         return NULL;
+    }
 
     mapper->base = NULL;
     mapper->size = mapper->offset = 0;
@@ -70,7 +72,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
         FILE_ATTRIBUTE_NORMAL,
         NULL);
     if (mapper->hFile == (HANDLE)-1) {
-        PyErr_SetString(PyExc_IOError, "cannot open file");
+        PyErr_SetString(PyExc_OSError, "cannot open file");
         Py_DECREF(mapper);
         return NULL;
     }
@@ -81,7 +83,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
         0, 0, NULL);
     if (mapper->hMap == (HANDLE)-1) {
         CloseHandle(mapper->hFile);
-        PyErr_SetString(PyExc_IOError, "cannot map file");
+        PyErr_SetString(PyExc_OSError, "cannot map file");
         Py_DECREF(mapper);
         return NULL;
     }
@@ -101,12 +103,15 @@ static void
 mapping_dealloc(ImagingMapperObject* mapper)
 {
 #ifdef _WIN32
-    if (mapper->base != 0)
+    if (mapper->base != 0) {
         UnmapViewOfFile(mapper->base);
-    if (mapper->hMap != (HANDLE)-1)
+    }
+    if (mapper->hMap != (HANDLE)-1) {
         CloseHandle(mapper->hMap);
-    if (mapper->hFile != (HANDLE)-1)
+    }
+    if (mapper->hFile != (HANDLE)-1) {
         CloseHandle(mapper->hFile);
+    }
     mapper->base = 0;
     mapper->hMap = mapper->hFile = (HANDLE)-1;
 #endif
@@ -122,18 +127,22 @@ mapping_read(ImagingMapperObject* mapper, PyObject* args)
     PyObject* buf;
 
     int size = -1;
-    if (!PyArg_ParseTuple(args, "|i", &size))
+    if (!PyArg_ParseTuple(args, "|i", &size)) {
         return NULL;
+    }
 
     /* check size */
-    if (size < 0 || mapper->offset + size > mapper->size)
+    if (size < 0 || mapper->offset + size > mapper->size) {
         size = mapper->size - mapper->offset;
-    if (size < 0)
+    }
+    if (size < 0) {
         size = 0;
+    }
 
     buf = PyBytes_FromStringAndSize(NULL, size);
-    if (!buf)
+    if (!buf) {
         return NULL;
+    }
 
     if (size > 0) {
         memcpy(PyBytes_AsString(buf), mapper->base + mapper->offset, size);
@@ -148,8 +157,9 @@ mapping_seek(ImagingMapperObject* mapper, PyObject* args)
 {
     int offset;
     int whence = 0;
-    if (!PyArg_ParseTuple(args, "i|i", &offset, &whence))
+    if (!PyArg_ParseTuple(args, "i|i", &offset, &whence)) {
         return NULL;
+    }
 
     switch (whence) {
         case 0: /* SEEK_SET */
@@ -193,37 +203,43 @@ mapping_readimage(ImagingMapperObject* mapper, PyObject* args)
     int stride;
     int orientation;
     if (!PyArg_ParseTuple(args, "s(ii)ii", &mode, &xsize, &ysize,
-                          &stride, &orientation))
+                          &stride, &orientation)) {
         return NULL;
+    }
 
     if (stride <= 0) {
         /* FIXME: maybe we should call ImagingNewPrologue instead */
-        if (!strcmp(mode, "L") || !strcmp(mode, "P"))
+        if (!strcmp(mode, "L") || !strcmp(mode, "P")) {
             stride = xsize;
-        else if (!strcmp(mode, "I;16") || !strcmp(mode, "I;16B"))
+        } else if (!strcmp(mode, "I;16") || !strcmp(mode, "I;16B")) {
             stride = xsize * 2;
-        else
+        } else {
             stride = xsize * 4;
+        }
     }
 
     size = ysize * stride;
 
     if (mapper->offset + size > mapper->size) {
-        PyErr_SetString(PyExc_IOError, "image file truncated");
+        PyErr_SetString(PyExc_OSError, "image file truncated");
         return NULL;
     }
 
     im = ImagingNewPrologue(mode, xsize, ysize);
-    if (!im)
+    if (!im) {
         return NULL;
+    }
 
     /* setup file pointers */
-    if (orientation > 0)
-        for (y = 0; y < ysize; y++)
+    if (orientation > 0) {
+        for (y = 0; y < ysize; y++) {
             im->image[y] = mapper->base + mapper->offset + y * stride;
-    else
-        for (y = 0; y < ysize; y++)
+        }
+    } else {
+        for (y = 0; y < ysize; y++) {
             im->image[ysize-y-1] = mapper->base + mapper->offset + y * stride;
+        }
+    }
 
     im->destroy = ImagingDestroyMap;
 
@@ -279,8 +295,9 @@ PyObject*
 PyImaging_Mapper(PyObject* self, PyObject* args)
 {
     char* filename;
-    if (!PyArg_ParseTuple(args, "s", &filename))
+    if (!PyArg_ParseTuple(args, "s", &filename)) {
         return NULL;
+    }
 
     return (PyObject*) PyImaging_MapperNew(filename, 1);
 }
@@ -319,8 +336,9 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     int ystep;
 
     if (!PyArg_ParseTuple(args, "O(ii)sn(sii)", &target, &xsize, &ysize,
-                          &codec, &offset, &mode, &stride, &ystep))
+                          &codec, &offset, &mode, &stride, &ystep)) {
         return NULL;
+    }
 
     if (!PyImaging_CheckBuffer(target)) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
@@ -328,12 +346,13 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     }
 
     if (stride <= 0) {
-        if (!strcmp(mode, "L") || !strcmp(mode, "P"))
+        if (!strcmp(mode, "L") || !strcmp(mode, "P")) {
             stride = xsize;
-        else if (!strncmp(mode, "I;16", 4))
+        } else if (!strncmp(mode, "I;16", 4)) {
             stride = xsize * 2;
-        else
+        } else {
             stride = xsize * 4;
+        }
     }
 
     if (stride > 0 && ysize > PY_SSIZE_T_MAX / stride) {
@@ -349,8 +368,9 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     }
 
     /* check buffer size */
-    if (PyImaging_GetBuffer(target, &view) < 0)
+    if (PyImaging_GetBuffer(target, &view) < 0) {
         return NULL;
+    }
 
     if (view.len < 0) {
         PyErr_SetString(PyExc_ValueError, "buffer has negative size");
@@ -371,12 +391,15 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     }
 
     /* setup file pointers */
-    if (ystep > 0)
-        for (y = 0; y < ysize; y++)
+    if (ystep > 0) {
+        for (y = 0; y < ysize; y++) {
             im->image[y] = (char*)view.buf + offset + y * stride;
-    else
-        for (y = 0; y < ysize; y++)
+        }
+    } else {
+        for (y = 0; y < ysize; y++) {
             im->image[ysize-y-1] = (char*)view.buf + offset + y * stride;
+        }
+    }
 
     im->destroy = mapping_destroy_buffer;
 

@@ -26,7 +26,7 @@
 /* exception state */
 
 void *
-ImagingError_IOError(void)
+ImagingError_OSError(void)
 {
     fprintf(stderr, "*** exception: file access error\n");
     return NULL;
@@ -43,21 +43,20 @@ void *
 ImagingError_ModeError(void)
 {
     return ImagingError_ValueError("bad image mode");
-    return NULL;
 }
 
 void *
 ImagingError_Mismatch(void)
 {
     return ImagingError_ValueError("images don't match");
-    return NULL;
 }
 
 void *
 ImagingError_ValueError(const char *message)
 {
-    if (!message)
-	message = "exception: bad argument to function";
+    if (!message) {
+        message = "exception: bad argument to function";
+    }
     fprintf(stderr, "*** %s\n", message);
     return NULL;
 }

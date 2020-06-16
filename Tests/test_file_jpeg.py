@@ -147,7 +147,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
             f = str(tmp_path / "temp.jpg")
             icc_profile = im.info["icc_profile"]
-            # Should not raise IOError for image with icc larger than image size.
+            # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
                 format="JPEG",
@@ -219,7 +219,7 @@ class TestFileJpeg:
             gps_index = 34853
             expected_exif_gps = {
                 0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
+                2: 4294967295,
                 5: b"\x01",
                 30: 65535,
                 29: "1999:99:99 99:99:99",
@@ -241,7 +241,7 @@ class TestFileJpeg:
             36867: "2099:09:29 10:10:10",
             34853: {
                 0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
+                2: 4294967295,
                 5: b"\x01",
                 30: 65535,
                 29: "1999:99:99 99:99:99",
@@ -253,11 +253,11 @@ class TestFileJpeg:
             271: "Make",
             272: "XXX-XXX",
             305: "PIL",
-            42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
+            42034: (1, 1, 1, 1),
             42035: "LensMake",
             34856: b"\xaa\xaa\xaa\xaa\xaa\xaa",
-            282: (4294967295, 1),
-            33434: (4294967295, 1),
+            282: 4294967295,
+            33434: 4294967295,
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
@@ -379,14 +379,14 @@ class TestFileJpeg:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
             assert im.getbbox() is not None
 
-    def test_truncated_jpeg_throws_IOError(self):
+    def test_truncated_jpeg_throws_oserror(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         with Image.open(filename) as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     def test_qtables(self, tmp_path):
@@ -500,7 +500,7 @@ class TestFileJpeg:
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 0)
+            assert_image_similar(img, Image.open(TEST_FILE), 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -552,7 +552,7 @@ class TestFileJpeg:
         out = BytesIO()
         for mode in ["LA", "La", "RGBA", "RGBa", "P"]:
             img = Image.new(mode, (20, 20))
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 img.save(out, "JPEG")
 
     def test_save_tiff_with_dpi(self, tmp_path):
@@ -647,6 +647,19 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
+    def test_exif_x_resolution(self, tmp_path):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif[282] == 180
+
+            out = str(tmp_path / "out.jpg")
+            with pytest.warns(None) as record:
+                im.save(out, exif=exif)
+            assert len(record) == 0
+
+        with Image.open(out) as reloaded:
+            assert reloaded.getexif()[282] == 180
+
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
         with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
@@ -689,6 +702,10 @@ class TestFileJpeg:
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
 
+    def test_icc_after_SOF(self):
+        with Image.open("Tests/images/icc-after-SOF.jpg") as im:
+            assert im.info["icc_profile"] == b"profile"
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")
@@ -702,7 +719,7 @@ class TestFileCloseW32:
         im = Image.open(tmpfile)
         fp = im.fp
         assert not fp.closed
-        with pytest.raises(WindowsError):
+        with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
         assert fp.closed

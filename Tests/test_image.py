@@ -57,7 +57,7 @@ class TestImage:
             assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
-        assert issubclass(UnidentifiedImageError, IOError)
+        assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
 
@@ -687,5 +687,5 @@ class TestRegistry:
         assert enc.args == ("RGB", "args", "extra")
 
     def test_encode_registry_fail(self):
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image._getencoder("RGB", "DoesNotExist", ("args",), extra=("extra",))

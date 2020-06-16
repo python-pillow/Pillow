@@ -106,8 +106,9 @@ j2k_pack_l(Imaging im, UINT8 *buf,
     unsigned x,y;
     for (y = 0; y < h; ++y) {
         UINT8 *data = (UINT8 *)(im->image[y + y0] + x0);
-        for (x = 0; x < w; ++x)
+        for (x = 0; x < w; ++x) {
             *ptr++ = *data++;
+        }
     }
 }
 
@@ -240,8 +241,9 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params)
             } else {
                 rate = ((float)(components * im->xsize * im->ysize * 8)
                         / (params->tcp_rates[n] * 8));
-                if (rate > CINEMA_24_CS_LENGTH)
+                if (rate > CINEMA_24_CS_LENGTH) {
                     params->tcp_rates[n] = max_rate;
+                }
             }
         }
 
@@ -257,8 +259,9 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params)
             } else {
                 rate = ((float)(components * im->xsize * im->ysize * 8)
                         / (params->tcp_rates[n] * 8));
-                if (rate > CINEMA_48_CS_LENGTH)
+                if (rate > CINEMA_48_CS_LENGTH) {
                     params->tcp_rates[n] = max_rate;
+                }
             }
         }
 
@@ -397,8 +400,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         float *pq;
 
         if (len) {
-            if (len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0]))
+            if (len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
                 len = sizeof(params.tcp_rates)/sizeof(params.tcp_rates[0]);
+            }
 
             params.tcp_numlayers = (int)len;
 
@@ -423,8 +427,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         params.cp_disto_alloc = 1;
     }
 
-    if (context->num_resolutions)
+    if (context->num_resolutions) {
         params.numresolution = context->num_resolutions;
+    }
 
     if (context->cblk_width >= 4 && context->cblk_width <= 1024
         && context->cblk_height >= 4 && context->cblk_height <= 1024
@@ -455,18 +460,21 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
     case OPJ_CINEMA2K_24:
     case OPJ_CINEMA2K_48:
         params.cp_rsiz = OPJ_CINEMA2K;
-        if (params.numresolution > 6)
+        if (params.numresolution > 6) {
             params.numresolution = 6;
+        }
         break;
     case OPJ_CINEMA4K_24:
         params.cp_rsiz = OPJ_CINEMA4K;
-        if (params.numresolution > 7)
+        if (params.numresolution > 7) {
             params.numresolution = 7;
+        }
         break;
     }
 
-    if (context->cinema_mode != OPJ_OFF)
+    if (context->cinema_mode != OPJ_OFF) {
         j2k_set_cinema_params(im, components, &params);
+    }
 
     /* Set up the reference grid in the image */
     image->x0 = params.image_offset_x0;
@@ -526,10 +534,12 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         unsigned ty1 = ty0 + tile_height;
         unsigned pixy, pixh;
 
-        if (ty0 < params.image_offset_y0)
+        if (ty0 < params.image_offset_y0) {
             ty0 = params.image_offset_y0;
-        if (ty1 > ysiz)
+        }
+        if (ty1 > ysiz) {
             ty1 = ysiz;
+        }
 
         pixy = ty0 - params.image_offset_y0;
         pixh = ty1 - ty0;
@@ -540,10 +550,12 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
             unsigned pixx, pixw;
             unsigned data_size;
 
-            if (tx0 < params.image_offset_x0)
+            if (tx0 < params.image_offset_x0) {
                 tx0 = params.image_offset_x0;
-            if (tx1 > xsiz)
+            }
+            if (tx1 > xsiz) {
                 tx1 = xsiz;
+            }
 
             pixx = tx0 - params.image_offset_x0;
             pixw = tx1 - tx0;
@@ -572,12 +584,15 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
     ret = -1;
 
  quick_exit:
-    if (codec)
+    if (codec) {
         opj_destroy_codec(codec);
-    if (image)
+    }
+    if (image) {
         opj_image_destroy(image);
-    if (stream)
+    }
+    if (stream) {
         opj_stream_destroy(stream);
+    }
 
     return ret;
 }
@@ -585,8 +600,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
 int
 ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
 {
-    if (state->state == J2K_STATE_FAILED)
+    if (state->state == J2K_STATE_FAILED) {
         return -1;
+    }
 
     if (state->state == J2K_STATE_START) {
 
@@ -611,8 +627,9 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
         context->quality_layers = NULL;
     }
 
-    if (context->error_msg)
+    if (context->error_msg) {
         free ((void *)context->error_msg);
+    }
 
     context->error_msg = NULL;
 

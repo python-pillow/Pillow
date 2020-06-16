@@ -484,10 +484,10 @@ def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
     def create_test_image():
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
-        nine_grid_deltas = [  # noqa: E131
+        nine_grid_deltas = [
             (-1, -1), (-1, 0), (-1, 1),
-             (0, -1),  (0, 0),  (0, 1),
-             (1, -1),  (1, 0),  (1, 1),
+            (0,  -1),  (0, 0),  (0, 1),
+            (1,  -1),  (1, 0),  (1, 1),
         ]
         # fmt: on
         chans = []

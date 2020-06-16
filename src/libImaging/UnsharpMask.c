@@ -14,10 +14,12 @@ typedef UINT8 pixel[4];
 
 static inline UINT8 clip8(int in)
 {
-    if (in >= 255)
+    if (in >= 255) {
        return 255;
-    if (in <= 0)
+    }
+    if (in <= 0) {
         return 0;
+    }
     return (UINT8) in;
 }
 
@@ -39,8 +41,9 @@ ImagingUnsharpMask(Imaging imOut, Imaging imIn, float radius, int percent,
     /* First, do a gaussian blur on the image, putting results in imOut
        temporarily. All format checks are in gaussian blur. */
     result = ImagingGaussianBlur(imOut, imIn, radius, 3);
-    if (!result)
+    if (!result) {
         return NULL;
+    }
 
     /* Now, go through each pixel, compare "normal" pixel to blurred
        pixel. If the difference is more than threshold values, apply

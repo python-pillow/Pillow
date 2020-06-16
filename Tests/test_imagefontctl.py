@@ -60,7 +60,7 @@ def test_complex_unicode_text():
 
     target = "Tests/images/test_complex_unicode_text2.png"
     with Image.open(target) as target_img:
-        assert_image_similar(im, target_img, 2.3)
+        assert_image_similar(im, target_img, 2.33)
 
 
 def test_text_direction_rtl():

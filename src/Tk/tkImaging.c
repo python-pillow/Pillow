@@ -68,8 +68,9 @@ ImagingFind(const char* name)
 #else
     id = atol(name);
 #endif
-    if (!id)
+    if (!id) {
         return NULL;
+    }
 
     return (Imaging) id;
 }
@@ -119,10 +120,11 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
         block.offset[0] = 0;
         block.offset[1] = 1;
         block.offset[2] = 2;
-        if (strcmp(im->mode, "RGBA") == 0)
+        if (strcmp(im->mode, "RGBA") == 0) {
             block.offset[3] = 3; /* alpha (or reserved, under 8.2) */
-        else
+        } else {
             block.offset[3] = 0; /* no alpha */
+        }
     } else {
         TCL_APPEND_RESULT(interp, "Bad mode", (char*) NULL);
         return TCL_ERROR;
@@ -136,10 +138,11 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
     if (TK_LT_85) { /* Tk 8.4 */
         TK_PHOTO_PUT_BLOCK_84(photo, &block, 0, 0, block.width, block.height,
                 TK_PHOTO_COMPOSITE_SET);
-        if (strcmp(im->mode, "RGBA") == 0)
+        if (strcmp(im->mode, "RGBA") == 0) {
             /* Tk workaround: we need apply ToggleComplexAlphaIfNeeded */
             /* (fixed in Tk 8.5a3) */
             TK_PHOTO_SET_SIZE_84(photo, block.width, block.height);
+        }
     } else {
         /* Tk >=8.5 */
         TK_PHOTO_PUT_BLOCK_85(interp, photo, &block, 0, 0, block.width,

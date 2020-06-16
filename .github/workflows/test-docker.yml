@@ -14,6 +14,7 @@ jobs:
           arch,
           ubuntu-16.04-xenial-amd64,
           ubuntu-18.04-bionic-amd64,
+          ubuntu-20.04-focal-amd64,
           debian-9-stretch-x86,
           debian-10-buster-x86,
           centos-6-amd64,
@@ -21,15 +22,15 @@ jobs:
           centos-8-amd64,
           amazon-1-amd64,
           amazon-2-amd64,
-          fedora-30-amd64,
           fedora-31-amd64,
+          fedora-32-amd64,
         ]
         dockerTag: [master]
 
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: Build system information
       run: python .github/workflows/system-info.py
@@ -46,7 +47,6 @@ jobs:
         sudo chown -R runner $GITHUB_WORKSPACE
 
     - name: After success
-      if: success()
       run: |
         PATH="$PATH:~/.local/bin"
         docker start pillow_container
@@ -59,7 +59,6 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      if: success()
       uses: codecov/codecov-action@v1
       with:
         flags: GHA_Docker

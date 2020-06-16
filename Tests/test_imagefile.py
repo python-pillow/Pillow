@@ -71,7 +71,7 @@ class TestImageFile:
             im1, im2 = roundtrip("JPEG")  # lossy compression
             assert_image(im1, im2.mode, im2.size)
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             roundtrip("PDF")
 
     def test_ico(self):
@@ -95,7 +95,13 @@ class TestImageFile:
 
     def test_raise_ioerror(self):
         with pytest.raises(IOError):
-            ImageFile.raise_ioerror(1)
+            with pytest.warns(DeprecationWarning) as record:
+                ImageFile.raise_ioerror(1)
+        assert len(record) == 1
+
+    def test_raise_oserror(self):
+        with pytest.raises(OSError):
+            ImageFile.raise_oserror(1)
 
     def test_raise_typeerror(self):
         with pytest.raises(TypeError):
@@ -107,17 +113,17 @@ class TestImageFile:
             input = f.read()
         p = ImageFile.Parser()
         p.feed(input)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             p.close()
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
         with Image.open("Tests/images/truncated_image.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -132,7 +138,7 @@ class TestImageFile:
     @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self):
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -255,9 +261,9 @@ class TestPyDecoder:
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 40960 not in exif
+            assert 40960 not in reloaded_exif
             assert reloaded_exif[40963] == 455
-            assert exif[11] == "Pillow test"
+            assert reloaded_exif[11] == "Pillow test"
 
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
             exif = im.getexif()
@@ -275,9 +281,9 @@ class TestPyDecoder:
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 40960 not in exif
+            assert 34665 not in reloaded_exif
             assert reloaded_exif[40963] == 455
-            assert exif[305] == "Pillow test"
+            assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
@@ -296,7 +302,7 @@ class TestPyDecoder:
                     reloaded_exif = reloaded.getexif()
                     assert reloaded_exif[258] == 8
                     assert reloaded_exif[40963] == 455
-                    assert exif[305] == "Pillow test"
+                    assert reloaded_exif[305] == "Pillow test"
 
             im.save(out, exif=exif)
             check_exif()

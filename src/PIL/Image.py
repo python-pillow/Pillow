@@ -35,6 +35,7 @@ import struct
 import sys
 import tempfile
 import warnings
+import xml.etree.ElementTree
 from collections.abc import Callable, MutableMapping
 from pathlib import Path
 
@@ -1050,10 +1051,12 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: 0 = median cut
-                       1 = maximum coverage
-                       2 = fast octree
-                       3 = libimagequant
+        :param method: ``Image.MEDIANCUT=0`` (median cut),
+                       ``Image.MAXCOVERAGE=1`` (maximum coverage),
+                       ``Image.FASTOCTREE=2`` (fast octree),
+                       ``Image.LIBIMAGEQUANT=3`` (libimagequant; check support using
+                       :py:func:`PIL.features.check_feature`
+                       with ``feature="libimagequant"``).
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
@@ -1300,7 +1303,28 @@ class Image:
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
-        self._exif.load(self.info.get("exif"))
+
+        exif_info = self.info.get("exif")
+        if exif_info is None and "Raw profile type exif" in self.info:
+            exif_info = bytes.fromhex(
+                "".join(self.info["Raw profile type exif"].split("\n")[3:])
+            )
+        self._exif.load(exif_info)
+
+        # XMP tags
+        if 0x0112 not in self._exif:
+            xmp_tags = self.info.get("XML:com.adobe.xmp")
+            if xmp_tags:
+                root = xml.etree.ElementTree.fromstring(xmp_tags)
+                for elem in root.iter():
+                    if elem.tag.endswith("}Description"):
+                        orientation = elem.attrib.get(
+                            "{http://ns.adobe.com/tiff/1.0/}Orientation"
+                        )
+                        if orientation:
+                            self._exif[0x0112] = int(orientation)
+                        break
+
         return self._exif
 
     def getim(self):
@@ -2080,7 +2104,7 @@ class Image:
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
-        :exception IOError: If the file could not be written.  The file
+        :exception OSError: If the file could not be written.  The file
            may have been created, and may contain partial data.
         """
 
@@ -2141,7 +2165,7 @@ class Image:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
-        **EOFError** exception. When a sequence file is opened, the
+        ``EOFError`` exception. When a sequence file is opened, the
         library automatically seeks to frame 0.
 
         See :py:meth:`~PIL.Image.Image.tell`.
@@ -2247,6 +2271,7 @@ class Image:
            :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
            If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
            (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
+           See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
            using :py:meth:`~PIL.Image.Image.reduce` or
@@ -2276,7 +2301,9 @@ class Image:
         if x / y >= aspect:
             x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
         else:
-            y = round_aspect(x / aspect, key=lambda n: abs(aspect - x / n))
+            y = round_aspect(
+                x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
+            )
         size = (x, y)
 
         box = None
@@ -2324,7 +2351,7 @@ class Image:
           It may also be an object with a :py:meth:`~method.getdata` method
           that returns a tuple supplying new **method** and **data** values::
 
-            class Example(object):
+            class Example:
                 def getdata(self):
                     method = Image.EXTENT
                     data = (0, 0, 100, 100)
@@ -2336,6 +2363,7 @@ class Image:
            environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+           See: :ref:`concept-filters`.
         :param fill: If **method** is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
@@ -2725,7 +2753,7 @@ def fromarray(obj, mode=None):
     if ndim > ndmax:
         raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
 
-    size = shape[1], shape[0]
+    size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
         if hasattr(obj, "tobytes"):
             obj = obj.tobytes()
@@ -3222,7 +3250,7 @@ class Exif(MutableMapping):
 
     def _fixup(self, value):
         try:
-            if len(value) == 1 and not isinstance(value, dict):
+            if len(value) == 1 and isinstance(value, tuple):
                 return value[0]
         except Exception:
             pass
@@ -3243,7 +3271,7 @@ class Exif(MutableMapping):
         else:
             from . import TiffImagePlugin
 
-            info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+            info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
             info.load(self.fp)
             return self._fixup_dict(info)
 
@@ -3263,12 +3291,14 @@ class Exif(MutableMapping):
         if not data:
             return
 
-        self.fp = io.BytesIO(data[6:])
+        if data.startswith(b"Exif\x00\x00"):
+            data = data[6:]
+        self.fp = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
 
-        self._info = TiffImagePlugin.ImageFileDirectory_v1(self.head)
+        self._info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
         self.endian = self._info._endian
         self.fp.seek(self._info.next)
         self._info.load(self.fp)
@@ -3279,7 +3309,7 @@ class Exif(MutableMapping):
             self._data.update(ifd)
             self._ifds[0x8769] = ifd
 
-    def tobytes(self, offset=0):
+    def tobytes(self, offset=8):
         from . import TiffImagePlugin
 
         if self.endian == "<":

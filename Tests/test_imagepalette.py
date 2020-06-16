@@ -145,5 +145,5 @@ def test_2bit_palette(tmp_path):
 
 
 def test_invalid_palette():
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")

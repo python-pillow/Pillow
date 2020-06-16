@@ -1,11 +1,14 @@
 import pickle
 
+import pytest
 from PIL import Image
 
+from .helper import skip_unless_feature
 
-def helper_pickle_file(tmp_path, pickle, protocol=0, mode=None):
+
+def helper_pickle_file(tmp_path, pickle, protocol, test_file, mode):
     # Arrange
-    with Image.open("Tests/images/hopper.jpg") as im:
+    with Image.open(test_file) as im:
         filename = str(tmp_path / "temp.pkl")
         if mode:
             im = im.convert(mode)
@@ -20,9 +23,7 @@ def helper_pickle_file(tmp_path, pickle, protocol=0, mode=None):
         assert im == loaded_im
 
 
-def helper_pickle_string(
-    pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
-):
+def helper_pickle_string(pickle, protocol, test_file, mode):
     with Image.open(test_file) as im:
         if mode:
             im = im.convert(mode)
@@ -35,41 +36,31 @@ def helper_pickle_string(
         assert im == loaded_im
 
 
-def test_pickle_image(tmp_path):
+@pytest.mark.parametrize(
+    ("test_file", "test_mode"),
+    [
+        ("Tests/images/hopper.jpg", None),
+        ("Tests/images/hopper.jpg", "L"),
+        ("Tests/images/hopper.jpg", "PA"),
+        pytest.param(
+            "Tests/images/hopper.webp", None, marks=skip_unless_feature("webp")
+        ),
+        ("Tests/images/hopper.tif", None),
+        ("Tests/images/test-card.png", None),
+        ("Tests/images/zero_bb.png", None),
+        ("Tests/images/zero_bb_scale2.png", None),
+        ("Tests/images/non_zero_bb.png", None),
+        ("Tests/images/non_zero_bb_scale2.png", None),
+        ("Tests/images/p_trns_single.png", None),
+        ("Tests/images/pil123p.png", None),
+        ("Tests/images/itxt_chunks.png", None),
+    ],
+)
+def test_pickle_image(tmp_path, test_file, test_mode):
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol)
-        helper_pickle_file(tmp_path, pickle, protocol)
-
-
-def test_pickle_p_mode():
-    # Act / Assert
-    for test_file in [
-        "Tests/images/test-card.png",
-        "Tests/images/zero_bb.png",
-        "Tests/images/zero_bb_scale2.png",
-        "Tests/images/non_zero_bb.png",
-        "Tests/images/non_zero_bb_scale2.png",
-        "Tests/images/p_trns_single.png",
-        "Tests/images/pil123p.png",
-        "Tests/images/itxt_chunks.png",
-    ]:
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            helper_pickle_string(pickle, protocol=protocol, test_file=test_file)
-
-
-def test_pickle_pa_mode(tmp_path):
-    # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, mode="PA")
-        helper_pickle_file(tmp_path, pickle, protocol, mode="PA")
-
-
-def test_pickle_l_mode(tmp_path):
-    # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, mode="L")
-        helper_pickle_file(tmp_path, pickle, protocol, mode="L")
+        helper_pickle_string(pickle, protocol, test_file, test_mode)
+        helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
 
 
 def test_pickle_la_mode_with_palette(tmp_path):
@@ -88,3 +79,15 @@ def test_pickle_la_mode_with_palette(tmp_path):
 
         im.mode = "PA"
         assert im == loaded_im
+
+
+@skip_unless_feature("webp")
+def test_pickle_tell():
+    # Arrange
+    image = Image.open("Tests/images/hopper.webp")
+
+    # Act: roundtrip
+    unpickled_image = pickle.loads(pickle.dumps(image))
+
+    # Assert
+    assert unpickled_image.tell() == 0

@@ -499,7 +499,7 @@ class FreeTypeFont:
     def get_variation_names(self):
         """
         :returns: A list of the named styles in a variation font.
-        :exception IOError: If the font is not a variation font.
+        :exception OSError: If the font is not a variation font.
         """
         try:
             names = self.font.getvarnames()
@@ -510,7 +510,7 @@ class FreeTypeFont:
     def set_variation_by_name(self, name):
         """
         :param name: The name of the style.
-        :exception IOError: If the font is not a variation font.
+        :exception OSError: If the font is not a variation font.
         """
         names = self.get_variation_names()
         if not isinstance(name, bytes):
@@ -529,7 +529,7 @@ class FreeTypeFont:
     def get_variation_axes(self):
         """
         :returns: A list of the axes in a variation font.
-        :exception IOError: If the font is not a variation font.
+        :exception OSError: If the font is not a variation font.
         """
         try:
             axes = self.font.getvaraxes()
@@ -542,7 +542,7 @@ class FreeTypeFont:
     def set_variation_by_axes(self, axes):
         """
         :param axes: A list of values for each axis.
-        :exception IOError: If the font is not a variation font.
+        :exception OSError: If the font is not a variation font.
         """
         try:
             self.font.setvaraxes(axes)
@@ -586,7 +586,7 @@ def load(filename):
 
     :param filename: Name of font file.
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
     f = ImageFont()
     f._load_pilfont(filename)
@@ -637,8 +637,13 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
+
+                     You can check support for Raqm layout using
+                     :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
+
+                     .. versionadded:: 4.2.0
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
 
     def freetype(font):
@@ -698,7 +703,7 @@ def load_path(filename):
 
     :param filename: Name of font file.
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
         if isDirectory(directory):

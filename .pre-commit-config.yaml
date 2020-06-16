@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 6bedb5c58a7d8c25aa9509f8217bc24e9797e90d  # frozen: 19.10b0
     hooks:
       - id: black
         args: ["--target-version", "py35"]
@@ -8,25 +8,36 @@ repos:
         files: \.py$
         types: []
 
+  - repo: https://github.com/timothycrosley/isort
+    rev: 7c29dd9d55161704cfc45998c6f5c2c43d39264b  # frozen: 4.3.21
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/asottile/yesqa
+    rev: b13a51aa54142c59219c764e9f9362c049b439ed  # frozen: v1.2.0
+    hooks:
+      - id: yesqa
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: ffbd448645bad2e7ca13f96fca5830058d27ccd5  # frozen: v1.1.7
+    hooks:
+      - id: remove-tabs
+        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)
+
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.9
+    rev: 735cfe7e1c57a8e05f660ba75de72313005af54a  # frozen: 3.8.2
     hooks:
       - id: flake8
         additional_dependencies: [flake8-2020, flake8-implicit-str-concat]
 
-  - repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21
-    hooks:
-      - id: isort
-
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.5.1
+    rev: 0d7d077d6ed5624854f93ac601739c1804ebeb98  # frozen: v1.5.1
     hooks:
       - id: python-check-blanket-noqa
       - id: rst-backticks
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: ebc15addedad713c86ef18ae9632c88e187dd0af  # frozen: v3.1.0
     hooks:
       - id: check-merge-conflict
       - id: check-yaml

@@ -30,6 +30,15 @@ def test_read_exif_metadata():
             assert exif_data == expected_exif
 
 
+def test_read_exif_metadata_without_prefix():
+    with Image.open("Tests/images/flower2.webp") as im:
+        # Assert prefix is not present
+        assert im.info["exif"][:6] != b"Exif\x00\x00"
+
+        exif = im.getexif()
+        assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
+
+
 def test_write_exif_metadata():
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()

@@ -95,9 +95,15 @@ quantize_pngquant(
     result = 1;
 
 err:
-    if (attr) liq_attr_destroy(attr);
-    if (image) liq_image_destroy(image);
-    if (remap) liq_result_destroy(remap);
+    if (attr) {
+        liq_attr_destroy(attr);
+    }
+    if (image) {
+        liq_image_destroy(image);
+    }
+    if (remap) {
+        liq_result_destroy(remap);
+    }
     free(charMatrix);
     free(charMatrixRows);
     if (!result)  {

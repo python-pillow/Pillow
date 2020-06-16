@@ -156,6 +156,8 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
+                if not isinstance(xy[0], (list, tuple)):
+                    xy = [tuple(xy[i : i + 2]) for i in range(0, len(xy), 2)]
                 for i in range(1, len(xy) - 1):
                     point = xy[i]
                     angles = [

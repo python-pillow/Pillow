@@ -66,7 +66,7 @@ def test_load_set_dpi():
             assert im.size == (164, 164)
 
             with Image.open("Tests/images/drawing_wmf_ref_144.png") as expected:
-                assert_image_similar(im, expected, 2.0)
+                assert_image_similar(im, expected, 2.1)
 
 
 def test_save(tmp_path):
@@ -74,5 +74,5 @@ def test_save(tmp_path):
 
     for ext in [".wmf", ".emf"]:
         tmpfile = str(tmp_path / ("temp" + ext))
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(tmpfile)

@@ -34,12 +34,14 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality)
     /* Check arguments */
     width  = extent[2] - extent[0];
     height = extent[3] - extent[1];
-    if (width < 0.0 || height < 0.0 || quality < 2)
+    if (width < 0.0 || height < 0.0 || quality < 2) {
         return (Imaging) ImagingError_ValueError(NULL);
+    }
 
     im = ImagingNewDirty("L", xsize, ysize);
-    if (!im)
+    if (!im) {
         return NULL;
+    }
 
     dr = width/(xsize-1);
     di = height/(ysize-1);
@@ -82,8 +84,9 @@ ImagingEffectNoise(int xsize, int ysize, float sigma)
     double this, next;
 
     imOut = ImagingNewDirty("L", xsize, ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     next = 0.0;
     nextok = 0;
@@ -123,20 +126,23 @@ ImagingEffectSpread(Imaging imIn, int distance)
 
     imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
 
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
 #define SPREAD(type, image)\
-    for (y = 0; y < imOut->ysize; y++)\
+    for (y = 0; y < imOut->ysize; y++) {\
         for (x = 0; x < imOut->xsize; x++) {\
             int xx = x + (rand() % distance) - distance/2;\
             int yy = y + (rand() % distance) - distance/2;\
             if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) {\
                 imOut->image[yy][xx] = imIn->image[y][x];\
                 imOut->image[y][x]   = imIn->image[yy][xx];\
-            } else\
+            } else {\
                 imOut->image[y][x]   = imIn->image[y][x];\
-        }
+            }\
+        }\
+    }
 
     if (imIn->image8) {
         SPREAD(UINT8, image8);

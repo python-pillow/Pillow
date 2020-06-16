@@ -30,12 +30,14 @@ ImagingPaletteNew(const char* mode)
     int i;
     ImagingPalette palette;
 
-    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA"))
+    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA")) {
         return (ImagingPalette) ImagingError_ModeError();
+    }
 
     palette = calloc(1, sizeof(struct ImagingPaletteInstance));
-    if (!palette)
+    if (!palette) {
         return (ImagingPalette) ImagingError_MemoryError();
+    }
 
     strncpy(palette->mode, mode, IMAGING_MODE_LENGTH-1);
     palette->mode[IMAGING_MODE_LENGTH-1] = 0;
@@ -60,8 +62,9 @@ ImagingPaletteNewBrowser(void)
     ImagingPalette palette;
 
     palette = ImagingPaletteNew("RGB");
-    if (!palette)
+    if (!palette) {
         return NULL;
+    }
 
     /* Blank out unused entries */
     /* FIXME: Add 10-level windows palette here? */
@@ -74,14 +77,16 @@ ImagingPaletteNewBrowser(void)
 
     /* Simple 6x6x6 colour cube */
 
-    for (b = 0; b < 256; b += 51)
-        for (g = 0; g < 256; g += 51)
+    for (b = 0; b < 256; b += 51) {
+        for (g = 0; g < 256; g += 51) {
             for (r = 0; r < 256; r += 51) {
                 palette->palette[i*4+0] = r;
                 palette->palette[i*4+1] = g;
                 palette->palette[i*4+2] = b;
                 i++;
             }
+        }
+    }
 
     /* Blank out unused entries */
     /* FIXME: add 30-level greyscale wedge here? */
@@ -102,12 +107,14 @@ ImagingPaletteDuplicate(ImagingPalette palette)
 
     ImagingPalette new_palette;
 
-    if (!palette)
+    if (!palette) {
         return NULL;
+    }
     /* malloc check ok, small constant allocation */
     new_palette = malloc(sizeof(struct ImagingPaletteInstance));
-    if (!new_palette)
+    if (!new_palette) {
         return (ImagingPalette) ImagingError_MemoryError();
+    }
 
     memcpy(new_palette, palette, sizeof(struct ImagingPaletteInstance));
 
@@ -123,8 +130,9 @@ ImagingPaletteDelete(ImagingPalette palette)
     /* Destroy palette object */
 
     if (palette) {
-        if (palette->cache)
+        if (palette->cache) {
             free(palette->cache);
+        }
         free(palette);
     }
 }
@@ -209,8 +217,9 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
         tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
 
         dmin[i] = tmin;
-        if (tmax < dmax)
+        if (tmax < dmax) {
             dmax = tmax; /* keep the smallest max distance only */
+        }
 
     }
 
@@ -220,10 +229,11 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
      * all slots in that box.  We only check boxes for which the min
      * distance is less than or equal the smallest max distance */
 
-    for (i = 0; i < BOXVOLUME; i++)
+    for (i = 0; i < BOXVOLUME; i++) {
         d[i] = (unsigned int) ~0;
+    }
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++) {
 
         if (dmin[i] <= dmax) {
 
@@ -262,6 +272,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
                 rx += 2 * RSTEP * RSTEP;
             }
         }
+    }
 
     /* Step 3 -- Update cache */
 
@@ -269,10 +280,13 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
      * cache slot in the box.  Update the cache. */
 
     j = 0;
-    for (r = r0; r < r1; r+=4)
-        for (g = g0; g < g1; g+=4)
-            for (b = b0; b < b1; b+=4)
+    for (r = r0; r < r1; r+=4) {
+        for (g = g0; g < g1; g+=4) {
+            for (b = b0; b < b1; b+=4) {
                 ImagingPaletteCache(palette, r, g, b) = c[j++];
+            }
+        }
+    }
 }
 
 
@@ -297,8 +311,9 @@ ImagingPaletteCachePrepare(ImagingPalette palette)
         }
 
         /* Mark all entries as empty */
-        for (i = 0; i < entries; i++)
+        for (i = 0; i < entries; i++) {
             palette->cache[i] = 0x100;
+        }
 
     }
 

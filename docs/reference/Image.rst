@@ -58,8 +58,8 @@ Functions
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
         documentation`_ to have warnings output to the logging facility instead of stderr.
 
-	.. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
-	.. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
+    .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
+    .. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
 
 Image processing
 ^^^^^^^^^^^^^^^^
@@ -179,6 +179,7 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
 .. automethod:: PIL.Image.Image.getextrema
+.. automethod:: PIL.Image.Image.getexif
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.histogram
