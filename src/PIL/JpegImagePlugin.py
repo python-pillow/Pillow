@@ -323,7 +323,8 @@ MARKER = {
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"\377"
+    # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
+    return prefix[0:3] == b"\xFF\xD8\xFF"
 
 
 ##
