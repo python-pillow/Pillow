@@ -706,7 +706,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
 
-    def test_reading_not_whole_file_for_define_it_type(self):
+    def test_jpeg_magic_number(self):
         size = 4097
         buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
         buffer.max_pos = 0
