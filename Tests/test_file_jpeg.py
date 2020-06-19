@@ -3,7 +3,7 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
+from PIL import ExifTags, Image, ImageFile, JpegImagePlugin, UnidentifiedImageError
 
 from .helper import (
     assert_image,
@@ -718,7 +718,7 @@ class TestFileJpeg:
             return res
 
         buffer.read = read
-        with pytest.raises(OSError):
+        with pytest.raises(UnidentifiedImageError):
             Image.open(buffer)
 
         # Assert the entire file has not been read
