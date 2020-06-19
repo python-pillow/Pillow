@@ -707,7 +707,7 @@ class TestFileJpeg:
             assert im.info["icc_profile"] == b"profile"
 
     def test_reading_not_whole_file_for_define_it_type(self):
-        size = 1024 ** 2
+        size = 4097
         buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
         buffer.max_pos = 0
         orig_read = buffer.read
@@ -721,10 +721,8 @@ class TestFileJpeg:
         with pytest.raises(OSError):
             Image.open(buffer)
 
-        # Only small part of file has been read.
-        # The upper limit of max_pos (8Kb) was chosen experimentally
-        # and increased approximately twice.
-        assert 0 < buffer.max_pos < 8 * 1024
+        # Assert the entire file has not been read
+        assert 0 < buffer.max_pos < size
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
