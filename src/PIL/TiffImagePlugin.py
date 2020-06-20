@@ -553,9 +553,10 @@ class ImageFileDirectory_v2(MutableMapping):
                         )
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
-                else:
-                    if all(isinstance(v, str) for v in values):
-                        self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, str) for v in values):
+                    self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, bytes) for v in values):
+                    self.tagtype[tag] = TiffTags.BYTE
 
         if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
@@ -573,8 +574,10 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (info.length == 1) or (
-            info.length is None and len(values) == 1 and not legacy_api
+        if (
+            (info.length == 1)
+            or self.tagtype[tag] == TiffTags.BYTE
+            or (info.length is None and len(values) == 1 and not legacy_api)
         ):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [
@@ -1546,16 +1549,17 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if (
-                    TiffTags.lookup(tag).type == TiffTags.UNDEFINED
-                    or not Image.core.libtiff_support_custom_tags
-                ):
+                if not Image.core.libtiff_support_custom_tags:
                     continue
 
                 if tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue
+                else:
+                    type = TiffTags.lookup(tag).type
+                    if type:
+                        types[tag] = type
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str):
                     atts[tag] = value.encode("ascii", "replace") + b"\0"

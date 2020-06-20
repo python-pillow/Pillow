@@ -319,13 +319,13 @@ def test_empty_values():
 
 def test_PhotoshopInfo(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
-        assert len(im.tag_v2[34377]) == 1
-        assert isinstance(im.tag_v2[34377][0], bytes)
+        assert len(im.tag_v2[34377]) == 70
+        assert isinstance(im.tag_v2[34377], bytes)
         out = str(tmp_path / "temp.tiff")
         im.save(out)
     with Image.open(out) as reloaded:
-        assert len(reloaded.tag_v2[34377]) == 1
-        assert isinstance(reloaded.tag_v2[34377][0], bytes)
+        assert len(reloaded.tag_v2[34377]) == 70
+        assert isinstance(reloaded.tag_v2[34377], bytes)
 
 
 def test_too_many_entries():
