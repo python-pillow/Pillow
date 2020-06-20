@@ -29,8 +29,8 @@ def register(viewer, order=1):
 
     :param viewer: The viewer to be registered.
     :param order:
-        A negative integer to prepend this viewer to the list,
-        or a positive integer to append it.
+        Zero or a negative integer to prepend this viewer to the list,
+        a positive integer to append it.
     """
     try:
         if issubclass(viewer, Viewer):
