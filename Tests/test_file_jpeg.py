@@ -90,9 +90,12 @@ class TestFileJpeg:
             ]
             assert k > 0.9
 
-    def test_dpi(self):
+    @pytest.mark.parametrize(
+        "test_image_path", [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
+    )
+    def test_dpi(self, test_image_path):
         def test(xdpi, ydpi=None):
-            with Image.open(TEST_FILE) as im:
+            with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
 
