@@ -150,6 +150,18 @@ class TestImageFont:
 
         assert_image_equal(img_path, img_filelike)
 
+    def test_transparent_background(self):
+        im = Image.new(mode="RGBA", size=(300, 100))
+        draw = ImageDraw.Draw(im)
+        ttf = self.get_font()
+
+        txt = "Hello World!"
+        draw.text((10, 10), txt, font=ttf)
+
+        target = "Tests/images/transparent_background_text.png"
+        with Image.open(target) as target_img:
+            assert_image_similar(im, target_img, 4.09)
+
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)
