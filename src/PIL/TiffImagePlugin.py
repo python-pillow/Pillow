@@ -1491,7 +1491,10 @@ def _save(im, fp, filename):
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
-    ifd[STRIPBYTECOUNTS] = stride * im.size[1]
+    strip_byte_counts = stride * im.size[1]
+    if strip_byte_counts >= 2 ** 16:
+        ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
+    ifd[STRIPBYTECOUNTS] = strip_byte_counts
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)

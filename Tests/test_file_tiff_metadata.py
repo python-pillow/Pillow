@@ -156,6 +156,23 @@ def test_write_metadata(tmp_path):
             assert value == reloaded[tag], "%s didn't roundtrip" % tag
 
 
+def test_change_stripbytecounts_tag_type(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.tif") as im:
+        info = im.tag_v2
+
+        # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
+        im = im.resize((500, 500))
+
+        # STRIPBYTECOUNTS can be a SHORT or a LONG
+        info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
+
+        im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
+
+
 def test_no_duplicate_50741_tag():
     assert TAG_IDS["MakerNoteSafety"] == 50741
     assert TAG_IDS["BestQualityScale"] == 50780
