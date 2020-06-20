@@ -39,7 +39,7 @@ def register(viewer, order=1):
         pass  # raised if viewer wasn't a class
     if order > 0:
         _viewers.append(viewer)
-    elif order < 0:
+    else:
         _viewers.insert(0, viewer)
 
 
