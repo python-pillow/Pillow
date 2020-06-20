@@ -215,12 +215,155 @@ class FreeTypeFont:
         """
         return self.font.ascent, self.font.descent
 
+    def getlength(self, text, mode="", direction=None, features=None, language=None):
+        """
+        Returns length (in pixels with 1/64 precision) of given text if rendered
+        in font with provided direction, features, and language.
+
+        This is the amount by which following text should be offset.
+        Text bounding box may extend past the length in some fonts,
+        e.g. when using italics or accents.
+
+        The result is returned as a float; it is a whole number if using basic layout.
+
+        Note that the sum of two lengths may not equal the length of a concatenated
+        string due to kerning. If you need to adjust for kerning, include the following
+        character and subtract its length.
+
+        For example, instead of
+
+        .. code-block:: python
+
+          hello = font.getlength("Hello")
+          world = font.getlength("World")
+          hello_world = hello + world  # not adjusted for kerning
+          assert hello_world == font.getlength("HelloWorld")  # may fail
+
+        use
+
+        .. code-block:: python
+
+          hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
+          world = font.getlength("World")
+          hello_world = hello + world  # adjusted for kerning
+          assert hello_world == font.getlength("HelloWorld")  # True
+
+        .. versionadded:: 8.0.0
+
+        :param text: Text to measure.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+        :return: Width for horizontal, height for vertical text.
+        """
+        return (
+            self.font.getlength(text, mode == "1", direction, features, language) / 64
+        )
+
+    def getbbox(
+        self,
+        text,
+        mode="",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        anchor=None,
+    ):
+        """
+        Returns bounding box (in pixels) of given text relative to given anchor
+        if rendered in font with provided direction, features, and language.
+
+        Use :py:meth`getlength()` to get the offset of following text with
+        1/64 pixel precision. The bounding box includes extra margins for
+        some fonts, e.g. italics or accents.
+
+        .. versionadded:: 8.0.0
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`
+                         Requires libraqm.
+
+        :param stroke_width: The width of the text stroke.
+
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+        """
+        size, offset = self.font.getsize(
+            text, mode == "1", direction, features, language, anchor
+        )
+        left, top = offset[0] - stroke_width, offset[1] - stroke_width
+        width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
+        return left, top, left + width, top + height
+
     def getsize(
         self, text, direction=None, features=None, language=None, stroke_width=0
     ):
         """
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
+
+        Use :py:meth:`getlength()` to measure the offset of following text with
+        1/64 pixel precision.
+        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        .. note:: For historical reasons this function measures text height from
+            the ascender line instead of the top, see :ref:`text-anchors`.
+            If you wish to measure text height from the top, it is recommended
+            to use the bottom value of :meth:`getbbox` with ``anchor='lt'`` instead.
 
         :param text: Text to measure.
 

@@ -608,6 +608,49 @@ text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *featu
 }
 
 static PyObject*
+font_getlength(FontObject* self, PyObject* args)
+{
+    int length; /* length along primary axis, in 26.6 precision */
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    const char *dir = NULL;
+    const char *lang = NULL;
+    PyObject *features = Py_None;
+    PyObject *string;
+
+    /* calculate size and bearing for a given string */
+
+    if (!PyArg_ParseTuple(args, "O|izOz:getlength", &string, &mask, &dir, &features, &lang)) {
+        return NULL;
+    }
+
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    length = 0;
+    for (i = 0; i < count; i++) {
+        if (horizontal_dir) {
+            length += glyph_info[i].x_advance;
+        } else {
+            length -= glyph_info[i].y_advance;
+        }
+    }
+
+    if (glyph_info) {
+        PyMem_Free(glyph_info);
+        glyph_info = NULL;
+    }
+
+    return PyLong_FromLong(length);
+}
+
+static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
     int position; /* pen position along primary axis, in 26.6 precision */
@@ -1176,6 +1219,7 @@ font_dealloc(FontObject* self)
 static PyMethodDef font_methods[] = {
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
+    {"getlength", (PyCFunction) font_getlength, METH_VARARGS},
 #if FREETYPE_MAJOR > 2 ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)

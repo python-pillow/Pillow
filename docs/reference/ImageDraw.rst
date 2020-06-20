@@ -403,6 +403,15 @@ Methods
 
     Return the size of the given string, in pixels.
 
+    You can use :meth:`.FreeTypeFont.getlength` to measure text length
+    with 1/64 pixel precision.
+
+    .. note:: For historical reasons this function measures text height from
+        the ascender line instead of the top, see :ref:`text-anchors`.
+        If you wish to measure text height from the top, it is recommended
+        to use :meth:`.FreeTypeFont.getbbox` with ``anchor='lt'`` instead.
+
+
     :param text: Text to be measured. If it contains any newline characters,
                  the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.

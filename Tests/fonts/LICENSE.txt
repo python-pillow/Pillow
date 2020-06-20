@@ -9,6 +9,7 @@ ter-x20b.pcf, from http://terminus-font.sourceforge.net/
 
 All of the above fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
 
+OpenSansCondensed-LightItalic.tt, from https://fonts.google.com/specimen/Open+Sans, under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
 10x20-ISO8859-1.pcf, from https://packages.ubuntu.com/xenial/xfonts-base
 
