@@ -2177,7 +2177,7 @@ class Image:
 
         if command is not None:
             warnings.warn(
-                "The command parameter was deprecated and will be removed in a future"
+                "The command parameter is deprecated and will be removed in a future"
                 "release. Use a subclass of ImageShow.Viewer instead.",
                 DeprecationWarning,
             )
