@@ -209,6 +209,57 @@ def test_language():
         assert_image_similar(im, target_img, 0.5)
 
 
+@pytest.mark.parametrize("mode", ("L", "1"))
+@pytest.mark.parametrize(
+    "text,direction,expected",
+    (
+        ("سلطنة عمان Oman", None, 173.703125),
+        ("سلطنة عمان Oman", "ltr", 173.703125),
+        ("Oman سلطنة عمان", "rtl", 173.703125),
+        ("English عربي", "rtl", 123.796875),
+        ("test", "ttb", 80.0),
+    ),
+    ids=("None", "ltr", "rtl2", "rtl", "ttb"),
+)
+def test_getlength(mode, text, direction, expected):
+    try:
+        ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+        assert ttf.getlength(text, mode, direction) == expected
+    except ValueError as ex:
+        if (
+            direction == "ttb"
+            and str(ex) == "libraqm 0.7 or greater required for 'ttb' direction"
+        ):
+            pytest.skip("libraqm 0.7 or greater not available")
+
+
+@pytest.mark.parametrize("mode", ("L", "1"))
+@pytest.mark.parametrize("direction", ("ltr", "ttb"))
+@pytest.mark.parametrize(
+    "text",
+    ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
+    ids=("caron-above", "caron-below", "double-breve", "overline"),
+)
+def test_getlength_combine(mode, direction, text):
+    if text == "i\u0305i" and direction == "ttb":
+        pytest.skip("fails with this font")
+
+    ttf = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
+
+    try:
+        target = ttf.getlength("ii", mode, direction)
+        actual = ttf.getlength(text, mode, direction)
+
+        assert actual == target
+    except ValueError as ex:
+        if (
+            direction == "ttb"
+            and str(ex) == "libraqm 0.7 or greater required for 'ttb' direction"
+        ):
+            pytest.skip("libraqm 0.7 or greater not available")
+
+
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
 def test_anchor_ttb(anchor):
     if distutils.version.StrictVersion(ImageFont.core.freetype2_version) < "2.5.1":
@@ -291,8 +342,42 @@ def test_combine(name, text, dir, anchor, epsilon):
     try:
         d.text((200, 200), text, fill="black", anchor=anchor, direction=dir, font=f)
     except ValueError as ex:
-        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
+        if (
+            dir == "ttb"
+            and str(ex) == "libraqm 0.7 or greater required for 'ttb' direction"
+        ):
             pytest.skip("libraqm 0.7 or greater not available")
 
     with Image.open(path) as expected:
         assert_image_similar(im, expected, epsilon)
+
+
+@pytest.mark.parametrize(
+    "anchor,align",
+    (
+        ("lm", "left"),  # pass with getsize
+        ("lm", "center"),  # fail at 2.12
+        ("lm", "right"),  # fail at 2.57
+        ("mm", "left"),  # fail at 2.12
+        ("mm", "center"),  # pass with getsize
+        ("mm", "right"),  # fail at 2.12
+        ("rm", "left"),  # fail at 2.57
+        ("rm", "center"),  # fail at 2.12
+        ("rm", "right"),  # pass with getsize
+    ),
+)
+def test_combine_multiline(anchor, align):
+    # test that multiline text uses getline, not getsize or getbbox
+
+    path = "Tests/images/test_combine_multiline_%s_%s.png" % (anchor, align)
+    f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
+    text = "i\u0305\u035C\ntext"  # i with overline and double breve, and a word
+
+    im = Image.new("RGB", (400, 400), "white")
+    d = ImageDraw.Draw(im)
+    d.line(((0, 200), (400, 200)), "gray")
+    d.line(((200, 0), (200, 400)), "gray")
+    d.multiline_text((200, 200), text, fill="black", anchor=anchor, font=f, align=align)
+
+    with Image.open(path) as expected:
+        assert_image_similar(im, expected, 0.015)

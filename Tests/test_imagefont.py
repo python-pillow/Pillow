@@ -34,9 +34,24 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.3", "<2.4"): {"multiline": 30, "textsize": 12, "getters": (12, 16)},
-        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
-        "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
+        (">=2.3", "<2.4"): {
+            "multiline": 30,
+            "textsize": 12,
+            "multiline-anchor": 6,
+            "getlength": (36, 27, 27, 33),
+        },
+        (">=2.7",): {
+            "multiline": 6.2,
+            "textsize": 2.5,
+            "multiline-anchor": 4,
+            "getlength": (36, 21, 24, 33),
+        },
+        "Default": {
+            "multiline": 0.5,
+            "textsize": 0.5,
+            "multiline-anchor": 4,
+            "getlength": (36, 24, 24, 33),
+        },
     }
 
     @classmethod
@@ -178,6 +193,34 @@ class TestImageFont:
 
             # Epsilon ~.5 fails with FreeType 2.7
             assert_image_similar(im, target_img, self.metrics["textsize"])
+
+    @pytest.mark.parametrize(
+        "text,mode,font,size,length_basic_index,length_raqm",
+        (
+            # basic test
+            ("text", "L", "FreeMono.ttf", 15, 0, 36),
+            ("text", "1", "FreeMono.ttf", 15, 0, 36),
+            # issue 4177
+            ("rrr", "L", "DejaVuSans.ttf", 18, 1, 22.21875),
+            ("rrr", "1", "DejaVuSans.ttf", 18, 2, 22.21875),
+            # test 'l' not including extra margin
+            # using exact value 2047 / 64 for raqm, checked with debugger
+            ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+            ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+        ),
+    )
+    def test_getlength(self, text, mode, font, size, length_basic_index, length_raqm):
+        f = ImageFont.truetype(
+            "Tests/fonts/" + font, size, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
+            length = f.getlength(text, mode)
+            assert length == self.metrics["getlength"][length_basic_index]
+        else:
+            # disable kerning, kerning metrics changed
+            length = f.getlength(text, mode, features=["-kern"])
+            assert length == length_raqm
 
     def test_render_multiline(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -581,7 +624,7 @@ class TestImageFont:
         assert t.font.glyphs == 4177
         assert t.getsize("A") == (12, 16)
         assert t.getsize("AB") == (24, 16)
-        assert t.getsize("M") == self.metrics["getters"]
+        assert t.getsize("M") == (12, 16)
         assert t.getsize("y") == (12, 20)
         assert t.getsize("a") == (12, 16)
         assert t.getsize_multiline("A") == (12, 16)
@@ -735,34 +778,86 @@ class TestImageFont:
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
     @pytest.mark.parametrize(
-        "name,text,anchor",
+        "anchor,left,left_raqm,top",
         (
             # test horizontal anchors
-            ("quick", "Quick", "ls"),
-            ("quick", "Quick", "ms"),
-            ("quick", "Quick", "rs"),
+            ("ls", 0, 0, -36),
+            ("ms", -64, -65, -36),
+            ("rs", -128, -129, -36),
             # test vertical anchors
-            ("quick", "Quick", "ma"),
-            ("quick", "Quick", "mt"),
-            ("quick", "Quick", "mm"),
-            ("quick", "Quick", "mb"),
-            ("quick", "Quick", "md"),
+            ("ma", -64, -65, 16),
+            ("mt", -64, -65, 0),
+            ("mm", -64, -65, -17),
+            ("mb", -64, -65, -44),
+            ("md", -64, -65, -51),
         ),
     )
-    def test_anchor(self, name, text, anchor):
-        path = "Tests/images/test_anchor_%s_%s.png" % (name, anchor)
+    def test_anchor(self, anchor, left, left_raqm, top):
+        name, text = "quick", "Quick"
+        target = "Tests/images/test_anchor_%s_%s.png" % (name, anchor)
+        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM or freetype < "2.4":
+            width, height = (129, 44)
+            left = left_raqm
+        else:
+            width, height = (128, 44)
+
         f = ImageFont.truetype(
             "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
         )
 
+        # test getbbox
+        assert f.getbbox(text, anchor=anchor) == (left, top, left + width, top + height)
+
+        # test render
         im = Image.new("RGB", (200, 200), "white")
         d = ImageDraw.Draw(im)
         d.line(((0, 100), (200, 100)), "gray")
         d.line(((100, 0), (100, 200)), "gray")
         d.text((100, 100), text, fill="black", anchor=anchor, font=f)
 
-        with Image.open(path) as expected:
+        with Image.open(target) as expected:
             assert_image_similar(im, expected, 7)
+
+    @pytest.mark.parametrize(
+        "anchor,align",
+        (
+            # test horizontal anchors
+            ("lm", "left"),
+            ("lm", "center"),
+            ("lm", "right"),
+            ("mm", "left"),
+            ("mm", "center"),
+            ("mm", "right"),
+            ("rm", "left"),
+            ("rm", "center"),
+            ("rm", "right"),
+            # test vertical anchors
+            ("ma", "center"),
+            # ("mm", "center"),
+            ("md", "center"),
+        ),
+    )
+    def test_anchor_multiline(self, anchor, align):
+        target = "Tests/images/test_anchor_multiline_%s_%s.png" % (anchor, align)
+        text = "a\nlong\ntext sample"
+
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        # test render
+        im = Image.new("RGB", (600, 400), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 200), (600, 200)), "gray")
+        d.line(((300, 0), (300, 400)), "gray")
+        d.multiline_text(
+            (300, 200), text, fill="black", anchor=anchor, font=f, align=align
+        )
+
+        with Image.open(target) as expected:
+            assert_image_similar(im, expected, self.metrics["multiline-anchor"])
 
 
 @skip_unless_feature("raqm")

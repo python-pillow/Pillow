@@ -379,6 +379,9 @@ class ImageDraw:
         elif anchor[1] in "tb":
             raise ValueError("anchor not supported for multiline text")
 
+        if font is None:
+            font = self.getfont()
+
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -386,13 +389,12 @@ class ImageDraw:
             self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
         )
         for line in lines:
-            line_width, line_height = self.textsize(
+            line_width = font.getlength(
                 line,
-                font,
+                self.fontmode,
                 direction=direction,
                 features=features,
                 language=language,
-                stroke_width=stroke_width,
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
