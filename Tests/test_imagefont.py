@@ -40,18 +40,21 @@ class TestImageFont:
             "textsize": 12,
             "getters": (13, 16),
             "mask": (107, 13),
+            "multiline-anchor": 6,
         },
         (">=2.7",): {
             "multiline": 6.2,
             "textsize": 2.5,
             "getters": (12, 16),
             "mask": (108, 13),
+            "multiline-anchor": 4,
         },
         "Default": {
             "multiline": 0.5,
             "textsize": 0.5,
             "getters": (12, 16),
             "mask": (108, 13),
+            "multiline-anchor": 4,
         },
     }
 
@@ -780,6 +783,45 @@ class TestImageFont:
 
         with Image.open(path) as expected:
             assert_image_similar(im, expected, 7)
+
+    @pytest.mark.parametrize(
+        "anchor,align",
+        (
+            # test horizontal anchors
+            ("lm", "left"),
+            ("lm", "center"),
+            ("lm", "right"),
+            ("mm", "left"),
+            ("mm", "center"),
+            ("mm", "right"),
+            ("rm", "left"),
+            ("rm", "center"),
+            ("rm", "right"),
+            # test vertical anchors
+            ("ma", "center"),
+            # ("mm", "center"),  # duplicate
+            ("md", "center"),
+        ),
+    )
+    def test_anchor_multiline(self, anchor, align):
+        target = "Tests/images/test_anchor_multiline_%s_%s.png" % (anchor, align)
+        text = "a\nlong\ntext sample"
+
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        # test render
+        im = Image.new("RGB", (600, 400), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 200), (600, 200)), "gray")
+        d.line(((300, 0), (300, 400)), "gray")
+        d.multiline_text(
+            (300, 200), text, fill="black", anchor=anchor, font=f, align=align
+        )
+
+        with Image.open(target) as expected:
+            assert_image_similar(im, expected, self.metrics["multiline-anchor"])
 
     def test_anchor_invalid(self):
         font = self.get_font()
