@@ -12,8 +12,8 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Image.show
-~~~~~~~~~~
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
 
