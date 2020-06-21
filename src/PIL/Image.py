@@ -3139,11 +3139,10 @@ def register_encoder(name, encoder):
 
 
 # --------------------------------------------------------------------
-# Simple display support.  User code may override this.
+# Simple display support.
 
 
 def _show(image, **options):
-    # override me, as necessary
     _showxv(image, **options)
 
 
