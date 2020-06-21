@@ -62,6 +62,9 @@ Changelog (Pillow)
 - Fix pickling WebP #4561
   [hugovk, radarhere]
 
+- Replace IOError and WindowsError aliases with OSError #4536
+  [hugovk, radarhere]
+
 7.1.2 (2020-04-25)
 ------------------
 
