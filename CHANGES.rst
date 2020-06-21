@@ -5,6 +5,24 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Change STRIPBYTECOUNTS to LONG if necessary when saving #4626
+  [radarhere, hugovk]
+
+- Write JFIF header when saving JPEG #4639
+  [radarhere]
+
+- Replaced tiff_jpeg with jpeg compression when saving TIFF images #4627
+  [radarhere]
+
+- Writing TIFF tags: improved BYTE, added UNDEFINED #4605
+  [radarhere]
+
+- Consider transparency when pasting text on an RGBA image #4566
+  [radarhere]
+
+- Added method argument to single frame WebP saving #4547
+  [radarhere]
+
 - Use ImageFileDirectory_v2 in Image.Exif #4637
   [radarhere]
 
