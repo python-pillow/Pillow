@@ -1,10 +1,10 @@
+import os
 import subprocess
 import sys
 
 import pytest
 from PIL import Image, ImageGrab
-
-from .helper import assert_image, skip_unless_feature
+from .helper import assert_image, assert_image_equal_tofile, skip_unless_feature
 
 
 class TestImageGrab:
@@ -71,3 +71,27 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 
         im = ImageGrab.grabclipboard()
         assert_image(im, im.mode, im.size)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    def test_grabclipboard_file(self):
+        p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        p.stdin.write(rb'Set-Clipboard -Path "Tests\images\hopper.gif"')
+        p.communicate()
+
+        im = ImageGrab.grabclipboard()
+        assert len(im) == 1
+        assert os.path.samefile(im[0], "Tests/images/hopper.gif")
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    def test_grabclipboard_png(self):
+        p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        p.stdin.write(
+            rb"""$bytes = [System.IO.File]::ReadAllBytes("Tests\images\hopper.png")
+$ms = new-object System.IO.MemoryStream(, $bytes)
+[Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+[Windows.Forms.Clipboard]::SetData("PNG", $ms)"""
+        )
+        p.communicate()
+
+        im = ImageGrab.grabclipboard()
+        assert_image_equal_tofile(im, "Tests/images/hopper.png")

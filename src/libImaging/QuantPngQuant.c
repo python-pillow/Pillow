@@ -20,8 +20,8 @@
 int
 quantize_pngquant(
     Pixel *pixelData,
-    int width,
-    int height,
+    unsigned int width,
+    unsigned int height,
     uint32_t quantPixels,
     Pixel **palette,
     uint32_t *paletteLength,

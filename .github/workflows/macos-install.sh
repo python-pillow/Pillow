@@ -2,7 +2,7 @@
 
 set -e
 
-brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype
+brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype openblas
 
 PYTHONOPTIMIZE=0 pip install cffi
 pip install coverage
@@ -11,6 +11,8 @@ pip install -U pytest
 pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
+
+echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
 pip install numpy
 
 # extra test images

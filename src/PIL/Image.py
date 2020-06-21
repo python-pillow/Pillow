@@ -1051,10 +1051,12 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: 0 = median cut
-                       1 = maximum coverage
-                       2 = fast octree
-                       3 = libimagequant
+        :param method: ``Image.MEDIANCUT=0`` (median cut),
+                       ``Image.MAXCOVERAGE=1`` (maximum coverage),
+                       ``Image.FASTOCTREE=2`` (fast octree),
+                       ``Image.LIBIMAGEQUANT=3`` (libimagequant; check support using
+                       :py:func:`PIL.features.check_feature`
+                       with ``feature="libimagequant"``).
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
@@ -3137,11 +3139,10 @@ def register_encoder(name, encoder):
 
 
 # --------------------------------------------------------------------
-# Simple display support.  User code may override this.
+# Simple display support.
 
 
 def _show(image, **options):
-    # override me, as necessary
     _showxv(image, **options)
 
 

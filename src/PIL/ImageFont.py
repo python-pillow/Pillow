@@ -259,7 +259,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
-        size, offset = self.font.getsize(text, direction, features, language)
+        size, offset = self.font.getsize(text, False, direction, features, language)
         return (
             size[0] + stroke_width * 2 + offset[0],
             size[1] + stroke_width * 2 + offset[1],
@@ -468,7 +468,9 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        size, offset = self.font.getsize(text, direction, features, language)
+        size, offset = self.font.getsize(
+            text, mode == "1", direction, features, language
+        )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         im = fill("L", size, 0)
         self.font.render(
@@ -637,6 +639,11 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
+
+                     You can check support for Raqm layout using
+                     :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
+
+                     .. versionadded:: 4.2.0
     :return: A font object.
     :exception OSError: If the file could not be read.
     """

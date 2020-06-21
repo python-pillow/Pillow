@@ -30,6 +30,7 @@ Reference
    PSDraw
    PixelAccess
    PyAccess
+   features
    ../PIL
    plugins
    internal_design

@@ -314,6 +314,7 @@ def _save(im, fp, filename):
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
+    method = im.encoderinfo.get("method", 0)
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
         alpha = (
@@ -331,6 +332,7 @@ def _save(im, fp, filename):
         float(quality),
         im.mode,
         icc_profile,
+        method,
         exif,
         xmp,
     )

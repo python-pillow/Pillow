@@ -502,33 +502,45 @@ PyObject*
 PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
 {
     int clip;
-    HANDLE handle;
+    HANDLE handle = NULL;
     int size;
     void* data;
     PyObject* result;
+    UINT format;
+    UINT formats[] = { CF_DIB, CF_DIBV5, CF_HDROP, RegisterClipboardFormatA("PNG"), 0 };
+    LPCSTR format_names[] = { "DIB", "DIB", "file", "png", NULL };
 
-    clip = OpenClipboard(NULL);
-    /* FIXME: check error status */
-
-    handle = GetClipboardData(CF_DIB);
-    if (!handle) {
-        /* FIXME: add CF_HDROP support to allow cut-and-paste from
-           the explorer */
-        CloseClipboard();
-        Py_INCREF(Py_None);
-        return Py_None;
+    if (!OpenClipboard(NULL)) {
+        PyErr_SetString(PyExc_OSError, "failed to open clipboard");
+        return NULL;
     }
 
-    size = GlobalSize(handle);
+    // find best format as set by clipboard owner
+    format = 0;
+    while (!handle && (format = EnumClipboardFormats(format))) {
+        for (UINT i = 0; formats[i] != 0; i++) {
+            if (format == formats[i]) {
+                handle = GetClipboardData(format);
+                format = i;
+                break;
+            }
+        }
+    }
+
+    if (!handle) {
+        CloseClipboard();
+        return Py_BuildValue("zO", NULL, Py_None);
+    }
+
     data = GlobalLock(handle);
+    size = GlobalSize(handle);
 
     result = PyBytes_FromStringAndSize(data, size);
 
     GlobalUnlock(handle);
-
     CloseClipboard();
 
-    return result;
+    return Py_BuildValue("zN", format_names[format], result);
 }
 
 /* -------------------------------------------------------------------- */
