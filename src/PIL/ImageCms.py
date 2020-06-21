@@ -369,7 +369,7 @@ def profileToProfile(
         else:
             imOut = transform.apply(im)
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
     return imOut
 
@@ -393,7 +393,7 @@ def getOpenProfile(profileFilename):
     try:
         return ImageCmsProfile(profileFilename)
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def buildTransform(
@@ -474,7 +474,7 @@ def buildTransform(
             inputProfile, outputProfile, inMode, outMode, renderingIntent, flags=flags
         )
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def buildProofTransform(
@@ -585,7 +585,7 @@ def buildProofTransform(
             flags,
         )
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 buildTransformFromOpenProfiles = buildTransform
@@ -640,7 +640,7 @@ def applyTransform(im, transform, inPlace=False):
         else:
             imOut = transform.apply(im)
     except (TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
     return imOut
 
@@ -682,15 +682,15 @@ def createProfile(colorSpace, colorTemp=-1):
     if colorSpace == "LAB":
         try:
             colorTemp = float(colorTemp)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             raise PyCMSError(
                 'Color temperature must be numeric, "%s" not valid' % colorTemp
-            )
+            ) from e
 
     try:
         return core.createProfile(colorSpace, colorTemp)
     except (TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileName(profile):
@@ -732,7 +732,7 @@ def getProfileName(profile):
         return "{} - {}\n".format(model, manufacturer)
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileInfo(profile):
@@ -772,7 +772,7 @@ def getProfileInfo(profile):
         return "\r\n\r\n".join(arr) + "\r\n\r\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileCopyright(profile):
@@ -800,7 +800,7 @@ def getProfileCopyright(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.copyright or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileManufacturer(profile):
@@ -828,7 +828,7 @@ def getProfileManufacturer(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.manufacturer or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileModel(profile):
@@ -857,7 +857,7 @@ def getProfileModel(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.model or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileDescription(profile):
@@ -886,7 +886,7 @@ def getProfileDescription(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.profile_description or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getDefaultIntent(profile):
@@ -925,7 +925,7 @@ def getDefaultIntent(profile):
             profile = ImageCmsProfile(profile)
         return profile.profile.rendering_intent
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def isIntentSupported(profile, intent, direction):
@@ -976,7 +976,7 @@ def isIntentSupported(profile, intent, direction):
         else:
             return -1
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def versions():

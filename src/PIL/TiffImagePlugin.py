@@ -1117,8 +1117,8 @@ class TiffImageFile(ImageFile.ImageFile):
         )
         try:
             decoder.setimage(self.im, extents)
-        except ValueError:
-            raise OSError("Couldn't set the image")
+        except ValueError as e:
+            raise OSError("Couldn't set the image") from e
 
         close_self_fp = self._exclusive_fp and not self.is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1231,9 +1231,9 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("format key: {}".format(key))
         try:
             self.mode, rawmode = OPEN_INFO[key]
-        except KeyError:
+        except KeyError as e:
             logger.debug("- unsupported format")
-            raise SyntaxError("unknown pixel mode")
+            raise SyntaxError("unknown pixel mode") from e
 
         logger.debug("- raw mode: {}".format(rawmode))
         logger.debug("- pil mode: {}".format(self.mode))
@@ -1400,8 +1400,8 @@ def _save(im, fp, filename):
 
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as TIFF" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as TIFF" % im.mode) from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 

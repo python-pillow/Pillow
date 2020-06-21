@@ -503,8 +503,8 @@ class FreeTypeFont:
         """
         try:
             names = self.font.getvarnames()
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name):
@@ -533,8 +533,8 @@ class FreeTypeFont:
         """
         try:
             axes = self.font.getvaraxes()
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
         for axis in axes:
             axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
@@ -546,8 +546,8 @@ class FreeTypeFont:
         """
         try:
             self.font.setvaraxes(axes)
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
 
 
 class TransposedFont:
