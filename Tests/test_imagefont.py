@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     is_pypy,
@@ -736,3 +737,19 @@ class TestImageFont:
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
+
+
+def test_render_mono_size():
+    # issue 4177
+
+    if distutils.version.StrictVersion(ImageFont.core.freetype2_version) < "2.4":
+        pytest.skip("Different metrics")
+
+    im = Image.new("P", (100, 30), "white")
+    draw = ImageDraw.Draw(im)
+    ttf = ImageFont.truetype(
+        "Tests/fonts/DejaVuSans.ttf", 18, layout_engine=ImageFont.LAYOUT_BASIC
+    )
+
+    draw.text((10, 10), "r" * 10, "black", ttf)
+    assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
