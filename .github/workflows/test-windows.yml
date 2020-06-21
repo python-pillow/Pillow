@@ -105,9 +105,9 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_openjpeg.cmd"
 
-    # GPL licensed; skip if building wheels
+    # GPL licensed
     - name: Build dependencies / libimagequant
-      if: false
+      if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libimagequant.cmd"
 
     # Raqm dependencies
@@ -129,7 +129,9 @@ jobs:
 
     - name: Build Pillow
       run: |
-        & winbuild\build\build_pillow.cmd install
+        $FLAGS=""
+        if ('${{ github.event_name }}' -eq 'push') { $FLAGS="--disable-imagequant" }
+        & winbuild\build\build_pillow.cmd $FLAGS install
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -171,12 +173,14 @@ jobs:
 
     - name: Build wheel
       id: wheel
+      if: "github.event_name == 'push'"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
-        winbuild\\build\\build_pillow.cmd bdist_wheel"
+        winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
     - uses: actions/upload-artifact@v2
+      if: "github.event_name == 'push'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
