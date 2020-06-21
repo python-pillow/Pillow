@@ -27,3 +27,9 @@ Moved from the legacy :py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v1` to
 :py:class:`PIL.Image.Exif`. This means that Exif RATIONALs and SIGNED_RATIONALs
 are now read as :py:class:`PIL.TiffImagePlugin.IFDRational`, instead of as a
 tuple with a numerator and a denominator.
+
+TIFF BYTE tags format
+^^^^^^^^^^^^^^^^^^^^^
+
+TIFF BYTE tags were previously read as a tuple containing a bytestring. They
+are now read as just a single bytestring.
