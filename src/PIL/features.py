@@ -270,7 +270,7 @@ def pilinfo(out=None, supported_formats=True):
                 v = version(name)
             if v is not None:
                 t = "compiled for" if name in ("pil", "jpg") else "loaded"
-                print("---", feature, "support ok,", t, "version", v, file=out)
+                print("---", feature, "support ok,", t, v, file=out)
             else:
                 print("---", feature, "support ok", file=out)
         else:
