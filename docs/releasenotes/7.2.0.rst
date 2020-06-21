@@ -33,3 +33,13 @@ TIFF BYTE tags format
 
 TIFF BYTE tags were previously read as a tuple containing a bytestring. They
 are now read as just a single bytestring.
+
+Deprecations
+^^^^^^^^^^^^
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+is now deprecated and will be removed in a future release. Use
+``ImageFile.raise_oserror`` instead.
