@@ -11,7 +11,11 @@ pip install -U pytest
 pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
-pip install numpy
+if [[ $PYTHON_VERSION == "pypy3" ]]; then
+  pip install numpy!=1.19.0
+else
+  pip install numpy
+fi
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
