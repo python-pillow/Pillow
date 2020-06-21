@@ -373,7 +373,7 @@ ImagingZipEncodeCleanup(ImagingCodecState state) {
 const char*
 ImagingZipVersion(void)
 {
-    return ZLIB_VERSION;
+    return zlibVersion();
 }
 
 #endif

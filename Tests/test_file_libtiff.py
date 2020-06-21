@@ -3,11 +3,12 @@ import io
 import itertools
 import logging
 import os
+import re
 from collections import namedtuple
 from ctypes import c_float
 
 import pytest
-from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags
+from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
     assert_image_equal,
@@ -47,6 +48,9 @@ class LibTiffTestCase:
 
 
 class TestFileLibTiff(LibTiffTestCase):
+    def test_version(self):
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("libtiff"))
+
     def test_g4_tiff(self, tmp_path):
         """Test the ordinary file path load path"""
 

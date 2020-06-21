@@ -1608,6 +1608,7 @@ static int
 setup_module(PyObject* m) {
     PyObject *d;
     PyObject *v;
+    int vn;
 
     d = PyModule_GetDict(m);
 
@@ -1622,7 +1623,8 @@ setup_module(PyObject* m) {
 
     d = PyModule_GetDict(m);
 
-    v = PyUnicode_FromFormat("%d.%d", LCMS_VERSION / 100, LCMS_VERSION % 100);
+    vn = cmsGetEncodedCMMversion();
+    v = PyUnicode_FromFormat("%d.%d", vn / 100, vn % 100);
     PyDict_SetItemString(d, "littlecms_version", v);
 
     return 0;

@@ -23,10 +23,10 @@ import subprocess
 import sys
 import tempfile
 
-from PIL import Image, ImageFile, PngImagePlugin
+from PIL import Image, ImageFile, PngImagePlugin, features
 from PIL._binary import i8
 
-enable_jpeg2k = hasattr(Image.core, "jp2klib_version")
+enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 

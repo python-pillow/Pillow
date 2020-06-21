@@ -2,7 +2,7 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, Jpeg2KImagePlugin
+from PIL import Image, ImageFile, Jpeg2KImagePlugin, features
 
 from .helper import (
     assert_image_equal,
@@ -35,7 +35,7 @@ def roundtrip(im, **options):
 
 def test_sanity():
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", Image.core.jp2klib_version)
+    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
