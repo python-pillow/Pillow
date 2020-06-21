@@ -5,7 +5,7 @@ Reference for modules whose documentation has not yet been ported or written
 can be found here.
 
 :mod:`PIL` Module
--------------------------
+-----------------
 
 .. py:module:: PIL
 
