@@ -1,10 +1,10 @@
 .. py:module:: PIL.ExifTags
 .. py:currentmodule:: PIL.ExifTags
 
-:py:mod:`ExifTags` Module
-==========================
+:py:mod:`~PIL.ExifTags` Module
+==============================
 
-The :py:mod:`ExifTags` module exposes two dictionaries which
+The :py:mod:`~PIL.ExifTags` module exposes two dictionaries which
 provide constants and clear-text names for various well-known EXIF tags.
 
 .. py:data:: TAGS

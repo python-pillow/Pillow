@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageMath
 .. py:currentmodule:: PIL.ImageMath
 
-:py:mod:`ImageMath` Module
-==========================
+:py:mod:`~PIL.ImageMath` Module
+===============================
 
-The :py:mod:`ImageMath` module can be used to evaluate “image expressions”. The
+The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”. The
 module provides a single :py:meth:`~PIL.ImageMath.eval` function, which takes
 an expression string and one or more images.
 
