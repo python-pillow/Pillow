@@ -8,9 +8,30 @@ The :py:mod:`ImageCms` module provides color profile management
 support using the LittleCMS2 color management engine, based on Kevin
 Cazabon's PyCMS library.
 
-.. automodule:: PIL.ImageCms
-    :members:
-    :noindex:
+.. autoclass:: ImageCmsTransform
+.. autoexception:: PyCMSError
+
+Functions
+---------
+
+.. autofunction:: applyTransform
+.. autofunction:: buildProofTransform
+.. autofunction:: buildProofTransformFromOpenProfiles
+.. autofunction:: buildTransform
+.. autofunction:: buildTransformFromOpenProfiles
+.. autofunction:: createProfile
+.. autofunction:: getDefaultIntent
+.. autofunction:: getOpenProfile
+.. autofunction:: getProfileCopyright
+.. autofunction:: getProfileDescription
+.. autofunction:: getProfileInfo
+.. autofunction:: getProfileManufacturer
+.. autofunction:: getProfileModel
+.. autofunction:: getProfileName
+.. autofunction:: get_display_profile
+.. autofunction:: isIntentSupported
+.. autofunction:: profileToProfile
+.. autofunction:: versions
 
 CmsProfile
 ----------
