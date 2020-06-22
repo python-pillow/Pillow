@@ -34,14 +34,21 @@ Example: Parse an image
     im.save("copy.jpg")
 
 
-:py:class:`~PIL.ImageFile.Parser`
----------------------------------
+Classes
+-------
 
 .. autoclass:: PIL.ImageFile.Parser()
     :members:
 
-:py:class:`~PIL.ImageFile.PyDecoder`
-------------------------------------
-
 .. autoclass:: PIL.ImageFile.PyDecoder()
     :members:
+
+.. autoclass:: PIL.ImageFile.ImageFile()
+    :member-order: bysource
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: PIL.ImageFile.StubImageFile()
+    :members:
+    :show-inheritance:
