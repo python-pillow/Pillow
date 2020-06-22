@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Updated JPEG magic number #4707
+  [Cykooz, radarhere]
+
 - Change STRIPBYTECOUNTS to LONG if necessary when saving #4626
   [radarhere, hugovk]
 
