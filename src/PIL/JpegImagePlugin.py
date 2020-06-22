@@ -323,7 +323,8 @@ MARKER = {
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"\377"
+    # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
+    return prefix[0:3] == b"\xFF\xD8\xFF"
 
 
 ##
@@ -337,10 +338,11 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        s = self.fp.read(1)
+        s = self.fp.read(3)
 
-        if i8(s) != 255:
+        if s != b"\xFF\xD8\xFF":
             raise SyntaxError("not a JPEG file")
+        s = b"\xFF"
 
         # Create attributes
         self.bits = self.layers = 0

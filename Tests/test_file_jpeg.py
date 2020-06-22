@@ -3,7 +3,14 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin, features
+from PIL import (
+    ExifTags,
+    Image,
+    ImageFile,
+    JpegImagePlugin,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image,
@@ -708,6 +715,24 @@ class TestFileJpeg:
     def test_icc_after_SOF(self):
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
+
+    def test_jpeg_magic_number(self):
+        size = 4097
+        buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
+        buffer.max_pos = 0
+        orig_read = buffer.read
+
+        def read(n=-1):
+            res = orig_read(n)
+            buffer.max_pos = max(buffer.max_pos, buffer.tell())
+            return res
+
+        buffer.read = read
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(buffer)
+
+        # Assert the entire file has not been read
+        assert 0 < buffer.max_pos < size
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
