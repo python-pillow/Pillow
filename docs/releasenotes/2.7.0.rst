@@ -29,53 +29,53 @@ Image resizing filters
 Image resizing methods :py:meth:`~PIL.Image.Image.resize` and
 :py:meth:`~PIL.Image.Image.thumbnail` take a ``resample`` argument, which tells
 which filter should be used for resampling. Possible values are:
-:py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
-:py:attr:`PIL.Image.BICUBIC` and :py:attr:`PIL.Image.ANTIALIAS`.
+:py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BILINEAR`,
+:py:data:`PIL.Image.BICUBIC` and :py:data:`PIL.Image.ANTIALIAS`.
 Almost all of them were changed in this version.
 
 Bicubic and bilinear downscaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-From the beginning :py:attr:`~PIL.Image.BILINEAR` and
-:py:attr:`~PIL.Image.BICUBIC` filters were based on affine transformations
+From the beginning :py:data:`~PIL.Image.BILINEAR` and
+:py:data:`~PIL.Image.BICUBIC` filters were based on affine transformations
 and used a fixed number of pixels from the source image for every destination
-pixel (2x2 pixels for :py:attr:`~PIL.Image.BILINEAR` and 4x4 for
-:py:attr:`~PIL.Image.BICUBIC`). This gave an unsatisfactory result for
+pixel (2x2 pixels for :py:data:`~PIL.Image.BILINEAR` and 4x4 for
+:py:data:`~PIL.Image.BICUBIC`). This gave an unsatisfactory result for
 downscaling. At the same time, a high quality convolutions-based algorithm with
-flexible kernel was used for :py:attr:`~PIL.Image.ANTIALIAS` filter.
+flexible kernel was used for :py:data:`~PIL.Image.ANTIALIAS` filter.
 
 Starting from Pillow 2.7.0, a high quality convolutions-based algorithm is used
 for all of these three filters.
 
 If you have previously used any tricks to maintain quality when downscaling with
-:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` filters
+:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` filters
 (for example, reducing within several steps), they are unnecessary now.
 
 Antialias renamed to Lanczos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A new :py:attr:`PIL.Image.LANCZOS` constant was added instead of
-:py:attr:`~PIL.Image.ANTIALIAS`.
+A new :py:data:`PIL.Image.LANCZOS` constant was added instead of
+:py:data:`~PIL.Image.ANTIALIAS`.
 
-When :py:attr:`~PIL.Image.ANTIALIAS` was initially added, it was the only
+When :py:data:`~PIL.Image.ANTIALIAS` was initially added, it was the only
 high-quality filter based on convolutions. It's name was supposed to reflect
 this. Starting from Pillow 2.7.0 all resize method are based on convolutions.
 All of them are antialias from now on. And the real name of the
-:py:attr:`~PIL.Image.ANTIALIAS` filter is Lanczos filter.
+:py:data:`~PIL.Image.ANTIALIAS` filter is Lanczos filter.
 
-The :py:attr:`~PIL.Image.ANTIALIAS` constant is left for backward compatibility
-and is an alias for :py:attr:`~PIL.Image.LANCZOS`.
+The :py:data:`~PIL.Image.ANTIALIAS` constant is left for backward compatibility
+and is an alias for :py:data:`~PIL.Image.LANCZOS`.
 
 Lanczos upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The image upscaling quality with :py:attr:`~PIL.Image.LANCZOS` filter was
-almost the same as :py:attr:`~PIL.Image.BILINEAR` due to bug. This has been fixed.
+The image upscaling quality with :py:data:`~PIL.Image.LANCZOS` filter was
+almost the same as :py:data:`~PIL.Image.BILINEAR` due to bug. This has been fixed.
 
 Bicubic upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:attr:`~PIL.Image.BICUBIC` filter for affine transformations produced
+The :py:data:`~PIL.Image.BICUBIC` filter for affine transformations produced
 sharp, slightly pixelated image for upscaling. Bicubic for convolutions is
 more soft.
 
@@ -84,42 +84,42 @@ Resize performance
 
 In most cases, convolution is more a expensive algorithm for downscaling
 because it takes into account all the pixels of source image. Therefore
-:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` filters'
+:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` filters'
 performance can be lower than before. On the other hand the quality of
-:py:attr:`~PIL.Image.BILINEAR` and :py:attr:`~PIL.Image.BICUBIC` was close to
-:py:attr:`~PIL.Image.NEAREST`. So if such quality is suitable for your tasks
-you can switch to :py:attr:`~PIL.Image.NEAREST` filter for downscaling,
+:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` was close to
+:py:data:`~PIL.Image.NEAREST`. So if such quality is suitable for your tasks
+you can switch to :py:data:`~PIL.Image.NEAREST` filter for downscaling,
 which will give a huge improvement in performance.
 
 At the same time performance of convolution resampling for downscaling has been
 improved by around a factor of two compared to the previous version.
-The upscaling performance of the :py:attr:`~PIL.Image.LANCZOS` filter has
-remained the same. For :py:attr:`~PIL.Image.BILINEAR` filter it has improved by
-1.5 times and for :py:attr:`~PIL.Image.BICUBIC` by four times.
+The upscaling performance of the :py:data:`~PIL.Image.LANCZOS` filter has
+remained the same. For :py:data:`~PIL.Image.BILINEAR` filter it has improved by
+1.5 times and for :py:data:`~PIL.Image.BICUBIC` by four times.
 
 Default filter for thumbnails
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In Pillow 2.5 the default filter for :py:meth:`~PIL.Image.Image.thumbnail` was
-changed from :py:attr:`~PIL.Image.NEAREST` to :py:attr:`~PIL.Image.ANTIALIAS`.
+changed from :py:data:`~PIL.Image.NEAREST` to :py:data:`~PIL.Image.ANTIALIAS`.
 Antialias was chosen because all the other filters gave poor quality for
-reduction. Starting from Pillow 2.7.0, :py:attr:`~PIL.Image.ANTIALIAS` has been
-replaced with :py:attr:`~PIL.Image.BICUBIC`, because it's faster and
-:py:attr:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
+reduction. Starting from Pillow 2.7.0, :py:data:`~PIL.Image.ANTIALIAS` has been
+replaced with :py:data:`~PIL.Image.BICUBIC`, because it's faster and
+:py:data:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
 downscaling with libjpeg, which uses supersampling internally, not convolutions.
 
 Image transposition
 -------------------
 
-A new method :py:attr:`PIL.Image.TRANSPOSE` has been added for the
+A new method :py:data:`PIL.Image.TRANSPOSE` has been added for the
 :py:meth:`~PIL.Image.Image.transpose` operation in addition to
-:py:attr:`~PIL.Image.FLIP_LEFT_RIGHT`, :py:attr:`~PIL.Image.FLIP_TOP_BOTTOM`,
-:py:attr:`~PIL.Image.ROTATE_90`, :py:attr:`~PIL.Image.ROTATE_180`,
-:py:attr:`~PIL.Image.ROTATE_270`. :py:attr:`~PIL.Image.TRANSPOSE` is an algebra
+:py:data:`~PIL.Image.FLIP_LEFT_RIGHT`, :py:data:`~PIL.Image.FLIP_TOP_BOTTOM`,
+:py:data:`~PIL.Image.ROTATE_90`, :py:data:`~PIL.Image.ROTATE_180`,
+:py:data:`~PIL.Image.ROTATE_270`. :py:data:`~PIL.Image.TRANSPOSE` is an algebra
 transpose, with an image reflected across its main diagonal.
 
-The speed of :py:attr:`~PIL.Image.ROTATE_90`, :py:attr:`~PIL.Image.ROTATE_270`
-and :py:attr:`~PIL.Image.TRANSPOSE` has been significantly improved for large
+The speed of :py:data:`~PIL.Image.ROTATE_90`, :py:data:`~PIL.Image.ROTATE_270`
+and :py:data:`~PIL.Image.TRANSPOSE` has been significantly improved for large
 images which don't fit in the processor cache.
 
 Gaussian blur and unsharp mask
