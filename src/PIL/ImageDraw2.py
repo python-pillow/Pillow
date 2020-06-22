@@ -106,7 +106,7 @@ class Draw:
 
     def chord(self, xy, start, end, *options):
         """
-        Same as :py:meth:`~PIL.ImageDraw2.ImageDraw.arc`, but connects the end points
+        Same as :py:meth:`~PIL.ImageDraw2.Draw.arc`, but connects the end points
         with a straight line.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.chord`
