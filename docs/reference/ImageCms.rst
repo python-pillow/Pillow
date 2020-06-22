@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageCms
 .. py:currentmodule:: PIL.ImageCms
 
-:py:mod:`ImageCms` Module
-=========================
+:py:mod:`~PIL.ImageCms` Module
+==============================
 
-The :py:mod:`ImageCms` module provides color profile management
+The :py:mod:`~PIL.ImageCms` module provides color profile management
 support using the LittleCMS2 color management engine, based on Kevin
 Cazabon's PyCMS library.
 

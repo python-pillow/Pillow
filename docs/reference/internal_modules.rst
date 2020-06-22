@@ -1,32 +1,32 @@
 Internal Modules
 ================
 
-:mod:`_binary` Module
----------------------
+:mod:`~PIL._binary` Module
+--------------------------
 
 .. automodule:: PIL._binary
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`_tkinter_finder` Module
------------------------------
+:mod:`~PIL._tkinter_finder` Module
+----------------------------------
 
 .. automodule:: PIL._tkinter_finder
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`_util` Module
--------------------
+:mod:`~PIL._util` Module
+------------------------
 
 .. automodule:: PIL._util
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`_version` Module
-----------------------
+:mod:`~PIL._version` Module
+---------------------------
 
 .. module:: PIL._version
 

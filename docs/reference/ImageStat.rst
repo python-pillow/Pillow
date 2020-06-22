@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageStat
 .. py:currentmodule:: PIL.ImageStat
 
-:py:mod:`ImageStat` Module
-==========================
+:py:mod:`~PIL.ImageStat` Module
+===============================
 
-The :py:mod:`ImageStat` module calculates global statistics for an image, or
+The :py:mod:`~PIL.ImageStat` module calculates global statistics for an image, or
 for a region of an image.
 
 .. py:class:: Stat(image_or_list, mask=None)

@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageOps
 .. py:currentmodule:: PIL.ImageOps
 
-:py:mod:`ImageOps` Module
-==========================
+:py:mod:`~PIL.ImageOps` Module
+==============================
 
-The :py:mod:`ImageOps` module contains a number of ‘ready-made’ image
+The :py:mod:`~PIL.ImageOps` module contains a number of ‘ready-made’ image
 processing operations. This module is somewhat experimental, and most operators
 only work on L and RGB images.
 

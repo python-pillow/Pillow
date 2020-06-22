@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageDraw
 .. py:currentmodule:: PIL.ImageDraw
 
-:py:mod:`ImageDraw` Module
-==========================
+:py:mod:`~PIL.ImageDraw` Module
+===============================
 
-The :py:mod:`ImageDraw` module provides simple 2D graphics for
+The :py:mod:`~PIL.ImageDraw` module provides simple 2D graphics for
 :py:class:`~PIL.Image.Image` objects.  You can use this module to create new
 images, annotate or retouch existing images, and to generate graphics on the
 fly for web use.
