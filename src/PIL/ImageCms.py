@@ -295,11 +295,12 @@ def profileToProfile(
     ``inputProfile`` to ``outputProfile``.
 
     If the input or output profiles specified are not valid filenames, a
-    ``PyCMSError`` will be raised.  If ``inPlace`` is ``True`` and
-    ``outputMode != im.mode``, a ``PyCMSError`` will be raised.  If an error
-    occurs during application of the profiles, a ``PyCMSError`` will be raised.
+    :exc:`PyCMSError` will be raised.  If ``inPlace`` is ``True`` and
+    ``outputMode != im.mode``, a :exc:`PyCMSError` will be raised.
+    If an error occurs during application of the profiles,
+    a :exc:`PyCMSError` will be raised.
     If ``outputMode`` is not a mode supported by the ``outputProfile`` (or by pyCMS),
-    a ``PyCMSError`` will be raised.
+    a :exc:`PyCMSError` will be raised.
 
     This function applies an ICC transformation to im from ``inputProfile``'s
     color space to ``outputProfile``'s color space using the specified rendering
@@ -381,8 +382,8 @@ def getOpenProfile(profileFilename):
     The PyCMSProfile object can be passed back into pyCMS for use in creating
     transforms and such (as in ImageCms.buildTransformFromOpenProfiles()).
 
-    If ``profileFilename`` is not a valid filename for an ICC profile, a ``PyCMSError``
-    will be raised.
+    If ``profileFilename`` is not a valid filename for an ICC profile,
+    a :exc:`PyCMSError` will be raised.
 
     :param profileFilename: String, as a valid filename path to the ICC profile
         you wish to open, or a file-like object.
@@ -410,11 +411,11 @@ def buildTransform(
     image.
 
     If the input or output profiles specified are not valid filenames, a
-    ``PyCMSError`` will be raised. If an error occurs during creation of the
-    transform, a ``PyCMSError`` will be raised.
+    :exc:`PyCMSError` will be raised. If an error occurs during creation
+    of the transform, a :exc:`PyCMSError` will be raised.
 
     If ``inMode`` or ``outMode`` are not a mode supported by the ``outputProfile``
-    (or by pyCMS), a ``PyCMSError`` will be raised.
+    (or by pyCMS), a :exc:`PyCMSError` will be raised.
 
     This function builds and returns an ICC transform from the ``inputProfile``
     to the ``outputProfile`` using the ``renderingIntent`` to determine what to do
@@ -493,13 +494,13 @@ def buildProofTransform(
     obtained on the ``proofProfile`` device.
 
     If the input, output, or proof profiles specified are not valid
-    filenames, a ``PyCMSError`` will be raised.
+    filenames, a :exc:`PyCMSError` will be raised.
 
-    If an error occurs during creation of the transform, a ``PyCMSError``
-    will be raised.
+    If an error occurs during creation of the transform,
+    a :exc:`PyCMSError` will be raised.
 
     If ``inMode`` or ``outMode`` are not a mode supported by the ``outputProfile``
-    (or by pyCMS), a ``PyCMSError`` will be raised.
+    (or by pyCMS), a :exc:`PyCMSError` will be raised.
 
     This function builds and returns an ICC transform from the ``inputProfile``
     to the ``outputProfile``, but tries to simulate the result that would be
@@ -596,17 +597,17 @@ def applyTransform(im, transform, inPlace=False):
     """
     (pyCMS) Applies a transform to a given image.
 
-    If ``im.mode != transform.inMode``, a ``PyCMSError`` is raised.
+    If ``im.mode != transform.inMode``, a :exc:`PyCMSError` is raised.
 
     If ``inPlace`` is ``True`` and ``transform.inMode != transform.outMode``, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
     If ``im.mode``, ``transform.inMode`` or ``transform.outMode`` is not
     supported by pyCMSdll or the profiles you used for the transform, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while the transform is being applied, a ``PyCMSError``
-    is raised.
+    If an error occurs while the transform is being applied,
+    a :exc:`PyCMSError` is raised.
 
     This function applies a pre-calculated transform (from
     ImageCms.buildTransform() or ImageCms.buildTransformFromOpenProfiles())
@@ -649,12 +650,14 @@ def createProfile(colorSpace, colorTemp=-1):
     """
     (pyCMS) Creates a profile.
 
-    If colorSpace not in ``["LAB", "XYZ", "sRGB"]``, a ``PyCMSError`` is raised.
+    If colorSpace not in ``["LAB", "XYZ", "sRGB"]``,
+    a :exc:`PyCMSError` is raised.
 
-    If using LAB and ``colorTemp`` is not a positive integer, a ``PyCMSError`` is
-    raised.
+    If using LAB and ``colorTemp`` is not a positive integer,
+    a :exc:`PyCMSError` is raised.
 
-    If an error occurs while creating the profile, a ``PyCMSError`` is raised.
+    If an error occurs while creating the profile,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to create common profiles on-the-fly instead of
     having to supply a profile on disk and knowing the path to it.  It
@@ -699,8 +702,8 @@ def getProfileName(profile):
     (pyCMS) Gets the internal product name for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile,
-    a ``PyCMSError`` is raised If an error occurs while trying to obtain the
-    name tag, a ``PyCMSError`` is raised.
+    a :exc:`PyCMSError` is raised If an error occurs while trying
+    to obtain the name tag, a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the INTERNAL name of the profile (stored
     in an ICC tag in the profile itself), usually the one used when the
@@ -740,10 +743,10 @@ def getProfileInfo(profile):
     (pyCMS) Gets the internal product information for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile,
-    a ``PyCMSError`` is raised.
+    a :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the info tag, a ``PyCMSError``
-    is raised.
+    If an error occurs while trying to obtain the info tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     info tag.  This often contains details about the profile, and how it
@@ -780,10 +783,10 @@ def getProfileCopyright(profile):
     (pyCMS) Gets the copyright for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the copyright tag, a ``PyCMSError``
-    is raised.
+    If an error occurs while trying to obtain the copyright tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     copyright tag.
@@ -808,10 +811,10 @@ def getProfileManufacturer(profile):
     (pyCMS) Gets the manufacturer for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
     If an error occurs while trying to obtain the manufacturer tag, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     manufacturer tag.
@@ -836,10 +839,10 @@ def getProfileModel(profile):
     (pyCMS) Gets the model for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the model tag, a ``PyCMSError``
-    is raised.
+    If an error occurs while trying to obtain the model tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     model tag.
@@ -865,10 +868,10 @@ def getProfileDescription(profile):
     (pyCMS) Gets the description for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the description tag, a ``PyCMSError``
-    is raised.
+    If an error occurs while trying to obtain the description tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     description tag.
@@ -894,10 +897,10 @@ def getDefaultIntent(profile):
     (pyCMS) Gets the default intent name for the given profile.
 
     If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
     If an error occurs while trying to obtain the default intent, a
-    ``PyCMSError`` is raised.
+    :exc:`PyCMSError` is raised.
 
     Use this function to determine the default (and usually best optimized)
     rendering intent for this profile.  Most profiles support multiple
@@ -940,8 +943,8 @@ def isIntentSupported(profile, intent, direction):
     be used for others. Some profiles can only be used for certain
     rendering intents, so it's best to either verify this before trying
     to create a transform with them (using this function), or catch the
-    potential ``PyCMSError`` that will occur if they don't support the modes
-    you select.
+    potential :exc:`PyCMSError` that will occur if they don't
+    support the modes you select.
 
     :param profile: EITHER a valid CmsProfile object, OR a string of the
         filename of an ICC profile.
