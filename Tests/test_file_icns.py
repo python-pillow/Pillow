@@ -2,14 +2,14 @@ import io
 import sys
 
 import pytest
-from PIL import IcnsImagePlugin, Image
+from PIL import IcnsImagePlugin, Image, features
 
 from .helper import assert_image_equal, assert_image_similar
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
 
-ENABLE_JPEG2K = hasattr(Image.core, "jp2klib_version")
+ENABLE_JPEG2K = features.check_codec("jpg_2000")
 
 
 def test_sanity():

@@ -3,7 +3,7 @@ import zlib
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, PngImagePlugin
+from PIL import Image, ImageFile, PngImagePlugin, features
 
 from .helper import (
     PillowLeakTestCase,
@@ -73,7 +73,7 @@ class TestFilePng:
     def test_sanity(self, tmp_path):
 
         # internal version number
-        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", Image.core.zlib_version)
+        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
 
         test_file = str(tmp_path / "temp.png")
 

@@ -4168,12 +4168,21 @@ setup_module(PyObject* m) {
 
 #ifdef LIBJPEG_TURBO_VERSION
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_True);
+    #define tostr1(a) #a
+    #define tostr(a) tostr1(a)
+    PyDict_SetItemString(d, "libjpeg_turbo_version", PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION)));
+    #undef tostr
+    #undef tostr1
 #else
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
 #endif
 
 #ifdef HAVE_LIBIMAGEQUANT
     PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_True);
+    {
+        extern const char* ImagingImageQuantVersion(void);
+        PyDict_SetItemString(d, "imagequant_version", PyUnicode_FromString(ImagingImageQuantVersion()));
+    }
 #else
     PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_False);
 #endif

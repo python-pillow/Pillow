@@ -251,8 +251,8 @@ class PdfDict(collections.UserDict):
     def __getattr__(self, key):
         try:
             value = self[key.encode("us-ascii")]
-        except KeyError:
-            raise AttributeError(key)
+        except KeyError as e:
+            raise AttributeError(key) from e
         if isinstance(value, bytes):
             value = decode_text(value)
         if key.endswith("Date"):
@@ -811,11 +811,11 @@ class PdfParser:
             if m:
                 try:
                     stream_len = int(result[b"Length"])
-                except (TypeError, KeyError, ValueError):
+                except (TypeError, KeyError, ValueError) as e:
                     raise PdfFormatError(
                         "bad or missing Length in stream dict (%r)"
                         % result.get(b"Length", None)
-                    )
+                    ) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")

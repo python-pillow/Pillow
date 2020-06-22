@@ -1,5 +1,8 @@
+import io
+import re
+
 import pytest
-from PIL import Image, WebPImagePlugin
+from PIL import Image, WebPImagePlugin, features
 
 from .helper import (
     assert_image_similar,
@@ -36,6 +39,7 @@ class TestFileWebp:
     def test_version(self):
         _webp.WebPDecoderVersion()
         _webp.WebPDecoderBuggyAlpha()
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("webp"))
 
     def test_read_rgb(self):
         """
@@ -54,15 +58,10 @@ class TestFileWebp:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
 
-    def test_write_rgb(self, tmp_path):
-        """
-        Can we write a RGB mode file to webp without error.
-        Does it have the bits we expect?
-        """
-
+    def _roundtrip(self, tmp_path, mode, epsilon, args={}):
         temp_file = str(tmp_path / "temp.webp")
 
-        hopper(self.rgb_mode).save(temp_file)
+        hopper(mode).save(temp_file, **args)
         with Image.open(temp_file) as image:
             assert image.mode == self.rgb_mode
             assert image.size == (128, 128)
@@ -70,18 +69,38 @@ class TestFileWebp:
             image.load()
             image.getdata()
 
-            # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
-            assert_image_similar_tofile(
-                image, "Tests/images/hopper_webp_write.ppm", 12.0
-            )
+            if mode == self.rgb_mode:
+                # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
+                assert_image_similar_tofile(
+                    image, "Tests/images/hopper_webp_write.ppm", 12.0
+                )
 
             # This test asserts that the images are similar. If the average pixel
             # difference between the two images is less than the epsilon value,
             # then we're going to accept that it's a reasonable lossy version of
-            # the image. The old lena images for WebP are showing ~16 on
-            # Ubuntu, the jpegs are showing ~18.
-            target = hopper(self.rgb_mode)
-            assert_image_similar(image, target, 12.0)
+            # the image.
+            target = hopper(mode)
+            if mode != self.rgb_mode:
+                target = target.convert(self.rgb_mode)
+            assert_image_similar(image, target, epsilon)
+
+    def test_write_rgb(self, tmp_path):
+        """
+        Can we write a RGB mode file to webp without error?
+        Does it have the bits we expect?
+        """
+
+        self._roundtrip(tmp_path, self.rgb_mode, 12.5)
+
+    def test_write_method(self, tmp_path):
+        self._roundtrip(tmp_path, self.rgb_mode, 12.0, {"method": 6})
+
+        buffer_no_args = io.BytesIO()
+        hopper().save(buffer_no_args, format="WEBP")
+
+        buffer_method = io.BytesIO()
+        hopper().save(buffer_method, format="WEBP", method=6)
+        assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
     def test_write_unsupported_mode_L(self, tmp_path):
         """
@@ -89,18 +108,7 @@ class TestFileWebp:
         similar to the original file.
         """
 
-        temp_file = str(tmp_path / "temp.webp")
-        hopper("L").save(temp_file)
-        with Image.open(temp_file) as image:
-            assert image.mode == self.rgb_mode
-            assert image.size == (128, 128)
-            assert image.format == "WEBP"
-
-            image.load()
-            image.getdata()
-            target = hopper("L").convert(self.rgb_mode)
-
-            assert_image_similar(image, target, 10.0)
+        self._roundtrip(tmp_path, "L", 10.0)
 
     def test_write_unsupported_mode_P(self, tmp_path):
         """
@@ -108,18 +116,7 @@ class TestFileWebp:
         similar to the original file.
         """
 
-        temp_file = str(tmp_path / "temp.webp")
-        hopper("P").save(temp_file)
-        with Image.open(temp_file) as image:
-            assert image.mode == self.rgb_mode
-            assert image.size == (128, 128)
-            assert image.format == "WEBP"
-
-            image.load()
-            image.getdata()
-            target = hopper("P").convert(self.rgb_mode)
-
-            assert_image_similar(image, target, 50.0)
+        self._roundtrip(tmp_path, "P", 50.0)
 
     def test_WebPEncode_with_invalid_args(self):
         """

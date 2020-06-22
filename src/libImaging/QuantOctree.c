@@ -28,6 +28,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "ImagingUtils.h"
 #include "QuantOctree.h"
 
 typedef struct _ColorBucket{
@@ -152,10 +153,10 @@ static void
 avg_color_from_color_bucket(const ColorBucket bucket, Pixel *dst) {
    float count = bucket->count;
    if (count != 0) {
-       dst->c.r = (int)(bucket->r / count);
-       dst->c.g = (int)(bucket->g / count);
-       dst->c.b = (int)(bucket->b / count);
-       dst->c.a = (int)(bucket->a / count);
+       dst->c.r = CLIP8((int)(bucket->r / count));
+       dst->c.g = CLIP8((int)(bucket->g / count));
+       dst->c.b = CLIP8((int)(bucket->b / count));
+       dst->c.a = CLIP8((int)(bucket->a / count));
    } else {
        dst->c.r = 0;
        dst->c.g = 0;
