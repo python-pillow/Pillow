@@ -3,7 +3,7 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
+from PIL import ExifTags, Image, ImageFile, JpegImagePlugin, UnidentifiedImageError
 
 from .helper import (
     assert_image,
@@ -706,8 +706,8 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
 
-    def test_reading_not_whole_file_for_define_it_type(self):
-        size = 1024 ** 2
+    def test_jpeg_magic_number(self):
+        size = 4097
         buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
         buffer.max_pos = 0
         orig_read = buffer.read
@@ -718,13 +718,11 @@ class TestFileJpeg:
             return res
 
         buffer.read = read
-        with pytest.raises(OSError):
+        with pytest.raises(UnidentifiedImageError):
             Image.open(buffer)
 
-        # Only small part of file has been read.
-        # The upper limit of max_pos (8Kb) was chosen experimentally
-        # and increased approximately twice.
-        assert 0 < buffer.max_pos < 8 * 1024
+        # Assert the entire file has not been read
+        assert 0 < buffer.max_pos < size
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
