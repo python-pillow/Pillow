@@ -3,7 +3,14 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin, UnidentifiedImageError, features
+from PIL import (
+    ExifTags,
+    Image,
+    ImageFile,
+    JpegImagePlugin,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image,
