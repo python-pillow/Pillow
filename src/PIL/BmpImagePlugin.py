@@ -263,7 +263,7 @@ class BmpImageFile(ImageFile.ImageFile):
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
-        if head_data[0:2] != b"BM":
+        if not _accept(head_data[0:2]):
             raise SyntaxError("Not a BMP file")
         # read the start position of the BMP image data (u32)
         offset = i32(head_data[10:14])

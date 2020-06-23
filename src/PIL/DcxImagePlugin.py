@@ -46,7 +46,7 @@ class DcxImageFile(PcxImageFile):
 
         # Header
         s = self.fp.read(4)
-        if i32(s) != MAGIC:
+        if not _accept(s):
             raise SyntaxError("not a DCX file")
 
         # Component directory

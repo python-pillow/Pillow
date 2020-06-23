@@ -633,7 +633,7 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        if self.fp.read(8) != _MAGIC:
+        if not _accept(self.fp.read(8)):
             raise SyntaxError("not a PNG file")
         self.__fp = self.fp
         self.__frame = 0

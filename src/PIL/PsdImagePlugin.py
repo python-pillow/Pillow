@@ -61,7 +61,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
+        if not _accept(s) or i16(s[4:]) != 1:
             raise SyntaxError("not a PSD file")
 
         psd_bits = i16(s[22:])

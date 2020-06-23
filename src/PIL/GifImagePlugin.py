@@ -63,7 +63,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         # Screen
         s = self.fp.read(13)
-        if s[:6] not in [b"GIF87a", b"GIF89a"]:
+        if not _accept(s):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
