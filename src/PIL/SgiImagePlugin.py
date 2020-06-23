@@ -58,8 +58,7 @@ class SgiImageFile(ImageFile.ImageFile):
         headlen = 512
         s = self.fp.read(headlen)
 
-        # magic number : 474
-        if i16(s) != 474:
+        if not _accept(s):
             raise ValueError("Not an SGI image file")
 
         # compression : verbatim or RLE

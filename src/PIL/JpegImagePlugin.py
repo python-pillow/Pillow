@@ -340,7 +340,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(3)
 
-        if s != b"\xFF\xD8\xFF":
+        if not _accept(s):
             raise SyntaxError("not a JPEG file")
         s = b"\xFF"
 
