@@ -887,6 +887,19 @@ def test_wide_line_dot():
     assert_image_similar(im, Image.open(expected), 1)
 
 
+def test_wide_line_larger_than_int():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    expected = "Tests/images/imagedraw_wide_line_larger_than_int.png"
+
+    # Act
+    draw.line([(0, 0), (32768, 32768)], width=3)
+
+    # Assert
+    assert_image_similar(im, Image.open(expected), 1)
+
+
 @pytest.mark.parametrize(
     "xy",
     [

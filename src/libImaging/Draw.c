@@ -669,7 +669,7 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 {
     DRAW* draw;
     INT32 ink;
-    int dx, dy;
+    long dx, dy;
     double big_hypotenuse, small_hypotenuse, ratio_max, ratio_min;
     int dxmin, dxmax, dymin, dymax;
     Edge e[4];
