@@ -37,6 +37,12 @@ are now read as just a single bytestring.
 Deprecations
 ^^^^^^^^^^^^
 
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``command`` parameter was deprecated and will be removed in a future release.
+Use a subclass of :py:class:`PIL.ImageShow.Viewer` instead.
+
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
