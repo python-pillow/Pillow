@@ -5,7 +5,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from .helper import (
     assert_image_equal,
-    assert_image_similar,
+    assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
 )
@@ -71,7 +71,7 @@ def helper_arc(bbox, start, end):
     draw.arc(bbox, start, end)
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_arc.png"), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc.png", 1)
 
 
 def test_arc1():
@@ -110,20 +110,19 @@ def test_arc_no_loops():
     draw.arc(BBOX1, start=start, end=end)
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_arc_no_loops.png"), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc_no_loops.png", 1)
 
 
 def test_arc_width():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_arc_width.png"
 
     # Act
     draw.arc(BBOX1, 10, 260, width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc_width.png", 1)
 
 
 def test_arc_width_pieslice_large():
@@ -131,26 +130,24 @@ def test_arc_width_pieslice_large():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_arc_width_pieslice.png"
 
     # Act
     draw.arc(BBOX1, 10, 260, fill="yellow", width=100)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc_width_pieslice.png", 1)
 
 
 def test_arc_width_fill():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_arc_width_fill.png"
 
     # Act
     draw.arc(BBOX1, 10, 260, fill="yellow", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc_width_fill.png", 1)
 
 
 def test_arc_width_non_whole_angle():
@@ -163,7 +160,7 @@ def test_arc_width_non_whole_angle():
     draw.arc(BBOX1, 10, 259.5, width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_bitmap():
@@ -190,7 +187,7 @@ def helper_chord(mode, bbox, start, end):
     draw.chord(bbox, start, end, fill="red", outline="yellow")
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_chord1():
@@ -209,26 +206,24 @@ def test_chord_width():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_chord_width.png"
 
     # Act
     draw.chord(BBOX1, 10, 260, outline="yellow", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_chord_width.png", 1)
 
 
 def test_chord_width_fill():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_chord_width_fill.png"
 
     # Act
     draw.chord(BBOX1, 10, 260, fill="red", outline="yellow", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_chord_width_fill.png", 1)
 
 
 def test_chord_zero_width():
@@ -254,7 +249,7 @@ def helper_ellipse(mode, bbox):
     draw.ellipse(bbox, fill="green", outline="blue")
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_ellipse1():
@@ -276,8 +271,8 @@ def test_ellipse_translucent():
     draw.ellipse(BBOX1, fill=(0, 255, 0, 127))
 
     # Assert
-    expected = Image.open("Tests/images/imagedraw_ellipse_translucent.png")
-    assert_image_similar(im, expected, 1)
+    expected = "Tests/images/imagedraw_ellipse_translucent.png"
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_ellipse_edge():
@@ -289,7 +284,7 @@ def test_ellipse_edge():
     draw.ellipse(((0, 0), (W - 1, H)), fill="white")
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_edge.png", 1)
 
 
 def test_ellipse_symmetric():
@@ -304,39 +299,36 @@ def test_ellipse_width():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_ellipse_width.png"
 
     # Act
     draw.ellipse(BBOX1, outline="blue", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_width.png", 1)
 
 
 def test_ellipse_width_large():
     # Arrange
     im = Image.new("RGB", (500, 500))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_ellipse_width_large.png"
 
     # Act
     draw.ellipse((25, 25, 475, 475), outline="blue", width=75)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_width_large.png", 1)
 
 
 def test_ellipse_width_fill():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_ellipse_width_fill.png"
 
     # Act
     draw.ellipse(BBOX1, fill="green", outline="blue", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_width_fill.png", 1)
 
 
 def test_ellipse_zero_width():
@@ -423,7 +415,7 @@ def helper_pieslice(bbox, start, end):
     draw.pieslice(bbox, start, end, fill="white", outline="blue")
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_pieslice.png"), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_pieslice.png", 1)
 
 
 def test_pieslice1():
@@ -440,13 +432,12 @@ def test_pieslice_width():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_pieslice_width.png"
 
     # Act
     draw.pieslice(BBOX1, 10, 260, outline="blue", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_pieslice_width.png", 1)
 
 
 def test_pieslice_width_fill():
@@ -459,7 +450,7 @@ def test_pieslice_width_fill():
     draw.pieslice(BBOX1, 10, 260, fill="white", outline="blue", width=5)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_pieslice_zero_width():
@@ -571,13 +562,12 @@ def test_big_rectangle():
     im = Image.new("RGB", (W, H))
     bbox = [(-1, -1), (W + 1, H + 1)]
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_big_rectangle.png"
 
     # Act
     draw.rectangle(bbox, fill="orange")
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_big_rectangle.png", 1)
 
 
 def test_rectangle_width():
@@ -878,13 +868,12 @@ def test_wide_line_dot():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_wide_line_dot.png"
 
     # Act
     draw.line([(50, 50), (50, 50)], width=3)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_wide_line_dot.png", 1)
 
 
 def test_wide_line_larger_than_int():
@@ -897,7 +886,7 @@ def test_wide_line_larger_than_int():
     draw.line([(0, 0), (32768, 32768)], width=3)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 @pytest.mark.parametrize(
@@ -984,13 +973,12 @@ def test_wide_line_larger_than_int():
 def test_line_joint(xy):
     im = Image.new("RGB", (500, 325))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_line_joint_curve.png"
 
     # Act
     draw.line(xy, GRAY, 50, "curve")
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 3)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_line_joint_curve.png", 3)
 
 
 def test_textsize_empty_string():
@@ -1031,8 +1019,8 @@ def test_stroke():
         draw.text((10, 10), "A", "#f00", font, stroke_width=2, stroke_fill=stroke_fill)
 
         # Assert
-        assert_image_similar(
-            im, Image.open("Tests/images/imagedraw_stroke_" + suffix + ".png"), 3.1
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_stroke_" + suffix + ".png", 3.1
         )
 
 
@@ -1047,9 +1035,7 @@ def test_stroke_descender():
     draw.text((10, 0), "y", "#f00", font, stroke_width=2, stroke_fill="#0f0")
 
     # Assert
-    assert_image_similar(
-        im, Image.open("Tests/images/imagedraw_stroke_descender.png"), 6.76
-    )
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_descender.png", 6.76)
 
 
 @skip_unless_feature("freetype2")
@@ -1065,9 +1051,7 @@ def test_stroke_multiline():
     )
 
     # Assert
-    assert_image_similar(
-        im, Image.open("Tests/images/imagedraw_stroke_multiline.png"), 3.3
-    )
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_multiline.png", 3.3)
 
 
 def test_same_color_outline():
@@ -1106,4 +1090,4 @@ def test_same_color_outline():
                 expected = "Tests/images/imagedraw_outline_{}_{}.png".format(
                     operation, mode
                 )
-                assert_image_similar(im, Image.open(expected), 1)
+                assert_image_similar_tofile(im, expected, 1)
