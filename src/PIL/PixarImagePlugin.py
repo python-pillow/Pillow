@@ -43,7 +43,7 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # assuming a 4-byte magic label
         s = self.fp.read(4)
-        if s != b"\200\350\000\000":
+        if not _accept(s):
             raise SyntaxError("not a PIXAR file")
 
         # read rest of header

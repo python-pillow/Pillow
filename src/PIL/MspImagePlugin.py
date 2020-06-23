@@ -51,7 +51,7 @@ class MspImageFile(ImageFile.ImageFile):
 
         # Header
         s = self.fp.read(32)
-        if s[:4] not in [b"DanM", b"LinS"]:
+        if not _accept(s):
             raise SyntaxError("not an MSP file")
 
         # Header checksum
