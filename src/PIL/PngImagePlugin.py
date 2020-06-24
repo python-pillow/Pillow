@@ -1036,7 +1036,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                 prev_disposal = previous["encoderinfo"].get("disposal")
                 prev_blend = previous["encoderinfo"].get("blend")
                 if prev_disposal == APNG_DISPOSE_OP_PREVIOUS and len(im_frames) < 2:
-                    prev_disposal == APNG_DISPOSE_OP_BACKGROUND
+                    prev_disposal = APNG_DISPOSE_OP_BACKGROUND
 
                 if prev_disposal == APNG_DISPOSE_OP_BACKGROUND:
                     base_im = previous["im"]
