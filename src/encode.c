@@ -671,7 +671,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     // This list also exists in TiffTags.py
     const int core_tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
-        341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
+        341, 282, 283, 284, 286, 287, 296, 297, 320, 321, 338, 32995, 32998, 32996,
         339, 32997, 330, 531, 530, 65537
     };
 
@@ -801,7 +801,26 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             TRACE(("Setting from Tuple: %d \n", key_int));
             len = PyTuple_Size(value);
 
-            if (type == TIFF_SHORT) {
+            if (key_int == TIFFTAG_COLORMAP) {
+                int stride = 256;
+                if (len != 768) {
+                    PyErr_SetString(PyExc_ValueError, "Requiring 768 items for for Colormap");
+                    return NULL;
+                }
+                UINT16 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(UINT16));
+                if (av) {
+                    for (i=0;i<len;i++) {
+                        av[i] = (UINT16)PyLong_AsLong(PyTuple_GetItem(value,i));
+                    }
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int,
+                                                    av,
+                                                    av + stride,
+                                                    av + stride * 2);
+                    free(av);
+                }
+            } else if (type == TIFF_SHORT) {
                 UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
                 av = calloc(len, sizeof(UINT16));

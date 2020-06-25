@@ -1530,7 +1530,6 @@ def _save(im, fp, filename):
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         blocklist = [
-            COLORMAP,
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
