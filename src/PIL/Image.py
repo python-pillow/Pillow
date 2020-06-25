@@ -3150,12 +3150,21 @@ def register_encoder(name, encoder):
 
 
 def _show(image, **options):
+    options["_internal_pillow"] = True
     _showxv(image, **options)
 
 
 def _showxv(image, title=None, **options):
     from . import ImageShow
 
+    if "_internal_pillow" in options:
+        del options["_internal_pillow"]
+    else:
+        warnings.warn(
+            "_showxv is deprecated and will be removed in a future release. "
+            "Use Image.show instead.",
+            DeprecationWarning,
+        )
     ImageShow.show(image, title, **options)
 
 
