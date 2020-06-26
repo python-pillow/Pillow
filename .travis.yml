@@ -84,6 +84,13 @@ jobs:
         - MB_PYTHON_VERSION=3.8
         - PLAT=i686
 
+    - name: "3.6 Xenial 64-bit PyPy"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=pypy3.6-7.3
+        - MB_ML_VER=2010
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+
     - name: "3.5 macOS latest"
       os: osx
       osx_image: xcode9.3
@@ -160,6 +167,13 @@ jobs:
         - PLAT=i686
         - LATEST="true"
 
+    - name: "3.6 Xenial 64-bit PyPy latest"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=pypy3.6-7.3
+        - MB_ML_VER=2010
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+        - LATEST="true"
 
 before_install:
     - source multibuild/common_utils.sh
