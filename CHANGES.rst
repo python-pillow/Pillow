@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Deprecated _showxv #4714
+  [radarhere]
+
 - Deprecate Image.show(command="...") #4646
   [nulano, hugovk, radarhere]
 
