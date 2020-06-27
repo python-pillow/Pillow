@@ -23,18 +23,15 @@ WIDTH = 800
 
 
 def puti16(fp, values):
-    # write network order (big-endian) 16-bit sequence
+    """Write network order (big-endian) 16-bit sequence"""
     for v in values:
         if v < 0:
             v += 65536
         fp.write(_binary.o16be(v))
 
 
-##
-# Base class for raster font file handlers.
-
-
 class FontFile:
+    """Base class for raster font file handlers."""
 
     bitmap = None
 

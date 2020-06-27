@@ -7,7 +7,7 @@
 The :py:mod:`ImageStat` module calculates global statistics for an image, or
 for a region of an image.
 
-.. py:class:: PIL.ImageStat.Stat(image_or_list, mask=None)
+.. py:class:: Stat(image_or_list, mask=None)
 
     Calculate statistics for the given image. If a mask is included,
     only the regions covered by that mask are included in the
@@ -22,13 +22,13 @@ for a region of an image.
 
         .. note::
 
-            This relies on the :py:meth:`~PIL.Image.histogram` method, and
+            This relies on the :py:meth:`~PIL.Image.Image.histogram` method, and
             simply returns the low and high bins used. This is correct for
             images with 8 bits per channel, but fails for other modes such as
-            ``I`` or ``F``. Instead, use :py:meth:`~PIL.Image.getextrema` to
+            ``I`` or ``F``. Instead, use :py:meth:`~PIL.Image.Image.getextrema` to
             return per-band extrema for the image. This is more correct and
             efficient because, for non-8-bit modes, the histogram method uses
-            :py:meth:`~PIL.Image.getextrema` to determine the bins used.
+            :py:meth:`~PIL.Image.Image.getextrema` to determine the bins used.
 
     .. py:attribute:: count
 
