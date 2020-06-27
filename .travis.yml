@@ -23,7 +23,7 @@ matrix:
       arch: arm64
     - python: "3.7"
       arch: ppc64le
-    - python: "3.5"
+    - python: "3.8"
       arch: s390x
 
     - python: "pypy3"
@@ -36,14 +36,11 @@ matrix:
       services: xvfb
     - python: '3.7'
       name: "3.7 Xenial"
+      env: PYTHONOPTIMIZE=2
       services: xvfb
     - python: '3.6'
       name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
-      services: xvfb
-    - python: '3.5'
-      name: "3.5 Xenial PYTHONOPTIMIZE=2"
-      env: PYTHONOPTIMIZE=2
       services: xvfb
 
 install:

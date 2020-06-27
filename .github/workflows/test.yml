@@ -17,13 +17,12 @@ jobs:
           "3.8",
           "3.7",
           "3.6",
-          "3.5",
         ]
         include:
-        - python-version: "3.5"
-          env: PYTHONOPTIMIZE=2
         - python-version: "3.6"
           env: PYTHONOPTIMIZE=1
+        - python-version: "3.7"
+          env: PYTHONOPTIMIZE=2
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu

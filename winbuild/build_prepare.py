@@ -456,7 +456,7 @@ def build_pillow():
         cmd_cd("{pillow_dir}"),
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("MSSdk", "1"),  # for Python 3.5 and PyPy3.6
+        cmd_set("MSSdk", "1"),  # for PyPy3.6
         cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
         r'"{python_dir}\{python_exe}" setup.py build_ext %*',
     ]
