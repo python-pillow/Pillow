@@ -324,3 +324,34 @@ Instances of the :py:class:`Image` class have the following attributes:
     Unless noted elsewhere, this dictionary does not affect saving files.
 
     :type: :py:class:`dict`
+
+.. py:attribute:: Image.is_animated
+    :type: bool
+
+    This attribute is ``True`` if the Image is animated, ``False`` otherwise.
+    Typically defined as ``Image.n_frames > 1``.
+
+    This attribute is only defined by Image plugins that support animated Images.
+    Plugins may leave this attribute undefined if they don't support loading
+    animated images, even if the given format supports animated images. Use
+    ``hasattr(image, "is_animated")`` to check whether the implementation
+    supports animated images, or ``getattr(image, "is_animated", False)``
+    to check whether an image has been loaded with animation support.
+
+    .. seealso:: :attr:`~Image.n_frames`, :func:`~Image.seek` and :func:`~Image.tell`
+
+.. py:attribute:: Image.n_frames
+    :type: int
+
+    The number of frames in this image.
+    Defined if and only if :attr:`~Image.is_animated` is also defined.
+    Equal to 1 for non-animated images loaded by a plugin supporting animations.
+
+    This attribute is only defined by Image plugins that support animated Images.
+    Plugins may leave this attribute undefined if they don't support loading
+    animated images, even if the given format supports animated images. Use
+    ``hasattr(image, "is_animated")`` to check whether the implementation
+    supports animated images, or ``getattr(image, "n_frames", 1)``
+    to check whether an image has been loaded with more than one frame.
+
+    .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
