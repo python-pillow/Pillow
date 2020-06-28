@@ -304,8 +304,8 @@ def _dib_save(im, fp, filename):
 def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as BMP" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as BMP" % im.mode) from e
 
     info = im.encoderinfo
 

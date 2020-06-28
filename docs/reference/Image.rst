@@ -76,8 +76,15 @@ Constructing images
 .. autofunction:: new
 .. autofunction:: fromarray
 .. autofunction:: frombytes
-.. autofunction:: fromstring
 .. autofunction:: frombuffer
+
+Generating images
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: effect_mandelbrot
+.. autofunction:: effect_noise
+.. autofunction:: linear_gradient
+.. autofunction:: radial_gradient
 
 Registering plugins
 ^^^^^^^^^^^^^^^^^^^
@@ -88,12 +95,14 @@ Registering plugins
     ignore them.
 
 .. autofunction:: register_open
-.. autofunction:: register_decoder
 .. autofunction:: register_mime
 .. autofunction:: register_save
-.. autofunction:: register_encoder
+.. autofunction:: register_save_all
 .. autofunction:: register_extension
-
+.. autofunction:: register_extensions
+.. autofunction:: registered_extensions
+.. autofunction:: register_decoder
+.. autofunction:: register_encoder
 
 The Image Class
 ---------------
@@ -140,6 +149,8 @@ This crops the input image with the provided coordinates:
 
 
 .. automethod:: PIL.Image.Image.draft
+.. automethod:: PIL.Image.Image.effect_spread
+.. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
 
 This blurs the input image using a filter from the ``ImageFilter`` module:
@@ -176,12 +187,14 @@ This helps to get the bounding box coordinates of the input image:
     print(im.getbbox())
     # Returns four coordinates in the format (left, upper, right, lower)
 
+.. automethod:: PIL.Image.Image.getchannel
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
-.. automethod:: PIL.Image.Image.getextrema
 .. automethod:: PIL.Image.Image.getexif
+.. automethod:: PIL.Image.Image.getextrema
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
+.. automethod:: PIL.Image.Image.getprojection
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.offset
 .. automethod:: PIL.Image.Image.paste
@@ -191,6 +204,8 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.putpalette
 .. automethod:: PIL.Image.Image.putpixel
 .. automethod:: PIL.Image.Image.quantize
+.. automethod:: PIL.Image.Image.reduce
+.. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.resize
 
 This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``:
@@ -205,7 +220,6 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
     (width, height) = (im.width // 2, im.height // 2)
     im_resized = im.resize((width, height))
 
-.. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.rotate
 
 This rotates the input image by ``theta`` degrees counter clockwise:
@@ -225,7 +239,6 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.seek
 .. automethod:: PIL.Image.Image.show
 .. automethod:: PIL.Image.Image.split
-.. automethod:: PIL.Image.Image.getchannel
 .. automethod:: PIL.Image.Image.tell
 .. automethod:: PIL.Image.Image.thumbnail
 .. automethod:: PIL.Image.Image.tobitmap
@@ -260,57 +273,51 @@ Attributes
 
 Instances of the :py:class:`Image` class have the following attributes:
 
-.. py:attribute:: filename
+.. py:attribute:: Image.filename
+    :type: str
 
     The filename or path of the source file. Only images created with the
     factory function ``open`` have a filename attribute. If the input is a
     file like object, the filename attribute is set to an empty string.
 
-    :type: :py:class:`string`
-
-.. py:attribute:: format
+.. py:attribute:: Image.format
+    :type: Optional[str]
 
     The file format of the source file. For images created by the library
     itself (via a factory function, or by running a method on an existing
     image), this attribute is set to ``None``.
 
-    :type: :py:class:`string` or ``None``
-
-.. py:attribute:: mode
+.. py:attribute:: Image.mode
+    :type: str
 
     Image mode. This is a string specifying the pixel format used by the image.
     Typical values are “1”, “L”, “RGB”, or “CMYK.” See
     :ref:`concept-modes` for a full list.
 
-    :type: :py:class:`string`
-
-.. py:attribute:: size
+.. py:attribute:: Image.size
+    :type: tuple[int]
 
     Image size, in pixels. The size is given as a 2-tuple (width, height).
 
-    :type: ``(width, height)``
-
-.. py:attribute:: width
+.. py:attribute:: Image.width
+    :type: int
 
     Image width, in pixels.
 
-    :type: :py:class:`int`
-
-.. py:attribute:: height
+.. py:attribute:: Image.height
+    :type: int
 
     Image height, in pixels.
 
-    :type: :py:class:`int`
-
-.. py:attribute:: palette
+.. py:attribute:: Image.palette
+    :type: Optional[PIL.ImagePalette.ImagePalette]
 
     Colour palette table, if any. If mode is "P" or "PA", this should be an
     instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
     Otherwise, it should be set to ``None``.
 
-    :type: :py:class:`~PIL.ImagePalette.ImagePalette` or ``None``
-
-.. py:attribute:: info
+.. py:attribute:: Image.info
+    :type: dict
 
     A dictionary holding data associated with the image. This dictionary is
     used by file handlers to pass on various non-image information read from
@@ -322,8 +329,6 @@ Instances of the :py:class:`Image` class have the following attributes:
     keep a reference to the info dictionary returned from the open method.
 
     Unless noted elsewhere, this dictionary does not affect saving files.
-
-    :type: :py:class:`dict`
 
 Constants
 ---------

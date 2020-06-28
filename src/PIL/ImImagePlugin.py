@@ -163,8 +163,8 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error:
-                raise SyntaxError("not an IM file")
+            except re.error as e:
+                raise SyntaxError("not an IM file") from e
 
             if m:
 
@@ -341,8 +341,8 @@ def _save(im, fp, filename):
 
     try:
         image_type, rawmode = SAVE[im.mode]
-    except KeyError:
-        raise ValueError("Cannot save %s images as IM" % im.mode)
+    except KeyError as e:
+        raise ValueError("Cannot save %s images as IM" % im.mode) from e
 
     frames = im.encoderinfo.get("frames", 1)
 
