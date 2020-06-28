@@ -5,6 +5,15 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Deprecated _showxv #4714
+  [radarhere]
+
+- Deprecate Image.show(command="...") #4646
+  [nulano, hugovk, radarhere]
+
+- Updated JPEG magic number #4707
+  [Cykooz, radarhere]
+
 - Change STRIPBYTECOUNTS to LONG if necessary when saving #4626
   [radarhere, hugovk]
 

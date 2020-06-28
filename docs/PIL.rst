@@ -4,6 +4,14 @@ PIL Package (autodoc of remaining modules)
 Reference for modules whose documentation has not yet been ported or written
 can be found here.
 
+:mod:`PIL` Module
+-----------------
+
+.. py:module:: PIL
+
+.. autoexception:: UnidentifiedImageError
+    :show-inheritance:
+
 :mod:`BdfFontFile` Module
 -------------------------
 
@@ -52,21 +60,12 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-.. intentionally skipped documenting this because it's not documented anywhere
-
 :mod:`ImageDraw2` Module
 ------------------------
 
 .. automodule:: PIL.ImageDraw2
     :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageShow` Module
------------------------
-
-.. automodule:: PIL.ImageShow
-    :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -74,14 +73,6 @@ can be found here.
 ----------------------------
 
 .. automodule:: PIL.ImageTransform
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`JpegPresets` Module
--------------------------
-
-.. automodule:: PIL.JpegPresets
     :members:
     :undoc-members:
     :show-inheritance:
@@ -140,12 +131,3 @@ can be found here.
     :members:
     :undoc-members:
     :show-inheritance:
-
-:mod:`_binary` Module
----------------------
-
-.. automodule:: PIL._binary
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

@@ -61,7 +61,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
+        if not _accept(s) or i16(s[4:]) != 1:
             raise SyntaxError("not a PSD file")
 
         psd_bits = i16(s[22:])
@@ -144,8 +144,8 @@ class PsdImageFile(ImageFile.ImageFile):
             self.frame = layer
             self.fp = self.__fp
             return name, bbox
-        except IndexError:
-            raise EOFError("no such layer")
+        except IndexError as e:
+            raise EOFError("no such layer") from e
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)

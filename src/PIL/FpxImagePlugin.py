@@ -59,8 +59,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except OSError:
-            raise SyntaxError("not an FPX file; invalid OLE file")
+        except OSError as e:
+            raise SyntaxError("not an FPX file; invalid OLE file") from e
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
             raise SyntaxError("not an FPX file; bad root CLSID")

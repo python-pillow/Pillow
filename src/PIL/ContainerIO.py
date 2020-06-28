@@ -14,14 +14,16 @@
 # See the README file for information on usage and redistribution.
 #
 
-##
-# A file object that provides read access to a part of an existing
-# file (for example a TAR file).
 
 import io
 
 
 class ContainerIO:
+    """
+    A file object that provides read access to a part of an existing
+    file (for example a TAR file).
+    """
+
     def __init__(self, file, offset, length):
         """
         Create file object.

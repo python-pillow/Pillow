@@ -7,7 +7,8 @@
 The :py:mod:`ExifTags` module exposes two dictionaries which
 provide constants and clear-text names for various well-known EXIF tags.
 
-.. py:class:: PIL.ExifTags.TAGS
+.. py:data:: TAGS
+    :type: dict
 
     The TAG dictionary maps 16-bit integer EXIF tag enumerations to
     descriptive string names.  For instance:
@@ -16,7 +17,8 @@ provide constants and clear-text names for various well-known EXIF tags.
         >>> TAGS[0x010e]
         'ImageDescription'
 
-.. py:class:: PIL.ExifTags.GPSTAGS
+.. py:data:: GPSTAGS
+    :type: dict
 
     The GPSTAGS dictionary maps 8-bit integer EXIF gps enumerations to
     descriptive string names.  For instance:

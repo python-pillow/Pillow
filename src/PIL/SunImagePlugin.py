@@ -53,7 +53,7 @@ class SunImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(32)
-        if i32(s) != 0x59A66A95:
+        if not _accept(s):
             raise SyntaxError("not an SUN raster file")
 
         offset = 32

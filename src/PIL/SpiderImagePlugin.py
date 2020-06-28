@@ -111,8 +111,8 @@ class SpiderImageFile(ImageFile.ImageFile):
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
                 raise SyntaxError("not a valid Spider file")
-        except struct.error:
-            raise SyntaxError("not a valid Spider file")
+        except struct.error as e:
+            raise SyntaxError("not a valid Spider file") from e
 
         h = (99,) + t  # add 1 value : spider header index starts at 1
         iform = int(h[5])

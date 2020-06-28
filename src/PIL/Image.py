@@ -434,8 +434,8 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-    except AttributeError:
-        raise OSError("decoder %s not available" % decoder_name)
+    except AttributeError as e:
+        raise OSError("decoder %s not available" % decoder_name) from e
     return decoder(mode, *args + extra)
 
 
@@ -457,8 +457,8 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-    except AttributeError:
-        raise OSError("encoder %s not available" % encoder_name)
+    except AttributeError as e:
+        raise OSError("encoder %s not available" % encoder_name) from e
     return encoder(mode, *args + extra)
 
 
@@ -971,10 +971,10 @@ class Image:
                         if isinstance(t, tuple):
                             try:
                                 t = trns_im.palette.getcolor(t)
-                            except Exception:
+                            except Exception as e:
                                 raise ValueError(
                                     "Couldn't allocate a palette color for transparency"
-                                )
+                                ) from e
                     trns_im.putpixel((0, 0), t)
 
                     if mode in ("L", "RGB"):
@@ -1027,8 +1027,8 @@ class Image:
                 # normalize source image and try again
                 im = self.im.convert(getmodebase(self.mode))
                 im = im.convert(mode, dither)
-            except KeyError:
-                raise ValueError("illegal conversion")
+            except KeyError as e:
+                raise ValueError("illegal conversion") from e
 
         new_im = self._new(im)
         if delete_trns:
@@ -1625,16 +1625,16 @@ class Image:
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
-                except (AttributeError, ValueError):
+                except (AttributeError, ValueError) as e:
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "PA", "RGBA"):
-                        raise ValueError  # sanity check
+                        raise ValueError from e  # sanity check
                     self.im = im
                 self.pyaccess = None
                 self.mode = self.im.mode
-            except (KeyError, ValueError):
-                raise ValueError("illegal image mode")
+            except (KeyError, ValueError) as e:
+                raise ValueError("illegal image mode") from e
 
         if self.mode in ("LA", "PA"):
             band = 1
@@ -2136,8 +2136,8 @@ class Image:
                 init()
             try:
                 format = EXTENSION[ext]
-            except KeyError:
-                raise ValueError("unknown file extension: {}".format(ext))
+            except KeyError as e:
+                raise ValueError("unknown file extension: {}".format(ext)) from e
 
         if format.upper() not in SAVE:
             init()
@@ -2181,8 +2181,10 @@ class Image:
 
     def show(self, title=None, command=None):
         """
-        Displays this image. This method is mainly intended for
-        debugging purposes.
+        Displays this image. This method is mainly intended for debugging purposes.
+
+        This method calls :py:func:`PIL.ImageShow.show` internally. You can use
+        :py:func:`PIL.ImageShow.register` to override its default behaviour.
 
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
@@ -2194,10 +2196,15 @@ class Image:
 
         On Windows, the image is opened with the standard PNG display utility.
 
-        :param title: Optional title to use for the image window,
-           where possible.
-        :param command: command used to show the image
+        :param title: Optional title to use for the image window, where possible.
         """
+
+        if command is not None:
+            warnings.warn(
+                "The command parameter is deprecated and will be removed in a future "
+                "release. Use a subclass of ImageShow.Viewer instead.",
+                DeprecationWarning,
+            )
 
         _show(self, title=title, command=command)
 
@@ -2238,8 +2245,8 @@ class Image:
         if isinstance(channel, str):
             try:
                 channel = self.getbands().index(channel)
-            except ValueError:
-                raise ValueError('The image has no channel "{}"'.format(channel))
+            except ValueError as e:
+                raise ValueError('The image has no channel "{}"'.format(channel)) from e
 
         return self._new(self.im.getband(channel))
 
@@ -2736,12 +2743,12 @@ def fromarray(obj, mode=None):
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
-        except KeyError:
-            raise TypeError("Cannot handle this data type")
+        except KeyError as e:
+            raise TypeError("Cannot handle this data type") from e
         try:
             mode, rawmode = _fromarray_typemap[typekey]
-        except KeyError:
-            raise TypeError("Cannot handle this data type: %s, %s" % typekey)
+        except KeyError as e:
+            raise TypeError("Cannot handle this data type: %s, %s" % typekey) from e
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -3143,12 +3150,21 @@ def register_encoder(name, encoder):
 
 
 def _show(image, **options):
+    options["_internal_pillow"] = True
     _showxv(image, **options)
 
 
 def _showxv(image, title=None, **options):
     from . import ImageShow
 
+    if "_internal_pillow" in options:
+        del options["_internal_pillow"]
+    else:
+        warnings.warn(
+            "_showxv is deprecated and will be removed in a future release. "
+            "Use Image.show instead.",
+            DeprecationWarning,
+        )
     ImageShow.show(image, title, **options)
 
 

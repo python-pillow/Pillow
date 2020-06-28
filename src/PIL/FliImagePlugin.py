@@ -42,9 +42,8 @@ class FliImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(128)
-        magic = i16(s[4:6])
         if not (
-            magic in [0xAF11, 0xAF12]
+            _accept(s)
             and i16(s[14:16]) in [0, 3]  # flags
             and s[20:22] == b"\x00\x00"  # reserved
         ):
@@ -60,6 +59,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         # animation speed
         duration = i32(s[16:20])
+        magic = i16(s[4:6])
         if magic == 0xAF11:
             duration = (duration * 1000) // 70
         self.info["duration"] = duration
