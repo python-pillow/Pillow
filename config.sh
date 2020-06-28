@@ -27,6 +27,12 @@ function pre_build {
         build_new_zlib
     fi
 
+    if [ -n "$IS_OSX" ]; then
+        ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
+        ORIGINAL_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+        BUILD_PREFIX=`dirname $(dirname $(which python))`
+        PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
+    fi
     build_simple xcb-proto $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     if [ -n "$IS_OSX" ]; then
         build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
@@ -36,6 +42,10 @@ function pre_build {
         sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+    if [ -n "$IS_OSX" ]; then
+        BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
+        PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
+    fi
     
     # Custom flags to include both multibuild and jpeg defaults
     ORIGINAL_CFLAGS=$CFLAGS
@@ -81,6 +91,12 @@ EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
 
 function run_tests {
+    if [ -n "$IS_OSX" ]; then
+        brew install openblas
+        echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
+    fi
+    pip install numpy
+
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
     # Test against expected codecs, modules and features
