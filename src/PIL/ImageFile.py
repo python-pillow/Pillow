@@ -85,7 +85,7 @@ def _tilesort(t):
 
 
 class ImageFile(Image.Image):
-    "Base class for image file format handlers."
+    """Base class for image file format handlers."""
 
     def __init__(self, fp=None, filename=None):
         super().__init__()
