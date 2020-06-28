@@ -231,8 +231,8 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 try:
                     m = split.match(s)
-                except re.error:
-                    raise SyntaxError("not an EPS file")
+                except re.error as e:
+                    raise SyntaxError("not an EPS file") from e
 
                 if m:
                     k, v = m.group(1, 2)
