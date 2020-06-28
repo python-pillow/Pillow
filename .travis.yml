@@ -98,6 +98,13 @@ jobs:
         - MB_ML_VER=2010
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
 
+    - name: "3.5 Xenial aarch64"
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.5
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
     - name: "3.6 Xenial aarch64"
       arch: arm64
       env:
@@ -213,6 +220,15 @@ jobs:
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
         - LATEST="true"
 
+    - name: "3.5 Xenial aarch64 latest"
+      os: linux
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.5
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+        - LATEST="true"
     - name: "3.6 Xenial aarch64 latest"
       os: linux
       arch: arm64
