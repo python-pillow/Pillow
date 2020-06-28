@@ -91,6 +91,12 @@ EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
 
 function run_tests {
+    if [ -n "$IS_OSX" ]; then
+        brew install openblas
+        echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
+    fi
+    pip install numpy
+
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
     # Test against expected codecs, modules and features

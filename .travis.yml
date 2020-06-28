@@ -5,7 +5,7 @@ env:
       - PLAT=x86_64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
-      - TEST_DEPENDS="pytest pytest-cov numpy"
+      - TEST_DEPENDS="pytest pytest-cov"
       - MACOSX_DEPLOYMENT_TARGET=10.10
       - WHEELHOUSE_UPLOADER_USERNAME=travis-worker
       # Following generated with
