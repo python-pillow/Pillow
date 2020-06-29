@@ -1050,10 +1050,10 @@ int clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1, event_
       // X of intersection
       double ix = - (B * y + C) / A;
       if (A * x0 + B * y + C < eps) {
-        x0 = round(fmax(x0, ix));
+        x0 = lround(fmax(x0, ix));
       }
       if (A * x1 + B * y + C < eps) {
-        x1 = round(fmin(x1, ix));
+        x1 = lround(fmin(x1, ix));
       }
     }
     if (x0 <= x1) {
@@ -1557,7 +1557,7 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
       if (pieSideNew(im, x0, y0, x1, y1, end, ink, width, op)) {
         return -1;
       }
-      float xc = round((x0 + x1 - width) / 2.0), yc = round((y0 + y1 - width) / 2.0);
+      int xc = lround((x0 + x1 - width) / 2.0), yc = lround((y0 + y1 - width) / 2.0);
       ellipseNew(im, xc, yc, xc + width - 1, yc + width - 1, ink, 1, 0, op);
       return pieNew(im, x0, y0, x1, y1, start, end, ink, width, op);
     }

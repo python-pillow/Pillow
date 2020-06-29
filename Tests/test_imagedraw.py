@@ -165,7 +165,7 @@ def test_arc_width_non_whole_angle():
 
 def test_arc_high():
     # Arrange
-    im = Image.new("RGB", (200, 200));
+    im = Image.new("RGB", (200, 200))
     draw = ImageDraw.Draw(im)
 
     # Act
@@ -252,7 +252,7 @@ def test_chord_zero_width():
 
 def test_chord_too_fat():
     # Arrange
-    im = Image.new("RGB", (100, 100));
+    im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
 
     # Act
@@ -401,7 +401,9 @@ def test_ellipse_various_sizes():
 def test_ellipse_various_sizes_filled():
     im = ellipse_various_sizes_helper(True)
 
-    with Image.open("Tests/images/imagedraw_ellipse_various_sizes_filled.png") as expected:
+    with Image.open(
+        "Tests/images/imagedraw_ellipse_various_sizes_filled.png"
+    ) as expected:
         assert_image_equal(im, expected)
 
 
@@ -529,7 +531,7 @@ def test_pieslice_zero_width():
 
 def test_pieslice_wide():
     # Arrange
-    im = Image.new("RGB", (200, 100));
+    im = Image.new("RGB", (200, 100))
     draw = ImageDraw.Draw(im)
 
     # Act
