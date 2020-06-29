@@ -104,6 +104,13 @@ def test_apng_dispose_region():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_dispose_op_background_p_mode():
+    with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
+        im.seek(1)
+        im.load()
+        assert im.size == (128, 64)
+
+
 def test_apng_blend():
     with Image.open("Tests/images/apng/blend_op_source_solid.png") as im:
         im.seek(im.n_frames - 1)

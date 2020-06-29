@@ -904,7 +904,7 @@ class PngImageFile(ImageFile.ImageFile):
                 dispose = self._prev_im.copy()
                 dispose = self._crop(dispose, self.dispose_extent)
             elif self.dispose_op == APNG_DISPOSE_OP_BACKGROUND:
-                dispose = Image.core.fill("RGBA", self.size, (0, 0, 0, 0))
+                dispose = Image.core.fill(self.im.mode, self.size)
                 dispose = self._crop(dispose, self.dispose_extent)
             else:
                 dispose = None
