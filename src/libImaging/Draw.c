@@ -1150,6 +1150,30 @@ typedef struct {
 
 typedef void (*clip_ellipse_init)(clip_ellipse_state*, int32_t, int32_t, int32_t, float, float);
 
+void debug_clip_tree(clip_node* root, int space) {
+  if (root == NULL) {
+    return;
+  }
+  if (root->type == CT_CLIP) {
+    int t = space;
+    while (t--) {
+      fputc(' ', stderr);
+    }
+    fprintf(stderr, "clip %+fx%+fy%+f > 0\n", root->a, root->b, root->c);
+  } else {
+    debug_clip_tree(root->l, space + 2);
+    int t = space;
+    while (t--) {
+      fputc(' ', stderr);
+    }
+    fprintf(stderr, "%s\n", root->type == CT_AND ? "and" : "or");
+    debug_clip_tree(root->r, space + 2);
+  }
+  if (space == 0) {
+    fputc('\n', stderr);
+  }
+}
+
 // Resulting angles will satisfy 0 <= al < 360, al <= ar <= al + 360
 void normalize_angles(float* al, float* ar) {
   if (*ar - *al >= 360) {
@@ -1162,10 +1186,10 @@ void normalize_angles(float* al, float* ar) {
 }
 
 // An arc with caps orthogonal to the ellipse curve.
-void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float _al, float _ar) {
+void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, float ar) {
   if (a < b) {
     // transpose the coordinate system
-    arc_init(s, b, a, w, 90 - _ar, 90 - _al);
+    arc_init(s, b, a, w, 90 - ar, 90 - al);
     ellipse_init(&s->st, a, b, w);
     clip_tree_transpose(s->root);
   } else {
@@ -1174,8 +1198,6 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float _al,
 
     s->head = NULL;
     s->node_count = 0;
-
-    int32_t al = round(_al), ar = round(_ar);
 
     // building clipping tree, a lot of different cases
     if (ar == al + 360) {
@@ -1191,25 +1213,12 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float _al,
       rc->a = a * sin(ar * M_PI / 180.0);
       rc->b = -b * cos(ar * M_PI / 180.0);
       rc->c = (b * b - a * a) * sin(ar * M_PI / 90.0) / 2.0;
-      if (al % 180 == 0 || ar % 180 == 0 || al == ar) {
+      if (fmod(al, 180) == 0 || fmod(ar, 180) == 0) {
         s->root = s->nodes + s->node_count++;
         s->root->l = lc;
         s->root->r = rc;
         s->root->type = ar - al < 180 ? CT_AND : CT_OR;
-        if (al == ar) {
-          lc = s->nodes + s->node_count++;
-          lc->l = lc->r = NULL;
-          lc->type = CT_CLIP;
-          lc->a = al == 0 ? 1 : al == 180 ? -1 : 0;
-          lc->b = al % 180 ? (al < 180 ? 1 : -1) : 0;
-          lc->c = 0;
-          rc = s->root;
-          s->root = s->nodes + s->node_count++;
-          s->root->l = lc;
-          s->root->r = rc;
-          s->root->type = CT_AND;
-        }
-      } else if ((al / 180 + ar / 180) % 2 == 1) {
+      } else if (((int)(al / 180) + (int)(ar / 180)) % 2 == 1) {
         s->root = s->nodes + s->node_count++;
         s->root->l = s->nodes + s->node_count++;
         s->root->l->l = s->nodes + s->node_count++;
@@ -1226,8 +1235,8 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float _al,
         s->root->r->l->l = s->root->r->l->r = NULL;
         s->root->l->l->a = s->root->l->l->c = 0;
         s->root->r->l->a = s->root->r->l->c = 0;
-        s->root->l->l->b = (al / 180) % 2 == 0 ? 1 : -1;
-        s->root->r->l->b = (ar / 180) % 2 == 0 ? 1 : -1;
+        s->root->l->l->b = (int)(al / 180) % 2 == 0 ? 1 : -1;
+        s->root->r->l->b = (int)(ar / 180) % 2 == 0 ? 1 : -1;
       } else {
         s->root = s->nodes + s->node_count++;
         s->root->l = s->nodes + s->node_count++;
@@ -1266,6 +1275,48 @@ void chord_line_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, flo
   s->root->r->a = -s->root->l->a;
   s->root->r->b = -s->root->l->b;
   s->root->r->c = 2 * w * sqrt(pow(s->root->l->a, 2.0) + pow(s->root->l->b, 2.0)) - s->root->l->c;
+}
+
+// Pie side.
+void pie_side_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, float _) {
+  ellipse_init(&s->st, a, b, a + b + 1);
+
+  s->head = NULL;
+  s->node_count = 0;
+
+  double xl = a * cos(al * M_PI / 180.0);
+  double yl = b * sin(al * M_PI / 180.0);
+  double a1 = -yl;
+  double b1 = xl;
+  double c1 = w * sqrt(a1 * a1 + b1 * b1);
+
+  s->root = s->nodes + s->node_count++;
+  s->root->type = CT_AND;
+  s->root->l = s->nodes + s->node_count++;
+  s->root->l->type = CT_AND;
+
+  clip_node* cnode;
+  cnode = s->nodes + s->node_count++;
+  cnode->l = cnode->r = NULL;
+  cnode->type = CT_CLIP;
+  cnode->a = a1;
+  cnode->b = b1;
+  cnode->c = c1;
+  s->root->l->l = cnode;
+  cnode = s->nodes + s->node_count++;
+  cnode->l = cnode->r = NULL;
+  cnode->type = CT_CLIP;
+  cnode->a = -a1;
+  cnode->b = -b1;
+  cnode->c = c1;
+  s->root->l->r = cnode;
+  cnode = s->nodes + s->node_count++;
+  cnode->l = cnode->r = NULL;
+  cnode->type = CT_CLIP;
+  cnode->a = b1;
+  cnode->b = -a1;
+  cnode->c = 0;
+  s->root->r = cnode;
 }
 
 // A chord.
@@ -1384,12 +1435,13 @@ clipEllipseNew(Imaging im, int x0, int y0, int x1, int y1,
 
     int a = x1 - x0;
     int b = y1 - y0;
-    if (a < 0 || b < 0 || start == end) {
+    if (a < 0 || b < 0) {
       return 0;
     }
 
     clip_ellipse_state st;
     init(&st, a, b, width, start, end);
+    // debug_clip_tree(st.root, 0);
     int32_t X0, Y, X1;
     int next_code;
     while ((next_code = clip_ellipse_next(&st, &X0, &Y, &X1)) >= 0) {
@@ -1425,9 +1477,17 @@ chordLineNew(Imaging im, int x0, int y0, int x1, int y1,
 static int
 pieNew(Imaging im, int x0, int y0, int x1, int y1,
         float start, float end,
-        const void* ink_, int op)
+        const void* ink_, int width, int op)
 {
-  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, x1 + y1 - x0 - y0, op, pie_init);
+  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, pie_init);
+}
+
+static int
+pieSideNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start,
+        const void* ink_, int width, int op)
+{
+  return clipEllipseNew(im, x0, y0, x1, y1, start, 0, ink_, width, op, pie_side_init);
 }
 
 int
@@ -1483,38 +1543,26 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
                     float start, float end, const void* ink, int fill,
                     int width, int op)
 {
-    //fprintf(stderr, "P (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
+    // fprintf(stderr, "P (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
     normalize_angles(&start, &end);
     if (start + 360 == end) {
-      return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, fill, width, op);
+      return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
     }
     if (start == end) {
       return 0;
     }
     if (fill) {
-      return pieNew(im, x0, y0, x1, y1, start, end, ink, op);
+      return pieNew(im, x0, y0, x1, y1, start, end, ink, x1 + y1 - x0 - y0, op);
     } else {
-      float xc = x0 + (x1 - x0) / 2.0, yc = y0 + (y1 - y0) / 2.0;
-      float al = start * M_PI / 180.0, ar = end * M_PI / 180.0;
-      int32_t xa = xc + (x1 - x0 - width) * cos(al) / 2, ya = yc + (y1 - y0 - width) * sin(al) / 2;
-      int32_t xb = xc + (x1 - x0 - width) * cos(ar) / 2, yb = yc + (y1 - y0 - width) * sin(ar) / 2;
-      int32_t xt, yt;
-      if (ImagingDrawWideLine(im, xc, yc, xa, ya, ink, width, op) < 0) {
+      if (pieSideNew(im, x0, y0, x1, y1, start, ink, width, op)) {
         return -1;
       }
-      if (ImagingDrawWideLine(im, xc, yc, xb, yb, ink, width, op) < 0) {
+      if (pieSideNew(im, x0, y0, x1, y1, end, ink, width, op)) {
         return -1;
       }
-      xt = xc - width / 2;
-      yt = yc - width / 2;
-      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
-      xt = xa - width / 2;
-      yt = ya - width / 2;
-      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
-      xt = xb - width / 2;
-      yt = yb - width / 2;
-      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
-      return arcNew(im, x0, y0, x1, y1, start, end, ink, width, op);
+      float xc = round((x0 + x1 - width) / 2.0), yc = round((y0 + y1 - width) / 2.0);
+      ellipseNew(im, xc, yc, xc + width - 1, yc + width - 1, ink, 1, 0, op);
+      return pieNew(im, x0, y0, x1, y1, start, end, ink, width, op);
     }
 }
 

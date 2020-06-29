@@ -196,13 +196,11 @@ def helper_chord(mode, bbox, start, end):
 def test_chord1():
     for mode in ["RGB", "L"]:
         helper_chord(mode, BBOX1, 0, 180)
-        helper_chord(mode, BBOX1, 0.5, 180.4)
 
 
 def test_chord2():
     for mode in ["RGB", "L"]:
         helper_chord(mode, BBOX2, 0, 180)
-        helper_chord(mode, BBOX2, 0.5, 180.4)
 
 
 def test_chord_width():
@@ -465,13 +463,13 @@ def helper_pieslice(bbox, start, end):
 
 
 def test_pieslice1():
-    helper_pieslice(BBOX1, -90, 45)
-    helper_pieslice(BBOX1, -90.5, 45.4)
+    helper_pieslice(BBOX1, -92, 46)
+    helper_pieslice(BBOX1, -92.2, 46.2)
 
 
 def test_pieslice2():
-    helper_pieslice(BBOX2, -90, 45)
-    helper_pieslice(BBOX2, -90.5, 45.4)
+    helper_pieslice(BBOX2, -92, 46)
+    helper_pieslice(BBOX2, -92.2, 46.2)
 
 
 def test_pieslice_width():

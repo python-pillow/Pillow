@@ -119,7 +119,7 @@ class ImageDraw:
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None, width=0):
+    def arc(self, xy, start, end, fill=None, width=1):
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
