@@ -5,6 +5,9 @@ Changelog (Pillow)
 7.2.0 (unreleased)
 ------------------
 
+- Fixed loading non-RGBA mode APNGs with dispose background #4742
+  [radarhere]
+
 - Deprecated _showxv #4714
   [radarhere]
 
