@@ -104,6 +104,13 @@ def test_apng_dispose_region():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_dispose_op_background_p_mode():
+    with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
+        im.seek(1)
+        im.load()
+        assert im.size == (128, 64)
+
+
 def test_apng_blend():
     with Image.open("Tests/images/apng/blend_op_source_solid.png") as im:
         im.seek(im.n_frames - 1)
@@ -490,6 +497,26 @@ def test_apng_save_disposal(tmp_path):
     )
     with Image.open(test_file) as im:
         im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+def test_apng_save_disposal_previous(tmp_path):
+    test_file = str(tmp_path / "temp.png")
+    size = (128, 64)
+    transparent = Image.new("RGBA", size, (0, 0, 0, 0))
+    red = Image.new("RGBA", size, (255, 0, 0, 255))
+    green = Image.new("RGBA", size, (0, 255, 0, 255))
+
+    # test APNG_DISPOSE_OP_NONE
+    transparent.save(
+        test_file,
+        save_all=True,
+        append_images=[red, green],
+        disposal=PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS,
+    )
+    with Image.open(test_file) as im:
+        im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 

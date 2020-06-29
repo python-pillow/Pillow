@@ -323,7 +323,8 @@ MARKER = {
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"\377"
+    # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
+    return prefix[0:3] == b"\xFF\xD8\xFF"
 
 
 ##
@@ -337,10 +338,11 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        s = self.fp.read(1)
+        s = self.fp.read(3)
 
-        if i8(s) != 255:
+        if not _accept(s):
             raise SyntaxError("not a JPEG file")
+        s = b"\xFF"
 
         # Create attributes
         self.bits = self.layers = 0
@@ -503,13 +505,13 @@ def _getmp(self):
         file_contents.seek(info.next)
         info.load(file_contents)
         mp = dict(info)
-    except Exception:
-        raise SyntaxError("malformed MP Index (unreadable directory)")
+    except Exception as e:
+        raise SyntaxError("malformed MP Index (unreadable directory)") from e
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
-    except KeyError:
-        raise SyntaxError("malformed MP Index (no number of images)")
+    except KeyError as e:
+        raise SyntaxError("malformed MP Index (no number of images)") from e
     # get MP entries
     mpentries = []
     try:
@@ -545,8 +547,8 @@ def _getmp(self):
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError:
-        raise SyntaxError("malformed MP Index (bad MP Entry)")
+    except KeyError as e:
+        raise SyntaxError("malformed MP Index (bad MP Entry)") from e
     # Next we should try and parse the individual image unique ID list;
     # we don't because I've never seen this actually used in a real MPO
     # file and so can't test it.
@@ -610,8 +612,8 @@ def _save(im, fp, filename):
 
     try:
         rawmode = RAWMODE[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as JPEG" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as JPEG" % im.mode) from e
 
     info = im.encoderinfo
 
@@ -663,8 +665,8 @@ def _save(im, fp, filename):
                     for line in qtables.splitlines()
                     for num in line.split("#", 1)[0].split()
                 ]
-            except ValueError:
-                raise ValueError("Invalid quantization table")
+            except ValueError as e:
+                raise ValueError("Invalid quantization table") from e
             else:
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
@@ -679,8 +681,8 @@ def _save(im, fp, filename):
                     if len(table) != 64:
                         raise TypeError
                     table = array.array("B", table)
-                except TypeError:
-                    raise ValueError("Invalid quantization table")
+                except TypeError as e:
+                    raise ValueError("Invalid quantization table") from e
                 else:
                     qtables[idx] = list(table)
             return qtables

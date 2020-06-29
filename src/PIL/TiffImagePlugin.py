@@ -553,9 +553,10 @@ class ImageFileDirectory_v2(MutableMapping):
                         )
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
-                else:
-                    if all(isinstance(v, str) for v in values):
-                        self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, str) for v in values):
+                    self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, bytes) for v in values):
+                    self.tagtype[tag] = TiffTags.BYTE
 
         if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
@@ -573,8 +574,10 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (info.length == 1) or (
-            info.length is None and len(values) == 1 and not legacy_api
+        if (
+            (info.length == 1)
+            or self.tagtype[tag] == TiffTags.BYTE
+            or (info.length is None and len(values) == 1 and not legacy_api)
         ):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [
@@ -1114,8 +1117,8 @@ class TiffImageFile(ImageFile.ImageFile):
         )
         try:
             decoder.setimage(self.im, extents)
-        except ValueError:
-            raise OSError("Couldn't set the image")
+        except ValueError as e:
+            raise OSError("Couldn't set the image") from e
 
         close_self_fp = self._exclusive_fp and not self.is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1228,9 +1231,9 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("format key: {}".format(key))
         try:
             self.mode, rawmode = OPEN_INFO[key]
-        except KeyError:
+        except KeyError as e:
             logger.debug("- unsupported format")
-            raise SyntaxError("unknown pixel mode")
+            raise SyntaxError("unknown pixel mode") from e
 
         logger.debug("- raw mode: {}".format(rawmode))
         logger.debug("- pil mode: {}".format(self.mode))
@@ -1397,14 +1400,17 @@ def _save(im, fp, filename):
 
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as TIFF" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as TIFF" % im.mode) from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
     compression = im.encoderinfo.get("compression", im.info.get("compression"))
     if compression is None:
         compression = "raw"
+    elif compression == "tiff_jpeg":
+        # OJPEG is obsolete, so use new-style JPEG compression instead
+        compression = "jpeg"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
@@ -1485,7 +1491,10 @@ def _save(im, fp, filename):
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
-    ifd[STRIPBYTECOUNTS] = stride * im.size[1]
+    strip_byte_counts = stride * im.size[1]
+    if strip_byte_counts >= 2 ** 16:
+        ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
+    ifd[STRIPBYTECOUNTS] = strip_byte_counts
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
@@ -1521,7 +1530,6 @@ def _save(im, fp, filename):
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         blocklist = [
-            COLORMAP,
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
@@ -1546,16 +1554,17 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if (
-                    TiffTags.lookup(tag).type == TiffTags.UNDEFINED
-                    or not Image.core.libtiff_support_custom_tags
-                ):
+                if not Image.core.libtiff_support_custom_tags:
                     continue
 
                 if tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue
+                else:
+                    type = TiffTags.lookup(tag).type
+                    if type:
+                        types[tag] = type
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str):
                     atts[tag] = value.encode("ascii", "replace") + b"\0"

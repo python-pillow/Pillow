@@ -671,7 +671,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     // This list also exists in TiffTags.py
     const int core_tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
-        341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
+        341, 282, 283, 284, 286, 287, 296, 297, 320, 321, 338, 32995, 32998, 32996,
         339, 32997, 330, 531, 530, 65537
     };
 
@@ -761,12 +761,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         }
 
-        if (PyBytes_Check(value) &&
-                (type == TIFF_BYTE || type == TIFF_UNDEFINED)) {
-            // For backwards compatibility
-            type = TIFF_ASCII;
-        }
-
         if (PyTuple_Check(value)) {
             Py_ssize_t len;
             len = PyTuple_Size(value);
@@ -790,25 +784,40 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
         if (!is_core_tag) {
             // Register field for non core tags.
+            if (type == TIFF_BYTE) {
+                is_var_length = 1;
+            }
             if (ImagingLibTiffMergeFieldInfo(&encoder->state, type, key_int, is_var_length)) {
                 continue;
             }
         }
 
-        if (is_var_length) {
+        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+            status = ImagingLibTiffSetField(&encoder->state,
+                    (ttag_t) key_int,
+                    PyBytes_Size(value), PyBytes_AsString(value));
+        } else if (is_var_length) {
             Py_ssize_t len,i;
             TRACE(("Setting from Tuple: %d \n", key_int));
             len = PyTuple_Size(value);
 
-            if (type == TIFF_BYTE) {
-                UINT8 *av;
+            if (key_int == TIFFTAG_COLORMAP) {
+                int stride = 256;
+                if (len != 768) {
+                    PyErr_SetString(PyExc_ValueError, "Requiring 768 items for for Colormap");
+                    return NULL;
+                }
+                UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
-                av = calloc(len, sizeof(UINT8));
+                av = calloc(len, sizeof(UINT16));
                 if (av) {
                     for (i=0;i<len;i++) {
-                        av[i] = (UINT8)PyLong_AsLong(PyTuple_GetItem(value,i));
+                        av[i] = (UINT16)PyLong_AsLong(PyTuple_GetItem(value,i));
                     }
-                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int,
+                                                    av,
+                                                    av + stride,
+                                                    av + stride * 2);
                     free(av);
                 }
             } else if (type == TIFF_SHORT) {
@@ -914,10 +923,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 status = ImagingLibTiffSetField(&encoder->state,
                         (ttag_t) key_int,
                         (FLOAT64)PyFloat_AsDouble(value));
-            } else if (type == TIFF_BYTE) {
-                status = ImagingLibTiffSetField(&encoder->state,
-                        (ttag_t) key_int,
-                        (UINT8)PyLong_AsLong(value));
             } else if (type == TIFF_SBYTE) {
                 status = ImagingLibTiffSetField(&encoder->state,
                         (ttag_t) key_int,

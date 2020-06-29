@@ -1,10 +1,10 @@
 .. py:module:: PIL.PyAccess
 .. py:currentmodule:: PIL.PyAccess
 
-:py:mod:`PyAccess` Module
-=========================
+:py:mod:`~PIL.PyAccess` Module
+==============================
 
-The :py:mod:`PyAccess` module provides a CFFI/Python implementation of the :ref:`PixelAccess`. This implementation is far faster on PyPy than the PixelAccess version.
+The :py:mod:`~PIL.PyAccess` module provides a CFFI/Python implementation of the :ref:`PixelAccess`. This implementation is far faster on PyPy than the PixelAccess version.
 
 .. note:: Accessing individual pixels is fairly slow. If you are
            looping over all of the pixels in an image, there is likely

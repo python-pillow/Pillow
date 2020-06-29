@@ -81,6 +81,7 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
+typedef const char* (*t_raqm_version_string) (void);
 typedef bool (*t_raqm_version_atleast)(unsigned int major,
                                        unsigned int minor,
                                        unsigned int micro);
@@ -112,6 +113,7 @@ typedef void (*t_raqm_destroy) (raqm_t *rq);
 typedef struct {
     void* raqm;
     int version;
+    t_raqm_version_string version_string;
     t_raqm_version_atleast version_atleast;
     t_raqm_create create;
     t_raqm_set_text set_text;
@@ -173,6 +175,7 @@ setraqm(void)
     }
 
 #ifndef _WIN32
+    p_raqm.version_string = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
@@ -206,6 +209,7 @@ setraqm(void)
         return 2;
     }
 #else
+    p_raqm.version_string = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
@@ -609,6 +613,8 @@ font_getsize(FontObject* self, PyObject* args)
     FT_Face face;
     int xoffset, yoffset;
     int horizontal_dir;
+    int mask = 0;
+    int load_flags;
     const char *dir = NULL;
     const char *lang = NULL;
     size_t i, count;
@@ -618,11 +624,11 @@ font_getsize(FontObject* self, PyObject* args)
     /* calculate size and bearing for a given string */
 
     PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|zOz:getsize", &string, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
         return NULL;
     }
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, 0);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -641,7 +647,11 @@ font_getsize(FontObject* self, PyObject* args)
         /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
          *   Yifu Yu<root@jackyyf.com>, 2014-10-15
          */
-        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT|FT_LOAD_NO_BITMAP);
+        load_flags = FT_LOAD_NO_BITMAP;
+        if (mask) {
+            load_flags |= FT_LOAD_TARGET_MONO;
+        }
+        error = FT_Load_Glyph(face, index, load_flags);
         if (error) {
             return geterror(error);
         }
@@ -1251,6 +1261,9 @@ setup_module(PyObject* m) {
     setraqm();
     v = PyBool_FromLong(!!p_raqm.raqm);
     PyDict_SetItemString(d, "HAVE_RAQM", v);
+    if (p_raqm.version_string) {
+        PyDict_SetItemString(d, "raqm_version", PyUnicode_FromString(p_raqm.version_string()));
+    }
 
     return 0;
 }

@@ -4,7 +4,7 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageMode
+from PIL import Image, ImageMode, features
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
 
@@ -46,7 +46,7 @@ def test_sanity():
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+$", ImageCms.core.littlecms_version)
+    assert re.search(r"\d+\.\d+$", features.version_module("littlecms2"))
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)

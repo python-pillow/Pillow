@@ -132,4 +132,8 @@ _plugins = [
 
 
 class UnidentifiedImageError(OSError):
+    """
+    Raised in :py:meth:`PIL.Image.open` if an image cannot be opened and identified.
+    """
+
     pass

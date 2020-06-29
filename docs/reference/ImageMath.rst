@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageMath
 .. py:currentmodule:: PIL.ImageMath
 
-:py:mod:`ImageMath` Module
-==========================
+:py:mod:`~PIL.ImageMath` Module
+===============================
 
-The :py:mod:`ImageMath` module can be used to evaluate “image expressions”. The
+The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”. The
 module provides a single :py:meth:`~PIL.ImageMath.eval` function, which takes
 an expression string and one or more images.
 
@@ -98,20 +98,24 @@ These functions are applied to each individual pixel.
 .. py:currentmodule:: None
 
 .. py:function:: abs(image)
+    :noindex:
 
     Absolute value.
 
 .. py:function:: convert(image, mode)
+    :noindex:
 
     Convert image to the given mode. The mode must be given as a string
     constant.
 
 .. py:function:: float(image)
+    :noindex:
 
     Convert image to 32-bit floating point. This is equivalent to
     convert(image, “F”).
 
 .. py:function:: int(image)
+    :noindex:
 
     Convert image to 32-bit integer. This is equivalent to convert(image, “I”).
 
@@ -119,9 +123,11 @@ These functions are applied to each individual pixel.
     integers if necessary to get a correct result.
 
 .. py:function:: max(image1, image2)
+    :noindex:
 
     Maximum value.
 
 .. py:function:: min(image1, image2)
+    :noindex:
 
     Minimum value.

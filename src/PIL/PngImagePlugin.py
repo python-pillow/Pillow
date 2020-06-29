@@ -168,8 +168,10 @@ class ChunkStream:
             crc2 = i32(self.fp.read(4))
             if crc1 != crc2:
                 raise SyntaxError("broken PNG file (bad header checksum in %r)" % cid)
-        except struct.error:
-            raise SyntaxError("broken PNG file (incomplete checksum in %r)" % cid)
+        except struct.error as e:
+            raise SyntaxError(
+                "broken PNG file (incomplete checksum in %r)" % cid
+            ) from e
 
     def crc_skip(self, cid, data):
         """Read checksum.  Used if the C module is not present"""
@@ -186,8 +188,8 @@ class ChunkStream:
         while True:
             try:
                 cid, pos, length = self.read()
-            except struct.error:
-                raise OSError("truncated PNG file")
+            except struct.error as e:
+                raise OSError("truncated PNG file") from e
 
             if cid == endchunk:
                 break
@@ -633,7 +635,7 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        if self.fp.read(8) != _MAGIC:
+        if not _accept(self.fp.read(8)):
             raise SyntaxError("not a PNG file")
         self.__fp = self.fp
         self.__frame = 0
@@ -737,9 +739,9 @@ class PngImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             try:
                 self._seek(f)
-            except EOFError:
+            except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in APNG file")
+                raise EOFError("no more images in APNG file") from e
 
     def _seek(self, frame, rewind=False):
         if frame == 0:
@@ -902,7 +904,7 @@ class PngImageFile(ImageFile.ImageFile):
                 dispose = self._prev_im.copy()
                 dispose = self._crop(dispose, self.dispose_extent)
             elif self.dispose_op == APNG_DISPOSE_OP_BACKGROUND:
-                dispose = Image.core.fill("RGBA", self.size, (0, 0, 0, 0))
+                dispose = Image.core.fill(self.im.mode, self.size)
                 dispose = self._crop(dispose, self.dispose_extent)
             else:
                 dispose = None
@@ -1036,7 +1038,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                 prev_disposal = previous["encoderinfo"].get("disposal")
                 prev_blend = previous["encoderinfo"].get("blend")
                 if prev_disposal == APNG_DISPOSE_OP_PREVIOUS and len(im_frames) < 2:
-                    prev_disposal == APNG_DISPOSE_OP_BACKGROUND
+                    prev_disposal = APNG_DISPOSE_OP_BACKGROUND
 
                 if prev_disposal == APNG_DISPOSE_OP_BACKGROUND:
                     base_im = previous["im"]
@@ -1168,8 +1170,8 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
     # get the corresponding PNG mode
     try:
         rawmode, mode = _OUTMODES[mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as PNG" % mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as PNG" % mode) from e
 
     #
     # write minimal PNG file

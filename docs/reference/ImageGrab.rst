@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageGrab
 .. py:currentmodule:: PIL.ImageGrab
 
-:py:mod:`ImageGrab` Module
-==========================
+:py:mod:`~PIL.ImageGrab` Module
+===============================
 
-The :py:mod:`ImageGrab` module can be used to copy the contents of the screen
+The :py:mod:`~PIL.ImageGrab` module can be used to copy the contents of the screen
 or the clipboard to a PIL image memory.
 
 .. versionadded:: 1.1.3

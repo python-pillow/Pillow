@@ -118,8 +118,8 @@ class IptcImageFile(ImageFile.ImageFile):
         # compression
         try:
             compression = COMPRESSION[self.getint((3, 120))]
-        except KeyError:
-            raise OSError("Unknown IPTC image compression")
+        except KeyError as e:
+            raise OSError("Unknown IPTC image compression") from e
 
         # tile
         if tag == (8, 10):

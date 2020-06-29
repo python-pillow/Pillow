@@ -17,19 +17,21 @@ def test_register():
     ImageShow._viewers.pop()
 
 
-def test_viewer_show():
+@pytest.mark.parametrize(
+    "order", [-1, 0],
+)
+def test_viewer_show(order):
     class TestViewer(ImageShow.Viewer):
-        methodCalled = False
-
         def show_image(self, image, **options):
             self.methodCalled = True
             return True
 
     viewer = TestViewer()
-    ImageShow.register(viewer, -1)
+    ImageShow.register(viewer, order)
 
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
-        with hopper() as im:
+        viewer.methodCalled = False
+        with hopper(mode) as im:
             assert ImageShow.show(im)
         assert viewer.methodCalled
 

@@ -1,15 +1,15 @@
 .. py:module:: PIL.ImageChops
 .. py:currentmodule:: PIL.ImageChops
 
-:py:mod:`ImageChops` ("Channel Operations") Module
-==================================================
+:py:mod:`~PIL.ImageChops` ("Channel Operations") Module
+=======================================================
 
-The :py:mod:`ImageChops` module contains a number of arithmetical image
+The :py:mod:`~PIL.ImageChops` module contains a number of arithmetical image
 operations, called channel operations (“chops”). These can be used for various
 purposes, including special effects, image compositions, algorithmic painting,
 and more.
 
-For more pre-made operations, see :py:mod:`ImageOps`.
+For more pre-made operations, see :py:mod:`~PIL.ImageOps`.
 
 At this time, most channel operations are only implemented for 8-bit images
 (e.g. “L” and “RGB”).

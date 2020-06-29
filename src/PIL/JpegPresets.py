@@ -1,9 +1,11 @@
 """
 JPEG quality settings equivalent to the Photoshop settings.
+Can be used when saving JPEG files.
 
-More presets can be added to the presets dict if needed.
-
-Can be use when saving JPEG file.
+The following presets are available by default:
+``web_low``, ``web_medium``, ``web_high``, ``web_very_high``, ``web_maximum``,
+``low``, ``medium``, ``high``, ``maximum``.
+More presets can be added to the :py:data:`presets` dict if needed.
 
 To apply the preset, specify::
 
@@ -20,7 +22,6 @@ To apply only the subsampling setting::
 Example::
 
   im.save("image_name.jpg", quality="web_high")
-
 
 Subsampling
 -----------

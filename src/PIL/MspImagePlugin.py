@@ -51,7 +51,7 @@ class MspImageFile(ImageFile.ImageFile):
 
         # Header
         s = self.fp.read(32)
-        if s[:4] not in [b"DanM", b"LinS"]:
+        if not _accept(s):
             raise SyntaxError("not an MSP file")
 
         # Header checksum
@@ -116,8 +116,8 @@ class MspDecoder(ImageFile.PyDecoder):
             rowmap = struct.unpack_from(
                 "<%dH" % (self.state.ysize), self.fd.read(self.state.ysize * 2)
             )
-        except struct.error:
-            raise OSError("Truncated MSP file in row map")
+        except struct.error as e:
+            raise OSError("Truncated MSP file in row map") from e
 
         for x, rowlen in enumerate(rowmap):
             try:
@@ -142,8 +142,8 @@ class MspDecoder(ImageFile.PyDecoder):
                         img.write(row[idx : idx + runcount])
                         idx += runcount
 
-            except struct.error:
-                raise OSError("Corrupted MSP file in row %d" % x)
+            except struct.error as e:
+                raise OSError("Corrupted MSP file in row %d" % x) from e
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 

@@ -545,6 +545,7 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     int height;
     int lossless;
     float quality_factor;
+    int method;
     uint8_t* rgb;
     uint8_t* icc_bytes;
     uint8_t* exif_bytes;
@@ -556,48 +557,74 @@ PyObject* WebPEncode_wrapper(PyObject* self, PyObject* args)
     Py_ssize_t exif_size;
     Py_ssize_t xmp_size;
     size_t ret_size;
+    int rgba_mode;
+    int channels;
+    int ok;
     ImagingSectionCookie cookie;
+    WebPConfig config;
+    WebPMemoryWriter writer;
+    WebPPicture pic;
 
-    if (!PyArg_ParseTuple(args, "y#iiifss#s#s#",
+    if (!PyArg_ParseTuple(args, "y#iiifss#is#s#",
                 (char**)&rgb, &size, &width, &height, &lossless, &quality_factor, &mode,
-                &icc_bytes, &icc_size, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
+                &icc_bytes, &icc_size, &method, &exif_bytes, &exif_size, &xmp_bytes, &xmp_size)) {
         return NULL;
     }
-    if (strcmp(mode, "RGBA")==0){
-        if (size < width * height * 4){
-            Py_RETURN_NONE;
-        }
-        #if WEBP_ENCODER_ABI_VERSION >= 0x0100
-        if (lossless) {
-            ImagingSectionEnter(&cookie);
-            ret_size = WebPEncodeLosslessRGBA(rgb, width, height, 4 * width, &output);
-            ImagingSectionLeave(&cookie);
-        } else
-        #endif
-        {
-            ImagingSectionEnter(&cookie);
-            ret_size = WebPEncodeRGBA(rgb, width, height, 4 * width, quality_factor, &output);
-            ImagingSectionLeave(&cookie);
-        }
-    } else if (strcmp(mode, "RGB")==0){
-        if (size < width * height * 3){
-            Py_RETURN_NONE;
-        }
-        #if WEBP_ENCODER_ABI_VERSION >= 0x0100
-        if (lossless) {
-            ImagingSectionEnter(&cookie);
-            ret_size = WebPEncodeLosslessRGB(rgb, width, height, 3 * width, &output);
-            ImagingSectionLeave(&cookie);
-        } else
-        #endif
-        {
-            ImagingSectionEnter(&cookie);
-            ret_size = WebPEncodeRGB(rgb, width, height, 3 * width, quality_factor, &output);
-            ImagingSectionLeave(&cookie);
-        }
-    } else {
+
+    rgba_mode = strcmp(mode, "RGBA") == 0;
+    if (!rgba_mode && strcmp(mode, "RGB") != 0) {
         Py_RETURN_NONE;
     }
+
+    channels = rgba_mode ? 4 : 3;
+    if (size < width * height * channels) {
+        Py_RETURN_NONE;
+    }
+
+    // Setup config for this frame
+    if (!WebPConfigInit(&config)) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
+        return NULL;
+    }
+    config.lossless = lossless;
+    config.quality = quality_factor;
+    config.method = method;
+
+    // Validate the config
+    if (!WebPValidateConfig(&config)) {
+        PyErr_SetString(PyExc_ValueError, "invalid configuration");
+        return NULL;
+    }
+
+    if (!WebPPictureInit(&pic)) {
+        PyErr_SetString(PyExc_ValueError, "could not initialise picture");
+        return NULL;
+    }
+    pic.width = width;
+    pic.height = height;
+    pic.use_argb = 1; // Don't convert RGB pixels to YUV
+
+    if (rgba_mode) {
+        WebPPictureImportRGBA(&pic, rgb, channels * width);
+    } else {
+        WebPPictureImportRGB(&pic, rgb, channels * width);
+    }
+
+    WebPMemoryWriterInit(&writer);
+    pic.writer = WebPMemoryWrite;
+    pic.custom_ptr = &writer;
+
+    ImagingSectionEnter(&cookie);
+    ok = WebPEncode(&config, &pic);
+    ImagingSectionLeave(&cookie);
+
+    WebPPictureFree(&pic);
+    if (!ok) {
+        PyErr_SetString(PyExc_ValueError, "encoding error");
+        return NULL;
+    }
+    output = writer.mem;
+    ret_size = writer.size;
 
 #ifndef HAVE_WEBPMUX
     if (ret_size > 0) {
@@ -794,6 +821,16 @@ PyObject* WebPDecoderVersion_wrapper() {
     return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
+// Version as string
+const char*
+WebPDecoderVersion_str(void)
+{
+    static char version[20];
+    int version_number = WebPGetDecoderVersion();
+    sprintf(version, "%d.%d.%d", version_number >> 16, (version_number >> 8) % 0x100, version_number % 0x100);
+    return version;
+}
+
 /*
  * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
  * Files that are valid with 0.3 are reported as being invalid.
@@ -845,9 +882,12 @@ void addTransparencyFlagToModule(PyObject* m) {
 }
 
 static int setup_module(PyObject* m) {
+    PyObject* d = PyModule_GetDict(m);
     addMuxFlagToModule(m);
     addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
+
+    PyDict_SetItemString(d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
 
 #ifdef HAVE_WEBPANIM
     /* Ready object types */

@@ -3,11 +3,12 @@ import io
 import itertools
 import logging
 import os
+import re
 from collections import namedtuple
 from ctypes import c_float
 
 import pytest
-from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags
+from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
     assert_image_equal,
@@ -47,6 +48,9 @@ class LibTiffTestCase:
 
 
 class TestFileLibTiff(LibTiffTestCase):
+    def test_version(self):
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("libtiff"))
+
     def test_g4_tiff(self, tmp_path):
         """Test the ordinary file path load path"""
 
@@ -203,6 +207,7 @@ class TestFileLibTiff(LibTiffTestCase):
                     del core_items[tag]
                 except KeyError:
                     pass
+            del core_items[320]  # colormap is special, tested below
 
             # Type codes:
             #     2: "ascii",
@@ -299,9 +304,6 @@ class TestFileLibTiff(LibTiffTestCase):
                             )
                             continue
 
-                        if libtiff and isinstance(value, bytes):
-                            value = value.decode()
-
                         assert reloaded_value == value
 
             # Test with types
@@ -321,6 +323,17 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_xmlpacket_tag(self, tmp_path):
+        TiffImagePlugin.WRITE_LIBTIFF = True
+
+        out = str(tmp_path / "temp.tif")
+        hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            if 700 in reloaded.tag_v2:
+                assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, tmp_path):
         # issue #1765
@@ -448,6 +461,14 @@ class TestFileLibTiff(LibTiffTestCase):
         assert size_compressed > size_jpeg
         assert size_jpeg > size_jpeg_30
 
+    def test_tiff_jpeg_compression(self, tmp_path):
+        im = hopper("RGB")
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_jpeg")
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["compression"] == "jpeg"
+
     def test_quality(self, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
@@ -470,6 +491,18 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="tiff_adobe_deflate")
         with Image.open(out) as im2:
             assert_image_equal(im, im2)
+
+    def test_palette_save(self, tmp_path):
+        im = hopper("P")
+        out = str(tmp_path / "temp.tif")
+
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            # colormap/palette tag
+            assert len(reloaded.tag_v2[320]) == 768
 
     def xtest_bw_compression_w_rgb(self, tmp_path):
         """ This test passes, but when running all tests causes a failure due
@@ -666,6 +699,26 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         TiffImagePlugin.READ_LIBTIFF = False
         assert icc == icc_libtiff
+
+    def test_write_icc(self, tmp_path):
+        def check_write(libtiff):
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+            with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+                icc_profile = img.info["icc_profile"]
+
+                out = str(tmp_path / "temp.tif")
+                img.save(out, icc_profile=icc_profile)
+            with Image.open(out) as reloaded:
+                assert icc_profile == reloaded.info["icc_profile"]
+
+        libtiffs = []
+        if Image.core.libtiff_support_custom_tags:
+            libtiffs.append(True)
+        libtiffs.append(False)
+
+        for libtiff in libtiffs:
+            check_write(libtiff)
 
     def test_multipage_compression(self):
         with Image.open("Tests/images/compression.tif") as im:

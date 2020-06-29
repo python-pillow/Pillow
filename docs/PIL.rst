@@ -4,98 +4,89 @@ PIL Package (autodoc of remaining modules)
 Reference for modules whose documentation has not yet been ported or written
 can be found here.
 
-:mod:`BdfFontFile` Module
--------------------------
+:mod:`PIL` Module
+-----------------
+
+.. py:module:: PIL
+
+.. autoexception:: UnidentifiedImageError
+    :show-inheritance:
+
+:mod:`~PIL.BdfFontFile` Module
+------------------------------
 
 .. automodule:: PIL.BdfFontFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`ContainerIO` Module
--------------------------
+:mod:`~PIL.ContainerIO` Module
+------------------------------
 
 .. automodule:: PIL.ContainerIO
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`FontFile` Module
-----------------------
+:mod:`~PIL.FontFile` Module
+---------------------------
 
 .. automodule:: PIL.FontFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`GdImageFile` Module
--------------------------
+:mod:`~PIL.GdImageFile` Module
+------------------------------
 
 .. automodule:: PIL.GdImageFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`GimpGradientFile` Module
-------------------------------
+:mod:`~PIL.GimpGradientFile` Module
+-----------------------------------
 
 .. automodule:: PIL.GimpGradientFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`GimpPaletteFile` Module
------------------------------
+:mod:`~PIL.GimpPaletteFile` Module
+----------------------------------
 
 .. automodule:: PIL.GimpPaletteFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. intentionally skipped documenting this because it's not documented anywhere
-
-:mod:`ImageDraw2` Module
-------------------------
+:mod:`~PIL.ImageDraw2` Module
+-----------------------------
 
 .. automodule:: PIL.ImageDraw2
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
-:mod:`ImageShow` Module
------------------------
-
-.. automodule:: PIL.ImageShow
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ImageTransform` Module
-----------------------------
+:mod:`~PIL.ImageTransform` Module
+---------------------------------
 
 .. automodule:: PIL.ImageTransform
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`JpegPresets` Module
--------------------------
-
-.. automodule:: PIL.JpegPresets
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`PaletteFile` Module
--------------------------
+:mod:`~PIL.PaletteFile` Module
+------------------------------
 
 .. automodule:: PIL.PaletteFile
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`PcfFontFile` Module
--------------------------
+:mod:`~PIL.PcfFontFile` Module
+------------------------------
 
 .. automodule:: PIL.PcfFontFile
     :members:
@@ -125,27 +116,18 @@ can be found here.
     :show-inheritance:
 
 
-:mod:`TarIO` Module
--------------------
+:mod:`~PIL.TarIO` Module
+------------------------
 
 .. automodule:: PIL.TarIO
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`WalImageFile` Module
---------------------------
+:mod:`~PIL.WalImageFile` Module
+-------------------------------
 
 .. automodule:: PIL.WalImageFile
     :members:
     :undoc-members:
     :show-inheritance:
-
-:mod:`_binary` Module
----------------------
-
-.. automodule:: PIL._binary
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

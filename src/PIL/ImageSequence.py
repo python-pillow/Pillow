@@ -38,8 +38,8 @@ class Iterator:
         try:
             self.im.seek(ix)
             return self.im
-        except EOFError:
-            raise IndexError  # end of sequence
+        except EOFError as e:
+            raise IndexError from e  # end of sequence
 
     def __iter__(self):
         return self
@@ -49,8 +49,8 @@ class Iterator:
             self.im.seek(self.position)
             self.position += 1
             return self.im
-        except EOFError:
-            raise StopIteration
+        except EOFError as e:
+            raise StopIteration from e
 
 
 def all_frames(im, func=None):

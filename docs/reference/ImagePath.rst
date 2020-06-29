@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImagePath
 .. py:currentmodule:: PIL.ImagePath
 
-:py:mod:`ImagePath` Module
-==========================
+:py:mod:`~PIL.ImagePath` Module
+===============================
 
-The :py:mod:`ImagePath` module is used to store and manipulate 2-dimensional
+The :py:mod:`~PIL.ImagePath` module is used to store and manipulate 2-dimensional
 vector data. Path objects can be passed to the methods on the
 :py:mod:`~PIL.ImageDraw` module.
 

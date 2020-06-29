@@ -259,7 +259,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
-        size, offset = self.font.getsize(text, direction, features, language)
+        size, offset = self.font.getsize(text, False, direction, features, language)
         return (
             size[0] + stroke_width * 2 + offset[0],
             size[1] + stroke_width * 2 + offset[1],
@@ -468,7 +468,9 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        size, offset = self.font.getsize(text, direction, features, language)
+        size, offset = self.font.getsize(
+            text, mode == "1", direction, features, language
+        )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         im = fill("L", size, 0)
         self.font.render(
@@ -503,8 +505,8 @@ class FreeTypeFont:
         """
         try:
             names = self.font.getvarnames()
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name):
@@ -533,8 +535,8 @@ class FreeTypeFont:
         """
         try:
             axes = self.font.getvaraxes()
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
         for axis in axes:
             axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
@@ -546,8 +548,8 @@ class FreeTypeFont:
         """
         try:
             self.font.setvaraxes(axes)
-        except AttributeError:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required")
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
 
 
 class TransposedFont:

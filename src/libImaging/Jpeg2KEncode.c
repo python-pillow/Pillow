@@ -50,7 +50,7 @@ static OPJ_SIZE_T
 j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
 {
     ImagingCodecState state = (ImagingCodecState)p_user_data;
-    int result;
+    unsigned int result;
 
     result = _imaging_write_pyFd(state->fd, p_buffer, p_nb_bytes);
 
@@ -399,8 +399,8 @@ j2k_encode_entry(Imaging im, ImagingCodecState state)
         Py_ssize_t n;
         float *pq;
 
-        if (len) {
-            if (len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
+        if (len > 0) {
+            if ((unsigned)len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
                 len = sizeof(params.tcp_rates)/sizeof(params.tcp_rates[0]);
             }
 

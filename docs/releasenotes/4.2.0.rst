@@ -27,7 +27,7 @@ New DecompressionBomb Warning
 
 :py:meth:`PIL.Image.Image.crop` now may raise a DecompressionBomb
 warning if the crop region enlarges the image over the threshold
-specified by :py:attr:`PIL.Image.MAX_PIXELS`.
+specified by :py:data:`PIL.Image.MAX_PIXELS`.
 
 Removed Deprecated Items
 ========================

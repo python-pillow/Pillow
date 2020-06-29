@@ -12,13 +12,30 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+
+The ``command`` parameter was deprecated and will be removed in a future release.
+Use a subclass of ``ImageShow.Viewer`` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+
+``Image._showxv`` has been deprecated. Use :py:meth:`~PIL.Image.Image.show`
+instead. If custom behaviour is required, use :py:meth:`~PIL.ImageShow.register` to add
+a custom :py:class:`~PIL.ImageShow.Viewer` class.
+
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
 
 ``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
-is now deprecated and will be removed in a future released. Use
+is now deprecated and will be removed in a future release. Use
 ``ImageFile.raise_oserror`` instead.
 
 PILLOW_VERSION constant

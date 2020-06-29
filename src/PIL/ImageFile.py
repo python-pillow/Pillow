@@ -85,7 +85,7 @@ def _tilesort(t):
 
 
 class ImageFile(Image.Image):
-    "Base class for image file format handlers."
+    """Base class for image file format handlers."""
 
     def __init__(self, fp=None, filename=None):
         super().__init__()
@@ -122,7 +122,7 @@ class ImageFile(Image.Image):
                 EOFError,  # got header but not the first frame
                 struct.error,
             ) as v:
-                raise SyntaxError(v)
+                raise SyntaxError(v) from v
 
             if not self.mode or self.size[0] <= 0:
                 raise SyntaxError("not identified by this driver")
@@ -241,12 +241,12 @@ class ImageFile(Image.Image):
                         while True:
                             try:
                                 s = read(self.decodermaxblock)
-                            except (IndexError, struct.error):
+                            except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError("image file is truncated")
+                                    raise OSError("image file is truncated") from e
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
@@ -505,7 +505,7 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation):
+    except (AttributeError, io.UnsupportedOperation) as e:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
@@ -522,7 +522,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError("encoder error %d when writing image file" % s) from e
             e.cleanup()
     else:
         # slight speedup: compress to real file object

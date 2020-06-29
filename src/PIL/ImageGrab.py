@@ -93,12 +93,28 @@ def grabclipboard():
         os.unlink(filepath)
         return im
     elif sys.platform == "win32":
-        data = Image.core.grabclipboard_win32()
+        fmt, data = Image.core.grabclipboard_win32()
+        if fmt == "file":  # CF_HDROP
+            import struct
+
+            o = struct.unpack_from("I", data)[0]
+            if data[16] != 0:
+                files = data[o:].decode("utf-16le").split("\0")
+            else:
+                files = data[o:].decode("mbcs").split("\0")
+            return files[: files.index("")]
         if isinstance(data, bytes):
-            from . import BmpImagePlugin
             import io
 
-            return BmpImagePlugin.DibImageFile(io.BytesIO(data))
-        return data
+            data = io.BytesIO(data)
+            if fmt == "png":
+                from . import PngImagePlugin
+
+                return PngImagePlugin.PngImageFile(data)
+            elif fmt == "DIB":
+                from . import BmpImagePlugin
+
+                return BmpImagePlugin.DibImageFile(data)
+        return None
     else:
         raise NotImplementedError("ImageGrab.grabclipboard() is macOS and Windows only")

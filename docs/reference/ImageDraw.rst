@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageDraw
 .. py:currentmodule:: PIL.ImageDraw
 
-:py:mod:`ImageDraw` Module
-==========================
+:py:mod:`~PIL.ImageDraw` Module
+===============================
 
-The :py:mod:`ImageDraw` module provides simple 2D graphics for
+The :py:mod:`~PIL.ImageDraw` module provides simple 2D graphics for
 :py:class:`~PIL.Image.Image` objects.  You can use this module to create new
 images, annotate or retouch existing images, and to generate graphics on the
 fly for web use.
@@ -124,7 +124,7 @@ Example: Draw Multiline Text
 Functions
 ---------
 
-.. py:class:: PIL.ImageDraw.Draw(im, mode=None)
+.. py:method:: Draw(im, mode=None)
 
     Creates an object that can be used to draw in the given image.
 
@@ -140,13 +140,13 @@ Functions
 Methods
 -------
 
-.. py:method:: PIL.ImageDraw.ImageDraw.getfont()
+.. py:method:: ImageDraw.getfont()
 
     Get the current default font.
 
     :returns: An image font.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.arc(xy, start, end, fill=None, width=0)
+.. py:method:: ImageDraw.arc(xy, start, end, fill=None, width=0)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
@@ -162,7 +162,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.bitmap(xy, bitmap, fill=None)
+.. py:method:: ImageDraw.bitmap(xy, bitmap, fill=None)
 
     Draws a bitmap (mask) at the given position, using the current fill color
     for the non-zero portions. The bitmap should be a valid transparency mask
@@ -173,7 +173,7 @@ Methods
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.chord(xy, start, end, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.chord(xy, start, end, fill=None, outline=None, width=1)
 
     Same as :py:meth:`~PIL.ImageDraw.ImageDraw.arc`, but connects the end points
     with a straight line.
@@ -187,7 +187,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
 
     Draws an ellipse inside the given bounding box.
 
@@ -200,9 +200,9 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.line(xy, fill=None, width=0, joint=None)
+.. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
-    Draws a line between the coordinates in the **xy** list.
+    Draws a line between the coordinates in the ``xy`` list.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
@@ -216,7 +216,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
     Same as arc, but also draws straight lines between the end points and the
     center of the bounding box.
@@ -233,7 +233,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.point(xy, fill=None)
+.. py:method:: ImageDraw.point(xy, fill=None)
 
     Draws points (individual pixels) at the given coordinates.
 
@@ -241,7 +241,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the point.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.polygon(xy, fill=None, outline=None)
+.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None)
 
     Draws a polygon.
 
@@ -254,7 +254,7 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
 
     Draws a rectangle.
 
@@ -267,13 +267,13 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.shape(shape, fill=None, outline=None)
+.. py:method:: ImageDraw.shape(shape, fill=None, outline=None)
 
     .. warning:: This method is experimental.
 
     Draw a shape.
 
-.. py:method:: PIL.ImageDraw.ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
+.. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None)
 
     Draws the string at the given position.
 
@@ -325,7 +325,7 @@ Methods
 
         .. versionadded:: 6.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
+.. py:method:: ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None)
 
     Draws the string at the given position.
 
@@ -362,7 +362,7 @@ Methods
 
                      .. versionadded:: 6.0.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
+.. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -401,7 +401,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-.. py:method:: PIL.ImageDraw.ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
+.. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     Return the size of the given string, in pixels.
 
@@ -439,7 +439,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-.. py:method:: PIL.ImageDraw.getdraw(im=None, hints=None)
+.. py:method:: getdraw(im=None, hints=None)
 
     .. warning:: This method is experimental.
 
@@ -450,7 +450,7 @@ Methods
     :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
-.. py:method:: PIL.ImageDraw.floodfill(image, xy, value, border=None, thresh=0)
+.. py:method:: floodfill(image, xy, value, border=None, thresh=0)
 
     .. warning:: This method is experimental.
 

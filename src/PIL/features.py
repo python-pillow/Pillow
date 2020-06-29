@@ -8,11 +8,11 @@ import PIL
 from . import Image
 
 modules = {
-    "pil": "PIL._imaging",
-    "tkinter": "PIL._tkinter_finder",
-    "freetype2": "PIL._imagingft",
-    "littlecms2": "PIL._imagingcms",
-    "webp": "PIL._webp",
+    "pil": ("PIL._imaging", "PILLOW_VERSION"),
+    "tkinter": ("PIL._tkinter_finder", None),
+    "freetype2": ("PIL._imagingft", "freetype2_version"),
+    "littlecms2": ("PIL._imagingcms", "littlecms_version"),
+    "webp": ("PIL._webp", "webpdecoder_version"),
 }
 
 
@@ -27,13 +27,31 @@ def check_module(feature):
     if not (feature in modules):
         raise ValueError("Unknown module %s" % feature)
 
-    module = modules[feature]
+    module, ver = modules[feature]
 
     try:
         __import__(module)
         return True
     except ImportError:
         return False
+
+
+def version_module(feature):
+    """
+    :param feature: The module to check for.
+    :returns:
+        The loaded version number as a string, or ``None`` if unknown or not available.
+    :raises ValueError: If the module is not defined in this version of Pillow.
+    """
+    if not check_module(feature):
+        return None
+
+    module, ver = modules[feature]
+
+    if ver is None:
+        return None
+
+    return getattr(__import__(module, fromlist=[ver]), ver)
 
 
 def get_supported_modules():
@@ -43,7 +61,12 @@ def get_supported_modules():
     return [f for f in modules if check_module(f)]
 
 
-codecs = {"jpg": "jpeg", "jpg_2000": "jpeg2k", "zlib": "zip", "libtiff": "libtiff"}
+codecs = {
+    "jpg": ("jpeg", "jpeglib"),
+    "jpg_2000": ("jpeg2k", "jp2klib"),
+    "zlib": ("zip", "zlib"),
+    "libtiff": ("libtiff", "libtiff"),
+}
 
 
 def check_codec(feature):
@@ -57,9 +80,30 @@ def check_codec(feature):
     if feature not in codecs:
         raise ValueError("Unknown codec %s" % feature)
 
-    codec = codecs[feature]
+    codec, lib = codecs[feature]
 
     return codec + "_encoder" in dir(Image.core)
+
+
+def version_codec(feature):
+    """
+    :param feature: The codec to check for.
+    :returns:
+        The version number as a string, or ``None`` if not available.
+        Checked at compile time for ``jpg``, run-time otherwise.
+    :raises ValueError: If the codec is not defined in this version of Pillow.
+    """
+    if not check_codec(feature):
+        return None
+
+    codec, lib = codecs[feature]
+
+    version = getattr(Image.core, lib + "_version")
+
+    if feature == "libtiff":
+        return version.split("\n")[0].split("Version ")[1]
+
+    return version
 
 
 def get_supported_codecs():
@@ -70,13 +114,13 @@ def get_supported_codecs():
 
 
 features = {
-    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM"),
-    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX"),
-    "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY"),
-    "raqm": ("PIL._imagingft", "HAVE_RAQM"),
-    "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO"),
-    "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT"),
-    "xcb": ("PIL._imaging", "HAVE_XCB"),
+    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
+    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
+    "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
+    "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
+    "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
+    "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
+    "xcb": ("PIL._imaging", "HAVE_XCB", None),
 }
 
 
@@ -91,13 +135,30 @@ def check_feature(feature):
     if feature not in features:
         raise ValueError("Unknown feature %s" % feature)
 
-    module, flag = features[feature]
+    module, flag, ver = features[feature]
 
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         return getattr(imported_module, flag)
     except ImportError:
         return None
+
+
+def version_feature(feature):
+    """
+    :param feature: The feature to check for.
+    :returns: The version number as a string, or ``None`` if not available.
+    :raises ValueError: If the feature is not defined in this version of Pillow.
+    """
+    if not check_feature(feature):
+        return None
+
+    module, flag, ver = features[feature]
+
+    if ver is None:
+        return None
+
+    return getattr(__import__(module, fromlist=[ver]), ver)
 
 
 def get_supported_features():
@@ -109,9 +170,9 @@ def get_supported_features():
 
 def check(feature):
     """
-    :param feature: A module, feature, or codec name.
+    :param feature: A module, codec, or feature name.
     :returns:
-        ``True`` if the module, feature, or codec is available,
+        ``True`` if the module, codec, or feature is available,
         ``False`` or ``None`` otherwise.
     """
 
@@ -123,6 +184,22 @@ def check(feature):
         return check_feature(feature)
     warnings.warn("Unknown feature '%s'." % feature, stacklevel=2)
     return False
+
+
+def version(feature):
+    """
+    :param feature:
+        The module, codec, or feature to check for.
+    :returns:
+        The version number as a string, or ``None`` if unknown or not available.
+    """
+    if feature in modules:
+        return version_module(feature)
+    if feature in codecs:
+        return version_codec(feature)
+    if feature in features:
+        return version_feature(feature)
+    return None
 
 
 def get_supported():
@@ -187,7 +264,15 @@ def pilinfo(out=None, supported_formats=True):
         ("xcb", "XCB (X protocol)"),
     ]:
         if check(name):
-            print("---", feature, "support ok", file=out)
+            if name == "jpg" and check_feature("libjpeg_turbo"):
+                v = "libjpeg-turbo " + version_feature("libjpeg_turbo")
+            else:
+                v = version(name)
+            if v is not None:
+                t = "compiled for" if name in ("pil", "jpg") else "loaded"
+                print("---", feature, "support ok,", t, v, file=out)
+            else:
+                print("---", feature, "support ok", file=out)
         else:
             print("***", feature, "support not installed", file=out)
     print("-" * 68, file=out)
