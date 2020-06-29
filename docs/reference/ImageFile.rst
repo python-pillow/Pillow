@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageFile
 .. py:currentmodule:: PIL.ImageFile
 
-:py:mod:`ImageFile` Module
-==========================
+:py:mod:`~PIL.ImageFile` Module
+===============================
 
-The :py:mod:`ImageFile` module provides support functions for the image open
+The :py:mod:`~PIL.ImageFile` module provides support functions for the image open
 and save functions.
 
 In addition, it provides a :py:class:`Parser` class which can be used to decode
