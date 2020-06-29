@@ -1198,6 +1198,7 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, 
 
     s->head = NULL;
     s->node_count = 0;
+    normalize_angles(&al, &ar);
 
     // building clipping tree, a lot of different cases
     if (ar == al + 360) {
@@ -1494,7 +1495,6 @@ int
 ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
                    const void* ink, int fill, int width, int op)
 {
-    //fprintf(stderr, "E (%d %d) (%d %d) --- %08X f%d w%d o%d\n", x0, y0, x1, y1, *(int*)ink, fill, width, op);
     return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
 }
 
@@ -1502,7 +1502,6 @@ int
 ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
                float start, float end, const void* ink, int width, int op)
 {
-    //fprintf(stderr, "A (%d %d) (%d %d) %f-%f %08X f- w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, width, op);
     normalize_angles(&start, &end);
     if (start + 360 == end) {
       return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, 0, width, op);
@@ -1519,7 +1518,6 @@ ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
                  float start, float end, const void* ink, int fill,
                  int width, int op)
 {
-    //fprintf(stderr, "C (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
     normalize_angles(&start, &end);
     if (start + 360 == end) {
       return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, fill, width, op);
@@ -1543,7 +1541,6 @@ ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
                     float start, float end, const void* ink, int fill,
                     int width, int op)
 {
-    // fprintf(stderr, "P (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
     normalize_angles(&start, &end);
     if (start + 360 == end) {
       return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);

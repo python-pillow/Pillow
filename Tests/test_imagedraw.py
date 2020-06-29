@@ -166,6 +166,19 @@ def test_arc_width_non_whole_angle():
     assert_image_similar(im, Image.open(expected), 1)
 
 
+def test_arc_high():
+    # Arrange
+    im = Image.new("RGB", (200, 200));
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.arc([10, 10, 89, 189], 20, 330, width=20, fill="white")
+    draw.arc([110, 10, 189, 189], 20, 150, width=20, fill="white")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_high.png"))
+
+
 def test_bitmap():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -240,6 +253,18 @@ def test_chord_zero_width():
     # Assert
     with Image.open("Tests/images/imagedraw_chord_zero_width.png") as expected:
         assert_image_equal(im, expected)
+
+
+def test_chord_too_fat():
+    # Arrange
+    im = Image.new("RGB", (100, 100));
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.chord([-150, -150, 99, 99], 15, 60, width=10, fill="white", outline="red")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_chord_too_fat.png"))
 
 
 def helper_ellipse(mode, bbox):
@@ -509,6 +534,18 @@ def test_pieslice_zero_width():
     # Assert
     with Image.open("Tests/images/imagedraw_pieslice_zero_width.png") as expected:
         assert_image_equal(im, expected)
+
+
+def test_pieslice_wide():
+    # Arrange
+    im = Image.new("RGB", (200, 100));
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.pieslice([0, 0, 199, 99], 190, 170, width=10, fill="white", outline="red")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice_wide.png"))
 
 
 def helper_point(points):
