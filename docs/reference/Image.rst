@@ -247,7 +247,7 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
-This flips the input image by using the ``Image.FLIP_LEFT_RIGHT`` method.
+This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 
 .. code-block:: python
 
@@ -329,3 +329,134 @@ Instances of the :py:class:`Image` class have the following attributes:
     keep a reference to the info dictionary returned from the open method.
 
     Unless noted elsewhere, this dictionary does not affect saving files.
+
+Constants
+---------
+
+.. data:: NONE
+
+Transpose methods
+^^^^^^^^^^^^^^^^^
+
+Used to specify the :meth:`Image.transpose` method to use.
+
+.. data:: FLIP_LEFT_RIGHT
+.. data:: FLIP_TOP_BOTTOM
+.. data:: ROTATE_90
+.. data:: ROTATE_180
+.. data:: ROTATE_270
+.. data:: TRANSPOSE
+.. data:: TRANSVERSE
+
+Transform methods
+^^^^^^^^^^^^^^^^^
+
+Used to specify the :meth:`Image.transform` method to use.
+
+.. data:: AFFINE
+
+    Affine transform
+
+.. data:: EXTENT
+
+    Cut out a rectangular subregion
+
+.. data:: PERSPECTIVE
+
+    Perspective transform
+
+.. data:: QUAD
+
+    Map a quadrilateral to a rectangle
+
+.. data:: MESH
+
+    Map a number of source quadrilaterals in one operation
+
+Resampling filters
+^^^^^^^^^^^^^^^^^^
+
+See :ref:`concept-filters` for details.
+
+.. data:: NEAREST
+    :noindex:
+.. data:: BOX
+    :noindex:
+.. data:: BILINEAR
+    :noindex:
+.. data:: HAMMING
+    :noindex:
+.. data:: BICUBIC
+    :noindex:
+.. data:: LANCZOS
+    :noindex:
+
+Some filters are also available under the following names for backwards compatibility:
+
+.. data:: NONE
+    :noindex:
+    :value: NEAREST
+.. data:: LINEAR
+    :value: BILINEAR
+.. data:: CUBIC
+    :value: BICUBIC
+.. data:: ANTIALIAS
+    :value: LANCZOS
+
+Dither modes
+^^^^^^^^^^^^
+
+Used to specify the dithering method to use for the
+:meth:`~Image.convert` and :meth:`~Image.quantize` methods.
+
+.. data:: NONE
+    :noindex:
+
+    No dither
+
+.. comment: (not implemented)
+    .. data:: ORDERED
+    .. data:: RASTERIZE
+
+.. data:: FLOYDSTEINBERG
+
+    Floyd-Steinberg dither
+
+Palettes
+^^^^^^^^
+
+Used to specify the pallete to use for the :meth:`~Image.convert` method.
+
+.. data:: WEB
+.. data:: ADAPTIVE
+
+Quantization methods
+^^^^^^^^^^^^^^^^^^^^
+
+Used to specify the quantization method to use for the :meth:`~Image.quantize` method.
+
+.. data:: MEDIANCUT
+
+    Median cut
+
+.. data:: MAXCOVERAGE
+
+    Maximum coverage
+
+.. data:: FASTOCTREE
+
+    Fast octree
+
+.. data:: LIBIMAGEQUANT
+
+    libimagequant
+
+    Check support using :py:func:`PIL.features.check_feature`
+    with ``feature="libimagequant"``.
+
+.. comment: These are not referenced anywhere?
+    Categories
+    ^^^^^^^^^^
+    .. data:: NORMAL
+    .. data:: SEQUENCE
+    .. data:: CONTAINER
