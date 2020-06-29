@@ -819,192 +819,6 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink,
 /* -------------------------------------------------------------------- */
 /* standard shapes */
 
-#define ARC 0
-#define CHORD 1
-#define PIESLICE 2
-
-static void
-ellipsePoint(int cx, int cy, int w, int h,
-             float i, int *x, int *y)
-{
-    float i_cos, i_sin;
-    float x_f, y_f;
-    double modf_int;
-    i_cos = cos(i*M_PI/180);
-    i_sin = sin(i*M_PI/180);
-    x_f = (i_cos * w/2) + cx;
-    y_f = (i_sin * h/2) + cy;
-    if (modf(x_f, &modf_int) == 0.5) {
-        *x = i_cos > 0 ? FLOOR(x_f) : CEIL(x_f);
-    } else {
-        *x = FLOOR(x_f + 0.5);
-    }
-    if (modf(y_f, &modf_int) == 0.5) {
-        *y = i_sin > 0 ? FLOOR(y_f) : CEIL(y_f);
-    } else {
-        *y = FLOOR(y_f + 0.5);
-    }
-}
-
-static int
-ellipse(Imaging im, int x0, int y0, int x1, int y1,
-        float start, float end, const void* ink_, int fill,
-        int width, int mode, int op)
-{
-    float i;
-    int inner;
-    int n;
-    int maxEdgeCount;
-    int w, h;
-    int x, y;
-    int cx, cy;
-    int lx = 0, ly = 0;
-    int sx = 0, sy = 0;
-    int lx_inner = 0, ly_inner = 0;
-    int sx_inner = 0, sy_inner = 0;
-    DRAW* draw;
-    INT32 ink;
-    Edge* e;
-
-    DRAWINIT();
-
-    while (end < start) {
-        end += 360;
-    }
-
-    if (end - start > 360) {
-        // no need to go in loops
-        end = start + 361;
-    }
-
-    w = x1 - x0;
-    h = y1 - y0;
-    if (w <= 0 || h <= 0) {
-        return 0;
-    }
-
-    cx = (x0 + x1) / 2;
-    cy = (y0 + y1) / 2;
-
-    if (!fill && width <= 1) {
-        for (i = start; i < end+1; i++) {
-            if (i > end) {
-                i = end;
-            }
-            ellipsePoint(cx, cy, w, h, i, &x, &y);
-            if (i != start) {
-                draw->line(im, lx, ly, x, y, ink);
-            } else {
-                sx = x, sy = y;
-            }
-            lx = x, ly = y;
-        }
-
-        if (i != start) {
-            if (mode == PIESLICE) {
-                if (x != cx || y != cy) {
-                    draw->line(im, x, y, cx, cy, ink);
-                    draw->line(im, cx, cy, sx, sy, ink);
-                }
-            } else if (mode == CHORD) {
-                if (x != sx || y != sy) {
-                    draw->line(im, x, y, sx, sy, ink);
-                }
-            }
-        }
-    } else {
-        inner = (mode == ARC || !fill) ? 1 : 0;
-
-        // Build edge list
-        // malloc check UNDONE, FLOAT?
-        maxEdgeCount = ceil(end - start);
-        if (inner) {
-            maxEdgeCount *= 2;
-        }
-        maxEdgeCount += 3;
-        e = calloc(maxEdgeCount, sizeof(Edge));
-        if (!e) {
-            ImagingError_MemoryError();
-            return -1;
-        }
-
-        // Outer circle
-        n = 0;
-        for (i = start; i < end+1; i++) {
-            if (i > end) {
-                i = end;
-            }
-            ellipsePoint(cx, cy, w, h, i, &x, &y);
-            if (i == start) {
-                sx = x, sy = y;
-            } else {
-                add_edge(&e[n++], lx, ly, x, y);
-            }
-            lx = x, ly = y;
-        }
-        if (n == 0) {
-            return 0;
-        }
-
-        if (inner) {
-            // Inner circle
-            x0 += width - 1;
-            y0 += width - 1;
-            x1 -= width - 1;
-            y1 -= width - 1;
-
-            w = x1 - x0;
-            h = y1 - y0;
-            if (w <= 0 || h <= 0) {
-                // ARC with no gap in the middle is a PIESLICE
-                mode = PIESLICE;
-                inner = 0;
-            } else {
-                for (i = start; i < end+1; i++) {
-                    if (i > end) {
-                        i = end;
-                    }
-                    ellipsePoint(cx, cy, w, h, i, &x, &y);
-                    if (i == start) {
-                        sx_inner = x, sy_inner = y;
-                    } else {
-                        add_edge(&e[n++], lx_inner, ly_inner, x, y);
-                    }
-                    lx_inner = x, ly_inner = y;
-                }
-            }
-        }
-
-        if (end - start < 360) {
-            // Close polygon
-            if (mode == PIESLICE) {
-                if (x != cx || y != cy) {
-                    add_edge(&e[n++], sx, sy, cx, cy);
-                    add_edge(&e[n++], cx, cy, lx, ly);
-                    if (inner) {
-                        ImagingDrawWideLine(im, sx, sy, cx, cy, &ink, width, op);
-                        ImagingDrawWideLine(im, cx, cy, lx, ly, &ink, width, op);
-                    }
-                }
-            } else if (mode == CHORD) {
-                add_edge(&e[n++], sx, sy, lx, ly);
-                if (inner) {
-                    add_edge(&e[n++], sx_inner, sy_inner, lx_inner, ly_inner);
-                }
-            } else if (mode == ARC) {
-                add_edge(&e[n++], sx, sy, sx_inner, sy_inner);
-                add_edge(&e[n++], lx, ly, lx_inner, ly_inner);
-            }
-        }
-
-        draw->polygon(im, n, e, ink, 0);
-
-        free(e);
-    }
-
-    return 0;
-}
-
 // Imagine 2D plane and ellipse with center in (0, 0) and semi-major axes a and b.
 // Then quarter_* stuff approximates its top right quarter (x, y >= 0) with integer
 // points from set {(2x+x0, 2y+y0) | x,y in Z} where x0, y0 are from {0, 1} and
@@ -1155,25 +969,35 @@ int8_t ellipse_next(ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* 
     return 0;
 }
 
+// Clipping tree consists of half-plane clipping nodes and combining nodes.
+// We can throw a horizontal segment in such a tree and collect an ordered set
+// of resulting disjoint clipped segments organized into a sorted linked list
+// of their end points.
 typedef enum {
-  CT_AND,
-  CT_OR,
-  CT_CLIP
+  CT_AND, // intersection
+  CT_OR, // union
+  CT_CLIP // half-plane clipping
 } clip_type;
 
 typedef struct clip_node {
   clip_type type;
-  double a, b, c;
-  struct clip_node* l;
+  double a, b, c; // half-plane coeffs, only used in clipping nodes
+  struct clip_node* l; // child pointers, are only non-NULL in combining nodes
   struct clip_node* r;
 } clip_node;
 
+// Linked list for the ends of the clipped horizontal segments.
+// Since the segment is always horizontal, we don't need to store Y coordinate.
 typedef struct event_list {
   int32_t x;
-  int8_t type;
+  int8_t type; // used internally, 1 for the left end (smaller X), -1 for the
+               // right end; pointless in output since the output segments
+               // are disjoint, therefore the types would always come in pairs
+               // and interchange (1 -1 1 -1 ...)
   struct event_list* next;
 } event_list;
 
+// Mirrors all the clipping nodes of the tree relative to the y = x line.
 void clip_tree_transpose(clip_node* root) {
   if (root != NULL) {
     if (root->type == CT_CLIP) {
@@ -1186,29 +1010,31 @@ void clip_tree_transpose(clip_node* root) {
   }
 }
 
-void clip_tree_free(clip_node* root) {
-  if (root != NULL) {
-    clip_tree_free(root->l);
-    clip_tree_free(root->r);
-    free(root);
-  }
-}
-
-// Outputs a sequence of open-close events (types -1 and 1) for non-intersecting
-// segments sorted by X coordinate.
-// Merging nodes (AND, OR) may also accept sequences for intersecting segments,
-// i.e. something like correct bracket sequences.
-event_list* clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1) {
+// Outputs a sequence of open-close events (types -1 and 1) for
+// non-intersecting segments sorted by X coordinate.
+// Combining nodes (AND, OR) may also accept sequences for intersecting
+// segments, i.e. something like correct bracket sequences.
+int clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1, event_list** ret) {
   if (root == NULL) {
     event_list* start = malloc(sizeof(event_list));
+    if (!start) {
+      ImagingError_MemoryError();
+      return -1;
+    }
     event_list* end = malloc(sizeof(event_list));
+    if (!end) {
+      free(start);
+      ImagingError_MemoryError();
+      return -1;
+    }
     start->x = x0;
     start->type = 1;
     start->next = end;
     end->x = x1;
     end->type = -1;
     end->next = NULL;
-    return start;
+    *ret = start;
+    return 0;
   }
   if (root->type == CT_CLIP) {
     double eps = 1e-9;
@@ -1232,22 +1058,43 @@ event_list* clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1
     }
     if (x0 <= x1) {
       event_list* start = malloc(sizeof(event_list));
+      if (!start) {
+        ImagingError_MemoryError();
+        return -1;
+      }
       event_list* end = malloc(sizeof(event_list));
+      if (!end) {
+        free(start);
+        ImagingError_MemoryError();
+        return -1;
+      }
       start->x = x0;
       start->type = 1;
       start->next = end;
       end->x = x1;
       end->type = -1;
       end->next = NULL;
-      return start;
+      *ret = start;
     } else {
-      return NULL;
+      *ret = NULL;
     }
+    return 0;
   }
   if (root->type == CT_OR || root->type == CT_AND) {
-    event_list* l1 = clip_tree_do_clip(root->l, x0, y, x1);
-    event_list* l2 = clip_tree_do_clip(root->r, x0, y, x1);
-    event_list* ret = NULL;
+    event_list* l1;
+    event_list* l2;
+    if (clip_tree_do_clip(root->l, x0, y, x1, &l1) < 0) {
+      return -1;
+    }
+    if (clip_tree_do_clip(root->r, x0, y, x1, &l2) < 0) {
+      while (l1) {
+        l2 = l1->next;
+        free(l1);
+        l1 = l2;
+      }
+      return -1;
+    }
+    *ret = NULL;
     event_list* tail = NULL;
     int32_t k1 = 0;
     int32_t k2 = 0;
@@ -1274,7 +1121,7 @@ event_list* clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1
               (t->type == -1 && tail != NULL && tail->type == 1 && (k1 == 0 || k2 == 0))
           ))) {
         if (tail == NULL) {
-          ret = t;
+          *ret = t;
         } else {
           tail->next = t;
         }
@@ -1283,43 +1130,59 @@ event_list* clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1
         free(t);
       }
     }
-    return ret;
+    return 0;
   }
-  return NULL;
+  *ret = NULL;
+  return 0;
 }
 
+// One more layer of processing on top of the regular ellipse.
+// Uses the clipping tree.
+// Used for producing ellipse derivatives such as arc, chord, pie, etc.
 typedef struct {
   ellipse_state st;
   clip_node* root;
+  clip_node nodes[7];
+  int32_t node_count;
   event_list* head;
   int32_t y;
 } clip_ellipse_state;
 
-void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al, int32_t ar) {
+typedef void (*clip_ellipse_init)(clip_ellipse_state*, int32_t, int32_t, int32_t, float, float);
+
+// Resulting angles will satisfy 0 <= al < 360, al <= ar <= al + 360
+void normalize_angles(float* al, float* ar) {
+  if (*ar - *al >= 360) {
+    *al = 0;
+    *ar = 360;
+  } else {
+    *al = fmod(*al < 0 ? 360 - (fmod(-*al, 360)) : *al, 360);
+    *ar = *al + fmod(*ar < *al ? 360 - fmod(*al - *ar, 360) : *ar - *al, 360);
+  }
+}
+
+// An arc with caps orthogonal to the ellipse curve.
+void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float _al, float _ar) {
   if (a < b) {
     // transpose the coordinate system
-    arc_init(s, b, a, w, 90 - ar, 90 - al);
+    arc_init(s, b, a, w, 90 - _ar, 90 - _al);
     ellipse_init(&s->st, a, b, w);
     clip_tree_transpose(s->root);
   } else {
+    // a >= b, based on "wide" ellipse
     ellipse_init(&s->st, a, b, w);
 
     s->head = NULL;
+    s->node_count = 0;
 
-    // normalize angles: 0 <= al < 360, al <= ar <= al + 360
-    if (ar - al >= 360) {
-      al = 0;
-      ar = 360;
-    } else {
-      al = (al < 0 ? 360 - (-al % 360) : al) % 360;
-      ar = al + (ar < al ? 360 - ((al - ar) % 360) : ar - al) % 360;
-    }
+    int32_t al = round(_al), ar = round(_ar);
 
+    // building clipping tree, a lot of different cases
     if (ar == al + 360) {
       s->root = NULL;
     } else {
-      clip_node* lc = malloc(sizeof(clip_node));
-      clip_node* rc = malloc(sizeof(clip_node));
+      clip_node* lc = s->nodes + s->node_count++;
+      clip_node* rc = s->nodes + s->node_count++;
       lc->l = lc->r = rc->l = rc->r = NULL;
       lc->type = rc->type = CT_CLIP;
       lc->a = -a * sin(al * M_PI / 180.0);
@@ -1329,30 +1192,30 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al
       rc->b = -b * cos(ar * M_PI / 180.0);
       rc->c = (b * b - a * a) * sin(ar * M_PI / 90.0) / 2.0;
       if (al % 180 == 0 || ar % 180 == 0 || al == ar) {
-        s->root = malloc(sizeof(clip_node));
+        s->root = s->nodes + s->node_count++;
         s->root->l = lc;
         s->root->r = rc;
         s->root->type = ar - al < 180 ? CT_AND : CT_OR;
         if (al == ar) {
-          lc = malloc(sizeof(clip_node));
+          lc = s->nodes + s->node_count++;
           lc->l = lc->r = NULL;
           lc->type = CT_CLIP;
           lc->a = al == 0 ? 1 : al == 180 ? -1 : 0;
           lc->b = al % 180 ? (al < 180 ? 1 : -1) : 0;
           lc->c = 0;
           rc = s->root;
-          s->root = malloc(sizeof(clip_node));
+          s->root = s->nodes + s->node_count++;
           s->root->l = lc;
           s->root->r = rc;
           s->root->type = CT_AND;
         }
       } else if ((al / 180 + ar / 180) % 2 == 1) {
-        s->root = malloc(sizeof(clip_node));
-        s->root->l = malloc(sizeof(clip_node));
-        s->root->l->l = malloc(sizeof(clip_node));
+        s->root = s->nodes + s->node_count++;
+        s->root->l = s->nodes + s->node_count++;
+        s->root->l->l = s->nodes + s->node_count++;
         s->root->l->r = lc;
-        s->root->r = malloc(sizeof(clip_node));
-        s->root->r->l = malloc(sizeof(clip_node));
+        s->root->r = s->nodes + s->node_count++;
+        s->root->r->l = s->nodes + s->node_count++;
         s->root->r->r = rc;
         s->root->type = CT_OR;
         s->root->l->type = CT_AND;
@@ -1366,9 +1229,9 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al
         s->root->l->l->b = (al / 180) % 2 == 0 ? 1 : -1;
         s->root->r->l->b = (ar / 180) % 2 == 0 ? 1 : -1;
       } else {
-        s->root = malloc(sizeof(clip_node));
-        s->root->l = malloc(sizeof(clip_node));
-        s->root->r = malloc(sizeof(clip_node));
+        s->root = s->nodes + s->node_count++;
+        s->root->l = s->nodes + s->node_count++;
+        s->root->r = s->nodes + s->node_count++;
         s->root->type = s->root->l->type = ar - al < 180 ? CT_AND : CT_OR;
         s->root->l->l = lc;
         s->root->l->r = rc;
@@ -1381,15 +1244,41 @@ void arc_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al
   }
 }
 
-void chord_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t al, int32_t ar) {
-  ellipse_init(&s->st, a, b, w);
+// A chord line.
+void chord_line_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, float ar) {
+  ellipse_init(&s->st, a, b, a + b + 1);
 
   s->head = NULL;
+  s->node_count = 0;
 
   // line equation for chord
   double xl = a * cos(al * M_PI / 180.0), xr = a * cos(ar * M_PI / 180.0);
   double yl = b * sin(al * M_PI / 180.0), yr = b * sin(ar * M_PI / 180.0);
-  s->root = malloc(sizeof(clip_node));
+  s->root = s->nodes + s->node_count++;
+  s->root->l = s->nodes + s->node_count++;
+  s->root->r = s->nodes + s->node_count++;
+  s->root->type = CT_AND;
+  s->root->l->type = s->root->r->type = CT_CLIP;
+  s->root->l->l = s->root->l->r = s->root->r->l = s->root->r->r = NULL;
+  s->root->l->a = yr - yl;
+  s->root->l->b = xl - xr;
+  s->root->l->c = -(s->root->l->a * xl + s->root->l->b * yl);
+  s->root->r->a = -s->root->l->a;
+  s->root->r->b = -s->root->l->b;
+  s->root->r->c = 2 * w * sqrt(pow(s->root->l->a, 2.0) + pow(s->root->l->b, 2.0)) - s->root->l->c;
+}
+
+// A chord.
+void chord_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, float ar) {
+  ellipse_init(&s->st, a, b, w);
+
+  s->head = NULL;
+  s->node_count = 0;
+
+  // line equation for chord
+  double xl = a * cos(al * M_PI / 180.0), xr = a * cos(ar * M_PI / 180.0);
+  double yl = b * sin(al * M_PI / 180.0), yr = b * sin(ar * M_PI / 180.0);
+  s->root = s->nodes + s->node_count++;
   s->root->l = s->root->r = NULL;
   s->root->type = CT_CLIP;
   s->root->a = yr - yl;
@@ -1397,8 +1286,35 @@ void chord_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, int32_t 
   s->root->c = -(s->root->a * xl + s->root->b * yl);
 }
 
+// A pie. Can also be used to draw an arc with ugly sharp caps.
+void pie_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, float ar) {
+  ellipse_init(&s->st, a, b, w);
+
+  s->head = NULL;
+  s->node_count = 0;
+
+  // line equations for pie sides
+  double xl = a * cos(al * M_PI / 180.0), xr = a * cos(ar * M_PI / 180.0);
+  double yl = b * sin(al * M_PI / 180.0), yr = b * sin(ar * M_PI / 180.0);
+
+  clip_node* lc = s->nodes + s->node_count++;
+  clip_node* rc = s->nodes + s->node_count++;
+  lc->l = lc->r = rc->l = rc->r = NULL;
+  lc->type = rc->type = CT_CLIP;
+  lc->a = -yl;
+  lc->b = xl;
+  lc->c = 0;
+  rc->a = yr;
+  rc->b = -xr;
+  rc->c = 0;
+        
+  s->root = s->nodes + s->node_count++;
+  s->root->l = lc;
+  s->root->r = rc;
+  s->root->type = ar - al < 180 ? CT_AND : CT_OR;
+}
+
 void clip_ellipse_free(clip_ellipse_state* s) {
-  clip_tree_free(s->root);
   while (s->head != NULL) {
     event_list* t = s->head;
     s->head = s->head->next;
@@ -1409,7 +1325,9 @@ void clip_ellipse_free(clip_ellipse_state* s) {
 int8_t clip_ellipse_next(clip_ellipse_state* s, int32_t* ret_x0, int32_t* ret_y, int32_t* ret_x1) {
   int32_t x0, y, x1;
   while (s->head == NULL && ellipse_next(&s->st, &x0, &y, &x1) >= 0) {
-    s->head = clip_tree_do_clip(s->root, x0, y, x1);
+    if (clip_tree_do_clip(s->root, x0, y, x1, &s->head) < 0) {
+      return -2;
+    }
     s->y = y;
   }
   if (s->head != NULL) {
@@ -1439,8 +1357,9 @@ ellipseNew(Imaging im, int x0, int y0, int x1, int y1,
 
     int a = x1 - x0;
     int b = y1 - y0;
-    if (a < 0 || b < 0)
-        return 0;
+    if (a < 0 || b < 0) {
+      return 0;
+    }
     if (fill) {
       width = a + b;
     }
@@ -1449,40 +1368,156 @@ ellipseNew(Imaging im, int x0, int y0, int x1, int y1,
     ellipse_init(&st, a, b, width);
     int32_t X0, Y, X1;
     while (ellipse_next(&st, &X0, &Y, &X1) != -1) {
-        draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
+      draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
     }
     return 0;
 }
 
-int
-ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-               float start, float end, const void* ink, int width, int op)
+static int
+clipEllipseNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start, float end,
+        const void* ink_, int width, int op, clip_ellipse_init init)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, width, ARC, op);
+    DRAW* draw;
+    INT32 ink;
+    DRAWINIT();
+
+    int a = x1 - x0;
+    int b = y1 - y0;
+    if (a < 0 || b < 0 || start == end) {
+      return 0;
+    }
+
+    clip_ellipse_state st;
+    init(&st, a, b, width, start, end);
+    int32_t X0, Y, X1;
+    int next_code;
+    while ((next_code = clip_ellipse_next(&st, &X0, &Y, &X1)) >= 0) {
+      draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
+    }
+    clip_ellipse_free(&st);
+    return next_code == -1 ? 0 : -1;
+}
+static int
+arcNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start, float end,
+        const void* ink_, int width, int op)
+{
+  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, arc_init);
 }
 
-int
-ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-                 float start, float end, const void* ink, int fill,
-                 int width, int op)
+static int
+chordNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start, float end,
+        const void* ink_, int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, width, CHORD, op);
+  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, chord_init);
+}
+
+static int
+chordLineNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start, float end,
+        const void* ink_, int width, int op)
+{
+  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, chord_line_init);
+}
+
+static int
+pieNew(Imaging im, int x0, int y0, int x1, int y1,
+        float start, float end,
+        const void* ink_, int op)
+{
+  return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, x1 + y1 - x0 - y0, op, pie_init);
 }
 
 int
 ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
                    const void* ink, int fill, int width, int op)
 {
+    //fprintf(stderr, "E (%d %d) (%d %d) --- %08X f%d w%d o%d\n", x0, y0, x1, y1, *(int*)ink, fill, width, op);
     return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
 }
+
+int
+ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
+               float start, float end, const void* ink, int width, int op)
+{
+    //fprintf(stderr, "A (%d %d) (%d %d) %f-%f %08X f- w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, width, op);
+    normalize_angles(&start, &end);
+    if (start + 360 == end) {
+      return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, 0, width, op);
+    }
+    if (start == end) {
+      return 0;
+    }
+    return arcNew(im, x0, y0, x1, y1, start, end, ink, width, op);
+}
+
+
+int
+ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
+                 float start, float end, const void* ink, int fill,
+                 int width, int op)
+{
+    //fprintf(stderr, "C (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
+    normalize_angles(&start, &end);
+    if (start + 360 == end) {
+      return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, fill, width, op);
+    }
+    if (start == end) {
+      return 0;
+    }
+    if (fill) {
+      return chordNew(im, x0, y0, x1, y1, start, end, ink, x1 - x0 + y1 - y0 + 1, op);
+    } else {
+      if (chordLineNew(im, x0, y0, x1, y1, start, end, ink, width, op)) {
+        return -1;
+      }
+      return chordNew(im, x0, y0, x1, y1, start, end, ink, width, op);
+    }
+}
+
 
 int
 ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
                     float start, float end, const void* ink, int fill,
                     int width, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, width, PIESLICE, op);
+    //fprintf(stderr, "P (%d %d) (%d %d) %f-%f %08X f%d w%d o%d\n", x0, y0, x1, y1, start, end, *(int*)ink, fill, width, op);
+    normalize_angles(&start, &end);
+    if (start + 360 == end) {
+      return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, fill, width, op);
+    }
+    if (start == end) {
+      return 0;
+    }
+    if (fill) {
+      return pieNew(im, x0, y0, x1, y1, start, end, ink, op);
+    } else {
+      float xc = x0 + (x1 - x0) / 2.0, yc = y0 + (y1 - y0) / 2.0;
+      float al = start * M_PI / 180.0, ar = end * M_PI / 180.0;
+      int32_t xa = xc + (x1 - x0 - width) * cos(al) / 2, ya = yc + (y1 - y0 - width) * sin(al) / 2;
+      int32_t xb = xc + (x1 - x0 - width) * cos(ar) / 2, yb = yc + (y1 - y0 - width) * sin(ar) / 2;
+      int32_t xt, yt;
+      if (ImagingDrawWideLine(im, xc, yc, xa, ya, ink, width, op) < 0) {
+        return -1;
+      }
+      if (ImagingDrawWideLine(im, xc, yc, xb, yb, ink, width, op) < 0) {
+        return -1;
+      }
+      xt = xc - width / 2;
+      yt = yc - width / 2;
+      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
+      xt = xa - width / 2;
+      yt = ya - width / 2;
+      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
+      xt = xb - width / 2;
+      yt = yb - width / 2;
+      ellipseNew(im, xt, yt, xt + width, yt + width, ink, 1, 0, op);
+      return arcNew(im, x0, y0, x1, y1, start, end, ink, width, op);
+    }
 }
+
 
 /* -------------------------------------------------------------------- */
 
