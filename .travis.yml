@@ -14,18 +14,12 @@ env:
 
 language: python
 # Default Python version is usually 3.6
-python: 3.5
+python: 3.8
 dist: xenial
 services: docker
 
 jobs:
   include:
-    - name: "3.5 macOS"
-      os: osx
-      osx_image: xcode9.3
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.5
     - name: "3.6 macOS"
       os: osx
       osx_image: xcode9.3
@@ -33,15 +27,6 @@ jobs:
       env:
         - MB_PYTHON_VERSION=3.6
 
-    - name: "3.5 Xenial"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-    - name: "3.5 Xenial 32-bit"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - PLAT=i686
     - name: "3.6 Xenial"
       os: linux
       env:
@@ -98,13 +83,6 @@ jobs:
         - MB_ML_VER=2010
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
 
-    - name: "3.5 Xenial aarch64"
-      arch: arm64
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.5
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
     - name: "3.6 Xenial aarch64"
       arch: arm64
       env:
@@ -128,13 +106,6 @@ jobs:
         - MB_PYTHON_VERSION=3.8
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
 
-    - name: "3.5 macOS latest"
-      os: osx
-      osx_image: xcode9.3
-      language: generic
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - LATEST="true"
     - name: "3.6 macOS latest"
       os: osx
       osx_image: xcode9.3
@@ -143,17 +114,6 @@ jobs:
         - MB_PYTHON_VERSION=3.6
         - LATEST="true"
 
-    - name: "3.5 Xenial latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - LATEST="true"
-    - name: "3.5 Xenial 32-bit latest"
-      os: linux
-      env:
-        - MB_PYTHON_VERSION=3.5
-        - PLAT=i686
-        - LATEST="true"
     - name: "3.6 Xenial latest"
       os: linux
       env:
@@ -220,15 +180,6 @@ jobs:
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
         - LATEST="true"
 
-    - name: "3.5 Xenial aarch64 latest"
-      os: linux
-      arch: arm64
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.5
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-        - LATEST="true"
     - name: "3.6 Xenial aarch64 latest"
       os: linux
       arch: arm64
