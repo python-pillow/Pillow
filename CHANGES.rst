@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-7.2.0 (unreleased)
+7.2.0 (2020-07-01)
 ------------------
 
 - Do not convert I;16 images when showing PNGs #4744
