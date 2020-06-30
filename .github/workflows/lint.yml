@@ -24,7 +24,7 @@ jobs:
           lint-pip-
 
     - name: pre-commit cache
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       with:
         path: ~/.cache/pre-commit
         key: lint-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
@@ -32,7 +32,7 @@ jobs:
           lint-pre-commit-
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 

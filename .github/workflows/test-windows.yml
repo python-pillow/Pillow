@@ -36,7 +36,7 @@ jobs:
         path: winbuild\depends
 
     - name: Cache pip
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       with:
         path: ~\AppData\Local\pip\Cache
         key:
@@ -47,7 +47,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
@@ -128,7 +128,7 @@ jobs:
       shell: pwsh
 
     - name: Upload errors
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: errors

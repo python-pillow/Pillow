@@ -37,7 +37,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Ubuntu cache
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       if: startsWith(matrix.os, 'ubuntu')
       with:
         path: ~/.cache/pip
@@ -47,7 +47,7 @@ jobs:
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: macOS cache
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       if: startsWith(matrix.os, 'macOS')
       with:
         path: ~/Library/Caches/pip
@@ -57,7 +57,7 @@ jobs:
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -89,7 +89,7 @@ jobs:
       shell: pwsh
 
     - name: Upload errors
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: errors
