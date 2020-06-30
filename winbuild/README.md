@@ -11,7 +11,6 @@ For more extensive info, see the [Windows build instructions](build.rst).
 * Requires Microsoft Visual Studio 2017 or newer with C++ component.
 * Requires NASM for libjpeg-turbo, a required dependency when using this script.
 * Requires CMake 3.12 or newer (available as Visual Studio component).
-* Python 3.6+ is required to generate valid scripts, but builds targeting Python 3.5+ are supported.
 * Tested on Windows Server 2016 with Visual Studio 2017 Community (AppVeyor).
 * Tested on Windows Server 2019 with Visual Studio 2019 Enterprise (GitHub Actions).
 

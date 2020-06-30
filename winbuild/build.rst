@@ -12,12 +12,6 @@ Prerequisites
 -------------
 
 
-Python
-^^^^^^
-
-While the scripts can target any version of Python supported by Pillow,
-Python 3.6+ is required to generate valid build scripts.
-
 Compilers
 ^^^^^^^^^
 
