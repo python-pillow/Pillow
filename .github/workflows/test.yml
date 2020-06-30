@@ -36,30 +36,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Ubuntu cache
-      uses: actions/cache@v2
-      if: startsWith(matrix.os, 'ubuntu')
-      with:
-        path: ~/.cache/pip
-        key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
-        restore-keys: |
-          ${{ matrix.os }}-${{ matrix.python-version }}-
-
-    - name: macOS cache
-      uses: actions/cache@v2
-      if: startsWith(matrix.os, 'macOS')
-      with:
-        path: ~/Library/Caches/pip
-        key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
-        restore-keys: |
-          ${{ matrix.os }}-${{ matrix.python-version }}-
-
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Build system information
       run: python .github/workflows/system-info.py
