@@ -88,12 +88,18 @@ def autocontrast(image, cutoff=0, ignore=None):
                     h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
+            if isinstance(cutoff, int):
+                cutoff = (cutoff, cutoff)
+            elif isinstance(cutoff, tuple):
+                pass
+            else:
+                raise ValueError("the cutoff can only be a integer or tuple")
             # get number of pixels
             n = 0
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff // 100
+            cut = n * cutoff[0] // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -104,7 +110,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 if cut <= 0:
                     break
             # remove cutoff% samples from the hi end
-            cut = n * cutoff // 100
+            cut = n * cutoff[1] // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
