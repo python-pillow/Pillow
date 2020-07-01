@@ -1,5 +1,5 @@
 # Development, documentation & testing requirements.
-black; python_version >= '3.6'
+black
 check-manifest
 coverage
 jarn.viewdoc
