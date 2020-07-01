@@ -35,7 +35,7 @@ matrix:
       name: "3.8 Xenial"
       services: xvfb
     - python: '3.7'
-      name: "3.7 Xenial"
+      name: "3.7 Xenial PYTHONOPTIMIZE=2"
       env: PYTHONOPTIMIZE=2
       services: xvfb
     - python: '3.6'
