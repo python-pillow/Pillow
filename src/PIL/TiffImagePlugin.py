@@ -776,7 +776,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 self.tagtype[tag] = typ
 
                 msg += " - value: " + (
-                    "<table: %d bytes>" % size if size > 32 else str(data)
+                    "<table: %d bytes>" % size if size > 32 else repr(data)
                 )
                 logger.debug(msg)
 
