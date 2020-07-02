@@ -305,11 +305,9 @@ def test_exif_transpose():
 def test_autocontrast_cutoff():
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
-        assert (
-            ImageOps.autocontrast(img, cutoff=10).histogram()
-            == ImageOps.autocontrast(img, cutoff=(10, 10)).histogram()
-        )
-        assert (
-            ImageOps.autocontrast(img, cutoff=10).histogram()
-            != ImageOps.autocontrast(img, cutoff=(1, 10)).histogram()
-        )
+
+        def autocontrast(cutoff):
+            return ImageOps.autocontrast(img, cutoff).histogram()
+
+        assert autocontrast(10) == autocontrast((10, 10))
+        assert autocontrast(10) != autocontrast((1, 10))
