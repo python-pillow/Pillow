@@ -85,5 +85,5 @@ def open(fp, mode="r"):
 
     try:
         return GdImageFile(fp)
-    except SyntaxError:
-        raise UnidentifiedImageError("cannot identify this image file")
+    except SyntaxError as e:
+        raise UnidentifiedImageError("cannot identify this image file") from e

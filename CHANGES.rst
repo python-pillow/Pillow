@@ -2,8 +2,17 @@
 Changelog (Pillow)
 ==================
 
-7.2.0 (unreleased)
+7.2.0 (2020-07-01)
 ------------------
+
+- Do not convert I;16 images when showing PNGs #4744
+  [radarhere]
+
+- Fixed ICNS file pointer saving #4741
+  [radarhere]
+
+- Fixed loading non-RGBA mode APNGs with dispose background #4742
+  [radarhere]
 
 - Deprecated _showxv #4714
   [radarhere]

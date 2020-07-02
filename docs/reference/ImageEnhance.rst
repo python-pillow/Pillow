@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageEnhance
 .. py:currentmodule:: PIL.ImageEnhance
 
-:py:mod:`ImageEnhance` Module
-=============================
+:py:mod:`~PIL.ImageEnhance` Module
+==================================
 
-The :py:mod:`ImageEnhance` module contains a number of classes that can be used
+The :py:mod:`~PIL.ImageEnhance` module contains a number of classes that can be used
 for image enhancement.
 
 Example: Vary the sharpness of an image

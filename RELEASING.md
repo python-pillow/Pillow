@@ -114,3 +114,12 @@ Released as needed privately to individual vendors for critical security-related
 ## Documentation
 
 * [ ] Make sure the [default version for Read the Docs](https://pillow.readthedocs.io/en/stable/) is up-to-date with the release changes
+
+## Docker Images
+
+* [ ] Update Pillow in the Docker Images repository
+  ```bash
+  git clone https://github.com/python-pillow/docker-images
+  cd docker-images
+  ./update-pillow-tag.sh [[release tag]]
+  ```

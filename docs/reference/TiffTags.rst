@@ -1,10 +1,10 @@
 .. py:module:: PIL.TiffTags
 .. py:currentmodule:: PIL.TiffTags
 
-:py:mod:`TiffTags` Module
-=========================
+:py:mod:`~PIL.TiffTags` Module
+==============================
 
-The :py:mod:`TiffTags` module exposes many of the standard TIFF
+The :py:mod:`~PIL.TiffTags` module exposes many of the standard TIFF
 metadata tag numbers, names, and type information.
 
 .. method:: lookup(tag)
