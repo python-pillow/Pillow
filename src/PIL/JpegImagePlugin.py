@@ -488,7 +488,7 @@ def _getexif(self):
 def _getmp(self):
     # Extract MP information.  This method was inspired by the "highly
     # experimental" _getexif version that's been in use for years now,
-    # itself based on the ImageFileDirectory class in the TIFF plug-in.
+    # itself based on the ImageFileDirectory class in the TIFF plugin.
 
     # The MP record essentially consists of a TIFF file embedded in a JPEG
     # application marker.
