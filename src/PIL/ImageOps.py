@@ -70,7 +70,9 @@ def autocontrast(image, cutoff=0, ignore=None):
     becomes white (255).
 
     :param image: The image to process.
-    :param cutoff: How many percent to cut off from the histogram.
+    :param cutoff: The percent to cut off from the histogram on the low and
+                   high ends. Either a tuple of (low, high), or a single
+                   number for both.
     :param ignore: The background pixel value (use None for no background).
     :return: An image.
     """
@@ -88,12 +90,14 @@ def autocontrast(image, cutoff=0, ignore=None):
                     h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
+            if not isinstance(cutoff, tuple):
+                cutoff = (cutoff, cutoff)
             # get number of pixels
             n = 0
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff // 100
+            cut = n * cutoff[0] // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -103,8 +107,8 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = 0
                 if cut <= 0:
                     break
-            # remove cutoff% samples from the hi end
-            cut = n * cutoff // 100
+            # remove cutoff% samples from the high end
+            cut = n * cutoff[1] // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
