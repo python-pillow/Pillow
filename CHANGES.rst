@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+7.3.0 (unreleased)
+------------------
+
+- Allow ImageOps.autocontrast to specify low and high cutoffs separately #4749
+  [millionhz, radarhere]
+
 7.2.0 (2020-07-01)
 ------------------
 
