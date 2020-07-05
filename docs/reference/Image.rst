@@ -333,15 +333,14 @@ Instances of the :py:class:`Image` class have the following attributes:
 .. py:attribute:: Image.is_animated
     :type: bool
 
-    This attribute is ``True`` if the Image is animated, ``False`` otherwise.
-    Typically defined as ``Image.n_frames > 1``.
+    ``True`` if this image has more than one frame, or ``False`` otherwise.
 
-    This attribute is only defined by Image plugins that support animated Images.
+    This attribute is only defined by image plugins that support animated images.
     Plugins may leave this attribute undefined if they don't support loading
-    animated images, even if the given format supports animated images. Use
-    ``hasattr(image, "is_animated")`` to check whether the implementation
-    supports animated images, or ``getattr(image, "is_animated", False)``
-    to check whether an image has been loaded with animation support.
+    animated images, even if the given format supports animated images.
+
+    To check whether an image is animated regardless of its format, use
+    ``getattr(image, "is_animated", False)``.
 
     .. seealso:: :attr:`~Image.n_frames`, :func:`~Image.seek` and :func:`~Image.tell`
 
@@ -349,15 +348,13 @@ Instances of the :py:class:`Image` class have the following attributes:
     :type: int
 
     The number of frames in this image.
-    Defined if and only if :attr:`~Image.is_animated` is also defined.
-    Equal to 1 for non-animated images loaded by a plugin supporting animations.
 
-    This attribute is only defined by Image plugins that support animated Images.
+    This attribute is only defined by image plugins that support animated images.
     Plugins may leave this attribute undefined if they don't support loading
-    animated images, even if the given format supports animated images. Use
-    ``hasattr(image, "is_animated")`` to check whether the implementation
-    supports animated images, or ``getattr(image, "n_frames", 1)``
-    to check whether an image has been loaded with more than one frame.
+    animated images, even if the given format supports animated images.
+
+    To check the number of frames in an image regardless of its format, use
+    ``getattr(image, "n_frames", 1)``.
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
 
