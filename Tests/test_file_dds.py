@@ -11,6 +11,8 @@ TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
+TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
+TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SRGB.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/uncompressed_rgb.dds"
 
 
@@ -83,6 +85,37 @@ def test_dx10_bc7_unorm_srgb():
 
         with Image.open(
             TEST_FILE_DX10_BC7_UNORM_SRGB.replace(".dds", ".png")
+        ) as target:
+            assert_image_equal(target, im)
+
+
+def test_dx10_r8g8b8a8():
+    """Check DX10 images can be opened"""
+
+    with Image.open(TEST_FILE_DX10_R8G8B8A8) as im:
+        im.load()
+
+        assert im.format == "DDS"
+        assert im.mode == "RGBA"
+        assert im.size == (256, 256)
+
+        with Image.open(TEST_FILE_DX10_R8G8B8A8.replace(".dds", ".png")) as target:
+            assert_image_equal(target, im)
+
+
+def test_dx10_r8g8b8a8_unorm_srgb():
+    """Check DX10 unsigned normalized integer images can be opened"""
+
+    with Image.open(TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB) as im:
+        im.load()
+
+        assert im.format == "DDS"
+        assert im.mode == "RGBA"
+        assert im.size == (16, 16)
+        assert im.info["gamma"] == 1 / 2.2
+
+        with Image.open(
+            TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB.replace(".dds", ".png")
         ) as target:
             assert_image_equal(target, im)
 
