@@ -106,17 +106,20 @@ jobs:
       os: osx
       osx_image: xcode9.3
       language: generic
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.6
         - LATEST="true"
 
     - name: "3.6 Xenial latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.6
         - LATEST="true"
     - name: "3.6 Xenial 32-bit latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.6
         - PLAT=i686
@@ -126,6 +129,7 @@ jobs:
       os: osx
       osx_image: xcode9.3
       language: generic
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.7
         - LATEST="true"
@@ -133,28 +137,33 @@ jobs:
       os: osx
       osx_image: xcode9.3
       language: generic
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.8
         - LATEST="true"
 
     - name: "3.7 Xenial latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.7
         - LATEST="true"
     - name: "3.7 Xenial 32-bit latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.7
         - PLAT=i686
         - LATEST="true"
     - name: "3.8 Xenial latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.8
         - LATEST="true"
     - name: "3.8 Xenial 32-bit latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.8
         - PLAT=i686
@@ -164,12 +173,14 @@ jobs:
       os: osx
       osx_image: xcode9.3
       language: generic
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=pypy3.6-7.3
         - MB_PYTHON_OSX_VER=10.9
         - LATEST="true"
     - name: "3.6 Xenial 64-bit PyPy latest"
       os: linux
+      if: tag IS blank
       env:
         - MB_PYTHON_VERSION=pypy3.6-7.3
         - MB_ML_VER=2010
@@ -179,6 +190,7 @@ jobs:
     - name: "3.6 Xenial aarch64 latest"
       os: linux
       arch: arm64
+      if: tag IS blank
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
@@ -188,6 +200,7 @@ jobs:
     - name: "3.7 Xenial aarch64 latest"
       os: linux
       arch: arm64
+      if: tag IS blank
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
@@ -197,6 +210,7 @@ jobs:
     - name: "3.8 Xenial aarch64 latest"
       os: linux
       arch: arm64
+      if: tag IS blank
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
