@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-7.3.0 (unreleased)
+8.0.0 (unreleased)
 ------------------
 
 - Allow ImageOps.autocontrast to specify low and high cutoffs separately #4749
