@@ -7,10 +7,6 @@ env:
       - BUILD_DEPENDS=""
       - TEST_DEPENDS="pytest pytest-cov"
       - MACOSX_DEPLOYMENT_TARGET=10.10
-      - WHEELHOUSE_UPLOADER_USERNAME=travis-worker
-      # Following generated with
-      # travis encrypt -r python-pillow/pillow-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
-      - secure: "ky76goiK6n4k8V9/uG340GSFVwmjE7G76l9xbhhGZkcph4eTwN5VRM/tqyJvlNs/HZOhKSILfyGBeaG8qf7gHmwr0touPT+EjWn4TNV8iyVj75ZshgRE9DuaIAfdH89gW2m+BmvBDyzi0JE3KVCu55NcGm8h7Ecl6nmQ/c2iROY="
 
 language: python
 # Default Python version is usually 3.6
@@ -219,16 +215,20 @@ install:
     - if [[ -n "$LATEST" ]]; then BUILD_COMMIT=master; fi
     - clean_code $REPO_DIR $BUILD_COMMIT
     - build_wheel $REPO_DIR $PLAT
+    - ls -l "${TRAVIS_BUILD_DIR}/wheelhouse/"
 
 script:
     - install_run $PLAT
 
-after_success:
-    # Upload wheels to Rackspace container
-    - if [[ -z "$LATEST" ]]; then
-        pip install wheelhouse-uploader;
-        python -m wheelhouse_uploader upload --local-folder
-          ${TRAVIS_BUILD_DIR}/wheelhouse/
-          --no-update-index
-          wheels;
-      fi
+# Upload wheels to GitHub Releases
+deploy:
+  provider: releases
+  api_key:
+    secure: PTgVG7DrYa2FTSQOq0eDaHDZb1vy0vf6MulyuoXMg8rssPQgJ/mYxRpNDK4V0EKolpN7f8s/OGg+fpNNtp5pOCJGsx0Okcf+YB2ac+Xl7DQPBucbDKFXs1ndf/ny6umk0TXX8JTrDp/mJDJf401yx1+qsZ6X/PFvchXvXVrQ+SQ=
+  file_glob: true
+  file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
+  on:
+    condition: -z "$LATEST"
+    repo: python-pillow/pillow-wheels
+    tags: true
+  skip_cleanup: true
