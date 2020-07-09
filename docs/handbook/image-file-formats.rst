@@ -857,7 +857,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
+    methods are: :data:`None`, ``"tiff_ccitt"``, ``"group3"``,
     ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
     ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
     ``"tiff_sgilog24"``, ``"tiff_raw_16"``

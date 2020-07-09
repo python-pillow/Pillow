@@ -285,7 +285,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     The file format of the source file. For images created by the library
     itself (via a factory function, or by running a method on an existing
-    image), this attribute is set to ``None``.
+    image), this attribute is set to :data:`None`.
 
 .. py:attribute:: Image.mode
     :type: str
@@ -314,7 +314,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     Colour palette table, if any. If mode is "P" or "PA", this should be an
     instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
-    Otherwise, it should be set to ``None``.
+    Otherwise, it should be set to :data:`None`.
 
 .. py:attribute:: Image.info
     :type: dict
