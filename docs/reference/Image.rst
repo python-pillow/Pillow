@@ -333,6 +333,10 @@ Instances of the :py:class:`Image` class have the following attributes:
 Classes
 -------
 
+.. autoclass:: PIL.Image.Exif
+    :members:
+    :undoc-members:
+    :show-inheritance:
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
 

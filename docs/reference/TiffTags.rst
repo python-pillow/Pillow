@@ -60,3 +60,8 @@ metadata tag numbers, names, and type information.
 
     The ``TYPES`` dictionary maps the TIFF type short integer to a
     human readable type name.
+
+.. py:data:: PIL.TiffTags.LIBTIFF_CORE
+    :type: list
+
+    A list of supported tag ids when writing using libtiff.
