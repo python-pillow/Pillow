@@ -9,7 +9,7 @@ objects from PIL images.
 
 .. versionadded:: 1.1.6
 
-.. py:class:: ImageQt.ImageQt(image)
+.. py:class:: ImageQt(image)
 
     Creates an :py:class:`~PIL.ImageQt.ImageQt` object from a PIL
     :py:class:`~PIL.Image.Image` object. This class is a subclass of
