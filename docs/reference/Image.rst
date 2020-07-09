@@ -268,8 +268,8 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
 
-Attributes
-----------
+Image Attributes
+----------------
 
 Instances of the :py:class:`Image` class have the following attributes:
 
@@ -329,6 +329,12 @@ Instances of the :py:class:`Image` class have the following attributes:
     keep a reference to the info dictionary returned from the open method.
 
     Unless noted elsewhere, this dictionary does not affect saving files.
+
+Classes
+-------
+
+.. autoclass:: PIL.Image.ImagePointHandler
+.. autoclass:: PIL.Image.ImageTransformHandler
 
 Constants
 ---------

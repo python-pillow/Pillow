@@ -1577,6 +1577,13 @@ class Image:
            single argument. The function is called once for each
            possible pixel value, and the resulting table is applied to
            all bands of the image.
+
+           It may also be an :py:class:`~PIL.Image.ImagePointHandler`
+           object::
+
+               class Example(Image.ImagePointHandler):
+                 def point(self, data):
+                   # Return result
         :param mode: Output mode (default is same as input).  In the
            current version, this can only be used if the source image
            has mode "L" or "P", and the output has mode "1" or the
@@ -2534,12 +2541,20 @@ class Image:
 
 
 class ImagePointHandler:
-    # used as a mixin by point transforms (for use with im.point)
+    """
+    Used as a mixin by point transforms
+    (for use with :py:meth:`~PIL.Image.Image.point`)
+    """
+
     pass
 
 
 class ImageTransformHandler:
-    # used as a mixin by geometry transforms (for use with im.transform)
+    """
+    Used as a mixin by geometry transforms
+    (for use with :py:meth:`~PIL.Image.Image.transform`)
+    """
+
     pass
 
 
