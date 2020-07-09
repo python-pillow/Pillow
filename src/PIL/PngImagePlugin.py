@@ -76,21 +76,50 @@ _MODES = {
 
 _simple_palette = re.compile(b"^\xff*\x00\xff*$")
 
-# Maximum decompressed size for a iTXt or zTXt chunk.
-# Eliminates decompression bombs where compressed chunks can expand 1000x
 MAX_TEXT_CHUNK = ImageFile.SAFEBLOCK
-# Set the maximum total text chunk size.
+"""
+Maximum decompressed size for a iTXt or zTXt chunk.
+Eliminates decompression bombs where compressed chunks can expand 1000x
+See :ref:`Text in PNG File Format<png-text>`.
+"""
 MAX_TEXT_MEMORY = 64 * MAX_TEXT_CHUNK
+"""
+Set the maximum total text chunk size.
+See :ref:`Text in PNG File Format<png-text>`.
+"""
 
 
 # APNG frame disposal modes
 APNG_DISPOSE_OP_NONE = 0
+"""
+No disposal is done on this frame before rendering the next frame.
+See :ref:`Saving APNG sequences<apng-saving>`.
+"""
 APNG_DISPOSE_OP_BACKGROUND = 1
+"""
+This frame’s modified region is cleared to fully transparent black before rendering
+the next frame.
+See :ref:`Saving APNG sequences<apng-saving>`.
+"""
 APNG_DISPOSE_OP_PREVIOUS = 2
+"""
+This frame’s modified region is reverted to the previous frame’s contents before
+rendering the next frame.
+See :ref:`Saving APNG sequences<apng-saving>`.
+"""
 
 # APNG frame blend modes
 APNG_BLEND_OP_SOURCE = 0
+"""
+All color components of this frame, including alpha, overwrite the previous output
+image contents.
+See :ref:`Saving APNG sequences<apng-saving>`.
+"""
 APNG_BLEND_OP_OVER = 1
+"""
+This frame should be alpha composited with the previous output image contents.
+See :ref:`Saving APNG sequences<apng-saving>`.
+"""
 
 
 def _safe_zlib_decompress(s):
