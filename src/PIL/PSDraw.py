@@ -26,7 +26,7 @@ from . import EpsImagePlugin
 class PSDraw:
     """
     Sets up printing to the given file. If **fp** is omitted,
-    :py:attr:`sys.stdout` is assumed.
+    :py:data:`sys.stdout` is assumed.
     """
 
     def __init__(self, fp=None):
