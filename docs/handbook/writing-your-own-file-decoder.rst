@@ -175,7 +175,7 @@ The fields are used as follows:
 
 The **raw mode** field is used to determine how the data should be unpacked to
 match PIL’s internal pixel layout. PIL supports a large set of raw modes; for a
-complete list, see the table in the :py:mod:`Unpack.c` module. The following
+complete list, see the table in the :file:`Unpack.c` module. The following
 table describes some commonly used **raw modes**:
 
 +-----------+-----------------------------------------------------------------+

@@ -453,8 +453,8 @@ If everything goes well, the result is an :py:class:`PIL.Image.Image` object.
 Otherwise, an :exc:`OSError` exception is raised.
 
 You can use a file-like object instead of the filename. The object must
-implement :py:meth:`~file.read`, :py:meth:`~file.seek` and
-:py:meth:`~file.tell` methods, and be opened in binary mode.
+implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
+and be opened in binary mode.
 
 Reading from an open file
 ^^^^^^^^^^^^^^^^^^^^^^^^^

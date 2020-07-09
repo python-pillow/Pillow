@@ -717,7 +717,7 @@ class Image:
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
         :param args: Extra arguments to the encoder.
-        :rtype: A bytes object.
+        :returns: A :py:class:`bytes` object.
         """
 
         # may pass tuple instead of argument list
@@ -2352,10 +2352,10 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(size, method, data, resample, fill=1):
+                def transform(self, size, data, resample, fill=1):
                     # Return result
 
-          It may also be an object with a :py:meth:`~method.getdata` method
+          It may also be an object with a ``method.getdata`` method
           that returns a tuple supplying new **method** and **data** values::
 
             class Example:
@@ -2847,8 +2847,8 @@ def open(fp, mode="r"):
     :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
     :param fp: A filename (string), pathlib.Path object or a file object.
-       The file object must implement :py:meth:`~file.read`,
-       :py:meth:`~file.seek`, and :py:meth:`~file.tell` methods,
+       The file object must implement ``file.read``,
+       ``file.seek`, and ``file.tell`` methods,
        and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
     :returns: An :py:class:`~PIL.Image.Image` object.

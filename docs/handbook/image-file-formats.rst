@@ -473,7 +473,7 @@ image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
 **chromaticity**
