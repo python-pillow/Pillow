@@ -339,8 +339,9 @@ Instances of the :py:class:`Image` class have the following attributes:
     Plugins may leave this attribute undefined if they don't support loading
     animated images, even if the given format supports animated images.
 
-    To check whether an image is animated regardless of its format, use
-    ``getattr(image, "is_animated", False)``.
+    Given that this attribute is not present for all images use
+    ``getattr(image, "is_animated", False)`` to check if Pillow is aware of multiple
+    frames in an image regardless of its format.
 
     .. seealso:: :attr:`~Image.n_frames`, :func:`~Image.seek` and :func:`~Image.tell`
 
@@ -353,8 +354,9 @@ Instances of the :py:class:`Image` class have the following attributes:
     Plugins may leave this attribute undefined if they don't support loading
     animated images, even if the given format supports animated images.
 
-    To check the number of frames in an image regardless of its format, use
-    ``getattr(image, "n_frames", 1)``.
+    Given that this attribute is not present for all images use
+    ``getattr(image, "n_frames", 1)`` to check the number of frames that Pillow is
+    aware of in an image regardless of its format.
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
 
