@@ -98,7 +98,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.8
       run: |
-        pip install sphinx-rtd-theme
+        pip install sphinx-removed-in sphinx-rtd-theme
         make doccheck
 
     - name: After success
