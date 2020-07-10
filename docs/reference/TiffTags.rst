@@ -64,4 +64,4 @@ metadata tag numbers, names, and type information.
 .. py:data:: PIL.TiffTags.LIBTIFF_CORE
     :type: list
 
-    A list of supported tag ids when writing using libtiff.
+    A list of supported tag IDs when writing using LibTIFF.

@@ -70,7 +70,7 @@ image enhancement filters:
 .. class:: Filter
 
     An abstract mixin used for filtering images
-    (for use with :py:meth:`~PIL.Image.Image.filter`)
+    (for use with :py:meth:`~PIL.Image.Image.filter`).
 
     Implementors must provide the following method:
 
@@ -83,7 +83,7 @@ image enhancement filters:
 .. class:: MultibandFilter
 
     An abstract mixin used for filtering multi-band images
-    (for use with :py:meth:`~PIL.Image.Image.filter`)
+    (for use with :py:meth:`~PIL.Image.Image.filter`).
 
     Implementors must provide the following method:
 
