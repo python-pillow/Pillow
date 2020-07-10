@@ -2,7 +2,7 @@
 # The Python Imaging Library
 # $Id$
 #
-# simple postscript graphics interface
+# Simple PostScript graphics interface
 #
 # History:
 # 1996-04-20 fl   Created
@@ -20,7 +20,7 @@ import sys
 from . import EpsImagePlugin
 
 ##
-# Simple Postscript graphics interface.
+# Simple PostScript graphics interface.
 
 
 class PSDraw:
@@ -41,7 +41,7 @@ class PSDraw:
             self.fp.write(bytes(to_write, "UTF-8"))
 
     def begin_document(self, id=None):
-        """Set up printing of a document. (Write Postscript DSC header.)"""
+        """Set up printing of a document. (Write PostScript DSC header.)"""
         # FIXME: incomplete
         self._fp_write(
             "%!PS-Adobe-3.0\n"
@@ -57,7 +57,7 @@ class PSDraw:
         self.isofont = {}
 
     def end_document(self):
-        """Ends printing. (Write Postscript DSC footer.)"""
+        """Ends printing. (Write PostScript DSC footer.)"""
         self._fp_write("%%EndDocument\nrestore showpage\n%%End\n")
         if hasattr(self.fp, "flush"):
             self.fp.flush()
@@ -66,7 +66,7 @@ class PSDraw:
         """
         Selects which font to use.
 
-        :param font: A Postscript font name
+        :param font: A PostScript font name
         :param size: Size in points.
         """
         if font not in self.isofont:
@@ -79,7 +79,7 @@ class PSDraw:
     def line(self, xy0, xy1):
         """
         Draws a line between the two points. Coordinates are given in
-        Postscript point coordinates (72 points per inch, (0, 0) is the lower
+        PostScript point coordinates (72 points per inch, (0, 0) is the lower
         left corner of the page).
         """
         xy = xy0 + xy1
@@ -143,10 +143,10 @@ class PSDraw:
 
 
 # --------------------------------------------------------------------
-# Postscript driver
+# PostScript driver
 
 #
-# EDROFF.PS -- Postscript driver for Edroff 2
+# EDROFF.PS -- PostScript driver for Edroff 2
 #
 # History:
 # 94-01-25 fl: created (edroff 2.04)
@@ -176,7 +176,7 @@ EDROFF_PS = """\
 """
 
 #
-# VDI.PS -- Postscript driver for VDI meta commands
+# VDI.PS -- PostScript driver for VDI meta commands
 #
 # History:
 # 94-01-25 fl: created (edroff 2.04)
