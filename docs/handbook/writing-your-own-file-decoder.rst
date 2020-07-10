@@ -365,7 +365,7 @@ interest in this object are:
   The target image, will be set by Pillow.
 
 **state**
-  An ImagingCodecStateInstance, will be set by Pillow. The **context**
+  An ImagingCodecStateInstance, will be set by Pillow. The ``context``
   member is an opaque struct that can be used by the decoder to store
   any format specific state or options.
 

@@ -25,7 +25,7 @@ from . import EpsImagePlugin
 
 class PSDraw:
     """
-    Sets up printing to the given file. If **fp** is omitted,
+    Sets up printing to the given file. If ``fp`` is omitted,
     :py:data:`sys.stdout` is assumed.
     """
 
