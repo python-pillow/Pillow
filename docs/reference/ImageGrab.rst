@@ -27,7 +27,7 @@ or the clipboard to a PIL image memory.
         .. versionadded:: 6.2.0
 
     :param xdisplay:
-        X11 Display address. Pass ``None`` to grab the default system screen. Pass ``""`` to grab the default X11 screen on Windows or macOS.
+        X11 Display address. Pass :data:`None` to grab the default system screen. Pass ``""`` to grab the default X11 screen on Windows or macOS.
 
         You can check X11 support using :py:func:`PIL.features.check_feature` with ``feature="xcb"``.
 
