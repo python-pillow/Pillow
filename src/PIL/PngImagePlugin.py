@@ -79,7 +79,7 @@ _simple_palette = re.compile(b"^\xff*\x00\xff*$")
 MAX_TEXT_CHUNK = ImageFile.SAFEBLOCK
 """
 Maximum decompressed size for a iTXt or zTXt chunk.
-Eliminates decompression bombs where compressed chunks can expand 1000x
+Eliminates decompression bombs where compressed chunks can expand 1000x.
 See :ref:`Text in PNG File Format<png-text>`.
 """
 MAX_TEXT_MEMORY = 64 * MAX_TEXT_CHUNK
