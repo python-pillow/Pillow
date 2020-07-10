@@ -406,13 +406,13 @@ Using the ImageSequence Iterator class
         # ...do something to frame...
 
 
-Postscript printing
+PostScript printing
 -------------------
 
 The Python Imaging Library includes functions to print images, text and
-graphics on Postscript printers. Here’s a simple example:
+graphics on PostScript printers. Here’s a simple example:
 
-Drawing Postscript
+Drawing PostScript
 ^^^^^^^^^^^^^^^^^^
 
 ::
