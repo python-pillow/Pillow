@@ -330,6 +330,36 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     Unless noted elsewhere, this dictionary does not affect saving files.
 
+.. py:attribute:: Image.is_animated
+    :type: bool
+
+    ``True`` if this image has more than one frame, or ``False`` otherwise.
+
+    This attribute is only defined by image plugins that support animated images.
+    Plugins may leave this attribute undefined if they don't support loading
+    animated images, even if the given format supports animated images.
+
+    Given that this attribute is not present for all images use
+    ``getattr(image, "is_animated", False)`` to check if Pillow is aware of multiple
+    frames in an image regardless of its format.
+
+    .. seealso:: :attr:`~Image.n_frames`, :func:`~Image.seek` and :func:`~Image.tell`
+
+.. py:attribute:: Image.n_frames
+    :type: int
+
+    The number of frames in this image.
+
+    This attribute is only defined by image plugins that support animated images.
+    Plugins may leave this attribute undefined if they don't support loading
+    animated images, even if the given format supports animated images.
+
+    Given that this attribute is not present for all images use
+    ``getattr(image, "n_frames", 1)`` to check the number of frames that Pillow is
+    aware of in an image regardless of its format.
+
+    .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
+
 Classes
 -------
 
