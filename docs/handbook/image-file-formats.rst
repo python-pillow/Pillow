@@ -473,7 +473,7 @@ image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
 **chromaticity**
@@ -778,7 +778,7 @@ The :py:meth:`~PIL.Image.open` method sets the following
 
 The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
 of TIFF metadata. The keys are numerical indexes from
-:py:attr:`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
+:py:data:`.TiffTags.TAGS_V2`.  Values are strings or numbers for single
 items, multiple values are returned in a tuple of values. Rational
 numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
 object.
@@ -831,7 +831,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     object and setting the type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` with
     the appropriate numerical value from
-    ``TiffTags.TYPES``.
+    :py:data:`.TiffTags.TYPES`.
 
     .. versionadded:: 2.3.0
 
@@ -848,7 +848,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     Previous versions only supported some tags when writing using
     libtiff. The supported list is found in
-    :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
+    :py:data:`.TiffTags.LIBTIFF_CORE`.
 
     .. versionadded:: 6.1.0
 

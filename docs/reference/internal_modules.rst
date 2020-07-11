@@ -36,3 +36,12 @@ Internal Modules
 
     This is the master version number for Pillow,
     all other uses reference this module.
+
+:mod:`PIL.Image.core` Module
+----------------------------
+
+.. module:: PIL._imaging
+.. module:: PIL.Image.core
+
+An internal interface module previously known as :mod:`~PIL._imaging`,
+implemented in :file:`_imaging.c`.

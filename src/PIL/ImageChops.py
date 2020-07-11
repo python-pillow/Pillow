@@ -293,7 +293,7 @@ def logical_xor(image1, image2):
 
 def blend(image1, image2, alpha):
     """Blend images using constant transparency weight. Alias for
-    :py:meth:`PIL.Image.Image.blend`.
+    :py:func:`PIL.Image.blend`.
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
@@ -303,7 +303,7 @@ def blend(image1, image2, alpha):
 
 def composite(image1, image2, mask):
     """Create composite using transparency mask. Alias for
-    :py:meth:`PIL.Image.Image.composite`.
+    :py:func:`PIL.Image.composite`.
 
     :rtype: :py:class:`~PIL.Image.Image`
     """

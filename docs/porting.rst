@@ -19,7 +19,8 @@ to this::
 
     from PIL import Image
 
-The :py:mod:`~PIL._imaging` module has been moved. You can now import it like this::
+The :py:mod:`PIL._imaging` module has been moved to :py:mod:`PIL.Image.core`.
+You can now import it like this::
 
     from PIL.Image import core as _imaging
 
