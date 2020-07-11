@@ -229,20 +229,12 @@ Plugin reference
 ---------------------------------
 
 .. automodule:: PIL.PngImagePlugin
-    :members: ChunkStream, PngStream, getchunks, is_cid, putchunk
-    :show-inheritance:
-.. autoclass:: PIL.PngImagePlugin.ChunkStream
-    :members:
+    :members: ChunkStream, PngImageFile, PngStream, getchunks, is_cid, putchunk,
+        MAX_TEXT_CHUNK, MAX_TEXT_MEMORY, APNG_BLEND_OP_SOURCE, APNG_BLEND_OP_OVER,
+        APNG_DISPOSE_OP_NONE, APNG_DISPOSE_OP_BACKGROUND, APNG_DISPOSE_OP_PREVIOUS
     :undoc-members:
     :show-inheritance:
-.. autoclass:: PIL.PngImagePlugin.PngImageFile
-    :members:
-    :undoc-members:
-    :show-inheritance:
-.. autoclass:: PIL.PngImagePlugin.PngStream
-    :members:
-    :undoc-members:
-    :show-inheritance:
+    :member-order: groupwise
 
 
 :mod:`~PIL.PpmImagePlugin` Module
