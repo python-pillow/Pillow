@@ -5587,7 +5587,7 @@ Pre-fork
       any other pixel value means opaque.  This is faster than using an
       "L" transparency mask.
 
-    + Properly writes EPS files (and properly prints images to postscript
+    + Properly writes EPS files (and properly prints images to PostScript
       printers as well).
 
     + Reads 4-bit BMP files, as well as 4 and 8-bit Windows ICO and CUR
@@ -5670,7 +5670,7 @@ Pre-fork
     + Added the "pilfile" utility, which quickly identifies image files
       (without loading them, in most cases).
 
-    + Added the "pilprint" utility, which prints image files to Postscript
+    + Added the "pilprint" utility, which prints image files to PostScript
       printers.
 
     + Added a rudimentary version of the "pilview" utility, which is
@@ -5684,5 +5684,5 @@ Pre-fork
       Jack).  This allows you to read images through the Img extensions file
       format handlers.  See the file "Lib/ImgExtImagePlugin.py" for details.
 
-    + Postscript printing is provided through the PSDraw module.  See the
+    + PostScript printing is provided through the PSDraw module.  See the
       handbook for details.

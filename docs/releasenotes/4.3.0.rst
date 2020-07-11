@@ -124,7 +124,7 @@ This release contains several performance improvements:
 * ``Image.transpose`` has been accelerated 15% or more by using a cache
   friendly algorithm.
 * ImageFilters based on Kernel convolution are significantly faster
-  due to the new MultibandFilter feature.
+  due to the new :py:class:`~PIL.ImageFilter.MultibandFilter` feature.
 * All memory allocation for images is now done in blocks, rather than
   falling back to an allocation for each scan line for images larger
   than the block size.

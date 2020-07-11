@@ -34,9 +34,9 @@ Removed Deprecated Items
 
 Several deprecated items have been removed.
 
-* The methods :py:meth:`PIL.ImageWin.Dib.fromstring`,
-  :py:meth:`PIL.ImageWin.Dib.tostring` and
-  :py:meth:`PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict` have
+* The methods ``PIL.ImageWin.Dib.fromstring``,
+  ``PIL.ImageWin.Dib.tostring`` and
+  ``PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict`` have
   been removed.
 
 * Before Pillow 4.2.0, attempting to save an RGBA image as JPEG would

@@ -132,7 +132,7 @@ The fields are used as follows:
 **parameters**
     Parameters to the decoder. The contents of this field depends on the
     decoder specified by the first field in the tile descriptor tuple. If the
-    decoder doesn’t need any parameters, use ``None`` for this field.
+    decoder doesn’t need any parameters, use :data:`None` for this field.
 
 Note that the :py:attr:`tile` attribute contains a list of tile descriptors,
 not just a single descriptor.
@@ -175,7 +175,7 @@ The fields are used as follows:
 
 The **raw mode** field is used to determine how the data should be unpacked to
 match PIL’s internal pixel layout. PIL supports a large set of raw modes; for a
-complete list, see the table in the :py:mod:`Unpack.c` module. The following
+complete list, see the table in the :file:`Unpack.c` module. The following
 table describes some commonly used **raw modes**:
 
 +-----------+-----------------------------------------------------------------+

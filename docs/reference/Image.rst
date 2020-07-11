@@ -268,8 +268,8 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
 
-Attributes
-----------
+Image Attributes
+----------------
 
 Instances of the :py:class:`Image` class have the following attributes:
 
@@ -285,7 +285,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     The file format of the source file. For images created by the library
     itself (via a factory function, or by running a method on an existing
-    image), this attribute is set to ``None``.
+    image), this attribute is set to :data:`None`.
 
 .. py:attribute:: Image.mode
     :type: str
@@ -314,7 +314,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     Colour palette table, if any. If mode is "P" or "PA", this should be an
     instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
-    Otherwise, it should be set to ``None``.
+    Otherwise, it should be set to :data:`None`.
 
 .. py:attribute:: Image.info
     :type: dict
@@ -329,6 +329,16 @@ Instances of the :py:class:`Image` class have the following attributes:
     keep a reference to the info dictionary returned from the open method.
 
     Unless noted elsewhere, this dictionary does not affect saving files.
+
+Classes
+-------
+
+.. autoclass:: PIL.Image.Exif
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. autoclass:: PIL.Image.ImagePointHandler
+.. autoclass:: PIL.Image.ImageTransformHandler
 
 Constants
 ---------
