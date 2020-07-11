@@ -2177,6 +2177,9 @@ class Image:
 
         See :py:meth:`~PIL.Image.Image.tell`.
 
+        If defined, :attr:`~PIL.Image.Image.n_frames` refers to the
+        number of available frames.
+
         :param frame: Frame number, starting at 0.
         :exception EOFError: If the call attempts to seek beyond the end
             of the sequence.
@@ -2260,6 +2263,9 @@ class Image:
     def tell(self):
         """
         Returns the current frame number. See :py:meth:`~PIL.Image.Image.seek`.
+
+        If defined, :attr:`~PIL.Image.Image.n_frames` refers to the
+        number of available frames.
 
         :returns: Frame number, starting with 0.
         """
