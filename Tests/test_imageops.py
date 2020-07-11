@@ -300,3 +300,14 @@ def test_exif_transpose():
                     "Tests/images/hopper_orientation_" + str(i) + ext
                 ) as orientation_im:
                     check(orientation_im)
+
+
+def test_autocontrast_cutoff():
+    # Test the cutoff argument of autocontrast
+    with Image.open("Tests/images/bw_gradient.png") as img:
+
+        def autocontrast(cutoff):
+            return ImageOps.autocontrast(img, cutoff).histogram()
+
+        assert autocontrast(10) == autocontrast((10, 10))
+        assert autocontrast(10) != autocontrast((1, 10))

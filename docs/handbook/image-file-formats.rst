@@ -473,7 +473,7 @@ image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
 **chromaticity**
@@ -501,12 +501,14 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
     This key is omitted if the image is not a transparent palette image.
 
+.. _png-text:
+
 ``open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
-``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
+:data:`.PngImagePlugin.MAX_TEXT_CHUNK`, by default 1MB, to prevent
 decompression bombs. Additionally, the total size of all of the text
-chunks is limited to ``PngImagePlugin.MAX_TEXT_MEMORY``, defaulting to
+chunks is limited to :data:`.PngImagePlugin.MAX_TEXT_MEMORY`, defaulting to
 64MB.
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
@@ -610,6 +612,8 @@ where applicable:
 
     Any APNG file containing sequence errors is treated as an invalid image. The APNG
     loader will not attempt to repair and reorder files containing sequence errors.
+
+.. _apng-saving:
 
 Saving
 ~~~~~~
@@ -774,7 +778,7 @@ The :py:meth:`~PIL.Image.open` method sets the following
 
 The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
 of TIFF metadata. The keys are numerical indexes from
-:py:attr:`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
+:py:data:`.TiffTags.TAGS_V2`.  Values are strings or numbers for single
 items, multiple values are returned in a tuple of values. Rational
 numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
 object.
@@ -827,7 +831,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     object and setting the type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` with
     the appropriate numerical value from
-    ``TiffTags.TYPES``.
+    :py:data:`.TiffTags.TYPES`.
 
     .. versionadded:: 2.3.0
 
@@ -844,7 +848,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     Previous versions only supported some tags when writing using
     libtiff. The supported list is found in
-    :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
+    :py:data:`.TiffTags.LIBTIFF_CORE`.
 
     .. versionadded:: 6.1.0
 
@@ -857,7 +861,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
+    methods are: :data:`None`, ``"tiff_ccitt"``, ``"group3"``,
     ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
     ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
     ``"tiff_sgilog24"``, ``"tiff_raw_16"``

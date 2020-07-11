@@ -10,4 +10,5 @@ pyroma
 pytest
 pytest-cov
 sphinx>=2.4
+sphinx-removed-in
 sphinx-rtd-theme

@@ -191,7 +191,7 @@ def _accept(prefix):
 
 
 ##
-# Image plugin for Encapsulated Postscript.  This plugin supports only
+# Image plugin for Encapsulated PostScript.  This plugin supports only
 # a few variants of this format.
 
 
@@ -262,7 +262,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         else:
                             self.info[k] = ""
                     elif s[0] == "%":
-                        # handle non-DSC Postscript comments that some
+                        # handle non-DSC PostScript comments that some
                         # tools mistakenly put in the Comments section
                         pass
                     else:
@@ -352,7 +352,7 @@ def _save(im, fp, filename, eps=1):
     im.load()
 
     #
-    # determine postscript image mode
+    # determine PostScript image mode
     if im.mode == "L":
         operator = (8, 1, "image")
     elif im.mode == "RGB":

@@ -776,7 +776,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 self.tagtype[tag] = typ
 
                 msg += " - value: " + (
-                    "<table: %d bytes>" % size if size > 32 else str(data)
+                    "<table: %d bytes>" % size if size > 32 else repr(data)
                 )
                 logger.debug(msg)
 
@@ -993,7 +993,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: {}".format(self.__first))
-        logger.debug("- ifh: {}".format(ifh))
+        logger.debug("- ifh: {!r}".format(ifh))  # Use !r to avoid str(bytes)
 
         # and load the first frame
         self._seek(0)

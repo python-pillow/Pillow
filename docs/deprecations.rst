@@ -78,7 +78,8 @@ period of deprecation has passed.
 Python 2.7
 ~~~~~~~~~~
 
-*Removed in version 7.0.0.*
+.. deprecated:: 6.0.0
+.. versionremoved:: 7.0.0
 
 Python 2.7 reached end-of-life on 2020-01-01. Pillow 6.x was the last series to
 support Python 2.
@@ -86,7 +87,8 @@ support Python 2.
 Image.__del__
 ~~~~~~~~~~~~~
 
-*Removed in version 7.0.0.*
+.. deprecated:: 6.1.0
+.. versionremoved:: 7.0.0
 
 Implicitly closing the image's underlying file in ``Image.__del__`` has been removed.
 Use a context manager or call ``Image.close()`` instead to close the file in a
@@ -109,7 +111,8 @@ Use instead:
 PIL.*ImagePlugin.__version__ attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Removed in version 7.0.0.*
+.. deprecated:: 6.0.0
+.. versionremoved:: 7.0.0
 
 The version constants of individual plugins have been removed. Use ``PIL.__version__``
 instead.
@@ -134,7 +137,8 @@ Removed                          Removed                            Removed
 PyQt4 and PySide
 ~~~~~~~~~~~~~~~~
 
-*Removed in version 7.0.0.*
+.. deprecated:: 6.0.0
+.. versionremoved:: 7.0.0
 
 Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
 2018-08-31 and PySide since 2015-10-14.
@@ -145,7 +149,8 @@ or PySide2.
 Setting the size of TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Removed in version 7.0.0.*
+.. deprecated:: 5.3.0
+.. versionremoved:: 7.0.0
 
 Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
 an error. Use ``Image.resize`` instead.
@@ -153,7 +158,8 @@ an error. Use ``Image.resize`` instead.
 VERSION constant
 ~~~~~~~~~~~~~~~~
 
-*Removed in version 6.0.0.*
+.. deprecated:: 5.2.0
+.. versionremoved:: 6.0.0
 
 ``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use
 ``__version__`` instead.
@@ -161,7 +167,8 @@ VERSION constant
 Undocumented ImageOps functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Removed in version 6.0.0.*
+.. deprecated:: 4.3.0
+.. versionremoved:: 6.0.0
 
 Several undocumented functions in ``ImageOps`` have been removed. Use the equivalents
 in ``ImageFilter`` instead:
@@ -179,7 +186,8 @@ Removed                     Use instead
 PIL.OleFileIO
 ~~~~~~~~~~~~~
 
-*Removed in version 6.0.0.*
+.. deprecated:: 4.0.0
+.. versionremoved:: 6.0.0
 
 PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
 the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0

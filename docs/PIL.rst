@@ -93,8 +93,8 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:class:`PngImagePlugin.iTXt` Class
-----------------------------------
+:class:`.PngImagePlugin.iTXt` Class
+-----------------------------------
 
 .. autoclass:: PIL.PngImagePlugin.iTXt
     :members:
@@ -107,8 +107,8 @@ can be found here.
         :param lang: language code
         :param tkey: UTF-8 version of the key name
 
-:class:`PngImagePlugin.PngInfo` Class
--------------------------------------
+:class:`.PngImagePlugin.PngInfo` Class
+--------------------------------------
 
 .. autoclass:: PIL.PngImagePlugin.PngInfo
     :members:
