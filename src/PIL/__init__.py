@@ -98,6 +98,7 @@ _plugins = [
     "GifImagePlugin",
     "GribStubImagePlugin",
     "Hdf5StubImagePlugin",
+    "HeifImagePlugin",
     "IcnsImagePlugin",
     "IcoImagePlugin",
     "ImImagePlugin",
