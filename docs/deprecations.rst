@@ -49,16 +49,23 @@ PILLOW_VERSION constant
 It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
 more time to upgrade.
 
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 3.2.0
+.. versionremoved:: 8.0.0
 
-Some attributes in ``ImageCms.CmsProfile`` are deprecated. From 6.0.0, they issue a
+Some attributes in ``ImageCms.CmsProfile`` have been removed. From 6.0.0, they issued a
 ``DeprecationWarning``:
 
 ========================  ===============================
-Deprecated                Use instead
+Removed                   Use instead
 ========================  ===============================
 ``color_space``           Padded ``xcolor_space``
 ``pcs``                   Padded ``connection_space``
@@ -68,12 +75,6 @@ Deprecated                Use instead
 ``product_manufacturer``  Unicode ``manufacturer``
 ``product_model``         Unicode ``model``
 ========================  ===============================
-
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
 
 Python 2.7
 ~~~~~~~~~~

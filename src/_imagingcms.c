@@ -223,25 +223,6 @@ cms_transform_dealloc(CmsTransformObject* self)
 /* -------------------------------------------------------------------- */
 /* internal functions */
 
-static const char*
-findICmode(cmsColorSpaceSignature cs)
-{
-    switch (cs) {
-    case cmsSigXYZData: return "XYZ";
-    case cmsSigLabData: return "LAB";
-    case cmsSigLuvData: return "LUV";
-    case cmsSigYCbCrData: return "YCbCr";
-    case cmsSigYxyData: return "YXY";
-    case cmsSigRgbData: return "RGB";
-    case cmsSigGrayData: return "L";
-    case cmsSigHsvData: return "HSV";
-    case cmsSigHlsData: return "HLS";
-    case cmsSigCmykData: return "CMYK";
-    case cmsSigCmyData: return "CMY";
-    default: return ""; /* other TBA */
-    }
-}
-
 static cmsUInt32Number
 findLCMStype(char* PILmode)
 {
@@ -957,89 +938,9 @@ static struct PyMethodDef cms_profile_methods[] = {
 };
 
 static PyObject*
-_profile_getattr(CmsProfileObject* self, cmsInfoType field)
-{
-    // UNDONE -- check that I'm getting the right fields on these.
-    // return PyUnicode_DecodeFSDefault(cmsTakeProductName(self->profile));
-    //wchar_t buf[256]; -- UNDONE need wchar_t for unicode version.
-    char buf[256];
-    cmsUInt32Number written;
-    written =  cmsGetProfileInfoASCII(self->profile,
-                                      field,
-                                      "en",
-                                      "us",
-                                      buf,
-                                      256);
-    if (written) {
-        return PyUnicode_FromString(buf);
-    }
-    // UNDONE suppressing error here by sending back blank string.
-    return PyUnicode_FromString("");
-}
-
-static PyObject*
-cms_profile_getattr_product_desc(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "product_desc is deprecated. Use Unicode profile_description instead.", 1);
-    // description was Description != 'Copyright' || or  "%s - %s" (manufacturer, model) in 1.x
-    return _profile_getattr(self, cmsInfoDescription);
-}
-
-/* use these four for the individual fields.
- */
-static PyObject*
-cms_profile_getattr_product_description(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "product_description is deprecated. Use Unicode profile_description instead.", 1);
-    return _profile_getattr(self, cmsInfoDescription);
-}
-
-static PyObject*
-cms_profile_getattr_product_model(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "product_model is deprecated. Use Unicode model instead.", 1);
-    return _profile_getattr(self, cmsInfoModel);
-}
-
-static PyObject*
-cms_profile_getattr_product_manufacturer(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "product_manufacturer is deprecated. Use Unicode manufacturer instead.", 1);
-    return _profile_getattr(self, cmsInfoManufacturer);
-}
-
-static PyObject*
-cms_profile_getattr_product_copyright(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "product_copyright is deprecated. Use Unicode copyright instead.", 1);
-    return _profile_getattr(self, cmsInfoCopyright);
-}
-
-static PyObject*
 cms_profile_getattr_rendering_intent(CmsProfileObject* self, void* closure)
 {
     return PyLong_FromLong(cmsGetHeaderRenderingIntent(self->profile));
-}
-
-static PyObject*
-cms_profile_getattr_pcs(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "pcs is deprecated. Use padded connection_space instead.", 1);
-    return PyUnicode_DecodeFSDefault(findICmode(cmsGetPCS(self->profile)));
-}
-
-static PyObject*
-cms_profile_getattr_color_space(CmsProfileObject* self, void* closure)
-{
-    PyErr_WarnEx(PyExc_DeprecationWarning,
-                 "color_space is deprecated. Use padded xcolor_space instead.", 1);
-    return PyUnicode_DecodeFSDefault(findICmode(cmsGetColorSpace(self->profile)));
 }
 
 /* New-style unicode interfaces.  */
@@ -1149,14 +1050,12 @@ cms_profile_getattr_device_class(CmsProfileObject* self, void* closure)
     return _profile_read_int_as_string(cmsGetDeviceClass(self->profile));
 }
 
-/* Duplicate of pcs, but uninterpreted.  */
 static PyObject*
 cms_profile_getattr_connection_space(CmsProfileObject* self, void* closure)
 {
     return _profile_read_int_as_string(cmsGetPCS(self->profile));
 }
 
-/* Duplicate of color_space, but uninterpreted.  */
 static PyObject*
 cms_profile_getattr_xcolor_space(CmsProfileObject* self, void* closure)
 {
@@ -1458,15 +1357,6 @@ cms_profile_getattr_icc_viewing_condition (CmsProfileObject* self, void* closure
 
 
 static struct PyGetSetDef cms_profile_getsetters[] = {
-    /* Compatibility interfaces.  */
-    { "product_desc",       (getter) cms_profile_getattr_product_desc },
-    { "product_description", (getter) cms_profile_getattr_product_description },
-    { "product_manufacturer", (getter) cms_profile_getattr_product_manufacturer },
-    { "product_model",      (getter) cms_profile_getattr_product_model },
-    { "product_copyright",  (getter) cms_profile_getattr_product_copyright },
-    { "pcs",                (getter) cms_profile_getattr_pcs },
-    { "color_space",        (getter) cms_profile_getattr_color_space },
-
     /* New style interfaces.  */
     { "rendering_intent",   (getter) cms_profile_getattr_rendering_intent },
     { "creation_date",      (getter) cms_profile_getattr_creation_date },
@@ -1485,7 +1375,6 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     { "header_model",       (getter) cms_profile_getattr_header_model },
     { "device_class",       (getter) cms_profile_getattr_device_class },
     { "connection_space",   (getter) cms_profile_getattr_connection_space },
-    /* Similar to color_space, but with full 4-letter signature (including trailing whitespace).  */
     { "xcolor_space",       (getter) cms_profile_getattr_xcolor_space },
     { "profile_id",         (getter) cms_profile_getattr_profile_id },
     { "is_matrix_shaper",   (getter) cms_profile_getattr_is_matrix_shaper },
