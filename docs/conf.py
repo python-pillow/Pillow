@@ -122,7 +122,7 @@ nitpick_ignore = [
     ("py:attr", "PIL.Image.Image.tag"),
     ("py:attr", "PIL.Image.Image.tag_v2"),
     ("py:attr", "PIL.Image.Image.tile"),
-    ("py:data", "PIL.Image.MAX_PIXELS"),
+    ("py:data", "PIL.Image.MAX_IMAGE_PIXELS"),
     ("py:func", "PIL.ImageMath.convert"),
     ("py:func", "PIL.ImageMath.float"),
     ("py:func", "PIL.ImageMath.int"),
