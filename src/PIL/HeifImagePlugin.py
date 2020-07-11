@@ -4,7 +4,6 @@ from . import Image, ImageFile
 
 try:
     import pyheif
-    print("!")
 except ImportError:
     pyheif = None
 
@@ -30,7 +29,6 @@ class HeifImageFile(ImageFile.ImageFile):
 
 
 if pyheif:
-    print("!!")
     Image.register_open(HeifImageFile.format, HeifImageFile, _accept)
     Image.register_extensions(HeifImageFile.format, [".heif", ".heic", ".hif"])
     Image.register_mime(HeifImageFile.format, "image/heif")
