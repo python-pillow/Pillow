@@ -75,19 +75,12 @@ can be easily displayed in a chromaticity diagram, for example).
         space, e.g. ``XYZ␣``, ``RGB␣`` or ``CMYK`` (see 7.2.6 of
         ICC.1:2010 for details).
 
-        Note that the deprecated attribute ``color_space`` contains an
-        interpreted (non-padded) variant of this (but can be empty on
-        unknown input).
-
     .. py:attribute:: connection_space
         :type: str
 
         4-character string (padded with whitespace) identifying the color
         space on the B-side of the transform (see 7.2.7 of ICC.1:2010 for
         details).
-
-        Note that the deprecated attribute ``pcs`` contains an interpreted
-        (non-padded) variant of this (but can be empty on unknown input).
 
     .. py:attribute:: header_flags
         :type: int
@@ -349,55 +342,6 @@ can be easily displayed in a chromaticity diagram, for example).
 
         The elements of the tuple are booleans.  If the value is ``True``,
         that intent is supported for that direction.
-
-    .. py:attribute:: color_space
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        Interpreted value of :py:attr:`.xcolor_space`.  May be the
-        empty string if value could not be decoded.
-
-    .. py:attribute:: pcs
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        Interpreted value of :py:attr:`.connection_space`.  May be
-        the empty string if value could not be decoded.
-
-    .. py:attribute:: product_model
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        ASCII-encoded value of :py:attr:`.model`.
-
-    .. py:attribute:: product_manufacturer
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        ASCII-encoded value of :py:attr:`.manufacturer`.
-
-    .. py:attribute:: product_copyright
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        ASCII-encoded value of :py:attr:`.copyright`.
-
-    .. py:attribute:: product_description
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        ASCII-encoded value of :py:attr:`.profile_description`.
-
-    .. py:attribute:: product_desc
-        :type: str
-
-        Deprecated but retained for backwards compatibility.
-        ASCII-encoded value of :py:attr:`.profile_description`.
-
-        This alias of :py:attr:`.product_description` used to
-        contain a derived informative string about the profile,
-        depending on the value of the description, copyright,
-        manufacturer and model fields).
 
     There is one function defined on the class:
 
