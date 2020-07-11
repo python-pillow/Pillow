@@ -46,6 +46,9 @@ matrix:
       env: PYTHONOPTIMIZE=2
       services: xvfb
 
+  allow_failures:
+  - python: "3.9-dev"
+
 install:
   - |
     if [ "$LINT" == "true" ]; then
