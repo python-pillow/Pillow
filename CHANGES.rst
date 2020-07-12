@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
+  [hugovk, radarhere]
+
 - Allow ImageOps.autocontrast to specify low and high cutoffs separately #4749
   [millionhz, radarhere]
 
