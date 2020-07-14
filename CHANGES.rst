@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Drop support for EOL Python 3.5 #4746
+  [hugovk, radarhere, nulano]
+
 - Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
   [hugovk, radarhere]
 
