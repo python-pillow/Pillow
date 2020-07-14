@@ -115,17 +115,10 @@ nitpicky = True
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
-    ("py:meth", "_open"),
-    ("py:attr", "tile"),
-    ("py:meth", "CDC.GetHandleAttrib"),
-    ("py:meth", "PIL.Image.Image.convert2byte"),
     ("py:attr", "PIL.Image.Image.tag"),
     ("py:attr", "PIL.Image.Image.tag_v2"),
     ("py:attr", "PIL.Image.Image.tile"),
     ("py:data", "PIL.Image.MAX_IMAGE_PIXELS"),
-    ("py:func", "PIL.ImageMath.convert"),
-    ("py:func", "PIL.ImageMath.float"),
-    ("py:func", "PIL.ImageMath.int"),
     ("py:attr", "PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype"),
 ]
 
