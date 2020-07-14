@@ -712,8 +712,8 @@ The :py:meth:`~PIL.Image.open` method sets the following attributes:
 **n_frames**
     Set to the number of images in the stack.
 
-A convenience method, :py:meth:`~PIL.Image.Image.convert2byte`, is provided for
-converting floating point data to byte data (mode ``L``)::
+A convenience method, :py:meth:`~PIL.SpiderImagePlugin.SpiderImageFile.convert2byte`,
+is provided for converting floating point data to byte data (mode ``L``)::
 
     im = Image.open('image001.spi').convert2byte()
 
