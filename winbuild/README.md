@@ -6,18 +6,17 @@ For more extensive info, see the [Windows build instructions](build.rst).
 * See [Current Windows Build/Testing process (Pillow#553)](https://github.com/python-pillow/Pillow/issues/553#issuecomment-37877416),
   [Definitive docs for how to compile on Windows (matplotlib#1717)](https://github.com/matplotlib/matplotlib/issues/1717#issuecomment-13343859),
   [Test Windows with GitHub Actions (Pillow#4084)](https://github.com/python-pillow/Pillow/pull/4084).
-  
+
 
 * Requires Microsoft Visual Studio 2017 or newer with C++ component.
 * Requires NASM for libjpeg-turbo, a required dependency when using this script.
 * Requires CMake 3.12 or newer (available as Visual Studio component).
-* Python 3.6+ is required to generate valid scripts, but builds targeting Python 3.5+ are supported.
 * Tested on Windows Server 2016 with Visual Studio 2017 Community (AppVeyor).
 * Tested on Windows Server 2019 with Visual Studio 2019 Enterprise (GitHub Actions).
 
 The following is a simplified version of the script used on AppVeyor:
 ```
-set PYTHON=C:\Python35\bin
+set PYTHON=C:\Python38\bin
 cd /D C:\Pillow\winbuild
 C:\Python37\bin\python.exe build_prepare.py -v --depends=C:\pillow-depends
 build\build_dep_all.cmd

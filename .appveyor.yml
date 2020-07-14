@@ -14,7 +14,7 @@ environment:
   matrix:
   - PYTHON: C:/Python38
     ARCHITECTURE: x86
-  - PYTHON: C:/Python35-x64
+  - PYTHON: C:/Python36-x64
     ARCHITECTURE: x64
 
 

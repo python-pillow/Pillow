@@ -12,12 +12,6 @@ Prerequisites
 -------------
 
 
-Python
-^^^^^^
-
-While the scripts can target any version of Python supported by Pillow,
-Python 3.6+ is required to generate valid build scripts.
-
 Compilers
 ^^^^^^^^^
 
@@ -104,7 +98,7 @@ The following is a simplified version of the script used on AppVeyor:
 
 .. code-block::
 
-    set PYTHON=C:\Python35\bin
+    set PYTHON=C:\Python38\bin
     cd /D C:\Pillow\winbuild
     C:\Python37\bin\python.exe build_prepare.py -v --depends=C:\pillow-depends
     build\build_dep_all.cmd

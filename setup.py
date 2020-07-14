@@ -880,7 +880,6 @@ try:
             "Development Status :: 6 - Mature",
             "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
@@ -893,7 +892,7 @@ try:
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
         ],
-        python_requires=">=3.5",
+        python_requires=">=3.6",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
         include_package_data=True,
