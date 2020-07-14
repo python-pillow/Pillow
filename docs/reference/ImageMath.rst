@@ -60,9 +60,8 @@ point values, as necessary. For example, if you add two 8-bit images, the
 result will be a 32-bit integer image. If you add a floating point constant to
 an 8-bit image, the result will be a 32-bit floating point image.
 
-You can force conversion using the :py:func:`~PIL.ImageMath.convert`,
-:py:func:`~PIL.ImageMath.float`, and :py:func:`~PIL.ImageMath.int` functions
-described below.
+You can force conversion using the ``convert()``, ``float()``, and ``int()``
+functions described below.
 
 Bitwise Operators
 ^^^^^^^^^^^^^^^^^
