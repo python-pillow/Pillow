@@ -3,7 +3,7 @@ repos:
     rev: 6bedb5c58a7d8c25aa9509f8217bc24e9797e90d  # frozen: 19.10b0
     hooks:
       - id: black
-        args: ["--target-version", "py35"]
+        args: ["--target-version", "py36"]
         # Only .py files, until https://github.com/psf/black/issues/402 resolved
         files: \.py$
         types: []
