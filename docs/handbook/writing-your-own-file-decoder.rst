@@ -28,16 +28,16 @@ Pillow decodes files in two stages:
 
 An image plugin should contain a format handler derived from the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should
-provide an :py:meth:`_open` method, which reads the file header and
+provide an ``_open`` method, which reads the file header and
 sets up at least the :py:attr:`~PIL.Image.Image.mode` and
 :py:attr:`~PIL.Image.Image.size` attributes. To be able to load the
-file, the method must also create a list of :py:attr:`tile`
-descriptors, which contain a decoder name, extents of the tile, and
+file, the method must also create a list of ``tile`` descriptors,
+which contain a decoder name, extents of the tile, and
 any decoder-specific data. The format handler class must be explicitly
 registered, via a call to the :py:mod:`~PIL.Image` module.
 
 .. note:: For performance reasons, it is important that the
-  :py:meth:`_open` method quickly rejects files that do not have the
+  ``_open`` method quickly rejects files that do not have the
   appropriate contents.
 
 Example
@@ -103,10 +103,10 @@ Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
-The :py:attr:`tile` attribute
------------------------------
+The ``tile`` attribute
+----------------------
 
-To be able to read the file as well as just identifying it, the :py:attr:`tile`
+To be able to read the file as well as just identifying it, the ``tile``
 attribute must also be set. This attribute consists of a list of tile
 descriptors, where each descriptor specifies how data should be loaded to a
 given region in the image. In most cases, only a single descriptor is used,
@@ -134,7 +134,7 @@ The fields are used as follows:
     decoder specified by the first field in the tile descriptor tuple. If the
     decoder doesn’t need any parameters, use :data:`None` for this field.
 
-Note that the :py:attr:`tile` attribute contains a list of tile descriptors,
+Note that the ``tile`` attribute contains a list of tile descriptors,
 not just a single descriptor.
 
 Decoders
