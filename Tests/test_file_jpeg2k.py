@@ -8,7 +8,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     is_big_endian,
-    on_ci,
     skip_unless_feature,
 )
 
@@ -190,14 +189,14 @@ def test_16bit_monochrome_has_correct_mode():
         assert jp2.mode == "I;16"
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_jp2_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
         with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
             assert_image_similar(jp2, tiff_16bit, 1e-3)
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_j2k_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
         with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
