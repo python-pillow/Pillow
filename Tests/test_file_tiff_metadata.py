@@ -144,16 +144,16 @@ def test_write_metadata(tmp_path):
             assert_deep_equal(
                 original[tag],
                 value,
-                "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
+                f"{tag} didn't roundtrip, {original[tag]}, {value}",
             )
         else:
-            assert original[tag] == value, "{} didn't roundtrip, {}, {}".format(
-                tag, original[tag], value
-            )
+            assert (
+                original[tag] == value
+            ), f"{tag} didn't roundtrip, {original[tag]}, {value}"
 
     for tag, value in original.items():
         if tag not in ignored:
-            assert value == reloaded[tag], "%s didn't roundtrip" % tag
+            assert value == reloaded[tag], f"{tag} didn't roundtrip"
 
 
 def test_change_stripbytecounts_tag_type(tmp_path):

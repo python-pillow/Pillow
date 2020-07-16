@@ -181,7 +181,7 @@ def helper_chord(mode, bbox, start, end):
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_chord_{}.png".format(mode)
+    expected = f"Tests/images/imagedraw_chord_{mode}.png"
 
     # Act
     draw.chord(bbox, start, end, fill="red", outline="yellow")
@@ -243,7 +243,7 @@ def helper_ellipse(mode, bbox):
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
+    expected = f"Tests/images/imagedraw_ellipse_{mode}.png"
 
     # Act
     draw.ellipse(bbox, fill="green", outline="blue")
@@ -513,7 +513,7 @@ def test_polygon_kite():
         # Arrange
         im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
-        expected = "Tests/images/imagedraw_polygon_kite_{}.png".format(mode)
+        expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
 
         # Act
         draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
@@ -1087,7 +1087,5 @@ def test_same_color_outline():
                 draw_method(*args)
 
                 # Assert
-                expected = "Tests/images/imagedraw_outline_{}_{}.png".format(
-                    operation, mode
-                )
+                expected = f"Tests/images/imagedraw_outline_{operation}_{mode}.png"
                 assert_image_similar_tofile(im, expected, 1)

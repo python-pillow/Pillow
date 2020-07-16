@@ -61,7 +61,7 @@ def raise_oserror(error):
     except AttributeError:
         message = ERRORS.get(error)
     if not message:
-        message = "decoder error %d" % error
+        message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
 
 
@@ -201,7 +201,7 @@ class ImageFile(Image.Image):
                         # use mmap, if possible
                         import mmap
 
-                        with open(self.filename, "r") as fp:
+                        with open(self.filename) as fp:
                             self.map = mmap.mmap(
                                 fp.fileno(), 0, access=mmap.ACCESS_READ
                             )
@@ -256,7 +256,7 @@ class ImageFile(Image.Image):
                                 else:
                                     raise OSError(
                                         "image file is truncated "
-                                        "(%d bytes not processed)" % len(b)
+                                        f"({len(b)} bytes not processed)"
                                     )
 
                             b = b + s
@@ -332,7 +332,7 @@ class StubImageFile(ImageFile):
     def load(self):
         loader = self._load()
         if loader is None:
-            raise OSError("cannot find loader for this %s file" % self.format)
+            raise OSError(f"cannot find loader for this {self.format} file")
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
@@ -524,7 +524,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s) from e
+                raise OSError(f"encoder error {s} when writing image file") from e
             e.cleanup()
     else:
         # slight speedup: compress to real file object
@@ -539,7 +539,7 @@ def _save(im, fp, tile, bufsize=0):
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError(f"encoder error {s} when writing image file")
             e.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()

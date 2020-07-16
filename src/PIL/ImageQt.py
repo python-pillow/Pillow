@@ -145,7 +145,7 @@ def _toqclass_helper(im):
         data = im.tobytes("raw", "BGRA")
         format = QImage.Format_ARGB32
     else:
-        raise ValueError("unsupported image mode %r" % im.mode)
+        raise ValueError(f"unsupported image mode {repr(im.mode)}")
 
     __data = data or align8to32(im.tobytes(), im.size[0], im.mode)
     return {"data": __data, "im": im, "format": format, "colortable": colortable}

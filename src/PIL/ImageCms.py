@@ -678,8 +678,7 @@ def createProfile(colorSpace, colorTemp=-1):
 
     if colorSpace not in ["LAB", "XYZ", "sRGB"]:
         raise PyCMSError(
-            "Color space not supported for on-the-fly profile creation (%s)"
-            % colorSpace
+            f"Color space not supported for on-the-fly profile creation ({colorSpace})"
         )
 
     if colorSpace == "LAB":
@@ -687,7 +686,7 @@ def createProfile(colorSpace, colorTemp=-1):
             colorTemp = float(colorTemp)
         except (TypeError, ValueError) as e:
             raise PyCMSError(
-                'Color temperature must be numeric, "%s" not valid' % colorTemp
+                f'Color temperature must be numeric, "{colorTemp}" not valid'
             ) from e
 
     try:
@@ -732,7 +731,7 @@ def getProfileName(profile):
             return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
-        return "{} - {}\n".format(model, manufacturer)
+        return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v) from v

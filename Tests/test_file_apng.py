@@ -311,7 +311,7 @@ def test_apng_sequence_errors():
     ]
     for f in test_files:
         with pytest.raises(SyntaxError):
-            with Image.open("Tests/images/apng/{0}".format(f)) as im:
+            with Image.open(f"Tests/images/apng/{f}") as im:
                 im.seek(im.n_frames - 1)
                 im.load()
 

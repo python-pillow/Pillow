@@ -39,7 +39,7 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
-        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, name))
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:

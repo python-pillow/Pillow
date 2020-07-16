@@ -49,7 +49,7 @@ def test_questionable():
             with Image.open(f) as im:
                 im.load()
             if os.path.basename(f) not in supported:
-                print("Please add %s to the partially supported bmp specs." % f)
+                print(f"Please add {f} to the partially supported bmp specs.")
         except Exception:  # as msg:
             if os.path.basename(f) in supported:
                 raise
@@ -84,7 +84,7 @@ def test_good():
         if name in file_map:
             return os.path.join(base, "html", file_map[name])
         name = os.path.splitext(name)[0]
-        return os.path.join(base, "html", "%s.png" % name)
+        return os.path.join(base, "html", f"{name}.png")
 
     for f in get_files("g"):
         try:
@@ -107,4 +107,4 @@ def test_good():
                 os.path.join(base, "g", "pal8rle.bmp"),
                 os.path.join(base, "g", "pal4rle.bmp"),
             )
-            assert f in unsupported, "Unsupported Image {}: {}".format(f, msg)
+            assert f in unsupported, f"Unsupported Image {f}: {msg}"

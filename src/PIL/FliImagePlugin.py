@@ -130,7 +130,7 @@ class FliImageFile(ImageFile.ImageFile):
             self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError("cannot seek to frame %d" % frame)
+            raise ValueError(f"cannot seek to frame {frame}")
         self.__frame = frame
 
         # move to next frame

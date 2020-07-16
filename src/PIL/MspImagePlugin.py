@@ -114,7 +114,7 @@ class MspDecoder(ImageFile.PyDecoder):
         try:
             self.fd.seek(32)
             rowmap = struct.unpack_from(
-                "<%dH" % (self.state.ysize), self.fd.read(self.state.ysize * 2)
+                f"<{self.state.ysize}H", self.fd.read(self.state.ysize * 2)
             )
         except struct.error as e:
             raise OSError("Truncated MSP file in row map") from e
@@ -143,7 +143,7 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += runcount
 
             except struct.error as e:
-                raise OSError("Corrupted MSP file in row %d" % x) from e
+                raise OSError(f"Corrupted MSP file in row {x}") from e
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
@@ -160,7 +160,7 @@ Image.register_decoder("MSP", MspDecoder)
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise OSError("cannot write mode %s as MSP" % im.mode)
+        raise OSError(f"cannot write mode {im.mode} as MSP")
 
     # create MSP header
     header = [0] * 16

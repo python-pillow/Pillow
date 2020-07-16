@@ -25,7 +25,7 @@ def _test_leak(min_iterations, max_iterations, fn, *args, **kwargs):
         if i < min_iterations:
             mem_limit = mem + 1
             continue
-        msg = "memory usage limit exceeded after %d iterations" % (i + 1)
+        msg = f"memory usage limit exceeded after {i + 1} iterations"
         assert mem <= mem_limit, msg
 
 

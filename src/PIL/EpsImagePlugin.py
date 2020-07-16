@@ -118,10 +118,10 @@ def Ghostscript(tile, size, fp, scale=1):
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
         "-sDEVICE=ppmraw",  # ppm driver
-        "-sOutputFile=%s" % outfile,  # output file
+        f"-sOutputFile={outfile}",  # output file
         # adjust for image origin
         "-c",
-        "%d %d translate" % (-bbox[0], -bbox[1]),
+        f"{-bbox[0]} {-bbox[1]} translate",
         "-f",
         infile,  # input file
         # showpage (see https://bugs.ghostscript.com/show_bug.cgi?id=698272)
@@ -386,10 +386,10 @@ def _save(im, fp, filename, eps=1):
         # image header
         fp.write("gsave\n")
         fp.write("10 dict begin\n")
-        fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
+        fp.write(f"/buf {im.size[0] * operator[1]} string def\n")
         fp.write("%d %d scale\n" % im.size)
         fp.write("%d %d 8\n" % im.size)  # <= bits
-        fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+        fp.write(f"[{im.size[0]} 0 0 -{im.size[1]} 0 {im.size[1]}]\n")
         fp.write("{ currentfile buf readhexstring pop } bind\n")
         fp.write(operator[2] + "\n")
         if hasattr(fp, "flush"):

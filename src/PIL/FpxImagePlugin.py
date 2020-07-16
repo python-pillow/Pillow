@@ -72,7 +72,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # get the Image Contents Property Set
 
         prop = self.ole.getproperties(
-            ["Data Object Store %06d" % index, "\005Image Contents"]
+            [f"Data Object Store {index:06d}", "\005Image Contents"]
         )
 
         # size (highest resolution)
@@ -120,8 +120,8 @@ class FpxImageFile(ImageFile.ImageFile):
         # setup tile descriptors for a given subimage
 
         stream = [
-            "Data Object Store %06d" % index,
-            "Resolution %04d" % subimage,
+            f"Data Object Store {index:06d}",
+            f"Resolution {subimage:04d}",
             "Subimage 0000 Header",
         ]
 

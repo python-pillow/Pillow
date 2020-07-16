@@ -159,7 +159,7 @@ class ChunkStream:
 
         if not is_cid(cid):
             if not ImageFile.LOAD_TRUNCATED_IMAGES:
-                raise SyntaxError("broken PNG file (chunk %s)" % repr(cid))
+                raise SyntaxError(f"broken PNG file (chunk {repr(cid)})")
 
         return cid, pos, length
 
@@ -196,10 +196,12 @@ class ChunkStream:
             crc1 = _crc32(data, _crc32(cid))
             crc2 = i32(self.fp.read(4))
             if crc1 != crc2:
-                raise SyntaxError("broken PNG file (bad header checksum in %r)" % cid)
+                raise SyntaxError(
+                    f"broken PNG file (bad header checksum in {repr(cid)})"
+                )
         except struct.error as e:
             raise SyntaxError(
-                "broken PNG file (incomplete checksum in %r)" % cid
+                f"broken PNG file (incomplete checksum in {repr(cid)})"
             ) from e
 
     def crc_skip(self, cid, data):
@@ -351,8 +353,8 @@ class PngStream(ChunkStream):
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
             raise ValueError(
-                "Too much memory used in text chunks: %s>MAX_TEXT_MEMORY"
-                % self.text_memory
+                "Too much memory used in text chunks: "
+                f"{self.text_memory}>MAX_TEXT_MEMORY"
             )
 
     def save_rewind(self):
@@ -381,9 +383,7 @@ class PngStream(ChunkStream):
         logger.debug("Compression method %s", i8(s[i]))
         comp_method = i8(s[i])
         if comp_method != 0:
-            raise SyntaxError(
-                "Unknown compression method %s in iCCP chunk" % comp_method
-            )
+            raise SyntaxError(f"Unknown compression method {comp_method} in iCCP chunk")
         try:
             icc_profile = _safe_zlib_decompress(s[i + 2 :])
         except ValueError:
@@ -530,9 +530,7 @@ class PngStream(ChunkStream):
         else:
             comp_method = 0
         if comp_method != 0:
-            raise SyntaxError(
-                "Unknown compression method %s in zTXt chunk" % comp_method
-            )
+            raise SyntaxError(f"Unknown compression method {comp_method} in zTXt chunk")
         try:
             v = _safe_zlib_decompress(v[1:])
         except ValueError:
@@ -794,7 +792,7 @@ class PngImageFile(ImageFile.ImageFile):
             return
         else:
             if frame != self.__frame + 1:
-                raise ValueError("cannot seek to frame %d" % frame)
+                raise ValueError(f"cannot seek to frame {frame}")
 
         # ensure previous frame was loaded
         self.load()
@@ -1186,7 +1184,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         else:
             bits = 8
         if bits != 8:
-            mode = "%s;%d" % (mode, bits)
+            mode = f"{mode};{bits}"
 
     # encoder options
     im.encoderconfig = (
@@ -1200,7 +1198,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
     try:
         rawmode, mode = _OUTMODES[mode]
     except KeyError as e:
-        raise OSError("cannot write mode %s as PNG" % mode) from e
+        raise OSError(f"cannot write mode {mode} as PNG") from e
 
     #
     # write minimal PNG file
