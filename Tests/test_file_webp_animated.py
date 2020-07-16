@@ -5,7 +5,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     is_big_endian,
-    on_ci,
     skip_unless_feature,
 )
 
@@ -27,7 +26,7 @@ def test_n_frames():
         assert im.is_animated
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_write_animation_L(tmp_path):
     """
     Convert an animated GIF to animated WebP, then compare the frame count, and first
@@ -53,7 +52,7 @@ def test_write_animation_L(tmp_path):
             assert_image_similar(im, orig.convert("RGBA"), 25.0)
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_write_animation_RGB(tmp_path):
     """
     Write an animated WebP from RGB frames, and ensure the frames
