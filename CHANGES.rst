@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Add MIME type to PsdImagePlugin #4788
+  [samamorgan]
+
 - Drop support for EOL Python 3.5 #4746
   [hugovk, radarhere, nulano]
 
