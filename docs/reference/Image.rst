@@ -196,7 +196,6 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
 .. automethod:: PIL.Image.Image.histogram
-.. automethod:: PIL.Image.Image.offset
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
 .. automethod:: PIL.Image.Image.putalpha
@@ -243,7 +242,6 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.thumbnail
 .. automethod:: PIL.Image.Image.tobitmap
 .. automethod:: PIL.Image.Image.tobytes
-.. automethod:: PIL.Image.Image.tostring
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
@@ -262,8 +260,6 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 
 
 .. automethod:: PIL.Image.Image.verify
-
-.. automethod:: PIL.Image.Image.fromstring
 
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
