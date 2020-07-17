@@ -307,3 +307,5 @@ def _maketile(file, mode, bbox, channels):
 Image.register_open(PsdImageFile.format, PsdImageFile, _accept)
 
 Image.register_extension(PsdImageFile.format, ".psd")
+
+Image.register_mime(PsdImageFile.format, "image/vnd.adobe.photoshop")

@@ -12,6 +12,7 @@ def test_sanity():
         assert im.mode == "RGB"
         assert im.size == (128, 128)
         assert im.format == "PSD"
+        assert im.get_format_mimetype() == "image/vnd.adobe.photoshop"
 
         im2 = hopper()
         assert_image_similar(im, im2, 4.8)
