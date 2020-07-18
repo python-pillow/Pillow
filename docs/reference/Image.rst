@@ -151,6 +151,7 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.draft
 .. automethod:: PIL.Image.Image.effect_spread
 .. automethod:: PIL.Image.Image.entropy
+.. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.filter
 
 This blurs the input image using a filter from the ``ImageFilter`` module:
