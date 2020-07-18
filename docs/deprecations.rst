@@ -74,9 +74,9 @@ im.fromstring and tostring
 .. deprecated:: 2.0.0
 .. versionremoved:: 8.0.0
 
-* ``Image.fromstring()`` has been removed, call ``frombytes()`` instead.
-* ``im.fromstring()`` has been removed, call ``frombytes()`` instead.
-* ``im.tostring()`` has been removed, call ``tobytes()`` instead.
+* ``Image.fromstring()`` has been removed, call :py:func:`.Image.frombytes()` instead.
+* ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
+* ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
 
 They issued a ``DeprecationWarning`` since 2.0.0,
 an ``Exception`` since 3.0.0
