@@ -374,6 +374,10 @@ Constants
 ---------
 
 .. data:: NONE
+.. data:: MAX_IMAGE_PIXELS
+
+    Set to 89,478,485, approximately 0.25gb for a 24 bit (3 bpp) image.
+    See :py:meth:`~PIL.Image.open` for more information about how this is used.
 
 Transpose methods
 ^^^^^^^^^^^^^^^^^
