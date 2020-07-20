@@ -799,7 +799,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            logger.debug("Tag {}, Type: {}, Value: {}".format(tag, typ, value))
+            logger.debug("Tag {}, Type: {}, Value: {!r}".format(tag, typ, value))
             values = value if isinstance(value, tuple) else (value,)
             data = self._write_dispatch[typ](self, *values)
 
