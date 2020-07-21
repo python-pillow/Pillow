@@ -57,6 +57,8 @@ Functions
         turned into an error with ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or
         suppressed entirely with ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See
         also `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
+        If the number of pixels is greater than twice :py:data:`PIL.Image.MAX_IMAGE_PIXELS`, then a
+        ``DecompressionBombError`` will be raised instead.
 
     .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
     .. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
