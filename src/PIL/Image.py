@@ -2869,7 +2869,7 @@ def open(fp, mode="r"):
 
     :param fp: A filename (string), pathlib.Path object or a file object.
        The file object must implement ``file.read``,
-       ``file.seek`, and ``file.tell`` methods,
+       ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
     :returns: An :py:class:`~PIL.Image.Image` object.
