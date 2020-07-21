@@ -14,7 +14,7 @@ import struct
 import subprocess
 import sys
 import warnings
-from distutils import ccompiler, sysconfig
+from distutils import ccompiler
 from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
@@ -418,7 +418,7 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        prefix = sysconfig.get_config_var("prefix")
+        prefix = os.path.normpath(sys.prefix)
         if prefix:
             _add_directory(library_dirs, os.path.join(prefix, "lib"))
             _add_directory(include_dirs, os.path.join(prefix, "include"))
