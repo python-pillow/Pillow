@@ -81,7 +81,7 @@ class DecompressionBombError(Exception):
     pass
 
 
-# Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
+# Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
 
