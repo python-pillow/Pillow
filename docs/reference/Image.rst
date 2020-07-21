@@ -53,10 +53,16 @@ Functions
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
         a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the number of pixels in an
-        image is over a certain limit, :py:data:`PIL.Image.MAX_IMAGE_PIXELS`. If desired, the warning can be
-        turned into an error with ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or
-        suppressed entirely with ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See
-        also `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
+        image is over a certain limit, :py:data:`PIL.Image.MAX_IMAGE_PIXELS`.
+
+        This threshold can be changed by setting :py:data:`PIL.Image.MAX_IMAGE_PIXELS`. It can be disabled
+        by setting ``Image.MAX_IMAGE_PIXELS = None``.
+
+        If desired, the warning can be turned into an error with
+        ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or suppressed entirely with
+        ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also
+        `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
+
         If the number of pixels is greater than twice :py:data:`PIL.Image.MAX_IMAGE_PIXELS`, then a
         ``DecompressionBombError`` will be raised instead.
 
