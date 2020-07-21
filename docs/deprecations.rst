@@ -68,8 +68,8 @@ raised a ``DeprecationWarning`` since 1.1.5,
 an ``Exception`` since Pillow 3.0.0
 and ``NotImplementedError`` since 3.3.0.
 
-im.fromstring and tostring
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Image.fromstring, im.fromstring and im.tostring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 2.0.0
 .. versionremoved:: 8.0.0
