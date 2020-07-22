@@ -1,5 +1,3 @@
-import distutils.version
-
 import pytest
 from packaging.version import parse as parse_version
 from PIL import Image, ImageDraw, ImageFont, features

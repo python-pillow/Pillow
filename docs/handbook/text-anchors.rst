@@ -19,7 +19,7 @@ horizontal alignment, the second character is the vertical alignment.
 For example, the default value of ``la`` for horizontal text means left--ascender
 aligned text.
 
-When drawing text with :py:meth:`PIL.ImageDraw.Draw.text` with a specific anchor,
+When drawing text with :py:meth:`PIL.ImageDraw.ImageDraw.text` with a specific anchor,
 text will be placed such that the specified anchor point is at the ``xy`` coordinates.
 
 For example, in the following image, text is ``ms`` (middle--baseline) aligned, with ``xy`` at
