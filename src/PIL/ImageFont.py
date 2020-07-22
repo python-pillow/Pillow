@@ -217,8 +217,8 @@ class FreeTypeFont:
 
     def getlength(self, text, mode="", direction=None, features=None, language=None):
         """
-        Returns length (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
+        Returns length (in pixels with 1/64 precision) of given text if rendered
+        in font with provided direction, features, and language.
 
         This is the amount by which following text should be offset.
         Text bounding box may extend past the length in some fonts,
@@ -275,8 +275,9 @@ class FreeTypeFont:
         Returns bounding box (in pixels) of given text relative to given anchor
         if rendered in font with provided direction, features, and language.
 
-        Use :py:func`getlength()` to get the offset of following text. The bounding
-        box includes extra margins for some fonts, e.g. italics or accents.
+        Use :py:meth`getlength()` to get the offset of following text with
+        1/64 pixel precision. The bounding box includes extra margins for
+        some fonts, e.g. italics or accents.
 
         :param text: Text to render.
         :param mode: Used by some graphics drivers to indicate what mode the
@@ -329,8 +330,14 @@ class FreeTypeFont:
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
 
-        Use :py:func:`getlength()` to measure the offset of following text.
-        Use :py:func:`getbbox()` to get the exact bounding box based on an anchor.
+        Use :py:meth:`getlength()` to measure the offset of following text with
+        1/64 pixel precision.
+        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        .. note:: For historical reasons this function measures text height from
+            the ascender line instead of the top, see :ref:`text-anchors`.
+            If you wish to measure text height from the top, it is recommended
+            to use :meth:`getbbox` with `anchor='lt'` instead.
 
         :param text: Text to measure.
 
@@ -369,9 +376,10 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        # vertical offset is added for historical reasons, see discussion in #4789
         size, offset = self.font.getsize(text, False, direction, features, language)
         return (
-            size[0] + stroke_width * 2 + offset[0],
+            size[0] + stroke_width * 2,
             size[1] + stroke_width * 2 + offset[1],
         )
 

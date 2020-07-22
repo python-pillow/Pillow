@@ -37,18 +37,21 @@ class TestImageFont:
         (">=2.3", "<2.4"): {
             "multiline": 30,
             "textsize": 12,
+            "getters": (13, 16),
             "multiline-anchor": 6,
             "getlength": (36, 27, 27, 33),
         },
         (">=2.7",): {
             "multiline": 6.2,
             "textsize": 2.5,
+            "getters": (12, 16),
             "multiline-anchor": 4,
             "getlength": (36, 21, 24, 33),
         },
         "Default": {
             "multiline": 0.5,
             "textsize": 0.5,
+            "getters": (12, 16),
             "multiline-anchor": 4,
             "getlength": (36, 24, 24, 33),
         },
@@ -624,7 +627,7 @@ class TestImageFont:
         assert t.font.glyphs == 4177
         assert t.getsize("A") == (12, 16)
         assert t.getsize("AB") == (24, 16)
-        assert t.getsize("M") == (12, 16)
+        assert t.getsize("M") == self.metrics["getters"]
         assert t.getsize("y") == (12, 20)
         assert t.getsize("a") == (12, 16)
         assert t.getsize_multiline("A") == (12, 16)
