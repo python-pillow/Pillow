@@ -3,9 +3,9 @@
 Writing Your Own Image Plugin
 =============================
 
-The Pillow uses a plug-in model which allows you to add your own
+Pillow uses a plugin model which allows you to add your own
 decoders to the library, without any changes to the library
-itself. Such plug-ins usually have names like
+itself. Such plugins usually have names like
 :file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
 (usually an abbreviation).
 
@@ -14,7 +14,7 @@ itself. Such plug-ins usually have names like
              :file:`ImagePlugin.py`.  You will need to import your
              image plugin manually.
 
-Pillow decodes files in 2 stages:
+Pillow decodes files in two stages:
 
 1. It loops over the available image plugins in the loaded order, and
    calls the plugin's ``_accept`` function with the first 16 bytes of
@@ -26,24 +26,24 @@ Pillow decodes files in 2 stages:
    called, which sets up a decoder for each tile and feeds the data to
    it.
 
-An image plug-in should contain a format handler derived from the
+An image plugin should contain a format handler derived from the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should
-provide an :py:meth:`_open` method, which reads the file header and
+provide an ``_open`` method, which reads the file header and
 sets up at least the :py:attr:`~PIL.Image.Image.mode` and
 :py:attr:`~PIL.Image.Image.size` attributes. To be able to load the
-file, the method must also create a list of :py:attr:`tile`
-descriptors, which contain a decoder name, extents of the tile, and
+file, the method must also create a list of ``tile`` descriptors,
+which contain a decoder name, extents of the tile, and
 any decoder-specific data. The format handler class must be explicitly
 registered, via a call to the :py:mod:`~PIL.Image` module.
 
 .. note:: For performance reasons, it is important that the
-  :py:meth:`_open` method quickly rejects files that do not have the
+  ``_open`` method quickly rejects files that do not have the
   appropriate contents.
 
 Example
 -------
 
-The following plug-in supports a simple format, which has a 128-byte header
+The following plugin supports a simple format, which has a 128-byte header
 consisting of the words “SPAM” followed by the width, height, and pixel size in
 bits. The header fields are separated by spaces. The image data follows
 directly after the header, and can be either bi-level, greyscale, or 24-bit
@@ -82,14 +82,14 @@ true color.
                 raise SyntaxError("unknown number of bits")
 
             # data descriptor
-            self.tile = [
-                ("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))
-            ]
+            self.tile = [("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
+
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
 
     Image.register_extension(SpamImageFile.format, ".spam")
-    Image.register_extension(SpamImageFile.format, ".spa") # dos version
+    Image.register_extension(SpamImageFile.format, ".spa")  # DOS version
+
 
 The format handler must always set the
 :py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.mode`
@@ -103,10 +103,10 @@ Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
-The :py:attr:`tile` attribute
------------------------------
+The ``tile`` attribute
+----------------------
 
-To be able to read the file as well as just identifying it, the :py:attr:`tile`
+To be able to read the file as well as just identifying it, the ``tile``
 attribute must also be set. This attribute consists of a list of tile
 descriptors, where each descriptor specifies how data should be loaded to a
 given region in the image. In most cases, only a single descriptor is used,
@@ -132,9 +132,9 @@ The fields are used as follows:
 **parameters**
     Parameters to the decoder. The contents of this field depends on the
     decoder specified by the first field in the tile descriptor tuple. If the
-    decoder doesn’t need any parameters, use None for this field.
+    decoder doesn’t need any parameters, use :data:`None` for this field.
 
-Note that the :py:attr:`tile` attribute contains a list of tile descriptors,
+Note that the ``tile`` attribute contains a list of tile descriptors,
 not just a single descriptor.
 
 Decoders
@@ -175,7 +175,7 @@ The fields are used as follows:
 
 The **raw mode** field is used to determine how the data should be unpacked to
 match PIL’s internal pixel layout. PIL supports a large set of raw modes; for a
-complete list, see the table in the :py:mod:`Unpack.c` module. The following
+complete list, see the table in the :file:`Unpack.c` module. The following
 table describes some commonly used **raw modes**:
 
 +-----------+-----------------------------------------------------------------+
@@ -211,7 +211,7 @@ Note that for the most common cases, the raw mode is simply the same as the mode
 
 The Python Imaging Library supports many other decoders, including JPEG, PNG,
 and PackBits. For details, see the :file:`decode.c` source file, and the
-standard plug-in implementations provided with the library.
+standard plugin implementations provided with the library.
 
 Decoding floating point data
 ----------------------------

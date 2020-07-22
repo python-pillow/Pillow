@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageEnhance
 .. py:currentmodule:: PIL.ImageEnhance
 
-:py:mod:`ImageEnhance` Module
-=============================
+:py:mod:`~PIL.ImageEnhance` Module
+==================================
 
-The :py:mod:`ImageEnhance` module contains a number of classes that can be used
+The :py:mod:`~PIL.ImageEnhance` module contains a number of classes that can be used
 for image enhancement.
 
 Example: Vary the sharpness of an image
@@ -29,7 +29,8 @@ Classes
 All enhancement classes implement a common interface, containing a single
 method:
 
-.. py:class:: PIL.ImageEnhance._Enhance
+.. py:class:: _Enhance
+
     .. py:method:: enhance(factor)
 
         Returns an enhanced image.
@@ -40,7 +41,7 @@ method:
                        etc), and higher values more. There are no restrictions
                        on this value.
 
-.. py:class:: PIL.ImageEnhance.Color(image)
+.. py:class:: Color(image)
 
     Adjust image color balance.
 
@@ -49,7 +50,7 @@ method:
     factor of 0.0 gives a black and white image. A factor of 1.0 gives
     the original image.
 
-.. py:class:: PIL.ImageEnhance.Contrast(image)
+.. py:class:: Contrast(image)
 
     Adjust image contrast.
 
@@ -57,7 +58,7 @@ method:
     to the contrast control on a TV set. An enhancement factor of 0.0
     gives a solid grey image. A factor of 1.0 gives the original image.
 
-.. py:class:: PIL.ImageEnhance.Brightness(image)
+.. py:class:: Brightness(image)
 
     Adjust image brightness.
 
@@ -65,7 +66,7 @@ method:
     enhancement factor of 0.0 gives a black image. A factor of 1.0 gives the
     original image.
 
-.. py:class:: PIL.ImageEnhance.Sharpness(image)
+.. py:class:: Sharpness(image)
 
     Adjust image sharpness.
 

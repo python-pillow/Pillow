@@ -55,6 +55,19 @@ def test_save_append_images(tmp_path):
             assert_image_equal(reread, provided_im)
 
 
+@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
+def test_save_fp():
+    fp = io.BytesIO()
+
+    with Image.open(TEST_FILE) as im:
+        im.save(fp, format="ICNS")
+
+    with Image.open(fp) as reread:
+        assert reread.mode == "RGBA"
+        assert reread.size == (1024, 1024)
+        assert reread.format == "ICNS"
+
+
 def test_sizes():
     # Check that we can load all of the sizes, and that the final pixel
     # dimensions are as expected

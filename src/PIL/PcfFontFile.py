@@ -48,11 +48,8 @@ def sz(s, o):
     return s[o : s.index(b"\0", o)]
 
 
-##
-# Font file plugin for the X11 PCF format.
-
-
 class PcfFontFile(FontFile.FontFile):
+    """Font file plugin for the X11 PCF format."""
 
     name = "name"
 

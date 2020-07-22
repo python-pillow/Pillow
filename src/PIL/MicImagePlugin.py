@@ -46,8 +46,8 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except OSError:
-            raise SyntaxError("not an MIC file; invalid OLE file")
+        except OSError as e:
+            raise SyntaxError("not an MIC file; invalid OLE file") from e
 
         # find ACI subfiles with Image members (maybe not the
         # best way to identify MIC files, but what the... ;-)
@@ -77,8 +77,8 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             return
         try:
             filename = self.images[frame]
-        except IndexError:
-            raise EOFError("no such frame")
+        except IndexError as e:
+            raise EOFError("no such frame") from e
 
         self.fp = self.ole.openstream(filename)
 

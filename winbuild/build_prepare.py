@@ -6,32 +6,32 @@ import sys
 
 
 def cmd_cd(path):
-    return "cd /D {path}".format(**locals())
+    return f"cd /D {path}"
 
 
 def cmd_set(name, value):
-    return "set {name}={value}".format(**locals())
+    return f"set {name}={value}"
 
 
 def cmd_append(name, value):
-    op = "path " if name == "PATH" else "set {name}="
-    return (op + "%{name}%;{value}").format(**locals())
+    op = "path " if name == "PATH" else f"set {name}="
+    return op + f"%{name}%;{value}"
 
 
 def cmd_copy(src, tgt):
-    return 'copy /Y /B "{src}" "{tgt}"'.format(**locals())
+    return f'copy /Y /B "{src}" "{tgt}"'
 
 
 def cmd_xcopy(src, tgt):
-    return 'xcopy /Y /E "{src}" "{tgt}"'.format(**locals())
+    return f'xcopy /Y /E "{src}" "{tgt}"'
 
 
 def cmd_mkdir(path):
-    return 'mkdir "{path}"'.format(**locals())
+    return f'mkdir "{path}"'
 
 
 def cmd_rmdir(path):
-    return 'rmdir /S /Q "{path}"'.format(**locals())
+    return f'rmdir /S /Q "{path}"'
 
 
 def cmd_nmake(makefile=None, target="", params=None):
@@ -44,13 +44,13 @@ def cmd_nmake(makefile=None, target="", params=None):
 
     return " ".join(
         [
-            "{{nmake}}",
+            "{nmake}",
             "-nologo",
-            '-f "{makefile}"' if makefile is not None else "",
-            "{params}",
-            '"{target}"',
+            f'-f "{makefile}"' if makefile is not None else "",
+            f"{params}",
+            f'"{target}"',
         ]
-    ).format(**locals())
+    )
 
 
 def cmd_cmake(params=None, file="."):
@@ -62,15 +62,15 @@ def cmd_cmake(params=None, file="."):
         params = str(params)
     return " ".join(
         [
-            "{{cmake}}",
+            "{cmake}",
             "-DCMAKE_VERBOSE_MAKEFILE=ON",
             "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
             "-DCMAKE_BUILD_TYPE=Release",
-            "{params}",
+            f"{params}",
             '-G "NMake Makefiles"',
-            '"{file}"',
+            f'"{file}"',
         ]
-    ).format(**locals())
+    )
 
 
 def cmd_msbuild(
@@ -78,14 +78,14 @@ def cmd_msbuild(
 ):
     return " ".join(
         [
-            "{{msbuild}}",
-            "{file}",
-            '/t:"{target}"',
-            '/p:Configuration="{configuration}"',
-            "/p:Platform={platform}",
+            "{msbuild}",
+            f"{file}",
+            f'/t:"{target}"',
+            f'/p:Configuration="{configuration}"',
+            f"/p:Platform={platform}",
             "/m",
         ]
-    ).format(**locals())
+    )
 
 
 SF_MIRROR = "http://iweb.dl.sourceforge.net"
@@ -336,12 +336,12 @@ def find_msvs():
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
     if os.path.isfile(msbuild):
-        vs["msbuild"] = '"{}"'.format(msbuild)
+        vs["msbuild"] = f'"{msbuild}"'
     else:
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
         if os.path.isfile(msbuild):
-            vs["msbuild"] = '"{}"'.format(msbuild)
+            vs["msbuild"] = f'"{msbuild}"'
         else:
             print("Visual Studio MSBuild not found")
             return None
@@ -350,7 +350,7 @@ def find_msvs():
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vs["header"].append('call "{}" {{vcvars_arch}}'.format(vcvarsall))
+    vs["header"].append(f'call "{vcvarsall}" {{vcvars_arch}}')
 
     return vs
 
@@ -411,7 +411,7 @@ def get_footer(dep):
 def build_dep(name):
     dep = deps[name]
     dir = dep["dir"]
-    file = "build_dep_{name}.cmd".format(**locals())
+    file = f"build_dep_{name}.cmd"
 
     extract_dep(dep["url"], dep["filename"])
 
@@ -424,10 +424,10 @@ def build_dep(name):
         with open(patch_file, "w") as f:
             f.write(text)
 
-    banner = "Building {name} ({dir})".format(**locals())
+    banner = f"Building {name} ({dir})"
     lines = [
         "@echo " + ("=" * 70),
-        "@echo ==== {:<60} ====".format(banner),
+        f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
         "cd /D %s" % os.path.join(build_dir, dir),
         *prefs["header"],
@@ -444,7 +444,8 @@ def build_dep_all():
     for dep_name in deps:
         if dep_name in disabled:
             continue
-        lines.append(r'cmd.exe /c "{{build_dir}}\{}"'.format(build_dep(dep_name)))
+        script = build_dep(dep_name)
+        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
@@ -456,7 +457,7 @@ def build_pillow():
         cmd_cd("{pillow_dir}"),
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("MSSdk", "1"),  # for Python 3.5 and PyPy3.6
+        cmd_set("MSSdk", "1"),  # for PyPy3.6
         cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
         r'"{python_dir}\{python_exe}" setup.py build_ext %*',
     ]

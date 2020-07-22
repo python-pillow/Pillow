@@ -8,7 +8,7 @@ Over 30 different file formats can be identified and read by the library.
 Write support is less extensive, but most common interchange and presentation
 formats are supported.
 
-The :py:meth:`~PIL.Image.Image.open` function identifies files from their
+The :py:meth:`~PIL.Image.open` function identifies files from their
 contents, not their names, but the :py:meth:`~PIL.Image.Image.save` method
 looks at the name to determine which format to use, unless the format is given
 explicitly.
@@ -25,7 +25,7 @@ Pillow reads and writes Windows and OS/2 BMP files containing ``1``, ``L``, ``P`
 or ``RGB`` data. 16-colour images are read as ``P`` images. Run-length encoding
 is not supported.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **compression**
@@ -74,7 +74,7 @@ are used or GIF89a is already in use.
 Note that GIF files are always read as grayscale (``L``)
 or palette mode (``P``) images.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **background**
@@ -203,7 +203,7 @@ ICNS
 Pillow reads and (macOS only) writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
-:py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.Image.open` method
+:py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.open` method
 sets the following :py:attr:`~PIL.Image.Image.info` property:
 
 **sizes**
@@ -257,7 +257,7 @@ Using the :py:meth:`~PIL.Image.Image.draft` method, you can speed things up by
 converting ``RGB`` images to ``L``, and resize images to 1/2, 1/4 or 1/8 of
 their original size while loading them.
 
-The :py:meth:`~PIL.Image.Image.open` method may set the following
+The :py:meth:`~PIL.Image.open` method may set the following
 :py:attr:`~PIL.Image.Image.info` properties if available:
 
 **jfif**
@@ -473,7 +473,7 @@ image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
 
 **chromaticity**
@@ -501,12 +501,14 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
     This key is omitted if the image is not a transparent palette image.
 
+.. _png-text:
+
 ``open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
-``PngImagePlugin.MAX_TEXT_CHUNK``, by default 1MB, to prevent
+:data:`.PngImagePlugin.MAX_TEXT_CHUNK`, by default 1MB, to prevent
 decompression bombs. Additionally, the total size of all of the text
-chunks is limited to ``PngImagePlugin.MAX_TEXT_MEMORY``, defaulting to
+chunks is limited to :data:`.PngImagePlugin.MAX_TEXT_MEMORY`, defaulting to
 64MB.
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
@@ -611,6 +613,8 @@ where applicable:
     Any APNG file containing sequence errors is treated as an invalid image. The APNG
     loader will not attempt to repair and reorder files containing sequence errors.
 
+.. _apng-saving:
+
 Saving
 ~~~~~~
 
@@ -697,7 +701,7 @@ Pillow also reads SPIDER stack files containing sequences of SPIDER images. The
 :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell` methods are supported, and
 random access is allowed.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
+The :py:meth:`~PIL.Image.open` method sets the following attributes:
 
 **format**
     Set to ``SPIDER``
@@ -708,8 +712,8 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following attributes:
 **n_frames**
     Set to the number of images in the stack.
 
-A convenience method, :py:meth:`~PIL.Image.Image.convert2byte`, is provided for
-converting floating point data to byte data (mode ``L``)::
+A convenience method, :py:meth:`~PIL.SpiderImagePlugin.SpiderImageFile.convert2byte`,
+is provided for converting floating point data to byte data (mode ``L``)::
 
     im = Image.open('image001.spi').convert2byte()
 
@@ -750,7 +754,7 @@ uncompressed files.
     support for reading Packbits, LZW and JPEG compressed TIFFs
     without using libtiff.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **compression**
@@ -774,7 +778,7 @@ The :py:meth:`~PIL.Image.Image.open` method sets the following
 
 The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
 of TIFF metadata. The keys are numerical indexes from
-:py:attr:`~PIL.TiffTags.TAGS_V2`.  Values are strings or numbers for single
+:py:data:`.TiffTags.TAGS_V2`.  Values are strings or numbers for single
 items, multiple values are returned in a tuple of values. Rational
 numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
 object.
@@ -827,7 +831,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     object and setting the type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` with
     the appropriate numerical value from
-    ``TiffTags.TYPES``.
+    :py:data:`.TiffTags.TYPES`.
 
     .. versionadded:: 2.3.0
 
@@ -844,7 +848,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     Previous versions only supported some tags when writing using
     libtiff. The supported list is found in
-    :py:attr:`~PIL:TiffTags.LIBTIFF_CORE`.
+    :py:data:`.TiffTags.LIBTIFF_CORE`.
 
     .. versionadded:: 6.1.0
 
@@ -857,7 +861,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: ``None``, ``"tiff_ccitt"``, ``"group3"``,
+    methods are: :data:`None`, ``"tiff_ccitt"``, ``"group3"``,
     ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
     ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
     ``"tiff_sgilog24"``, ``"tiff_raw_16"``
@@ -1021,7 +1025,7 @@ FLI, FLC
 
 Pillow reads Autodesk FLI and FLC animations.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **duration**
@@ -1054,7 +1058,7 @@ GBR
 
 The GBR decoder reads GIMP brush files, version 1 and 2.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **comment**
@@ -1069,7 +1073,7 @@ GD
 Pillow reads uncompressed GD2 files. Note that you must use
 :py:func:`PIL.GdImageFile.open` to read such a file.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **transparency**
@@ -1185,7 +1189,7 @@ XPM
 
 Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
 
-The :py:meth:`~PIL.Image.Image.open` method sets the following
+The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **transparency**

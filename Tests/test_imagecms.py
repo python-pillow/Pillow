@@ -435,39 +435,6 @@ def test_extended_information():
     assert p.xcolor_space == "RGB "
 
 
-def test_deprecations():
-    skip_missing()
-    o = ImageCms.getOpenProfile(SRGB)
-    p = o.profile
-
-    def helper_deprecated(attr, expected):
-        result = pytest.warns(DeprecationWarning, getattr, p, attr)
-        assert result == expected
-
-    # p.color_space
-    helper_deprecated("color_space", "RGB")
-
-    # p.pcs
-    helper_deprecated("pcs", "XYZ")
-
-    # p.product_copyright
-    helper_deprecated(
-        "product_copyright", "Copyright International Color Consortium, 2009"
-    )
-
-    # p.product_desc
-    helper_deprecated("product_desc", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_description
-    helper_deprecated("product_description", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_manufacturer
-    helper_deprecated("product_manufacturer", "")
-
-    # p.product_model
-    helper_deprecated("product_model", "IEC 61966-2-1 Default RGB Colour Space - sRGB")
-
-
 def test_profile_typesafety():
     """ Profile init type safety
 

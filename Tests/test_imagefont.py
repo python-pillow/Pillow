@@ -1,5 +1,4 @@
 import copy
-import distutils.version
 import os
 import re
 import shutil
@@ -7,6 +6,7 @@ import sys
 from io import BytesIO
 
 import pytest
+from packaging.version import parse as parse_version
 from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import (
@@ -59,7 +59,7 @@ class TestImageFont:
 
     @classmethod
     def setup_class(self):
-        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
+        freetype = parse_version(features.version_module("freetype2"))
 
         self.metrics = self.METRICS["Default"]
         for conditions, metrics in self.METRICS.items():
@@ -67,7 +67,7 @@ class TestImageFont:
                 continue
 
             for condition in conditions:
-                version = re.sub("[<=>]", "", condition)
+                version = parse_version(re.sub("[<=>]", "", condition))
                 if (condition.startswith(">=") and freetype >= version) or (
                     condition.startswith("<") and freetype < version
                 ):
@@ -501,7 +501,7 @@ class TestImageFont:
         with pytest.raises(UnicodeEncodeError):
             font.getsize("’")
 
-    @pytest.mark.skipif(is_pypy(), reason="failing on PyPy")
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"
@@ -667,8 +667,8 @@ class TestImageFont:
     def test_variation_get(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.get_variation_names()
             with pytest.raises(NotImplementedError):
@@ -739,8 +739,8 @@ class TestImageFont:
     def test_variation_set_by_name(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_name("Bold")
             return
@@ -763,8 +763,8 @@ class TestImageFont:
     def test_variation_set_by_axes(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(features.version_module("freetype2"))
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_axes([100])
             return
@@ -871,7 +871,7 @@ class TestImageFont_RaqmLayout(TestImageFont):
 def test_render_mono_size():
     # issue 4177
 
-    if distutils.version.StrictVersion(ImageFont.core.freetype2_version) < "2.4":
+    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
         pytest.skip("Different metrics")
 
     im = Image.new("P", (100, 30), "white")

@@ -144,8 +144,8 @@ class PsdImageFile(ImageFile.ImageFile):
             self.frame = layer
             self.fp = self.__fp
             return name, bbox
-        except IndexError:
-            raise EOFError("no such layer")
+        except IndexError as e:
+            raise EOFError("no such layer") from e
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)
@@ -307,3 +307,5 @@ def _maketile(file, mode, bbox, channels):
 Image.register_open(PsdImageFile.format, PsdImageFile, _accept)
 
 Image.register_extension(PsdImageFile.format, ".psd")
+
+Image.register_mime(PsdImageFile.format, "image/vnd.adobe.photoshop")

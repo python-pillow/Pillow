@@ -175,7 +175,7 @@ setraqm(void)
     }
 
 #ifndef _WIN32
-    p_raqm.version_string = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_string");
+    p_raqm.version_string = (t_raqm_version_string)dlsym(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
@@ -209,7 +209,7 @@ setraqm(void)
         return 2;
     }
 #else
-    p_raqm.version_string = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_string");
+    p_raqm.version_string = (t_raqm_version_string)GetProcAddress(p_raqm.raqm, "raqm_version_string");
     p_raqm.version_atleast = (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_atleast");
     p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
     p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");

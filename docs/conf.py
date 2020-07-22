@@ -22,12 +22,19 @@ import sphinx_rtd_theme
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-# needs_sphinx = '1.0'
+needs_sphinx = "2.4"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode", "sphinx.ext.intersphinx"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "sphinx_removed_in",
+]
+
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -97,6 +104,22 @@ pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+# If true, Sphinx will warn about all references where the target cannot be found.
+# Default is False. You can activate this mode temporarily using the -n command-line
+# switch.
+nitpicky = True
+
+# A list of (type, target) tuples (by default empty) that should be ignored when
+# generating warnings in “nitpicky mode”. Note that type should include the domain name
+# if present. Example entries would be ('py:func', 'int') or
+# ('envvar', 'LD_LIBRARY_PATH').
+nitpick_ignore = [
+    ("py:attr", "PIL.Image.Image.tag"),
+    ("py:attr", "PIL.Image.Image.tag_v2"),
+    ("py:attr", "PIL.Image.Image.tile"),
+    ("py:attr", "PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------

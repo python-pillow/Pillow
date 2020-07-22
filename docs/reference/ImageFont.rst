@@ -1,12 +1,12 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`ImageFont` Module
-==========================
+:py:mod:`~PIL.ImageFont` Module
+===============================
 
-The :py:mod:`ImageFont` module defines a class with the same name. Instances of
+The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.Draw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
 PIL uses its own font file format to store bitmap fonts. You can use the
 :command:`pilfont` utility from
