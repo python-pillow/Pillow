@@ -798,9 +798,11 @@ class TestImageFont:
     def test_anchor(self, anchor, left, left_raqm, top):
         name, text = "quick", "Quick"
         target = "Tests/images/test_anchor_%s_%s.png" % (name, anchor)
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = parse_version(features.version_module("freetype2"))
 
-        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM or freetype < "2.4":
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM or freetype < parse_version(
+            "2.4"
+        ):
             width, height = (129, 44)
             left = left_raqm
         else:
@@ -871,7 +873,7 @@ class TestImageFont_RaqmLayout(TestImageFont):
 def test_render_mono_size():
     # issue 4177
 
-    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
+    if parse_version(features.version_module("freetype2")) < parse_version("2.4"):
         pytest.skip("Different metrics")
 
     im = Image.new("P", (100, 30), "white")

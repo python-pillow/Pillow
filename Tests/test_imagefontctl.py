@@ -1,7 +1,8 @@
 import distutils.version
 
 import pytest
-from PIL import Image, ImageDraw, ImageFont
+from packaging.version import parse as parse_version
+from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import assert_image_similar, skip_unless_feature
 
@@ -262,7 +263,7 @@ def test_getlength_combine(mode, direction, text):
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
 def test_anchor_ttb(anchor):
-    if distutils.version.StrictVersion(ImageFont.core.freetype2_version) < "2.5.1":
+    if parse_version(features.version_module("freetype2")) < parse_version("2.5.1"):
         # FreeType 2.5.1 README: Miscellaneous Changes:
         # Improved computation of emulated vertical metrics for TrueType fonts.
         pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
@@ -325,7 +326,7 @@ combine_tests = (
 )
 def test_combine(name, text, dir, anchor, epsilon):
     if (
-        distutils.version.StrictVersion(ImageFont.core.freetype2_version) < "2.5.1"
+        parse_version(features.version_module("freetype2")) < parse_version("2.5.1")
         and dir == "ttb"
     ):
         # FreeType 2.5.1 README: Miscellaneous Changes:
