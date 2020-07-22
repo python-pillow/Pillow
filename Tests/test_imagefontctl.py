@@ -380,3 +380,32 @@ def test_combine_multiline(anchor, align):
 
     with Image.open(path) as expected:
         assert_image_similar(im, expected, 0.015)
+
+
+def test_anchor_invalid_ttb():
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    im = Image.new("RGB", (100, 100), "white")
+    d = ImageDraw.Draw(im)
+    d.font = font
+
+    for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
+        pytest.raises(
+            ValueError, lambda: font.getmask2("hello", anchor=anchor, direction="ttb")
+        )
+        pytest.raises(
+            ValueError, lambda: font.getbbox("hello", anchor=anchor, direction="ttb")
+        )
+        pytest.raises(
+            ValueError, lambda: d.text((0, 0), "hello", anchor=anchor, direction="ttb")
+        )
+        pytest.raises(
+            ValueError,
+            lambda: d.multiline_text(
+                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
+            ),
+        )
+    # ttb multiline text does not support anchors at all
+    pytest.raises(
+        ValueError,
+        lambda: d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
+    )

@@ -864,6 +864,24 @@ class TestImageFont:
         with Image.open(target) as expected:
             assert_image_similar(im, expected, self.metrics["multiline-anchor"])
 
+    def test_anchor_invalid(self):
+        font = self.get_font()
+        im = Image.new("RGB", (100, 100), "white")
+        d = ImageDraw.Draw(im)
+        d.font = font
+
+        for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
+            pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+        for anchor in ["lt", "lb"]:
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
