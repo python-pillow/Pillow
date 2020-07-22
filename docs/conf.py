@@ -118,7 +118,6 @@ nitpick_ignore = [
     ("py:attr", "PIL.Image.Image.tag"),
     ("py:attr", "PIL.Image.Image.tag_v2"),
     ("py:attr", "PIL.Image.Image.tile"),
-    ("py:data", "PIL.Image.MAX_IMAGE_PIXELS"),
     ("py:attr", "PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype"),
 ]
 
