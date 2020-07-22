@@ -729,23 +729,28 @@ font_getsize(FontObject* self, PyObject* args)
             load_flags |= FT_LOAD_TARGET_MONO;
         }
         error = FT_Load_Glyph(face, index, load_flags);
-        if (error)
+        if (error) {
             return geterror(error);
-
+        }
         error = FT_Get_Glyph(face->glyph, &glyph);
-        if (error)
+        if (error) {
             return geterror(error);
+        }
 
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
 
-        if (bbox.xMax > x_max)
+        if (bbox.xMax > x_max) {
             x_max = bbox.xMax;
-        if (bbox.xMin < x_min)
+        }
+        if (bbox.xMin < x_min) {
             x_min = bbox.xMin;
-        if (bbox.yMax > y_max)
+        }
+        if (bbox.yMax > y_max) {
             y_max = bbox.yMax;
-        if (bbox.yMin < y_min)
+        }
+        if (bbox.yMin < y_min) {
             y_min = bbox.yMin;
+        }
 
         FT_Done_Glyph(glyph);
     }
@@ -920,16 +925,20 @@ font_render(FontObject* self, PyObject* args)
 
         // compute baseline and adjust start position if glyph bearing extends before origin
         if (horizontal_dir) {
-            if (glyph_slot->bitmap_top > baseline)
+            if (glyph_slot->bitmap_top > baseline) {
                 baseline = glyph_slot->bitmap_top;
-            if (glyph_slot->bitmap_left < offset)
+            }
+            if (glyph_slot->bitmap_left < offset) {
                 offset = glyph_slot->bitmap_left;
+            }
             x += glyph_info[i].x_advance;
         } else {
-            if (glyph_slot->bitmap_top > offset)
+            if (glyph_slot->bitmap_top > offset) {
                 offset = glyph_slot->bitmap_top;
-            if (glyph_slot->bitmap_left < baseline)
+            }
+            if (glyph_slot->bitmap_left < baseline) {
                 baseline = glyph_slot->bitmap_left;
+            }
             y += glyph_info[i].y_advance;
         }
     }
