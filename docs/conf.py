@@ -114,12 +114,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [
-    ("py:attr", "PIL.Image.Image.tag"),
-    ("py:attr", "PIL.Image.Image.tag_v2"),
-    ("py:attr", "PIL.Image.Image.tile"),
-    ("py:attr", "PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype"),
-]
+# nitpick_ignore = []
 
 
 # -- Options for HTML output ----------------------------------------------
