@@ -991,7 +991,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
-        # legacy ifd entries will be filled in later
+        # legacy IFD entries will be filled in later
         self.ifd = None
 
         # setup frame pointers
