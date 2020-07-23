@@ -472,6 +472,8 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self.tagtype = {}
+        """ Dictionary of tag types """
         self.reset()
         (self.next,) = self._unpack("L", ifh[4:])
         self._legacy_api = False
@@ -972,17 +974,25 @@ class TiffImageFile(ImageFile.ImageFile):
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
 
+    def __init__(self, fp=None, filename=None):
+        self.tag_v2 = None
+        """ Image file directory (tag dictionary) """
+
+        self.tag = None
+        """ Legacy tag entries """
+
+        super().__init__(fp, filename)
+
     def _open(self):
         """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
 
-        # image file directory (tag dictionary)
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
-        # legacy tag/ifd entries will be filled in later
-        self.tag = self.ifd = None
+        # legacy IFD entries will be filled in later
+        self.ifd = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next

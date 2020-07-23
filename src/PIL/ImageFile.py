@@ -95,6 +95,8 @@ class ImageFile(Image.Image):
         self.custom_mimetype = None
 
         self.tile = None
+        """ A list of tile descriptors, or ``None`` """
+
         self.readonly = 1  # until we know better
 
         self.decoderconfig = ()
