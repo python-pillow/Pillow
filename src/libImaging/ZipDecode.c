@@ -20,7 +20,7 @@
 
 #ifdef  HAVE_LIBZ
 
-#include "Zip.h"
+#include "ZipState.h"
 
 static const int OFFSET[] = { 7, 3, 3, 1, 1, 0, 0 };
 static const int STARTING_COL[] = { 0, 4, 0, 2, 0, 1, 0 };
