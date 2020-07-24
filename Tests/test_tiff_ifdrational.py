@@ -49,6 +49,11 @@ def test_nonetype():
     assert xres and yres
 
 
+def test_nan():
+    # usually NaN != NaN, but this would break exif self-equality
+    assert IFDRational(123, 0) == IFDRational(123, 0)
+
+
 def test_ifd_rational_save(tmp_path):
     methods = (True, False)
     if not features.check("libtiff"):
