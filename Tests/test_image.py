@@ -466,18 +466,6 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
 
-    def test_offset_not_implemented(self):
-        # Arrange
-        with hopper() as im:
-
-            # Act / Assert
-            with pytest.raises(NotImplementedError):
-                im.offset(None)
-
-    def test_fromstring(self):
-        with pytest.raises(NotImplementedError):
-            Image.fromstring()
-
     def test_linear_gradient_wrong_mode(self):
         # Arrange
         wrong_mode = "RGB"

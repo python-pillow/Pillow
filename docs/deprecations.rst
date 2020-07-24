@@ -55,6 +55,33 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
+im.offset
+~~~~~~~~~
+
+.. deprecated:: 1.1.2
+.. versionremoved:: 8.0.0
+
+``im.offset()`` has been removed, call ``ImageChops.offset()`` instead.
+
+It was documented as deprecated in PIL 1.1.2,
+raised a ``DeprecationWarning`` since 1.1.5,
+an ``Exception`` since Pillow 3.0.0
+and ``NotImplementedError`` since 3.3.0.
+
+Image.fromstring, im.fromstring and im.tostring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 2.0.0
+.. versionremoved:: 8.0.0
+
+* ``Image.fromstring()`` has been removed, call :py:func:`.Image.frombytes()` instead.
+* ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
+* ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
+
+They issued a ``DeprecationWarning`` since 2.0.0,
+an ``Exception`` since 3.0.0
+and ``NotImplementedError`` since 3.3.0.
+
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
