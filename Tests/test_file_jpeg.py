@@ -241,7 +241,7 @@ class TestFileJpeg:
 
         # Assert
         assert exif[gps_index] == expected_exif_gps
-    
+
     def test_exif_equality(self):
         # in 7.2.0 Exif rationals are read as TiffImagePlugin.IFDRational
         # which broke self-equality of Exif data
