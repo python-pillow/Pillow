@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Remove long-deprecated Image.py functions #4798
+  [hugovk, nulano, radarhere]
+
 - Add MIME type to PsdImagePlugin #4788
   [samamorgan]
 
