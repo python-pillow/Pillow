@@ -354,6 +354,9 @@ class IFDRational(Rational):
 
     def __eq__(self, other):
         if isinstance(other, IFDRational):
+            if self.denominator == 0 and other.denominator == 0:
+                # in this case self._val and other._val would be NaN
+                return self.numerator == other.numerator
             other = other._val
         return self._val == other
 
