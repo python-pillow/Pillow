@@ -353,7 +353,13 @@ class IFDRational(Rational):
         return self._val.__hash__()
 
     def __eq__(self, other):
-        return self._val == other
+        if isinstance(other, IFDRational):
+            if self.denominator == 0 and other.denominator == 0:
+                # in this case self._val and other._val would be NaN
+                return self.numerator == other.numerator
+            return self._val == other._val
+        else:
+            return self._val == other
 
     def _delegate(op):
         def delegate(self, *args):
