@@ -243,8 +243,9 @@ class TestFileJpeg:
         assert exif[gps_index] == expected_exif_gps
 
     def test_exif_equality(self):
-        # in 7.2.0 Exif rationals are read as TiffImagePlugin.IFDRational
-        # which broke self-equality of Exif data
+        # In 7.2.0, Exif rationals were changed to be read as
+        # TiffImagePlugin.IFDRational. This class had a bug in __eq__,
+        # breaking the self-equality of Exif data
         exifs = []
         for i in range(2):
             with Image.open("Tests/images/exif-200dpcm.jpg") as im:
