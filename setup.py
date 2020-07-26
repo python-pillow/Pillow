@@ -14,7 +14,6 @@ import struct
 import subprocess
 import sys
 import warnings
-from distutils import ccompiler
 from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
@@ -131,7 +130,7 @@ class RequiredDependencyException(Exception):
     pass
 
 
-PLATFORM_MINGW = "mingw" in ccompiler.get_default_compiler()
+PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 PLATFORM_PYPY = hasattr(sys, "pypy_version_info")
 
 if sys.platform == "win32" and PLATFORM_MINGW:
