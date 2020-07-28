@@ -1,4 +1,3 @@
-import logging
 import os
 from io import BytesIO
 
@@ -15,8 +14,6 @@ from .helper import (
     is_pypy,
     is_win32,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class TestFileTiff:
