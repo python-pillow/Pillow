@@ -1,7 +1,6 @@
 import base64
 import io
 import itertools
-import logging
 import os
 import re
 from collections import namedtuple
@@ -18,8 +17,6 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
-
-logger = logging.getLogger(__name__)
 
 
 @skip_unless_feature("libtiff")
