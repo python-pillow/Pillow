@@ -2,7 +2,9 @@ import ctypes
 import os
 import subprocess
 import sys
-from distutils import ccompiler, sysconfig
+import sysconfig
+
+from setuptools.command.build_ext import new_compiler
 
 import pytest
 from PIL import Image
@@ -359,13 +361,12 @@ int main(int argc, char* argv[])
                 % sys.prefix.replace("\\", "\\\\")
             )
 
-        compiler = ccompiler.new_compiler()
-        compiler.add_include_dir(sysconfig.get_python_inc())
+        compiler = new_compiler()
+        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
 
-        libdir = sysconfig.get_config_var(
-            "LIBDIR"
-        ) or sysconfig.get_python_inc().replace("include", "libs")
-        print(libdir)
+        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
+            "INCLUDEPY"
+        ).replace("include", "libs")
         compiler.add_library_dir(libdir)
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")
