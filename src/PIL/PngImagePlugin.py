@@ -509,10 +509,11 @@ class PngStream(ChunkStream):
             v = b""
         if k:
             k = k.decode("latin-1", "strict")
-            v = v.decode("latin-1", "replace")
+            v_str = v.decode("latin-1", "replace")
 
-            self.im_info[k] = self.im_text[k] = v
-            self.check_text_memory(len(v))
+            self.im_info[k] = v if k == "exif" else v_str
+            self.im_text[k] = v_str
+            self.check_text_memory(len(v_str))
 
         return s
 
