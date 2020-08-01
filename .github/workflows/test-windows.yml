@@ -171,7 +171,7 @@ jobs:
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: MSYS2 MINGW64
+    name: MSYS2 MinGW 64-bit
 
     steps:
       - uses: actions/checkout@v2
@@ -221,4 +221,4 @@ jobs:
           python3 -m pip install codecov
           bash <(curl -s https://codecov.io/bash) -F GHA_Windows
         env:
-          CODECOV_NAME: MSYS2 MINGW64
+          CODECOV_NAME: MSYS2 MinGW 64-bit
