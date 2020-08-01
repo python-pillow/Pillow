@@ -1,5 +1,5 @@
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
-.PHONY: clean coverage doc docserve help inplace install install-req release-test sdist test upload upload-test
+.PHONY: clean co coverage doc doccheck docserve help inplace install install-coverage debug install-req install-venv release-test sdist test readme
 .DEFAULT_GOAL := release-test
 
 clean:
