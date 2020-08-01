@@ -90,16 +90,5 @@ sdist:
 test:
 	pytest -qq
 
-# https://docs.python.org/3/distutils/packageindex.html#the-pypirc-file
-upload-test:
-#       [test]
-#       username:
-#       password:
-#       repository = http://test.pythonpackages.com
-	python3 setup.py sdist --format=gztar upload -r test
-
-upload:
-	python3 setup.py sdist --format=gztar upload
-
 readme:
 	viewdoc
