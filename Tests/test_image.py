@@ -86,6 +86,29 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_init(self):
+        try:
+            # No formats
+            Image.init([])
+            assert len(Image.ID) == 0
+            for ext in (".jpg", ".png"):
+                with pytest.raises(UnidentifiedImageError):
+                    Image.open("Tests/images/hopper" + ext)
+
+            # Only JPEG
+            Image.init(["JPEG"])
+            assert len(Image.ID) != 0
+            Image.open("Tests/images/hopper.jpg")
+            with pytest.raises(UnidentifiedImageError):
+                Image.open("Tests/images/hopper.png")
+
+        finally:
+            # All formats
+            Image.init(True)
+            assert len(Image.ID) != 0
+            for ext in (".jpg", ".png"):
+                Image.open("Tests/images/hopper" + ext)
+
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
         assert im.width == 1

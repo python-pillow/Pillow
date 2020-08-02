@@ -204,6 +204,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 ID = []
+EVERY_ID = []
 OPEN = {}
 MIME = {}
 SAVE = {}
@@ -390,14 +391,24 @@ def preinit():
     _initialized = 1
 
 
-def init():
+def init(formats=None):
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
+
+    :param formats: Which formats to use when identifying images. The default value of
+                    ``None`` will load all formats at first, or remember the previous
+                    setting if called repeatedly. If you have previously provided a
+                    list of formats to use, ``True`` must be used to remove the
+                    restriction and use all formats.
     """
 
-    global _initialized
+    global _initialized, ID, EVERY_ID
     if _initialized >= 2:
+        if formats is True:
+            ID = EVERY_ID
+        elif formats is not None:
+            ID = formats
         return 0
 
     for plugin in _plugins:
@@ -406,8 +417,11 @@ def init():
             __import__("PIL.%s" % plugin, globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
+    EVERY_ID = ID
+    if formats is not None and formats is not True:
+        ID = formats
 
-    if OPEN or SAVE:
+    if OPEN or SAVE or (not formats and formats is not None):
         _initialized = 2
         return 1
 
