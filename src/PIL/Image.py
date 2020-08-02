@@ -2836,7 +2836,7 @@ def _decompression_bomb_check(size):
         )
 
 
-def open(fp, mode="r"):
+def open(fp, mode="r", formats=None):
     """
     Opens and identifies the given image file.
 
@@ -2867,6 +2867,11 @@ def open(fp, mode="r"):
             "Binary data must be used instead."
         )
 
+    if formats is None:
+        formats = ID
+    elif not isinstance(formats, (list, tuple)):
+        raise TypeError("formats must be a list or tuple")
+
     exclusive_fp = False
     filename = ""
     if isinstance(fp, Path):
@@ -2890,8 +2895,8 @@ def open(fp, mode="r"):
 
     accept_warnings = []
 
-    def _open_core(fp, filename, prefix):
-        for i in ID:
+    def _open_core(fp, filename, prefix, formats):
+        for i in formats:
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
@@ -2913,11 +2918,11 @@ def open(fp, mode="r"):
                 raise
         return None
 
-    im = _open_core(fp, filename, prefix)
+    im = _open_core(fp, filename, prefix, formats)
 
     if im is None:
         if init():
-            im = _open_core(fp, filename, prefix)
+            im = _open_core(fp, filename, prefix, formats)
 
     if im:
         im._exclusive_fp = exclusive_fp
