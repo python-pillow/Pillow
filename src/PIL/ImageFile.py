@@ -509,7 +509,7 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation) as e:
+    except (AttributeError, io.UnsupportedOperation) as exc:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
@@ -526,7 +526,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s) from e
+                raise OSError("encoder error %d when writing image file" % s) from exc
             e.cleanup()
     else:
         # slight speedup: compress to real file object
