@@ -93,21 +93,24 @@ class TestImage:
             assert len(Image.ID) == 0
             for ext in (".jpg", ".png"):
                 with pytest.raises(UnidentifiedImageError):
-                    Image.open("Tests/images/hopper" + ext)
+                    with Image.open("Tests/images/hopper" + ext):
+                        pass
 
             # Only JPEG
             Image.init(["JPEG"])
             assert len(Image.ID) != 0
             Image.open("Tests/images/hopper.jpg")
             with pytest.raises(UnidentifiedImageError):
-                Image.open("Tests/images/hopper.png")
+                with Image.open("Tests/images/hopper.png"):
+                    pass
 
         finally:
             # All formats
             Image.init(True)
             assert len(Image.ID) != 0
             for ext in (".jpg", ".png"):
-                Image.open("Tests/images/hopper" + ext)
+                with Image.open("Tests/images/hopper" + ext):
+                    pass
 
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
