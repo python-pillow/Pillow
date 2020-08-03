@@ -14,9 +14,9 @@ import struct
 import subprocess
 import sys
 import warnings
-from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
 
 
 def get_version():
@@ -350,6 +350,22 @@ class pil_build_ext(build_ext):
             if getattr(self, "enable_%s" % x):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
+
+    def _update_extension(self, name, libraries, define_macros=None, include_dirs=None):
+        for extension in self.extensions:
+            if extension.name == name:
+                extension.libraries += libraries
+                if define_macros is not None:
+                    extension.define_macros += define_macros
+                if include_dirs is not None:
+                    extension.include_dirs += include_dirs
+                break
+
+    def _remove_extension(self, name):
+        for extension in self.extensions:
+            if extension.name == name:
+                self.extensions.remove(extension)
+                break
 
     def build_extensions(self):
 
@@ -694,12 +710,6 @@ class pil_build_ext(build_ext):
         #
         # core library
 
-        files = ["src/_imaging.c"]
-        for src_file in _IMAGING:
-            files.append("src/" + src_file + ".c")
-        for src_file in _LIB_IMAGING:
-            files.append(os.path.join("src/libImaging", src_file + ".c"))
-
         libs = self.add_imaging_libs.split()
         defs = []
         if feature.jpeg:
@@ -736,7 +746,7 @@ class pil_build_ext(build_ext):
         else:
             defs.append(("PILLOW_VERSION", '"%s"' % PILLOW_VERSION))
 
-        exts = [(Extension("PIL._imaging", files, libraries=libs, define_macros=defs))]
+        self._update_extension("PIL._imaging", libs, defs)
 
         #
         # additional libraries
@@ -744,26 +754,17 @@ class pil_build_ext(build_ext):
         if feature.freetype:
             libs = ["freetype"]
             defs = []
-            exts.append(
-                Extension(
-                    "PIL._imagingft",
-                    ["src/_imagingft.c"],
-                    libraries=libs,
-                    define_macros=defs,
-                )
-            )
+            self._update_extension("PIL._imagingft", libs, defs)
+        else:
+            self._remove_extension("PIL._imagingft")
 
         if feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
-            exts.append(
-                Extension(
-                    "PIL._imagingcms",
-                    ["src/_imagingcms.c"],
-                    libraries=[feature.lcms] + extra,
-                )
-            )
+            self._update_extension("PIL._imagingcms", [feature.lcms] + extra)
+        else:
+            self._remove_extension("PIL._imagingcms")
 
         if feature.webp:
             libs = [feature.webp]
@@ -774,26 +775,12 @@ class pil_build_ext(build_ext):
                 libs.append(feature.webpmux)
                 libs.append(feature.webpmux.replace("pmux", "pdemux"))
 
-            exts.append(
-                Extension(
-                    "PIL._webp", ["src/_webp.c"], libraries=libs, define_macros=defs
-                )
-            )
+            self._update_extension("PIL._webp", libs, defs)
+        else:
+            self._remove_extension("PIL._webp")
 
         tk_libs = ["psapi"] if sys.platform == "win32" else []
-        exts.append(
-            Extension(
-                "PIL._imagingtk",
-                ["src/_imagingtk.c", "src/Tk/tkImaging.c"],
-                include_dirs=["src/Tk"],
-                libraries=tk_libs,
-            )
-        )
-
-        exts.append(Extension("PIL._imagingmath", ["src/_imagingmath.c"]))
-        exts.append(Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]))
-
-        self.extensions[:] = exts
+        self._update_extension("PIL._imagingtk", tk_libs, include_dirs=["src/Tk"])
 
         build_ext.build_extensions(self)
 
@@ -857,6 +844,20 @@ def debug_build():
     return hasattr(sys, "gettotalrefcount")
 
 
+files = ["src/_imaging.c"]
+for src_file in _IMAGING:
+    files.append("src/" + src_file + ".c")
+for src_file in _LIB_IMAGING:
+    files.append(os.path.join("src/libImaging", src_file + ".c"))
+ext_modules = [
+    Extension("PIL._imaging", files),
+    Extension("PIL._imagingft", ["src/_imagingft.c"]),
+    Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
+    Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
+    Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
+    Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
+]
 try:
     setup(
         name=NAME,
@@ -891,7 +892,7 @@ try:
         ],
         python_requires=">=3.6",
         cmdclass={"build_ext": pil_build_ext},
-        ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+        ext_modules=ext_modules,
         include_package_data=True,
         packages=["PIL"],
         package_dir={"": "src"},
