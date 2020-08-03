@@ -282,7 +282,7 @@ def pilinfo(out=None, supported_formats=True):
         for ext, i in Image.EXTENSION.items():
             extensions[i].append(ext)
 
-        for i in sorted(Image.ID):
+        for i in sorted(Image.EVERY_ID):
             line = "{}".format(i)
             if i in Image.MIME:
                 line = "{} {}".format(line, Image.MIME[i])
