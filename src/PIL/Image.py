@@ -2862,6 +2862,7 @@ def open(fp, mode="r", formats=None):
        identified.
     :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
        instance is used for ``fp``.
+    :exception TypeError: If ``formats`` is not ``None``, a list or a tuple.
     """
 
     if mode != "r":
