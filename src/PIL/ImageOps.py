@@ -61,10 +61,10 @@ def _lut(image, lut):
 # actions
 
 
-def autocontrast(image, cutoff=0, ignore=None):
+def autocontrast(image, cutoff=0, ignore=None, mask=None):
     """
     Maximize (normalize) image contrast. This function calculates a
-    histogram of the input image, removes **cutoff** percent of the
+    histogram of the input image (or mask region), removes **cutoff** percent of the
     lightest and darkest pixels from the histogram, and remaps the image
     so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
@@ -74,9 +74,15 @@ def autocontrast(image, cutoff=0, ignore=None):
                    high ends. Either a tuple of (low, high), or a single
                    number for both.
     :param ignore: The background pixel value (use None for no background).
+    :param mask: histogram used in contrast operation is computed using pixels
+                 within the mask. If no mask is given the entire image is used
+                 for histogram computation.
     :return: An image.
     """
-    histogram = image.histogram()
+    if mask:
+        histogram = image.histogram(mask)
+    else:
+        histogram = image.histogram()
     lut = []
     for layer in range(0, len(histogram), 256):
         h = histogram[layer : layer + 256]
