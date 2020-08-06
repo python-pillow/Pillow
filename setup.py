@@ -479,6 +479,9 @@ class pil_build_ext(build_ext):
                 # add Homebrew's include and lib directories
                 _add_directory(library_dirs, os.path.join(prefix, "lib"))
                 _add_directory(include_dirs, os.path.join(prefix, "include"))
+                _add_directory(
+                    include_dirs, os.path.join(prefix, "opt", "zlib", "include")
+                )
                 ft_prefix = os.path.join(prefix, "opt", "freetype")
 
             if ft_prefix and os.path.isdir(ft_prefix):
