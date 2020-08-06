@@ -554,5 +554,6 @@ if __name__ == "__main__":
 
     print()
 
+    write_script(".gitignore", ["*"])
     build_dep_all()
     build_pillow()
