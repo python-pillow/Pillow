@@ -74,7 +74,7 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None):
                    high ends. Either a tuple of (low, high), or a single
                    number for both.
     :param ignore: The background pixel value (use None for no background).
-    :param mask: histogram used in contrast operation is computed using pixels
+    :param mask: Histogram used in contrast operation is computed using pixels
                  within the mask. If no mask is given the entire image is used
                  for histogram computation.
     :return: An image.
