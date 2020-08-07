@@ -1,5 +1,5 @@
 import pytest
-from PIL import Image, ImageOps, ImageDraw, features
+from PIL import Image, ImageDraw, ImageOps, features
 
 from .helper import (
     assert_image_equal,
@@ -315,25 +315,27 @@ def test_autocontrast_cutoff():
         assert autocontrast(10) != autocontrast((1, 10))
 
 
-def test_autocontrast_mask():
+def test_autocontrast_mask_toy_input():
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
 
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
-        x0, y0 = img.size[0]//4, img.size[1]//4
-        x1, y1 = 3*img.size[0]//4, 3*img.size[1]//4
+        x0, y0 = img.size[0] // 4, img.size[1] // 4
+        x1, y1 = 3 * img.size[0] // 4, 3 * img.size[1] // 4
         draw.rectangle((x0, y0, x1, y1), fill=255)
 
         assert ImageOps.autocontrast(img, mask=rect_mask) != ImageOps.autocontrast(img)
 
+
+def test_auto_contrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
 
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
-        x0, y0 = img.size[0]//2, img.size[1]//2
-        x1, y1 = img.size[0]-40, img.size[1]
+        x0, y0 = img.size[0] // 2, img.size[1] // 2
+        x1, y1 = img.size[0] - 40, img.size[1]
         draw.rectangle((x0, y0, x1, y1), fill=255)
 
         result = ImageOps.autocontrast(img, mask=rect_mask)
