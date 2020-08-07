@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import assert_image_equal, assert_image_similar, skip_unless_feature

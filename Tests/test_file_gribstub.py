@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import GribStubImagePlugin, Image
 
 from .helper import hopper

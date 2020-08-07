@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image
 
 TEST_FILE = "Tests/images/libtiff_segfault.tif"

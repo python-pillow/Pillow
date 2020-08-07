@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper

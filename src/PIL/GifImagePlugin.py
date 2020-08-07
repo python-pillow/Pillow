@@ -30,7 +30,10 @@ import os
 import subprocess
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
-from ._binary import i8, i16le as i16, o8, o16le as o16
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import o8
+from ._binary import o16le as o16
 
 # --------------------------------------------------------------------
 # Identify/read GIF files

@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, features
 
 from .helper import (

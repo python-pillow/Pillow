@@ -9,7 +9,7 @@ repos:
         types: []
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 7c29dd9d55161704cfc45998c6f5c2c43d39264b  # frozen: 4.3.21
+    rev: 9ae09866e278fbc6ec0383ccb16b5c84e78e6e4d  # frozen: 5.3.2
     hooks:
       - id: isort
 

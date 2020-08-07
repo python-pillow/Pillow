@@ -2,6 +2,7 @@ import os
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 

@@ -19,7 +19,9 @@
 import io
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16be as i16, i32be as i32
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)

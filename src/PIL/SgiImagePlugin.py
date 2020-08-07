@@ -26,7 +26,9 @@ import os
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, o8
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import o8
 
 
 def _accept(prefix):

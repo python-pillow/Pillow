@@ -1,6 +1,7 @@
 import io
 
 import pytest
+
 from PIL import IcoImagePlugin, Image, ImageDraw
 
 from .helper import assert_image_equal, hopper

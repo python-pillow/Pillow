@@ -5,6 +5,7 @@ import tempfile
 import time
 
 import pytest
+
 from PIL import Image, PdfParser
 
 from .helper import hopper

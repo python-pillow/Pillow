@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
 import pytest
+
 from PIL import Image, ImageDraw
 
 from .helper import assert_image_equal, assert_image_similar, hopper
