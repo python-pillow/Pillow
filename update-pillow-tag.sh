@@ -15,4 +15,5 @@ git fetch --all
 git checkout $1
 cd ..
 git commit -m "Pillow -> $1" Pillow
-git push
+git tag $1
+git push origin $1

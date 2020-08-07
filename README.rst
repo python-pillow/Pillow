@@ -40,10 +40,9 @@ earliest NumPy that Pillow is compatible with; see
 Wheels
 ------
 
-Wheels are uploaded to a
-`Rackspace container <https://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.ssl.cf2.rackcdn.com/>`_.
-Credentials for this container are encrypted to this specific repo in the
-``.travis.yml`` file, so the upload won't work from another repository.
+Wheels are uploaded to https://github.com/python-pillow/pillow-wheels/releases.
+Credentials are encrypted to this specific repo in the ``.travis.yml`` file,
+so the upload won't work from another repository.
 
 PyPI
 ~~~~
