@@ -79,10 +79,7 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None):
                  for histogram computation.
     :return: An image.
     """
-    if mask:
-        histogram = image.histogram(mask)
-    else:
-        histogram = image.histogram()
+    histogram = image.histogram(mask)
     lut = []
     for layer in range(0, len(histogram), 256):
         h = histogram[layer : layer + 256]
