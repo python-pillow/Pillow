@@ -1,6 +1,7 @@
 import os.path
 
 import pytest
+
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from .helper import (

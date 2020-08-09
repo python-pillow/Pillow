@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_similar, is_pypy, skip_unless_feature

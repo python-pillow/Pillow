@@ -28,7 +28,9 @@ from io import BytesIO
 from math import ceil, log
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
-from ._binary import i8, i16le as i16, i32le as i32
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
 
 #
 # --------------------------------------------------------------------

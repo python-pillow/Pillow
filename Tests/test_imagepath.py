@@ -2,6 +2,7 @@ import array
 import struct
 
 import pytest
+
 from PIL import Image, ImagePath
 
 

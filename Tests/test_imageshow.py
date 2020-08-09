@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageShow
 
 from .helper import hopper, is_win32, on_ci

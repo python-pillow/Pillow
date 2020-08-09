@@ -7,6 +7,7 @@ from collections import namedtuple
 from ctypes import c_float
 
 import pytest
+
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (

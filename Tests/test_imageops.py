@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageDraw, ImageOps, features
 
 from .helper import (

@@ -1,6 +1,7 @@
 import sys
 
 import pytest
+
 from PIL import Image
 
 # This test is not run automatically.

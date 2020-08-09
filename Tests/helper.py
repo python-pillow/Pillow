@@ -11,6 +11,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageMath, features
 
 logger = logging.getLogger(__name__)
@@ -184,7 +185,7 @@ class PillowLeakTestCase:
         :returns: memory usage in kilobytes
         """
 
-        from resource import getrusage, RUSAGE_SELF
+        from resource import RUSAGE_SELF, getrusage
 
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == "darwin":

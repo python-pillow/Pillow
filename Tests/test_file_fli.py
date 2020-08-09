@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import FliImagePlugin, Image
 
 from .helper import assert_image_equal, is_pypy
