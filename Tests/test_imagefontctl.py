@@ -1,6 +1,6 @@
 import pytest
-
 from packaging.version import parse as parse_version
+
 from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import assert_image_similar, skip_unless_feature
