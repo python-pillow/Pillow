@@ -91,9 +91,10 @@ ImageCms.CmsProfile attributes
 Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
 they issued a ``DeprecationWarning``:
 
-========================  ===============================================================
+========================  ===================================================
+
 Removed                   Use instead
-========================  ===============================================================
+========================  ===================================================
 ``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
 ``pcs``                   Padded :py:attr:`~.CmsProfile.connection_space`
 ``product_copyright``     Unicode :py:attr:`~.CmsProfile.copyright`
@@ -101,7 +102,7 @@ Removed                   Use instead
 ``product_description``   Unicode :py:attr:`~.CmsProfile.profile_description`
 ``product_manufacturer``  Unicode :py:attr:`~.CmsProfile.manufacturer`
 ``product_model``         Unicode :py:attr:`~.CmsProfile.model`
-========================  ===============================================================
+========================  ===================================================
 
 Python 2.7
 ~~~~~~~~~~
