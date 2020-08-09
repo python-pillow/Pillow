@@ -1092,3 +1092,101 @@ def test_same_color_outline():
                     operation, mode
                 )
                 assert_image_similar_tofile(im, expected, 1)
+
+
+@pytest.mark.parametrize(
+    "nb_polygon_sides, rotation, polygon_name",
+    [(4, 0, "square"), (8, 0, "octagon"), (4, 45, "square")],
+)
+def test_draw_regular_polygon(nb_polygon_sides, rotation, polygon_name):
+    im = Image.new("RGBA", size=(W, H), color=(255, 0, 0, 0))
+    filename = (
+        f"Tests/images/imagedraw_regular_polygon__{polygon_name}"
+        f"_with_{rotation}_degree_rotation.png"
+    )
+    draw = ImageDraw.Draw(im)
+    draw.regular_polygon(
+        b_box=[(0, 0), (W, H)], nb_sides=nb_polygon_sides, rotation=rotation, fill="red"
+    )
+    assert_image_equal(im, Image.open(filename))
+
+
+@pytest.mark.parametrize(
+    "nb_polygon_sides, expected_vertices",
+    [
+        (3, [(6.7, 75.0), (93.3, 75.0), (50.0, 0.0)]),
+        (4, [(14.64, 85.36), (85.36, 85.36), (85.36, 14.64), (14.64, 14.64)]),
+        (
+            5,
+            [
+                (20.61, 90.45),
+                (79.39, 90.45),
+                (97.55, 34.55),
+                (50.0, 0.0),
+                (2.45, 34.55),
+            ],
+        ),
+        (
+            6,
+            [
+                (25.0, 93.3),
+                (75.0, 93.3),
+                (100.0, 50.0),
+                (75.0, 6.7),
+                (25.0, 6.7),
+                (0.0, 50.0),
+            ],
+        ),
+    ],
+)
+def test_compute_regular_polygon_vertices(nb_polygon_sides, expected_vertices):
+    vertices = ImageDraw._compute_regular_polygon_vertices(
+        nb_sides=nb_polygon_sides, b_box=[(0, 0), (100, 100)], rotation=0
+    )
+    assert vertices == expected_vertices
+
+
+@pytest.mark.parametrize(
+    "nb_polygon_sides, bounding_box, rotation, expected_error, error_message",
+    [
+        (None, [(0, 0), (100, 100)], 0, TypeError, "nb_sides should be an int"),
+        (1, [(0, 0), (100, 100)], 0, ValueError, "nb_sides should be an int > 2"),
+        (3, 100, 0, TypeError, "b_box should be a list/tuple"),
+        (
+            3,
+            [(0, 0), (50, 50), (100, 100)],
+            0,
+            ValueError,
+            "b_box should have 2 items (top-left & bottom-right coordinates)",
+        ),
+        (
+            3,
+            [(50, 50), (0, None)],
+            0,
+            ValueError,
+            "b_box should only contain numeric data",
+        ),
+        (
+            3,
+            [(50, 50), (0, 0)],
+            0,
+            ValueError,
+            "b_box: Bottom-right coordinate should be larger than top-left coordinate",
+        ),
+        (
+            3,
+            [(0, 0), (100, 100)],
+            "0",
+            ValueError,
+            "rotation should be an int or float",
+        ),
+    ],
+)
+def test_compute_regular_polygon_vertices_input_error_handling(
+    nb_polygon_sides, bounding_box, rotation, expected_error, error_message
+):
+    with pytest.raises(expected_error) as e:
+        ImageDraw._compute_regular_polygon_vertices(
+            nb_sides=nb_polygon_sides, b_box=bounding_box, rotation=rotation
+        )
+    assert str(e.value) == error_message

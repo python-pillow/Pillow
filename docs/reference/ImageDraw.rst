@@ -254,6 +254,22 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
 
+
+.. py:method:: ImageDraw.regular_polygon(*, b_box, nb_sides, rotation=0, fill=None, outline=None)
+
+    Draws a regular polygon inscribed in ``b_box``,
+    with ``nb_sides``, and rotation of ``rotation`` degrees
+
+    :param b_box: A bounding box which inscribes the polygon
+        (e.g. b_box = [(50, 50), (150, 150)])
+    :param nb_sides: Number of sides
+        (e.g. nb_sides=3 for a triangle, 6 for a hexagon, etc..)
+    :param rotation: Apply an arbitrary rotation to the polygon
+        (e.g. rotation=90, applies a 90 degree rotation)
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+
+
 .. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
 
     Draws a rectangle.

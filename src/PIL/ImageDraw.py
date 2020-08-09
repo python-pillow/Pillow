@@ -242,6 +242,13 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
+    def regular_polygon(self, *, nb_sides, b_box, rotation=0, fill=None, outline=None):
+        """Draw a regular polygon."""
+        xy = _compute_regular_polygon_vertices(
+            nb_sides=nb_sides, b_box=b_box, rotation=rotation
+        )
+        self.polygon(xy, fill=fill, outline=outline)
+
     def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
@@ -553,6 +560,136 @@ def floodfill(image, xy, value, border=None, thresh=0):
                         new_edge.add((s, t))
         full_edge = edge  # discard pixels processed
         edge = new_edge
+
+
+def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
+    """
+    Generate a list of vertices for a 2D regular polygon.
+
+    :param nb_sides: Number of sides
+        (e.g. nb_sides = 3 for a triangle, 6 for a hexagon, etc..)
+    :param b_box: A bounding box which inscribes the polygon
+        (e.g. b_box = [(50, 50), (150, 150)])
+    :param rotation: Apply an arbitrary rotation to the polygon
+        (e.g. rotation=90, applies a 90 degree rotation)
+    :return: List of regular polygon vertices
+        (e.g. [(25, 50), (50, 50), (50, 25), (25, 25)])
+
+    How are the vertices computed?
+    1. Compute the following variables
+        - theta: Angle between the apothem & the nearest polygon vertex
+        - side_length: Length of each polygon edge
+        - centroid: Center of bounding box
+        - polygon_radius: Distance between centroid and each polygon vertex
+        - angles: Location of each polygon vertex in polar grid
+            (e.g. A square with 0 degree rotation => [225.0, 315.0, 45.0, 135.0])
+
+    2. For each angle in angles, get the polygon vertex at that angle
+        The vertex is computed using the equation below.
+            X= xcos(φ) + ysin(φ)
+            Y= −xsin(φ) + ycos(φ)
+
+        Note:
+            φ = angle in degrees
+            x = 0
+            y = polygon_radius
+
+        The formula above assumes rotation around the origin.
+        In our case, we are rotating around the centroid.
+        To account for this, we use the formula below
+            X = xcos(φ) + ysin(φ) + centroid_x
+            Y = −xsin(φ) + ycos(φ) + centroid_y
+    """
+    # 1. Error Handling
+    # 1.1 Check `nb_sides` has an appropriate value
+    if not isinstance(nb_sides, int):
+        raise TypeError("nb_sides should be an int")
+    if nb_sides < 3:
+        raise ValueError("nb_sides should be an int > 2")
+
+    # 1.2 Check `b_box` has an appropriate value
+    if not isinstance(b_box, (list, tuple)):
+        raise TypeError("b_box should be a list/tuple")
+    if not len(b_box) == 2:
+        raise ValueError(
+            "b_box should have 2 items (top-left & bottom-right coordinates)"
+        )
+
+    b_box_pts = [pt for corner in b_box for pt in corner]
+    if not all(isinstance(i, (int, float)) for i in b_box_pts):
+        raise ValueError("b_box should only contain numeric data")
+
+    if b_box[1][1] <= b_box[0][1] or b_box[1][0] <= b_box[0][0]:
+        raise ValueError(
+            "b_box: Bottom-right coordinate should be larger than top-left coordinate"
+        )
+
+    # 1.3 Check `rotation` has an appropriate value
+    if not isinstance(rotation, (int, float)):
+        raise ValueError("rotation should be an int or float")
+
+    # 2. Define Helper Functions
+    def _get_centroid(*, b_box):
+        return (b_box[1][0] + b_box[0][0]) * 0.5, (b_box[1][1] + b_box[0][1]) * 0.5
+
+    def _apply_rotation(*, point, degrees, centroid):
+        return (
+            round(
+                point[0] * math.cos(math.radians(360 - degrees))
+                - point[1] * math.sin(math.radians(360 - degrees))
+                + centroid[0],
+                2,
+            ),
+            round(
+                point[1] * math.cos(math.radians(360 - degrees))
+                + point[0] * math.sin(math.radians(360 - degrees))
+                + centroid[1],
+                2,
+            ),
+        )
+
+    def _get_theta(*, nb_sides):
+        return 0.5 * (360 / nb_sides)
+
+    def _get_polygon_radius(*, side_length, theta):
+        return (0.5 * side_length) / math.sin(math.radians(theta))
+
+    def _compute_polygon_vertex(*, angle, centroid, polygon_radius):
+        start_point = [polygon_radius, 0]
+        return _apply_rotation(point=start_point, degrees=angle, centroid=centroid)
+
+    def _get_side_length(*, b_box, theta):
+        h = b_box[1][1] - b_box[0][1]
+        return h * math.sin(math.radians(theta))
+
+    def _get_angles(*, nb_sides, rotation):
+        angles = []
+        degrees = 360 / nb_sides
+        # Start with the bottom left polygon vertex
+        current_angle = (270 - 0.5 * degrees) + rotation
+        for _ in range(0, nb_sides):
+            angles.append(current_angle)
+            current_angle += degrees
+            if current_angle > 360:
+                current_angle -= 360
+        return angles
+
+    # 3. Variable Declarations
+    vertices = []
+    theta = _get_theta(nb_sides=nb_sides)
+    side_length = _get_side_length(theta=theta, b_box=b_box)
+    centroid = _get_centroid(b_box=b_box)
+    polygon_radius = _get_polygon_radius(side_length=side_length, theta=theta)
+    angles = _get_angles(nb_sides=nb_sides, rotation=rotation)
+
+    # 4. Compute Vertices
+    for angle in angles:
+        vertices.append(
+            _compute_polygon_vertex(
+                centroid=centroid, angle=angle, polygon_radius=polygon_radius
+            )
+        )
+    return vertices
 
 
 def _color_diff(color1, color2):
