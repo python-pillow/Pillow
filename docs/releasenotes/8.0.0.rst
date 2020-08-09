@@ -29,13 +29,13 @@ Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed:
 ========================  ===============================================================
 Removed                   Use instead
 ========================  ===============================================================
-``color_space``           Padded :py:attr:`~PIL.ImageCms.CmsProfile.xcolor_space`
-``pcs``                   Padded :py:attr:`~PIL.ImageCms.CmsProfile.connection_space`
-``product_copyright``     Unicode :py:attr:`~PIL.ImageCms.CmsProfile.copyright`
-``product_desc``          Unicode :py:attr:`~PIL.ImageCms.CmsProfile.profile_description`
-``product_description``   Unicode :py:attr:`~PIL.ImageCms.CmsProfile.profile_description`
-``product_manufacturer``  Unicode :py:attr:`~PIL.ImageCms.CmsProfile.manufacturer`
-``product_model``         Unicode :py:attr:`~PIL.ImageCms.CmsProfile.model`
+``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
+``pcs``                   Padded :py:attr:`~.CmsProfile.connection_space`
+``product_copyright``     Unicode :py:attr:`~.CmsProfile.copyright`
+``product_desc``          Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_description``   Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_manufacturer``  Unicode :py:attr:`~.CmsProfile.manufacturer`
+``product_model``         Unicode :py:attr:`~.CmsProfile.model`
 ========================  ===============================================================
 
 API Changes
