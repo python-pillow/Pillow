@@ -3,8 +3,9 @@ import os
 import shutil
 import tempfile
 
-import PIL
 import pytest
+
+import PIL
 from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
 
 from .helper import (

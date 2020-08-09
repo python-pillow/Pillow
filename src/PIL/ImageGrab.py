@@ -21,8 +21,8 @@ from . import Image
 
 if sys.platform == "darwin":
     import os
-    import tempfile
     import subprocess
+    import tempfile
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):

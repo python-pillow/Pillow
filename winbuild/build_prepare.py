@@ -356,8 +356,8 @@ def find_msvs():
 
 
 def extract_dep(url, filename):
-    import urllib.request
     import tarfile
+    import urllib.request
     import zipfile
 
     file = os.path.join(depends_dir, filename)

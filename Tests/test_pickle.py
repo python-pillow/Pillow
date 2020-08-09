@@ -1,6 +1,7 @@
 import pickle
 
 import pytest
+
 from PIL import Image
 
 from .helper import skip_unless_feature

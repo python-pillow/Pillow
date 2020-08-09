@@ -4,9 +4,9 @@ import subprocess
 import sys
 import sysconfig
 
+import pytest
 from setuptools.command.build_ext import new_compiler
 
-import pytest
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32, on_ci
@@ -17,8 +17,9 @@ if os.environ.get("PYTHONOPTIMIZE") == "2":
     cffi = None
 else:
     try:
-        from PIL import PyAccess
         import cffi
+
+        from PIL import PyAccess
     except ImportError:
         cffi = None
 

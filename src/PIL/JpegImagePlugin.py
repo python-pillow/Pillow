@@ -40,7 +40,10 @@ import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, i16be as i16, i32be as i32, o8
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
 from .JpegPresets import presets
 
 #

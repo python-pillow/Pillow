@@ -1,5 +1,6 @@
 # Test the ImageMorphology functionality
 import pytest
+
 from PIL import Image, ImageMorph, _imagingmorph
 
 from .helper import assert_image_equal, hopper

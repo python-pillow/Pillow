@@ -1,6 +1,7 @@
 import sys
 
 import pytest
+
 from PIL import Image
 
 from .helper import is_win32

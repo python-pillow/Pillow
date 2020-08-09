@@ -16,8 +16,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-import PIL
 import sphinx_rtd_theme
+
+import PIL
 
 # -- General configuration ------------------------------------------------
 

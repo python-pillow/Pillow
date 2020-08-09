@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import pytest
+
 from PIL import Image
 
 
