@@ -3,6 +3,7 @@ import zlib
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageFile, PngImagePlugin, features
 
 from .helper import (

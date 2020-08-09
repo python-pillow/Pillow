@@ -1,13 +1,13 @@
 import base64
 import io
 import itertools
-import logging
 import os
 import re
 from collections import namedtuple
 from ctypes import c_float
 
 import pytest
+
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
@@ -18,8 +18,6 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
-
-logger = logging.getLogger(__name__)
 
 
 @skip_unless_feature("libtiff")

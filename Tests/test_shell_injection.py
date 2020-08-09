@@ -1,6 +1,7 @@
 import shutil
 
 import pytest
+
 from PIL import GifImagePlugin, Image, JpegImagePlugin
 
 from .helper import cjpeg_available, djpeg_available, is_win32, netpbm_available

@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import CurImagePlugin, Image
 
 TEST_FILE = "Tests/images/deerstalker.cur"

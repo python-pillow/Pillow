@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Hdf5StubImagePlugin, Image
 
 TEST_FILE = "Tests/images/hdf5.h5"

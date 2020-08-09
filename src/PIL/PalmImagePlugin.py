@@ -8,7 +8,8 @@
 ##
 
 from . import Image, ImageFile
-from ._binary import o8, o16be as o16b
+from ._binary import o8
+from ._binary import o16be as o16b
 
 # fmt: off
 _Palm8BitColormapValues = (

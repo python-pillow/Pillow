@@ -3,8 +3,9 @@ import os
 import shutil
 import tempfile
 
-import PIL
 import pytest
+
+import PIL
 from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
 
 from .helper import (
@@ -465,18 +466,6 @@ class TestImage:
 
         with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
-
-    def test_offset_not_implemented(self):
-        # Arrange
-        with hopper() as im:
-
-            # Act / Assert
-            with pytest.raises(NotImplementedError):
-                im.offset(None)
-
-    def test_fromstring(self):
-        with pytest.raises(NotImplementedError):
-            Image.fromstring()
 
     def test_linear_gradient_wrong_mode(self):
         # Arrange

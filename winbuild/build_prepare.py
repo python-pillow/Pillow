@@ -251,9 +251,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.8.zip",
-        "filename": "harfbuzz-2.6.8.zip",
-        "dir": "harfbuzz-2.6.8",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.0.zip",
+        "filename": "harfbuzz-2.7.0.zip",
+        "dir": "harfbuzz-2.7.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -356,8 +356,8 @@ def find_msvs():
 
 
 def extract_dep(url, filename):
-    import urllib.request
     import tarfile
+    import urllib.request
     import zipfile
 
     file = os.path.join(depends_dir, filename)
@@ -554,5 +554,6 @@ if __name__ == "__main__":
 
     print()
 
+    write_script(".gitignore", ["*"])
     build_dep_all()
     build_pillow()

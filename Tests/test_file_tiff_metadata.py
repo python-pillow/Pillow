@@ -2,6 +2,7 @@ import io
 import struct
 
 import pytest
+
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 

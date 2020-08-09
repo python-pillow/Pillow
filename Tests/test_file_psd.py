@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, PsdImagePlugin
 
 from .helper import assert_image_similar, hopper, is_pypy

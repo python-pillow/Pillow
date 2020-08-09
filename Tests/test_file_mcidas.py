@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, McIdasImagePlugin
 
 from .helper import assert_image_equal

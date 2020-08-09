@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import EpsImagePlugin, Image, ImageFile, features
 
 from .helper import (

@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import FitsStubImagePlugin, Image
 
 TEST_FILE = "Tests/images/hopper.fits"

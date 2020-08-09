@@ -16,8 +16,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-import PIL
 import sphinx_rtd_theme
+
+import PIL
 
 # -- General configuration ------------------------------------------------
 
@@ -114,12 +115,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [
-    ("py:attr", "PIL.Image.Image.tag"),
-    ("py:attr", "PIL.Image.Image.tag_v2"),
-    ("py:attr", "PIL.Image.Image.tile"),
-    ("py:attr", "PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype"),
-]
+# nitpick_ignore = []
 
 
 # -- Options for HTML output ----------------------------------------------
