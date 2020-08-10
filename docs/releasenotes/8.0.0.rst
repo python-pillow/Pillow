@@ -54,7 +54,7 @@ ImageOps.autocontrast cutoffs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Previously, the ``cutoff`` parameter of :py:func:`.ImageOps.autocontrast` could only
-be a single integer, used as the percent to cut off from the histogram on the low and
+be a single number, used as the percent to cut off from the histogram on the low and
 high ends.
 
 Now, it can also be a tuple ``(low, high)``.
