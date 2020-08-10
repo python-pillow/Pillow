@@ -105,7 +105,9 @@ Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
-Once the plugin has been imported, it can be used::
+Once the plugin has been imported, it can be used:
+
+.. code-block:: python
 
     from PIL import Image
     import SpamImagePlugin
@@ -422,5 +424,4 @@ Python-based file decoder:
    called with a buffer of data to be interpreted.
 
 3. Cleanup: The decoder instance's ``cleanup`` method is called.
-
 
