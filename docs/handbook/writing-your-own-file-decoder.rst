@@ -159,6 +159,8 @@ can be used with most uncompressed file formats, such as PPM, BMP, uncompressed
 TIFF, and many others. To use the raw decoder with the
 :py:func:`PIL.Image.frombytes` function, use the following syntax::
 
+.. code-block:: python
+
     image = Image.frombytes(
         mode, size, data, "raw",
         raw mode, stride, orientation
@@ -268,6 +270,8 @@ image memory.
 
 To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
 the following syntax::
+
+.. code-block:: python
 
     image = Image.frombytes(
         mode, size, data, "bit",
