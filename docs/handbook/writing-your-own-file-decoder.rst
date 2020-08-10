@@ -105,6 +105,13 @@ Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
+Once the plugin has been imported, it can be used::
+
+    from PIL import Image
+    import SpamImagePlugin
+    with Image.open("hopper.spam") as im:
+        pass
+
 The ``tile`` attribute
 ----------------------
 
