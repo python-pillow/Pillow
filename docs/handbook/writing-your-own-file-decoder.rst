@@ -87,8 +87,10 @@ true color.
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
 
-    Image.register_extension(SpamImageFile.format, ".spam")
-    Image.register_extension(SpamImageFile.format, ".spa")  # DOS version
+    Image.register_extensions(SpamImageFile.format, [
+        ".spam",
+        ".spa",  # DOS version
+    ])
 
 
 The format handler must always set the
