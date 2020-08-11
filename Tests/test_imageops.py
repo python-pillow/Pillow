@@ -350,5 +350,13 @@ def test_auto_contrast_mask_real_input():
         result_nomask = ImageOps.autocontrast(img)
 
         assert result_nomask != result
-        assert ImageStat.Stat(result, mask=rect_mask).median == [195, 202, 184]
-        assert ImageStat.Stat(result_nomask).median == [119, 106, 79]
+        assert_tuple_approx_equal(
+                ImageStat.Stat(result, mask=rect_mask).median,
+                [195, 202, 184],
+                threshold=2,
+                msg='autocontrast with mask pixel incorrect')
+        assert_tuple_approx_equal(
+                ImageStat.Stat(result_nomask).median,
+                [119, 106, 79],
+                threshold=2,
+                msg='autocontrast without mask pixel incorrect')
