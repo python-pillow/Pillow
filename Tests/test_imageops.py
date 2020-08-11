@@ -1,6 +1,6 @@
 import pytest
 
-from PIL import Image, ImageDraw, ImageOps, features
+from PIL import Image, ImageDraw, ImageOps, ImageStat, features
 
 from .helper import (
     assert_image_equal,
@@ -328,8 +328,12 @@ def test_autocontrast_mask_toy_input():
         y1 = 3 * img.size[1] // 4
         draw.rectangle((x0, y0, x1, y1), fill=255)
 
-        assert ImageOps.autocontrast(img, mask=rect_mask) != ImageOps.autocontrast(img)
+        result = ImageOps.autocontrast(img, mask=rect_mask)
+        result_nomask = ImageOps.autocontrast(img)
 
+        assert result != result_nomask
+        assert ImageStat.Stat(result, mask=rect_mask).median == [127]
+        assert ImageStat.Stat(result_nomask).median == [128]
 
 def test_auto_contrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
@@ -345,3 +349,5 @@ def test_auto_contrast_mask_real_input():
         result_nomask = ImageOps.autocontrast(img)
 
         assert result_nomask != result
+        assert ImageStat.Stat(result, mask=rect_mask).median == [195, 202, 184]
+        assert ImageStat.Stat(result_nomask).median == [119, 106, 79]
