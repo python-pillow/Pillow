@@ -1740,7 +1740,7 @@ class Image:
         Rewrites the image to reorder the palette.
 
         :param dest_map: A list of indexes into the original palette.
-           e.g. [1,0] would swap a two item palette, and list(range(256))
+           e.g. ``[1,0]`` would swap a two item palette, and ``list(range(256))``
            is the identity transform.
         :param source_palette: Bytes or None.
         :returns:  An :py:class:`~PIL.Image.Image` object.
@@ -1922,16 +1922,16 @@ class Image:
 
     def reduce(self, factor, box=None):
         """
-        Returns a copy of the image reduced by `factor` times.
-        If the size of the image is not dividable by the `factor`,
+        Returns a copy of the image reduced ``factor`` times.
+        If the size of the image is not dividable by ``factor``,
         the resulting size will be rounded up.
 
         :param factor: A greater than 0 integer or tuple of two integers
            for width and height separately.
         :param box: An optional 4-tuple of ints providing
            the source image region to be reduced.
-           The values must be within (0, 0, width, height) rectangle.
-           If omitted or None, the entire source is used.
+           The values must be within ``(0, 0, width, height)`` rectangle.
+           If omitted or ``None``, the entire source is used.
         """
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)

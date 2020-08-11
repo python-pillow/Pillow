@@ -250,7 +250,9 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
 
 def get_display_profile(handle=None):
-    """ (experimental) Fetches the profile for the current display device.
+    """
+    (experimental) Fetches the profile for the current display device.
+
     :returns: ``None`` if the profile is not known.
     """
 
@@ -624,7 +626,7 @@ def applyTransform(im, transform, inPlace=False):
     :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
         as the ``inMode`` supported by the transform.
     :param transform: A valid CmsTransform class object
-    :param inPlace: Bool.  If ``True``, ``im` is modified in place and ``None`` is
+    :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
         returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
         transform applied is returned (and ``im`` is not changed). The default is
         ``False``.

@@ -40,6 +40,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024 * 1024
 
 LOAD_TRUNCATED_IMAGES = False
+"""Whether loading of truncated image files is currently enabled. User code may change this."""
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -48,6 +49,7 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
+"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
 
 
 #
@@ -583,7 +585,7 @@ class PyCodecState:
 class PyDecoder:
     """
     Python implementation of a format decoder. Override this class and
-    add the decoding logic in the `decode` method.
+    add the decoding logic in the :meth:`decode` method.
 
     See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
     """
@@ -615,9 +617,9 @@ class PyDecoder:
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of (bytes consumed, errcode).
+        :returns: A tuple of ``(bytes consumed, errcode)``.
             If finished with decoding return <0 for the bytes consumed.
-            Err codes are from `ERRORS`
+            Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
 
