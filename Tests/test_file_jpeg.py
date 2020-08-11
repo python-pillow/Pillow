@@ -735,6 +735,14 @@ class TestFileJpeg:
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size
 
+    def test_missing_gps_ifd(self):
+        # This image is missing its gps ifd data.
+        with Image.open("Tests/images/exif-gps-ifd-missing.jpeg") as im:
+
+            # This should return the default, and not a IndexError when a tag is
+            # missing.
+            assert im.info.get("dpi") == (72, 72)
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")

@@ -587,15 +587,20 @@ class ImageFileDirectory_v2(MutableMapping):
                 TiffTags.SIGNED_RATIONAL,
             ]:  # rationals
                 values = (values,)
-            try:
+
+            if len(values) == 1:
                 (dest[tag],) = values
-            except ValueError:
+            elif len(values) > 1:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
                     "Metadata Warning, tag %s had too many entries: %s, expected 1"
                     % (tag, len(values))
                 )
                 dest[tag] = values[0]
+            else:
+                warnings.warn(
+                    "Metadata Warning, tag %s had no entries, expected 1" % tag
+                )
 
         else:
             # Spec'd length > 1 or undefined
