@@ -335,6 +335,7 @@ def test_autocontrast_mask_toy_input():
         assert ImageStat.Stat(result, mask=rect_mask).median == [127]
         assert ImageStat.Stat(result_nomask).median == [128]
 
+
 def test_auto_contrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
