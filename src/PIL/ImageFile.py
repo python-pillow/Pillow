@@ -40,7 +40,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024 * 1024
 
 LOAD_TRUNCATED_IMAGES = False
-"""Whether loading of truncated image files is currently enabled. User code may change this."""
+"""Whether or not to load truncated image files. User code may change this."""
 
 ERRORS = {
     -1: "image buffer overrun error",
