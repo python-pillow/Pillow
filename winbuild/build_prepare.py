@@ -420,7 +420,10 @@ def build_dep(name):
         with open(patch_file, "r") as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
-            text = text.replace(patch_from.format(**prefs), patch_to.format(**prefs))
+            patch_from = patch_from.format(**prefs)
+            patch_to = patch_to.format(**prefs)
+            assert patch_from in text
+            text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
             f.write(text)
 
