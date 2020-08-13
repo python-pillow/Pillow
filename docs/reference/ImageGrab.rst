@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageGrab
 .. py:currentmodule:: PIL.ImageGrab
 
-:py:mod:`ImageGrab` Module
-==========================
+:py:mod:`~PIL.ImageGrab` Module
+===============================
 
-The :py:mod:`ImageGrab` module can be used to copy the contents of the screen
+The :py:mod:`~PIL.ImageGrab` module can be used to copy the contents of the screen
 or the clipboard to a PIL image memory.
 
 .. versionadded:: 1.1.3
@@ -27,7 +27,7 @@ or the clipboard to a PIL image memory.
         .. versionadded:: 6.2.0
 
     :param xdisplay:
-        X11 Display address. Pass ``None`` to grab the default system screen. Pass ``""`` to grab the default X11 screen on Windows or macOS.
+        X11 Display address. Pass :data:`None` to grab the default system screen. Pass ``""`` to grab the default X11 screen on Windows or macOS.
 
         You can check X11 support using :py:func:`PIL.features.check_feature` with ``feature="xcb"``.
 

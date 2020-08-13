@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import __version__
 
 pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")

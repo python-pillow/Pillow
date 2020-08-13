@@ -121,39 +121,47 @@ Filters
 For geometry operations that may map multiple input pixels to a single output
 pixel, the Python Imaging Library provides different resampling *filters*.
 
-``NEAREST``
+.. py:currentmodule:: PIL.Image
+
+.. data:: NEAREST
+
     Pick one nearest pixel from the input image. Ignore all other input pixels.
 
-``BOX``
+.. data:: BOX
+
     Each pixel of source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of ``NEAREST``.
+    For upscaling is equivalent of :data:`NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-``BILINEAR``
+.. data:: BILINEAR
+
     For resize calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
 
-``HAMMING``
-    Produces a sharper image than ``BILINEAR``, doesn't have dislocations
-    on local level like with ``BOX``.
+.. data:: HAMMING
+
+    Produces a sharper image than :data:`BILINEAR`, doesn't have dislocations
+    on local level like with :data:`BOX`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-``BICUBIC``
+.. data:: BICUBIC
+
     For resize calculate the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
 
-``LANCZOS``
+.. data:: LANCZOS
+
     Calculate the output pixel value using a high-quality Lanczos filter (a
     truncated sinc) on all pixels that may contribute to the output value.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
@@ -165,19 +173,19 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+------------+-------------+-----------+-------------+
-| Filter     | Downscaling | Upscaling | Performance |
-|            | quality     | quality   |             |
-+============+=============+===========+=============+
-|``NEAREST`` |             |           | ⭐⭐⭐⭐⭐  |
-+------------+-------------+-----------+-------------+
-|``BOX``     | ⭐          |           | ⭐⭐⭐⭐    |
-+------------+-------------+-----------+-------------+
-|``BILINEAR``| ⭐          | ⭐        | ⭐⭐⭐      |
-+------------+-------------+-----------+-------------+
-|``HAMMING`` | ⭐⭐        |           | ⭐⭐⭐      |
-+------------+-------------+-----------+-------------+
-|``BICUBIC`` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
-+------------+-------------+-----------+-------------+
-|``LANCZOS`` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
-+------------+-------------+-----------+-------------+
++----------------+-------------+-----------+-------------+
+| Filter         | Downscaling | Upscaling | Performance |
+|                | quality     | quality   |             |
++================+=============+===========+=============+
+|:data:`NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
++----------------+-------------+-----------+-------------+
+|:data:`BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
++----------------+-------------+-----------+-------------+
+|:data:`BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
++----------------+-------------+-----------+-------------+
+|:data:`HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
++----------------+-------------+-----------+-------------+
+|:data:`BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
++----------------+-------------+-----------+-------------+
+|:data:`LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++----------------+-------------+-----------+-------------+

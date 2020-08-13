@@ -1,6 +1,7 @@
 import filecmp
 
 import pytest
+
 from PIL import Image, ImImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy

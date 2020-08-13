@@ -26,7 +26,9 @@ import os
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, o8
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import o8
 
 
 def _accept(prefix):
@@ -58,8 +60,7 @@ class SgiImageFile(ImageFile.ImageFile):
         headlen = 512
         s = self.fp.read(headlen)
 
-        # magic number : 474
-        if i16(s) != 474:
+        if not _accept(s):
             raise ValueError("Not an SGI image file")
 
         # compression : verbatim or RLE

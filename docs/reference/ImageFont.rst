@@ -1,12 +1,12 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`ImageFont` Module
-==========================
+:py:mod:`~PIL.ImageFont` Module
+===============================
 
-The :py:mod:`ImageFont` module defines a class with the same name. Instances of
+The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.Draw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
 PIL uses its own font file format to store bitmap fonts. You can use the
 :command:`pilfont` utility from
@@ -56,3 +56,19 @@ Methods
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
+
+Constants
+---------
+
+.. data:: PIL.ImageFont.LAYOUT_BASIC
+
+    Use basic text layout for TrueType font.
+    Advanced features such as text direction are not supported.
+
+.. data:: PIL.ImageFont.LAYOUT_RAQM
+
+    Use Raqm text layout for TrueType font.
+    Advanced features are supported.
+
+    Requires Raqm, you can check support using
+    :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

@@ -1,9 +1,11 @@
 """
 JPEG quality settings equivalent to the Photoshop settings.
+Can be used when saving JPEG files.
 
-More presets can be added to the presets dict if needed.
-
-Can be use when saving JPEG file.
+The following presets are available by default:
+``web_low``, ``web_medium``, ``web_high``, ``web_very_high``, ``web_maximum``,
+``low``, ``medium``, ``high``, ``maximum``.
+More presets can be added to the :py:data:`presets` dict if needed.
 
 To apply the preset, specify::
 
@@ -21,7 +23,6 @@ Example::
 
   im.save("image_name.jpg", quality="web_high")
 
-
 Subsampling
 -----------
 
@@ -33,7 +34,7 @@ Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
 4:2:0.
 
 You can get the subsampling of a JPEG with the
-`JpegImagePlugin.get_sampling(im)` function.
+:func:`.JpegImagePlugin.get_sampling` function.
 
 In JPEG compressed data a JPEG marker is used instead of an EXIF tag.
 (ref.: https://www.exiv2.org/tags.html)
@@ -63,7 +64,7 @@ The tables format between im.quantization and quantization in presets differ in
 3. The zigzag order is remove in the preset (needed by libjpeg >= 6a).
 
 You can convert the dict format to the preset format with the
-`JpegImagePlugin.convert_dict_qtables(dict_qtables)` function.
+:func:`.JpegImagePlugin.convert_dict_qtables()` function.
 
 Libjpeg ref.:
 https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/libjpeg-3.html

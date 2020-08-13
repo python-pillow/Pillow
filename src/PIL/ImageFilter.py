@@ -49,7 +49,7 @@ class Kernel(BuiltinFilter):
                     version, this must be (3,3) or (5,5).
     :param kernel: A sequence containing kernel weights.
     :param scale: Scale factor. If given, the result for each pixel is
-                    divided by this value.  the default is the sum of the
+                    divided by this value.  The default is the sum of the
                     kernel weights.
     :param offset: Offset. If given, this value is added to the result,
                     after it has been divided by the scale factor.
@@ -69,7 +69,7 @@ class Kernel(BuiltinFilter):
 class RankFilter(Filter):
     """
     Create a rank filter.  The rank filter sorts all pixels in
-    a window of the given size, and returns the **rank**'th value.
+    a window of the given size, and returns the ``rank``'th value.
 
     :param size: The kernel size, in pixels.
     :param rank: What pixel value to pick.  Use 0 for a min filter,
@@ -411,10 +411,10 @@ class Color3DLUT(MultibandFilter):
     def _check_size(size):
         try:
             _, _, _ = size
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 "Size should be either an integer or a tuple of three integers."
-            )
+            ) from e
         except TypeError:
             size = (size, size, size)
         size = [int(x) for x in size]

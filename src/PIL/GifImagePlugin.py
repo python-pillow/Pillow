@@ -30,7 +30,10 @@ import os
 import subprocess
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
-from ._binary import i8, i16le as i16, o8, o16le as o16
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import o8
+from ._binary import o16le as o16
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -63,7 +66,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         # Screen
         s = self.fp.read(13)
-        if s[:6] not in [b"GIF87a", b"GIF89a"]:
+        if not _accept(s):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
@@ -130,9 +133,9 @@ class GifImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             try:
                 self._seek(f)
-            except EOFError:
+            except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in GIF file")
+                raise EOFError("no more images in GIF file") from e
 
     def _seek(self, frame):
 

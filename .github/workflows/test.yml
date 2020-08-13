@@ -14,16 +14,16 @@ jobs:
         ]
         python-version: [
           "pypy3",
+          "3.9-dev",
           "3.8",
           "3.7",
           "3.6",
-          "3.5",
         ]
         include:
-        - python-version: "3.5"
-          env: PYTHONOPTIMIZE=2
         - python-version: "3.6"
           env: PYTHONOPTIMIZE=1
+        - python-version: "3.7"
+          env: PYTHONOPTIMIZE=2
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu
@@ -36,30 +36,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Ubuntu cache
-      uses: actions/cache@v1
-      if: startsWith(matrix.os, 'ubuntu')
-      with:
-        path: ~/.cache/pip
-        key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
-        restore-keys: |
-          ${{ matrix.os }}-${{ matrix.python-version }}-
-
-    - name: macOS cache
-      uses: actions/cache@v1
-      if: startsWith(matrix.os, 'macOS')
-      with:
-        path: ~/Library/Caches/pip
-        key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
-        restore-keys: |
-          ${{ matrix.os }}-${{ matrix.python-version }}-
-
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Build system information
       run: python .github/workflows/system-info.py
@@ -68,11 +62,15 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
         .github/workflows/macos-install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Build
       run: |
@@ -89,7 +87,7 @@ jobs:
       shell: pwsh
 
     - name: Upload errors
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: errors
@@ -98,7 +96,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.8
       run: |
-        pip install sphinx-rtd-theme
+        pip install sphinx-removed-in sphinx-rtd-theme
         make doccheck
 
     - name: After success

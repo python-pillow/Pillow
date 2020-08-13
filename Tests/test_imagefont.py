@@ -1,5 +1,4 @@
 import copy
-import distutils.version
 import os
 import re
 import shutil
@@ -7,10 +6,13 @@ import sys
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageDraw, ImageFont
+from packaging.version import parse as parse_version
+
+from PIL import Image, ImageDraw, ImageFont, features
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     is_pypy,
@@ -40,7 +42,7 @@ class TestImageFont:
 
     @classmethod
     def setup_class(self):
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
+        freetype = parse_version(features.version_module("freetype2"))
 
         self.metrics = self.METRICS["Default"]
         for conditions, metrics in self.METRICS.items():
@@ -48,7 +50,7 @@ class TestImageFont:
                 continue
 
             for condition in conditions:
-                version = re.sub("[<=>]", "", condition)
+                version = parse_version(re.sub("[<=>]", "", condition))
                 if (condition.startswith(">=") and freetype >= version) or (
                     condition.startswith("<") and freetype < version
                 ):
@@ -67,7 +69,7 @@ class TestImageFont:
         )
 
     def test_sanity(self):
-        assert re.search(r"\d+\.\d+\.\d+$", ImageFont.core.freetype2_version)
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("freetype2"))
 
     def test_font_properties(self):
         ttf = self.get_font()
@@ -149,6 +151,18 @@ class TestImageFont:
         img_filelike = self._render(font_filelike)
 
         assert_image_equal(img_path, img_filelike)
+
+    def test_transparent_background(self):
+        im = Image.new(mode="RGBA", size=(300, 100))
+        draw = ImageDraw.Draw(im)
+        ttf = self.get_font()
+
+        txt = "Hello World!"
+        draw.text((10, 10), txt, font=ttf)
+
+        target = "Tests/images/transparent_background_text.png"
+        with Image.open(target) as target_img:
+            assert_image_similar(im, target_img, 4.09)
 
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -442,7 +456,7 @@ class TestImageFont:
         with pytest.raises(UnicodeEncodeError):
             font.getsize("’")
 
-    @pytest.mark.skipif(is_pypy(), reason="failing on PyPy")
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"
@@ -607,8 +621,8 @@ class TestImageFont:
     def test_variation_get(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.get_variation_names()
             with pytest.raises(NotImplementedError):
@@ -679,8 +693,8 @@ class TestImageFont:
     def test_variation_set_by_name(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_name("Bold")
             return
@@ -703,8 +717,8 @@ class TestImageFont:
     def test_variation_set_by_axes(self):
         font = self.get_font()
 
-        freetype = distutils.version.StrictVersion(ImageFont.core.freetype2_version)
-        if freetype < "2.9.1":
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.9.1"):
             with pytest.raises(NotImplementedError):
                 font.set_variation_by_axes([100])
             return
@@ -724,3 +738,19 @@ class TestImageFont:
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
+
+
+def test_render_mono_size():
+    # issue 4177
+
+    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
+        pytest.skip("Different metrics")
+
+    im = Image.new("P", (100, 30), "white")
+    draw = ImageDraw.Draw(im)
+    ttf = ImageFont.truetype(
+        "Tests/fonts/DejaVuSans.ttf", 18, layout_engine=ImageFont.LAYOUT_BASIC
+    )
+
+    draw.text((10, 10), "r" * 10, "black", ttf)
+    assert_image_equal_tofile(im, "Tests/images/text_mono.gif")

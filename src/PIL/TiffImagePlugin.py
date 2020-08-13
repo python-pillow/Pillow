@@ -414,7 +414,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     The tiff metadata type of each item is stored in a dictionary of
     tag types in
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
     are read from a tiff file, guessed from the type added, or added
     manually.
 
@@ -472,6 +472,8 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self.tagtype = {}
+        """ Dictionary of tag types """
         self.reset()
         (self.next,) = self._unpack("L", ifh[4:])
         self._legacy_api = False
@@ -553,9 +555,10 @@ class ImageFileDirectory_v2(MutableMapping):
                         )
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
-                else:
-                    if all(isinstance(v, str) for v in values):
-                        self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, str) for v in values):
+                    self.tagtype[tag] = TiffTags.ASCII
+                elif all(isinstance(v, bytes) for v in values):
+                    self.tagtype[tag] = TiffTags.BYTE
 
         if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
@@ -573,8 +576,10 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (info.length == 1) or (
-            info.length is None and len(values) == 1 and not legacy_api
+        if (
+            (info.length == 1)
+            or self.tagtype[tag] == TiffTags.BYTE
+            or (info.length is None and len(values) == 1 and not legacy_api)
         ):
             # Don't mess with the legacy api, since it's frozen.
             if legacy_api and self.tagtype[tag] in [
@@ -773,7 +778,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 self.tagtype[tag] = typ
 
                 msg += " - value: " + (
-                    "<table: %d bytes>" % size if size > 32 else str(data)
+                    "<table: %d bytes>" % size if size > 32 else repr(data)
                 )
                 logger.debug(msg)
 
@@ -880,7 +885,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ('Some Data',)
 
     Also contains a dictionary of tag types as read from the tiff image file,
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
 
     Values are returned as a tuple.
 
@@ -893,6 +898,10 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
+
+    # defined in ImageFileDirectory_v2
+    tagtype: dict
+    """Dictionary of tag types"""
 
     @classmethod
     def from_v2(cls, original):
@@ -969,17 +978,25 @@ class TiffImageFile(ImageFile.ImageFile):
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
 
+    def __init__(self, fp=None, filename=None):
+        self.tag_v2 = None
+        """ Image file directory (tag dictionary) """
+
+        self.tag = None
+        """ Legacy tag entries """
+
+        super().__init__(fp, filename)
+
     def _open(self):
         """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
 
-        # image file directory (tag dictionary)
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
-        # legacy tag/ifd entries will be filled in later
-        self.tag = self.ifd = None
+        # legacy IFD entries will be filled in later
+        self.ifd = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
@@ -990,7 +1007,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: {}".format(self.__first))
-        logger.debug("- ifh: {}".format(ifh))
+        logger.debug("- ifh: {!r}".format(ifh))  # Use !r to avoid str(bytes)
 
         # and load the first frame
         self._seek(0)
@@ -1114,8 +1131,8 @@ class TiffImageFile(ImageFile.ImageFile):
         )
         try:
             decoder.setimage(self.im, extents)
-        except ValueError:
-            raise OSError("Couldn't set the image")
+        except ValueError as e:
+            raise OSError("Couldn't set the image") from e
 
         close_self_fp = self._exclusive_fp and not self.is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1228,9 +1245,9 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("format key: {}".format(key))
         try:
             self.mode, rawmode = OPEN_INFO[key]
-        except KeyError:
+        except KeyError as e:
             logger.debug("- unsupported format")
-            raise SyntaxError("unknown pixel mode")
+            raise SyntaxError("unknown pixel mode") from e
 
         logger.debug("- raw mode: {}".format(rawmode))
         logger.debug("- pil mode: {}".format(self.mode))
@@ -1397,14 +1414,17 @@ def _save(im, fp, filename):
 
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as TIFF" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as TIFF" % im.mode) from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
     compression = im.encoderinfo.get("compression", im.info.get("compression"))
     if compression is None:
         compression = "raw"
+    elif compression == "tiff_jpeg":
+        # OJPEG is obsolete, so use new-style JPEG compression instead
+        compression = "jpeg"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
@@ -1485,7 +1505,10 @@ def _save(im, fp, filename):
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
-    ifd[STRIPBYTECOUNTS] = stride * im.size[1]
+    strip_byte_counts = stride * im.size[1]
+    if strip_byte_counts >= 2 ** 16:
+        ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
+    ifd[STRIPBYTECOUNTS] = strip_byte_counts
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
@@ -1521,7 +1544,6 @@ def _save(im, fp, filename):
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         blocklist = [
-            COLORMAP,
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
@@ -1546,16 +1568,17 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if (
-                    TiffTags.lookup(tag).type == TiffTags.UNDEFINED
-                    or not Image.core.libtiff_support_custom_tags
-                ):
+                if not Image.core.libtiff_support_custom_tags:
                     continue
 
                 if tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue
+                else:
+                    type = TiffTags.lookup(tag).type
+                    if type:
+                        types[tag] = type
             if tag not in atts and tag not in blocklist:
                 if isinstance(value, str):
                     atts[tag] = value.encode("ascii", "replace") + b"\0"

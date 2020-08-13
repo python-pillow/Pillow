@@ -40,6 +40,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024 * 1024
 
 LOAD_TRUNCATED_IMAGES = False
+"""Whether or not to load truncated image files. User code may change this."""
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -48,6 +49,7 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
+"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
 
 
 #
@@ -85,7 +87,7 @@ def _tilesort(t):
 
 
 class ImageFile(Image.Image):
-    "Base class for image file format handlers."
+    """Base class for image file format handlers."""
 
     def __init__(self, fp=None, filename=None):
         super().__init__()
@@ -95,6 +97,8 @@ class ImageFile(Image.Image):
         self.custom_mimetype = None
 
         self.tile = None
+        """ A list of tile descriptors, or ``None`` """
+
         self.readonly = 1  # until we know better
 
         self.decoderconfig = ()
@@ -122,7 +126,7 @@ class ImageFile(Image.Image):
                 EOFError,  # got header but not the first frame
                 struct.error,
             ) as v:
-                raise SyntaxError(v)
+                raise SyntaxError(v) from v
 
             if not self.mode or self.size[0] <= 0:
                 raise SyntaxError("not identified by this driver")
@@ -241,12 +245,12 @@ class ImageFile(Image.Image):
                         while True:
                             try:
                                 s = read(self.decodermaxblock)
-                            except (IndexError, struct.error):
+                            except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError("image file is truncated")
+                                    raise OSError("image file is truncated") from e
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
@@ -505,7 +509,7 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation):
+    except (AttributeError, io.UnsupportedOperation) as e:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
@@ -522,7 +526,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError("encoder error %d when writing image file" % s) from e
             e.cleanup()
     else:
         # slight speedup: compress to real file object
@@ -581,7 +585,7 @@ class PyCodecState:
 class PyDecoder:
     """
     Python implementation of a format decoder. Override this class and
-    add the decoding logic in the `decode` method.
+    add the decoding logic in the :meth:`decode` method.
 
     See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
     """
@@ -613,9 +617,9 @@ class PyDecoder:
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of (bytes consumed, errcode).
+        :returns: A tuple of ``(bytes consumed, errcode)``.
             If finished with decoding return <0 for the bytes consumed.
-            Err codes are from `ERRORS`
+            Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
 

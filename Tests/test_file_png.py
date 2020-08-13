@@ -3,7 +3,8 @@ import zlib
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, PngImagePlugin
+
+from PIL import Image, ImageFile, PngImagePlugin, features
 
 from .helper import (
     PillowLeakTestCase,
@@ -12,7 +13,6 @@ from .helper import (
     hopper,
     is_big_endian,
     is_win32,
-    on_ci,
     skip_unless_feature,
 )
 
@@ -69,11 +69,11 @@ class TestFilePng:
                     png.crc(cid, s)
         return chunks
 
-    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_sanity(self, tmp_path):
 
         # internal version number
-        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", Image.core.zlib_version)
+        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
 
         test_file = str(tmp_path / "temp.png")
 
@@ -606,6 +606,11 @@ class TestFilePng:
             # when the image is no longer a PngImageFile instance
             exif = im.copy().getexif()
             assert exif[274] == 1
+
+        # With a tEXt chunk
+        with Image.open("Tests/images/exif_text.png") as im:
+            exif = im._getexif()
+        assert exif[274] == 1
 
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:

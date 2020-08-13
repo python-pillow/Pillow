@@ -1,6 +1,7 @@
 import io
 
 import pytest
+
 from PIL import EpsImagePlugin, Image, features
 
 from .helper import assert_image_similar, hopper, skip_unless_feature

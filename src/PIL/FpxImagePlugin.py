@@ -17,7 +17,8 @@
 import olefile
 
 from . import Image, ImageFile
-from ._binary import i8, i32le as i32
+from ._binary import i8
+from ._binary import i32le as i32
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
@@ -59,8 +60,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except OSError:
-            raise SyntaxError("not an FPX file; invalid OLE file")
+        except OSError as e:
+            raise SyntaxError("not an FPX file; invalid OLE file") from e
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
             raise SyntaxError("not an FPX file; bad root CLSID")

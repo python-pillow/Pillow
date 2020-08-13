@@ -25,7 +25,12 @@
 
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16le as i16, i32le as i32, o8, o16le as o16, o32le as o32
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
+from ._binary import o8
+from ._binary import o16le as o16
+from ._binary import o32le as o32
 
 #
 # --------------------------------------------------------------------
@@ -263,7 +268,7 @@ class BmpImageFile(ImageFile.ImageFile):
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
-        if head_data[0:2] != b"BM":
+        if not _accept(head_data):
             raise SyntaxError("Not a BMP file")
         # read the start position of the BMP image data (u32)
         offset = i32(head_data[10:14])
@@ -304,8 +309,8 @@ def _dib_save(im, fp, filename):
 def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as BMP" % im.mode)
+    except KeyError as e:
+        raise OSError("cannot write mode %s as BMP" % im.mode) from e
 
     info = im.encoderinfo
 

@@ -2,6 +2,7 @@ import io
 import struct
 
 import pytest
+
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
@@ -154,6 +155,23 @@ def test_write_metadata(tmp_path):
     for tag, value in original.items():
         if tag not in ignored:
             assert value == reloaded[tag], "%s didn't roundtrip" % tag
+
+
+def test_change_stripbytecounts_tag_type(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.tif") as im:
+        info = im.tag_v2
+
+        # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
+        im = im.resize((500, 500))
+
+        # STRIPBYTECOUNTS can be a SHORT or a LONG
+        info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
+
+        im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
 
 
 def test_no_duplicate_50741_tag():
@@ -319,13 +337,13 @@ def test_empty_values():
 
 def test_PhotoshopInfo(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
-        assert len(im.tag_v2[34377]) == 1
-        assert isinstance(im.tag_v2[34377][0], bytes)
+        assert len(im.tag_v2[34377]) == 70
+        assert isinstance(im.tag_v2[34377], bytes)
         out = str(tmp_path / "temp.tiff")
         im.save(out)
     with Image.open(out) as reloaded:
-        assert len(reloaded.tag_v2[34377]) == 1
-        assert isinstance(reloaded.tag_v2[34377][0], bytes)
+        assert len(reloaded.tag_v2[34377]) == 70
+        assert isinstance(reloaded.tag_v2[34377], bytes)
 
 
 def test_too_many_entries():

@@ -16,7 +16,9 @@
 # See the README file for information on usage and redistribution.
 #
 from . import BmpImagePlugin, Image
-from ._binary import i8, i16le as i16, i32le as i32
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
 
 #
 # --------------------------------------------------------------------

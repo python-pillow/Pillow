@@ -2,8 +2,65 @@
 Changelog (Pillow)
 ==================
 
-7.2.0 (unreleased)
+8.0.0 (unreleased)
 ------------------
+
+- Read EXIF data tEXt chunk into info as bytes instead of string #4828
+  [radarhere]
+
+- Remove long-deprecated Image.py functions #4798
+  [hugovk, nulano, radarhere]
+
+- Add MIME type to PsdImagePlugin #4788
+  [samamorgan]
+
+- Drop support for EOL Python 3.5 #4746
+  [hugovk, radarhere, nulano]
+
+- Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
+  [hugovk, radarhere]
+
+- Allow ImageOps.autocontrast to specify low and high cutoffs separately #4749
+  [millionhz, radarhere]
+
+7.2.0 (2020-07-01)
+------------------
+
+- Do not convert I;16 images when showing PNGs #4744
+  [radarhere]
+
+- Fixed ICNS file pointer saving #4741
+  [radarhere]
+
+- Fixed loading non-RGBA mode APNGs with dispose background #4742
+  [radarhere]
+
+- Deprecated _showxv #4714
+  [radarhere]
+
+- Deprecate Image.show(command="...") #4646
+  [nulano, hugovk, radarhere]
+
+- Updated JPEG magic number #4707
+  [Cykooz, radarhere]
+
+- Change STRIPBYTECOUNTS to LONG if necessary when saving #4626
+  [radarhere, hugovk]
+
+- Write JFIF header when saving JPEG #4639
+  [radarhere]
+
+- Replaced tiff_jpeg with jpeg compression when saving TIFF images #4627
+  [radarhere]
+
+- Writing TIFF tags: improved BYTE, added UNDEFINED #4605
+  [radarhere]
+
+- Consider transparency when pasting text on an RGBA image #4566
+  [radarhere]
+
+- Added method argument to single frame WebP saving #4547
+  [radarhere]
 
 - Use ImageFileDirectory_v2 in Image.Exif #4637
   [radarhere]
@@ -42,6 +99,9 @@ Changelog (Pillow)
   [radarhere]
 
 - Fix pickling WebP #4561
+  [hugovk, radarhere]
+
+- Replace IOError and WindowsError aliases with OSError #4536
   [hugovk, radarhere]
 
 7.1.2 (2020-04-25)
@@ -5542,7 +5602,7 @@ Pre-fork
       any other pixel value means opaque.  This is faster than using an
       "L" transparency mask.
 
-    + Properly writes EPS files (and properly prints images to postscript
+    + Properly writes EPS files (and properly prints images to PostScript
       printers as well).
 
     + Reads 4-bit BMP files, as well as 4 and 8-bit Windows ICO and CUR
@@ -5625,7 +5685,7 @@ Pre-fork
     + Added the "pilfile" utility, which quickly identifies image files
       (without loading them, in most cases).
 
-    + Added the "pilprint" utility, which prints image files to Postscript
+    + Added the "pilprint" utility, which prints image files to PostScript
       printers.
 
     + Added a rudimentary version of the "pilview" utility, which is
@@ -5639,5 +5699,5 @@ Pre-fork
       Jack).  This allows you to read images through the Img extensions file
       format handlers.  See the file "Lib/ImgExtImagePlugin.py" for details.
 
-    + Postscript printing is provided through the PSDraw module.  See the
+    + PostScript printing is provided through the PSDraw module.  See the
       handbook for details.

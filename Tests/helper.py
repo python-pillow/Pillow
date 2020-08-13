@@ -11,6 +11,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageMath, features
 
 logger = logging.getLogger(__name__)
@@ -165,12 +166,6 @@ def assert_tuple_approx_equal(actuals, targets, threshold, msg):
     assert value, msg + ": " + repr(actuals) + " != " + repr(targets)
 
 
-def skip_known_bad_test(msg=None):
-    # Skip if PILLOW_RUN_KNOWN_BAD is not true in the environment.
-    if not os.environ.get("PILLOW_RUN_KNOWN_BAD", False):
-        pytest.skip(msg or "Known bad test")
-
-
 def skip_unless_feature(feature):
     reason = "%s not available" % feature
     return pytest.mark.skipif(not features.check(feature), reason=reason)
@@ -190,7 +185,7 @@ class PillowLeakTestCase:
         :returns: memory usage in kilobytes
         """
 
-        from resource import getrusage, RUSAGE_SELF
+        from resource import RUSAGE_SELF, getrusage
 
         mem = getrusage(RUSAGE_SELF).ru_maxrss
         if sys.platform == "darwin":

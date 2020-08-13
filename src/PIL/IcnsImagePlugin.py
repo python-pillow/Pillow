@@ -23,10 +23,10 @@ import subprocess
 import sys
 import tempfile
 
-from PIL import Image, ImageFile, PngImagePlugin
+from PIL import Image, ImageFile, PngImagePlugin, features
 from PIL._binary import i8
 
-enable_jpeg2k = hasattr(Image.core, "jp2klib_version")
+enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
@@ -337,6 +337,10 @@ def _save(im, fp, filename):
 
         # iconutil -c icns -o {} {}
 
+        fp_only = not filename
+        if fp_only:
+            f, filename = tempfile.mkstemp(".icns")
+            os.close(f)
         convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
         convert_proc = subprocess.Popen(
             convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
@@ -348,6 +352,10 @@ def _save(im, fp, filename):
 
         if retcode:
             raise subprocess.CalledProcessError(retcode, convert_cmd)
+
+        if fp_only:
+            with open(filename, "rb") as f:
+                fp.write(f.read())
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")

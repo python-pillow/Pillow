@@ -483,7 +483,6 @@ LIBTIFF_CORE = {
     65537,
 }
 
-LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
 

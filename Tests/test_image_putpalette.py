@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import ImagePalette
 
 from .helper import hopper

@@ -6,32 +6,32 @@ import sys
 
 
 def cmd_cd(path):
-    return "cd /D {path}".format(**locals())
+    return f"cd /D {path}"
 
 
 def cmd_set(name, value):
-    return "set {name}={value}".format(**locals())
+    return f"set {name}={value}"
 
 
 def cmd_append(name, value):
-    op = "path " if name == "PATH" else "set {name}="
-    return (op + "%{name}%;{value}").format(**locals())
+    op = "path " if name == "PATH" else f"set {name}="
+    return op + f"%{name}%;{value}"
 
 
 def cmd_copy(src, tgt):
-    return 'copy /Y /B "{src}" "{tgt}"'.format(**locals())
+    return f'copy /Y /B "{src}" "{tgt}"'
 
 
 def cmd_xcopy(src, tgt):
-    return 'xcopy /Y /E "{src}" "{tgt}"'.format(**locals())
+    return f'xcopy /Y /E "{src}" "{tgt}"'
 
 
 def cmd_mkdir(path):
-    return 'mkdir "{path}"'.format(**locals())
+    return f'mkdir "{path}"'
 
 
 def cmd_rmdir(path):
-    return 'rmdir /S /Q "{path}"'.format(**locals())
+    return f'rmdir /S /Q "{path}"'
 
 
 def cmd_nmake(makefile=None, target="", params=None):
@@ -44,13 +44,13 @@ def cmd_nmake(makefile=None, target="", params=None):
 
     return " ".join(
         [
-            "{{nmake}}",
+            "{nmake}",
             "-nologo",
-            '-f "{makefile}"' if makefile is not None else "",
-            "{params}",
-            '"{target}"',
+            f'-f "{makefile}"' if makefile is not None else "",
+            f"{params}",
+            f'"{target}"',
         ]
-    ).format(**locals())
+    )
 
 
 def cmd_cmake(params=None, file="."):
@@ -62,15 +62,15 @@ def cmd_cmake(params=None, file="."):
         params = str(params)
     return " ".join(
         [
-            "{{cmake}}",
+            "{cmake}",
             "-DCMAKE_VERBOSE_MAKEFILE=ON",
             "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
             "-DCMAKE_BUILD_TYPE=Release",
-            "{params}",
+            f"{params}",
             '-G "NMake Makefiles"',
-            '"{file}"',
+            f'"{file}"',
         ]
-    ).format(**locals())
+    )
 
 
 def cmd_msbuild(
@@ -78,14 +78,14 @@ def cmd_msbuild(
 ):
     return " ".join(
         [
-            "{{msbuild}}",
-            "{file}",
-            '/t:"{target}"',
-            '/p:Configuration="{configuration}"',
-            "/p:Platform={platform}",
+            "{msbuild}",
+            f"{file}",
+            f'/t:"{target}"',
+            f'/p:Configuration="{configuration}"',
+            f"/p:Platform={platform}",
             "/m",
         ]
-    ).format(**locals())
+    )
 
 
 SF_MIRROR = "http://iweb.dl.sourceforge.net"
@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.3/libjpeg-turbo-2.0.3.tar.gz",
-        "filename": "libjpeg-turbo-2.0.3.tar.gz",
-        "dir": "libjpeg-turbo-2.0.3",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4.tar.gz",
+        "filename": "libjpeg-turbo-2.0.4.tar.gz",
+        "dir": "libjpeg-turbo-2.0.4",
         "build": [
             cmd_cmake(
                 [
@@ -195,9 +195,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.10/lcms2-2.10.tar.gz",
-        "filename": "lcms2-2.10.tar.gz",
-        "dir": "lcms2-2.10",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.11/lcms2-2.11.tar.gz",
+        "filename": "lcms2-2.11.tar.gz",
+        "dir": "lcms2-2.11",
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -205,7 +205,7 @@ deps = {
                 # retarget to default toolset (selected by vcvarsall.bat)
                 "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
+                "<WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
@@ -251,9 +251,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.6.7.zip",
-        "filename": "harfbuzz-2.6.7.zip",
-        "dir": "harfbuzz-2.6.7",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.0.zip",
+        "filename": "harfbuzz-2.7.0.zip",
+        "dir": "harfbuzz-2.7.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -336,12 +336,12 @@ def find_msvs():
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
     if os.path.isfile(msbuild):
-        vs["msbuild"] = '"{}"'.format(msbuild)
+        vs["msbuild"] = f'"{msbuild}"'
     else:
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
         if os.path.isfile(msbuild):
-            vs["msbuild"] = '"{}"'.format(msbuild)
+            vs["msbuild"] = f'"{msbuild}"'
         else:
             print("Visual Studio MSBuild not found")
             return None
@@ -350,14 +350,14 @@ def find_msvs():
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vs["header"].append('call "{}" {{vcvars_arch}}'.format(vcvarsall))
+    vs["header"].append(f'call "{vcvarsall}" {{vcvars_arch}}')
 
     return vs
 
 
 def extract_dep(url, filename):
-    import urllib.request
     import tarfile
+    import urllib.request
     import zipfile
 
     file = os.path.join(depends_dir, filename)
@@ -411,7 +411,7 @@ def get_footer(dep):
 def build_dep(name):
     dep = deps[name]
     dir = dep["dir"]
-    file = "build_dep_{name}.cmd".format(**locals())
+    file = f"build_dep_{name}.cmd"
 
     extract_dep(dep["url"], dep["filename"])
 
@@ -420,14 +420,17 @@ def build_dep(name):
         with open(patch_file, "r") as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
-            text = text.replace(patch_from.format(**prefs), patch_to.format(**prefs))
+            patch_from = patch_from.format(**prefs)
+            patch_to = patch_to.format(**prefs)
+            assert patch_from in text
+            text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
             f.write(text)
 
-    banner = "Building {name} ({dir})".format(**locals())
+    banner = f"Building {name} ({dir})"
     lines = [
         "@echo " + ("=" * 70),
-        "@echo ==== {:<60} ====".format(banner),
+        f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
         "cd /D %s" % os.path.join(sources_dir, dir),
         *prefs["header"],
@@ -444,7 +447,8 @@ def build_dep_all():
     for dep_name in deps:
         if dep_name in disabled:
             continue
-        lines.append(r'cmd.exe /c "{{build_dir}}\{}"'.format(build_dep(dep_name)))
+        script = build_dep(dep_name)
+        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
@@ -456,7 +460,7 @@ def build_pillow():
         cmd_cd("{pillow_dir}"),
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("MSSdk", "1"),  # for Python 3.5 and PyPy3.6
+        cmd_set("MSSdk", "1"),  # for PyPy3.6
         cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
         r'"{python_dir}\{python_exe}" setup.py build_ext %*',
     ]
@@ -560,5 +564,6 @@ if __name__ == "__main__":
 
     print()
 
+    write_script(".gitignore", ["*"])
     build_dep_all()
     build_pillow()

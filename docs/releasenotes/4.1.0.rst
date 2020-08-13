@@ -10,9 +10,9 @@ Several deprecated items have been removed.
   resolution', 'resolution unit', and 'date time' has been
   removed. Underscores should be used instead.
 
-* The methods :py:meth:`PIL.ImageDraw.ImageDraw.setink`,
-  :py:meth:`PIL.ImageDraw.ImageDraw.setfill`, and
-  :py:meth:`PIL.ImageDraw.ImageDraw.setfont` have been removed.
+* The methods ``PIL.ImageDraw.ImageDraw.setink``,
+  ``PIL.ImageDraw.ImageDraw.setfill``, and
+  ``PIL.ImageDraw.ImageDraw.setfont`` have been removed.
 
 
 Closing Files When Opening Images

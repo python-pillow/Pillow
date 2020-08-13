@@ -4,7 +4,8 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageMode
+
+from PIL import Image, ImageMode, features
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
 
@@ -46,7 +47,7 @@ def test_sanity():
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+$", ImageCms.core.littlecms_version)
+    assert re.search(r"\d+\.\d+$", features.version_module("littlecms2"))
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
@@ -433,39 +434,6 @@ def test_extended_information():
     assert p.version == 2.0
     assert p.viewing_condition == "Reference Viewing Condition in IEC 61966-2-1"
     assert p.xcolor_space == "RGB "
-
-
-def test_deprecations():
-    skip_missing()
-    o = ImageCms.getOpenProfile(SRGB)
-    p = o.profile
-
-    def helper_deprecated(attr, expected):
-        result = pytest.warns(DeprecationWarning, getattr, p, attr)
-        assert result == expected
-
-    # p.color_space
-    helper_deprecated("color_space", "RGB")
-
-    # p.pcs
-    helper_deprecated("pcs", "XYZ")
-
-    # p.product_copyright
-    helper_deprecated(
-        "product_copyright", "Copyright International Color Consortium, 2009"
-    )
-
-    # p.product_desc
-    helper_deprecated("product_desc", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_description
-    helper_deprecated("product_description", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_manufacturer
-    helper_deprecated("product_manufacturer", "")
-
-    # p.product_model
-    helper_deprecated("product_model", "IEC 61966-2-1 Default RGB Colour Space - sRGB")
 
 
 def test_profile_typesafety():

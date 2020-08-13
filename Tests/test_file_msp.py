@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import Image, MspImagePlugin
 
 from .helper import assert_image_equal, hopper

@@ -81,7 +81,7 @@ class DecompressionBombError(Exception):
     pass
 
 
-# Limit to around a quarter gigabyte for a 24 bit (3 bpp) image
+# Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
 
@@ -434,8 +434,8 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     try:
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
-    except AttributeError:
-        raise OSError("decoder %s not available" % decoder_name)
+    except AttributeError as e:
+        raise OSError("decoder %s not available" % decoder_name) from e
     return decoder(mode, *args + extra)
 
 
@@ -457,8 +457,8 @@ def _getencoder(mode, encoder_name, args, extra=()):
     try:
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
-    except AttributeError:
-        raise OSError("encoder %s not available" % encoder_name)
+    except AttributeError as e:
+        raise OSError("encoder %s not available" % encoder_name) from e
     return encoder(mode, *args + extra)
 
 
@@ -717,7 +717,7 @@ class Image:
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
         :param args: Extra arguments to the encoder.
-        :rtype: A bytes object.
+        :returns: A :py:class:`bytes` object.
         """
 
         # may pass tuple instead of argument list
@@ -745,11 +745,6 @@ class Image:
             raise RuntimeError("encoder error %d in tobytes" % s)
 
         return b"".join(data)
-
-    def tostring(self, *args, **kw):
-        raise NotImplementedError(
-            "tostring() has been removed. Please call tobytes() instead."
-        )
 
     def tobitmap(self, name="image"):
         """
@@ -801,11 +796,6 @@ class Image:
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
-
-    def fromstring(self, *args, **kw):
-        raise NotImplementedError(
-            "fromstring() has been removed. Please call frombytes() instead."
-        )
 
     def load(self):
         """
@@ -865,7 +855,7 @@ class Image:
         and the palette can be represented without a palette.
 
         The current version supports all possible conversions between
-        "L", "RGB" and "CMYK." The **matrix** argument only supports "L"
+        "L", "RGB" and "CMYK." The ``matrix`` argument only supports "L"
         and "RGB".
 
         When translating a color image to greyscale (mode "L"),
@@ -876,24 +866,24 @@ class Image:
         The default method of converting a greyscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is NONE, all values larger than 128 are set to 255 (white),
+        dither is :data:`NONE`, all values larger than 128 are set to 255 (white),
         all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
-        When converting from "RGBA" to "P" without a **matrix** argument,
+        When converting from "RGBA" to "P" without a ``matrix`` argument,
         this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
-        and **dither** and **palette** are ignored.
+        and ``dither`` and ``palette`` are ignored.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are NONE or FLOYDSTEINBERG (default).
-           Note that this is not used when **matrix** is supplied.
+           Available methods are :data:`NONE` or :data:`FLOYDSTEINBERG` (default).
+           Note that this is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
-           to "P".  Available palettes are WEB or ADAPTIVE.
-        :param colors: Number of colors to use for the ADAPTIVE palette.
+           to "P".  Available palettes are :data:`WEB` or :data:`ADAPTIVE`.
+        :param colors: Number of colors to use for the :data:`ADAPTIVE` palette.
            Defaults to 256.
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -971,10 +961,10 @@ class Image:
                         if isinstance(t, tuple):
                             try:
                                 t = trns_im.palette.getcolor(t)
-                            except Exception:
+                            except Exception as e:
                                 raise ValueError(
                                     "Couldn't allocate a palette color for transparency"
-                                )
+                                ) from e
                     trns_im.putpixel((0, 0), t)
 
                     if mode in ("L", "RGB"):
@@ -1027,8 +1017,8 @@ class Image:
                 # normalize source image and try again
                 im = self.im.convert(getmodebase(self.mode))
                 im = im.convert(mode, dither)
-            except KeyError:
-                raise ValueError("illegal conversion")
+            except KeyError as e:
+                raise ValueError("illegal conversion") from e
 
         new_im = self._new(im)
         if delete_trns:
@@ -1051,10 +1041,10 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: ``Image.MEDIANCUT=0`` (median cut),
-                       ``Image.MAXCOVERAGE=1`` (maximum coverage),
-                       ``Image.FASTOCTREE=2`` (fast octree),
-                       ``Image.LIBIMAGEQUANT=3`` (libimagequant; check support using
+        :param method: :data:`MEDIANCUT` (median cut),
+                       :data:`MAXCOVERAGE` (maximum coverage),
+                       :data:`FASTOCTREE` (fast octree),
+                       :data:`LIBIMAGEQUANT` (libimagequant; check support using
                        :py:func:`PIL.features.check_feature`
                        with ``feature="libimagequant"``).
         :param kmeans: Integer
@@ -1062,7 +1052,7 @@ class Image:
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are NONE or FLOYDSTEINBERG (default).
+           Available methods are :data:`NONE` or :data:`FLOYDSTEINBERG` (default).
            Default: 1 (legacy setting)
         :returns: A new image
 
@@ -1215,7 +1205,7 @@ class Image:
     def getbands(self):
         """
         Returns a tuple containing the name of each band in this image.
-        For example, **getbands** on an RGB image returns ("R", "G", "B").
+        For example, ``getbands`` on an RGB image returns ("R", "G", "B").
 
         :returns: A tuple containing band names.
         :rtype: tuple
@@ -1269,7 +1259,7 @@ class Image:
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
         operations.  To convert it to an ordinary sequence (e.g. for
-        printing), use **list(im.getdata())**.
+        printing), use ``list(im.getdata())``.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
@@ -1434,11 +1424,6 @@ class Image:
             return self.im.entropy(extrema)
         return self.im.entropy()
 
-    def offset(self, xoffset, yoffset=None):
-        raise NotImplementedError(
-            "offset() has been removed. Please call ImageChops.offset() instead."
-        )
-
     def paste(self, im, box=None, mask=None):
         """
         Pastes another image into this image. The box argument is either
@@ -1577,6 +1562,13 @@ class Image:
            single argument. The function is called once for each
            possible pixel value, and the resulting table is applied to
            all bands of the image.
+
+           It may also be an :py:class:`~PIL.Image.ImagePointHandler`
+           object::
+
+               class Example(Image.ImagePointHandler):
+                 def point(self, data):
+                   # Return result
         :param mode: Output mode (default is same as input).  In the
            current version, this can only be used if the source image
            has mode "L" or "P", and the output has mode "1" or the
@@ -1625,16 +1617,16 @@ class Image:
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
-                except (AttributeError, ValueError):
+                except (AttributeError, ValueError) as e:
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "PA", "RGBA"):
-                        raise ValueError  # sanity check
+                        raise ValueError from e  # sanity check
                     self.im = im
                 self.pyaccess = None
                 self.mode = self.im.mode
-            except (KeyError, ValueError):
-                raise ValueError("illegal image mode")
+            except (KeyError, ValueError) as e:
+                raise ValueError("illegal image mode") from e
 
         if self.mode in ("LA", "PA"):
             band = 1
@@ -1748,7 +1740,7 @@ class Image:
         Rewrites the image to reorder the palette.
 
         :param dest_map: A list of indexes into the original palette.
-           e.g. [1,0] would swap a two item palette, and list(range(256))
+           e.g. ``[1,0]`` would swap a two item palette, and ``list(range(256))``
            is the identity transform.
         :param source_palette: Bytes or None.
         :returns:  An :py:class:`~PIL.Image.Image` object.
@@ -1842,12 +1834,12 @@ class Image:
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height).
         :param resample: An optional resampling filter.  This can be
-           one of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BOX`,
-           :py:attr:`PIL.Image.BILINEAR`, :py:attr:`PIL.Image.HAMMING`,
-           :py:attr:`PIL.Image.BICUBIC` or :py:attr:`PIL.Image.LANCZOS`.
-           Default filter is :py:attr:`PIL.Image.BICUBIC`.
+           one of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BOX`,
+           :py:data:`PIL.Image.BILINEAR`, :py:data:`PIL.Image.HAMMING`,
+           :py:data:`PIL.Image.BICUBIC` or :py:data:`PIL.Image.LANCZOS`.
+           Default filter is :py:data:`PIL.Image.BICUBIC`.
            If the image has mode "1" or "P", it is
-           always set to :py:attr:`PIL.Image.NEAREST`.
+           always set to :py:data:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
            the source image region to be scaled.
@@ -1930,16 +1922,16 @@ class Image:
 
     def reduce(self, factor, box=None):
         """
-        Returns a copy of the image reduced by `factor` times.
-        If the size of the image is not dividable by the `factor`,
+        Returns a copy of the image reduced ``factor`` times.
+        If the size of the image is not dividable by ``factor``,
         the resulting size will be rounded up.
 
         :param factor: A greater than 0 integer or tuple of two integers
            for width and height separately.
         :param box: An optional 4-tuple of ints providing
            the source image region to be reduced.
-           The values must be within (0, 0, width, height) rectangle.
-           If omitted or None, the entire source is used.
+           The values must be within ``(0, 0, width, height)`` rectangle.
+           If omitted or ``None``, the entire source is used.
         """
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
@@ -1977,12 +1969,12 @@ class Image:
 
         :param angle: In degrees counter clockwise.
         :param resample: An optional resampling filter.  This can be
-           one of :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), or :py:attr:`PIL.Image.BICUBIC`
+           one of :py:data:`PIL.Image.NEAREST` (use nearest neighbour),
+           :py:data:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           environment), or :py:data:`PIL.Image.BICUBIC`
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
-           set to :py:attr:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
+           set to :py:data:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
@@ -2136,8 +2128,8 @@ class Image:
                 init()
             try:
                 format = EXTENSION[ext]
-            except KeyError:
-                raise ValueError("unknown file extension: {}".format(ext))
+            except KeyError as e:
+                raise ValueError("unknown file extension: {}".format(ext)) from e
 
         if format.upper() not in SAVE:
             init()
@@ -2170,6 +2162,9 @@ class Image:
 
         See :py:meth:`~PIL.Image.Image.tell`.
 
+        If defined, :attr:`~PIL.Image.Image.n_frames` refers to the
+        number of available frames.
+
         :param frame: Frame number, starting at 0.
         :exception EOFError: If the call attempts to seek beyond the end
             of the sequence.
@@ -2181,8 +2176,10 @@ class Image:
 
     def show(self, title=None, command=None):
         """
-        Displays this image. This method is mainly intended for
-        debugging purposes.
+        Displays this image. This method is mainly intended for debugging purposes.
+
+        This method calls :py:func:`PIL.ImageShow.show` internally. You can use
+        :py:func:`PIL.ImageShow.register` to override its default behaviour.
 
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
@@ -2194,10 +2191,15 @@ class Image:
 
         On Windows, the image is opened with the standard PNG display utility.
 
-        :param title: Optional title to use for the image window,
-           where possible.
-        :param command: command used to show the image
+        :param title: Optional title to use for the image window, where possible.
         """
+
+        if command is not None:
+            warnings.warn(
+                "The command parameter is deprecated and will be removed in a future "
+                "release. Use a subclass of ImageShow.Viewer instead.",
+                DeprecationWarning,
+            )
 
         _show(self, title=title, command=command)
 
@@ -2238,14 +2240,17 @@ class Image:
         if isinstance(channel, str):
             try:
                 channel = self.getbands().index(channel)
-            except ValueError:
-                raise ValueError('The image has no channel "{}"'.format(channel))
+            except ValueError as e:
+                raise ValueError('The image has no channel "{}"'.format(channel)) from e
 
         return self._new(self.im.getband(channel))
 
     def tell(self):
         """
         Returns the current frame number. See :py:meth:`~PIL.Image.Image.seek`.
+
+        If defined, :attr:`~PIL.Image.Image.n_frames` refers to the
+        number of available frames.
 
         :returns: Frame number, starting with 0.
         """
@@ -2267,10 +2272,10 @@ class Image:
 
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
-           of :py:attr:`PIL.Image.NEAREST`, :py:attr:`PIL.Image.BILINEAR`,
-           :py:attr:`PIL.Image.BICUBIC`, or :py:attr:`PIL.Image.LANCZOS`.
-           If omitted, it defaults to :py:attr:`PIL.Image.BICUBIC`.
-           (was :py:attr:`PIL.Image.NEAREST` prior to version 2.5.0).
+           of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BILINEAR`,
+           :py:data:`PIL.Image.BICUBIC`, or :py:data:`PIL.Image.LANCZOS`.
+           If omitted, it defaults to :py:data:`PIL.Image.BICUBIC`.
+           (was :py:data:`PIL.Image.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
@@ -2334,22 +2339,22 @@ class Image:
 
         :param size: The output size.
         :param method: The transformation method.  This is one of
-          :py:attr:`PIL.Image.EXTENT` (cut out a rectangular subregion),
-          :py:attr:`PIL.Image.AFFINE` (affine transform),
-          :py:attr:`PIL.Image.PERSPECTIVE` (perspective transform),
-          :py:attr:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
-          :py:attr:`PIL.Image.MESH` (map a number of source quadrilaterals
+          :py:data:`PIL.Image.EXTENT` (cut out a rectangular subregion),
+          :py:data:`PIL.Image.AFFINE` (affine transform),
+          :py:data:`PIL.Image.PERSPECTIVE` (perspective transform),
+          :py:data:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
+          :py:data:`PIL.Image.MESH` (map a number of source quadrilaterals
           in one operation).
 
           It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(size, method, data, resample, fill=1):
+                def transform(self, size, data, resample, fill=1):
                     # Return result
 
-          It may also be an object with a :py:meth:`~method.getdata` method
-          that returns a tuple supplying new **method** and **data** values::
+          It may also be an object with a ``method.getdata`` method
+          that returns a tuple supplying new ``method`` and ``data`` values::
 
             class Example:
                 def getdata(self):
@@ -2358,13 +2363,13 @@ class Image:
                     return method, data
         :param data: Extra data to the transformation method.
         :param resample: Optional resampling filter.  It can be one of
-           :py:attr:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:attr:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), or :py:attr:`PIL.Image.BICUBIC` (cubic spline
+           :py:data:`PIL.Image.NEAREST` (use nearest neighbour),
+           :py:data:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           environment), or :py:data:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
-           has mode "1" or "P", it is set to :py:attr:`PIL.Image.NEAREST`.
+           has mode "1" or "P", it is set to :py:data:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
-        :param fill: If **method** is an
+        :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the
@@ -2486,10 +2491,10 @@ class Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
-        :param method: One of :py:attr:`PIL.Image.FLIP_LEFT_RIGHT`,
-          :py:attr:`PIL.Image.FLIP_TOP_BOTTOM`, :py:attr:`PIL.Image.ROTATE_90`,
-          :py:attr:`PIL.Image.ROTATE_180`, :py:attr:`PIL.Image.ROTATE_270`,
-          :py:attr:`PIL.Image.TRANSPOSE` or :py:attr:`PIL.Image.TRANSVERSE`.
+        :param method: One of :py:data:`PIL.Image.FLIP_LEFT_RIGHT`,
+          :py:data:`PIL.Image.FLIP_TOP_BOTTOM`, :py:data:`PIL.Image.ROTATE_90`,
+          :py:data:`PIL.Image.ROTATE_180`, :py:data:`PIL.Image.ROTATE_270`,
+          :py:data:`PIL.Image.TRANSPOSE` or :py:data:`PIL.Image.TRANSVERSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 
@@ -2527,12 +2532,20 @@ class Image:
 
 
 class ImagePointHandler:
-    # used as a mixin by point transforms (for use with im.point)
+    """
+    Used as a mixin by point transforms
+    (for use with :py:meth:`~PIL.Image.Image.point`)
+    """
+
     pass
 
 
 class ImageTransformHandler:
-    # used as a mixin by geometry transforms (for use with im.transform)
+    """
+    Used as a mixin by geometry transforms
+    (for use with :py:meth:`~PIL.Image.Image.transform`)
+    """
+
     pass
 
 
@@ -2644,12 +2657,6 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     return im
 
 
-def fromstring(*args, **kw):
-    raise NotImplementedError(
-        "fromstring() has been removed. Please call frombytes() instead."
-    )
-
-
 def frombuffer(mode, size, data, decoder_name="raw", *args):
     """
     Creates an image memory referencing pixel data in a byte buffer.
@@ -2661,7 +2668,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image file in a string, wrap it in a
-    **BytesIO** object, and use :py:func:`~PIL.Image.open` to load it.
+    :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
     In the current version, the default parameters used for the "raw" decoder
     differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
@@ -2708,7 +2715,7 @@ def fromarray(obj, mode=None):
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
 
-    If **obj** is not contiguous, then the tobytes method is called
+    If ``obj`` is not contiguous, then the ``tobytes`` method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
 
     If you have an image in NumPy::
@@ -2736,12 +2743,12 @@ def fromarray(obj, mode=None):
     if mode is None:
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
-        except KeyError:
-            raise TypeError("Cannot handle this data type")
+        except KeyError as e:
+            raise TypeError("Cannot handle this data type") from e
         try:
             mode, rawmode = _fromarray_typemap[typekey]
-        except KeyError:
-            raise TypeError("Cannot handle this data type: %s, %s" % typekey)
+        except KeyError as e:
+            raise TypeError("Cannot handle this data type: %s, %s" % typekey) from e
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -2840,8 +2847,8 @@ def open(fp, mode="r"):
     :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
     :param fp: A filename (string), pathlib.Path object or a file object.
-       The file object must implement :py:meth:`~file.read`,
-       :py:meth:`~file.seek`, and :py:meth:`~file.tell` methods,
+       The file object must implement ``file.read``,
+       ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
     :returns: An :py:class:`~PIL.Image.Image` object.
@@ -3139,17 +3146,25 @@ def register_encoder(name, encoder):
 
 
 # --------------------------------------------------------------------
-# Simple display support.  User code may override this.
+# Simple display support.
 
 
 def _show(image, **options):
-    # override me, as necessary
+    options["_internal_pillow"] = True
     _showxv(image, **options)
 
 
 def _showxv(image, title=None, **options):
     from . import ImageShow
 
+    if "_internal_pillow" in options:
+        del options["_internal_pillow"]
+    else:
+        warnings.warn(
+            "_showxv is deprecated and will be removed in a future release. "
+            "Use Image.show instead.",
+            DeprecationWarning,
+        )
     ImageShow.show(image, title, **options)
 
 
