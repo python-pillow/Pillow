@@ -52,3 +52,10 @@ Classes
 .. autoclass:: PIL.ImageFile.StubImageFile()
     :members:
     :show-inheritance:
+
+Constants
+---------
+
+.. autodata:: PIL.ImageFile.LOAD_TRUNCATED_IMAGES
+.. autodata:: PIL.ImageFile.ERRORS
+    :annotation:

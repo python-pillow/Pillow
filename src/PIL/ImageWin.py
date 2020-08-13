@@ -59,7 +59,7 @@ class Dib:
     with 20 greylevels.
 
     To make sure that palettes work properly under Windows, you must call the
-    **palette** method upon certain events from Windows.
+    ``palette`` method upon certain events from Windows.
 
     :param image: Either a PIL image, or a mode string. If a mode string is
                   used, a size must also be given.  The mode can be one of "1",
