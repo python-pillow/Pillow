@@ -205,7 +205,7 @@ deps = {
                 # retarget to default toolset (selected by vcvarsall.bat)
                 "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
+                "<WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
@@ -420,7 +420,10 @@ def build_dep(name):
         with open(patch_file, "r") as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
-            text = text.replace(patch_from.format(**prefs), patch_to.format(**prefs))
+            patch_from = patch_from.format(**prefs)
+            patch_to = patch_to.format(**prefs)
+            assert patch_from in text
+            text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
             f.write(text)
 
