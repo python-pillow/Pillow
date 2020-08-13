@@ -62,6 +62,8 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')
