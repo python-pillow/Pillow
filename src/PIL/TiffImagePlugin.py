@@ -567,7 +567,9 @@ class ImageFileDirectory_v2(MutableMapping):
         elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v for v in values]
 
-        values = tuple(info.cvt_enum(value) for value in values)
+        is_ifd = self.tagtype[tag] == TiffTags.LONG and isinstance(values, dict)
+        if not is_ifd:
+            values = tuple(info.cvt_enum(value) for value in values)
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 
@@ -576,7 +578,7 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (
+        if not is_ifd and (
             (info.length == 1)
             or self.tagtype[tag] == TiffTags.BYTE
             or (info.length is None and len(values) == 1 and not legacy_api)
@@ -802,11 +804,22 @@ class ImageFileDirectory_v2(MutableMapping):
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
             logger.debug("Tag {}, Type: {}, Value: {}".format(tag, typ, value))
-            values = value if isinstance(value, tuple) else (value,)
-            data = self._write_dispatch[typ](self, *values)
+            is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
+            if is_ifd:
+                if self._endian == "<":
+                    ifh = b"II\x2A\x00\x08\x00\x00\x00"
+                else:
+                    ifh = b"MM\x00\x2A\x00\x00\x00\x08"
+                ifd = ImageFileDirectory_v2(ifh)
+                for ifd_tag, ifd_value in self._tags_v2[tag].items():
+                    ifd[ifd_tag] = ifd_value
+                data = ifd.tobytes(offset)
+            else:
+                values = value if isinstance(value, tuple) else (value,)
+                data = self._write_dispatch[typ](self, *values)
 
             tagname = TiffTags.lookup(tag).name
-            typname = TYPES.get(typ, "unknown")
+            typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
             msg = "save: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ)
             msg += " - value: " + (
                 "<table: %d bytes>" % len(data) if len(data) >= 16 else str(values)
@@ -814,7 +827,9 @@ class ImageFileDirectory_v2(MutableMapping):
             logger.debug(msg)
 
             # count is sum of lengths for string and arbitrary data
-            if typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
+            if is_ifd:
+                count = 1
+            elif typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
                 count = len(data)
             else:
                 count = len(values)
