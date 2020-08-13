@@ -607,6 +607,11 @@ class TestFilePng:
             exif = im.copy().getexif()
             assert exif[274] == 1
 
+        # With a tEXt chunk
+        with Image.open("Tests/images/exif_text.png") as im:
+            exif = im._getexif()
+        assert exif[274] == 1
+
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:
             exif = im.getexif()

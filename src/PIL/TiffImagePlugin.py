@@ -414,7 +414,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     The tiff metadata type of each item is stored in a dictionary of
     tag types in
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
     are read from a tiff file, guessed from the type added, or added
     manually.
 
@@ -885,7 +885,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ('Some Data',)
 
     Also contains a dictionary of tag types as read from the tiff image file,
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
 
     Values are returned as a tuple.
 
@@ -898,6 +898,10 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
+
+    # defined in ImageFileDirectory_v2
+    tagtype: dict
+    """Dictionary of tag types"""
 
     @classmethod
     def from_v2(cls, original):

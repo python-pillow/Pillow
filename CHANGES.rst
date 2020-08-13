@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Read EXIF data tEXt chunk into info as bytes instead of string #4828
+  [radarhere]
+
 - Remove long-deprecated Image.py functions #4798
   [hugovk, nulano, radarhere]
 

@@ -64,7 +64,7 @@ def _lut(image, lut):
 def autocontrast(image, cutoff=0, ignore=None, mask=None):
     """
     Maximize (normalize) image contrast. This function calculates a
-    histogram of the input image (or mask region), removes **cutoff** percent of the
+    histogram of the input image (or mask region), removes ``cutoff`` percent of the
     lightest and darkest pixels from the histogram, and remaps the image
     so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
@@ -149,14 +149,14 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
     Colorize grayscale image.
     This function calculates a color wedge which maps all black pixels in
     the source image to the first color and all white pixels to the
-    second color. If **mid** is specified, it uses three-color mapping.
-    The **black** and **white** arguments should be RGB tuples or color names;
-    optionally you can use three-color mapping by also specifying **mid**.
+    second color. If ``mid`` is specified, it uses three-color mapping.
+    The ``black`` and ``white`` arguments should be RGB tuples or color names;
+    optionally you can use three-color mapping by also specifying ``mid``.
     Mapping positions for any of the colors can be specified
-    (e.g. **blackpoint**), where these parameters are the integer
+    (e.g. ``blackpoint``), where these parameters are the integer
     value corresponding to where the corresponding color should be mapped.
     These parameters must have logical order, such that
-    **blackpoint** <= **midpoint** <= **whitepoint** (if **mid** is specified).
+    ``blackpoint <= midpoint <= whitepoint`` (if ``mid`` is specified).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
@@ -315,7 +315,7 @@ def deform(image, deformer, resample=Image.BILINEAR):
 
     :param image: The image to deform.
     :param deformer: A deformer object.  Any object that implements a
-                    **getmesh** method can be used.
+                    ``getmesh`` method can be used.
     :param resample: An optional resampling filter. Same values possible as
        in the PIL.Image.transform function.
     :return: An image.
