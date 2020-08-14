@@ -47,12 +47,8 @@ so the upload won't work from another repository.
 PyPI
 ~~~~
 
-Download wheels from Rackspace::
+Download wheels from the
+`latest release <https://github.com/python-pillow/pillow-wheels/releases>`_ and upload
+to PyPI::
 
-    wget -m -A 'Pillow-<VERSION>-*' \
-    http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
-
-Upload wheels to PyPI::
-
-    cd a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
     twine upload Pillow-<VERSION>-*
