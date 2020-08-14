@@ -226,7 +226,6 @@ jobs:
               mingw-w64-x86_64-python3-olefile \
               mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-python3-pyqt5 \
-              mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-freetype \
               mingw-w64-x86_64-lcms2 \
               mingw-w64-x86_64-libwebp \
