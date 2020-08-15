@@ -2273,8 +2273,8 @@ class Image:
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BILINEAR`,
-           :py:data:`PIL.Image.BICUBIC`, :py:data:`PIL.Image.BOX`, or 
-           :py:data:`PIL.Image.LANCZOS`. If omitted, it defaults to 
+           :py:data:`PIL.Image.BICUBIC`, :py:data:`PIL.Image.BOX`, or
+           :py:data:`PIL.Image.LANCZOS`. If omitted, it defaults to
            :py:data:`PIL.Image.BICUBIC`. (was :py:data:`PIL.Image.NEAREST`
            prior to version 2.5.0). See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
