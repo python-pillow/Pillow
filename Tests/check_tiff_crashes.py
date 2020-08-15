@@ -14,16 +14,26 @@
 # version.
 
 
+import io
+import zipfile
+
 from PIL import Image
 
+# The vulnerabilities represented by these files have been addressed.
+# However, antivirus software does not detect that this is a version of Pillow
+# with those fixes, and so to prevent unnecessary alarm, the files are
+# hidden inside a password-protected zip
 repro_read_strip = (
-    "images/crash_1.tif",
-    "images/crash_2.tif",
+    "crash_1.tif",
+    "crash_2.tif",
 )
 
-for path in repro_read_strip:
-    with Image.open(path) as im:
-        try:
-            im.load()
-        except Exception as msg:
-            print(msg)
+with zipfile.ZipFile("images/crash.zip") as crashzip:
+    for path in repro_read_strip:
+        with crashzip.open(path, pwd=b"vulnerabilitiesaddressed") as f:
+            data = io.BytesIO(f.read())
+        with Image.open(data) as im:
+            try:
+                im.load()
+            except Exception as msg:
+                print(msg)
