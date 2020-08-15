@@ -218,22 +218,22 @@ jobs:
       - name: Install Dependencies
         run: |
           pacman -S --noconfirm \
+              mingw-w64-x86_64-python3-cffi \
+              mingw-w64-x86_64-python3-numpy \
+              mingw-w64-x86_64-python3-olefile \
               mingw-w64-x86_64-python3-pip \
-              mingw-w64-x86_64-python3-setuptools \
+              mingw-w64-x86_64-python3-pyqt5 \
               mingw-w64-x86_64-python3-pytest \
               mingw-w64-x86_64-python3-pytest-cov \
-              mingw-w64-x86_64-python3-cffi \
-              mingw-w64-x86_64-python3-olefile \
-              mingw-w64-x86_64-python3-numpy \
-              mingw-w64-x86_64-python3-pyqt5 \
+              mingw-w64-x86_64-python3-setuptools \
               mingw-w64-x86_64-freetype \
-              mingw-w64-x86_64-lcms2 \
-              mingw-w64-x86_64-libwebp \
-              mingw-w64-x86_64-libjpeg-turbo \
-              mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-libimagequant \
-              mingw-w64-x86_64-libraqm \
               mingw-w64-x86_64-ghostscript \
+              mingw-w64-x86_64-lcms2 \
+              mingw-w64-x86_64-libimagequant \
+              mingw-w64-x86_64-libjpeg-turbo \
+              mingw-w64-x86_64-libraqm \
+              mingw-w64-x86_64-libwebp \
+              mingw-w64-x86_64-openjpeg2 \
               subversion
 
           python3 -m pip install pyroma
