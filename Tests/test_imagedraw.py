@@ -1095,10 +1095,10 @@ def test_same_color_outline():
 
 
 @pytest.mark.parametrize(
-    "nb_polygon_sides, rotation, polygon_name",
+    "n_polygon_sides, rotation, polygon_name",
     [(4, 0, "square"), (8, 0, "octagon"), (4, 45, "square")],
 )
-def test_draw_regular_polygon(nb_polygon_sides, rotation, polygon_name):
+def test_draw_regular_polygon(n_polygon_sides, rotation, polygon_name):
     im = Image.new("RGBA", size=(W, H), color=(255, 0, 0, 0))
     filename = (
         f"Tests/images/imagedraw_regular_polygon__{polygon_name}"
@@ -1106,13 +1106,13 @@ def test_draw_regular_polygon(nb_polygon_sides, rotation, polygon_name):
     )
     draw = ImageDraw.Draw(im)
     draw.regular_polygon(
-        b_box=[(0, 0), (W, H)], nb_sides=nb_polygon_sides, rotation=rotation, fill="red"
+        [(0, 0), (W, H)], n_polygon_sides, rotation=rotation, fill="red"
     )
     assert_image_equal(im, Image.open(filename))
 
 
 @pytest.mark.parametrize(
-    "nb_polygon_sides, expected_vertices",
+    "n_polygon_sides, expected_vertices",
     [
         (3, [(6.7, 75.0), (93.3, 75.0), (50.0, 0.0)]),
         (4, [(14.64, 85.36), (85.36, 85.36), (85.36, 14.64), (14.64, 14.64)]),
@@ -1139,40 +1139,49 @@ def test_draw_regular_polygon(nb_polygon_sides, rotation, polygon_name):
         ),
     ],
 )
-def test_compute_regular_polygon_vertices(nb_polygon_sides, expected_vertices):
+def test_compute_regular_polygon_vertices(n_polygon_sides, expected_vertices):
     vertices = ImageDraw._compute_regular_polygon_vertices(
-        nb_sides=nb_polygon_sides, b_box=[(0, 0), (100, 100)], rotation=0
+        n_sides=n_polygon_sides, bbox=[(0, 0), (100, 100)], rotation=0
     )
     assert vertices == expected_vertices
 
 
 @pytest.mark.parametrize(
-    "nb_polygon_sides, bounding_box, rotation, expected_error, error_message",
+    "n_polygon_sides, bounding_box, rotation, expected_error, error_message",
     [
-        (None, [(0, 0), (100, 100)], 0, TypeError, "nb_sides should be an int"),
-        (1, [(0, 0), (100, 100)], 0, ValueError, "nb_sides should be an int > 2"),
-        (3, 100, 0, TypeError, "b_box should be a list/tuple"),
+        (None, [(0, 0), (100, 100)], 0, TypeError, "n_sides should be an int"),
+        (1, [(0, 0), (100, 100)], 0, ValueError, "n_sides should be an int > 2"),
+        (3, 100, 0, TypeError, "bbox should be a list/tuple"),
         (
             3,
-            [(0, 0), (50, 50), (100, 100)],
+            [(0, 0), (100,), (100,)],
             0,
             ValueError,
-            "b_box should have 2 items (top-left & bottom-right coordinates)",
+            "bbox should have the following format "
+            "[(x0, y0), (x1, y1)] or [x0, y0, x1, y1]",
+        ),
+        (
+            3,
+            [(50, 50), (100,)],
+            0,
+            ValueError,
+            "bbox should contain top-left and bottom-right coordinates (2D)",
         ),
         (
             3,
             [(50, 50), (0, None)],
             0,
             ValueError,
-            "b_box should only contain numeric data",
+            "bbox should only contain numeric data",
         ),
         (
             3,
             [(50, 50), (0, 0)],
             0,
             ValueError,
-            "b_box: Bottom-right coordinate should be larger than top-left coordinate",
+            "bbox: Bottom-right coordinate should be larger than top-left coordinate",
         ),
+        (3, [(0, 0), (100, 90)], 0, ValueError, "bbox should be a square",),
         (
             3,
             [(0, 0), (100, 100)],
@@ -1183,10 +1192,10 @@ def test_compute_regular_polygon_vertices(nb_polygon_sides, expected_vertices):
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
-    nb_polygon_sides, bounding_box, rotation, expected_error, error_message
+    n_polygon_sides, bounding_box, rotation, expected_error, error_message
 ):
     with pytest.raises(expected_error) as e:
         ImageDraw._compute_regular_polygon_vertices(
-            nb_sides=nb_polygon_sides, b_box=bounding_box, rotation=rotation
+            n_sides=n_polygon_sides, bbox=bounding_box, rotation=rotation
         )
     assert str(e.value) == error_message

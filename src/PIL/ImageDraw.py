@@ -242,10 +242,10 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
-    def regular_polygon(self, *, nb_sides, b_box, rotation=0, fill=None, outline=None):
+    def regular_polygon(self, bbox, n_sides, rotation=0, fill=None, outline=None):
         """Draw a regular polygon."""
         xy = _compute_regular_polygon_vertices(
-            nb_sides=nb_sides, b_box=b_box, rotation=rotation
+            n_sides=n_sides, bbox=bbox, rotation=rotation
         )
         self.polygon(xy, fill=fill, outline=outline)
 
@@ -562,14 +562,14 @@ def floodfill(image, xy, value, border=None, thresh=0):
         edge = new_edge
 
 
-def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
+def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
     """
     Generate a list of vertices for a 2D regular polygon.
 
-    :param nb_sides: Number of sides
-        (e.g. nb_sides = 3 for a triangle, 6 for a hexagon, etc..)
-    :param b_box: A bounding box which inscribes the polygon
-        (e.g. b_box = [(50, 50), (150, 150)])
+    :param n_sides: Number of sides
+        (e.g. n_sides = 3 for a triangle, 6 for a hexagon, etc..)
+    :param bbox: A bounding box (square) which inscribes the polygon
+        (e.g. bbox = [(50, 50), (150, 150)] or [50, 50, 150, 150])
     :param rotation: Apply an arbitrary rotation to the polygon
         (e.g. rotation=90, applies a 90 degree rotation)
     :return: List of regular polygon vertices
@@ -601,36 +601,48 @@ def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
             Y = −xsin(φ) + ycos(φ) + centroid_y
     """
     # 1. Error Handling
-    # 1.1 Check `nb_sides` has an appropriate value
-    if not isinstance(nb_sides, int):
-        raise TypeError("nb_sides should be an int")
-    if nb_sides < 3:
-        raise ValueError("nb_sides should be an int > 2")
+    # 1.1 Check `n_sides` has an appropriate value
+    if not isinstance(n_sides, int):
+        raise TypeError("n_sides should be an int")
+    if n_sides < 3:
+        raise ValueError("n_sides should be an int > 2")
 
-    # 1.2 Check `b_box` has an appropriate value
-    if not isinstance(b_box, (list, tuple)):
-        raise TypeError("b_box should be a list/tuple")
-    if not len(b_box) == 2:
+    # 1.2 Check `bbox` has an appropriate value
+    if not isinstance(bbox, (list, tuple)):
+        raise TypeError("bbox should be a list/tuple")
+
+    if not len(bbox) == 2 and not len(bbox) == 4:
         raise ValueError(
-            "b_box should have 2 items (top-left & bottom-right coordinates)"
+            "bbox should have the following format "
+            "[(x0, y0), (x1, y1)] or [x0, y0, x1, y1]"
+        )
+    # Flatten bbox if [(x0, y0), (x1, y1)] format used.
+    if len(bbox) == 2:
+        bbox = [pt for corner in bbox for pt in corner]
+
+    if not len(bbox) == 4:
+        raise ValueError(
+            "bbox should contain top-left and bottom-right coordinates (2D)"
         )
 
-    b_box_pts = [pt for corner in b_box for pt in corner]
-    if not all(isinstance(i, (int, float)) for i in b_box_pts):
-        raise ValueError("b_box should only contain numeric data")
+    if not all(isinstance(i, (int, float)) for i in bbox):
+        raise ValueError("bbox should only contain numeric data")
 
-    if b_box[1][1] <= b_box[0][1] or b_box[1][0] <= b_box[0][0]:
+    if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
         raise ValueError(
-            "b_box: Bottom-right coordinate should be larger than top-left coordinate"
+            "bbox: Bottom-right coordinate should be larger than top-left coordinate"
         )
+
+    if not bbox[2] - bbox[0] == bbox[3] - bbox[1]:
+        raise ValueError("bbox should be a square")
 
     # 1.3 Check `rotation` has an appropriate value
     if not isinstance(rotation, (int, float)):
         raise ValueError("rotation should be an int or float")
 
     # 2. Define Helper Functions
-    def _get_centroid(*, b_box):
-        return (b_box[1][0] + b_box[0][0]) * 0.5, (b_box[1][1] + b_box[0][1]) * 0.5
+    def _get_centroid(*, bbox):
+        return (bbox[2] + bbox[0]) * 0.5, (bbox[3] + bbox[1]) * 0.5
 
     def _apply_rotation(*, point, degrees, centroid):
         return (
@@ -648,8 +660,8 @@ def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
             ),
         )
 
-    def _get_theta(*, nb_sides):
-        return 0.5 * (360 / nb_sides)
+    def _get_theta(*, n_sides):
+        return 0.5 * (360 / n_sides)
 
     def _get_polygon_radius(*, side_length, theta):
         return (0.5 * side_length) / math.sin(math.radians(theta))
@@ -658,16 +670,16 @@ def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
         start_point = [polygon_radius, 0]
         return _apply_rotation(point=start_point, degrees=angle, centroid=centroid)
 
-    def _get_side_length(*, b_box, theta):
-        h = b_box[1][1] - b_box[0][1]
+    def _get_side_length(*, bbox, theta):
+        h = bbox[3] - bbox[1]
         return h * math.sin(math.radians(theta))
 
-    def _get_angles(*, nb_sides, rotation):
+    def _get_angles(*, n_sides, rotation):
         angles = []
-        degrees = 360 / nb_sides
+        degrees = 360 / n_sides
         # Start with the bottom left polygon vertex
         current_angle = (270 - 0.5 * degrees) + rotation
-        for _ in range(0, nb_sides):
+        for _ in range(0, n_sides):
             angles.append(current_angle)
             current_angle += degrees
             if current_angle > 360:
@@ -676,11 +688,11 @@ def _compute_regular_polygon_vertices(*, nb_sides, b_box, rotation):
 
     # 3. Variable Declarations
     vertices = []
-    theta = _get_theta(nb_sides=nb_sides)
-    side_length = _get_side_length(theta=theta, b_box=b_box)
-    centroid = _get_centroid(b_box=b_box)
+    theta = _get_theta(n_sides=n_sides)
+    side_length = _get_side_length(theta=theta, bbox=bbox)
+    centroid = _get_centroid(bbox=bbox)
     polygon_radius = _get_polygon_radius(side_length=side_length, theta=theta)
-    angles = _get_angles(nb_sides=nb_sides, rotation=rotation)
+    angles = _get_angles(n_sides=n_sides, rotation=rotation)
 
     # 4. Compute Vertices
     for angle in angles:
