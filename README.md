@@ -10,7 +10,7 @@ Pillow is the friendly PIL fork by [Alex Clark and
 Contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 As of 2019, Pillow development is
-[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise>).
+[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
 
 <table>
     <tr>
@@ -94,4 +94,3 @@ As of 2019, Pillow development is
 ## Report a Vulnerability
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
-
