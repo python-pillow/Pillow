@@ -1272,6 +1272,77 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
+    def getdominantcolors(self, numcolors=3, maxiter=50, threshold=1):
+        """
+        Returns a list of dominant colors in an image using k-means
+        clustering.
+
+        :param numcolors: Number of dominant colors to search for.
+        The default number is 3.
+        :param maxiter: Maximum number of iterations to run the
+        algorithm.  The default limit is 50.
+        :param threshold: Early stopping condition for the algorithm.
+        Higher values correspond with increased color differences. The
+        default is set to 1 (corresponding to 1 pixel difference).
+        :returns: An unsorted list of (pixel) values.
+        """
+
+        def euclidean(p1, p2):
+            return sum([(p1[i] - p2[i]) ** 2 for i in range(channels)])
+
+        if self.mode in ("1", "L", "P"):
+            channels = 1
+        elif self.mode in ("RGB", "YCbCr", "LAB", "HSV"):
+            channels = 3
+        elif self.mode in ("RGBA", "CMYK"):
+            channels = 4
+
+        w, h = self.size()
+
+        pixels_and_counts = []
+        for count, color in self.im.getcolors(w * h):
+            pixels_and_counts.append((color, count))
+
+        centroids = []
+        for i in range(numcolors):
+            centroids.append(([pixels_and_counts[i]], pixels_and_counts[i][0]))
+
+        for iter in range(maxiter):
+            cluster = {}
+            for i in range(numcolors):
+                cluster[i] = []
+
+            for pixel in pixels_and_counts:
+                smallest_distance = float("Inf")
+
+                for i in range(numcolors):
+                    distance = euclidean(pixel[0], centroids[i][1])
+                    if distance < smallest_distance:
+                        smallest_distance = distance
+                        idx = i
+
+                cluster[idx].append(pixel)
+
+            difference = 0
+            for i in range(numcolors):
+                previous = centroids[i][1]
+                pixel_sum = [0.0 for i in range(channels)]
+                count_sum = 0
+
+                for pixel in cluster[i]:
+                    count_sum += pixel[1]
+                    for channel in range(channels):
+                        pixel_sum[channel] += pixel[0][channel] * pixel[1]
+
+                current = [(channel_sum / count_sum) for channel_sum in pixel_sum]
+                centroids[i] = (cluster[i], current)
+                difference = max(difference, euclidean(previous, current))
+
+            if difference < threshold:
+                break
+
+        return [tuple(map(int, center[1])) for center in centroids]
+
     def getextrema(self):
         """
         Gets the the minimum and maximum pixel values for each band in
