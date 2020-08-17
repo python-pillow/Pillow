@@ -243,11 +243,6 @@ def _cmd_exists(cmd):
     )
 
 
-def _read(file):
-    with open(file, "rb") as fp:
-        return fp.read()
-
-
 def _pkg_config(name):
     try:
         command = os.environ.get("PKG_CONFIG", "pkg-config")
@@ -858,12 +853,17 @@ ext_modules = [
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
+
+with open("README.md") as f:
+    long_description = f.read()
+
 try:
     setup(
         name=NAME,
         version=PILLOW_VERSION,
         description="Python Imaging Library (Fork)",
-        long_description=_read("README.rst").decode("utf-8"),
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         license="HPND",
         author="Alex Clark (PIL Fork Author)",
         author_email="aclark@python-pillow.org",
