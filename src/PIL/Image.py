@@ -1287,24 +1287,31 @@ class Image:
         :returns: An unsorted list of (pixel) values.
         """
 
-        def euclidean(p1, p2):
-            return sum([(p1[i] - p2[i]) ** 2 for i in range(channels)])
-
-        if self.mode in ("1", "L", "P"):
+        self.load()
+        if self.mode in ("F", "I", "L", "P"):
             channels = 1
         elif self.mode in ("RGB", "YCbCr", "LAB", "HSV"):
             channels = 3
         elif self.mode in ("RGBA", "CMYK"):
             channels = 4
+        else:
+            tb = sys.exc_info()[2]
+            raise ValueError("Unsupported image mode").with_traceback(tb)
 
-        w, h = self.size()
+        def euclidean(p1, p2):
+            if channels == 1:
+                return (p1 - p2) ** 2
+            return sum([(p1[i] - p2[i]) ** 2 for i in range(channels)])
+
+        w, h = self.size
 
         pixels_and_counts = []
-        for count, color in self.im.getcolors(w * h):
+        for count, color in self.getcolors(w * h):
             pixels_and_counts.append((color, count))
 
         centroids = []
         for i in range(numcolors):
+            # Formatted as (pixel_cluster, center)
             centroids.append(([pixels_and_counts[i]], pixels_and_counts[i][0]))
 
         for iter in range(maxiter):
@@ -1326,22 +1333,34 @@ class Image:
             difference = 0
             for i in range(numcolors):
                 previous = centroids[i][1]
-                pixel_sum = [0.0 for i in range(channels)]
                 count_sum = 0
 
-                for pixel in cluster[i]:
-                    count_sum += pixel[1]
-                    for channel in range(channels):
-                        pixel_sum[channel] += pixel[0][channel] * pixel[1]
+                if channels == 1:
+                    pixel_sum = 0.0
+                    for pixel in cluster[i]:
+                        count_sum += pixel[1]
+                        pixel_sum += pixel[0] * pixel[1]
+                    current = pixel_sum / count_sum
+                else:
+                    pixel_sum = [0.0 for i in range(channels)]
+                    for pixel in cluster[i]:
+                        count_sum += pixel[1]
+                        for channel in range(channels):
+                            pixel_sum[channel] += pixel[0][channel] * pixel[1]
+                    current = [(channel_sum / count_sum) for channel_sum in pixel_sum]
 
-                current = [(channel_sum / count_sum) for channel_sum in pixel_sum]
                 centroids[i] = (cluster[i], current)
                 difference = max(difference, euclidean(previous, current))
 
             if difference < threshold:
                 break
 
-        return [tuple(map(int, center[1])) for center in centroids]
+        if self.mode == "F":
+            return [center[1] for center in centroids]
+        elif self.mode in ("I", "L", "P"):
+            return [int(center[1]) for center in centroids]
+        else:
+            return [tuple(map(int, center[1])) for center in centroids]
 
     def getextrema(self):
         """
