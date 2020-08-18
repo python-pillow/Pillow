@@ -1287,7 +1287,6 @@ class Image:
         :returns: An unsorted list of (pixel) values.
         """
 
-        self.load()
         if self.mode in ("F", "I", "L", "P"):
             channels = 1
         elif self.mode in ("RGB", "YCbCr", "LAB", "HSV"):
@@ -1314,11 +1313,13 @@ class Image:
             # Formatted as (pixel_cluster, center)
             centroids.append(([pixels_and_counts[i]], pixels_and_counts[i][0]))
 
+        # Begin k-means clustering
         for iter in range(maxiter):
             cluster = {}
             for i in range(numcolors):
                 cluster[i] = []
 
+            # Calculates all pixel distances from each center to add to the cluster
             for pixel in pixels_and_counts:
                 smallest_distance = float("Inf")
 
@@ -1330,6 +1331,7 @@ class Image:
 
                 cluster[idx].append(pixel)
 
+            # Adjusting the center of each cluster
             difference = 0
             for i in range(numcolors):
                 previous = centroids[i][1]
