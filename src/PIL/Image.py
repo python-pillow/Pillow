@@ -1284,7 +1284,7 @@ class Image:
         :param threshold: Early stopping condition for the algorithm.
         Higher values correspond with increased color differences. The
         default is set to 1 (corresponding to 1 pixel difference).
-        :returns: An unsorted list of (pixel) values.
+        :returns: An unsorted list of pixel values.
         """
 
         if self.mode in ("F", "I", "L", "P"):
