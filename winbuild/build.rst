@@ -81,6 +81,9 @@ Pillow for the selected version of Python.
 ``winbuild\build\build_pillow.cmd bdist_wheel`` will build wheels
 instead of installing Pillow.
 
+You can also use ``winbuild\build\build_pillow.cmd --inplace develop`` to build
+and install Pillow in develop mode (instead of ``pip install --editable``).
+
 Testing Pillow
 --------------
 

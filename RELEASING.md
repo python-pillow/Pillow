@@ -101,11 +101,7 @@ Released as needed privately to individual vendors for critical security-related
   cd pillow-wheels
   ./update-pillow-tag.sh [[release tag]]
   ```
-* [ ] Download distributions from the [Pillow Wheel Builder container](http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com/).
-  ```bash
-  wget -m -A 'Pillow-<VERSION>-*' \
-  http://a365fff413fe338398b6-1c8a9b3114517dc5fe17b7c3f8c63a43.r19.cf2.rackcdn.com
-  ```
+* [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases).
 
 ## Publicize Release
 
