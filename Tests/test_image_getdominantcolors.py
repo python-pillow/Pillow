@@ -2,13 +2,9 @@ from .helper import hopper
 
 
 def test_getdominantcolors():
-    def getdominantcolors(mode, numcolors=None):
+    def getdominantcolors(mode):
         im = hopper(mode)
-
-        if numcolors:
-            colors = im.getdominantcolors(numcolors)
-        else:
-            colors = im.getdominantcolors()
+        colors = im.getdominantcolors()
         return len(colors)
 
     assert getdominantcolors("F") == 3
