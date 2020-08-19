@@ -1733,11 +1733,13 @@ class Image:
         ):
             # RGB or RGBA value for a P image
             value = self.palette.getcolor(value)
-            
-        if self.mode = "L":
+
+        if self.mode == "L":
             if (type(xy[0]) is not int) or (type(xy[1]) is not int):
-                raise TypeError(f"Expected argument xy to be a tuple (int, int) but got { xy }")
-                
+                raise TypeError(
+                    f"Expected argument xy to be a tuple (int, int) but got { xy }"
+                )
+
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
