@@ -328,6 +328,36 @@ class TestCffi(AccessTest):
             assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
+class TestImagePutPixelError(AccessTest):
+    def test_putpixel_error_message(self):
+        for mode, reason, accept_tuple in [
+            ("L", "color must be int or tuple", True),
+            ("LA", "color must be int or tuple", True),
+            ("RGB", "color must be int or tuple", True),
+            ("RGBA", "color must be int or tuple", True),
+            ("I", "color must be int", False),
+            ("I;16", "color must be int", False),
+            ("BGR;15", "color must be int", False),
+        ]:
+            im = hopper(mode)
+
+            for v in ["foo", 1.0, None]:
+                with pytest.raises(TypeError, match=reason):
+                    im.putpixel((0, 0), v)
+
+            if not accept_tuple:
+                with pytest.raises(TypeError, match=reason):
+                    im.putpixel((0, 0), (10,))
+
+            with pytest.raises(OverflowError):
+                im.putpixel((0, 0), 2 ** 80)
+
+        for mode in ["BGR;15"]:
+            im = hopper(mode)
+            with pytest.raises(ValueError, match="unrecognized image mode"):
+                im.putpixel((0, 0), 0)
+
+
 class TestEmbeddable:
     @pytest.mark.skipif(
         not is_win32() or on_ci(),
