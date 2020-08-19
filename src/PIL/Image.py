@@ -1302,10 +1302,8 @@ class Image:
                 return (p1 - p2) ** 2
             return sum([(p1[i] - p2[i]) ** 2 for i in range(channels)])
 
-        w, h = self.size
-
         pixels_and_counts = []
-        for count, color in self.getcolors(w * h):
+        for count, color in self.getcolors(self.width * self.height):
             pixels_and_counts.append((color, count))
 
         centroids = []
