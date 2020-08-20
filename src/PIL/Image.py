@@ -1272,7 +1272,7 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
-    def getdominantcolors(self, numcolors=3, maxiter=50, threshold=1):
+    def getdominantcolors(self, numcolors=3, maxiter=50, threshold=1, quality=1.0):
         """
         Returns a list of dominant colors in an image using k-means
         clustering.
@@ -1284,10 +1284,20 @@ class Image:
         :param threshold: Early stopping condition for the algorithm.
         Higher values correspond with increased color differences. The
         default is set to 1 (corresponding to 1 pixel difference).
+        :param quality: Used for scaling an image to speed up calculations.
+        The default value is 1.0.
         :returns: An unsorted list of pixel values.
         """
 
-        if self.mode in ("F", "I", "L", "P"):
+        # Checking if # of pixels is greater than a 1080p image.
+        if quality >= 1.0 and self.width * self.height >= 2073600:
+            recommended_quality = 300000 / self.width * self.height
+            message = "Lower quality recommended: {:.4}".format(recommended_quality)
+            warnings.warn(message)
+        elif quality != 1.0:
+            self.thumbnail((quality * self.width, quality * self.height))
+
+        if self.mode in ("F", "L", "I", "P"):
             channels = 1
         elif self.mode in ("RGB", "YCbCr", "LAB", "HSV"):
             channels = 3
