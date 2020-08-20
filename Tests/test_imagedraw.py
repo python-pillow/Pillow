@@ -1095,107 +1095,84 @@ def test_same_color_outline():
 
 
 @pytest.mark.parametrize(
-    "n_polygon_sides, rotation, polygon_name",
-    [(4, 0, "square"), (8, 0, "octagon"), (4, 45, "square")],
+    "n_sides, rotation, polygon_name",
+    [(4, 0, "square"), (8, 0, "regular_octagon"), (4, 45, "square")],
 )
-def test_draw_regular_polygon(n_polygon_sides, rotation, polygon_name):
+def test_draw_regular_polygon(n_sides, rotation, polygon_name):
     im = Image.new("RGBA", size=(W, H), color=(255, 0, 0, 0))
+    filename_base = f"Tests/images/imagedraw_{polygon_name}"
     filename = (
-        f"Tests/images/imagedraw_regular_polygon__{polygon_name}"
-        f"_with_{rotation}_degree_rotation.png"
+        f"{filename_base}.png"
+        if rotation == 0
+        else f"{filename_base}_rotate_{rotation}.png"
     )
     draw = ImageDraw.Draw(im)
-    draw.regular_polygon(
-        [(0, 0), (W, H)], n_polygon_sides, rotation=rotation, fill="red"
-    )
+    draw.regular_polygon([W // 2, H // 2, 25], n_sides, rotation=rotation, fill="red")
     assert_image_equal(im, Image.open(filename))
 
 
 @pytest.mark.parametrize(
-    "n_polygon_sides, expected_vertices",
+    "n_sides, expected_vertices",
     [
-        (3, [(6.7, 75.0), (93.3, 75.0), (50.0, 0.0)]),
-        (4, [(14.64, 85.36), (85.36, 85.36), (85.36, 14.64), (14.64, 14.64)]),
+        (3, [(28.35, 62.5), (71.65, 62.5), (50.0, 25.0)]),
+        (4, [(32.32, 67.68), (67.68, 67.68), (67.68, 32.32), (32.32, 32.32)]),
         (
             5,
             [
-                (20.61, 90.45),
-                (79.39, 90.45),
-                (97.55, 34.55),
-                (50.0, 0.0),
-                (2.45, 34.55),
+                (35.31, 70.23),
+                (64.69, 70.23),
+                (73.78, 42.27),
+                (50.0, 25.0),
+                (26.22, 42.27),
             ],
         ),
         (
             6,
             [
-                (25.0, 93.3),
-                (75.0, 93.3),
-                (100.0, 50.0),
-                (75.0, 6.7),
-                (25.0, 6.7),
-                (0.0, 50.0),
+                (37.5, 71.65),
+                (62.5, 71.65),
+                (75.0, 50.0),
+                (62.5, 28.35),
+                (37.5, 28.35),
+                (25.0, 50.0),
             ],
         ),
     ],
 )
-def test_compute_regular_polygon_vertices(n_polygon_sides, expected_vertices):
+def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
     vertices = ImageDraw._compute_regular_polygon_vertices(
-        n_sides=n_polygon_sides, bbox=[(0, 0), (100, 100)], rotation=0
+        [W // 2, H // 2, 25], n_sides, 0
     )
     assert vertices == expected_vertices
 
 
 @pytest.mark.parametrize(
-    "n_polygon_sides, bounding_box, rotation, expected_error, error_message",
+    "n_sides, b_circle, rotation, expected_error, error_message",
     [
-        (None, [(0, 0), (100, 100)], 0, TypeError, "n_sides should be an int"),
-        (1, [(0, 0), (100, 100)], 0, ValueError, "n_sides should be an int > 2"),
-        (3, 100, 0, TypeError, "bbox should be a list/tuple"),
+        (None, [50, 50, 25], 0, TypeError, "n_sides should be an int"),
+        (1, [50, 50, 25], 0, ValueError, "n_sides should be an int > 2"),
+        (3, 50, 0, TypeError, "b_circle should be a list/tuple"),
         (
             3,
-            [(0, 0), (100,), (100,)],
+            [50, 50, 100, 100],
             0,
             ValueError,
-            "bbox should have the following format "
-            "[(x0, y0), (x1, y1)] or [x0, y0, x1, y1]",
+            "b_circle should contain 2D coordinates and a radius (e.g. [x0, y0, r])",
         ),
         (
             3,
-            [(50, 50), (100,)],
+            [50, 50, "25"],
             0,
             ValueError,
-            "bbox should contain top-left and bottom-right coordinates (2D)",
+            "b_circle should only contain numeric data",
         ),
-        (
-            3,
-            [(50, 50), (0, None)],
-            0,
-            ValueError,
-            "bbox should only contain numeric data",
-        ),
-        (
-            3,
-            [(50, 50), (0, 0)],
-            0,
-            ValueError,
-            "bbox: Bottom-right coordinate should be larger than top-left coordinate",
-        ),
-        (3, [(0, 0), (100, 90)], 0, ValueError, "bbox should be a square",),
-        (
-            3,
-            [(0, 0), (100, 100)],
-            "0",
-            ValueError,
-            "rotation should be an int or float",
-        ),
+        (3, [50, 50, 0], 0, ValueError, "b_circle radius should be > 0",),
+        (3, [50, 50, 25], "0", ValueError, "rotation should be an int or float",),
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
-    n_polygon_sides, bounding_box, rotation, expected_error, error_message
+    n_sides, b_circle, rotation, expected_error, error_message
 ):
     with pytest.raises(expected_error) as e:
-        ImageDraw._compute_regular_polygon_vertices(
-            n_sides=n_polygon_sides, bbox=bounding_box, rotation=rotation
-        )
+        ImageDraw._compute_regular_polygon_vertices(b_circle, n_sides, rotation)
     assert str(e.value) == error_message

@@ -242,12 +242,10 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
-    def regular_polygon(self, bbox, n_sides, rotation=0, fill=None, outline=None):
+    def regular_polygon(self, b_circle, n_sides, rotation=0, fill=None, outline=None):
         """Draw a regular polygon."""
-        xy = _compute_regular_polygon_vertices(
-            n_sides=n_sides, bbox=bbox, rotation=rotation
-        )
-        self.polygon(xy, fill=fill, outline=outline)
+        xy = _compute_regular_polygon_vertices(b_circle, n_sides, rotation)
+        self.polygon(xy, fill, outline)
 
     def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
@@ -562,14 +560,14 @@ def floodfill(image, xy, value, border=None, thresh=0):
         edge = new_edge
 
 
-def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
+def _compute_regular_polygon_vertices(b_circle, n_sides, rotation):
     """
     Generate a list of vertices for a 2D regular polygon.
 
+    :param b_circle: A bounding circle which inscribes the polygon
+        (e.g. b_circle = [x0, y0, r])
     :param n_sides: Number of sides
-        (e.g. n_sides = 3 for a triangle, 6 for a hexagon, etc..)
-    :param bbox: A bounding box (square) which inscribes the polygon
-        (e.g. bbox = [(50, 50), (150, 150)] or [50, 50, 150, 150])
+        (e.g. n_sides = 3 for a triangle, 6 for a hexagon)
     :param rotation: Apply an arbitrary rotation to the polygon
         (e.g. rotation=90, applies a 90 degree rotation)
     :return: List of regular polygon vertices
@@ -579,8 +577,8 @@ def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
     1. Compute the following variables
         - theta: Angle between the apothem & the nearest polygon vertex
         - side_length: Length of each polygon edge
-        - centroid: Center of bounding box
-        - polygon_radius: Distance between centroid and each polygon vertex
+        - centroid: Center of bounding circle (1st, 2nd elements of b_circle)
+        - polygon_radius: Polygon radius (3rd element of b_circle)
         - angles: Location of each polygon vertex in polar grid
             (e.g. A square with 0 degree rotation => [225.0, 315.0, 45.0, 135.0])
 
@@ -607,44 +605,27 @@ def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
     if n_sides < 3:
         raise ValueError("n_sides should be an int > 2")
 
-    # 1.2 Check `bbox` has an appropriate value
-    if not isinstance(bbox, (list, tuple)):
-        raise TypeError("bbox should be a list/tuple")
+    # 1.2 Check `b_circle` has an appropriate value
+    if not isinstance(b_circle, (list, tuple)):
+        raise TypeError("b_circle should be a list/tuple")
 
-    if not len(bbox) == 2 and not len(bbox) == 4:
+    if not len(b_circle) == 3:
         raise ValueError(
-            "bbox should have the following format "
-            "[(x0, y0), (x1, y1)] or [x0, y0, x1, y1]"
-        )
-    # Flatten bbox if [(x0, y0), (x1, y1)] format used.
-    if len(bbox) == 2:
-        bbox = [pt for corner in bbox for pt in corner]
-
-    if not len(bbox) == 4:
-        raise ValueError(
-            "bbox should contain top-left and bottom-right coordinates (2D)"
+            "b_circle should contain 2D coordinates and a radius (e.g. [x0, y0, r])"
         )
 
-    if not all(isinstance(i, (int, float)) for i in bbox):
-        raise ValueError("bbox should only contain numeric data")
+    if not all(isinstance(i, (int, float)) for i in b_circle):
+        raise ValueError("b_circle should only contain numeric data")
 
-    if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
-        raise ValueError(
-            "bbox: Bottom-right coordinate should be larger than top-left coordinate"
-        )
-
-    if not bbox[2] - bbox[0] == bbox[3] - bbox[1]:
-        raise ValueError("bbox should be a square")
+    if b_circle[-1] <= 0:
+        raise ValueError("b_circle radius should be > 0")
 
     # 1.3 Check `rotation` has an appropriate value
     if not isinstance(rotation, (int, float)):
         raise ValueError("rotation should be an int or float")
 
     # 2. Define Helper Functions
-    def _get_centroid(*, bbox):
-        return (bbox[2] + bbox[0]) * 0.5, (bbox[3] + bbox[1]) * 0.5
-
-    def _apply_rotation(*, point, degrees, centroid):
+    def _apply_rotation(point, degrees, centroid):
         return (
             round(
                 point[0] * math.cos(math.radians(360 - degrees))
@@ -660,21 +641,11 @@ def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
             ),
         )
 
-    def _get_theta(*, n_sides):
-        return 0.5 * (360 / n_sides)
-
-    def _get_polygon_radius(*, side_length, theta):
-        return (0.5 * side_length) / math.sin(math.radians(theta))
-
-    def _compute_polygon_vertex(*, angle, centroid, polygon_radius):
+    def _compute_polygon_vertex(centroid, angle, polygon_radius):
         start_point = [polygon_radius, 0]
-        return _apply_rotation(point=start_point, degrees=angle, centroid=centroid)
+        return _apply_rotation(start_point, angle, centroid)
 
-    def _get_side_length(*, bbox, theta):
-        h = bbox[3] - bbox[1]
-        return h * math.sin(math.radians(theta))
-
-    def _get_angles(*, n_sides, rotation):
+    def _get_angles(n_sides, rotation):
         angles = []
         degrees = 360 / n_sides
         # Start with the bottom left polygon vertex
@@ -688,19 +659,12 @@ def _compute_regular_polygon_vertices(*, n_sides, bbox, rotation):
 
     # 3. Variable Declarations
     vertices = []
-    theta = _get_theta(n_sides=n_sides)
-    side_length = _get_side_length(theta=theta, bbox=bbox)
-    centroid = _get_centroid(bbox=bbox)
-    polygon_radius = _get_polygon_radius(side_length=side_length, theta=theta)
-    angles = _get_angles(n_sides=n_sides, rotation=rotation)
+    *centroid, polygon_radius = b_circle
+    angles = _get_angles(n_sides, rotation)
 
     # 4. Compute Vertices
     for angle in angles:
-        vertices.append(
-            _compute_polygon_vertex(
-                centroid=centroid, angle=angle, polygon_radius=polygon_radius
-            )
-        )
+        vertices.append(_compute_polygon_vertex(centroid, angle, polygon_radius))
     return vertices
 
 
