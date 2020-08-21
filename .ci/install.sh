@@ -32,7 +32,6 @@ pip install test-image-results
 pip install numpy
 
 # TODO Remove when 3.9-dev includes setuptools 49.3.2+:
-if [ "$TRAVIS_PYTHON_VERSION" == "3.9-dev" ]; then pip install -U "setuptools>=49.3.2" ; fi
 if [ "$GHA_PYTHON_VERSION" == "3.9-dev" ]; then pip install -U "setuptools>=49.3.2" ; fi
 
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
