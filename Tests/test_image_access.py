@@ -330,7 +330,9 @@ class TestCffi(AccessTest):
 
 class TestImagePutPixelError(AccessTest):
     IMAGE_MODES1 = ["L", "LA", "RGB", "RGBA"]
+    IMAGE_MODES2 = ["I", "I;16", "BGR;15"]
     INVALID_TYPES1 = ["foo", 1.0, None]
+    INVALID_TYPES2 = [*INVALID_TYPES1, (10,)]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1)
     def test_putpixel_type_error1(self, mode):
@@ -338,9 +340,6 @@ class TestImagePutPixelError(AccessTest):
         for v in self.INVALID_TYPES1:
             with pytest.raises(TypeError, match="color must be int or tuple"):
                 im.putpixel((0, 0), v)
-
-    IMAGE_MODES2 = ["I", "I;16", "BGR;15"]
-    INVALID_TYPES2 = [*INVALID_TYPES1, (10,)]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES2)
     def test_putpixel_type_error2(self, mode):
