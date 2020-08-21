@@ -1107,7 +1107,8 @@ def test_draw_regular_polygon(n_sides, rotation, polygon_name):
         else f"{filename_base}_rotate_{rotation}.png"
     )
     draw = ImageDraw.Draw(im)
-    draw.regular_polygon([W // 2, H // 2, 25], n_sides, rotation=rotation, fill="red")
+    bounding_circle = ((W // 2, H // 2), 25)
+    draw.regular_polygon(bounding_circle, n_sides, rotation=rotation, fill="red")
     assert_image_equal(im, Image.open(filename))
 
 
@@ -1140,39 +1141,46 @@ def test_draw_regular_polygon(n_sides, rotation, polygon_name):
     ],
 )
 def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
-    vertices = ImageDraw._compute_regular_polygon_vertices(
-        [W // 2, H // 2, 25], n_sides, 0
-    )
+    bounding_circle = (W // 2, H // 2, 25)
+    vertices = ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, 0)
     assert vertices == expected_vertices
 
 
 @pytest.mark.parametrize(
-    "n_sides, b_circle, rotation, expected_error, error_message",
+    "n_sides, bounding_circle, rotation, expected_error, error_message",
     [
-        (None, [50, 50, 25], 0, TypeError, "n_sides should be an int"),
-        (1, [50, 50, 25], 0, ValueError, "n_sides should be an int > 2"),
-        (3, 50, 0, TypeError, "b_circle should be a list/tuple"),
+        (None, (50, 50, 25), 0, TypeError, "n_sides should be an int"),
+        (1, (50, 50, 25), 0, ValueError, "n_sides should be an int > 2"),
+        (3, 50, 0, TypeError, "bounding_circle should be a tuple"),
         (
             3,
-            [50, 50, 100, 100],
+            (50, 50, 100, 100),
             0,
             ValueError,
-            "b_circle should contain 2D coordinates and a radius (e.g. [x0, y0, r])",
+            "bounding_circle should contain 2D coordinates "
+            "and a radius (e.g. (x, y, r) or ((x, y), r) )",
         ),
         (
             3,
-            [50, 50, "25"],
+            (50, 50, "25"),
             0,
             ValueError,
-            "b_circle should only contain numeric data",
+            "bounding_circle should only contain numeric data",
         ),
-        (3, [50, 50, 0], 0, ValueError, "b_circle radius should be > 0",),
-        (3, [50, 50, 25], "0", ValueError, "rotation should be an int or float",),
+        (
+            3,
+            ((50, 50, 50), 25),
+            0,
+            ValueError,
+            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
+        ),
+        (3, (50, 50, 0), 0, ValueError, "bounding_circle radius should be > 0",),
+        (3, (50, 50, 25), "0", ValueError, "rotation should be an int or float",),
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
-    n_sides, b_circle, rotation, expected_error, error_message
+    n_sides, bounding_circle, rotation, expected_error, error_message
 ):
     with pytest.raises(expected_error) as e:
-        ImageDraw._compute_regular_polygon_vertices(b_circle, n_sides, rotation)
+        ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
     assert str(e.value) == error_message
