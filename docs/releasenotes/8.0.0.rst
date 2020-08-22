@@ -50,6 +50,14 @@ Add MIME type to PsdImagePlugin
 API Additions
 =============
 
+ImageOps.autocontrast: add mask parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`.ImageOps.autocontrast` can now take a ``mask`` parameter:
+
+* Histogram used in contrast operation is computed using pixels within the mask.
+  If no mask is given the entire image is used for histogram computation.
+
 ImageOps.autocontrast cutoffs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

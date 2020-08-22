@@ -1,6 +1,6 @@
 import pytest
 
-from PIL import Image, ImageOps, features
+from PIL import Image, ImageDraw, ImageOps, ImageStat, features
 
 from .helper import (
     assert_image_equal,
@@ -25,7 +25,9 @@ def test_sanity():
     ImageOps.autocontrast(hopper("RGB"))
 
     ImageOps.autocontrast(hopper("L"), cutoff=10)
+    ImageOps.autocontrast(hopper("L"), cutoff=(2, 10))
     ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
+    ImageOps.autocontrast(hopper("L"), mask=hopper("L"))
 
     ImageOps.colorize(hopper("L"), (0, 0, 0), (255, 255, 255))
     ImageOps.colorize(hopper("L"), "black", "white")
@@ -312,3 +314,51 @@ def test_autocontrast_cutoff():
 
         assert autocontrast(10) == autocontrast((10, 10))
         assert autocontrast(10) != autocontrast((1, 10))
+
+
+def test_autocontrast_mask_toy_input():
+    # Test the mask argument of autocontrast
+    with Image.open("Tests/images/bw_gradient.png") as img:
+
+        rect_mask = Image.new("L", img.size, 0)
+        draw = ImageDraw.Draw(rect_mask)
+        x0 = img.size[0] // 4
+        y0 = img.size[1] // 4
+        x1 = 3 * img.size[0] // 4
+        y1 = 3 * img.size[1] // 4
+        draw.rectangle((x0, y0, x1, y1), fill=255)
+
+        result = ImageOps.autocontrast(img, mask=rect_mask)
+        result_nomask = ImageOps.autocontrast(img)
+
+        assert result != result_nomask
+        assert ImageStat.Stat(result, mask=rect_mask).median == [127]
+        assert ImageStat.Stat(result_nomask).median == [128]
+
+
+def test_auto_contrast_mask_real_input():
+    # Test the autocontrast with a rectangular mask
+    with Image.open("Tests/images/iptc.jpg") as img:
+
+        rect_mask = Image.new("L", img.size, 0)
+        draw = ImageDraw.Draw(rect_mask)
+        x0, y0 = img.size[0] // 2, img.size[1] // 2
+        x1, y1 = img.size[0] - 40, img.size[1]
+        draw.rectangle((x0, y0, x1, y1), fill=255)
+
+        result = ImageOps.autocontrast(img, mask=rect_mask)
+        result_nomask = ImageOps.autocontrast(img)
+
+        assert result_nomask != result
+        assert_tuple_approx_equal(
+            ImageStat.Stat(result, mask=rect_mask).median,
+            [195, 202, 184],
+            threshold=2,
+            msg="autocontrast with mask pixel incorrect",
+        )
+        assert_tuple_approx_equal(
+            ImageStat.Stat(result_nomask).median,
+            [119, 106, 79],
+            threshold=2,
+            msg="autocontrast without mask pixel incorrect",
+        )
