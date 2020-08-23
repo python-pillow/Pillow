@@ -121,6 +121,7 @@ def _save(im, fp, filename, save_all=False):
 
             bits = 8
             params = None
+            decode = None
 
             if im.mode == "1":
                 filter = "ASCIIHexDecode"
@@ -150,6 +151,7 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
+                decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
                 raise ValueError("cannot save mode %s" % im.mode)
 
@@ -189,6 +191,7 @@ def _save(im, fp, filename, save_all=False):
                 Height=height,  # * 72.0 / resolution,
                 Filter=PdfParser.PdfName(filter),
                 BitsPerComponent=bits,
+                Decode=decode,
                 DecodeParams=params,
                 ColorSpace=colorspace,
             )
