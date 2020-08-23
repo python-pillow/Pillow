@@ -594,7 +594,8 @@ class Image:
         try:
             if hasattr(self, "_close__fp"):
                 self._close__fp()
-            self.fp.close()
+            if self.fp:
+                self.fp.close()
             self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
