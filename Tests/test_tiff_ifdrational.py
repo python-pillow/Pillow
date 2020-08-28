@@ -30,7 +30,6 @@ def test_sanity():
 
 
 def test_ranges():
-
     for num in range(1, 10):
         for denom in range(1, 10):
             assert IFDRational(num, denom) == IFDRational(num, denom)
@@ -48,12 +47,6 @@ def test_nonetype():
 
     assert xres and 1
     assert xres and yres
-
-
-def test_nan():
-    # usually NaN != NaN, but this would break exif self-equality
-
-    assert IFDRational(123, 0) == IFDRational(123, 0)
 
 
 def test_ifd_rational_save(tmp_path):
