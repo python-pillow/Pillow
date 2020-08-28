@@ -353,6 +353,8 @@ class IFDRational(Rational):
         return self._val.__hash__()
 
     def __eq__(self, other):
+        if isinstance(other, IFDRational):
+            other = other._val
         return self._val == other
 
     def _delegate(op):

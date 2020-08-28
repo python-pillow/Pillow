@@ -242,6 +242,16 @@ class TestFileJpeg:
         # Assert
         assert exif[gps_index] == expected_exif_gps
 
+    def test_exif_equality(self):
+        # In 7.2.0, Exif rationals were changed to be read as
+        # TiffImagePlugin.IFDRational. This class had a bug in __eq__,
+        # breaking the self-equality of Exif data
+        exifs = []
+        for i in range(2):
+            with Image.open("Tests/images/exif-200dpcm.jpg") as im:
+                exifs.append(im._getexif())
+        assert exifs[0] == exifs[1]
+
     def test_exif_rollback(self):
         # rolling back exif support in 3.1 to pre-3.0 formatting.
         # expected from 2.9, with b/u qualifiers switched for 3.2 compatibility
