@@ -727,9 +727,7 @@ class pil_build_ext(build_ext):
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
-            # FIXME the following define should be detected automatically
-            #       based on system libtiff, see #4237
-            if PLATFORM_MINGW:
+            if sys.platform == "win32":
                 defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
