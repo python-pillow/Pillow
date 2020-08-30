@@ -64,6 +64,8 @@ for raqm, libimagequant, and libxcb::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
+To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
+
 
 macOS Installation
 ^^^^^^^^^^^^^^^^^^
@@ -298,6 +300,42 @@ We recommend you use prebuilt wheels from PyPI.
 If you wish to compile Pillow manually, you can use the build scripts
 in the ``winbuild`` directory used for CI testing and development.
 These scripts require Visual Studio 2017 or newer and NASM.
+
+Building on Windows using MSYS2/MinGW
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
+**MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
+
+The following instructions target the 64-bit build, for 32-bit
+replace all occurrences of ``mingw-w64-x86_64-`` with ``mingw-w64-i686-``.
+
+Make sure you have Python and GCC installed::
+
+    pacman -S \
+        mingw-w64-x86_64-gcc \
+        mingw-w64-x86_64-python3 \
+        mingw-w64-x86_64-python3-pip \
+        mingw-w64-x86_64-python3-setuptools
+
+Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
+
+    pacman -S \
+        mingw-w64-x86_64-libjpeg-turbo \
+        mingw-w64-x86_64-zlib \
+        mingw-w64-x86_64-libtiff \
+        mingw-w64-x86_64-freetype \
+        mingw-w64-x86_64-lcms2 \
+        mingw-w64-x86_64-libwebp \
+        mingw-w64-x86_64-openjpeg2 \
+        mingw-w64-x86_64-libimagequant \
+        mingw-w64-x86_64-libraqm
+
+Now install Pillow with::
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow
+
 
 Building on FreeBSD
 ^^^^^^^^^^^^^^^^^^^
