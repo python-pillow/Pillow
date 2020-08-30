@@ -19,7 +19,8 @@ def test_register():
 
 
 @pytest.mark.parametrize(
-    "order", [-1, 0],
+    "order",
+    [-1, 0],
 )
 def test_viewer_show(order):
     class TestViewer(ImageShow.Viewer):
@@ -41,7 +42,8 @@ def test_viewer_show(order):
 
 
 @pytest.mark.skipif(
-    not on_ci() or is_win32(), reason="Only run on CIs; hangs on Windows CIs",
+    not on_ci() or is_win32(),
+    reason="Only run on CIs; hangs on Windows CIs",
 )
 def test_show():
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):

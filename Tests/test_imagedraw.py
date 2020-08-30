@@ -667,7 +667,10 @@ def test_floodfill_border():
 
     # Act
     ImageDraw.floodfill(
-        im, centre_point, ImageColor.getrgb("red"), border=ImageColor.getrgb("black"),
+        im,
+        centre_point,
+        ImageColor.getrgb("red"),
+        border=ImageColor.getrgb("black"),
     )
 
     # Assert

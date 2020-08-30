@@ -286,7 +286,7 @@ _write_dispatch = {}
 
 
 class IFDRational(Rational):
-    """ Implements a rational class where 0/0 is a legal value to match
+    """Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
 
     e.g., DigitalZoomRatio - 0.00/0.00  indicates that no digital zoom was used
@@ -907,7 +907,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
 
     @classmethod
     def from_v2(cls, original):
-        """ Returns an
+        """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
         instance with the same data as is contained in the original
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
@@ -924,7 +924,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         return ifd
 
     def to_v2(self):
-        """ Returns an
+        """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
         instance with the same data as is contained in the original
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
@@ -1094,8 +1094,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
-        """ Overload method triggered when we detect a compressed tiff
-            Calls out to libtiff """
+        """Overload method triggered when we detect a compressed tiff
+        Calls out to libtiff"""
 
         Image.Image.load(self)
 

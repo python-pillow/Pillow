@@ -1110,7 +1110,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
 
     # animation control
     chunk(
-        fp, b"acTL", o32(len(im_frames)), o32(loop),  # 0: num_frames  # 4: num_plays
+        fp,
+        b"acTL",
+        o32(len(im_frames)),
+        o32(loop),  # 0: num_frames  # 4: num_plays
     )
 
     # default image IDAT (if it exists)
@@ -1155,7 +1158,9 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
-                im_frame, fdat_chunks, [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                im_frame,
+                fdat_chunks,
+                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
 

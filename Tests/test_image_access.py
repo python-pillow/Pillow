@@ -132,9 +132,11 @@ class TestImageGetPixel(AccessTest):
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
-        assert im.getpixel((-1, -1)) == c, (
-            "put/getpixel roundtrip negative index failed for mode %s, color %s"
-            % (mode, c)
+        assert (
+            im.getpixel((-1, -1)) == c
+        ), "put/getpixel roundtrip negative index failed for mode %s, color %s" % (
+            mode,
+            c,
         )
 
         # Check 0
