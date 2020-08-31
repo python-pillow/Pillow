@@ -665,7 +665,7 @@ class Image:
         )
 
     def _repr_png_(self):
-        """ iPython display hook support
+        """iPython display hook support
 
         :returns: png version of the image as bytes
         """
@@ -1181,7 +1181,7 @@ class Image:
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
 
         :param filter: Filter kernel.
-        :returns: An :py:class:`~PIL.Image.Image` object.  """
+        :returns: An :py:class:`~PIL.Image.Image` object."""
 
         from . import ImageFilter
 
@@ -1506,7 +1506,7 @@ class Image:
             self.im.paste(im, box)
 
     def alpha_composite(self, im, dest=(0, 0), source=(0, 0)):
-        """ 'In-place' analog of Image.alpha_composite. Composites an image
+        """'In-place' analog of Image.alpha_composite. Composites an image
         onto this image.
 
         :param im: image to composite over this one

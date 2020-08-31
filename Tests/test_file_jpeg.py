@@ -39,7 +39,7 @@ class TestFileJpeg:
         return im
 
     def gen_random_image(self, size, mode="RGB"):
-        """ Generates a very hard to compress file
+        """Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
 
@@ -99,7 +99,8 @@ class TestFileJpeg:
             assert k > 0.9
 
     @pytest.mark.parametrize(
-        "test_image_path", [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
+        "test_image_path",
+        [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
     def test_dpi(self, test_image_path):
         def test(xdpi, ydpi=None):

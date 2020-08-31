@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 6bedb5c58a7d8c25aa9509f8217bc24e9797e90d  # frozen: 19.10b0
+    rev: e66be67b9b6811913470f70c28b4d50f94d05b22  # frozen: 20.8b1
     hooks:
       - id: black
         args: ["--target-version", "py35"]
@@ -9,7 +9,7 @@ repos:
         types: []
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 9ae09866e278fbc6ec0383ccb16b5c84e78e6e4d  # frozen: 5.3.2
+    rev: 377d260ffa6f746693f97b46d95025afc4bd8275  # frozen: 5.4.2
     hooks:
       - id: isort
 
@@ -31,7 +31,7 @@ repos:
         additional_dependencies: [flake8-2020, flake8-implicit-str-concat]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: 20b9ac745c5adaab12b845b3564c773dcc051d0e  # frozen: v1.5.2
+    rev: eae6397e4c259ed3d057511f6dd5330b92867e62  # frozen: v1.6.0
     hooks:
       - id: python-check-blanket-noqa
       - id: rst-backticks

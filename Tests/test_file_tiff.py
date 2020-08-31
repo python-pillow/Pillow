@@ -225,8 +225,8 @@ class TestFileTiff:
             assert im.getpixel((0, 1)) == 0
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
 
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             # to make the target --

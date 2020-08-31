@@ -34,6 +34,9 @@ def test_similar():
         (0, size_final[1] - size_bitmap[1]), text, fill=(0, 0, 0), font=font_bitmap
     )
     draw_outline.text(
-        (0, size_final[1] - size_outline[1]), text, fill=(0, 0, 0), font=font_outline,
+        (0, size_final[1] - size_outline[1]),
+        text,
+        fill=(0, 0, 0),
+        font=font_outline,
     )
     assert_image_similar(im_bitmap, im_outline, 20)

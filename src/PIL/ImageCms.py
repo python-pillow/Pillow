@@ -277,8 +277,8 @@ def get_display_profile(handle=None):
 
 class PyCMSError(Exception):
 
-    """ (pyCMS) Exception class.
-    This is used for all errors in the pyCMS API. """
+    """(pyCMS) Exception class.
+    This is used for all errors in the pyCMS API."""
 
     pass
 
