@@ -807,7 +807,7 @@ PyImaging_XbmDecoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBZ
 
-#include "ZipState.h"
+#include "ZipCodecs.h"
 
 PyObject*
 PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
