@@ -16,8 +16,8 @@ def get_files(d, ext=".bmp"):
 
 
 def test_bad():
-    """ These shouldn't crash/dos, but they shouldn't return anything
-    either """
+    """These shouldn't crash/dos, but they shouldn't return anything
+    either"""
     for f in get_files("b"):
 
         def open(f):
@@ -32,8 +32,8 @@ def test_bad():
 
 
 def test_questionable():
-    """ These shouldn't crash/dos, but it's not well defined that these
-    are in spec """
+    """These shouldn't crash/dos, but it's not well defined that these
+    are in spec"""
     supported = [
         "pal8os2v2.bmp",
         "rgb24prof.bmp",
@@ -57,8 +57,8 @@ def test_questionable():
 
 
 def test_good():
-    """ These should all work. There's a set of target files in the
-    html directory that we can compare against. """
+    """These should all work. There's a set of target files in the
+    html directory that we can compare against."""
 
     # Target files, if they're not just replacing the extension
     file_map = {

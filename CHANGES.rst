@@ -5,6 +5,24 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Fix IFDRational __eq__ bug #4888
+  [luphord, radarhere]
+
+- Fixed duplicate variable name #4885
+  [liZe, radarhere]
+
+- Added homebrew zlib include directory #4842
+  [radarhere]
+
+- Corrected inverted PDF CMYK colors #4866
+  [radarhere]
+
+- Do not try to close file pointer if file pointer is empty #4823
+  [radarhere]
+
+- ImageOps.autocontrast: add mask parameter #4843
+  [navneeth, hugovk]
+
 - Read EXIF data tEXt chunk into info as bytes instead of string #4828
   [radarhere]
 

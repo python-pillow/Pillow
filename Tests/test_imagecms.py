@@ -437,7 +437,7 @@ def test_extended_information():
 
 
 def test_profile_typesafety():
-    """ Profile init type safety
+    """Profile init type safety
 
     prepatch, these would segfault, postpatch they should emit a typeerror
     """
