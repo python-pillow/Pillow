@@ -1112,8 +1112,8 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
     chunk(
         fp,
         b"acTL",
-        o32(len(im_frames)),
-        o32(loop),  # 0: num_frames  # 4: num_plays
+        o32(len(im_frames)),  # 0: num_frames
+        o32(loop),  # 4: num_plays
     )
 
     # default image IDAT (if it exists)
