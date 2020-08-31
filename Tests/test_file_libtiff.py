@@ -768,12 +768,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.mode == "RGBA"
             assert im.size == (100, 40)
             assert im.tile, [
-                (
-                    "libtiff",
-                    (0, 0, 100, 40),
-                    0,
-                    ("RGBa;16N", "tiff_lzw", False, 38236),
-                )
+                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))
             ]
             im.load()
 
