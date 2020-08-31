@@ -19,7 +19,7 @@
 
 #ifdef  HAVE_LIBZ
 
-#include "ZipState.h"
+#include "ZipCodecs.h"
 
 int
 ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
