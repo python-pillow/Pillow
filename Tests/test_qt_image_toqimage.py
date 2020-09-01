@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageQt
 
 from .helper import assert_image_equal, hopper
@@ -12,10 +13,10 @@ if ImageQt.qt_is_installed:
 
     try:
         from PyQt5 import QtGui
-        from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+        from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
     except (ImportError, RuntimeError):
         from PySide2 import QtGui
-        from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+        from PySide2.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
 
 
 def test_sanity(tmp_path):

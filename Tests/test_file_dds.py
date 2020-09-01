@@ -2,6 +2,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import DdsImagePlugin, Image
 
 from .helper import assert_image_equal

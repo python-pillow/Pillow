@@ -638,7 +638,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
+                     :data:`.ImageFont.LAYOUT_BASIC` or :data:`.ImageFont.LAYOUT_RAQM`.
 
                      You can check support for Raqm layout using
                      :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

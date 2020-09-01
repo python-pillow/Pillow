@@ -3,6 +3,7 @@ from glob import glob
 from itertools import product
 
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper

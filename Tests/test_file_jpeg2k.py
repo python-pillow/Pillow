@@ -2,6 +2,7 @@ import re
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageFile, Jpeg2KImagePlugin, features
 
 from .helper import (

@@ -2,6 +2,7 @@ import io
 import struct
 
 import pytest
+
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
@@ -11,10 +12,10 @@ TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
 
 def test_rt_metadata(tmp_path):
-    """ Test writing arbitrary metadata into the tiff image directory
-        Use case is ImageJ private tags, one numeric, one arbitrary
-        data.  https://github.com/python-pillow/Pillow/issues/291
-        """
+    """Test writing arbitrary metadata into the tiff image directory
+    Use case is ImageJ private tags, one numeric, one arbitrary
+    data.  https://github.com/python-pillow/Pillow/issues/291
+    """
 
     img = hopper()
 

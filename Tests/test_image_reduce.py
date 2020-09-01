@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageMath, ImageMode
 
 from .helper import convert_to_comparable, skip_unless_feature

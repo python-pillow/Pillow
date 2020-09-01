@@ -237,10 +237,12 @@ def pilinfo(out=None, supported_formats=True):
         print(f"       {py_version.strip()}", file=out)
     print("-" * 68, file=out)
     print(
-        f"Python modules loaded from {os.path.dirname(Image.__file__)}", file=out,
+        f"Python modules loaded from {os.path.dirname(Image.__file__)}",
+        file=out,
     )
     print(
-        f"Binary modules loaded from {os.path.dirname(Image.core.__file__)}", file=out,
+        f"Binary modules loaded from {os.path.dirname(Image.core.__file__)}",
+        file=out,
     )
     print("-" * 68, file=out)
 

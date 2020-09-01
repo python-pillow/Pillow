@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 import pytest
+
 from PIL import Image, ImageGrab
 
 from .helper import assert_image, assert_image_equal_tofile, skip_unless_feature

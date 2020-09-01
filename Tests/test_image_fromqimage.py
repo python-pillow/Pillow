@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageQt
 
 from .helper import assert_image_equal, hopper

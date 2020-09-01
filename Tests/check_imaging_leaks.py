@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import pytest
+
 from PIL import Image
 
 from .helper import is_win32
@@ -11,7 +12,7 @@ pytestmark = pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
 
 
 def _get_mem_usage():
-    from resource import getpagesize, getrusage, RUSAGE_SELF
+    from resource import RUSAGE_SELF, getpagesize, getrusage
 
     mem = getrusage(RUSAGE_SELF).ru_maxrss
     return mem * getpagesize() / 1024 / 1024

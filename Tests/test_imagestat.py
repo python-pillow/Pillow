@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageStat
 
 from .helper import hopper

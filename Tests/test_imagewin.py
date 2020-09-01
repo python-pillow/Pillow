@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import ImageWin
 
 from .helper import hopper, is_win32

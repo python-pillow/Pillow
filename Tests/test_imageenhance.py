@@ -33,7 +33,9 @@ def _half_transparent_image():
 def _check_alpha(im, original, op, amount):
     assert im.getbands() == original.getbands()
     assert_image_equal(
-        im.getchannel("A"), original.getchannel("A"), f"Diff on {op}: {amount}",
+        im.getchannel("A"),
+        original.getchannel("A"),
+        f"Diff on {op}: {amount}",
     )
 
 

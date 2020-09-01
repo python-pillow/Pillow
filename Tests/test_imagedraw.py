@@ -1,6 +1,7 @@
 import os.path
 
 import pytest
+
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from .helper import (
@@ -666,7 +667,10 @@ def test_floodfill_border():
 
     # Act
     ImageDraw.floodfill(
-        im, centre_point, ImageColor.getrgb("red"), border=ImageColor.getrgb("black"),
+        im,
+        centre_point,
+        ImageColor.getrgb("red"),
+        border=ImageColor.getrgb("black"),
     )
 
     # Assert

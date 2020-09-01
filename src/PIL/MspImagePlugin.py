@@ -27,7 +27,9 @@ import io
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16le as i16, o16le as o16
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import o16le as o16
 
 #
 # read MSP files

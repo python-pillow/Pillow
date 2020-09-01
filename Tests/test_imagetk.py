@@ -1,12 +1,13 @@
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
 try:
-    from PIL import ImageTk
-
     import tkinter as tk
+
+    from PIL import ImageTk
 
     dir(ImageTk)
     HAS_TK = True

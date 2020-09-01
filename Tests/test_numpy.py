@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper

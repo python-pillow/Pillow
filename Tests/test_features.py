@@ -2,6 +2,7 @@ import io
 import re
 
 import pytest
+
 from PIL import features
 
 from .helper import skip_unless_feature

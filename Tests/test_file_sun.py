@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import Image, SunImagePlugin
 
 from .helper import assert_image_equal, assert_image_similar, hopper

@@ -2,6 +2,7 @@ import os.path
 import subprocess
 
 import pytest
+
 from PIL import Image
 
 from .helper import IMCONVERT, assert_image_equal, hopper, imagemagick_available

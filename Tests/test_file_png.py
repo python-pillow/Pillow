@@ -3,6 +3,7 @@ import zlib
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageFile, PngImagePlugin, features
 
 from .helper import (
@@ -605,6 +606,11 @@ class TestFilePng:
             # when the image is no longer a PngImageFile instance
             exif = im.copy().getexif()
             assert exif[274] == 1
+
+        # With a tEXt chunk
+        with Image.open("Tests/images/exif_text.png") as im:
+            exif = im._getexif()
+        assert exif[274] == 1
 
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:

@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, TarIO, features
 
 from .helper import is_pypy

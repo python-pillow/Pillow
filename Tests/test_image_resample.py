@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
 import pytest
+
 from PIL import Image, ImageDraw
 
 from .helper import assert_image_equal, assert_image_similar, hopper
@@ -537,7 +538,10 @@ class TestCoreResampleBox:
                 assert res.size == size
                 # Borders should be slightly different
                 assert_image_similar(
-                    res, im.crop(box).resize(size, flt), 0.4, f">>> {size} {box} {flt}",
+                    res,
+                    im.crop(box).resize(size, flt),
+                    0.4,
+                    f">>> {size} {box} {flt}",
                 )
 
     def test_skip_vertical(self):
@@ -555,5 +559,8 @@ class TestCoreResampleBox:
                 assert res.size == size
                 # Borders should be slightly different
                 assert_image_similar(
-                    res, im.crop(box).resize(size, flt), 0.4, f">>> {size} {box} {flt}",
+                    res,
+                    im.crop(box).resize(size, flt),
+                    0.4,
+                    f">>> {size} {box} {flt}",
                 )

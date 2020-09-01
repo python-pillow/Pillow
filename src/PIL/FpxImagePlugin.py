@@ -17,7 +17,8 @@
 import olefile
 
 from . import Image, ImageFile
-from ._binary import i8, i32le as i32
+from ._binary import i8
+from ._binary import i32le as i32
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {

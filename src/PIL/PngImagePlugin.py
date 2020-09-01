@@ -39,7 +39,12 @@ import warnings
 import zlib
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
-from ._binary import i8, i16be as i16, i32be as i32, o8, o16be as o16, o32be as o32
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
+from ._binary import o16be as o16
+from ._binary import o32be as o32
 
 logger = logging.getLogger(__name__)
 
@@ -509,10 +514,11 @@ class PngStream(ChunkStream):
             v = b""
         if k:
             k = k.decode("latin-1", "strict")
-            v = v.decode("latin-1", "replace")
+            v_str = v.decode("latin-1", "replace")
 
-            self.im_info[k] = self.im_text[k] = v
-            self.check_text_memory(len(v))
+            self.im_info[k] = v if k == "exif" else v_str
+            self.im_text[k] = v_str
+            self.check_text_memory(len(v_str))
 
         return s
 
@@ -1102,7 +1108,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
 
     # animation control
     chunk(
-        fp, b"acTL", o32(len(im_frames)), o32(loop),  # 0: num_frames  # 4: num_plays
+        fp,
+        b"acTL",
+        o32(len(im_frames)),  # 0: num_frames
+        o32(loop),  # 4: num_plays
     )
 
     # default image IDAT (if it exists)
@@ -1147,7 +1156,9 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
-                im_frame, fdat_chunks, [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                im_frame,
+                fdat_chunks,
+                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
 

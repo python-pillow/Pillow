@@ -56,3 +56,19 @@ Methods
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
+
+Constants
+---------
+
+.. data:: PIL.ImageFont.LAYOUT_BASIC
+
+    Use basic text layout for TrueType font.
+    Advanced features such as text direction are not supported.
+
+.. data:: PIL.ImageFont.LAYOUT_RAQM
+
+    Use Raqm text layout for TrueType font.
+    Advanced features are supported.
+
+    Requires Raqm, you can check support using
+    :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

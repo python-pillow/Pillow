@@ -69,7 +69,7 @@ class Kernel(BuiltinFilter):
 class RankFilter(Filter):
     """
     Create a rank filter.  The rank filter sorts all pixels in
-    a window of the given size, and returns the **rank**'th value.
+    a window of the given size, and returns the ``rank``'th value.
 
     :param size: The kernel size, in pixels.
     :param rank: What pixel value to pick.  Use 0 for a min filter,

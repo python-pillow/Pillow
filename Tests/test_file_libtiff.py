@@ -1,13 +1,13 @@
 import base64
 import io
 import itertools
-import logging
 import os
 import re
 from collections import namedtuple
 from ctypes import c_float
 
 import pytest
+
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
@@ -18,8 +18,6 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
-
-logger = logging.getLogger(__name__)
 
 
 @skip_unless_feature("libtiff")
@@ -404,8 +402,8 @@ class TestFileLibTiff(LibTiffTestCase):
             assert "temp.tif" == reread.tag[269][0]
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             im.load()
@@ -505,9 +503,9 @@ class TestFileLibTiff(LibTiffTestCase):
             assert len(reloaded.tag_v2[320]) == 768
 
     def xtest_bw_compression_w_rgb(self, tmp_path):
-        """ This test passes, but when running all tests causes a failure due
-            to output on stderr from the error thrown by libtiff. We need to
-            capture that but not now"""
+        """This test passes, but when running all tests causes a failure due
+        to output on stderr from the error thrown by libtiff. We need to
+        capture that but not now"""
 
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
@@ -770,7 +768,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.mode == "RGBA"
             assert im.size == (100, 40)
             assert im.tile, [
-                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236),)
+                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))
             ]
             im.load()
 

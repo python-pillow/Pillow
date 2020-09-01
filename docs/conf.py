@@ -16,8 +16,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-import PIL
 import sphinx_rtd_theme
+
+import PIL
 
 # -- General configuration ------------------------------------------------
 
@@ -76,7 +77,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build"]
+exclude_patterns = ["_build", "releasenotes/template.rst"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

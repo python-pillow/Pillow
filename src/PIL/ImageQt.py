@@ -29,11 +29,11 @@ qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=Tr
 for qt_version, qt_module in qt_versions:
     try:
         if qt_module == "PyQt5":
-            from PyQt5.QtGui import QImage, qRgba, QPixmap
             from PyQt5.QtCore import QBuffer, QIODevice
+            from PyQt5.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PySide2":
-            from PySide2.QtGui import QImage, qRgba, QPixmap
             from PySide2.QtCore import QBuffer, QIODevice
+            from PySide2.QtGui import QImage, QPixmap, qRgba
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True

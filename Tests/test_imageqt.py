@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import ImageQt
 
 from .helper import hopper

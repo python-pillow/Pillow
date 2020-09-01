@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, SgiImagePlugin
 
 from .helper import assert_image_equal, assert_image_similar, hopper

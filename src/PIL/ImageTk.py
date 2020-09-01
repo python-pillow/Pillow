@@ -69,7 +69,7 @@ class PhotoImage:
     image, pixels having alpha 0 are treated as transparent.
 
     The constructor takes either a PIL image, or a mode and a size.
-    Alternatively, you can use the **file** or **data** options to initialize
+    Alternatively, you can use the ``file`` or ``data`` options to initialize
     the photo image object.
 
     :param image: Either a PIL image, or a mode string.  If a mode string is
@@ -210,7 +210,7 @@ class BitmapImage:
 
     The given image must have mode "1".  Pixels having value 0 are treated as
     transparent.  Options, if any, are passed on to Tkinter.  The most commonly
-    used option is **foreground**, which is used to specify the color for the
+    used option is ``foreground``, which is used to specify the color for the
     non-transparent parts.  See the Tkinter documentation for information on
     how to specify colours.
 
