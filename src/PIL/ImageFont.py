@@ -259,9 +259,10 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        # vertical offset is added for historical reasons, see discussion in #4789
         size, offset = self.font.getsize(text, False, direction, features, language)
         return (
-            size[0] + stroke_width * 2 + offset[0],
+            size[0] + stroke_width * 2,
             size[1] + stroke_width * 2 + offset[1],
         )
 

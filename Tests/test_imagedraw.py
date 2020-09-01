@@ -1039,7 +1039,7 @@ def test_stroke_descender():
     draw.text((10, 0), "y", "#f00", font, stroke_width=2, stroke_fill="#0f0")
 
     # Assert
-    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_descender.png", 6.76)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_descender.png", 6.78)
 
 
 @skip_unless_feature("freetype2")
