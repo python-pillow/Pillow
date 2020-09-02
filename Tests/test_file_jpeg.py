@@ -8,6 +8,7 @@ from PIL import (
     ExifTags,
     Image,
     ImageFile,
+    ImageOps,
     JpegImagePlugin,
     UnidentifiedImageError,
     features,
@@ -248,6 +249,24 @@ class TestFileJpeg:
         with Image.open(f) as reloaded:
             exif = reloaded._getexif()
             assert exif[gps_index] == expected_exif_gps
+
+    def test_empty_exif_gps(self):
+        with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
+            exif = im.getexif()
+            del exif[0x8769]
+
+            # Assert that it needs to be transposed
+            assert exif[0x0112] == Image.TRANSVERSE
+
+            # Assert that the GPS IFD is present and empty
+            assert exif[0x8825] == {}
+
+            transposed = ImageOps.exif_transpose(im)
+        exif = transposed.getexif()
+        assert exif[0x8825] == {}
+
+        # Assert that it was transposed
+        assert 0x0112 not in exif
 
     def test_exif_rollback(self):
         # rolling back exif support in 3.1 to pre-3.0 formatting.
