@@ -610,41 +610,56 @@ text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *featu
 static PyObject*
 font_getsize(FontObject* self, PyObject* args)
 {
-    int position, advanced;
-    int x_max, x_min, y_max, y_min;
+    int position; /* pen position along primary axis, in 26.6 precision */
+    int advanced; /* pen position along primary axis, in pixels */
+    int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
+    int x_anchor, y_anchor; /* offset of point drawn at (0, 0), in pixels */
+    int load_flags; /* FreeType load_flags parameter */
+    int error;
     FT_Face face;
-    int x_anchor, y_anchor;
-    int horizontal_dir;
-    int mask = 0;
-    int load_flags;
+    FT_Glyph glyph;
+    FT_BBox bbox; /* glyph bounding box */
+    FT_Vector pen;
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t i, count;
-    GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
-    FT_Vector pen;
+    PyObject *string;
 
     /* calculate size and bearing for a given string */
 
-    PyObject* string;
     if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
         return NULL;
     }
+
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
+    /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
+     *   Yifu Yu<root@jackyyf.com>, 2014-10-15
+     */
+    load_flags = FT_LOAD_NO_BITMAP;
+    if (mask) {
+        load_flags |= FT_LOAD_TARGET_MONO;
+    }
+
+    /*
+     * text bounds are given by:
+     *   - bounding boxes of individual glyphs
+     *   - pen line, i.e. 0 to `advanced` along primary axis
+     *     this means point (0, 0) is part of the text bounding box
+     */
     face = NULL;
-    position = x_max = x_min = y_max = y_min = 0;
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+    position = x_min = x_max = y_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        int index, error, offset;
-        FT_BBox bbox;
-        FT_Glyph glyph;
         face = self->face;
-        index = glyph_info[i].index;
 
         if (horizontal_dir) {
             pen.x = position + glyph_info[i].x_offset;
@@ -665,17 +680,9 @@ font_getsize(FontObject* self, PyObject* args)
                 y_min = advanced;
             }
         }
-
         FT_Set_Transform(face, NULL, &pen);
 
-        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
-         *   Yifu Yu<root@jackyyf.com>, 2014-10-15
-         */
-        load_flags = FT_LOAD_NO_BITMAP;
-        if (mask) {
-            load_flags |= FT_LOAD_TARGET_MONO;
-        }
-        error = FT_Load_Glyph(face, index, load_flags);
+        error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
         if (error) {
             return geterror(error);
         }
@@ -686,7 +693,6 @@ font_getsize(FontObject* self, PyObject* args)
         }
 
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
-
         if (bbox.xMax > x_max) {
             x_max = bbox.xMax;
         }
@@ -730,38 +736,42 @@ font_getsize(FontObject* self, PyObject* args)
 static PyObject*
 font_render(FontObject* self, PyObject* args)
 {
-    int x, y, baseline, offset;
-    Imaging im;
-    int index, error, horizontal_dir;
-    int load_flags;
-    unsigned char *source;
+    int x, y; /* pen position, in 26.6 precision */
+    int x_min, y_max; /* text offset in 26.6 precision */
+    int load_flags; /* FreeType load_flags parameter */
+    int error;
     FT_Glyph glyph;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_BitmapGlyph bitmap_glyph;
-    int stroke_width = 0;
+    FT_Vector pen;
     FT_Stroker stroker = NULL;
-    /* render string into given buffer (the buffer *must* have
-       the right size, or this will crash) */
-    PyObject* string;
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int xx, yy; /* pixel offset of current glyph bitmap */
+    int x0, x1; /* horizontal bounds of glyph bitmap to copy */
+    unsigned int bitmap_y; /* glyph bitmap y index */
+    unsigned char *source; /* glyph bitmap source buffer */
+    Imaging im;
     Py_ssize_t id;
-    int mask = 0;
-    int temp;
-    int xx, x0, x1, yy;
-    unsigned int bitmap_y;
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int stroke_width = 0;
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t i, count;
-    GlyphInfo *glyph_info;
-    PyObject *features = NULL;
-    FT_Vector pen;
+    PyObject *features = Py_None;
+    PyObject* string;
+
+    /* render string into given buffer (the buffer *must* have
+       the right size, or this will crash) */
 
     if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
                                                    &stroke_width)) {
         return NULL;
     }
 
-    glyph_info = NULL;
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
         return NULL;
@@ -780,22 +790,24 @@ font_render(FontObject* self, PyObject* args)
     }
 
     im = (Imaging) id;
+
     /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
     load_flags = FT_LOAD_NO_BITMAP;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
 
-    pen.x = pen.y = x = y = baseline = offset = 0;
-    horizontal_dir = (dir && strcmp(dir, "ttb") == 0) ? 0 : 1;
+    /*
+     * calculate x_min and y_max
+     * must match font_getsize or there may be clipping!
+     */
+    x = y = x_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        index = glyph_info[i].index;
-
         pen.x = x + glyph_info[i].x_offset;
         pen.y = y + glyph_info[i].y_offset;
         FT_Set_Transform(self->face, NULL, &pen);
 
-        error = FT_Load_Glyph(self->face, index, load_flags | FT_LOAD_RENDER);
+        error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
             return geterror(error);
         }
@@ -803,46 +815,31 @@ font_render(FontObject* self, PyObject* args)
         glyph_slot = self->face->glyph;
         bitmap = glyph_slot->bitmap;
 
-        // compute baseline and adjust start position if glyph bearing extends before origin
-        if (horizontal_dir) {
-            if (glyph_slot->bitmap_top > baseline) {
-                baseline = glyph_slot->bitmap_top;
-            }
-            if (glyph_slot->bitmap_left < offset) {
-                offset = glyph_slot->bitmap_left;
-            }
-            x += glyph_info[i].x_advance;
-        } else {
-            if (glyph_slot->bitmap_top > offset) {
-                offset = glyph_slot->bitmap_top;
-            }
-            if (glyph_slot->bitmap_left < baseline) {
-                baseline = glyph_slot->bitmap_left;
-            }
-            y += glyph_info[i].y_advance;
+        if (glyph_slot->bitmap_top > y_max) {
+            y_max = glyph_slot->bitmap_top;
         }
+        if (glyph_slot->bitmap_left < x_min) {
+            x_min = glyph_slot->bitmap_left;
+        }
+
+        x += glyph_info[i].x_advance;
+        y += glyph_info[i].y_advance;
     }
 
-    if (horizontal_dir) {
-        x = (-offset + stroke_width) * 64;
-        y = (-baseline + (-stroke_width)) * 64;
-    } else {
-        x = (-baseline + stroke_width) * 64;
-        y = (-offset + (-stroke_width)) * 64;
-    }
+    /* set pen position to text origin */
+    x = (-x_min + stroke_width) * 64;
+    y = (-y_max + (-stroke_width)) * 64;
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
     }
 
     for (i = 0; i < count; i++) {
-        index = glyph_info[i].index;
-
         pen.x = x + glyph_info[i].x_offset;
         pen.y = y + glyph_info[i].y_offset;
         FT_Set_Transform(self->face, NULL, &pen);
 
-        error = FT_Load_Glyph(self->face, index, load_flags);
+        error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
             return geterror(error);
         }
@@ -872,6 +869,7 @@ font_render(FontObject* self, PyObject* args)
             yy = -glyph_slot->bitmap_top;
         }
 
+        /* clip glyph bitmap width to target image bounds */
         x0 = 0;
         x1 = bitmap.width;
         if (xx < 0) {
@@ -883,6 +881,7 @@ font_render(FontObject* self, PyObject* args)
 
         source = (unsigned char*) bitmap.buffer;
         for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
+            /* clip glyph bitmap height to target image bounds */
             if (yy >= 0 && yy < im->ysize) {
                 // blend this glyph into the buffer
                 unsigned char *target = im->image8[yy] + xx;
