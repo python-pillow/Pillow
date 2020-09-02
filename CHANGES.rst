@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Added writing of subIFDs #4862
+  [radarhere]
+
 - Fix IFDRational __eq__ bug #4888
   [luphord, radarhere]
 
