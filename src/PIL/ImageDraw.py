@@ -276,7 +276,7 @@ class ImageDraw:
         stroke_width=0,
         stroke_fill=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if self._multiline_check(text):
             return self.multiline_text(

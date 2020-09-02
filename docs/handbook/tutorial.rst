@@ -124,7 +124,7 @@ Identify Image Files
     for infile in sys.argv[1:]:
         try:
             with Image.open(infile) as im:
-                print(infile, im.format, "%dx%d" % im.size, im.mode)
+                print(infile, im.format, f"{im.size}x{im.mode}")
         except OSError:
             pass
 

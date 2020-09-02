@@ -83,7 +83,7 @@ def read_32(fobj, start_length, size):
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
-                raise SyntaxError("Error reading channel [%r left]" % bytesleft)
+                raise SyntaxError(f"Error reading channel [{repr(bytesleft)} left]")
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -321,7 +321,7 @@ def _save(im, fp, filename):
         last_w = None
         second_path = None
         for w in [16, 32, 128, 256, 512]:
-            prefix = "icon_{}x{}".format(w, w)
+            prefix = f"icon_{w}x{w}"
 
             first_path = os.path.join(iconset, prefix + ".png")
             if last_w == w:

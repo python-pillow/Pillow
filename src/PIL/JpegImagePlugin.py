@@ -198,7 +198,7 @@ def SOF(self, marker):
 
     self.bits = i8(s[0])
     if self.bits != 8:
-        raise SyntaxError("cannot handle %d-bit layers" % self.bits)
+        raise SyntaxError(f"cannot handle {self.bits}-bit layers")
 
     self.layers = i8(s[5])
     if self.layers == 1:
@@ -208,7 +208,7 @@ def SOF(self, marker):
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
-        raise SyntaxError("cannot handle %d-layer images" % self.layers)
+        raise SyntaxError(f"cannot handle {self.layers}-layer images")
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
         self.info["progressive"] = self.info["progression"] = 1
@@ -521,7 +521,7 @@ def _getmp(self):
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
             unpackedentry = struct.unpack_from(
-                "{}LLLHH".format(endianness), rawmpentries, entrynum * 16
+                f"{endianness}LLLHH", rawmpentries, entrynum * 16
             )
             labels = ("Attribute", "Size", "DataOffset", "EntryNo1", "EntryNo2")
             mpentry = dict(zip(labels, unpackedentry))
@@ -616,7 +616,7 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
-        raise OSError("cannot write mode %s as JPEG" % im.mode) from e
+        raise OSError(f"cannot write mode {im.mode} as JPEG") from e
 
     info = im.encoderinfo
 

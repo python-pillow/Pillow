@@ -14,7 +14,6 @@ def test_is_path():
     assert it_is
 
 
-@pytest.mark.skipif(not _util.py36, reason="os.path support for Paths added in 3.6")
 def test_path_obj_is_path():
     # Arrange
     from pathlib import Path

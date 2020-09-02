@@ -162,8 +162,8 @@ def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1):
 
 
 def assert_compare_images(a, b, max_average_diff, max_diff=255):
-    assert a.mode == b.mode, "got mode %r, expected %r" % (a.mode, b.mode)
-    assert a.size == b.size, "got size %r, expected %r" % (a.size, b.size)
+    assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
+    assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
 
     a, b = convert_to_comparable(a, b)
 
@@ -176,16 +176,15 @@ def assert_compare_images(a, b, max_average_diff, max_diff=255):
             a.size[0] * a.size[1]
         )
         msg = (
-            "average pixel value difference {:.4f} > expected {:.4f} "
-            "for '{}' band".format(average_diff, max_average_diff, band)
+            f"average pixel value difference {average_diff:.4f} > "
+            f"expected {max_average_diff:.4f} for '{band}' band"
         )
         assert max_average_diff >= average_diff, msg
 
         last_diff = [i for i, num in enumerate(ch_hist) if num > 0][-1]
-        assert (
-            max_diff >= last_diff
-        ), "max pixel value difference {} > expected {} for '{}' band".format(
-            last_diff, max_diff, band
+        assert max_diff >= last_diff, (
+            f"max pixel value difference {last_diff} > expected {max_diff} "
+            f"for '{band}' band"
         )
 
 

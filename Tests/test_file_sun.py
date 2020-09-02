@@ -46,7 +46,7 @@ def test_others():
         with Image.open(path) as im:
             im.load()
             assert isinstance(im, SunImagePlugin.SunImageFile)
-            target_path = "%s.png" % os.path.splitext(path)[0]
+            target_path = f"{os.path.splitext(path)[0]}.png"
             # im.save(target_file)
             with Image.open(target_path) as target:
                 assert_image_equal(im, target)

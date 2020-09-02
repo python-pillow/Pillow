@@ -466,7 +466,7 @@ class ImageFileDirectory_v2(MutableMapping):
         :param prefix: Override the endianness of the file.
         """
         if ifh[:4] not in PREFIXES:
-            raise SyntaxError("not a TIFF file (header %r not valid)" % ifh)
+            raise SyntaxError(f"not a TIFF file (header {repr(ifh)} not valid)")
         self._prefix = prefix if prefix is not None else ifh[:2]
         if self._prefix == MM:
             self._endian = ">"
@@ -596,8 +596,8 @@ class ImageFileDirectory_v2(MutableMapping):
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: %s, expected 1"
-                    % (tag, len(values))
+                    f"Metadata Warning, tag {tag} had too many entries: "
+                    f"{len(values)}, expected 1"
                 )
                 dest[tag] = values[0]
 
@@ -732,7 +732,7 @@ class ImageFileDirectory_v2(MutableMapping):
         if len(ret) != size:
             raise OSError(
                 "Corrupt EXIF data.  "
-                + "Expecting to read %d bytes but only got %d. " % (size, len(ret))
+                f"Expecting to read {size} bytes but only got {len(ret)}. "
             )
         return ret
 
@@ -747,18 +747,18 @@ class ImageFileDirectory_v2(MutableMapping):
 
                 tagname = TiffTags.lookup(tag).name
                 typname = TYPES.get(typ, "unknown")
-                msg = "tag: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ)
+                msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug(msg + " - unsupported type {}".format(typ))
+                    logger.debug(msg + f" - unsupported type {typ}")
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > 4:
                     here = fp.tell()
                     (offset,) = self._unpack("L", data)
-                    msg += " Tag Location: {} - Data Location: {}".format(here, offset)
+                    msg += f" Tag Location: {here} - Data Location: {offset}"
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -768,8 +768,8 @@ class ImageFileDirectory_v2(MutableMapping):
                 if len(data) != size:
                     warnings.warn(
                         "Possibly corrupt EXIF data.  "
-                        "Expecting to read %d bytes but only got %d."
-                        " Skipping tag %s" % (size, len(data), tag)
+                        f"Expecting to read {size} bytes but only got {len(data)}."
+                        f" Skipping tag {tag}"
                     )
                     logger.debug(msg)
                     continue
@@ -805,7 +805,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            logger.debug("Tag {}, Type: {}, Value: {}".format(tag, typ, value))
+            logger.debug(f"Tag {tag}, Type: {typ}, Value: {value}")
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
                 if self._endian == "<":
@@ -822,7 +822,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
             tagname = TiffTags.lookup(tag).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
-            msg = "save: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ)
+            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
             msg += " - value: " + (
                 "<table: %d bytes>" % len(data) if len(data) >= 16 else str(values)
             )
@@ -852,9 +852,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            logger.debug(
-                "{} {} {} {} {}".format(tag, typ, count, repr(value), repr(data))
-            )
+            logger.debug(f"{tag} {typ} {count} {repr(value)} {repr(data)}")
             result += self._pack("HHL4s", tag, typ, count, value)
 
         # -- overwrite here for multi-page --
@@ -1023,8 +1021,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self._n_frames = None
 
         logger.debug("*** TiffImageFile._open ***")
-        logger.debug("- __first: {}".format(self.__first))
-        logger.debug("- ifh: {!r}".format(ifh))  # Use !r to avoid str(bytes)
+        logger.debug(f"- __first: {self.__first}")
+        logger.debug(f"- ifh: {repr(ifh)}")  # Use repr to avoid str(bytes)
 
         # and load the first frame
         self._seek(0)
@@ -1056,8 +1054,8 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             logger.debug(
-                "Seeking to frame %s, on frame %s, __next %s, location: %s"
-                % (frame, self.__frame, self.__next, self.fp.tell())
+                f"Seeking to frame {frame}, on frame {self.__frame}, "
+                f"__next {self.__next}, location: {self.fp.tell()}"
             )
             # reset buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
@@ -1214,18 +1212,18 @@ class TiffImageFile(ImageFile.ImageFile):
         fillorder = self.tag_v2.get(FILLORDER, 1)
 
         logger.debug("*** Summary ***")
-        logger.debug("- compression: {}".format(self._compression))
-        logger.debug("- photometric_interpretation: {}".format(photo))
-        logger.debug("- planar_configuration: {}".format(self._planar_configuration))
-        logger.debug("- fill_order: {}".format(fillorder))
-        logger.debug("- YCbCr subsampling: {}".format(self.tag.get(530)))
+        logger.debug(f"- compression: {self._compression}")
+        logger.debug(f"- photometric_interpretation: {photo}")
+        logger.debug(f"- planar_configuration: {self._planar_configuration}")
+        logger.debug(f"- fill_order: {fillorder}")
+        logger.debug(f"- YCbCr subsampling: {self.tag.get(530)}")
 
         # size
         xsize = int(self.tag_v2.get(IMAGEWIDTH))
         ysize = int(self.tag_v2.get(IMAGELENGTH))
         self._size = xsize, ysize
 
-        logger.debug("- size: {}".format(self.size))
+        logger.debug(f"- size: {self.size}")
 
         sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
         if len(sampleFormat) > 1 and max(sampleFormat) == min(sampleFormat) == 1:
@@ -1259,15 +1257,15 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_tuple,
             extra_tuple,
         )
-        logger.debug("format key: {}".format(key))
+        logger.debug(f"format key: {key}")
         try:
             self.mode, rawmode = OPEN_INFO[key]
         except KeyError as e:
             logger.debug("- unsupported format")
             raise SyntaxError("unknown pixel mode") from e
 
-        logger.debug("- raw mode: {}".format(rawmode))
-        logger.debug("- pil mode: {}".format(self.mode))
+        logger.debug(f"- raw mode: {rawmode}")
+        logger.debug(f"- pil mode: {self.mode}")
 
         self.info["compression"] = self._compression
 
@@ -1308,7 +1306,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if fillorder == 2:
                 # Replace fillorder with fillorder=1
                 key = key[:3] + (1,) + key[4:]
-                logger.debug("format key: {}".format(key))
+                logger.debug(f"format key: {key}")
                 # this should always work, since all the
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
@@ -1432,7 +1430,7 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
-        raise OSError("cannot write mode %s as TIFF" % im.mode) from e
+        raise OSError(f"cannot write mode {im.mode} as TIFF") from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
@@ -1629,7 +1627,7 @@ def _save(im, fp, filename):
             if s:
                 break
         if s < 0:
-            raise OSError("encoder error %d when writing image file" % s)
+            raise OSError(f"encoder error {s} when writing image file")
 
     else:
         offset = ifd.save(fp)
@@ -1795,29 +1793,29 @@ class AppendingTiffWriter:
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def writeShort(self, value):
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def writeLong(self, value):
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def close(self):
         self.finalize()

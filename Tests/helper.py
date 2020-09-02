@@ -68,37 +68,31 @@ def convert_to_comparable(a, b):
 
 def assert_deep_equal(a, b, msg=None):
     try:
-        assert len(a) == len(b), msg or "got length {}, expected {}".format(
-            len(a), len(b)
-        )
+        assert len(a) == len(b), msg or f"got length {len(a)}, expected {len(b)}"
     except Exception:
         assert a == b, msg
 
 
 def assert_image(im, mode, size, msg=None):
     if mode is not None:
-        assert im.mode == mode, msg or "got mode {!r}, expected {!r}".format(
-            im.mode, mode
+        assert im.mode == mode, (
+            msg or f"got mode {repr(im.mode)}, expected {repr(mode)}"
         )
 
     if size is not None:
-        assert im.size == size, msg or "got size {!r}, expected {!r}".format(
-            im.size, size
+        assert im.size == size, (
+            msg or f"got size {repr(im.size)}, expected {repr(size)}"
         )
 
 
 def assert_image_equal(a, b, msg=None):
-    assert a.mode == b.mode, msg or "got mode {!r}, expected {!r}".format(
-        a.mode, b.mode
-    )
-    assert a.size == b.size, msg or "got size {!r}, expected {!r}".format(
-        a.size, b.size
-    )
+    assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
+    assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
     if a.tobytes() != b.tobytes():
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
-                logger.error("Url for test images: %s" % url)
+                logger.error(f"Url for test images: {url}")
             except Exception:
                 pass
 
@@ -113,12 +107,8 @@ def assert_image_equal_tofile(a, filename, msg=None, mode=None):
 
 
 def assert_image_similar(a, b, epsilon, msg=None):
-    assert a.mode == b.mode, msg or "got mode {!r}, expected {!r}".format(
-        a.mode, b.mode
-    )
-    assert a.size == b.size, msg or "got size {!r}, expected {!r}".format(
-        a.size, b.size
-    )
+    assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
+    assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
 
     a, b = convert_to_comparable(a, b)
 
@@ -130,13 +120,14 @@ def assert_image_similar(a, b, epsilon, msg=None):
     ave_diff = diff / (a.size[0] * a.size[1])
     try:
         assert epsilon >= ave_diff, (
-            msg or ""
-        ) + " average pixel value difference %.4f > epsilon %.4f" % (ave_diff, epsilon)
+            (msg or "")
+            + f" average pixel value difference {ave_diff:.4f} > epsilon {epsilon:.4f}"
+        )
     except Exception as e:
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
-                logger.error("Url for test images: %s" % url)
+                logger.error(f"Url for test images: {url}")
             except Exception:
                 pass
         raise e
@@ -167,7 +158,7 @@ def assert_tuple_approx_equal(actuals, targets, threshold, msg):
 
 
 def skip_unless_feature(feature):
-    reason = "%s not available" % feature
+    reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
 
 
@@ -205,7 +196,7 @@ class PillowLeakTestCase:
         for cycle in range(self.iterations):
             core()
             mem = self._get_mem_usage() - start_mem
-            msg = "memory usage limit exceeded in iteration %d" % cycle
+            msg = f"memory usage limit exceeded in iteration {cycle}"
             assert mem < self.mem_limit, msg
 
 

@@ -415,7 +415,7 @@ class FreeTypeFont:
         language=None,
         stroke_width=0,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Create a bitmap for the text.

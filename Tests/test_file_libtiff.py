@@ -171,18 +171,18 @@ class TestFileLibTiff(LibTiffTestCase):
                             assert (
                                 c_float(val[0][0] / val[0][1]).value
                                 == c_float(value[0][0] / value[0][1]).value
-                            ), ("%s didn't roundtrip" % tag)
+                            ), f"{tag} didn't roundtrip"
                         else:
-                            assert c_float(val).value == c_float(value).value, (
-                                "%s didn't roundtrip" % tag
-                            )
+                            assert (
+                                c_float(val).value == c_float(value).value
+                            ), f"{tag} didn't roundtrip"
                     else:
-                        assert val == value, "%s didn't roundtrip" % tag
+                        assert val == value, f"{tag} didn't roundtrip"
 
             # https://github.com/python-pillow/Pillow/issues/1561
             requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
             for field in requested_fields:
-                assert field in reloaded, "%s not in metadata" % field
+                assert field in reloaded, f"{field} not in metadata"
 
     def test_additional_metadata(self, tmp_path):
         # these should not crash. Seriously dummy data, most of it doesn't make

@@ -128,16 +128,13 @@ class TestImageGetPixel(AccessTest):
         im.putpixel((0, 0), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c)
+        ), f"put/getpixel roundtrip failed for mode {mode}, color {c}"
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
         assert (
             im.getpixel((-1, -1)) == c
-        ), "put/getpixel roundtrip negative index failed for mode %s, color %s" % (
-            mode,
-            c,
-        )
+        ), f"put/getpixel roundtrip negative index failed for mode {mode}, color {c}"
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
@@ -155,11 +152,11 @@ class TestImageGetPixel(AccessTest):
         im = Image.new(mode, (1, 1), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "initial color failed for mode {}, color {} ".format(mode, c)
+        ), f"initial color failed for mode {mode}, color {c} "
         # check initial color negative index
         assert (
             im.getpixel((-1, -1)) == c
-        ), "initial color failed with negative index for mode %s, color %s " % (mode, c)
+        ), f"initial color failed with negative index for mode {mode}, color {c} "
 
         # Check 0
         im = Image.new(mode, (0, 0), c)

@@ -41,7 +41,7 @@ def _pilbitmap_check():
     if _pilbitmap_ok is None:
         try:
             im = Image.new("1", (1, 1))
-            tkinter.BitmapImage(data="PIL:%d" % im.im.id)
+            tkinter.BitmapImage(data=f"PIL:{im.im.id}")
             _pilbitmap_ok = 1
         except tkinter.TclError:
             _pilbitmap_ok = 0
@@ -229,7 +229,7 @@ class BitmapImage:
         if _pilbitmap_check():
             # fast way (requires the pilbitmap booster patch)
             image.load()
-            kw["data"] = "PIL:%d" % image.im.id
+            kw["data"] = f"PIL:{image.im.id}"
             self.__im = image  # must keep a reference
         else:
             # slow but safe way

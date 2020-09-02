@@ -9,4 +9,4 @@ def pytest_report_header(config):
             features.pilinfo(out=out, supported_formats=False)
             return out.getvalue()
     except Exception as e:
-        return "pytest_report_header failed: %s" % e
+        return f"pytest_report_header failed: {e}"

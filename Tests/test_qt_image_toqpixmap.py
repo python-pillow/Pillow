@@ -16,5 +16,5 @@ class TestToQPixmap(PillowQPixmapTestCase):
             assert not data.isNull()
 
             # Test saving the file
-            tempfile = str(tmp_path / "temp_{}.png".format(mode))
+            tempfile = str(tmp_path / f"temp_{mode}.png")
             data.save(tempfile)

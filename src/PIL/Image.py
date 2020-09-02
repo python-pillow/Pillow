@@ -59,7 +59,7 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
-        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, name))
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:
@@ -96,8 +96,8 @@ try:
     if __version__ != getattr(core, "PILLOW_VERSION", None):
         raise ImportError(
             "The _imaging extension was built for another version of Pillow or PIL:\n"
-            "Core version: %s\n"
-            "Pillow version: %s" % (getattr(core, "PILLOW_VERSION", None), __version__)
+            f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
+            f"Pillow version: {__version__}"
         )
 
 except ImportError as v:
@@ -403,7 +403,7 @@ def init():
     for plugin in _plugins:
         try:
             logger.debug("Importing %s", plugin)
-            __import__("PIL.%s" % plugin, globals(), locals(), [])
+            __import__(f"PIL.{plugin}", globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
@@ -435,7 +435,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
     except AttributeError as e:
-        raise OSError("decoder %s not available" % decoder_name) from e
+        raise OSError(f"decoder {decoder_name} not available") from e
     return decoder(mode, *args + extra)
 
 
@@ -458,7 +458,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
     except AttributeError as e:
-        raise OSError("encoder %s not available" % encoder_name) from e
+        raise OSError(f"encoder {encoder_name} not available") from e
     return encoder(mode, *args + extra)
 
 
@@ -743,7 +743,7 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError("encoder error %d in tobytes" % s)
+            raise RuntimeError(f"encoder error {s} in tobytes")
 
         return b"".join(data)
 
@@ -764,9 +764,9 @@ class Image:
         data = self.tobytes("xbm")
         return b"".join(
             [
-                ("#define %s_width %d\n" % (name, self.size[0])).encode("ascii"),
-                ("#define %s_height %d\n" % (name, self.size[1])).encode("ascii"),
-                ("static char %s_bits[] = {\n" % name).encode("ascii"),
+                f"#define {name}_width {self.size[0]}\n".encode("ascii"),
+                f"#define {name}_height {self.size[1]}\n".encode("ascii"),
+                f"static char {name}_bits[] = {{\n".encode("ascii"),
                 data,
                 b"};",
             ]
@@ -1862,7 +1862,7 @@ class Image:
         """
 
         if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
-            message = "Unknown resampling filter ({}).".format(resample)
+            message = f"Unknown resampling filter ({resample})."
 
             filters = [
                 "{} ({})".format(filter[1], filter[0])
@@ -2130,7 +2130,7 @@ class Image:
             try:
                 format = EXTENSION[ext]
             except KeyError as e:
-                raise ValueError("unknown file extension: {}".format(ext)) from e
+                raise ValueError(f"unknown file extension: {ext}") from e
 
         if format.upper() not in SAVE:
             init()
@@ -2242,7 +2242,7 @@ class Image:
             try:
                 channel = self.getbands().index(channel)
             except ValueError as e:
-                raise ValueError('The image has no channel "{}"'.format(channel)) from e
+                raise ValueError(f'The image has no channel "{channel}"') from e
 
         return self._new(self.im.getband(channel))
 
@@ -2463,9 +2463,9 @@ class Image:
                     BOX: "Image.BOX",
                     HAMMING: "Image.HAMMING",
                     LANCZOS: "Image.LANCZOS/Image.ANTIALIAS",
-                }[resample] + " ({}) cannot be used.".format(resample)
+                }[resample] + f" ({resample}) cannot be used."
             else:
-                message = "Unknown resampling filter ({}).".format(resample)
+                message = f"Unknown resampling filter ({resample})."
 
             filters = [
                 "{} ({})".format(filter[1], filter[0])
@@ -2759,7 +2759,7 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
+        raise ValueError(f"Too many dimensions: {ndim} > {ndmax}.")
 
     size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
@@ -2825,14 +2825,14 @@ def _decompression_bomb_check(size):
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
         raise DecompressionBombError(
-            "Image size (%d pixels) exceeds limit of %d pixels, "
-            "could be decompression bomb DOS attack." % (pixels, 2 * MAX_IMAGE_PIXELS)
+            f"Image size ({pixels} pixels) exceeds limit of {2 * MAX_IMAGE_PIXELS} "
+            "pixels, could be decompression bomb DOS attack."
         )
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
-            "Image size (%d pixels) exceeds limit of %d pixels, "
-            "could be decompression bomb DOS attack." % (pixels, MAX_IMAGE_PIXELS),
+            f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
+            "could be decompression bomb DOS attack.",
             DecompressionBombWarning,
         )
 
@@ -2861,7 +2861,7 @@ def open(fp, mode="r"):
     """
 
     if mode != "r":
-        raise ValueError("bad mode %r" % mode)
+        raise ValueError(f"bad mode {repr(mode)}")
     elif isinstance(fp, io.StringIO):
         raise ValueError(
             "StringIO cannot be used to open an image. "
@@ -3242,13 +3242,13 @@ def _apply_env_variables(env=None):
         try:
             var = int(var) * units
         except ValueError:
-            warnings.warn("{} is not int".format(var_name))
+            warnings.warn(f"{var_name} is not int")
             continue
 
         try:
             setter(var)
         except ValueError as e:
-            warnings.warn("{}: {}".format(var_name, e))
+            warnings.warn(f"{var_name}: {e}")
 
 
 _apply_env_variables()
@@ -3371,8 +3371,8 @@ class Exif(MutableMapping):
                         if len(data) != size:
                             warnings.warn(
                                 "Possibly corrupt EXIF MakerNote data.  "
-                                "Expecting to read %d bytes but only got %d."
-                                " Skipping tag %s" % (size, len(data), ifd_tag)
+                                f"Expecting to read {size} bytes but only got "
+                                f"{len(data)}. Skipping tag {ifd_tag}"
                             )
                             continue
 

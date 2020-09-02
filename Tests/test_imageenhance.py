@@ -35,7 +35,7 @@ def _check_alpha(im, original, op, amount):
     assert_image_equal(
         im.getchannel("A"),
         original.getchannel("A"),
-        "Diff on {}: {}".format(op, amount),
+        f"Diff on {op}: {amount}",
     )
 
 

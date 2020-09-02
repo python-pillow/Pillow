@@ -21,7 +21,7 @@ from setuptools.command.build_ext import build_ext
 
 def get_version():
     version_file = "src/PIL/_version.py"
-    with open(version_file, "r") as f:
+    with open(version_file) as f:
         exec(compile(f.read(), version_file, "exec"))
     return locals()["__version__"]
 
@@ -39,10 +39,10 @@ ZLIB_ROOT = None
 
 if sys.platform == "win32" and sys.version_info >= (3, 9):
     warnings.warn(
-        "Pillow {} does not support Python {}.{} and does not provide prebuilt "
-        "Windows binaries. We do not recommend building from source on Windows.".format(
-            PILLOW_VERSION, sys.version_info.major, sys.version_info.minor
-        ),
+        f"Pillow {PILLOW_VERSION} does not support Python "
+        f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+        "prebuilt Windows binaries. We do not recommend building from source on "
+        "Windows.",
         RuntimeWarning,
     )
 
@@ -174,7 +174,7 @@ def _find_library_dirs_ldconfig():
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
         args = ["/sbin/ldconfig", "-p"]
-        expr = r".*\(%s.*\) => (.*)" % abi_type
+        expr = fr".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
@@ -302,8 +302,8 @@ class pil_build_ext(build_ext):
 
     user_options = (
         build_ext.user_options
-        + [("disable-%s" % x, None, "Disable support for %s" % x) for x in feature]
-        + [("enable-%s" % x, None, "Enable support for %s" % x) for x in feature]
+        + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
+        + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
         + [
             ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
             ("debug", None, "Debug logging"),
@@ -316,8 +316,8 @@ class pil_build_ext(build_ext):
         self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
-            setattr(self, "disable_%s" % x, None)
-            setattr(self, "enable_%s" % x, None)
+            setattr(self, f"disable_{x}", None)
+            setattr(self, f"enable_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -334,15 +334,15 @@ class pil_build_ext(build_ext):
             except TypeError:
                 self.parallel = None
         for x in self.feature:
-            if getattr(self, "disable_%s" % x):
+            if getattr(self, f"disable_{x}"):
                 setattr(self.feature, x, False)
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
-                if getattr(self, "enable_%s" % x):
+                if getattr(self, f"enable_{x}"):
                     raise ValueError(
-                        "Conflicting options: --enable-{} and --disable-{}".format(x, x)
+                        f"Conflicting options: --enable-{x} and --disable-{x}"
                     )
-            if getattr(self, "enable_%s" % x):
+            if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
 
@@ -393,12 +393,12 @@ class pil_build_ext(build_ext):
             if root is None and pkg_config:
                 if isinstance(lib_name, tuple):
                     for lib_name2 in lib_name:
-                        _dbg("Looking for `%s` using pkg-config." % lib_name2)
+                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
                         root = pkg_config(lib_name2)
                         if root:
                             break
                 else:
-                    _dbg("Looking for `%s` using pkg-config." % lib_name)
+                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
                     root = pkg_config(lib_name)
 
             if isinstance(root, tuple):
@@ -740,9 +740,9 @@ class pil_build_ext(build_ext):
             and sys.version_info < (3, 9)
             and not (PLATFORM_PYPY or PLATFORM_MINGW)
         ):
-            defs.append(("PILLOW_VERSION", '"\\"%s\\""' % PILLOW_VERSION))
+            defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
         else:
-            defs.append(("PILLOW_VERSION", '"%s"' % PILLOW_VERSION))
+            defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
         self._update_extension("PIL._imaging", libs, defs)
 
@@ -792,11 +792,11 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)
-        print("version      Pillow %s" % PILLOW_VERSION)
+        print(f"version      Pillow {PILLOW_VERSION}")
         v = sys.version.split("[")
-        print("platform     {} {}".format(sys.platform, v[0].strip()))
+        print(f"platform     {sys.platform} {v[0].strip()}")
         for v in v[1:]:
-            print("             [%s" % v.strip())
+            print(f"             [{v.strip()}")
         print("-" * 68)
 
         options = [
@@ -817,10 +817,10 @@ class pil_build_ext(build_ext):
             if option[0]:
                 version = ""
                 if len(option) >= 3 and option[2]:
-                    version = " (%s)" % option[2]
-                print("--- {} support available{}".format(option[1], version))
+                    version = f" ({option[2]})"
+                print(f"--- {option[1]} support available{version}")
             else:
-                print("*** %s support not available" % option[1])
+                print(f"*** {option[1]} support not available")
                 all = 0
 
         print("-" * 68)
@@ -903,28 +903,23 @@ try:
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
-    msg = """
+    msg = f"""
 
-The headers or library files could not be found for %s,
+The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
    https://pillow.readthedocs.io/en/latest/installation.html
 
-""" % (
-        str(err)
-    )
+"""
     sys.stderr.write(msg)
     raise RequiredDependencyException(msg)
 except DependencyException as err:
-    msg = """
+    msg = f"""
 
-The headers or library files could not be found for %s,
-which was requested by the option flag --enable-%s
+The headers or library files could not be found for {str(err)},
+which was requested by the option flag --enable-{str(err)}
 
-""" % (
-        str(err),
-        str(err),
-    )
+"""
     sys.stderr.write(msg)
     raise DependencyException(msg)

@@ -17,7 +17,7 @@ Extracting frames from an animation
     with Image.open("animation.fli") as im:
         index = 1
         for frame in ImageSequence.Iterator(im):
-            frame.save("frame%d.png" % index)
+            frame.save(f"frame{index}.png")
             index += 1
 
 The :py:class:`~PIL.ImageSequence.Iterator` class

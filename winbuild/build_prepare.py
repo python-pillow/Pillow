@@ -417,7 +417,7 @@ def build_dep(name):
 
     for patch_file, patch_list in dep.get("patch", {}).items():
         patch_file = os.path.join(sources_dir, dir, patch_file.format(**prefs))
-        with open(patch_file, "r") as f:
+        with open(patch_file) as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
             patch_from = patch_from.format(**prefs)

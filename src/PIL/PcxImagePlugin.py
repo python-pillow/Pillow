@@ -135,7 +135,7 @@ def _save(im, fp, filename):
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
-        raise ValueError("Cannot save %s images as PCX" % im.mode) from e
+        raise ValueError(f"Cannot save {im.mode} images as PCX") from e
 
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8

@@ -43,7 +43,7 @@ def test_sanity(tmp_path):
             continue
 
         # Test saving the file
-        tempfile = str(tmp_path / "temp_{}.png".format(mode))
+        tempfile = str(tmp_path / f"temp_{mode}.png")
         data.save(tempfile)
 
         # Check that it actually worked.

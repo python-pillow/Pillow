@@ -27,7 +27,7 @@ def setup_module():
         tk.Frame()
         # root = tk.Tk()
     except tk.TclError as v:
-        pytest.skip("TCL Error: %s" % v)
+        pytest.skip(f"TCL Error: {v}")
 
 
 def test_kw():

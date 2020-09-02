@@ -55,7 +55,7 @@ def helper_ellipse(mode, bbox):
     draw = ImageDraw2.Draw(im)
     pen = ImageDraw2.Pen("blue", width=2)
     brush = ImageDraw2.Brush("green")
-    expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
+    expected = f"Tests/images/imagedraw_ellipse_{mode}.png"
 
     # Act
     draw.ellipse(bbox, pen, brush)
