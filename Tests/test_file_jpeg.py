@@ -8,6 +8,7 @@ from PIL import (
     ExifTags,
     Image,
     ImageFile,
+    ImageOps,
     JpegImagePlugin,
     UnidentifiedImageError,
     features,
@@ -225,23 +226,48 @@ class TestFileJpeg:
             # Should not raise a TypeError
             im._getexif()
 
-    def test_exif_gps(self):
-        # Arrange
+    def test_exif_gps(self, tmp_path):
+        expected_exif_gps = {
+            0: b"\x00\x00\x00\x01",
+            2: 4294967295,
+            5: b"\x01",
+            30: 65535,
+            29: "1999:99:99 99:99:99",
+        }
+        gps_index = 34853
+
+        # Reading
         with Image.open("Tests/images/exif_gps.jpg") as im:
-            gps_index = 34853
-            expected_exif_gps = {
-                0: b"\x00\x00\x00\x01",
-                2: 4294967295,
-                5: b"\x01",
-                30: 65535,
-                29: "1999:99:99 99:99:99",
-            }
-
-            # Act
             exif = im._getexif()
+            assert exif[gps_index] == expected_exif_gps
 
-        # Assert
-        assert exif[gps_index] == expected_exif_gps
+        # Writing
+        f = str(tmp_path / "temp.jpg")
+        exif = Image.Exif()
+        exif[gps_index] = expected_exif_gps
+        hopper().save(f, exif=exif)
+
+        with Image.open(f) as reloaded:
+            exif = reloaded._getexif()
+            assert exif[gps_index] == expected_exif_gps
+
+    def test_empty_exif_gps(self):
+        with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
+            exif = im.getexif()
+            del exif[0x8769]
+
+            # Assert that it needs to be transposed
+            assert exif[0x0112] == Image.TRANSVERSE
+
+            # Assert that the GPS IFD is present and empty
+            assert exif[0x8825] == {}
+
+            transposed = ImageOps.exif_transpose(im)
+        exif = transposed.getexif()
+        assert exif[0x8825] == {}
+
+        # Assert that it was transposed
+        assert 0x0112 not in exif
 
     def test_exif_equality(self):
         # In 7.2.0, Exif rationals were changed to be read as
