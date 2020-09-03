@@ -805,7 +805,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            logger.debug(f"Tag {tag}, Type: {typ}, Value: {value}")
+            logger.debug(f"Tag {tag}, Type: {typ}, Value: {repr(value)}")
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
                 if self._endian == "<":
