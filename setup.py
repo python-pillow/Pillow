@@ -133,18 +133,6 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 PLATFORM_PYPY = hasattr(sys, "pypy_version_info")
 
-if sys.platform == "win32" and PLATFORM_MINGW:
-    from distutils import cygwinccompiler
-
-    cygwin_versions = cygwinccompiler.get_versions()
-    if cygwin_versions[1] is None:
-        # ld version is None
-        # distutils cygwinccompiler might fetch the ld path from gcc
-        # Try the normal path instead
-        cygwin_versions = list(cygwin_versions)
-        cygwin_versions[1] = cygwinccompiler._find_exe_version("ld -v")
-        cygwinccompiler.get_versions = lambda: tuple(cygwin_versions)
-
 
 def _dbg(s, tp=None):
     if DEBUG:
@@ -528,11 +516,6 @@ class pil_build_ext(build_ext):
             _add_directory(library_dirs, "/lib")
 
         if sys.platform == "win32":
-            if PLATFORM_MINGW:
-                _add_directory(
-                    include_dirs, "C:\\msys64\\mingw32\\include\\libimagequant"
-                )
-
             # on Windows, look for the OpenJPEG libraries in the location that
             # the official installer puts them
             program_files = os.environ.get("ProgramFiles", "")
@@ -727,6 +710,10 @@ class pil_build_ext(build_ext):
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
+            # FIXME the following define should be detected automatically
+            #       based on system libtiff, see #4237
+            if PLATFORM_MINGW:
+                defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
             defs.append(("HAVE_XCB", None))

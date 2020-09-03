@@ -244,6 +244,7 @@ jobs:
               ${{ matrix.package }}-libimagequant \
               ${{ matrix.package }}-libjpeg-turbo \
               ${{ matrix.package }}-libraqm \
+              ${{ matrix.package }}-libtiff \
               ${{ matrix.package }}-libwebp \
               ${{ matrix.package }}-openjpeg2 \
               subversion
@@ -253,9 +254,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: |
-          # libtiff is unable to open files
-          CFLAGS="-coverage" python3 setup.py build_ext --disable-tiff install
+        run: CFLAGS="-coverage" python3 setup.py build_ext install
 
       - name: Test Pillow
         run: |
