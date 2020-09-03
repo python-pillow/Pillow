@@ -7,13 +7,13 @@ from .test_file_libtiff import LibTiffTestCase
 
 class TestFileLibTiffSmall(LibTiffTestCase):
 
-    """ The small lena image was failing on open in the libtiff
-        decoder because the file pointer was set to the wrong place
-        by a spurious seek. It wasn't failing with the byteio method.
+    """The small lena image was failing on open in the libtiff
+    decoder because the file pointer was set to the wrong place
+    by a spurious seek. It wasn't failing with the byteio method.
 
-        It was fixed by forcing an lseek to the beginning of the
-        file just before reading in libtiff. These tests remain
-        to ensure that it stays fixed. """
+    It was fixed by forcing an lseek to the beginning of the
+    file just before reading in libtiff. These tests remain
+    to ensure that it stays fixed."""
 
     def test_g4_hopper_file(self, tmp_path):
         """Testing the open file load path"""

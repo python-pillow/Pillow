@@ -123,9 +123,9 @@ class WindowsViewer(Viewer):
 
     def get_command(self, file, **options):
         return (
-            'start "Pillow" /WAIT "%s" '
+            f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 2 127.0.0.1 >NUL "
-            '&& del /f "%s"' % (file, file)
+            f'&& del /f "{file}"'
         )
 
 
@@ -143,9 +143,7 @@ class MacViewer(Viewer):
         # on darwin open returns immediately resulting in the temp
         # file removal while app is opening
         command = "open -a Preview.app"
-        command = "({} {}; sleep 20; rm -f {})&".format(
-            command, quote(file), quote(file)
-        )
+        command = f"({command} {quote(file)}; sleep 20; rm -f {quote(file)})&"
         return command
 
     def show_file(self, file, **options):
@@ -153,7 +151,7 @@ class MacViewer(Viewer):
         fd, path = tempfile.mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write(file)
-        with open(path, "r") as f:
+        with open(path) as f:
             subprocess.Popen(
                 ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
                 shell=True,
@@ -173,14 +171,14 @@ class UnixViewer(Viewer):
 
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]
-        return "({} {}; rm -f {})&".format(command, quote(file), quote(file))
+        return f"({command} {quote(file)}; rm -f {quote(file)})&"
 
     def show_file(self, file, **options):
         """Display given file"""
         fd, path = tempfile.mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write(file)
-        with open(path, "r") as f:
+        with open(path) as f:
             command = self.get_command_ex(file, **options)[0]
             subprocess.Popen(
                 ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
@@ -216,7 +214,7 @@ class XVViewer(UnixViewer):
         # imagemagick's display command instead.
         command = executable = "xv"
         if title:
-            command += " -name %s" % quote(title)
+            command += f" -name {quote(title)}"
         return command, executable
 
 

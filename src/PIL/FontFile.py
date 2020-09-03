@@ -101,7 +101,7 @@ class FontFile:
         # font metrics
         with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
             fp.write(b"PILfont\n")
-            fp.write((";;;;;;%d;\n" % self.ysize).encode("ascii"))  # HACK!!!
+            fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
             fp.write(b"DATA\n")
             for id in range(256):
                 m = self.metrics[id]

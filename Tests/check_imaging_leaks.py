@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import pytest
+
 from PIL import Image
 
 from .helper import is_win32
@@ -11,7 +12,7 @@ pytestmark = pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
 
 
 def _get_mem_usage():
-    from resource import getpagesize, getrusage, RUSAGE_SELF
+    from resource import RUSAGE_SELF, getpagesize, getrusage
 
     mem = getrusage(RUSAGE_SELF).ru_maxrss
     return mem * getpagesize() / 1024 / 1024
@@ -25,7 +26,7 @@ def _test_leak(min_iterations, max_iterations, fn, *args, **kwargs):
         if i < min_iterations:
             mem_limit = mem + 1
             continue
-        msg = "memory usage limit exceeded after %d iterations" % (i + 1)
+        msg = f"memory usage limit exceeded after {i + 1} iterations"
         assert mem <= mem_limit, msg
 
 

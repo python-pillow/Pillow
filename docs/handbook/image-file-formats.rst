@@ -186,7 +186,7 @@ Reading local images
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
 image. If you only want the actual pixel rectangle, you can manipulate the
-:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.tile`
+:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.ImageFile.ImageFile.tile`
 attributes before loading the file::
 
     im = Image.open(...)
@@ -256,6 +256,9 @@ Pillow reads JPEG, JFIF, and Adobe JPEG files containing ``L``, ``RGB``, or
 Using the :py:meth:`~PIL.Image.Image.draft` method, you can speed things up by
 converting ``RGB`` images to ``L``, and resize images to 1/2, 1/4 or 1/8 of
 their original size while loading them.
+
+By default Pillow doesn't allow loading of truncated JPEG files, set
+:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
 
 The :py:meth:`~PIL.Image.open` method may set the following
 :py:attr:`~PIL.Image.Image.info` properties if available:
@@ -472,6 +475,9 @@ As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
 image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
+
+By default Pillow doesn't allow loading of truncated PNG files, set
+:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
 
 The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:
@@ -764,8 +770,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
 
 **dpi**
     Image resolution as an ``(xdpi, ydpi)`` tuple, where applicable. You can use
-    the :py:attr:`~PIL.Image.Image.tag` attribute to get more detailed
-    information about the image resolution.
+    the :py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag` attribute to get more
+    detailed information about the image resolution.
 
     .. versionadded:: 1.1.5
 
@@ -776,8 +782,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
     .. versionadded:: 1.1.5
 
 
-The :py:attr:`~PIL.Image.Image.tag_v2` attribute contains a dictionary
-of TIFF metadata. The keys are numerical indexes from
+The :py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag_v2` attribute contains a
+dictionary of TIFF metadata. The keys are numerical indexes from
 :py:data:`.TiffTags.TAGS_V2`.  Values are strings or numbers for single
 items, multiple values are returned in a tuple of values. Rational
 numbers are returned as a :py:class:`~PIL.TiffImagePlugin.IFDRational`
@@ -786,8 +792,8 @@ object.
     .. versionadded:: 3.0.0
 
 For compatibility with legacy code, the
-:py:attr:`~PIL.Image.Image.tag` attribute contains a dictionary of
-decoded TIFF fields as returned prior to version 3.0.0.  Values are
+:py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag` attribute contains a dictionary
+of decoded TIFF fields as returned prior to version 3.0.0.  Values are
 returned as either strings or tuples of numeric values. Rational
 numbers are returned as a tuple of ``(numerator, denominator)``.
 

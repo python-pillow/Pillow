@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
 import pytest
+
 from PIL import Image, ImageDraw
 
 from .helper import assert_image_equal, assert_image_similar, hopper
@@ -81,15 +82,16 @@ class TestImagingCoreResampleAccuracy:
         for y in range(case.size[1]):
             for x in range(case.size[0]):
                 if c_px[x, y] != s_px[x, y]:
-                    message = "\nHave: \n{}\n\nExpected: \n{}".format(
-                        self.serialize_image(case), self.serialize_image(sample)
+                    message = (
+                        f"\nHave: \n{self.serialize_image(case)}\n"
+                        f"\nExpected: \n{self.serialize_image(sample)}"
                     )
                     assert s_px[x, y] == c_px[x, y], message
 
     def serialize_image(self, image):
         s_px = image.load()
         return "\n".join(
-            " ".join("{:02x}".format(s_px[x, y]) for x in range(image.size[0]))
+            " ".join(f"{s_px[x, y]:02x}" for x in range(image.size[0]))
             for y in range(image.size[1])
         )
 
@@ -229,7 +231,7 @@ class TestCoreResampleConsistency:
         for x in range(channel.size[0]):
             for y in range(channel.size[1]):
                 if px[x, y] != color:
-                    message = "{} != {} for pixel {}".format(px[x, y], color, (x, y))
+                    message = f"{px[x, y]} != {color} for pixel {(x, y)}"
                     assert px[x, y] == color, message
 
     def test_8u(self):
@@ -268,10 +270,9 @@ class TestCoreResampleAlphaCorrect:
         px = i.load()
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
-            assert 256 == len(
-                used_colors
-            ), "All colors should present in resized image. Only {} on {} line.".format(
-                len(used_colors), y
+            assert 256 == len(used_colors), (
+                "All colors should be present in resized image. "
+                f"Only {len(used_colors)} on {y} line."
             )
 
     @pytest.mark.xfail(reason="Current implementation isn't precise enough")
@@ -307,8 +308,9 @@ class TestCoreResampleAlphaCorrect:
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
-                    message = "pixel at ({}, {}) is differ:\n{}\n{}".format(
-                        x, y, px[x, y], clean_pixel
+                    message = (
+                        f"pixel at ({x}, {y}) is different:\n"
+                        f"{px[x, y]}\n{clean_pixel}"
                     )
                     assert px[x, y][:3] == clean_pixel, message
 
@@ -503,7 +505,7 @@ class TestCoreResampleBox:
         ]:
             res = im.resize(size, Image.LANCZOS, box)
             assert res.size == size
-            assert_image_equal(res, im.crop(box), ">>> {} {}".format(size, box))
+            assert_image_equal(res, im.crop(box), f">>> {size} {box}")
 
     def test_no_passthrough(self):
         # When resize is required
@@ -519,9 +521,7 @@ class TestCoreResampleBox:
             assert res.size == size
             with pytest.raises(AssertionError, match=r"difference \d"):
                 # check that the difference at least that much
-                assert_image_similar(
-                    res, im.crop(box), 20, ">>> {} {}".format(size, box)
-                )
+                assert_image_similar(res, im.crop(box), 20, f">>> {size} {box}")
 
     def test_skip_horizontal(self):
         # Can skip resize for one dimension
@@ -541,7 +541,7 @@ class TestCoreResampleBox:
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,
-                    ">>> {} {} {}".format(size, box, flt),
+                    f">>> {size} {box} {flt}",
                 )
 
     def test_skip_vertical(self):
@@ -562,5 +562,5 @@ class TestCoreResampleBox:
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,
-                    ">>> {} {} {}".format(size, box, flt),
+                    f">>> {size} {box} {flt}",
                 )

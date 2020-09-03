@@ -25,7 +25,7 @@ from . import EpsImagePlugin
 
 class PSDraw:
     """
-    Sets up printing to the given file. If **fp** is omitted,
+    Sets up printing to the given file. If ``fp`` is omitted,
     :py:data:`sys.stdout` is assumed.
     """
 
@@ -71,10 +71,10 @@ class PSDraw:
         """
         if font not in self.isofont:
             # reencode font
-            self._fp_write("/PSDraw-{} ISOLatin1Encoding /{} E\n".format(font, font))
+            self._fp_write(f"/PSDraw-{font} ISOLatin1Encoding /{font} E\n")
             self.isofont[font] = 1
         # rough
-        self._fp_write("/F0 %d /PSDraw-%s F\n" % (size, font))
+        self._fp_write(f"/F0 {size} /PSDraw-{font} F\n")
 
     def line(self, xy0, xy1):
         """
@@ -82,8 +82,7 @@ class PSDraw:
         PostScript point coordinates (72 points per inch, (0, 0) is the lower
         left corner of the page).
         """
-        xy = xy0 + xy1
-        self._fp_write("%d %d %d %d Vl\n" % xy)
+        self._fp_write("%d %d %d %d Vl\n" % (*xy0, *xy1))
 
     def rectangle(self, box):
         """
@@ -107,8 +106,7 @@ class PSDraw:
         """
         text = "\\(".join(text.split("("))
         text = "\\)".join(text.split(")"))
-        xy = xy + (text,)
-        self._fp_write("%d %d M (%s) S\n" % xy)
+        self._fp_write(f"{xy[0]} {xy[1]} M ({text}) S\n")
 
     def image(self, box, im, dpi=None):
         """Draw a PIL image, centered in the given box."""
@@ -132,12 +130,12 @@ class PSDraw:
             y = ymax
         dx = (xmax - x) / 2 + box[0]
         dy = (ymax - y) / 2 + box[1]
-        self._fp_write("gsave\n{:f} {:f} translate\n".format(dx, dy))
+        self._fp_write(f"gsave\n{dx:f} {dy:f} translate\n")
         if (x, y) != im.size:
             # EpsImagePlugin._save prints the image at (0,0,xsize,ysize)
             sx = x / im.size[0]
             sy = y / im.size[1]
-            self._fp_write("{:f} {:f} scale\n".format(sx, sy))
+            self._fp_write(f"{sx:f} {sy:f} scale\n")
         EpsImagePlugin._save(im, self.fp, None, 0)
         self._fp_write("\ngrestore\n")
 

@@ -2,6 +2,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy

@@ -85,7 +85,10 @@ def test_wedge():
         im.getchannel(0), comparable.getchannel(0), 1, "Hue conversion is wrong"
     )
     assert_image_similar(
-        im.getchannel(1), comparable.getchannel(1), 1, "Saturation conversion is wrong",
+        im.getchannel(1),
+        comparable.getchannel(1),
+        1,
+        "Saturation conversion is wrong",
     )
     assert_image_similar(
         im.getchannel(2), comparable.getchannel(2), 1, "Value conversion is wrong"
@@ -113,7 +116,10 @@ def test_convert():
         im.getchannel(0), comparable.getchannel(0), 1, "Hue conversion is wrong"
     )
     assert_image_similar(
-        im.getchannel(1), comparable.getchannel(1), 1, "Saturation conversion is wrong",
+        im.getchannel(1),
+        comparable.getchannel(1),
+        1,
+        "Saturation conversion is wrong",
     )
     assert_image_similar(
         im.getchannel(2), comparable.getchannel(2), 1, "Value conversion is wrong"
@@ -126,11 +132,20 @@ def test_hsv_to_rgb():
     comparable = to_rgb_colorsys(comparable)
 
     assert_image_similar(
-        converted.getchannel(0), comparable.getchannel(0), 3, "R conversion is wrong",
+        converted.getchannel(0),
+        comparable.getchannel(0),
+        3,
+        "R conversion is wrong",
     )
     assert_image_similar(
-        converted.getchannel(1), comparable.getchannel(1), 3, "G conversion is wrong",
+        converted.getchannel(1),
+        comparable.getchannel(1),
+        3,
+        "G conversion is wrong",
     )
     assert_image_similar(
-        converted.getchannel(2), comparable.getchannel(2), 3, "B conversion is wrong",
+        converted.getchannel(2),
+        comparable.getchannel(2),
+        3,
+        "B conversion is wrong",
     )

@@ -30,7 +30,10 @@ pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
 pip install numpy
-if [ "$TRAVIS_PYTHON_VERSION" == "3.9-dev" ]; then pip install setuptools==47.3.1 ; fi
+
+# TODO Remove when 3.9-dev includes setuptools 49.3.2+:
+if [ "$GHA_PYTHON_VERSION" == "3.9-dev" ]; then pip install -U "setuptools>=49.3.2" ; fi
+
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"

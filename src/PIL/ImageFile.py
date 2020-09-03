@@ -40,6 +40,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024 * 1024
 
 LOAD_TRUNCATED_IMAGES = False
+"""Whether or not to load truncated image files. User code may change this."""
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -48,6 +49,7 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
+"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
 
 
 #
@@ -61,7 +63,7 @@ def raise_oserror(error):
     except AttributeError:
         message = ERRORS.get(error)
     if not message:
-        message = "decoder error %d" % error
+        message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
 
 
@@ -95,6 +97,8 @@ class ImageFile(Image.Image):
         self.custom_mimetype = None
 
         self.tile = None
+        """ A list of tile descriptors, or ``None`` """
+
         self.readonly = 1  # until we know better
 
         self.decoderconfig = ()
@@ -199,7 +203,7 @@ class ImageFile(Image.Image):
                         # use mmap, if possible
                         import mmap
 
-                        with open(self.filename, "r") as fp:
+                        with open(self.filename) as fp:
                             self.map = mmap.mmap(
                                 fp.fileno(), 0, access=mmap.ACCESS_READ
                             )
@@ -254,7 +258,7 @@ class ImageFile(Image.Image):
                                 else:
                                     raise OSError(
                                         "image file is truncated "
-                                        "(%d bytes not processed)" % len(b)
+                                        f"({len(b)} bytes not processed)"
                                     )
 
                             b = b + s
@@ -330,7 +334,7 @@ class StubImageFile(ImageFile):
     def load(self):
         loader = self._load()
         if loader is None:
-            raise OSError("cannot find loader for this %s file" % self.format)
+            raise OSError(f"cannot find loader for this {self.format} file")
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
@@ -505,7 +509,7 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation) as e:
+    except (AttributeError, io.UnsupportedOperation) as exc:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
@@ -522,7 +526,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s) from e
+                raise OSError(f"encoder error {s} when writing image file") from exc
             e.cleanup()
     else:
         # slight speedup: compress to real file object
@@ -537,7 +541,7 @@ def _save(im, fp, tile, bufsize=0):
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError(f"encoder error {s} when writing image file")
             e.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
@@ -581,7 +585,7 @@ class PyCodecState:
 class PyDecoder:
     """
     Python implementation of a format decoder. Override this class and
-    add the decoding logic in the `decode` method.
+    add the decoding logic in the :meth:`decode` method.
 
     See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
     """
@@ -613,9 +617,9 @@ class PyDecoder:
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of (bytes consumed, errcode).
+        :returns: A tuple of ``(bytes consumed, errcode)``.
             If finished with decoding return <0 for the bytes consumed.
-            Err codes are from `ERRORS`
+            Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
 

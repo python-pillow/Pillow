@@ -3,7 +3,7 @@ from PIL import Image, ImageMath
 
 def pixel(im):
     if hasattr(im, "im"):
-        return "{} {!r}".format(im.mode, im.getpixel((0, 0)))
+        return "{} {}".format(im.mode, repr(im.getpixel((0, 0))))
     else:
         if isinstance(im, int):
             return int(im)  # hack to deal with booleans

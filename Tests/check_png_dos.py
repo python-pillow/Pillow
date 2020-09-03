@@ -42,8 +42,8 @@ def test_dos_total_memory():
     info = PngImagePlugin.PngInfo()
 
     for x in range(64):
-        info.add_text("t%s" % x, compressed_data, zip=True)
-        info.add_itxt("i%s" % x, compressed_data, zip=True)
+        info.add_text(f"t{x}", compressed_data, zip=True)
+        info.add_itxt(f"i{x}", compressed_data, zip=True)
 
     b = BytesIO()
     im.save(b, "PNG", pnginfo=info)

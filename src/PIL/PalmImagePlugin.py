@@ -8,7 +8,8 @@
 ##
 
 from . import Image, ImageFile
-from ._binary import o8, o16be as o16b
+from ._binary import o8
+from ._binary import o16be as o16b
 
 # fmt: off
 _Palm8BitColormapValues = (
@@ -137,7 +138,7 @@ def _save(im, fp, filename):
             bpp = im.info["bpp"]
             im = im.point(lambda x, maxval=(1 << bpp) - 1: maxval - (x & maxval))
         else:
-            raise OSError("cannot write mode %s as Palm" % im.mode)
+            raise OSError(f"cannot write mode {im.mode} as Palm")
 
         # we ignore the palette here
         im.mode = "P"
@@ -153,7 +154,7 @@ def _save(im, fp, filename):
 
     else:
 
-        raise OSError("cannot write mode %s as Palm" % im.mode)
+        raise OSError(f"cannot write mode {im.mode} as Palm")
 
     #
     # make sure image data is available

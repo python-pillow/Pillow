@@ -87,8 +87,10 @@ true color.
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
 
-    Image.register_extension(SpamImageFile.format, ".spam")
-    Image.register_extension(SpamImageFile.format, ".spa")  # DOS version
+    Image.register_extensions(SpamImageFile.format, [
+        ".spam",
+        ".spa",  # DOS version
+    ])
 
 
 The format handler must always set the
@@ -102,6 +104,15 @@ the file.
 Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
+
+Once the plugin has been imported, it can be used:
+
+.. code-block:: python
+
+    from PIL import Image
+    import SpamImagePlugin
+    with Image.open("hopper.spam") as im:
+        pass
 
 The ``tile`` attribute
 ----------------------
@@ -147,6 +158,8 @@ The ``raw`` decoder is used to read uncompressed data from an image file. It
 can be used with most uncompressed file formats, such as PPM, BMP, uncompressed
 TIFF, and many others. To use the raw decoder with the
 :py:func:`PIL.Image.frombytes` function, use the following syntax::
+
+.. code-block:: python
 
     image = Image.frombytes(
         mode, size, data, "raw",
@@ -258,6 +271,8 @@ image memory.
 To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
 the following syntax::
 
+.. code-block:: python
+
     image = Image.frombytes(
         mode, size, data, "bit",
         bits, pad, fill, sign, orientation
@@ -350,7 +365,7 @@ interest in this object are:
   The target image, will be set by Pillow.
 
 **state**
-  An ImagingCodecStateInstance, will be set by Pillow. The **context**
+  An ImagingCodecStateInstance, will be set by Pillow. The ``context``
   member is an opaque struct that can be used by the decoder to store
   any format specific state or options.
 
@@ -413,5 +428,4 @@ Python-based file decoder:
    called with a buffer of data to be interpreted.
 
 3. Cleanup: The decoder instance's ``cleanup`` method is called.
-
 

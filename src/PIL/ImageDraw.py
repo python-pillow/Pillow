@@ -35,7 +35,6 @@ import numbers
 
 from . import Image, ImageColor
 
-
 """
 A simple 2D drawing interface for PIL images.
 <p>
@@ -277,7 +276,7 @@ class ImageDraw:
         stroke_width=0,
         stroke_fill=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if self._multiline_check(text):
             return self.multiline_text(

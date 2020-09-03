@@ -18,16 +18,16 @@ Image.show command parameter
 .. deprecated:: 7.2.0
 
 The ``command`` parameter was deprecated and will be removed in a future release.
-Use a subclass of ``ImageShow.Viewer`` instead.
+Use a subclass of :py:class:`.ImageShow.Viewer` instead.
 
 Image._showxv
 ~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
 
-``Image._showxv`` has been deprecated. Use :py:meth:`~PIL.Image.Image.show`
-instead. If custom behaviour is required, use :py:meth:`~PIL.ImageShow.register` to add
-a custom :py:class:`~PIL.ImageShow.Viewer` class.
+``Image._showxv`` has been deprecated. Use :py:meth:`.Image.Image.show`
+instead. If custom behaviour is required, use :py:func:`.ImageShow.register` to add
+a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,26 +55,54 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
+im.offset
+~~~~~~~~~
+
+.. deprecated:: 1.1.2
+.. versionremoved:: 8.0.0
+
+``im.offset()`` has been removed, call :py:func:`.ImageChops.offset()` instead.
+
+It was documented as deprecated in PIL 1.1.2,
+raised a ``DeprecationWarning`` since 1.1.5,
+an ``Exception`` since Pillow 3.0.0
+and ``NotImplementedError`` since 3.3.0.
+
+Image.fromstring, im.fromstring and im.tostring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 2.0.0
+.. versionremoved:: 8.0.0
+
+* ``Image.fromstring()`` has been removed, call :py:func:`.Image.frombytes()` instead.
+* ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
+* ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
+
+They issued a ``DeprecationWarning`` since 2.0.0,
+an ``Exception`` since 3.0.0
+and ``NotImplementedError`` since 3.3.0.
+
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
 
-Some attributes in ``ImageCms.CmsProfile`` have been removed. From 6.0.0, they issued a
-``DeprecationWarning``:
+Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
+they issued a ``DeprecationWarning``:
 
-========================  ===============================
+========================  ===================================================
+
 Removed                   Use instead
-========================  ===============================
-``color_space``           Padded ``xcolor_space``
-``pcs``                   Padded ``connection_space``
-``product_copyright``     Unicode ``copyright``
-``product_desc``          Unicode ``profile_description``
-``product_description``   Unicode ``profile_description``
-``product_manufacturer``  Unicode ``manufacturer``
-``product_model``         Unicode ``model``
-========================  ===============================
+========================  ===================================================
+``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
+``pcs``                   Padded :py:attr:`~.CmsProfile.connection_space`
+``product_copyright``     Unicode :py:attr:`~.CmsProfile.copyright`
+``product_desc``          Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_description``   Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_manufacturer``  Unicode :py:attr:`~.CmsProfile.manufacturer`
+``product_model``         Unicode :py:attr:`~.CmsProfile.model`
+========================  ===================================================
 
 Python 2.7
 ~~~~~~~~~~

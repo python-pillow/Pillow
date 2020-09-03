@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, WmfImagePlugin
 
 from .helper import assert_image_similar, hopper

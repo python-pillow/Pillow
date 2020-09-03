@@ -250,7 +250,9 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
 
 def get_display_profile(handle=None):
-    """ (experimental) Fetches the profile for the current display device.
+    """
+    (experimental) Fetches the profile for the current display device.
+
     :returns: ``None`` if the profile is not known.
     """
 
@@ -275,8 +277,8 @@ def get_display_profile(handle=None):
 
 class PyCMSError(Exception):
 
-    """ (pyCMS) Exception class.
-    This is used for all errors in the pyCMS API. """
+    """(pyCMS) Exception class.
+    This is used for all errors in the pyCMS API."""
 
     pass
 
@@ -624,7 +626,7 @@ def applyTransform(im, transform, inPlace=False):
     :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
         as the ``inMode`` supported by the transform.
     :param transform: A valid CmsTransform class object
-    :param inPlace: Bool.  If ``True``, ``im` is modified in place and ``None`` is
+    :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
         returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
         transform applied is returned (and ``im`` is not changed). The default is
         ``False``.
@@ -678,8 +680,7 @@ def createProfile(colorSpace, colorTemp=-1):
 
     if colorSpace not in ["LAB", "XYZ", "sRGB"]:
         raise PyCMSError(
-            "Color space not supported for on-the-fly profile creation (%s)"
-            % colorSpace
+            f"Color space not supported for on-the-fly profile creation ({colorSpace})"
         )
 
     if colorSpace == "LAB":
@@ -687,7 +688,7 @@ def createProfile(colorSpace, colorTemp=-1):
             colorTemp = float(colorTemp)
         except (TypeError, ValueError) as e:
             raise PyCMSError(
-                'Color temperature must be numeric, "%s" not valid' % colorTemp
+                f'Color temperature must be numeric, "{colorTemp}" not valid'
             ) from e
 
     try:
@@ -732,7 +733,7 @@ def getProfileName(profile):
             return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
-        return "{} - {}\n".format(model, manufacturer)
+        return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v) from v

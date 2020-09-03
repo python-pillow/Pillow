@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import Image
 
 from .helper import is_win32, skip_unless_feature
@@ -18,7 +19,7 @@ pytestmark = [
 
 
 def test_leak_load():
-    from resource import setrlimit, RLIMIT_AS, RLIMIT_STACK
+    from resource import RLIMIT_AS, RLIMIT_STACK, setrlimit
 
     setrlimit(RLIMIT_STACK, (stack_size, stack_size))
     setrlimit(RLIMIT_AS, (mem_limit, mem_limit))
@@ -28,7 +29,7 @@ def test_leak_load():
 
 
 def test_leak_save():
-    from resource import setrlimit, RLIMIT_AS, RLIMIT_STACK
+    from resource import RLIMIT_AS, RLIMIT_STACK, setrlimit
 
     setrlimit(RLIMIT_STACK, (stack_size, stack_size))
     setrlimit(RLIMIT_AS, (mem_limit, mem_limit))

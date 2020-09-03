@@ -36,10 +36,4 @@ What about PIL?
     Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0
     added Python 3 support and includes many bug fixes from many contributors.
 
-As more time passes since the last PIL release (1.1.7 in 2009), the likelihood of a new PIL release decreases. However, we've yet to hear an official "PIL is dead" announcement. So if you still want to support PIL, please `report issues here first`_, then `open corresponding Pillow tickets here`_.
-
-.. _report issues here first: https://bitbucket.org/effbot/pil-2009-raclette/issues
-
-.. _open corresponding Pillow tickets here: https://github.com/python-pillow/Pillow/issues
-
-Please provide a link to the first ticket so we can track the issue(s) upstream.
+As more time passes since the last PIL release (1.1.7 in 2009), the likelihood of a new PIL release decreases. However, we've yet to hear an official "PIL is dead" announcement.

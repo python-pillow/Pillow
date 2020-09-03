@@ -111,7 +111,7 @@ class ImagePalette:
                 self.dirty = 1
                 return index
         else:
-            raise ValueError("unknown color specifier: %r" % color)
+            raise ValueError(f"unknown color specifier: {repr(color)}")
 
     def save(self, fp):
         """Save palette to text file.
@@ -123,12 +123,12 @@ class ImagePalette:
         if isinstance(fp, str):
             fp = open(fp, "w")
         fp.write("# Palette\n")
-        fp.write("# Mode: %s\n" % self.mode)
+        fp.write(f"# Mode: {self.mode}\n")
         for i in range(256):
-            fp.write("%d" % i)
+            fp.write(f"{i}")
             for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
                 try:
-                    fp.write(" %d" % self.palette[j])
+                    fp.write(f" {self.palette[j]}")
                 except IndexError:
                     fp.write(" 0")
             fp.write("\n")

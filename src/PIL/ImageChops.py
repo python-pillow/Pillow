@@ -313,8 +313,8 @@ def composite(image1, image2, mask):
 
 def offset(image, xoffset, yoffset=None):
     """Returns a copy of the image where data has been offset by the given
-    distances. Data wraps around the edges. If **yoffset** is omitted, it
-    is assumed to be equal to **xoffset**.
+    distances. Data wraps around the edges. If ``yoffset`` is omitted, it
+    is assumed to be equal to ``xoffset``.
 
     :param xoffset: The horizontal distance.
     :param yoffset: The vertical distance.  If omitted, both

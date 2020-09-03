@@ -2,9 +2,11 @@ import ctypes
 import os
 import subprocess
 import sys
-from distutils import ccompiler, sysconfig
+import sysconfig
 
 import pytest
+from setuptools.command.build_ext import new_compiler
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32, on_ci
@@ -15,8 +17,9 @@ if os.environ.get("PYTHONOPTIMIZE") == "2":
     cffi = None
 else:
     try:
-        from PIL import PyAccess
         import cffi
+
+        from PIL import PyAccess
     except ImportError:
         cffi = None
 
@@ -125,14 +128,13 @@ class TestImageGetPixel(AccessTest):
         im.putpixel((0, 0), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c)
+        ), f"put/getpixel roundtrip failed for mode {mode}, color {c}"
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
-        assert im.getpixel((-1, -1)) == c, (
-            "put/getpixel roundtrip negative index failed for mode %s, color %s"
-            % (mode, c)
-        )
+        assert (
+            im.getpixel((-1, -1)) == c
+        ), f"put/getpixel roundtrip negative index failed for mode {mode}, color {c}"
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
@@ -150,11 +152,11 @@ class TestImageGetPixel(AccessTest):
         im = Image.new(mode, (1, 1), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "initial color failed for mode {}, color {} ".format(mode, c)
+        ), f"initial color failed for mode {mode}, color {c} "
         # check initial color negative index
         assert (
             im.getpixel((-1, -1)) == c
-        ), "initial color failed with negative index for mode %s, color %s " % (mode, c)
+        ), f"initial color failed with negative index for mode {mode}, color {c} "
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
@@ -359,13 +361,12 @@ int main(int argc, char* argv[])
                 % sys.prefix.replace("\\", "\\\\")
             )
 
-        compiler = ccompiler.new_compiler()
-        compiler.add_include_dir(sysconfig.get_python_inc())
+        compiler = new_compiler()
+        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
 
-        libdir = sysconfig.get_config_var(
-            "LIBDIR"
-        ) or sysconfig.get_python_inc().replace("include", "libs")
-        print(libdir)
+        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
+            "INCLUDEPY"
+        ).replace("include", "libs")
         compiler.add_library_dir(libdir)
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")

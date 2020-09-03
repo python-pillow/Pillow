@@ -286,7 +286,7 @@ _write_dispatch = {}
 
 
 class IFDRational(Rational):
-    """ Implements a rational class where 0/0 is a legal value to match
+    """Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
 
     e.g., DigitalZoomRatio - 0.00/0.00  indicates that no digital zoom was used
@@ -353,6 +353,8 @@ class IFDRational(Rational):
         return self._val.__hash__()
 
     def __eq__(self, other):
+        if isinstance(other, IFDRational):
+            other = other._val
         return self._val == other
 
     def _delegate(op):
@@ -414,7 +416,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     The tiff metadata type of each item is stored in a dictionary of
     tag types in
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype`. The types
     are read from a tiff file, guessed from the type added, or added
     manually.
 
@@ -464,7 +466,7 @@ class ImageFileDirectory_v2(MutableMapping):
         :param prefix: Override the endianness of the file.
         """
         if ifh[:4] not in PREFIXES:
-            raise SyntaxError("not a TIFF file (header %r not valid)" % ifh)
+            raise SyntaxError(f"not a TIFF file (header {repr(ifh)} not valid)")
         self._prefix = prefix if prefix is not None else ifh[:2]
         if self._prefix == MM:
             self._endian = ">"
@@ -472,6 +474,8 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self.tagtype = {}
+        """ Dictionary of tag types """
         self.reset()
         (self.next,) = self._unpack("L", ifh[4:])
         self._legacy_api = False
@@ -565,7 +569,9 @@ class ImageFileDirectory_v2(MutableMapping):
         elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v for v in values]
 
-        values = tuple(info.cvt_enum(value) for value in values)
+        is_ifd = self.tagtype[tag] == TiffTags.LONG and isinstance(values, dict)
+        if not is_ifd:
+            values = tuple(info.cvt_enum(value) for value in values)
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 
@@ -574,7 +580,7 @@ class ImageFileDirectory_v2(MutableMapping):
         # Spec'd length == 1, Actual > 1, Warn and truncate. Formerly barfed.
         # No Spec, Actual length 1, Formerly (<4.2) returned a 1 element tuple.
         # Don't mess with the legacy api, since it's frozen.
-        if (
+        if not is_ifd and (
             (info.length == 1)
             or self.tagtype[tag] == TiffTags.BYTE
             or (info.length is None and len(values) == 1 and not legacy_api)
@@ -590,8 +596,8 @@ class ImageFileDirectory_v2(MutableMapping):
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
                 warnings.warn(
-                    "Metadata Warning, tag %s had too many entries: %s, expected 1"
-                    % (tag, len(values))
+                    f"Metadata Warning, tag {tag} had too many entries: "
+                    f"{len(values)}, expected 1"
                 )
                 dest[tag] = values[0]
 
@@ -726,7 +732,7 @@ class ImageFileDirectory_v2(MutableMapping):
         if len(ret) != size:
             raise OSError(
                 "Corrupt EXIF data.  "
-                + "Expecting to read %d bytes but only got %d. " % (size, len(ret))
+                f"Expecting to read {size} bytes but only got {len(ret)}. "
             )
         return ret
 
@@ -741,18 +747,18 @@ class ImageFileDirectory_v2(MutableMapping):
 
                 tagname = TiffTags.lookup(tag).name
                 typname = TYPES.get(typ, "unknown")
-                msg = "tag: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ)
+                msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug(msg + " - unsupported type {}".format(typ))
+                    logger.debug(msg + f" - unsupported type {typ}")
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > 4:
                     here = fp.tell()
                     (offset,) = self._unpack("L", data)
-                    msg += " Tag Location: {} - Data Location: {}".format(here, offset)
+                    msg += f" Tag Location: {here} - Data Location: {offset}"
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -762,8 +768,8 @@ class ImageFileDirectory_v2(MutableMapping):
                 if len(data) != size:
                     warnings.warn(
                         "Possibly corrupt EXIF data.  "
-                        "Expecting to read %d bytes but only got %d."
-                        " Skipping tag %s" % (size, len(data), tag)
+                        f"Expecting to read {size} bytes but only got {len(data)}."
+                        f" Skipping tag {tag}"
                     )
                     logger.debug(msg)
                     continue
@@ -799,20 +805,33 @@ class ImageFileDirectory_v2(MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            logger.debug("Tag {}, Type: {}, Value: {!r}".format(tag, typ, value))
-            values = value if isinstance(value, tuple) else (value,)
-            data = self._write_dispatch[typ](self, *values)
+            logger.debug(f"Tag {tag}, Type: {typ}, Value: {repr(value)}")
+            is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
+            if is_ifd:
+                if self._endian == "<":
+                    ifh = b"II\x2A\x00\x08\x00\x00\x00"
+                else:
+                    ifh = b"MM\x00\x2A\x00\x00\x00\x08"
+                ifd = ImageFileDirectory_v2(ifh)
+                for ifd_tag, ifd_value in self._tags_v2[tag].items():
+                    ifd[ifd_tag] = ifd_value
+                data = ifd.tobytes(offset)
+            else:
+                values = value if isinstance(value, tuple) else (value,)
+                data = self._write_dispatch[typ](self, *values)
 
             tagname = TiffTags.lookup(tag).name
-            typname = TYPES.get(typ, "unknown")
-            msg = "save: %s (%d) - type: %s (%d)" % (tagname, tag, typname, typ)
+            typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
+            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
             msg += " - value: " + (
                 "<table: %d bytes>" % len(data) if len(data) >= 16 else str(values)
             )
             logger.debug(msg)
 
             # count is sum of lengths for string and arbitrary data
-            if typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
+            if is_ifd:
+                count = 1
+            elif typ in [TiffTags.BYTE, TiffTags.ASCII, TiffTags.UNDEFINED]:
                 count = len(data)
             else:
                 count = len(values)
@@ -833,9 +852,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            logger.debug(
-                "{} {} {} {} {}".format(tag, typ, count, repr(value), repr(data))
-            )
+            logger.debug(f"{tag} {typ} {count} {repr(value)} {repr(data)}")
             result += self._pack("HHL4s", tag, typ, count, value)
 
         # -- overwrite here for multi-page --
@@ -883,7 +900,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ('Some Data',)
 
     Also contains a dictionary of tag types as read from the tiff image file,
-    `~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
+    :attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v1.tagtype`.
 
     Values are returned as a tuple.
 
@@ -897,9 +914,13 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     tags = property(lambda self: self._tags_v1)
     tagdata = property(lambda self: self._tagdata)
 
+    # defined in ImageFileDirectory_v2
+    tagtype: dict
+    """Dictionary of tag types"""
+
     @classmethod
     def from_v2(cls, original):
-        """ Returns an
+        """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
         instance with the same data as is contained in the original
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
@@ -916,7 +937,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         return ifd
 
     def to_v2(self):
-        """ Returns an
+        """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
         instance with the same data as is contained in the original
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
@@ -972,17 +993,25 @@ class TiffImageFile(ImageFile.ImageFile):
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
 
+    def __init__(self, fp=None, filename=None):
+        self.tag_v2 = None
+        """ Image file directory (tag dictionary) """
+
+        self.tag = None
+        """ Legacy tag entries """
+
+        super().__init__(fp, filename)
+
     def _open(self):
         """Open the first image in a TIFF file"""
 
         # Header
         ifh = self.fp.read(8)
 
-        # image file directory (tag dictionary)
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
-        # legacy tag/ifd entries will be filled in later
-        self.tag = self.ifd = None
+        # legacy IFD entries will be filled in later
+        self.ifd = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
@@ -992,8 +1021,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self._n_frames = None
 
         logger.debug("*** TiffImageFile._open ***")
-        logger.debug("- __first: {}".format(self.__first))
-        logger.debug("- ifh: {!r}".format(ifh))  # Use !r to avoid str(bytes)
+        logger.debug(f"- __first: {self.__first}")
+        logger.debug(f"- ifh: {repr(ifh)}")  # Use repr to avoid str(bytes)
 
         # and load the first frame
         self._seek(0)
@@ -1025,8 +1054,8 @@ class TiffImageFile(ImageFile.ImageFile):
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
             logger.debug(
-                "Seeking to frame %s, on frame %s, __next %s, location: %s"
-                % (frame, self.__frame, self.__next, self.fp.tell())
+                f"Seeking to frame {frame}, on frame {self.__frame}, "
+                f"__next {self.__next}, location: {self.fp.tell()}"
             )
             # reset buffered io handle in case fp
             # was passed to libtiff, invalidating the buffer
@@ -1078,8 +1107,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self._close_exclusive_fp_after_loading = True
 
     def _load_libtiff(self):
-        """ Overload method triggered when we detect a compressed tiff
-            Calls out to libtiff """
+        """Overload method triggered when we detect a compressed tiff
+        Calls out to libtiff"""
 
         Image.Image.load(self)
 
@@ -1183,18 +1212,18 @@ class TiffImageFile(ImageFile.ImageFile):
         fillorder = self.tag_v2.get(FILLORDER, 1)
 
         logger.debug("*** Summary ***")
-        logger.debug("- compression: {}".format(self._compression))
-        logger.debug("- photometric_interpretation: {}".format(photo))
-        logger.debug("- planar_configuration: {}".format(self._planar_configuration))
-        logger.debug("- fill_order: {}".format(fillorder))
-        logger.debug("- YCbCr subsampling: {}".format(self.tag.get(530)))
+        logger.debug(f"- compression: {self._compression}")
+        logger.debug(f"- photometric_interpretation: {photo}")
+        logger.debug(f"- planar_configuration: {self._planar_configuration}")
+        logger.debug(f"- fill_order: {fillorder}")
+        logger.debug(f"- YCbCr subsampling: {self.tag.get(530)}")
 
         # size
         xsize = int(self.tag_v2.get(IMAGEWIDTH))
         ysize = int(self.tag_v2.get(IMAGELENGTH))
         self._size = xsize, ysize
 
-        logger.debug("- size: {}".format(self.size))
+        logger.debug(f"- size: {self.size}")
 
         sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
         if len(sampleFormat) > 1 and max(sampleFormat) == min(sampleFormat) == 1:
@@ -1228,15 +1257,15 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_tuple,
             extra_tuple,
         )
-        logger.debug("format key: {}".format(key))
+        logger.debug(f"format key: {key}")
         try:
             self.mode, rawmode = OPEN_INFO[key]
         except KeyError as e:
             logger.debug("- unsupported format")
             raise SyntaxError("unknown pixel mode") from e
 
-        logger.debug("- raw mode: {}".format(rawmode))
-        logger.debug("- pil mode: {}".format(self.mode))
+        logger.debug(f"- raw mode: {rawmode}")
+        logger.debug(f"- pil mode: {self.mode}")
 
         self.info["compression"] = self._compression
 
@@ -1277,7 +1306,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if fillorder == 2:
                 # Replace fillorder with fillorder=1
                 key = key[:3] + (1,) + key[4:]
-                logger.debug("format key: {}".format(key))
+                logger.debug(f"format key: {key}")
                 # this should always work, since all the
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
@@ -1401,7 +1430,7 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
-        raise OSError("cannot write mode %s as TIFF" % im.mode) from e
+        raise OSError(f"cannot write mode {im.mode} as TIFF") from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
@@ -1598,7 +1627,7 @@ def _save(im, fp, filename):
             if s:
                 break
         if s < 0:
-            raise OSError("encoder error %d when writing image file" % s)
+            raise OSError(f"encoder error {s} when writing image file")
 
     else:
         offset = ifd.save(fp)
@@ -1764,29 +1793,29 @@ class AppendingTiffWriter:
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def writeShort(self, value):
         bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
         if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError("wrote only %u bytes but wanted 2" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def writeLong(self, value):
         bytesWritten = self.f.write(struct.pack(self.longFmt, value))
         if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError("wrote only %u bytes but wanted 4" % bytesWritten)
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def close(self):
         self.finalize()

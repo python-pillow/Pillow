@@ -52,11 +52,19 @@ Functions
     .. warning::
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
-        a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the image is over a certain
-        limit. If desired, the warning can be turned into an error with
+        a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the number of pixels in an
+        image is over a certain limit, :py:data:`PIL.Image.MAX_IMAGE_PIXELS`.
+
+        This threshold can be changed by setting :py:data:`PIL.Image.MAX_IMAGE_PIXELS`. It can be disabled
+        by setting ``Image.MAX_IMAGE_PIXELS = None``.
+
+        If desired, the warning can be turned into an error with
         ``warnings.simplefilter('error', Image.DecompressionBombWarning)`` or suppressed entirely with
-        ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also `the logging
-        documentation`_ to have warnings output to the logging facility instead of stderr.
+        ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also
+        `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
+
+        If the number of pixels is greater than twice :py:data:`PIL.Image.MAX_IMAGE_PIXELS`, then a
+        ``DecompressionBombError`` will be raised instead.
 
     .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
     .. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
@@ -152,6 +160,7 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.effect_spread
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
+.. automethod:: PIL.Image.Image.frombytes
 
 This blurs the input image using a filter from the ``ImageFilter`` module:
 
@@ -196,7 +205,6 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
 .. automethod:: PIL.Image.Image.histogram
-.. automethod:: PIL.Image.Image.offset
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
 .. automethod:: PIL.Image.Image.putalpha
@@ -243,7 +251,6 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.thumbnail
 .. automethod:: PIL.Image.Image.tobitmap
 .. automethod:: PIL.Image.Image.tobytes
-.. automethod:: PIL.Image.Image.tostring
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
@@ -262,8 +269,6 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 
 
 .. automethod:: PIL.Image.Image.verify
-
-.. automethod:: PIL.Image.Image.fromstring
 
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
@@ -374,6 +379,10 @@ Constants
 ---------
 
 .. data:: NONE
+.. data:: MAX_IMAGE_PIXELS
+
+    Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
+    See :py:meth:`~PIL.Image.open` for more information about how this is used.
 
 Transpose methods
 ^^^^^^^^^^^^^^^^^

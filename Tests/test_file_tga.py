@@ -3,6 +3,7 @@ from glob import glob
 from itertools import product
 
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
@@ -35,9 +36,7 @@ def test_sanity(tmp_path):
 
                 assert_image_equal(saved_im, original_im)
 
-        png_paths = glob(
-            os.path.join(_TGA_DIR_COMMON, "*x*_{}.png".format(mode.lower()))
-        )
+        png_paths = glob(os.path.join(_TGA_DIR_COMMON, f"*x*_{mode.lower()}.png"))
 
         for png_path in png_paths:
             with Image.open(png_path) as reference_im:
