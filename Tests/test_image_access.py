@@ -4,9 +4,9 @@ import subprocess
 import sys
 import sysconfig
 
+import pytest
 from setuptools.command.build_ext import new_compiler
 
-import pytest
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32, on_ci
@@ -17,8 +17,9 @@ if os.environ.get("PYTHONOPTIMIZE") == "2":
     cffi = None
 else:
     try:
-        from PIL import PyAccess
         import cffi
+
+        from PIL import PyAccess
     except ImportError:
         cffi = None
 
@@ -127,14 +128,13 @@ class TestImageGetPixel(AccessTest):
         im.putpixel((0, 0), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "put/getpixel roundtrip failed for mode {}, color {}".format(mode, c)
+        ), f"put/getpixel roundtrip failed for mode {mode}, color {c}"
 
         # check putpixel negative index
         im.putpixel((-1, -1), c)
-        assert im.getpixel((-1, -1)) == c, (
-            "put/getpixel roundtrip negative index failed for mode %s, color %s"
-            % (mode, c)
-        )
+        assert (
+            im.getpixel((-1, -1)) == c
+        ), f"put/getpixel roundtrip negative index failed for mode {mode}, color {c}"
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
@@ -152,11 +152,11 @@ class TestImageGetPixel(AccessTest):
         im = Image.new(mode, (1, 1), c)
         assert (
             im.getpixel((0, 0)) == c
-        ), "initial color failed for mode {}, color {} ".format(mode, c)
+        ), f"initial color failed for mode {mode}, color {c} "
         # check initial color negative index
         assert (
             im.getpixel((-1, -1)) == c
-        ), "initial color failed with negative index for mode %s, color %s " % (mode, c)
+        ), f"initial color failed with negative index for mode {mode}, color {c} "
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
@@ -325,6 +325,38 @@ class TestCffi(AccessTest):
             access = PyAccess.new(im, False)
             access.putpixel((0, 0), color)
             assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+
+
+class TestImagePutPixelError(AccessTest):
+    IMAGE_MODES1 = ["L", "LA", "RGB", "RGBA"]
+    IMAGE_MODES2 = ["I", "I;16", "BGR;15"]
+    INVALID_TYPES1 = ["foo", 1.0, None]
+    INVALID_TYPES2 = [*INVALID_TYPES1, (10,)]
+
+    @pytest.mark.parametrize("mode", IMAGE_MODES1)
+    def test_putpixel_type_error1(self, mode):
+        im = hopper(mode)
+        for v in self.INVALID_TYPES1:
+            with pytest.raises(TypeError, match="color must be int or tuple"):
+                im.putpixel((0, 0), v)
+
+    @pytest.mark.parametrize("mode", IMAGE_MODES2)
+    def test_putpixel_type_error2(self, mode):
+        im = hopper(mode)
+        for v in self.INVALID_TYPES2:
+            with pytest.raises(TypeError, match="color must be int"):
+                im.putpixel((0, 0), v)
+
+    @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
+    def test_putpixel_overflow_error(self, mode):
+        im = hopper(mode)
+        with pytest.raises(OverflowError):
+            im.putpixel((0, 0), 2 ** 80)
+
+    def test_putpixel_unrecognized_mode(self):
+        im = hopper("BGR;15")
+        with pytest.raises(ValueError, match="unrecognized image mode"):
+            im.putpixel((0, 0), 0)
 
 
 class TestEmbeddable:

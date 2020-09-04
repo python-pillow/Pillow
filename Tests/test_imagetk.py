@@ -1,12 +1,13 @@
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
 try:
-    from PIL import ImageTk
-
     import tkinter as tk
+
+    from PIL import ImageTk
 
     dir(ImageTk)
     HAS_TK = True
@@ -26,7 +27,7 @@ def setup_module():
         tk.Frame()
         # root = tk.Tk()
     except tk.TclError as v:
-        pytest.skip("TCL Error: %s" % v)
+        pytest.skip(f"TCL Error: {v}")
 
 
 def test_kw():

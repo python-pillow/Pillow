@@ -41,7 +41,7 @@ def _pilbitmap_check():
     if _pilbitmap_ok is None:
         try:
             im = Image.new("1", (1, 1))
-            tkinter.BitmapImage(data="PIL:%d" % im.im.id)
+            tkinter.BitmapImage(data=f"PIL:{im.im.id}")
             _pilbitmap_ok = 1
         except tkinter.TclError:
             _pilbitmap_ok = 0
@@ -69,7 +69,7 @@ class PhotoImage:
     image, pixels having alpha 0 are treated as transparent.
 
     The constructor takes either a PIL image, or a mode and a size.
-    Alternatively, you can use the **file** or **data** options to initialize
+    Alternatively, you can use the ``file`` or ``data`` options to initialize
     the photo image object.
 
     :param image: Either a PIL image, or a mode string.  If a mode string is
@@ -210,7 +210,7 @@ class BitmapImage:
 
     The given image must have mode "1".  Pixels having value 0 are treated as
     transparent.  Options, if any, are passed on to Tkinter.  The most commonly
-    used option is **foreground**, which is used to specify the color for the
+    used option is ``foreground``, which is used to specify the color for the
     non-transparent parts.  See the Tkinter documentation for information on
     how to specify colours.
 
@@ -229,7 +229,7 @@ class BitmapImage:
         if _pilbitmap_check():
             # fast way (requires the pilbitmap booster patch)
             image.load()
-            kw["data"] = "PIL:%d" % image.im.id
+            kw["data"] = f"PIL:{image.im.id}"
             self.__im = image  # must keep a reference
         else:
             # slow but safe way

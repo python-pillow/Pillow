@@ -257,6 +257,9 @@ Using the :py:meth:`~PIL.Image.Image.draft` method, you can speed things up by
 converting ``RGB`` images to ``L``, and resize images to 1/2, 1/4 or 1/8 of
 their original size while loading them.
 
+By default Pillow doesn't allow loading of truncated JPEG files, set
+:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
+
 The :py:meth:`~PIL.Image.open` method may set the following
 :py:attr:`~PIL.Image.Image.info` properties if available:
 
@@ -472,6 +475,9 @@ As of Pillow 6.0, EXIF data can be read from PNG images. However, unlike other
 image formats, EXIF data is not guaranteed to be present in
 :py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
 called.
+
+By default Pillow doesn't allow loading of truncated PNG files, set
+:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
 
 The :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties, when appropriate:

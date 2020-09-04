@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageDraw, ImageFont
 
 from .helper import assert_image_similar, skip_unless_feature

@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_similar
@@ -15,8 +16,8 @@ def get_files(d, ext=".bmp"):
 
 
 def test_bad():
-    """ These shouldn't crash/dos, but they shouldn't return anything
-    either """
+    """These shouldn't crash/dos, but they shouldn't return anything
+    either"""
     for f in get_files("b"):
 
         def open(f):
@@ -31,8 +32,8 @@ def test_bad():
 
 
 def test_questionable():
-    """ These shouldn't crash/dos, but it's not well defined that these
-    are in spec """
+    """These shouldn't crash/dos, but it's not well defined that these
+    are in spec"""
     supported = [
         "pal8os2v2.bmp",
         "rgb24prof.bmp",
@@ -49,15 +50,15 @@ def test_questionable():
             with Image.open(f) as im:
                 im.load()
             if os.path.basename(f) not in supported:
-                print("Please add %s to the partially supported bmp specs." % f)
+                print(f"Please add {f} to the partially supported bmp specs.")
         except Exception:  # as msg:
             if os.path.basename(f) in supported:
                 raise
 
 
 def test_good():
-    """ These should all work. There's a set of target files in the
-    html directory that we can compare against. """
+    """These should all work. There's a set of target files in the
+    html directory that we can compare against."""
 
     # Target files, if they're not just replacing the extension
     file_map = {
@@ -84,7 +85,7 @@ def test_good():
         if name in file_map:
             return os.path.join(base, "html", file_map[name])
         name = os.path.splitext(name)[0]
-        return os.path.join(base, "html", "%s.png" % name)
+        return os.path.join(base, "html", f"{name}.png")
 
     for f in get_files("g"):
         try:
@@ -107,4 +108,4 @@ def test_good():
                 os.path.join(base, "g", "pal8rle.bmp"),
                 os.path.join(base, "g", "pal4rle.bmp"),
             )
-            assert f in unsupported, "Unsupported Image {}: {}".format(f, msg)
+            assert f in unsupported, f"Unsupported Image {f}: {msg}"

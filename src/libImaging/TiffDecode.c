@@ -20,6 +20,17 @@
 
 #include "TiffDecode.h"
 
+/* Convert C file descriptor to WinApi HFILE if LibTiff was compiled with tif_win32.c
+ *
+ * This cast is safe, as the top 32-bits of HFILE are guaranteed to be zero,
+ * see https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+ */
+#ifndef USE_WIN32_FILEIO
+#define fd_to_tiff_fd(fd) (fd)
+#else
+#define fd_to_tiff_fd(fd) ((int)_get_osfhandle(fd))
+#endif
+
 void dump_state(const TIFFSTATE *state){
     TRACE(("State: Location %u size %d eof %d data: %p ifd: %d\n", (uint)state->loc,
            (int)state->size, (uint)state->eof, state->data, state->ifd));
@@ -316,7 +327,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     if (clientstate->fp) {
         TRACE(("Opening using fd: %d\n",clientstate->fp));
         lseek(clientstate->fp,0,SEEK_SET); // Sometimes, I get it set to the end.
-        tiff = TIFFFdOpen(clientstate->fp, filename, mode);
+        tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
         TRACE(("Opening from string\n"));
         tiff = TIFFClientOpen(filename, mode,
@@ -521,7 +532,7 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 
     if (fp) {
         TRACE(("Opening using fd: %d for writing \n",clientstate->fp));
-        clientstate->tiff = TIFFFdOpen(clientstate->fp, filename, mode);
+        clientstate->tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
         // malloc a buffer to write the tif, we're going to need to realloc or something if we need bigger.
         TRACE(("Opening a buffer for writing \n"));

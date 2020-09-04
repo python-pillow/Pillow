@@ -59,7 +59,7 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
-        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, name))
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:
@@ -96,8 +96,8 @@ try:
     if __version__ != getattr(core, "PILLOW_VERSION", None):
         raise ImportError(
             "The _imaging extension was built for another version of Pillow or PIL:\n"
-            "Core version: %s\n"
-            "Pillow version: %s" % (getattr(core, "PILLOW_VERSION", None), __version__)
+            f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
+            f"Pillow version: {__version__}"
         )
 
 except ImportError as v:
@@ -403,7 +403,7 @@ def init():
     for plugin in _plugins:
         try:
             logger.debug("Importing %s", plugin)
-            __import__("PIL.%s" % plugin, globals(), locals(), [])
+            __import__(f"PIL.{plugin}", globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
@@ -435,7 +435,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
     except AttributeError as e:
-        raise OSError("decoder %s not available" % decoder_name) from e
+        raise OSError(f"decoder {decoder_name} not available") from e
     return decoder(mode, *args + extra)
 
 
@@ -458,7 +458,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
     except AttributeError as e:
-        raise OSError("encoder %s not available" % encoder_name) from e
+        raise OSError(f"encoder {encoder_name} not available") from e
     return encoder(mode, *args + extra)
 
 
@@ -594,7 +594,8 @@ class Image:
         try:
             if hasattr(self, "_close__fp"):
                 self._close__fp()
-            self.fp.close()
+            if self.fp:
+                self.fp.close()
             self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
@@ -664,7 +665,7 @@ class Image:
         )
 
     def _repr_png_(self):
-        """ iPython display hook support
+        """iPython display hook support
 
         :returns: png version of the image as bytes
         """
@@ -742,7 +743,7 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError("encoder error %d in tobytes" % s)
+            raise RuntimeError(f"encoder error {s} in tobytes")
 
         return b"".join(data)
 
@@ -763,9 +764,9 @@ class Image:
         data = self.tobytes("xbm")
         return b"".join(
             [
-                ("#define %s_width %d\n" % (name, self.size[0])).encode("ascii"),
-                ("#define %s_height %d\n" % (name, self.size[1])).encode("ascii"),
-                ("static char %s_bits[] = {\n" % name).encode("ascii"),
+                f"#define {name}_width {self.size[0]}\n".encode("ascii"),
+                f"#define {name}_height {self.size[1]}\n".encode("ascii"),
+                f"static char {name}_bits[] = {{\n".encode("ascii"),
                 data,
                 b"};",
             ]
@@ -855,7 +856,7 @@ class Image:
         and the palette can be represented without a palette.
 
         The current version supports all possible conversions between
-        "L", "RGB" and "CMYK." The **matrix** argument only supports "L"
+        "L", "RGB" and "CMYK." The ``matrix`` argument only supports "L"
         and "RGB".
 
         When translating a color image to greyscale (mode "L"),
@@ -870,9 +871,9 @@ class Image:
         all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
-        When converting from "RGBA" to "P" without a **matrix** argument,
+        When converting from "RGBA" to "P" without a ``matrix`` argument,
         this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
-        and **dither** and **palette** are ignored.
+        and ``dither`` and ``palette`` are ignored.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
@@ -880,7 +881,7 @@ class Image:
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`NONE` or :data:`FLOYDSTEINBERG` (default).
-           Note that this is not used when **matrix** is supplied.
+           Note that this is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`WEB` or :data:`ADAPTIVE`.
         :param colors: Number of colors to use for the :data:`ADAPTIVE` palette.
@@ -1180,7 +1181,7 @@ class Image:
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
 
         :param filter: Filter kernel.
-        :returns: An :py:class:`~PIL.Image.Image` object.  """
+        :returns: An :py:class:`~PIL.Image.Image` object."""
 
         from . import ImageFilter
 
@@ -1205,7 +1206,7 @@ class Image:
     def getbands(self):
         """
         Returns a tuple containing the name of each band in this image.
-        For example, **getbands** on an RGB image returns ("R", "G", "B").
+        For example, ``getbands`` on an RGB image returns ("R", "G", "B").
 
         :returns: A tuple containing band names.
         :rtype: tuple
@@ -1259,7 +1260,7 @@ class Image:
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
         operations.  To convert it to an ordinary sequence (e.g. for
-        printing), use **list(im.getdata())**.
+        printing), use ``list(im.getdata())``.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
@@ -1505,7 +1506,7 @@ class Image:
             self.im.paste(im, box)
 
     def alpha_composite(self, im, dest=(0, 0), source=(0, 0)):
-        """ 'In-place' analog of Image.alpha_composite. Composites an image
+        """'In-place' analog of Image.alpha_composite. Composites an image
         onto this image.
 
         :param im: image to composite over this one
@@ -1740,7 +1741,7 @@ class Image:
         Rewrites the image to reorder the palette.
 
         :param dest_map: A list of indexes into the original palette.
-           e.g. [1,0] would swap a two item palette, and list(range(256))
+           e.g. ``[1,0]`` would swap a two item palette, and ``list(range(256))``
            is the identity transform.
         :param source_palette: Bytes or None.
         :returns:  An :py:class:`~PIL.Image.Image` object.
@@ -1861,7 +1862,7 @@ class Image:
         """
 
         if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
-            message = "Unknown resampling filter ({}).".format(resample)
+            message = f"Unknown resampling filter ({resample})."
 
             filters = [
                 "{} ({})".format(filter[1], filter[0])
@@ -1922,16 +1923,16 @@ class Image:
 
     def reduce(self, factor, box=None):
         """
-        Returns a copy of the image reduced by `factor` times.
-        If the size of the image is not dividable by the `factor`,
+        Returns a copy of the image reduced ``factor`` times.
+        If the size of the image is not dividable by ``factor``,
         the resulting size will be rounded up.
 
         :param factor: A greater than 0 integer or tuple of two integers
            for width and height separately.
         :param box: An optional 4-tuple of ints providing
            the source image region to be reduced.
-           The values must be within (0, 0, width, height) rectangle.
-           If omitted or None, the entire source is used.
+           The values must be within ``(0, 0, width, height)`` rectangle.
+           If omitted or ``None``, the entire source is used.
         """
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
@@ -2129,7 +2130,7 @@ class Image:
             try:
                 format = EXTENSION[ext]
             except KeyError as e:
-                raise ValueError("unknown file extension: {}".format(ext)) from e
+                raise ValueError(f"unknown file extension: {ext}") from e
 
         if format.upper() not in SAVE:
             init()
@@ -2241,7 +2242,7 @@ class Image:
             try:
                 channel = self.getbands().index(channel)
             except ValueError as e:
-                raise ValueError('The image has no channel "{}"'.format(channel)) from e
+                raise ValueError(f'The image has no channel "{channel}"') from e
 
         return self._new(self.im.getband(channel))
 
@@ -2354,7 +2355,7 @@ class Image:
                     # Return result
 
           It may also be an object with a ``method.getdata`` method
-          that returns a tuple supplying new **method** and **data** values::
+          that returns a tuple supplying new ``method`` and ``data`` values::
 
             class Example:
                 def getdata(self):
@@ -2369,7 +2370,7 @@ class Image:
            interpolation in a 4x4 environment). If omitted, or if the image
            has mode "1" or "P", it is set to :py:data:`PIL.Image.NEAREST`.
            See: :ref:`concept-filters`.
-        :param fill: If **method** is an
+        :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the
@@ -2462,9 +2463,9 @@ class Image:
                     BOX: "Image.BOX",
                     HAMMING: "Image.HAMMING",
                     LANCZOS: "Image.LANCZOS/Image.ANTIALIAS",
-                }[resample] + " ({}) cannot be used.".format(resample)
+                }[resample] + f" ({resample}) cannot be used."
             else:
-                message = "Unknown resampling filter ({}).".format(resample)
+                message = f"Unknown resampling filter ({resample})."
 
             filters = [
                 "{} ({})".format(filter[1], filter[0])
@@ -2668,7 +2669,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image file in a string, wrap it in a
-    **BytesIO** object, and use :py:func:`~PIL.Image.open` to load it.
+    :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
     In the current version, the default parameters used for the "raw" decoder
     differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
@@ -2715,7 +2716,7 @@ def fromarray(obj, mode=None):
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol).
 
-    If **obj** is not contiguous, then the tobytes method is called
+    If ``obj`` is not contiguous, then the ``tobytes`` method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
 
     If you have an image in NumPy::
@@ -2758,7 +2759,7 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError("Too many dimensions: %d > %d." % (ndim, ndmax))
+        raise ValueError(f"Too many dimensions: {ndim} > {ndmax}.")
 
     size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
@@ -2824,14 +2825,14 @@ def _decompression_bomb_check(size):
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
         raise DecompressionBombError(
-            "Image size (%d pixels) exceeds limit of %d pixels, "
-            "could be decompression bomb DOS attack." % (pixels, 2 * MAX_IMAGE_PIXELS)
+            f"Image size ({pixels} pixels) exceeds limit of {2 * MAX_IMAGE_PIXELS} "
+            "pixels, could be decompression bomb DOS attack."
         )
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
-            "Image size (%d pixels) exceeds limit of %d pixels, "
-            "could be decompression bomb DOS attack." % (pixels, MAX_IMAGE_PIXELS),
+            f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
+            "could be decompression bomb DOS attack.",
             DecompressionBombWarning,
         )
 
@@ -2866,7 +2867,7 @@ def open(fp, mode="r", formats=None):
     """
 
     if mode != "r":
-        raise ValueError("bad mode %r" % mode)
+        raise ValueError(f"bad mode {repr(mode)}")
     elif isinstance(fp, io.StringIO):
         raise ValueError(
             "StringIO cannot be used to open an image. "
@@ -3252,13 +3253,13 @@ def _apply_env_variables(env=None):
         try:
             var = int(var) * units
         except ValueError:
-            warnings.warn("{} is not int".format(var_name))
+            warnings.warn(f"{var_name} is not int")
             continue
 
         try:
             setter(var)
         except ValueError as e:
-            warnings.warn("{}: {}".format(var_name, e))
+            warnings.warn(f"{var_name}: {e}")
 
 
 _apply_env_variables()
@@ -3381,8 +3382,8 @@ class Exif(MutableMapping):
                         if len(data) != size:
                             warnings.warn(
                                 "Possibly corrupt EXIF MakerNote data.  "
-                                "Expecting to read %d bytes but only got %d."
-                                " Skipping tag %s" % (size, len(data), ifd_tag)
+                                f"Expecting to read {size} bytes but only got "
+                                f"{len(data)}. Skipping tag {ifd_tag}"
                             )
                             continue
 

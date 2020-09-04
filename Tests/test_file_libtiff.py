@@ -7,6 +7,7 @@ from collections import namedtuple
 from ctypes import c_float
 
 import pytest
+
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
@@ -170,18 +171,18 @@ class TestFileLibTiff(LibTiffTestCase):
                             assert (
                                 c_float(val[0][0] / val[0][1]).value
                                 == c_float(value[0][0] / value[0][1]).value
-                            ), ("%s didn't roundtrip" % tag)
+                            ), f"{tag} didn't roundtrip"
                         else:
-                            assert c_float(val).value == c_float(value).value, (
-                                "%s didn't roundtrip" % tag
-                            )
+                            assert (
+                                c_float(val).value == c_float(value).value
+                            ), f"{tag} didn't roundtrip"
                     else:
-                        assert val == value, "%s didn't roundtrip" % tag
+                        assert val == value, f"{tag} didn't roundtrip"
 
             # https://github.com/python-pillow/Pillow/issues/1561
             requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
             for field in requested_fields:
-                assert field in reloaded, "%s not in metadata" % field
+                assert field in reloaded, f"{field} not in metadata"
 
     def test_additional_metadata(self, tmp_path):
         # these should not crash. Seriously dummy data, most of it doesn't make
@@ -401,8 +402,8 @@ class TestFileLibTiff(LibTiffTestCase):
             assert "temp.tif" == reread.tag[269][0]
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             im.load()
@@ -502,9 +503,9 @@ class TestFileLibTiff(LibTiffTestCase):
             assert len(reloaded.tag_v2[320]) == 768
 
     def xtest_bw_compression_w_rgb(self, tmp_path):
-        """ This test passes, but when running all tests causes a failure due
-            to output on stderr from the error thrown by libtiff. We need to
-            capture that but not now"""
+        """This test passes, but when running all tests causes a failure due
+        to output on stderr from the error thrown by libtiff. We need to
+        capture that but not now"""
 
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
@@ -767,7 +768,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.mode == "RGBA"
             assert im.size == (100, 40)
             assert im.tile, [
-                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236),)
+                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))
             ]
             im.load()
 

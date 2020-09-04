@@ -69,7 +69,7 @@ class Kernel(BuiltinFilter):
 class RankFilter(Filter):
     """
     Create a rank filter.  The rank filter sorts all pixels in
-    a window of the given size, and returns the **rank**'th value.
+    a window of the given size, and returns the ``rank``'th value.
 
     :param size: The kernel size, in pixels.
     :param rank: What pixel value to pick.  Use 0 for a min filter,
@@ -401,9 +401,8 @@ class Color3DLUT(MultibandFilter):
             raise ValueError(
                 "The table should have either channels * size**3 float items "
                 "or size**3 items of channels-sized tuples with floats. "
-                "Table should be: {}x{}x{}x{}. Actual length: {}".format(
-                    channels, size[0], size[1], size[2], len(table)
-                )
+                f"Table should be: {channels}x{size[0]}x{size[1]}x{size[2]}. "
+                f"Actual length: {len(table)}"
             )
         self.table = table
 
@@ -513,12 +512,12 @@ class Color3DLUT(MultibandFilter):
 
     def __repr__(self):
         r = [
-            "{} from {}".format(self.__class__.__name__, self.table.__class__.__name__),
+            f"{self.__class__.__name__} from {self.table.__class__.__name__}",
             "size={:d}x{:d}x{:d}".format(*self.size),
-            "channels={:d}".format(self.channels),
+            f"channels={self.channels:d}",
         ]
         if self.mode:
-            r.append("target_mode={}".format(self.mode))
+            r.append(f"target_mode={self.mode}")
         return "<{}>".format(" ".join(r))
 
     def filter(self, image):

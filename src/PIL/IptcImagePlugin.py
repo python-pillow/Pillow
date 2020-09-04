@@ -18,7 +18,10 @@ import os
 import tempfile
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, i32be as i32, o8
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
 
@@ -181,8 +184,9 @@ def getiptcinfo(im):
     :returns: A dictionary containing IPTC information, or None if
         no IPTC information block was found.
     """
-    from . import TiffImagePlugin, JpegImagePlugin
     import io
+
+    from . import JpegImagePlugin, TiffImagePlugin
 
     data = None
 

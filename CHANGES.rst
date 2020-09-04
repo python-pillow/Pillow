@@ -5,13 +5,43 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Raise proper TypeError in putpixel #4882
+  [nulano, hugovk]
+
+- Added writing of subIFDs #4862
+  [radarhere]
+
+- Fix IFDRational __eq__ bug #4888
+  [luphord, radarhere]
+
+- Fixed duplicate variable name #4885
+  [liZe, radarhere]
+
+- Added homebrew zlib include directory #4842
+  [radarhere]
+
+- Corrected inverted PDF CMYK colors #4866
+  [radarhere]
+
+- Do not try to close file pointer if file pointer is empty #4823
+  [radarhere]
+
+- ImageOps.autocontrast: add mask parameter #4843
+  [navneeth, hugovk]
+
+- Read EXIF data tEXt chunk into info as bytes instead of string #4828
+  [radarhere]
+
 - Remove long-deprecated Image.py functions #4798
   [hugovk, nulano, radarhere]
+
+- Replaced distutils with setuptools #4797, #4809, #4814, #4817, #4829, #4890
+  [hugovk, radarhere]
 
 - Add MIME type to PsdImagePlugin #4788
   [samamorgan]
 
-- Drop support for EOL Python 3.5 #4746
+- Drop support for EOL Python 3.5 #4746, #4794
   [hugovk, radarhere, nulano]
 
 - Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768

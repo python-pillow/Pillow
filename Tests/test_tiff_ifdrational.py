@@ -29,6 +29,12 @@ def test_sanity():
     _test_equal(1, 2, IFDRational(1, 2))
 
 
+def test_ranges():
+    for num in range(1, 10):
+        for denom in range(1, 10):
+            assert IFDRational(num, denom) == IFDRational(num, denom)
+
+
 def test_nonetype():
     # Fails if the _delegate function doesn't return a valid function
 

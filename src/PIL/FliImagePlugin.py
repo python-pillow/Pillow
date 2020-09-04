@@ -17,7 +17,10 @@
 
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16le as i16, i32le as i32, o8
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
+from ._binary import o8
 
 #
 # decoder
@@ -130,7 +133,7 @@ class FliImageFile(ImageFile.ImageFile):
             self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError("cannot seek to frame %d" % frame)
+            raise ValueError(f"cannot seek to frame {frame}")
         self.__frame = frame
 
         # move to next frame

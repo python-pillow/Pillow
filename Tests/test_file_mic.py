@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImagePalette
 
 from .helper import assert_image_similar, hopper, skip_unless_feature

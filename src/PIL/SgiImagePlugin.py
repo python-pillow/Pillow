@@ -26,7 +26,9 @@ import os
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, o8
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import o8
 
 
 def _accept(prefix):
@@ -158,9 +160,7 @@ def _save(im, fp, filename):
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError(
-            "incorrect number of bands in SGI write: {} vs {}".format(
-                z, len(im.getbands())
-            )
+            f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
         )
 
     # Minimum Byte value

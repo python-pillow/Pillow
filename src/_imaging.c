@@ -521,12 +521,20 @@ getink(PyObject* color, Imaging im, char* ink)
     if (im->type == IMAGING_TYPE_UINT8 ||
         im->type == IMAGING_TYPE_INT32 ||
         im->type == IMAGING_TYPE_SPECIAL) {
-                if (PyLong_Check(color)) {
-                        r = PyLong_AsLongLong(color);
+        if (PyLong_Check(color)) {
+            r = PyLong_AsLongLong(color);
+            if (r == -1 && PyErr_Occurred()) {
+                return NULL;
+            }
             rIsInt = 1;
-                }
-                if (r == -1 && PyErr_Occurred()) {
-                    rIsInt = 0;
+        } else if (im->type == IMAGING_TYPE_UINT8) {
+            if (!PyTuple_Check(color)) {
+                PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
+                return NULL;
+            }
+        } else {
+            PyErr_SetString(PyExc_TypeError, "color must be int");
+            return NULL;
         }
     }
 
@@ -570,9 +578,6 @@ getink(PyObject* color, Imaging im, char* ink)
         return ink;
     case IMAGING_TYPE_INT32:
         /* signed integer */
-        if (rIsInt != 1) {
-            return NULL;
-        }
         itmp = r;
         memcpy(ink, &itmp, sizeof(itmp));
         return ink;
@@ -587,9 +592,6 @@ getink(PyObject* color, Imaging im, char* ink)
         return ink;
     case IMAGING_TYPE_SPECIAL:
         if (strncmp(im->mode, "I;16", 4) == 0) {
-            if (rIsInt != 1) {
-                return NULL;
-            }
             ink[0] = (UINT8) r;
             ink[1] = (UINT8) (r >> 8);
             ink[2] = ink[3] = 0;

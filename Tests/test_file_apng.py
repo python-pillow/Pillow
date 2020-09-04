@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageSequence, PngImagePlugin
 
 
@@ -311,7 +312,7 @@ def test_apng_sequence_errors():
     ]
     for f in test_files:
         with pytest.raises(SyntaxError):
-            with Image.open("Tests/images/apng/{0}".format(f)) as im:
+            with Image.open(f"Tests/images/apng/{f}") as im:
                 im.seek(im.n_frames - 1)
                 im.load()
 
@@ -358,7 +359,10 @@ def test_apng_save_split_fdat(tmp_path):
     with Image.open("Tests/images/old-style-jpeg-compression.png") as im:
         frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
         im.save(
-            test_file, save_all=True, default_image=True, append_images=frames,
+            test_file,
+            save_all=True,
+            default_image=True,
+            append_images=frames,
         )
     with Image.open(test_file) as im:
         exception = None

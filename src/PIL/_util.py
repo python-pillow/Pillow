@@ -1,20 +1,9 @@
 import os
-import sys
-
-py36 = sys.version_info[0:2] >= (3, 6)
+from pathlib import Path
 
 
-if py36:
-    from pathlib import Path
-
-    def isPath(f):
-        return isinstance(f, (bytes, str, Path))
-
-
-else:
-
-    def isPath(f):
-        return isinstance(f, (bytes, str))
+def isPath(f):
+    return isinstance(f, (bytes, str, Path))
 
 
 # Checks if an object is a string, and that it points to a directory.

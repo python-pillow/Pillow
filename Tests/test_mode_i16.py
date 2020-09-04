@@ -15,9 +15,9 @@ def verify(im1):
             xy = x, y
             p1 = pix1[xy]
             p2 = pix2[xy]
-            assert p1 == p2, "got {!r} from mode {} at {}, expected {!r}".format(
-                p1, im1.mode, xy, p2
-            )
+            assert (
+                p1 == p2
+            ), f"got {repr(p1)} from mode {im1.mode} at {xy}, expected {repr(p2)}"
 
 
 def test_basic(tmp_path):

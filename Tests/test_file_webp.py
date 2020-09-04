@@ -2,6 +2,7 @@ import io
 import re
 
 import pytest
+
 from PIL import Image, WebPImagePlugin, features
 
 from .helper import (

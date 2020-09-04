@@ -1,0 +1,81 @@
+8.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+Python 3.5
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.5, which reached end-of-life on 2020-09-13.
+
+im.offset
+^^^^^^^^^
+
+``im.offset()`` has been removed, call :py:func:`.ImageChops.offset()` instead.
+
+Image.fromstring, im.fromstring and im.tostring
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``Image.fromstring()`` has been removed, call :py:func:`.Image.frombytes()` instead.
+* ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
+* ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
+
+ImageCms.CmsProfile attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed:
+
+========================  ===================================================
+Removed                   Use instead
+========================  ===================================================
+``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
+``pcs``                   Padded :py:attr:`~.CmsProfile.connection_space`
+``product_copyright``     Unicode :py:attr:`~.CmsProfile.copyright`
+``product_desc``          Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_description``   Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_manufacturer``  Unicode :py:attr:`~.CmsProfile.manufacturer`
+``product_model``         Unicode :py:attr:`~.CmsProfile.model`
+========================  ===================================================
+
+API Changes
+===========
+
+Add MIME type to PsdImagePlugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+"image/vnd.adobe.photoshop" is now registered as the
+:py:class:`.PsdImagePlugin.PsdImageFile` MIME type.
+
+API Additions
+=============
+
+ImageOps.autocontrast: add mask parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`.ImageOps.autocontrast` can now take a ``mask`` parameter:
+
+* Histogram used in contrast operation is computed using pixels within the mask.
+  If no mask is given the entire image is used for histogram computation.
+
+ImageOps.autocontrast cutoffs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the ``cutoff`` parameter of :py:func:`.ImageOps.autocontrast` could only
+be a single number, used as the percent to cut off from the histogram on the low and
+high ends.
+
+Now, it can also be a tuple ``(low, high)``.
+
+Security
+========
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

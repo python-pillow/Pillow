@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageSequence, TiffImagePlugin
 
 from .helper import assert_image_equal, hopper, skip_unless_feature

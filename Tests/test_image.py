@@ -3,8 +3,9 @@ import os
 import shutil
 import tempfile
 
-import PIL
 import pytest
+
+import PIL
 from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
 
 from .helper import (
@@ -726,7 +727,8 @@ class TestImage:
             }
 
     @pytest.mark.parametrize(
-        "test_module", [PIL, Image],
+        "test_module",
+        [PIL, Image],
     )
     def test_pillow_version(self, test_module):
         with pytest.warns(DeprecationWarning):
@@ -754,7 +756,7 @@ class TestImage:
             assert test_module.PILLOW_VERSION > "7.0.0"
 
     def test_overrun(self):
-        """ For overrun completeness, test as:
+        """For overrun completeness, test as:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
         for file in [

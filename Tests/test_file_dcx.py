@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import DcxImagePlugin, Image
 
 from .helper import assert_image_equal, hopper, is_pypy

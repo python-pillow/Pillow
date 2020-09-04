@@ -2,6 +2,7 @@ import io
 import sys
 
 import pytest
+
 from PIL import IcnsImagePlugin, Image, features
 
 from .helper import assert_image_equal, assert_image_similar
