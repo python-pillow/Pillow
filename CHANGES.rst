@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Raise proper TypeError in putpixel #4882
+  [nulano, hugovk]
+
 - Added writing of subIFDs #4862
   [radarhere]
 
@@ -32,13 +35,13 @@ Changelog (Pillow)
 - Remove long-deprecated Image.py functions #4798
   [hugovk, nulano, radarhere]
 
-- Replaced most uses of distutils with setuptools #4797, #4809, #4814, #4817, #4829
+- Replaced distutils with setuptools #4797, #4809, #4814, #4817, #4829, #4890
   [hugovk, radarhere]
 
 - Add MIME type to PsdImagePlugin #4788
   [samamorgan]
 
-- Drop support for EOL Python 3.5 #4746
+- Drop support for EOL Python 3.5 #4746, #4794
   [hugovk, radarhere, nulano]
 
 - Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
