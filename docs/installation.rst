@@ -345,7 +345,7 @@ Prerequisites are installed on recent **RedHat**, **Centos** or **Fedora** with:
         freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
         harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
 
-Note that the package manager may be ``yum`` or ``dnf``, depending on the
+Note that the package manager may be yum or DNF, depending on the
 exact distribution.
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
