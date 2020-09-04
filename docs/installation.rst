@@ -377,13 +377,13 @@ Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
 
 Then see ``depends/install_raqm.sh`` to install libraqm.
 
-Prerequisites are installed on recent **RedHat** **Centos** or **Fedora** with::
+Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
 
     sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
         freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
         harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
 
-Note that the package manager may be yum or dnf, depending on the
+Note that the package manager may be yum or DNF, depending on the
 exact distribution.
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
