@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Added formats parameter to Image.open #4837
+  [nulano, radarhere]
+
 - Added regular_polygon draw method #4846
   [comhar]
 
