@@ -25,16 +25,6 @@ function pre_build {
     if [ -n "$IS_OSX" ]; then
         # Update to latest zlib for OS X build
         build_new_zlib
-    elif [ $MB_ML_VER -eq 2014 ]; then
-        yum install -y cmake
-    
-        function get_cmake {
-            echo cmake
-        }
-
-        function build_xz {
-            yum install -y xz-devel
-        }
     fi
 
     if [ -n "$IS_OSX" ]; then
