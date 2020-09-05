@@ -78,6 +78,14 @@ high ends.
 
 Now, it can also be a tuple ``(low, high)``.
 
+ImageDraw.regular_polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method ``regular_polygon``, draws a regular polygon of ``n_sides``, inscribed in a ``bounding_circle``.
+
+For example ``ImageDraw.regular_polygon(((100, 100), 50), 5)``
+draws a pentagon centered at the point ``(100, 100)`` with a polygon radius of ``50``.
+
 Security
 ========
 
