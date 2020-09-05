@@ -2837,7 +2837,7 @@ def _decompression_bomb_check(size):
         )
 
 
-def open(fp, mode="r"):
+def open(fp, mode="r", formats=None):
     """
     Opens and identifies the given image file.
 
@@ -2852,12 +2852,18 @@ def open(fp, mode="r"):
        ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode.
     :param mode: The mode.  If given, this argument must be "r".
+    :param formats: A list or tuple of formats to attempt to load the file in.
+       This can be used to restrict the set of formats checked.
+       Pass ``None`` to try all supported formats. You can print the set of
+       available formats by running ``python -m PIL`` or using
+       the :py:func:`PIL.features.pilinfo` function.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception FileNotFoundError: If the file cannot be found.
     :exception PIL.UnidentifiedImageError: If the image cannot be opened and
        identified.
     :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
        instance is used for ``fp``.
+    :exception TypeError: If ``formats`` is not ``None``, a list or a tuple.
     """
 
     if mode != "r":
@@ -2867,6 +2873,11 @@ def open(fp, mode="r"):
             "StringIO cannot be used to open an image. "
             "Binary data must be used instead."
         )
+
+    if formats is None:
+        formats = ID
+    elif not isinstance(formats, (list, tuple)):
+        raise TypeError("formats must be a list or tuple")
 
     exclusive_fp = False
     filename = ""
@@ -2891,8 +2902,8 @@ def open(fp, mode="r"):
 
     accept_warnings = []
 
-    def _open_core(fp, filename, prefix):
-        for i in ID:
+    def _open_core(fp, filename, prefix, formats):
+        for i in formats:
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
@@ -2914,11 +2925,11 @@ def open(fp, mode="r"):
                 raise
         return None
 
-    im = _open_core(fp, filename, prefix)
+    im = _open_core(fp, filename, prefix, formats)
 
     if im is None:
         if init():
-            im = _open_core(fp, filename, prefix)
+            im = _open_core(fp, filename, prefix, formats)
 
     if im:
         im._exclusive_fp = exclusive_fp

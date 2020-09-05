@@ -87,6 +87,26 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_open_formats(self):
+        PNGFILE = "Tests/images/hopper.png"
+        JPGFILE = "Tests/images/hopper.jpg"
+
+        with pytest.raises(TypeError):
+            Image.open(PNGFILE, formats=123)
+
+        for formats in [["JPEG"], ("JPEG",)]:
+            with pytest.raises(UnidentifiedImageError):
+                Image.open(PNGFILE, formats=formats)
+
+            with Image.open(JPGFILE, formats=formats) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+
+        for file in [PNGFILE, JPGFILE]:
+            with Image.open(file, formats=None) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
         assert im.width == 1
