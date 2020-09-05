@@ -131,8 +131,8 @@ typedef struct {
 static p_raqm_func p_raqm;
 
 
-/* round a 26.6 pixel coordinate to the nearest larger integer */
-#define PIXEL(x) ((((x)+63) & -64)>>6)
+/* round a 26.6 pixel coordinate to the nearest integer */
+#define PIXEL(x) ((((x)+32) & -64)>>6)
 
 static PyObject*
 geterror(int code)
@@ -612,6 +612,7 @@ font_getsize(FontObject* self, PyObject* args)
 {
     int position; /* pen position along primary axis, in 26.6 precision */
     int advanced; /* pen position along primary axis, in pixels */
+    int px, py; /* position of current glyph, in pixels */
     int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
     int x_anchor, y_anchor; /* offset of point drawn at (0, 0), in pixels */
     int load_flags; /* FreeType load_flags parameter */
@@ -619,7 +620,6 @@ font_getsize(FontObject* self, PyObject* args)
     FT_Face face;
     FT_Glyph glyph;
     FT_BBox bbox; /* glyph bounding box */
-    FT_Vector pen;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count; /* glyph_info index and length */
     int horizontal_dir; /* is primary axis horizontal? */
@@ -662,8 +662,8 @@ font_getsize(FontObject* self, PyObject* args)
         face = self->face;
 
         if (horizontal_dir) {
-            pen.x = position + glyph_info[i].x_offset;
-            pen.y = glyph_info[i].y_offset;
+            px = PIXEL(position + glyph_info[i].x_offset);
+            py = PIXEL(glyph_info[i].y_offset);
 
             position += glyph_info[i].x_advance;
             advanced = PIXEL(position);
@@ -671,8 +671,8 @@ font_getsize(FontObject* self, PyObject* args)
                 x_max = advanced;
             }
         } else {
-            pen.x = glyph_info[i].x_offset;
-            pen.y = position + glyph_info[i].y_offset;
+            px = PIXEL(glyph_info[i].x_offset);
+            py = PIXEL(position + glyph_info[i].y_offset);
 
             position += glyph_info[i].y_advance;
             advanced = PIXEL(position);
@@ -680,7 +680,6 @@ font_getsize(FontObject* self, PyObject* args)
                 y_min = advanced;
             }
         }
-        FT_Set_Transform(face, NULL, &pen);
 
         error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
         if (error) {
@@ -693,15 +692,19 @@ font_getsize(FontObject* self, PyObject* args)
         }
 
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
+        bbox.xMax += px;
         if (bbox.xMax > x_max) {
             x_max = bbox.xMax;
         }
+        bbox.xMin += px;
         if (bbox.xMin < x_min) {
             x_min = bbox.xMin;
         }
+        bbox.yMax += py;
         if (bbox.yMax > y_max) {
             y_max = bbox.yMax;
         }
+        bbox.yMin += py;
         if (bbox.yMin < y_min) {
             y_min = bbox.yMin;
         }
@@ -716,7 +719,6 @@ font_getsize(FontObject* self, PyObject* args)
 
     x_anchor = y_anchor = 0;
     if (face) {
-        FT_Set_Transform(face, NULL, NULL);
         if (horizontal_dir) {
             x_anchor = 0;
             y_anchor = PIXEL(self->face->size->metrics.ascender);
@@ -737,6 +739,7 @@ static PyObject*
 font_render(FontObject* self, PyObject* args)
 {
     int x, y; /* pen position, in 26.6 precision */
+    int px, py; /* position of current glyph, in pixels */
     int x_min, y_max; /* text offset in 26.6 precision */
     int load_flags; /* FreeType load_flags parameter */
     int error;
@@ -744,7 +747,6 @@ font_render(FontObject* self, PyObject* args)
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_BitmapGlyph bitmap_glyph;
-    FT_Vector pen;
     FT_Stroker stroker = NULL;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count; /* glyph_info index and length */
@@ -803,9 +805,8 @@ font_render(FontObject* self, PyObject* args)
      */
     x = y = x_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        pen.x = x + glyph_info[i].x_offset;
-        pen.y = y + glyph_info[i].y_offset;
-        FT_Set_Transform(self->face, NULL, &pen);
+        px = PIXEL(x + glyph_info[i].x_offset);
+        py = PIXEL(y + glyph_info[i].y_offset);
 
         error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
@@ -815,11 +816,11 @@ font_render(FontObject* self, PyObject* args)
         glyph_slot = self->face->glyph;
         bitmap = glyph_slot->bitmap;
 
-        if (glyph_slot->bitmap_top > y_max) {
-            y_max = glyph_slot->bitmap_top;
+        if (glyph_slot->bitmap_top + py > y_max) {
+            y_max = glyph_slot->bitmap_top + py;
         }
-        if (glyph_slot->bitmap_left < x_min) {
-            x_min = glyph_slot->bitmap_left;
+        if (glyph_slot->bitmap_left + px < x_min) {
+            x_min = glyph_slot->bitmap_left + px;
         }
 
         x += glyph_info[i].x_advance;
@@ -827,17 +828,16 @@ font_render(FontObject* self, PyObject* args)
     }
 
     /* set pen position to text origin */
-    x = (-x_min + stroke_width) * 64;
-    y = (-y_max + (-stroke_width)) * 64;
+    x = (-x_min + stroke_width) << 6;
+    y = (-y_max + (-stroke_width)) << 6;
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
     }
 
     for (i = 0; i < count; i++) {
-        pen.x = x + glyph_info[i].x_offset;
-        pen.y = y + glyph_info[i].y_offset;
-        FT_Set_Transform(self->face, NULL, &pen);
+        px = PIXEL(x + glyph_info[i].x_offset);
+        py = PIXEL(y + glyph_info[i].y_offset);
 
         error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
@@ -861,12 +861,12 @@ font_render(FontObject* self, PyObject* args)
             bitmap_glyph = (FT_BitmapGlyph)glyph;
 
             bitmap = bitmap_glyph->bitmap;
-            xx = bitmap_glyph->left;
-            yy = -bitmap_glyph->top;
+            xx = px + bitmap_glyph->left;
+            yy = -(py + bitmap_glyph->top);
         } else {
             bitmap = glyph_slot->bitmap;
-            xx = glyph_slot->bitmap_left;
-            yy = -glyph_slot->bitmap_top;
+            xx = px + glyph_slot->bitmap_left;
+            yy = -(py + glyph_slot->bitmap_top);
         }
 
         /* clip glyph bitmap width to target image bounds */
@@ -916,7 +916,6 @@ font_render(FontObject* self, PyObject* args)
         }
     }
 
-    FT_Set_Transform(self->face, NULL, NULL);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;

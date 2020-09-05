@@ -704,10 +704,10 @@ class TestImageFont:
             font.set_variation_by_name("Bold")
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
-        self._check_text(font, "Tests/images/variation_adobe.png", 11.2)
+        self._check_text(font, "Tests/images/variation_adobe.png", 11)
         for name in ["Bold", b"Bold"]:
             font.set_variation_by_name(name)
-        self._check_text(font, "Tests/images/variation_adobe_name.png", 11.3)
+        self._check_text(font, "Tests/images/variation_adobe_name.png", 11)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         self._check_text(font, "Tests/images/variation_tiny.png", 40)
@@ -729,7 +729,7 @@ class TestImageFont:
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
-        self._check_text(font, "Tests/images/variation_adobe_axes.png", 5.8)
+        self._check_text(font, "Tests/images/variation_adobe_axes.png", 11.05)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         font.set_variation_by_axes([100])
