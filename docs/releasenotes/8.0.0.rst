@@ -79,7 +79,7 @@ high ends.
 Now, it can also be a tuple ``(low, high)``.
 
 ImageDraw.regular_polygon
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A new method ``regular_polygon``, draws a regular polygon of ``n_sides``, inscribed in a ``bounding_circle``.
 
