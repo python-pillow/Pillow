@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Added regular_polygon draw method #4846
+  [comhar]
+
 - Raise proper TypeError in putpixel #4882
   [nulano, hugovk]
 
