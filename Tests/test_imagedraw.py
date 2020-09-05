@@ -1175,8 +1175,20 @@ def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
             ValueError,
             "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
         ),
-        (3, (50, 50, 0), 0, ValueError, "bounding_circle radius should be > 0",),
-        (3, (50, 50, 25), "0", ValueError, "rotation should be an int or float",),
+        (
+            3,
+            (50, 50, 0),
+            0,
+            ValueError,
+            "bounding_circle radius should be > 0",
+        ),
+        (
+            3,
+            (50, 50, 25),
+            "0",
+            ValueError,
+            "rotation should be an int or float",
+        ),
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
