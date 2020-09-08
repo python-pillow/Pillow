@@ -454,6 +454,17 @@ class TestImage:
         with Image.open("Tests/images/effect_spread.png") as im3:
             assert_image_similar(im2, im3, 110)
 
+    def test_effect_spread_zero(self):
+        # Arrange
+        im = hopper()
+        distance = 0
+
+        # Act
+        im2 = im.effect_spread(distance)
+
+        # Assert
+        assert_image_equal(im, im2)
+
     def test_check_size(self):
         # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):
