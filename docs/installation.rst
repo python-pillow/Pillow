@@ -10,11 +10,10 @@ Warnings
 
 .. warning:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
 
-Notes
------
+Python Support
+--------------
 
-.. note:: Pillow is supported on the following Python versions
-
+Pillow supports these Python versions.
 
 +----------------------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+-------+
 | **Python**           |**3.9**|**3.8**|**3.7**|**3.6**|**3.5**|**3.4**|**3.3**|**3.2**|**2.7**|**2.6**|**2.5**|**2.4**|
