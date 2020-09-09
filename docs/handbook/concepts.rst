@@ -24,7 +24,7 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The ``mode`` of an image defines the type and depth of a pixel in the image.
+The ``mode`` of an image is a string which defines the type and depth of a pixel in the image.
 Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
 of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
 supports the following standard modes:
