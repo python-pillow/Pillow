@@ -35,9 +35,24 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.3", "<2.4"): {"multiline": 30, "textsize": 12, "getters": (13, 16)},
-        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
-        "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
+        (">=2.3", "<2.4"): {
+            "multiline": 30,
+            "textsize": 12,
+            "getters": (13, 16),
+            "mask": (107, 13),
+        },
+        (">=2.7",): {
+            "multiline": 6.2,
+            "textsize": 2.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+        },
+        "Default": {
+            "multiline": 0.5,
+            "textsize": 0.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+        },
     }
 
     @classmethod
@@ -343,7 +358,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size in ((13, 107), (13, 108))
+        assert mask.size == self.metrics["mask"][::-1]
 
     def test_unrotated_transposed_font_get_mask(self):
         # Arrange
@@ -356,7 +371,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size in ((107, 13), (108, 13))
+        assert mask.size == self.metrics["mask"]
 
     def test_free_type_font_get_name(self):
         # Arrange
@@ -400,7 +415,7 @@ class TestImageFont:
         mask = font.getmask(text)
 
         # Assert
-        assert mask.size in ((107, 13), (108, 13))
+        assert mask.size == self.metrics["mask"]
 
     def test_load_path_not_found(self):
         # Arrange
