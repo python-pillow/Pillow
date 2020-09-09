@@ -131,11 +131,15 @@ ImagingEffectSpread(Imaging imIn, int distance)
     }
 
 #define SPREAD(type, image)\
-    for (y = 0; y < imOut->ysize; y++) {\
-        for (x = 0; x < imOut->xsize; x++) {\
-            if (distance == 0) {\
+    if (distance == 0) {\
+        for (y = 0; y < imOut->ysize; y++) {\
+            for (x = 0; x < imOut->xsize; x++) {\
                 imOut->image[y][x] = imIn->image[y][x];\
-            } else {\
+            }\
+        }\
+    } else {\
+        for (y = 0; y < imOut->ysize; y++) {\
+            for (x = 0; x < imOut->xsize; x++) {\
                 int xx = x + (rand() % distance) - distance/2;\
                 int yy = y + (rand() % distance) - distance/2;\
                 if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) {\
