@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Fixed effect_spread bug for zero distance #4908
+  [radarhere, hugovk]
+
 - Added formats parameter to Image.open #4837
   [nulano, radarhere]
 
