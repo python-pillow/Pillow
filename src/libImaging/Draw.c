@@ -862,7 +862,7 @@ int8_t quarter_next(quarter_state* s, int32_t* ret_x, int32_t* ret_y) {
     if (s->cx == s->ex && s->cy == s->ey) {
         s->finished = 1;
     } else {
-        // bresenham's algorithm, possible optimization: only consider 2 of 3
+        // Bresenham's algorithm, possible optimization: only consider 2 of 3
         // next points depending on current slope
         int32_t nx = s->cx;
         int32_t ny = s->cy + 2;
