@@ -159,6 +159,14 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
+            if sys.platform == "win32":
+                profile_bytes_path = profile.encode()
+                try:
+                    profile_bytes_path.decode("ascii")
+                except UnicodeDecodeError:
+                    with open(profile, "rb") as f:
+                        self._set(core.profile_frombytes(f.read()))
+                    return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))
