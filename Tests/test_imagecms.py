@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import shutil
 from io import BytesIO
 
 import pytest
@@ -434,6 +435,19 @@ def test_extended_information():
     assert p.version == 2.0
     assert p.viewing_condition == "Reference Viewing Condition in IEC 61966-2-1"
     assert p.xcolor_space == "RGB "
+
+
+def test_non_ascii_path(tmp_path):
+    skip_missing()
+    tempfile = str(tmp_path / ("temp_" + chr(128) + ".icc"))
+    try:
+        shutil.copy(SRGB, tempfile)
+    except UnicodeEncodeError:
+        pytest.skip("Non-ASCII path could not be created")
+
+    o = ImageCms.getOpenProfile(tempfile)
+    p = o.profile
+    assert p.model == "IEC 61966-2-1 Default RGB Colour Space - sRGB"
 
 
 def test_profile_typesafety():

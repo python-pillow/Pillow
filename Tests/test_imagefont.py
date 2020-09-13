@@ -111,12 +111,12 @@ class TestImageFont:
         with open(FONT_PATH, "rb") as f:
             self._render(f)
 
-    def test_non_unicode_path(self, tmp_path):
+    def test_non_ascii_path(self, tmp_path):
         tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
         try:
             shutil.copy(FONT_PATH, tempfile)
         except UnicodeEncodeError:
-            pytest.skip("Unicode path could not be created")
+            pytest.skip("Non-ASCII path could not be created")
 
         ImageFont.truetype(tempfile, FONT_SIZE)
 
