@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Fixed loading profile with non-ASCII path on Windows #4914
+  [radarhere]
+
 - Fixed effect_spread bug for zero distance #4908
   [radarhere, hugovk]
 
