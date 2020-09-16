@@ -31,7 +31,7 @@ http://www.cazabon.com\n\
 #include "datetime.h"
 
 #include "lcms2.h"
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #define PYCMSVERSION "1.0.0 pil"
 

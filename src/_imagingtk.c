@@ -14,7 +14,7 @@
 
 
 #include "Python.h"
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #include "_tkmini.h"
 

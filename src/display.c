@@ -25,7 +25,7 @@
 
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support */

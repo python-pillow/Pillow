@@ -20,7 +20,7 @@
 
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 /* compatibility wrappers (defined in _imaging.c) */
 extern int PyImaging_CheckBuffer(PyObject* buffer);

@@ -25,7 +25,7 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 #include "Gif.h"
 
 #ifdef HAVE_UNISTD_H
