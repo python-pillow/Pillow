@@ -259,9 +259,11 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        # vertical offset is added for historical reasons
+        # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
         size, offset = self.font.getsize(text, False, direction, features, language)
         return (
-            size[0] + stroke_width * 2 + offset[0],
+            size[0] + stroke_width * 2,
             size[1] + stroke_width * 2 + offset[1],
         )
 

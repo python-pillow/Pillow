@@ -35,9 +35,24 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.3", "<2.4"): {"multiline": 30, "textsize": 12, "getters": (13, 16)},
-        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
-        "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
+        (">=2.3", "<2.4"): {
+            "multiline": 30,
+            "textsize": 12,
+            "getters": (13, 16),
+            "mask": (107, 13),
+        },
+        (">=2.7",): {
+            "multiline": 6.2,
+            "textsize": 2.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+        },
+        "Default": {
+            "multiline": 0.5,
+            "textsize": 0.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+        },
     }
 
     @classmethod
@@ -343,7 +358,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == (13, 108)
+        assert mask.size == self.metrics["mask"][::-1]
 
     def test_unrotated_transposed_font_get_mask(self):
         # Arrange
@@ -356,7 +371,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == (108, 13)
+        assert mask.size == self.metrics["mask"]
 
     def test_free_type_font_get_name(self):
         # Arrange
@@ -400,7 +415,7 @@ class TestImageFont:
         mask = font.getmask(text)
 
         # Assert
-        assert mask.size == (108, 13)
+        assert mask.size == self.metrics["mask"]
 
     def test_load_path_not_found(self):
         # Arrange
@@ -471,7 +486,8 @@ class TestImageFont:
         d = ImageDraw.Draw(img)
         d.text((10, 10), text, font=ttf)
 
-        assert_image_similar_tofile(img, target, self.metrics["multiline"])
+        # fails with 14.7
+        assert_image_similar_tofile(img, target, 6.2)
 
     def _test_fake_loading_font(self, monkeypatch, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
@@ -728,7 +744,7 @@ class TestImageFont:
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
-        self._check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
+        self._check_text(font, "Tests/images/variation_adobe_axes.png", 11.05)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         font.set_variation_by_axes([100])
