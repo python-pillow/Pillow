@@ -179,7 +179,15 @@ deps = {
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # freetype doesn't specify SDK version, MSBuild may guess incorrectly
                 '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa: E501
-            }
+            },
+            r"builds\windows\vc2010\freetype.user.props": {
+                "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_USE_HARFBUZZ</UserDefines>",  # noqa: E501
+                "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src</UserIncludeDirectories>",  # noqa: E501
+            },
+            r"src/autofit/afshaper.c": {
+                # link against harfbuzz.lib once it becomes available
+                "#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ": '#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ\n#pragma comment(lib, "harfbuzz.lib")',  # noqa: E501
+            },
         },
         "build": [
             cmd_rmdir("objs"),
@@ -488,7 +496,7 @@ if __name__ == "__main__":
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
         elif arg == "--no-raqm":
-            disabled += ["harfbuzz", "fribidi", "libraqm"]
+            disabled += ["fribidi", "libraqm"]
         elif arg.startswith("--depends="):
             depends_dir = arg[10:]
         elif arg.startswith("--python="):
@@ -561,6 +569,9 @@ if __name__ == "__main__":
         # script header
         "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
+
+    for k, v in deps.items():
+        prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
 
