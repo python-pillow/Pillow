@@ -498,6 +498,12 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
 
+    def test_one_item_tuple(self):
+        for mode in ("I", "F", "L"):
+            im = Image.new(mode, (100, 100), (5,))
+            px = im.load()
+            assert px[0, 0] == 5
+
     def test_linear_gradient_wrong_mode(self):
         # Arrange
         wrong_mode = "RGB"
