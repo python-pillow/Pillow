@@ -536,7 +536,7 @@ getink(PyObject* color, Imaging im, char* ink)
                 return NULL;
             }
         } else {
-            PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
+            PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
             return NULL;
         }
     }
