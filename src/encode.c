@@ -26,7 +26,7 @@
 #include "Python.h"
 
 #include "libImaging/Imaging.h"
-#include "Gif.h"
+#include "libImaging/Gif.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> /* write */
@@ -578,7 +578,7 @@ PyImaging_XbmEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBZ
 
-#include "ZipCodecs.h"
+#include "libImaging/ZipCodecs.h"
 
 PyObject*
 PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
@@ -648,7 +648,7 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBTIFF
 
-#include "TiffDecode.h"
+#include "libImaging/TiffDecode.h"
 
 #include <string.h>
 
@@ -975,7 +975,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 #undef  INT16
 #undef  INT32
 
-#include "Jpeg.h"
+#include "libImaging/Jpeg.h"
 
 static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     PyObject* tables;
@@ -1145,7 +1145,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_OPENJPEG
 
-#include "Jpeg2K.h"
+#include "libImaging/Jpeg2K.h"
 
 static void
 j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y)

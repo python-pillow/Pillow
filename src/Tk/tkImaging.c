@@ -39,7 +39,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Imaging.h"
+#include "../libImaging/Imaging.h"
 #include "_tkmini.h"
 
 #include <stdlib.h>
