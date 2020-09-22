@@ -217,7 +217,7 @@ def test_anchor_ttb(anchor):
         pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
 
     text = "f"
-    path = "Tests/images/test_anchor_ttb_%s_%s.png" % (text, anchor)
+    path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
 
     im = Image.new("RGB", (200, 400), "white")
@@ -281,7 +281,7 @@ def test_combine(name, text, dir, anchor, epsilon):
         # Improved computation of emulated vertical metrics for TrueType fonts.
         pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
 
-    path = "Tests/images/test_combine_%s.png" % name
+    path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 
     im = Image.new("RGB", (400, 400), "white")

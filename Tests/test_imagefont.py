@@ -770,7 +770,7 @@ class TestImageFont:
     )
     def test_anchor(self, anchor):
         name, text = "quick", "Quick"
-        path = "Tests/images/test_anchor_%s_%s.png" % (name, anchor)
+        path = f"Tests/images/test_anchor_{name}_{anchor}.png"
         f = ImageFont.truetype(
             "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
         )
@@ -804,7 +804,7 @@ class TestImageFont:
         ),
     )
     def test_anchor_multiline(self, anchor, align):
-        target = "Tests/images/test_anchor_multiline_%s_%s.png" % (anchor, align)
+        target = f"Tests/images/test_anchor_multiline_{anchor}_{align}.png"
         text = "a\nlong\ntext sample"
 
         f = ImageFont.truetype(
