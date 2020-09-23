@@ -97,6 +97,8 @@ function run_tests {
     fi
     pip install numpy
 
+    mv ../pillow-depends-master/test_images/* ../Pillow/Tests/images
+
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
     # Test against expected codecs, modules and features
