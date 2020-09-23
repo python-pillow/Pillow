@@ -4,47 +4,11 @@ pull_request_rules:
       - "#approved-reviews-by>=1"
       - label=automerge
       - status-success=Lint
+      - status-success=Test Successful
+      - status-success=Docker Test Successful
+      - status-success=Windows Test Successful
       - status-success=continuous-integration/appveyor/pr
       - status-success=continuous-integration/travis-ci/pr
-
-      # Test
-      - status-success=macOS-latest Python 3.6
-      - status-success=macOS-latest Python 3.7
-      - status-success=macOS-latest Python 3.8
-      - status-success=macOS-latest Python 3.9-dev
-      - status-success=macOS-latest Python pypy3
-      - status-success=ubuntu-latest Python 3.6
-      - status-success=ubuntu-latest Python 3.7
-      - status-success=ubuntu-latest Python 3.8
-      - status-success=ubuntu-latest Python 3.9-dev
-      - status-success=ubuntu-latest Python pypy3
-
-      # Test Docker
-      - status-success=alpine
-      - status-success=amazon-1-amd64
-      - status-success=amazon-2-amd64
-      - status-success=arch
-      - status-success=centos-6-amd64
-      - status-success=centos-7-amd64
-      - status-success=centos-8-amd64
-      - status-success=debian-10-buster-x86
-      - status-success=fedora-31-amd64
-      - status-success=fedora-32-amd64
-      - status-success=ubuntu-18.04-bionic-amd64
-      - status-success=ubuntu-20.04-focal-amd64
-
-      # Test Windows
-      - status-success=MSYS2 MinGW 32-bit
-      - status-success=MSYS2 MinGW 64-bit
-      - status-success=Python 3.6 x64
-      - status-success=Python 3.6 x86
-      - status-success=Python 3.7 x64
-      - status-success=Python 3.7 x86
-      - status-success=Python 3.8 x64
-      - status-success=Python 3.8 x86
-      - status-success=Python 3.9-dev x64
-      - status-success=Python 3.9-dev x86
-      - status-success=Python pypy3 x86
     actions:
       merge:
         method: merge
