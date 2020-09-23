@@ -25,6 +25,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include FT_BITMAP_H
 #include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
@@ -837,14 +838,17 @@ font_render(FontObject* self, PyObject* args)
     FT_Glyph glyph;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
+    FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
     FT_BitmapGlyph bitmap_glyph;
     FT_Stroker stroker = NULL;
+    int bitmap_converted_ready = 0; /* has bitmap_converted been initialized */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count; /* glyph_info index and length */
     int xx, yy; /* pixel offset of current glyph bitmap */
     int x0, x1; /* horizontal bounds of glyph bitmap to copy */
     unsigned int bitmap_y; /* glyph bitmap y index */
     unsigned char *source; /* glyph bitmap source buffer */
+    unsigned char convert_scale; /* scale factor for non-8bpp bitmaps */
     Imaging im;
     Py_ssize_t id;
     int horizontal_dir; /* is primary axis horizontal? */
@@ -980,6 +984,49 @@ font_render(FontObject* self, PyObject* args)
             yy = -(py + glyph_slot->bitmap_top);
         }
 
+        /* convert non-8bpp bitmaps */
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+                convert_scale = 255;
+                break;
+            case FT_PIXEL_MODE_GRAY2:
+                convert_scale = 255 / 3;
+                break;
+            case FT_PIXEL_MODE_GRAY4:
+                convert_scale = 255 / 15;
+                break;
+            default:
+                convert_scale = 1;
+        }
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+            case FT_PIXEL_MODE_GRAY2:
+            case FT_PIXEL_MODE_GRAY4:
+                if (!bitmap_converted_ready) {
+                    FT_Bitmap_Init(&bitmap_converted);
+                    bitmap_converted_ready = 1;
+                }
+                error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);
+                if (error) {
+                    geterror(error);
+                    goto glyph_error;
+                }
+                bitmap = bitmap_converted;
+                /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
+            case FT_PIXEL_MODE_GRAY:
+                break;
+#ifdef FT_LOAD_COLOR
+            case FT_PIXEL_MODE_BGRA:
+                if (color) {
+                    break;
+                }
+                /* we didn't ask for color, fall through to default */
+#endif
+            default:
+                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                goto glyph_error;
+        }
+
         /* clip glyph bitmap width to target image bounds */
         x0 = 0;
         x1 = bitmap.width;
@@ -994,7 +1041,9 @@ font_render(FontObject* self, PyObject* args)
         for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
             /* clip glyph bitmap height to target image bounds */
             if (yy >= 0 && yy < im->ysize) {
-                // blend this glyph into the buffer
+                /* blend this glyph into the buffer */
+                int k;
+                unsigned char v;
                 unsigned char* target;
                 if (color) {
                     /* target[RGB] returns the color, target[A] returns the mask */
@@ -1005,8 +1054,7 @@ font_render(FontObject* self, PyObject* args)
                 }
 #ifdef FT_LOAD_COLOR
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
-                    // paste color glyph
-                    int k;
+                    /* paste color glyph */
                     for (k = x0; k < x1; k++) {
                         if (target[k * 4 + 3] < source[k * 4 + 3]) {
                             /* unpremultiply BGRa to RGBA */
@@ -1018,62 +1066,28 @@ font_render(FontObject* self, PyObject* args)
                     }
                 } else
 #endif
-                // handle 8bpp separately for performance
                 if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-                    int k;
                     if (color) {
                         for (k = x0; k < x1; k++) {
-                            if (target[k * 4 + 3] < source[k]) {
-                                target[k * 4 + 0] = (unsigned char) (foreground_ink);
-                                target[k * 4 + 1] = (unsigned char) (foreground_ink >> 8);
-                                target[k * 4 + 2] = (unsigned char) (foreground_ink >> 16);
-                                target[k * 4 + 3] = source[k];
+                            v = source[k] * convert_scale;
+                            if (target[k * 4 + 3] < v) {
+                                target[k * 4 + 0] = (unsigned char)(foreground_ink);
+                                target[k * 4 + 1] = (unsigned char)(foreground_ink >> 8);
+                                target[k * 4 + 2] = (unsigned char)(foreground_ink >> 16);
+                                target[k * 4 + 3] = v;
                             }
                         }
                     } else {
                         for (k = x0; k < x1; k++) {
-                            if (target[k] < source[k]) {
-                                target[k] = source[k];
-                            }
-                        }
-                    }
-                } else {
-                    int k, v, m, a, b;
-                    switch (bitmap.pixel_mode) {
-                    case FT_PIXEL_MODE_MONO:
-                        a = 3;
-                        b = 7;
-                        m = 0x80;
-                        break;
-                    case FT_PIXEL_MODE_GRAY2:
-                        a = 2;
-                        b = 3;
-                        m = 0xC0;
-                        break;
-                    case FT_PIXEL_MODE_GRAY4:
-                        a = 1;
-                        b = 1;
-                        m = 0xF0;
-                        break;
-                    default:
-                        PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
-                        return NULL;
-                    }
-                    for (k = x0; k < x1; k++) {
-                        v = CLIP8(255 * ((source[k >> a] << (k & b)) & m) / m);
-                        if (color) {
-                            if (target[k * 4 + 3] < v) {
-                                target[k * 4 + 0] = (unsigned char) foreground_ink;
-                                target[k * 4 + 1] = (unsigned char) (foreground_ink >> 8);
-                                target[k * 4 + 2] = (unsigned char) (foreground_ink >> 16);
-                                target[k * 4 + 3] = v;
-                            }
-                        } else {
+                            v = source[k] * convert_scale;
                             if (target[k] < v) {
                                 target[k] = v;
                             }
                         }
                     }
+                } else {
+                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    goto glyph_error;
                 }
             }
             source += bitmap.pitch;
@@ -1085,9 +1099,23 @@ font_render(FontObject* self, PyObject* args)
         }
     }
 
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
+
+glyph_error:
+    if (stroker != NULL) {
+        FT_Done_Glyph(glyph);
+    }
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
+    FT_Stroker_Done(stroker);
+    PyMem_Del(glyph_info);
+    return NULL;
 }
 
 #if FREETYPE_MAJOR > 2 ||\
