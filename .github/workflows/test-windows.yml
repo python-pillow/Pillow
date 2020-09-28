@@ -267,3 +267,11 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -F GHA_Windows
         env:
           CODECOV_NAME: ${{ matrix.name }}
+
+  success:
+    needs: [build, msys]
+    runs-on: ubuntu-latest
+    name: Windows Test Successful
+    steps:
+      - name: Success
+        run: echo Windows Test Successful
