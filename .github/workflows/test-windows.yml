@@ -73,8 +73,8 @@ jobs:
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         Write-Host "::add-path::$env:RUNNER_WORKSPACE\nasm-2.14.02"
 
-        winbuild\depends\gs9531w32.exe /S
-        Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.53.1\bin"
+        winbuild\depends\gs9533w32.exe /S
+        Write-Host "::add-path::C:\Program Files (x86)\gs\gs9.53.3\bin"
 
         xcopy /s winbuild\depends\test_images\* Tests\images\
       shell: pwsh
