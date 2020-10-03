@@ -55,8 +55,8 @@ function pre_build {
     
     build_tiff
     build_libpng
-    build_openjpeg
     build_lcms2
+    build_openjpeg
 
     if [ -n "$IS_OSX" ]; then
         # Custom flags to allow building on OS X 10.10 and 10.11
