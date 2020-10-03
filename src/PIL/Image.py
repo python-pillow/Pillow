@@ -3466,7 +3466,8 @@ class Exif(MutableMapping):
     def __delitem__(self, tag):
         if self._info is not None and tag in self._info:
             del self._info[tag]
-        del self._data[tag]
+        else:
+            del self._data[tag]
 
     def __iter__(self):
         keys = set(self._data)
