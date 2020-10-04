@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_mingw
+from .helper import assert_image_equal, hopper
 
 try:
     import tkinter as tk
@@ -52,7 +52,6 @@ def test_kw():
     assert im is None
 
 
-@pytest.mark.skipif(is_mingw(), reason="Segmentation fault")
 def test_photoimage():
     for mode in TK_MODES:
         # test as image:
