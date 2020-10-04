@@ -307,7 +307,7 @@ Methods
                    ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
-                              of Pillow, but implemented only in version 7.2.0.
+                              of Pillow, but implemented only in version 8.0.0.
 
     :param spacing: If the text is passed on to
                     :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
@@ -367,7 +367,7 @@ Methods
                    ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
-                              of Pillow, but implemented only in version 7.2.0.
+                              of Pillow, but implemented only in version 8.0.0.
 
     :param spacing: The number of pixels between lines.
     :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
