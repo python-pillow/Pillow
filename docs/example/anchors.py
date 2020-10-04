@@ -8,8 +8,7 @@ def test(anchor):
     d = ImageDraw.Draw(im)
     d.line(((100, 0), (100, 100)), "gray")
     d.line(((0, 50), (200, 50)), "gray")
-    d.text((100, 50), "Sample", "black", font, anchor)
-    d.text((10, 100), "anchor=%s" % anchor, "gray", font, "ld")
+    d.text((100, 50), f"{anchor} example", "black", font, anchor)
     return im
 
 
