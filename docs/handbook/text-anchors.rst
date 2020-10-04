@@ -4,9 +4,9 @@
 Text anchors
 ============
 
-The ``anchor`` parameter determines alignment of drawn text relative to the ``xy`` parameter.
-The default alignment is top left, specifically ``la`` (left--ascender) for horizontal text
-and ``lt`` (left--top) for vertical text.
+The ``anchor`` parameter determines the alignment of drawn text relative to the ``xy`` parameter.
+The default alignment is top left, specifically ``la`` (left-ascender) for horizontal text
+and ``lt`` (left-top) for vertical text.
 
 This parameter is only supported by OpenType/TrueType fonts.
 Other fonts may ignore the parameter and use the default (top left) alignment.
@@ -14,19 +14,19 @@ Other fonts may ignore the parameter and use the default (top left) alignment.
 Specifying an anchor
 ^^^^^^^^^^^^^^^^^^^^
 
-An anchor is specified with a two character string. The first character is the
+An anchor is specified with a two-character string. The first character is the
 horizontal alignment, the second character is the vertical alignment.
-For example, the default value of ``la`` for horizontal text means left--ascender
+For example, the default value of ``la`` for horizontal text means left-ascender
 aligned text.
 
 When drawing text with :py:meth:`PIL.ImageDraw.ImageDraw.text` with a specific anchor,
-text will be placed such that the specified anchor point is at the ``xy`` coordinates.
+the text will be placed such that the specified anchor point is at the ``xy`` coordinates.
 
-For example, in the following image, text is ``ms`` (middle--baseline) aligned, with ``xy`` at
-the intersection of the two lines:
+For example, in the following image, the text is ``ms`` (middle-baseline) aligned, with
+``xy`` at the intersection of the two lines:
 
 .. image:: ../../Tests/images/test_anchor_quick_ms.png
-  :alt: Middle--baseline aligned text.
+  :alt: ms (middle-baseline) aligned text.
   :align: left
 
 .. code-block:: python
@@ -45,7 +45,7 @@ the intersection of the two lines:
     |
 
 .. only: comment
-    The container above prevents the image alignment from affecting following text.
+    The container above prevents the image alignment from affecting the following text.
 
 Quick reference
 ^^^^^^^^^^^^^^^
