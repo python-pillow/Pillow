@@ -56,7 +56,7 @@ alloc_array(Py_ssize_t count)
         PyErr_NoMemory();
         return NULL;
     }
-    if (count > (SIZE_MAX / (2 * sizeof(double))) - 1 ) {
+    if ((unsigned long long)count > (SIZE_MAX / (2 * sizeof(double))) - 1 ) {
         PyErr_NoMemory();
         return NULL;
     }
