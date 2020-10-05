@@ -3371,6 +3371,8 @@ class Exif(MutableMapping):
             head = b"MM\x00\x2A\x00\x00\x00\x08"
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
+            if tag in [0x8769, 0x8225] and not isinstance(value, dict):
+                value = self.get_ifd(tag)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
