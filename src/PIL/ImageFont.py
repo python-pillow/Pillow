@@ -347,6 +347,7 @@ class FreeTypeFont:
         features=None,
         language=None,
         stroke_width=0,
+        anchor=None,
     ):
         """
         Create a bitmap for the text.
@@ -395,6 +396,12 @@ class FreeTypeFont:
 
                          .. versionadded:: 6.2.0
 
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+                         .. versionadded:: 8.0.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
@@ -405,6 +412,7 @@ class FreeTypeFont:
             features=features,
             language=language,
             stroke_width=stroke_width,
+            anchor=anchor,
         )[0]
 
     def getmask2(
@@ -416,6 +424,7 @@ class FreeTypeFont:
         features=None,
         language=None,
         stroke_width=0,
+        anchor=None,
         *args,
         **kwargs,
     ):
@@ -466,14 +475,21 @@ class FreeTypeFont:
 
                          .. versionadded:: 6.2.0
 
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+                         .. versionadded:: 8.0.0
+
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
         size, offset = self.font.getsize(
-            text, mode == "1", direction, features, language
+            text, mode == "1", direction, features, language, anchor
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
+        offset = offset[0] - stroke_width, offset[1] - stroke_width
         im = fill("L", size, 0)
         self.font.render(
             text, im.id, mode == "1", direction, features, language, stroke_width

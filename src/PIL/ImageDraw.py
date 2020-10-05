@@ -320,6 +320,7 @@ class ImageDraw:
                     features=features,
                     language=language,
                     stroke_width=stroke_width,
+                    anchor=anchor,
                     *args,
                     **kwargs,
                 )
@@ -333,6 +334,7 @@ class ImageDraw:
                         features,
                         language,
                         stroke_width,
+                        anchor,
                         *args,
                         **kwargs,
                     )
@@ -353,7 +355,7 @@ class ImageDraw:
                 draw_text(stroke_ink, stroke_width)
 
                 # Draw normal text
-                draw_text(ink, 0, (stroke_width, stroke_width))
+                draw_text(ink, 0)
             else:
                 # Only draw normal text
                 draw_text(ink)
@@ -373,6 +375,16 @@ class ImageDraw:
         stroke_width=0,
         stroke_fill=None,
     ):
+        if direction == "ttb":
+            raise ValueError("ttb direction is unsupported for multiline text")
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            raise ValueError("anchor must be a 2 character string")
+        elif anchor[1] in "tb":
+            raise ValueError("anchor not supported for multiline text")
+
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -390,16 +402,33 @@ class ImageDraw:
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
-        left, top = xy
+
+        top = xy[1]
+        if anchor[1] == "m":
+            top -= (len(lines) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            top -= (len(lines) - 1) * line_spacing
+
         for idx, line in enumerate(lines):
+            left = xy[0]
+            width_difference = max_width - widths[idx]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                left -= width_difference / 2.0
+            elif anchor[0] == "r":
+                left -= width_difference
+
+            # then align by align parameter
             if align == "left":
-                pass  # left = x
+                pass
             elif align == "center":
-                left += (max_width - widths[idx]) / 2.0
+                left += width_difference / 2.0
             elif align == "right":
-                left += max_width - widths[idx]
+                left += width_difference
             else:
                 raise ValueError('align must be "left", "center" or "right"')
+
             self.text(
                 (left, top),
                 line,
@@ -413,7 +442,6 @@ class ImageDraw:
                 stroke_fill=stroke_fill,
             )
             top += line_spacing
-            left = xy[0]
 
     def textsize(
         self,

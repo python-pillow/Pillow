@@ -40,18 +40,21 @@ class TestImageFont:
             "textsize": 12,
             "getters": (13, 16),
             "mask": (107, 13),
+            "multiline-anchor": 6,
         },
         (">=2.7",): {
             "multiline": 6.2,
             "textsize": 2.5,
             "getters": (12, 16),
             "mask": (108, 13),
+            "multiline-anchor": 4,
         },
         "Default": {
             "multiline": 0.5,
             "textsize": 0.5,
             "getters": (12, 16),
             "mask": (108, 13),
+            "multiline-anchor": 4,
         },
     }
 
@@ -749,6 +752,93 @@ class TestImageFont:
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         font.set_variation_by_axes([100])
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+
+    @pytest.mark.parametrize(
+        "anchor",
+        (
+            # test horizontal anchors
+            "ls",
+            "ms",
+            "rs",
+            # test vertical anchors
+            "ma",
+            "mt",
+            "mm",
+            "mb",
+            "md",
+        ),
+    )
+    def test_anchor(self, anchor):
+        name, text = "quick", "Quick"
+        path = f"Tests/images/test_anchor_{name}_{anchor}.png"
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        im = Image.new("RGB", (200, 200), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 100), (200, 100)), "gray")
+        d.line(((100, 0), (100, 200)), "gray")
+        d.text((100, 100), text, fill="black", anchor=anchor, font=f)
+
+        with Image.open(path) as expected:
+            assert_image_similar(im, expected, 7)
+
+    @pytest.mark.parametrize(
+        "anchor,align",
+        (
+            # test horizontal anchors
+            ("lm", "left"),
+            ("lm", "center"),
+            ("lm", "right"),
+            ("mm", "left"),
+            ("mm", "center"),
+            ("mm", "right"),
+            ("rm", "left"),
+            ("rm", "center"),
+            ("rm", "right"),
+            # test vertical anchors
+            ("ma", "center"),
+            # ("mm", "center"),  # duplicate
+            ("md", "center"),
+        ),
+    )
+    def test_anchor_multiline(self, anchor, align):
+        target = f"Tests/images/test_anchor_multiline_{anchor}_{align}.png"
+        text = "a\nlong\ntext sample"
+
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        # test render
+        im = Image.new("RGB", (600, 400), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 200), (600, 200)), "gray")
+        d.line(((300, 0), (300, 400)), "gray")
+        d.multiline_text(
+            (300, 200), text, fill="black", anchor=anchor, font=f, align=align
+        )
+
+        with Image.open(target) as expected:
+            assert_image_similar(im, expected, self.metrics["multiline-anchor"])
+
+    def test_anchor_invalid(self):
+        font = self.get_font()
+        im = Image.new("RGB", (100, 100), "white")
+        d = ImageDraw.Draw(im)
+        d.font = font
+
+        for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
+            pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+        for anchor in ["lt", "lb"]:
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
 
 
 @skip_unless_feature("raqm")

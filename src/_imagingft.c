@@ -626,16 +626,24 @@ font_getsize(FontObject* self, PyObject* args)
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
     const char *dir = NULL;
     const char *lang = NULL;
+    const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
 
     /* calculate size and bearing for a given string */
 
-    if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|izOzz:getsize", &string, &mask, &dir, &features, &lang, &anchor)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    if (anchor == NULL) {
+        anchor = horizontal_dir ? "la" : "lt";
+    }
+    if (strlen(anchor) != 2) {
+        goto bad_anchor;
+    }
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
     if (PyErr_Occurred()) {
@@ -720,11 +728,75 @@ font_getsize(FontObject* self, PyObject* args)
     x_anchor = y_anchor = 0;
     if (face) {
         if (horizontal_dir) {
-            x_anchor = 0;
-            y_anchor = PIXEL(self->face->size->metrics.ascender);
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = 0;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = PIXEL(position / 2);
+                break;
+            case 'r':  // right
+                x_anchor = PIXEL(position);
+                break;
+            case 's':  // vertical baseline
+            default:
+                goto bad_anchor;
+            }
+            switch (anchor[1]) {
+            case 'a':  // ascender
+                y_anchor = PIXEL(self->face->size->metrics.ascender);
+                break;
+            case 't':  // top
+                y_anchor = y_max;
+                break;
+            case 'm':  // middle (ascender + descender) / 2
+                y_anchor = PIXEL((self->face->size->metrics.ascender + self->face->size->metrics.descender) / 2);
+                break;
+            case 's':  // horizontal baseline
+                y_anchor = 0;
+                break;
+            case 'b':  // bottom
+                y_anchor = y_min;
+                break;
+            case 'd':  // descender
+                y_anchor = PIXEL(self->face->size->metrics.descender);
+                break;
+            default:
+                goto bad_anchor;
+            }
         } else {
-            x_anchor = x_min;
-            y_anchor = 0;
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = x_min;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = (x_min + x_max) / 2;
+                break;
+            case 'r':  // right
+                x_anchor = x_max;
+                break;
+            case 's':  // vertical baseline
+                x_anchor = 0;
+                break;
+            default:
+                goto bad_anchor;
+            }
+            switch (anchor[1]) {
+            case 't':  // top
+                y_anchor = 0;
+                break;
+            case 'm':  // middle (top + bottom) / 2
+                y_anchor = PIXEL(position / 2);
+                break;
+            case 'b':  // bottom
+                y_anchor = PIXEL(position);
+                break;
+            case 'a':  // ascender
+            case 's':  // horizontal baseline
+            case 'd':  // descender
+            default:
+                goto bad_anchor;
+            }
         }
     }
 
@@ -733,6 +805,10 @@ font_getsize(FontObject* self, PyObject* args)
         (x_max - x_min), (y_max - y_min),
         (-x_anchor + x_min), -(-y_anchor + y_max)
     );
+
+bad_anchor:
+    PyErr_Format(PyExc_ValueError, "bad anchor specified: %s", anchor);
+    return NULL;
 }
 
 static PyObject*

@@ -295,18 +295,27 @@ Methods
 
     Draws the string at the given position.
 
-    :param xy: Top left corner of the text.
+    :param xy: The anchor coordinates of the text.
     :param text: Text to be drawn. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+    :param anchor: The text anchor alignment. Determines the relative location of
+                   the anchor to the text. The default alignment is top left.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
+
+                    .. note:: This parameter was present in earlier versions
+                              of Pillow, but implemented only in version 8.0.0.
+
     :param spacing: If the text is passed on to
                     :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
                     the number of pixels between lines.
     :param align: If the text is passed on to
                   :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
-                  ``"left"``, ``"center"`` or ``"right"``.
+                  ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
+                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -347,12 +356,22 @@ Methods
 
     Draws the string at the given position.
 
-    :param xy: Top left corner of the text.
+    :param xy: The anchor coordinates of the text.
     :param text: Text to be drawn.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+
+    :param anchor: The text anchor alignment. Determines the relative location of
+                   the anchor to the text. The default alignment is top left.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
+
+                    .. note:: This parameter was present in earlier versions
+                              of Pillow, but implemented only in version 8.0.0.
+
     :param spacing: The number of pixels between lines.
-    :param align: ``"left"``, ``"center"`` or ``"right"``.
+    :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
+                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
