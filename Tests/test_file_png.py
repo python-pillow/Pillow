@@ -564,6 +564,28 @@ class TestFilePng:
         chunks = PngImagePlugin.getchunks(im)
         assert len(chunks) == 3
 
+    def test_read_private_chunks(self):
+        im = Image.open("Tests/images/exif.png")
+        assert im.private_chunks == [(b"orNT", b"\x01")]
+
+    def test_roundtrip_private_chunk(self):
+        # Check private chunk roundtripping
+
+        with Image.open(TEST_PNG_FILE) as im:
+            info = PngImagePlugin.PngInfo()
+            info.add(b"prIV", b"VALUE")
+            info.add(b"atEC", b"VALUE2")
+            info.add(b"prIV", b"VALUE3", True)
+
+            im = roundtrip(im, pnginfo=info)
+        assert im.private_chunks == [(b"prIV", b"VALUE"), (b"atEC", b"VALUE2")]
+        im.load()
+        assert im.private_chunks == [
+            (b"prIV", b"VALUE"),
+            (b"atEC", b"VALUE2"),
+            (b"prIV", b"VALUE3", True),
+        ]
+
     def test_textual_chunks_after_idat(self):
         with Image.open("Tests/images/hopper.png") as im:
             assert "comment" in im.text.keys()
