@@ -663,43 +663,43 @@ class TestImage:
             exif = im.getexif()
             assert 258 not in exif
             assert 274 in exif
-            assert 40960 in exif
-            assert exif[40963] == 450
+            assert 282 in exif
+            assert exif[296] == 2
             assert exif[11] == "gThumb 3.0.1"
 
             out = str(tmp_path / "temp.jpg")
             exif[258] = 8
             del exif[274]
-            del exif[40960]
-            exif[40963] = 455
+            del exif[282]
+            exif[296] = 455
             exif[11] = "Pillow test"
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
             assert 274 not in reloaded_exif
-            assert 40960 not in reloaded_exif
-            assert reloaded_exif[40963] == 455
+            assert 282 not in reloaded_exif
+            assert reloaded_exif[296] == 455
             assert reloaded_exif[11] == "Pillow test"
 
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
             exif = im.getexif()
             assert 258 not in exif
-            assert 40962 in exif
-            assert exif[40963] == 200
+            assert 306 in exif
+            assert exif[274] == 1
             assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
             out = str(tmp_path / "temp.jpg")
             exif[258] = 8
-            del exif[34665]
-            exif[40963] = 455
+            del exif[306]
+            exif[274] = 455
             exif[305] = "Pillow test"
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 34665 not in reloaded_exif
-            assert reloaded_exif[40963] == 455
+            assert 306 not in reloaded_exif
+            assert reloaded_exif[274] == 455
             assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
