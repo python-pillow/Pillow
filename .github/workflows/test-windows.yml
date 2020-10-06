@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9-dev", "pypy3"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "pypy3"]
         architecture: ["x86", "x64"]
         include:
           - architecture: "x86"
@@ -63,9 +63,9 @@ jobs:
     - name: pip install wheel pytest pytest-cov
       run: python -m pip install wheel pytest pytest-cov
 
-    # TODO Remove when 3.9-dev includes setuptools 49.3.2+:
+    # TODO Remove when 3.9 includes setuptools 49.3.2+:
     - name: Upgrade setuptools
-      if: "contains(matrix.python-version, '3.9-dev')"
+      if: "contains(matrix.python-version, '3.9')"
       run: python -m pip install -U "setuptools>=49.3.2"
 
     - name: Install dependencies
