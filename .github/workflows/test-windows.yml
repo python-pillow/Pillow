@@ -54,7 +54,7 @@ jobs:
 
     - name: Set up TCL
       if: "contains(matrix.python-version, 'pypy')"
-      run: echo "TCL_LIBRARY=$env:pythonLocation\tcl\tcl8.5" >> $GITHUB_ENV
+      run: echo "TCL_LIBRARY=$env:pythonLocation\tcl\tcl8.5" >> $env:GITHUB_ENV
       shell: pwsh
 
     - name: Print build system information
@@ -71,10 +71,10 @@ jobs:
     - name: Install dependencies
       run: |
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $GITHUB_PATH
+        echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
 
         winbuild\depends\gs9533w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $GITHUB_PATH
+        echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
 
         xcopy /s winbuild\depends\test_images\* Tests\images\
       shell: pwsh
@@ -224,7 +224,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up shell
-        run: echo "C:\msys64\usr\bin\" >> $GITHUB_PATH
+        run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
         shell: pwsh
 
       - name: Install Dependencies
