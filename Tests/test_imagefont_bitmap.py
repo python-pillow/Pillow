@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import assert_image_similar
+from .helper import assert_image_equal_tofile, assert_image_similar, skip_unless_feature
 
 image_font_installed = True
 try:
@@ -41,3 +41,21 @@ def test_similar():
         font=font_outline,
     )
     assert_image_similar(im_bitmap, im_outline, 4)
+
+
+@skip_unless_feature("freetype2")
+@pytest.mark.parametrize("bpp", (1, 2, 4, 8))
+def test_bitmap_font(bpp):
+    text = "Bitmap Font"
+    target = f"Tests/images/bitmap_font_{bpp}.png"
+    font = ImageFont.truetype(
+        f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+        24,
+        layout_engine=ImageFont.LAYOUT_BASIC,
+    )
+
+    im = Image.new("RGB", (160, 35), "white")
+    draw = ImageDraw.Draw(im)
+    draw.text((2, 2), text, "black", font)
+
+    assert_image_equal_tofile(im, target)
