@@ -222,10 +222,12 @@ def test_language():
     ids=("None", "ltr", "rtl2", "rtl", "ttb"),
 )
 def test_getlength(mode, text, direction, expected):
-    try:
-        ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    im = Image.new(mode, (1, 1), 0)
+    d = ImageDraw.Draw(im)
 
-        assert ttf.getlength(text, mode, direction) == expected
+    try:
+        assert d.textlength(text, ttf, direction) == expected
     except ValueError as ex:
         if (
             direction == "ttb"
@@ -374,6 +376,8 @@ def test_combine_multiline(anchor, align):
     d = ImageDraw.Draw(im)
     d.line(((0, 200), (400, 200)), "gray")
     d.line(((200, 0), (200, 400)), "gray")
+    bbox = d.multiline_textbbox((200, 200), text, anchor=anchor, font=f, align=align)
+    d.rectangle(bbox, outline="red")
     d.multiline_text((200, 200), text, fill="black", anchor=anchor, font=f, align=align)
 
     with Image.open(path) as expected:
@@ -398,7 +402,17 @@ def test_anchor_invalid_ttb():
         )
         pytest.raises(
             ValueError,
+            lambda: d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb"),
+        )
+        pytest.raises(
+            ValueError,
             lambda: d.multiline_text(
+                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
+            ),
+        )
+        pytest.raises(
+            ValueError,
+            lambda: d.multiline_textbbox(
                 (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
             ),
         )
@@ -406,4 +420,8 @@ def test_anchor_invalid_ttb():
     pytest.raises(
         ValueError,
         lambda: d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
+    )
+    pytest.raises(
+        ValueError,
+        lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
     )

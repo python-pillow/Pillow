@@ -221,12 +221,15 @@ class TestImageFont:
             "Tests/fonts/" + font, size, layout_engine=self.LAYOUT_ENGINE
         )
 
+        im = Image.new(mode, (1, 1), 0)
+        d = ImageDraw.Draw(im)
+
         if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
-            length = f.getlength(text, mode)
+            length = d.textlength(text, f)
             assert length == self.metrics["getlength"][length_basic_index]
         else:
             # disable kerning, kerning metrics changed
-            length = f.getlength(text, mode, features=["-kern"])
+            length = d.textlength(text, f, features=["-kern"])
             assert length == length_raqm
 
     def test_render_multiline(self):
@@ -813,19 +816,19 @@ class TestImageFont:
         else:
             width, height = (128, 44)
 
+        bbox_expected = (left, top, left + width, top + height)
+
         f = ImageFont.truetype(
             "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
         )
 
-        # test getbbox
-        assert f.getbbox(text, anchor=anchor) == (left, top, left + width, top + height)
-
-        # test render
         im = Image.new("RGB", (200, 200), "white")
         d = ImageDraw.Draw(im)
         d.line(((0, 100), (200, 100)), "gray")
         d.line(((100, 0), (100, 200)), "gray")
         d.text((100, 100), text, fill="black", anchor=anchor, font=f)
+
+        assert d.textbbox((0, 0), text, f, anchor=anchor) == bbox_expected
 
         with Image.open(path) as expected:
             assert_image_similar(im, expected, 7)
@@ -880,11 +883,22 @@ class TestImageFont:
             pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
             pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
             pytest.raises(
+                ValueError, lambda: d.textbbox((0, 0), "hello", anchor=anchor)
+            )
+            pytest.raises(
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
             )
         for anchor in ["lt", "lb"]:
             pytest.raises(
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
             )
 
 
