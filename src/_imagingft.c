@@ -855,7 +855,8 @@ font_render(FontObject* self, PyObject* args)
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     int stroke_width = 0;
-    PY_LONG_LONG foreground_ink = 0;
+    PY_LONG_LONG foreground_ink_long = 0;
+    unsigned int foreground_ink;
     const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
@@ -866,7 +867,7 @@ font_render(FontObject* self, PyObject* args)
        the right size, or this will crash) */
 
     if (!PyArg_ParseTuple(args, "On|zzOziL:render", &string,  &id, &mode, &dir, &features, &lang,
-                                                   &stroke_width, &foreground_ink)) {
+                                                   &stroke_width, &foreground_ink_long)) {
         return NULL;
     }
 
@@ -875,12 +876,15 @@ font_render(FontObject* self, PyObject* args)
     mask = mode && strcmp(mode, "1") == 0;
     color = mode && strcmp(mode, "RGBA") == 0;
 
+    foreground_ink = foreground_ink_long;
+
 #ifdef FT_COLOR_H
     if (color) {
         FT_Color foreground_color;
-        foreground_color.red = (FT_Byte) (foreground_ink);
-        foreground_color.green = (FT_Byte) (foreground_ink >> 8);
-        foreground_color.blue = (FT_Byte) (foreground_ink >> 16);
+        FT_Byte* ink = (FT_Byte*)&foreground_ink;
+        foreground_color.red = ink[0];
+        foreground_color.green = ink[1];
+        foreground_color.blue = ink[2];
         foreground_color.alpha = (FT_Byte) 255; /* ink alpha is handled in ImageDraw.text */
         FT_Palette_Set_Foreground_Color(self->face, foreground_color);
     }
@@ -1068,12 +1072,13 @@ font_render(FontObject* self, PyObject* args)
 #endif
                 if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
+                        unsigned char* ink = (unsigned char*)&foreground_ink;
                         for (k = x0; k < x1; k++) {
                             v = source[k] * convert_scale;
                             if (target[k * 4 + 3] < v) {
-                                target[k * 4 + 0] = (unsigned char)(foreground_ink);
-                                target[k * 4 + 1] = (unsigned char)(foreground_ink >> 8);
-                                target[k * 4 + 2] = (unsigned char)(foreground_ink >> 16);
+                                target[k * 4 + 0] = ink[0];
+                                target[k * 4 + 1] = ink[1];
+                                target[k * 4 + 2] = ink[2];
                                 target[k * 4 + 3] = v;
                             }
                         }
