@@ -3390,7 +3390,7 @@ class Exif(MutableMapping):
                 if tag == 0x927C:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if self._ifds[0x8769][tag][:8] == b"FUJIFILM":
+                    if tag_data[:8] == b"FUJIFILM":
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 
