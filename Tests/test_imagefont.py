@@ -852,6 +852,7 @@ class TestImageFont:
         with Image.open("Tests/images/standard_embedded.png") as expected:
             assert_image_similar(img, expected, max(self.metrics["multiline"], 3))
 
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt(self):
         if parse_version(features.version_module("freetype2")) < parse_version("2.5.0"):
             pytest.skip("Freetype 2.5.0 or newer required")
@@ -865,7 +866,7 @@ class TestImageFont:
             im = Image.new("RGB", (150, 150), "white")
             d = ImageDraw.Draw(im)
 
-            d.text((10, 10), "\u263A", embedded_color=True, font=font)
+            d.text((10, 10), "\U0001f469", embedded_color=True, font=font)
 
             with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
                 assert_image_similar(im, expected, self.metrics["multiline"])
@@ -873,6 +874,7 @@ class TestImageFont:
             assert str(ex) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt_mask(self):
         if parse_version(features.version_module("freetype2")) < parse_version("2.5.0"):
             pytest.skip("Freetype 2.5.0 or newer required")
@@ -886,7 +888,7 @@ class TestImageFont:
             im = Image.new("RGB", (150, 150), "white")
             d = ImageDraw.Draw(im)
 
-            d.text((10, 10), "\u263A", "black", font=font)
+            d.text((10, 10), "\U0001f469", "black", font=font)
 
             with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
                 assert_image_similar(im, expected, self.metrics["multiline"])
