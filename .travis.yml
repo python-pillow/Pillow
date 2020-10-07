@@ -45,6 +45,12 @@ jobs:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.8
+    - name: "3.9 macOS"
+      os: osx
+      osx_image: xcode9.3
+      language: generic
+      env:
+        - MB_PYTHON_VERSION=3.9
 
     - name: "3.7 Xenial"
       os: linux
@@ -63,6 +69,15 @@ jobs:
       os: linux
       env:
         - MB_PYTHON_VERSION=3.8
+        - PLAT=i686
+    - name: "3.9 Xenial"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.9
+    - name: "3.9 Xenial 32-bit"
+      os: linux
+      env:
+        - MB_PYTHON_VERSION=3.9
         - PLAT=i686
 
     - name: "3.6 macOS PyPy"
@@ -100,6 +115,14 @@ jobs:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.8
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+    - name: "3.9 Xenial aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.9
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
 
     - name: "3.6 macOS latest"
@@ -141,6 +164,14 @@ jobs:
       env:
         - MB_PYTHON_VERSION=3.8
         - LATEST="true"
+    - name: "3.9 macOS latest"
+      os: osx
+      osx_image: xcode9.3
+      language: generic
+      if: tag IS blank
+      env:
+        - MB_PYTHON_VERSION=3.9
+        - LATEST="true"
 
     - name: "3.7 Xenial latest"
       os: linux
@@ -166,6 +197,19 @@ jobs:
       if: tag IS blank
       env:
         - MB_PYTHON_VERSION=3.8
+        - PLAT=i686
+        - LATEST="true"
+    - name: "3.9 Xenial latest"
+      os: linux
+      if: tag IS blank
+      env:
+        - MB_PYTHON_VERSION=3.9
+        - LATEST="true"
+    - name: "3.9 Xenial 32-bit latest"
+      os: linux
+      if: tag IS blank
+      env:
+        - MB_PYTHON_VERSION=3.9
         - PLAT=i686
         - LATEST="true"
 
@@ -215,6 +259,16 @@ jobs:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.8
+        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+        - LATEST="true"
+    - name: "3.9 Xenial aarch64 latest"
+      os: linux
+      arch: arm64
+      if: tag IS blank
+      env:
+        - PLAT=aarch64
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.9
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
         - LATEST="true"
 
