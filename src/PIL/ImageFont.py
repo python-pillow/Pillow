@@ -248,6 +248,15 @@ class FreeTypeFont:
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
+        or disable kerning with (requires libraqm)
+
+        .. code-block:: python
+
+          hello = draw.textlength("Hello", font, features=["-kern"])
+          world = draw.textlength("World", font, features=["-kern"])
+          hello_world = hello + world  # kerning is disabled, no need to adjust
+          assert hello_world == draw.textlength("HelloWorld", font, features=["-kern"])
+
         .. versionadded:: 8.0.0
 
         :param text: Text to measure.

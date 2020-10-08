@@ -403,13 +403,14 @@ Methods
 
     Return the size of the given string, in pixels.
 
-    You can use :meth:`.FreeTypeFont.getlength` to measure text length
-    with 1/64 pixel precision.
+    Use :py:meth:`textlength()` to measure the offset of following text with
+    1/64 pixel precision.
+    Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
 
     .. note:: For historical reasons this function measures text height from
         the ascender line instead of the top, see :ref:`text-anchors`.
         If you wish to measure text height from the top, it is recommended
-        to use :meth:`.FreeTypeFont.getbbox` with ``anchor='lt'`` instead.
+        to use :meth:`textbbox` with ``anchor='lt'`` instead.
 
 
     :param text: Text to be measured. If it contains any newline characters,
@@ -451,6 +452,16 @@ Methods
 
     Return the size of the given string, in pixels.
 
+    Use :py:meth:`textlength()` to measure the offset of following text with
+    1/64 pixel precision.
+    Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
+
+    .. note:: For historical reasons this function measures text height as the
+        distance between the top ascender line and bottom descender line,
+        not the top and bottom of the text, see :ref:`text-anchors`.
+        If you wish to measure text height from the top to the bottom of text,
+        it is recommended to use :meth:`multiline_textbbox` instead.
+
     :param text: Text to be measured.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param spacing: The number of pixels between lines.
@@ -484,6 +495,164 @@ Methods
     :param stroke_width: The width of the text stroke.
 
                      .. versionadded:: 6.2.0
+
+.. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None)
+
+    Returns length (in pixels with 1/64 precision) of given text if rendered
+    in font with provided direction, features, and language.
+
+    This is the amount by which following text should be offset.
+    Text bounding box may extend past the length in some fonts,
+    e.g. when using italics or accents.
+
+    The result is returned as a float; it is a whole number if using basic layout.
+
+    This method uses :meth:`.FreeTypeFont.getlength` internally and falls back
+    on :meth:`textlength` for non-TrueType fonts.
+
+    Note that the sum of two lengths may not equal the length of a concatenated
+    string due to kerning. If you need to adjust for kerning, include the following
+    character and subtract its length.
+
+    For example, instead of
+
+    .. code-block:: python
+
+        hello = draw.textlength("Hello", font)
+        world = draw.textlength("World", font)
+        hello_world = hello + world  # not adjusted for kerning
+        assert hello_world == draw.textlength("HelloWorld", font)  # may fail
+
+    use
+
+    .. code-block:: python
+
+        hello = draw.textlength("HelloW", font) - draw.textlength("W", font)  # adjusted for kerning
+        world = draw.textlength("World", font)
+        hello_world = hello + world  # adjusted for kerning
+        assert hello_world == draw.textlength("HelloWorld", font)  # True
+
+    or disable kerning with (requires libraqm)
+
+    .. code-block:: python
+
+        hello = draw.textlength("Hello", font, features=["-kern"])
+        world = draw.textlength("World", font, features=["-kern"])
+        hello_world = hello + world  # kerning is disabled, no need to adjust
+        assert hello_world == draw.textlength("HelloWorld", font, features=["-kern"])  # True
+
+    .. versionadded:: 8.0.0
+
+    :param text: Text to be measured. May not contain any newline characters.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
+                      Requires libraqm.
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
+                     to disable kerning.  To get all supported
+                     features, see `OpenType docs`_.
+                     Requires libraqm.
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code`_.
+                     Requires libraqm.
+
+.. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
+
+    Returns bounding box (in pixels) of given text relative to given anchor
+    if rendered in font with provided direction, features, and language.
+    Only supported for TrueType fonts.
+
+    Use :py:meth:`textlength` to get the offset of following text with
+    1/64 pixel precision. The bounding box includes extra margins for
+    some fonts, e.g. italics or accents.
+
+    .. versionadded:: 8.0.0
+
+    :param xy: The anchor coordinates of the text.
+    :param text: Text to be measured. If it contains any newline characters,
+                 the text is passed on to
+                 :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`.
+    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param anchor: The text anchor alignment. Determines the relative location of
+                   the anchor to the text. The default alignment is top left.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
+    :param spacing: If the text is passed on to
+                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`,
+                    the number of pixels between lines.
+    :param align: If the text is passed on to
+                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`,
+                  ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
+                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
+                      Requires libraqm.
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
+                     to disable kerning.  To get all supported
+                     features, see `OpenType docs`_.
+                     Requires libraqm.
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code`_.
+                     Requires libraqm.
+    :param stroke_width: The width of the text stroke.
+
+.. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
+
+    Returns bounding box (in pixels) of given text relative to given anchor
+    if rendered in font with provided direction, features, and language.
+    Only supported for TrueType fonts.
+
+    Use :py:meth:`textlength` to get the offset of following text with
+    1/64 pixel precision. The bounding box includes extra margins for
+    some fonts, e.g. italics or accents.
+
+    .. versionadded:: 8.0.0
+
+    :param xy: The anchor coordinates of the text.
+    :param text: Text to be measured.
+    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param anchor: The text anchor alignment. Determines the relative location of
+                   the anchor to the text. The default alignment is top left.
+                   See :ref:`text-anchors` for valid values. This parameter is
+                   ignored for non-TrueType fonts.
+    :param spacing: The number of pixels between lines.
+    :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
+                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+    :param direction: Direction of the text. It can be ``"rtl"`` (right to
+                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
+                      Requires libraqm.
+    :param features: A list of OpenType font features to be used during text
+                     layout. This is usually used to turn on optional
+                     font features that are not enabled by default,
+                     for example ``"dlig"`` or ``"ss01"``, but can be also
+                     used to turn off default font features, for
+                     example ``"-liga"`` to disable ligatures or ``"-kern"``
+                     to disable kerning.  To get all supported
+                     features, see `OpenType docs`_.
+                     Requires libraqm.
+    :param language: Language of the text. Different languages may use
+                     different glyph shapes or ligatures. This parameter tells
+                     the font which language the text is in, and to apply the
+                     correct substitutions as appropriate, if available.
+                     It should be a `BCP 47 language code`_.
+                     Requires libraqm.
+    :param stroke_width: The width of the text stroke.
 
 .. py:method:: getdraw(im=None, hints=None)
 
