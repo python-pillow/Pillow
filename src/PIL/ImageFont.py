@@ -308,7 +308,7 @@ class FreeTypeFont:
         Returns bounding box (in pixels) of given text relative to given anchor
         if rendered in font with provided direction, features, and language.
 
-        Use :py:meth`getlength()` to get the offset of following text with
+        Use :py:meth:`getlength()` to get the offset of following text with
         1/64 pixel precision. The bounding box includes extra margins for
         some fonts, e.g. italics or accents.
 
