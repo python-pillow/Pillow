@@ -173,7 +173,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     context->cinfo.comp_info[i].quant_tbl_no = last_q;
                 }
             } else if (context->quality != -1) {
-                jpeg_set_quality(&context->cinfo, context->quality, FALSE);
+                jpeg_set_quality(&context->cinfo, context->quality, TRUE);
             }
 
             /* Set subsampling options */
