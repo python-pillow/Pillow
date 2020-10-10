@@ -446,6 +446,7 @@ class TestFileJpeg:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
+                assert reloaded.quantization[0].typecode == 'B'
 
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
@@ -543,6 +544,30 @@ class TestFileJpeg:
             # qtable entry has wrong number of items
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
+
+    def test_load_16bit_qtables(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert len(im.quantization) == 2
+            assert len(im.quantization[0]) == 64
+            assert max(im.quantization[0]) > 255
+
+    def test_save_multiple_16bit_qtables(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            im2 = self.roundtrip(im, qtables='keep')
+            assert im.quantization == im2.quantization
+
+    def test_save_single_16bit_qtable(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            im2 = self.roundtrip(im, qtables=[im.quantization[0]])
+            assert len(im2.quantization) == 1
+            assert im2.quantization[0] == im.quantization[0]
+
+    def test_save_low_quality_baseline_qtables(self):
+        with Image.open(TEST_FILE) as im:
+            im2 = self.roundtrip(im, quality=10)
+            assert len(im2.quantization) == 2
+            assert max(im2.quantization[0]) <= 255
+            assert max(im2.quantization[1]) <= 255
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
