@@ -235,9 +235,8 @@ def SOF(self, marker):
 
 def DQT(self, marker):
     #
-    # Define quantization table.  Support baseline 8-bit tables
-    # only.  Note that there might be more than one table in
-    # each marker.
+    # Define quantization table.  Note that there might be more
+    # than one table in each marker.
 
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
