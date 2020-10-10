@@ -446,7 +446,7 @@ class TestFileJpeg:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
-                assert reloaded.quantization[0].typecode == 'B'
+                assert reloaded.quantization[0].typecode == "B"
 
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
@@ -553,12 +553,12 @@ class TestFileJpeg:
 
     def test_save_multiple_16bit_qtables(self):
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
-            im2 = self.roundtrip(im, qtables='keep')
+            im2 = self.roundtrip(im, qtables="keep")
             assert im.quantization == im2.quantization
 
     def test_save_single_16bit_qtable(self):
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
-            im2 = self.roundtrip(im, qtables=[im.quantization[0]])
+            im2 = self.roundtrip(im, qtables={0: im.quantization[0]})
             assert len(im2.quantization) == 1
             assert im2.quantization[0] == im.quantization[0]
 
