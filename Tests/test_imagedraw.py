@@ -164,6 +164,19 @@ def test_arc_width_non_whole_angle():
     assert_image_similar_tofile(im, expected, 1)
 
 
+def test_arc_high():
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.arc([10, 10, 89, 189], 20, 330, width=20, fill="white")
+    draw.arc([110, 10, 189, 189], 20, 150, width=20, fill="white")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_high.png"))
+
+
 def test_bitmap():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -194,13 +207,11 @@ def helper_chord(mode, bbox, start, end):
 def test_chord1():
     for mode in ["RGB", "L"]:
         helper_chord(mode, BBOX1, 0, 180)
-        helper_chord(mode, BBOX1, 0.5, 180.4)
 
 
 def test_chord2():
     for mode in ["RGB", "L"]:
         helper_chord(mode, BBOX2, 0, 180)
-        helper_chord(mode, BBOX2, 0.5, 180.4)
 
 
 def test_chord_width():
@@ -238,6 +249,18 @@ def test_chord_zero_width():
     # Assert
     with Image.open("Tests/images/imagedraw_chord_zero_width.png") as expected:
         assert_image_equal(im, expected)
+
+
+def test_chord_too_fat():
+    # Arrange
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.chord([-150, -150, 99, 99], 15, 60, width=10, fill="white", outline="red")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_chord_too_fat.png"))
 
 
 def helper_ellipse(mode, bbox):
@@ -282,15 +305,18 @@ def test_ellipse_edge():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.ellipse(((0, 0), (W - 1, H)), fill="white")
+    draw.ellipse(((0, 0), (W - 1, H - 1)), fill="white")
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_edge.png", 1)
 
 
 def test_ellipse_symmetric():
-    for bbox in [(25, 25, 76, 76), (25, 25, 75, 75)]:
-        im = Image.new("RGB", (101, 101))
+    for width, bbox in (
+        (100, (24, 24, 75, 75)),
+        (101, (25, 25, 75, 75)),
+    ):
+        im = Image.new("RGB", (width, 100))
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill="green", outline="blue")
         assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
@@ -342,6 +368,43 @@ def test_ellipse_zero_width():
 
     # Assert
     with Image.open("Tests/images/imagedraw_ellipse_zero_width.png") as expected:
+        assert_image_equal(im, expected)
+
+
+def ellipse_various_sizes_helper(filled):
+    ellipse_sizes = range(32)
+    image_size = sum(ellipse_sizes) + len(ellipse_sizes) + 1
+    im = Image.new("RGB", (image_size, image_size))
+    draw = ImageDraw.Draw(im)
+
+    x = 1
+    for w in ellipse_sizes:
+        y = 1
+        for h in ellipse_sizes:
+            border = [x, y, x + w - 1, y + h - 1]
+            if filled:
+                draw.ellipse(border, fill="white")
+            else:
+                draw.ellipse(border, outline="white")
+            y += h + 1
+        x += w + 1
+
+    return im
+
+
+def test_ellipse_various_sizes():
+    im = ellipse_various_sizes_helper(False)
+
+    with Image.open("Tests/images/imagedraw_ellipse_various_sizes.png") as expected:
+        assert_image_equal(im, expected)
+
+
+def test_ellipse_various_sizes_filled():
+    im = ellipse_various_sizes_helper(True)
+
+    with Image.open(
+        "Tests/images/imagedraw_ellipse_various_sizes_filled.png"
+    ) as expected:
         assert_image_equal(im, expected)
 
 
@@ -420,13 +483,13 @@ def helper_pieslice(bbox, start, end):
 
 
 def test_pieslice1():
-    helper_pieslice(BBOX1, -90, 45)
-    helper_pieslice(BBOX1, -90.5, 45.4)
+    helper_pieslice(BBOX1, -92, 46)
+    helper_pieslice(BBOX1, -92.2, 46.2)
 
 
 def test_pieslice2():
-    helper_pieslice(BBOX2, -90, 45)
-    helper_pieslice(BBOX2, -90.5, 45.4)
+    helper_pieslice(BBOX2, -92, 46)
+    helper_pieslice(BBOX2, -92.2, 46.2)
 
 
 def test_pieslice_width():
@@ -465,6 +528,18 @@ def test_pieslice_zero_width():
     # Assert
     with Image.open("Tests/images/imagedraw_pieslice_zero_width.png") as expected:
         assert_image_equal(im, expected)
+
+
+def test_pieslice_wide():
+    # Arrange
+    im = Image.new("RGB", (200, 100))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.pieslice([0, 0, 199, 99], 190, 170, width=10, fill="white", outline="red")
+
+    # Assert
+    assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice_wide.png"))
 
 
 def helper_point(points):
