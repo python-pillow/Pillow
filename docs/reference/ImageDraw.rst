@@ -411,8 +411,6 @@ Methods
         the ascender line instead of the top, see :ref:`text-anchors`.
         If you wish to measure text height from the top, it is recommended
         to use :meth:`textbbox` with ``anchor='lt'`` instead.
-
-
     :param text: Text to be measured. If it contains any newline characters,
                  the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
@@ -498,7 +496,7 @@ Methods
 
 .. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None)
 
-    Returns length (in pixels with 1/64 precision) of given text if rendered
+    Returns length (in pixels with 1/64 precision) of given text when rendered
     in font with provided direction, features, and language.
 
     This is the amount by which following text should be offset.
@@ -567,7 +565,7 @@ Methods
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
 
     Returns bounding box (in pixels) of given text relative to given anchor
-    if rendered in font with provided direction, features, and language.
+    when rendered in font with provided direction, features, and language.
     Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with
@@ -615,7 +613,7 @@ Methods
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
 
     Returns bounding box (in pixels) of given text relative to given anchor
-    if rendered in font with provided direction, features, and language.
+    when rendered in font with provided direction, features, and language.
     Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with

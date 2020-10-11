@@ -217,7 +217,7 @@ class FreeTypeFont:
 
     def getlength(self, text, mode="", direction=None, features=None, language=None):
         """
-        Returns length (in pixels with 1/64 precision) of given text if rendered
+        Returns length (in pixels with 1/64 precision) of given text when rendered
         in font with provided direction, features, and language.
 
         This is the amount by which following text should be offset.
@@ -306,7 +306,7 @@ class FreeTypeFont:
     ):
         """
         Returns bounding box (in pixels) of given text relative to given anchor
-        if rendered in font with provided direction, features, and language.
+        when rendered in font with provided direction, features, and language.
 
         Use :py:meth:`getlength()` to get the offset of following text with
         1/64 pixel precision. The bounding box includes extra margins for
