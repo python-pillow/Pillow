@@ -505,9 +505,6 @@ Methods
 
     The result is returned as a float; it is a whole number if using basic layout.
 
-    This method uses :meth:`.FreeTypeFont.getlength` internally and falls back
-    on :meth:`textlength` for non-TrueType fonts.
-
     Note that the sum of two lengths may not equal the length of a concatenated
     string due to kerning. If you need to adjust for kerning, include the following
     character and subtract its length.
