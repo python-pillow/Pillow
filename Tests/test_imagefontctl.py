@@ -114,7 +114,7 @@ def test_text_direction_ttb():
 
     target = "Tests/images/test_direction_ttb.png"
     with Image.open(target) as target_img:
-        assert_image_similar(im, target_img, 1.15)
+        assert_image_similar(im, target_img, 2.8)
 
 
 def test_text_direction_ttb_stroke():
@@ -138,7 +138,7 @@ def test_text_direction_ttb_stroke():
 
     target = "Tests/images/test_direction_ttb_stroke.png"
     with Image.open(target) as target_img:
-        assert_image_similar(im, target_img, 12.4)
+        assert_image_similar(im, target_img, 19.4)
 
 
 def test_ligature_features():
