@@ -18,6 +18,7 @@ from .helper import (
     is_pypy,
     is_win32,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -870,10 +871,9 @@ class TestImageFont:
         with Image.open("Tests/images/standard_embedded.png") as expected:
             assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
 
+    @skip_unless_feature_version("freetype2", "2.5.0")
     @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt(self):
-        if parse_version(features.version_module("freetype2")) < parse_version("2.5.0"):
-            pytest.skip("Freetype 2.5.0 or newer required")
         try:
             font = ImageFont.truetype(
                 "Tests/fonts/NotoColorEmoji.ttf",
@@ -892,10 +892,9 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
+    @skip_unless_feature_version("freetype2", "2.5.0")
     @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt_mask(self):
-        if parse_version(features.version_module("freetype2")) < parse_version("2.5.0"):
-            pytest.skip("Freetype 2.5.0 or newer required")
         try:
             font = ImageFont.truetype(
                 "Tests/fonts/NotoColorEmoji.ttf",
@@ -914,12 +913,8 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
+    @skip_unless_feature_version("freetype2", "2.10.0")
     def test_colr(self):
-        if parse_version(features.version_module("freetype2")) < parse_version(
-            "2.10.0"
-        ):
-            pytest.skip("Freetype 2.10.0 or newer required")
-
         font = ImageFont.truetype(
             "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
             size=64,
@@ -934,12 +929,8 @@ class TestImageFont:
         with Image.open("Tests/images/colr_bungee.png") as expected:
             assert_image_similar(im, expected, 21)
 
+    @skip_unless_feature_version("freetype2", "2.10.0")
     def test_colr_mask(self):
-        if parse_version(features.version_module("freetype2")) < parse_version(
-            "2.10.0"
-        ):
-            pytest.skip("Freetype 2.10.0 or newer required")
-
         font = ImageFont.truetype(
             "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
             size=64,
@@ -960,11 +951,9 @@ class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
 
 
+@skip_unless_feature_version("freetype2", "2.4", "Different metrics")
 def test_render_mono_size():
     # issue 4177
-
-    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
-        pytest.skip("Different metrics")
 
     im = Image.new("P", (100, 30), "white")
     draw = ImageDraw.Draw(im)

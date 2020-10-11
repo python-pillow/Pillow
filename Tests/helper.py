@@ -11,6 +11,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+from packaging.version import parse as parse_version
 
 from PIL import Image, ImageMath, features
 
@@ -160,6 +161,16 @@ def assert_tuple_approx_equal(actuals, targets, threshold, msg):
 def skip_unless_feature(feature):
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
+
+
+def skip_unless_feature_version(feature, version_required, reason=None):
+    if not features.check(feature):
+        return pytest.mark.skip(f"{feature} not available")
+    if reason is None:
+        reason = f"{feature} is older than {version_required}"
+    version_required = parse_version(version_required)
+    version_available = parse_version(features.version(feature))
+    return pytest.mark.skipif(version_available < version_required, reason=reason)
 
 
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
