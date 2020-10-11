@@ -26,7 +26,7 @@ matrix:
     - python: "3.8"
       arch: s390x
 
-    - python: "pypy3"
+    - python: "pypy3.6-7.3.1"
       name: "PyPy3 Xenial"
     - python: "3.9-dev"
       name: "3.9-dev Xenial"
