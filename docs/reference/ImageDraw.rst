@@ -415,7 +415,7 @@ Methods
 
     :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
-                    .. versionadded:: 8.0.0
+                     .. versionadded:: 8.0.0
 
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 

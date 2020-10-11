@@ -845,12 +845,12 @@ class TestImageFont:
         ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
         ttf.getsize(txt)
 
-        img = Image.new("RGB", (300, 64), "white")
-        d = ImageDraw.Draw(img)
+        im = Image.new("RGB", (300, 64), "white")
+        d = ImageDraw.Draw(im)
         d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
         with Image.open("Tests/images/standard_embedded.png") as expected:
-            assert_image_similar(img, expected, max(self.metrics["multiline"], 3))
+            assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
 
     @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt(self):
@@ -870,8 +870,8 @@ class TestImageFont:
 
             with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
                 assert_image_similar(im, expected, self.metrics["multiline"])
-        except IOError as ex:
-            assert str(ex) in ("unimplemented feature", "unknown file format")
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
     @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
@@ -892,8 +892,8 @@ class TestImageFont:
 
             with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
                 assert_image_similar(im, expected, self.metrics["multiline"])
-        except IOError as ex:
-            assert str(ex) in ("unimplemented feature", "unknown file format")
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
     def test_colr(self):
