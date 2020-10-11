@@ -840,6 +840,24 @@ class TestImageFont:
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
             )
 
+    @skip_unless_feature("freetype2")
+    @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
+    def test_bitmap_font(self, bpp):
+        text = "Bitmap Font"
+        layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
+        target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
+        font = ImageFont.truetype(
+            f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+            24,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (160, 35), "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((2, 2), text, "black", font)
+
+        assert_image_equal_tofile(im, target)
+
     def test_standard_embedded_color(self):
         txt = "Hello World!"
         ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
