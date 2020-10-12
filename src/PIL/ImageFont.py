@@ -290,9 +290,7 @@ class FreeTypeFont:
 
         :return: Width for horizontal, height for vertical text.
         """
-        return (
-            self.font.getlength(text, mode == "1", direction, features, language) / 64
-        )
+        return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
         self,
@@ -352,7 +350,7 @@ class FreeTypeFont:
         :return: ``(left, top, right, bottom)`` bounding box
         """
         size, offset = self.font.getsize(
-            text, mode == "1", direction, features, language, anchor
+            text, mode, direction, features, language, anchor
         )
         left, top = offset[0] - stroke_width, offset[1] - stroke_width
         width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width

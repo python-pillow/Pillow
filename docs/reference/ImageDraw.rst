@@ -513,7 +513,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-.. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None)
+.. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
 
     Returns length (in pixels with 1/64 precision) of given text when rendered
     in font with provided direction, features, and language.
@@ -577,8 +577,9 @@ Methods
                      correct substitutions as appropriate, if available.
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
+    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
-.. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
+.. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
@@ -625,8 +626,9 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
+    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
-.. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0)
+.. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
@@ -667,6 +669,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
+    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
 
 .. py:method:: getdraw(im=None, hints=None)
 

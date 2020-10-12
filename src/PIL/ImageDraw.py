@@ -500,15 +500,26 @@ class ImageDraw:
             max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
 
-    def textlength(self, text, font=None, direction=None, features=None, language=None):
+    def textlength(
+        self,
+        text,
+        font=None,
+        direction=None,
+        features=None,
+        language=None,
+        embedded_color=False,
+    ):
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
             raise ValueError("can't measure length of multiline text")
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
 
         if font is None:
             font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
         try:
-            return font.getlength(text, self.fontmode, direction, features, language)
+            return font.getlength(text, mode, direction, features, language)
         except AttributeError:
             size = self.textsize(
                 text, font, direction=direction, features=features, language=language
@@ -529,8 +540,12 @@ class ImageDraw:
         features=None,
         language=None,
         stroke_width=0,
+        embedded_color=False,
     ):
         """Get the bounding box of a given string, in pixels."""
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+
         if self._multiline_check(text):
             return self.multiline_textbbox(
                 xy,
@@ -543,12 +558,14 @@ class ImageDraw:
                 features,
                 language,
                 stroke_width,
+                embedded_color,
             )
 
         if font is None:
             font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
         bbox = font.getbbox(
-            text, self.fontmode, direction, features, language, stroke_width, anchor
+            text, mode, direction, features, language, stroke_width, anchor
         )
         return bbox[0] + xy[0], bbox[1] + xy[1], bbox[2] + xy[0], bbox[3] + xy[1]
 
@@ -564,6 +581,7 @@ class ImageDraw:
         features=None,
         language=None,
         stroke_width=0,
+        embedded_color=False,
     ):
         if direction == "ttb":
             raise ValueError("ttb direction is unsupported for multiline text")
@@ -583,7 +601,12 @@ class ImageDraw:
         )
         for line in lines:
             line_width = self.textlength(
-                line, font, direction=direction, features=features, language=language
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                embedded_color=embedded_color,
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
@@ -625,6 +648,7 @@ class ImageDraw:
                 features=features,
                 language=language,
                 stroke_width=stroke_width,
+                embedded_color=embedded_color,
             )
             if bbox is None:
                 bbox = bbox_line

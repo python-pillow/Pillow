@@ -624,6 +624,8 @@ font_getlength(FontObject* self, PyObject* args)
     size_t i, count; /* glyph_info index and length */
     int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     PyObject *features = Py_None;
@@ -631,13 +633,16 @@ font_getlength(FontObject* self, PyObject* args)
 
     /* calculate size and bearing for a given string */
 
-    if (!PyArg_ParseTuple(args, "O|izOz:getlength", &string, &mask, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|zzOz:getlength", &string, &mode, &dir, &features, &lang)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
