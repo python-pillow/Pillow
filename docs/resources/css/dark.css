@@ -1991,6 +1991,6 @@
 
     /* For black-on-white/transparent images at handbook/text-anchors.html */
     #text-anchors img {
-        filter: invert(1) brightness(0.85);
+        filter: invert(1) brightness(0.85) hue-rotate(-60deg);
     }
 }
