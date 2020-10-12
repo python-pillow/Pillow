@@ -931,7 +931,6 @@ class TestImageFont:
             assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
 
     @skip_unless_feature_version("freetype2", "2.5.0")
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt(self):
         try:
             font = ImageFont.truetype(
@@ -952,7 +951,6 @@ class TestImageFont:
             pytest.skip("freetype compiled without libpng or unsupported")
 
     @skip_unless_feature_version("freetype2", "2.5.0")
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt_mask(self):
         try:
             font = ImageFont.truetype(
