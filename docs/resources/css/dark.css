@@ -1988,4 +1988,9 @@
     .wy-body-for-nav .keep-us-sustainable a {
         color: rgb(222, 219, 215);
     }
+
+    /* For black-on-white/transparent images at handbook/text-anchors.html */
+    #text-anchors img {
+        filter: invert(1);
+    }
 }
