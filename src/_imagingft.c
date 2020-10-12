@@ -364,27 +364,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM < 0x07020000))
-    if (PyUnicode_Check(string)) {
-        Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
-        Py_ssize_t size = PyUnicode_GET_SIZE(string);
-        if (! size) {
-            /* return 0 and clean up, no glyphs==no size,
-               and raqm fails with empty strings */
-            goto failed;
-        }
-        if (!(*p_raqm.set_text)(rq, (const uint32_t *)(text), size)) {
-            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
-            goto failed;
-        }
-        if (lang) {
-            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
-                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
-                goto failed;
-            }
-        }
-    }
-#else
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
         Py_ssize_t size = PyUnicode_GET_LENGTH(string);
@@ -406,7 +385,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             }
         }
     }
-#endif
     else {
         PyErr_SetString(PyExc_TypeError, "expected string");
         goto failed;
