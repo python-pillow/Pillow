@@ -15,7 +15,6 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    is_pypy,
     is_win32,
     skip_unless_feature,
     skip_unless_feature_version,
@@ -509,7 +508,6 @@ class TestImageFont:
         with pytest.raises(UnicodeEncodeError):
             font.getsize("’")
 
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"

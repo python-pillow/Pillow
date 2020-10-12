@@ -33,9 +33,10 @@ pip install pyroma
 pip install test-image-results
 pip install numpy
 
-# TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
+# TODO Remove when 3.8 / 3.9 / PyPy3 includes setuptools 49.3.2+:
 if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then pip install -U "setuptools>=49.3.2" ; fi
 if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then pip install -U "setuptools>=49.3.2" ; fi
+if [ "$TRAVIS_PYTHON_VERSION" == "pypy3.6-7.3.1" ]; then pip install -U "setuptools>=49.3.2" ; fi
 
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:
