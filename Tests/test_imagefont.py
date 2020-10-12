@@ -18,6 +18,7 @@ from .helper import (
     is_pypy,
     is_win32,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -901,17 +902,119 @@ class TestImageFont:
                 lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
             )
 
+    @skip_unless_feature("freetype2")
+    @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
+    def test_bitmap_font(self, bpp):
+        text = "Bitmap Font"
+        layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
+        target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
+        font = ImageFont.truetype(
+            f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+            24,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (160, 35), "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((2, 2), text, "black", font)
+
+        assert_image_equal_tofile(im, target)
+
+    def test_standard_embedded_color(self):
+        txt = "Hello World!"
+        ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
+        ttf.getsize(txt)
+
+        im = Image.new("RGB", (300, 64), "white")
+        d = ImageDraw.Draw(im)
+        d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
+
+        with Image.open("Tests/images/standard_embedded.png") as expected:
+            assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
+
+    @skip_unless_feature_version("freetype2", "2.5.0")
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
+    def test_cbdt(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\U0001f469", embedded_color=True, font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @skip_unless_feature_version("freetype2", "2.5.0")
+    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
+    def test_cbdt_mask(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\U0001f469", "black", font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @skip_unless_feature_version("freetype2", "2.10.0")
+    def test_colr(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", embedded_color=True, font=font)
+
+        with Image.open("Tests/images/colr_bungee.png") as expected:
+            assert_image_similar(im, expected, 21)
+
+    @skip_unless_feature_version("freetype2", "2.10.0")
+    def test_colr_mask(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", "black", font=font)
+
+        with Image.open("Tests/images/colr_bungee_mask.png") as expected:
+            assert_image_similar(im, expected, 22)
+
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
 
 
+@skip_unless_feature_version("freetype2", "2.4", "Different metrics")
 def test_render_mono_size():
     # issue 4177
-
-    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
-        pytest.skip("Different metrics")
 
     im = Image.new("P", (100, 30), "white")
     draw = ImageDraw.Draw(im)

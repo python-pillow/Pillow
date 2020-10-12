@@ -118,7 +118,7 @@ class ImageDraw:
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None, width=0):
+    def arc(self, xy, start, end, fill=None, width=1):
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
@@ -282,6 +282,7 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         stroke_fill=None,
+        embedded_color=False,
         *args,
         **kwargs,
     ):
@@ -299,7 +300,11 @@ class ImageDraw:
                 language,
                 stroke_width,
                 stroke_fill,
+                embedded_color,
             )
+
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
 
         if font is None:
             font = self.getfont()
@@ -311,16 +316,20 @@ class ImageDraw:
             return ink
 
         def draw_text(ink, stroke_width=0, stroke_offset=None):
+            mode = self.fontmode
+            if stroke_width == 0 and embedded_color:
+                mode = "RGBA"
             coord = xy
             try:
                 mask, offset = font.getmask2(
                     text,
-                    self.fontmode,
+                    mode,
                     direction=direction,
                     features=features,
                     language=language,
                     stroke_width=stroke_width,
                     anchor=anchor,
+                    ink=ink,
                     *args,
                     **kwargs,
                 )
@@ -329,12 +338,13 @@ class ImageDraw:
                 try:
                     mask = font.getmask(
                         text,
-                        self.fontmode,
+                        mode,
                         direction,
                         features,
                         language,
                         stroke_width,
                         anchor,
+                        ink,
                         *args,
                         **kwargs,
                     )
@@ -342,7 +352,15 @@ class ImageDraw:
                     mask = font.getmask(text)
             if stroke_offset:
                 coord = coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]
-            self.draw.draw_bitmap(coord, mask, ink)
+            if mode == "RGBA":
+                # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
+                # extract mask and set text alpha
+                color, mask = mask, mask.getband(3)
+                color.fillband(3, (ink >> 24) & 0xFF)
+                coord2 = coord[0] + mask.size[0], coord[1] + mask.size[1]
+                self.im.paste(color, coord + coord2, mask)
+            else:
+                self.draw.draw_bitmap(coord, mask, ink)
 
         ink = getink(fill)
         if ink is not None:
@@ -374,6 +392,7 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         stroke_fill=None,
+        embedded_color=False,
     ):
         if direction == "ttb":
             raise ValueError("ttb direction is unsupported for multiline text")
@@ -435,6 +454,7 @@ class ImageDraw:
                 language=language,
                 stroke_width=stroke_width,
                 stroke_fill=stroke_fill,
+                embedded_color=embedded_color,
             )
             top += line_spacing
 

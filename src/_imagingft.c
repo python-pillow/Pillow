@@ -25,9 +25,13 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include FT_BITMAP_H
 #include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
+#ifdef FT_COLOR_H
+#include FT_COLOR_H
+#endif
 
 #define KEEP_PY_UNICODE
 
@@ -350,7 +354,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 
 static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                 const char* lang, GlyphInfo **glyph_info, int mask)
+                 const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
@@ -529,7 +533,7 @@ failed:
 
 static size_t
 text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                     const char* lang, GlyphInfo **glyph_info, int mask)
+                     const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     int error, load_flags;
     FT_ULong ch;
@@ -561,10 +565,15 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         return 0;
     }
 
-    load_flags = FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -595,14 +604,14 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
 
 static size_t
 text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-            const char* lang, GlyphInfo **glyph_info, int mask)
+            const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t count;
 
     if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask, color);
     } else {
-        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask);
+        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask, color);
     }
     return count;
 }
@@ -667,6 +676,8 @@ font_getsize(FontObject* self, PyObject* args)
     size_t i, count; /* glyph_info index and length */
     int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     const char *anchor = NULL;
@@ -675,11 +686,14 @@ font_getsize(FontObject* self, PyObject* args)
 
     /* calculate size and bearing for a given string */
 
-    if (!PyArg_ParseTuple(args, "O|izOzz:getsize", &string, &mask, &dir, &features, &lang, &anchor)) {
+    if (!PyArg_ParseTuple(args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
 
     if (anchor == NULL) {
         anchor = horizontal_dir ? "la" : "lt";
@@ -688,18 +702,20 @@ font_getsize(FontObject* self, PyObject* args)
         goto bad_anchor;
     }
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
-     *   Yifu Yu<root@jackyyf.com>, 2014-10-15
-     */
-    load_flags = FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
 
     /*
      * text bounds are given by:
@@ -865,19 +881,26 @@ font_render(FontObject* self, PyObject* args)
     FT_Glyph glyph;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
+    FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
     FT_BitmapGlyph bitmap_glyph;
     FT_Stroker stroker = NULL;
+    int bitmap_converted_ready = 0; /* has bitmap_converted been initialized */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count; /* glyph_info index and length */
     int xx, yy; /* pixel offset of current glyph bitmap */
     int x0, x1; /* horizontal bounds of glyph bitmap to copy */
     unsigned int bitmap_y; /* glyph bitmap y index */
     unsigned char *source; /* glyph bitmap source buffer */
+    unsigned char convert_scale; /* scale factor for non-8bpp bitmaps */
     Imaging im;
     Py_ssize_t id;
     int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
     int stroke_width = 0;
+    PY_LONG_LONG foreground_ink_long = 0;
+    unsigned int foreground_ink;
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     PyObject *features = Py_None;
@@ -886,14 +909,31 @@ font_render(FontObject* self, PyObject* args)
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
 
-    if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
-                                                   &stroke_width)) {
+    if (!PyArg_ParseTuple(args, "On|zzOziL:render", &string,  &id, &mode, &dir, &features, &lang,
+                                                   &stroke_width, &foreground_ink_long)) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    foreground_ink = foreground_ink_long;
+
+#ifdef FT_COLOR_H
+    if (color) {
+        FT_Color foreground_color;
+        FT_Byte* ink = (FT_Byte*)&foreground_ink;
+        foreground_color.red = ink[0];
+        foreground_color.green = ink[1];
+        foreground_color.blue = ink[2];
+        foreground_color.alpha = (FT_Byte) 255; /* ink alpha is handled in ImageDraw.text */
+        FT_Palette_Set_Foreground_Color(self->face, foreground_color);
+    }
+#endif
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -911,12 +951,15 @@ font_render(FontObject* self, PyObject* args)
     }
 
     im = (Imaging) id;
-
-    /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
-    load_flags = FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
 
     /*
      * calculate x_min and y_max
@@ -988,6 +1031,55 @@ font_render(FontObject* self, PyObject* args)
             yy = -(py + glyph_slot->bitmap_top);
         }
 
+        /* convert non-8bpp bitmaps */
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+                convert_scale = 255;
+                break;
+            case FT_PIXEL_MODE_GRAY2:
+                convert_scale = 255 / 3;
+                break;
+            case FT_PIXEL_MODE_GRAY4:
+                convert_scale = 255 / 15;
+                break;
+            default:
+                convert_scale = 1;
+        }
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+            case FT_PIXEL_MODE_GRAY2:
+            case FT_PIXEL_MODE_GRAY4:
+                if (!bitmap_converted_ready) {
+
+#if FREETYPE_MAJOR > 2 ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 6)
+                    FT_Bitmap_Init(&bitmap_converted);
+#else
+                    FT_Bitmap_New(&bitmap_converted);
+#endif
+                    bitmap_converted_ready = 1;
+                }
+                error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);
+                if (error) {
+                    geterror(error);
+                    goto glyph_error;
+                }
+                bitmap = bitmap_converted;
+                /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
+            case FT_PIXEL_MODE_GRAY:
+                break;
+#ifdef FT_LOAD_COLOR
+            case FT_PIXEL_MODE_BGRA:
+                if (color) {
+                    break;
+                }
+                /* we didn't ask for color, fall through to default */
+#endif
+            default:
+                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                goto glyph_error;
+        }
+
         /* clip glyph bitmap width to target image bounds */
         x0 = 0;
         x1 = bitmap.width;
@@ -1002,28 +1094,54 @@ font_render(FontObject* self, PyObject* args)
         for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
             /* clip glyph bitmap height to target image bounds */
             if (yy >= 0 && yy < im->ysize) {
-                // blend this glyph into the buffer
-                unsigned char *target = im->image8[yy] + xx;
-                if (mask) {
-                    // use monochrome mask (on palette images, etc)
-                    int j, k, m = 128;
-                    for (j = k = 0; j < x1; j++) {
-                        if (j >= x0 && (source[k] & m)) {
-                            target[j] = 255;
+                /* blend this glyph into the buffer */
+                int k;
+                unsigned char v;
+                unsigned char* target;
+                if (color) {
+                    /* target[RGB] returns the color, target[A] returns the mask */
+                    /* target bands get split again in ImageDraw.text */
+                    target = im->image[yy] + xx * 4;
+                } else {
+                    target = im->image8[yy] + xx;
+                }
+#ifdef FT_LOAD_COLOR
+                if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
+                    /* paste color glyph */
+                    for (k = x0; k < x1; k++) {
+                        if (target[k * 4 + 3] < source[k * 4 + 3]) {
+                            /* unpremultiply BGRa to RGBA */
+                            target[k * 4 + 0] = CLIP8((255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
+                            target[k * 4 + 1] = CLIP8((255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
+                            target[k * 4 + 2] = CLIP8((255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
+                            target[k * 4 + 3] = source[k * 4 + 3];
                         }
-                        if (!(m >>= 1)) {
-                            m = 128;
-                            k++;
+                    }
+                } else
+#endif
+                if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                    if (color) {
+                        unsigned char* ink = (unsigned char*)&foreground_ink;
+                        for (k = x0; k < x1; k++) {
+                            v = source[k] * convert_scale;
+                            if (target[k * 4 + 3] < v) {
+                                target[k * 4 + 0] = ink[0];
+                                target[k * 4 + 1] = ink[1];
+                                target[k * 4 + 2] = ink[2];
+                                target[k * 4 + 3] = v;
+                            }
+                        }
+                    } else {
+                        for (k = x0; k < x1; k++) {
+                            v = source[k] * convert_scale;
+                            if (target[k] < v) {
+                                target[k] = v;
+                            }
                         }
                     }
                 } else {
-                    // use antialiased rendering
-                    int k;
-                    for (k = x0; k < x1; k++) {
-                        if (target[k] < source[k]) {
-                            target[k] = source[k];
-                        }
-                    }
+                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    goto glyph_error;
                 }
             }
             source += bitmap.pitch;
@@ -1035,9 +1153,23 @@ font_render(FontObject* self, PyObject* args)
         }
     }
 
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
+
+glyph_error:
+    if (stroker != NULL) {
+        FT_Done_Glyph(glyph);
+    }
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
+    FT_Stroker_Done(stroker);
+    PyMem_Del(glyph_info);
+    return NULL;
 }
 
 #if FREETYPE_MAJOR > 2 ||\

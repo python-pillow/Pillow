@@ -3,7 +3,11 @@ from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
 
-from .helper import assert_image_similar, skip_unless_feature
+from .helper import (
+    assert_image_similar,
+    skip_unless_feature,
+    skip_unless_feature_version,
+)
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
@@ -262,13 +266,13 @@ def test_getlength_combine(mode, direction, text):
             pytest.skip("libraqm 0.7 or greater not available")
 
 
+# FreeType 2.5.1 README: Miscellaneous Changes:
+# Improved computation of emulated vertical metrics for TrueType fonts.
+@skip_unless_feature_version(
+    "freetype2", "2.5.1", "FreeType <2.5.1 has incompatible ttb metrics"
+)
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
 def test_anchor_ttb(anchor):
-    if parse_version(features.version_module("freetype2")) < parse_version("2.5.1"):
-        # FreeType 2.5.1 README: Miscellaneous Changes:
-        # Improved computation of emulated vertical metrics for TrueType fonts.
-        pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
-
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)

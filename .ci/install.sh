@@ -33,7 +33,8 @@ pip install pyroma
 pip install test-image-results
 pip install numpy
 
-# TODO Remove when 3.9 includes setuptools 49.3.2+:
+# TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
+if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then pip install -U "setuptools>=49.3.2" ; fi
 if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then pip install -U "setuptools>=49.3.2" ; fi
 
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then

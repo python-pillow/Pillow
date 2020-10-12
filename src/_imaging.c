@@ -518,6 +518,9 @@ getink(PyObject* color, Imaging im, char* ink)
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
+    if (PyTuple_Check(color) && PyTuple_Size(color) == 1) {
+        color = PyTuple_GetItem(color, 0);
+    }
     if (im->type == IMAGING_TYPE_UINT8 ||
         im->type == IMAGING_TYPE_INT32 ||
         im->type == IMAGING_TYPE_SPECIAL) {
@@ -533,7 +536,7 @@ getink(PyObject* color, Imaging im, char* ink)
                 return NULL;
             }
         } else {
-            PyErr_SetString(PyExc_TypeError, "color must be int");
+            PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
             return NULL;
         }
     }
@@ -2836,8 +2839,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
     int ink;
     int width = 0;
     float start, end;
-    int op = 0;
-    if (!PyArg_ParseTuple(args, "Offi|ii", &data, &start, &end, &ink, &width)) {
+    if (!PyArg_ParseTuple(args, "Offi|i", &data, &start, &end, &ink, &width)) {
         return NULL;
     }
 
@@ -2854,7 +2856,7 @@ _draw_arc(ImagingDrawObject* self, PyObject* args)
     n = ImagingDrawArc(self->image->image,
                        (int) xy[0], (int) xy[1],
                        (int) xy[2], (int) xy[3],
-                       start, end, &ink, width, op
+                       start, end, &ink, width, self->blend
                        );
 
     free(xy);
