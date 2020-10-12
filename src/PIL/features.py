@@ -224,6 +224,8 @@ def pilinfo(out=None, supported_formats=True):
         If ``True``, a list of all supported image file formats will be printed.
     """
 
+    from pkg_resources import parse_version
+
     if out is None:
         out = sys.stdout
 
@@ -269,7 +271,10 @@ def pilinfo(out=None, supported_formats=True):
             else:
                 v = version(name)
             if v is not None:
-                t = "compiled for" if name in ("pil", "jpg") else "loaded"
+                version_static = name in ("pil", "jpg")
+                if name == "littlecms2":
+                    version_static = parse_version(v) < parse_version("2.7.0")
+                t = "compiled for" if version_static else "loaded"
                 print("---", feature, "support ok,", t, v, file=out)
             else:
                 print("---", feature, "support ok", file=out)

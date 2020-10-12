@@ -48,7 +48,7 @@ def test_sanity():
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+$", features.version_module("littlecms2"))
+    assert re.search(r"\d+\.\d+(\.\d+)?$", features.version_module("littlecms2"))
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
