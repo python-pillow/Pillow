@@ -169,6 +169,20 @@ deps = {
         ],
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
+    "libpng": {
+        "url": SF_MIRROR + "/project/libpng/libpng16/1.6.37/lpng1637.zip",
+        "filename": "lpng1637.zip",
+        "dir": "lpng1637",
+        "build": [
+            # lint: do not inline
+            cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
+            cmd_nmake(target="clean"),
+            cmd_nmake(),
+            cmd_copy("libpng16_static.lib", "libpng16.lib"),
+        ],
+        "headers": [r"png*.h"],
+        "libs": [r"libpng16.lib"],
+    },
     "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.2.tar.gz",  # noqa: E501
         "filename": "freetype-2.10.2.tar.gz",
@@ -181,8 +195,10 @@ deps = {
                 '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa: E501
             },
             r"builds\windows\vc2010\freetype.user.props": {
-                "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_USE_HARFBUZZ</UserDefines>",  # noqa: E501
-                "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src</UserIncludeDirectories>",  # noqa: E501
+                "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ</UserDefines>",  # noqa: E501
+                "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
+                "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib once it becomes available
