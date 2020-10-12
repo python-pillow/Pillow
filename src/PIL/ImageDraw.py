@@ -411,13 +411,8 @@ class ImageDraw:
             self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
         )
         for line in lines:
-            line_width, line_height = self.textsize(
-                line,
-                font,
-                direction=direction,
-                features=features,
-                language=language,
-                stroke_width=stroke_width,
+            line_width = self.textlength(
+                line, font, direction=direction, features=features, language=language
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
@@ -504,6 +499,172 @@ class ImageDraw:
             )
             max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
+
+    def textlength(
+        self,
+        text,
+        font=None,
+        direction=None,
+        features=None,
+        language=None,
+        embedded_color=False,
+    ):
+        """Get the length of a given string, in pixels with 1/64 precision."""
+        if self._multiline_check(text):
+            raise ValueError("can't measure length of multiline text")
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+
+        if font is None:
+            font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
+        try:
+            return font.getlength(text, mode, direction, features, language)
+        except AttributeError:
+            size = self.textsize(
+                text, font, direction=direction, features=features, language=language
+            )
+            if direction == "ttb":
+                return size[1]
+            return size[0]
+
+    def textbbox(
+        self,
+        xy,
+        text,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        embedded_color=False,
+    ):
+        """Get the bounding box of a given string, in pixels."""
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+
+        if self._multiline_check(text):
+            return self.multiline_textbbox(
+                xy,
+                text,
+                font,
+                anchor,
+                spacing,
+                align,
+                direction,
+                features,
+                language,
+                stroke_width,
+                embedded_color,
+            )
+
+        if font is None:
+            font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
+        bbox = font.getbbox(
+            text, mode, direction, features, language, stroke_width, anchor
+        )
+        return bbox[0] + xy[0], bbox[1] + xy[1], bbox[2] + xy[0], bbox[3] + xy[1]
+
+    def multiline_textbbox(
+        self,
+        xy,
+        text,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        embedded_color=False,
+    ):
+        if direction == "ttb":
+            raise ValueError("ttb direction is unsupported for multiline text")
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            raise ValueError("anchor must be a 2 character string")
+        elif anchor[1] in "tb":
+            raise ValueError("anchor not supported for multiline text")
+
+        widths = []
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = (
+            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
+        )
+        for line in lines:
+            line_width = self.textlength(
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                embedded_color=embedded_color,
+            )
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+
+        top = xy[1]
+        if anchor[1] == "m":
+            top -= (len(lines) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            top -= (len(lines) - 1) * line_spacing
+
+        bbox = None
+
+        for idx, line in enumerate(lines):
+            left = xy[0]
+            width_difference = max_width - widths[idx]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                left -= width_difference / 2.0
+            elif anchor[0] == "r":
+                left -= width_difference
+
+            # then align by align parameter
+            if align == "left":
+                pass
+            elif align == "center":
+                left += width_difference / 2.0
+            elif align == "right":
+                left += width_difference
+            else:
+                raise ValueError('align must be "left", "center" or "right"')
+
+            bbox_line = self.textbbox(
+                (left, top),
+                line,
+                font,
+                anchor,
+                direction=direction,
+                features=features,
+                language=language,
+                stroke_width=stroke_width,
+                embedded_color=embedded_color,
+            )
+            if bbox is None:
+                bbox = bbox_line
+            else:
+                bbox = (
+                    min(bbox[0], bbox_line[0]),
+                    min(bbox[1], bbox_line[1]),
+                    max(bbox[2], bbox_line[2]),
+                    max(bbox[3], bbox_line[3]),
+                )
+
+            top += line_spacing
+
+        if bbox is None:
+            return xy[0], xy[1], xy[0], xy[1]
+        return bbox
 
 
 def Draw(im, mode=None):

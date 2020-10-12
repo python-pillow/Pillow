@@ -41,6 +41,7 @@ class TestImageFont:
             "getters": (13, 16),
             "mask": (107, 13),
             "multiline-anchor": 6,
+            "getlength": (36, 27, 27, 33),
         },
         (">=2.7",): {
             "multiline": 6.2,
@@ -48,6 +49,7 @@ class TestImageFont:
             "getters": (12, 16),
             "mask": (108, 13),
             "multiline-anchor": 4,
+            "getlength": (36, 21, 24, 33),
         },
         "Default": {
             "multiline": 0.5,
@@ -55,6 +57,7 @@ class TestImageFont:
             "getters": (12, 16),
             "mask": (108, 13),
             "multiline-anchor": 4,
+            "getlength": (36, 24, 24, 33),
         },
     }
 
@@ -197,6 +200,37 @@ class TestImageFont:
 
             # Epsilon ~.5 fails with FreeType 2.7
             assert_image_similar(im, target_img, self.metrics["textsize"])
+
+    @pytest.mark.parametrize(
+        "text, mode, font, size, length_basic_index, length_raqm",
+        (
+            # basic test
+            ("text", "L", "FreeMono.ttf", 15, 0, 36),
+            ("text", "1", "FreeMono.ttf", 15, 0, 36),
+            # issue 4177
+            ("rrr", "L", "DejaVuSans.ttf", 18, 1, 22.21875),
+            ("rrr", "1", "DejaVuSans.ttf", 18, 2, 22.21875),
+            # test 'l' not including extra margin
+            # using exact value 2047 / 64 for raqm, checked with debugger
+            ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+            ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+        ),
+    )
+    def test_getlength(self, text, mode, font, size, length_basic_index, length_raqm):
+        f = ImageFont.truetype(
+            "Tests/fonts/" + font, size, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        im = Image.new(mode, (1, 1), 0)
+        d = ImageDraw.Draw(im)
+
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
+            length = d.textlength(text, f)
+            assert length == self.metrics["getlength"][length_basic_index]
+        else:
+            # disable kerning, kerning metrics changed
+            length = d.textlength(text, f, features=["-kern"])
+            assert length == length_raqm
 
     def test_render_multiline(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -753,23 +787,36 @@ class TestImageFont:
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
     @pytest.mark.parametrize(
-        "anchor",
+        "anchor, left, left_old, top",
         (
             # test horizontal anchors
-            "ls",
-            "ms",
-            "rs",
+            ("ls", 0, 0, -36),
+            ("ms", -64, -65, -36),
+            ("rs", -128, -129, -36),
             # test vertical anchors
-            "ma",
-            "mt",
-            "mm",
-            "mb",
-            "md",
+            ("ma", -64, -65, 16),
+            ("mt", -64, -65, 0),
+            ("mm", -64, -65, -17),
+            ("mb", -64, -65, -44),
+            ("md", -64, -65, -51),
         ),
+        ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
     )
-    def test_anchor(self, anchor):
+    def test_anchor(self, anchor, left, left_old, top):
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
+
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.4"):
+            width, height = (129, 44)
+            left = left_old
+        elif self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+            width, height = (129, 44)
+        else:
+            width, height = (128, 44)
+
+        bbox_expected = (left, top, left + width, top + height)
+
         f = ImageFont.truetype(
             "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
         )
@@ -780,11 +827,13 @@ class TestImageFont:
         d.line(((100, 0), (100, 200)), "gray")
         d.text((100, 100), text, fill="black", anchor=anchor, font=f)
 
+        assert d.textbbox((0, 0), text, f, anchor=anchor) == bbox_expected
+
         with Image.open(path) as expected:
             assert_image_similar(im, expected, 7)
 
     @pytest.mark.parametrize(
-        "anchor,align",
+        "anchor, align",
         (
             # test horizontal anchors
             ("lm", "left"),
@@ -830,13 +879,25 @@ class TestImageFont:
 
         for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
             pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
             pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
             pytest.raises(
+                ValueError, lambda: d.textbbox((0, 0), "hello", anchor=anchor)
+            )
+            pytest.raises(
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
             )
         for anchor in ["lt", "lb"]:
             pytest.raises(
                 ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
             )
 
     @skip_unless_feature("freetype2")
@@ -870,7 +931,6 @@ class TestImageFont:
             assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
 
     @skip_unless_feature_version("freetype2", "2.5.0")
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt(self):
         try:
             font = ImageFont.truetype(
@@ -891,7 +951,6 @@ class TestImageFont:
             pytest.skip("freetype compiled without libpng or unsupported")
 
     @skip_unless_feature_version("freetype2", "2.5.0")
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_cbdt_mask(self):
         try:
             font = ImageFont.truetype(
