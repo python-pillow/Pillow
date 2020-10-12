@@ -60,6 +60,10 @@ class TestDecompressionBomb:
         with pytest.raises(Image.DecompressionBombError):
             Image.open("Tests/images/decompression_bomb.gif")
 
+    def test_exception_bmp(self):
+        with pytest.raises(Image.DecompressionBombError):
+            Image.open("Tests/images/bmp/b/reallybig.bmp")
+
 
 class TestDecompressionCrop:
     @classmethod

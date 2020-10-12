@@ -162,10 +162,6 @@ class BmpImageFile(ImageFile.ImageFile):
             else (1 << file_info["bits"])
         )
 
-        # ------------------------------- Check abnormal values for DOS attacks
-        if file_info["width"] * file_info["height"] > 2 ** 31:
-            raise OSError("Unsupported BMP Size: (%dx%d)" % self.size)
-
         # ---------------------- Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
         if self.mode is None:

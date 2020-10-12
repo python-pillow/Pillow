@@ -86,15 +86,11 @@ A new method :py:meth:`.ImageDraw.regular_polygon`, draws a regular polygon of `
 For example ``draw.regular_polygon(((100, 100), 50), 5)``
 draws a pentagon centered at the point ``(100, 100)`` with a polygon radius of ``50``.
 
-Security
-========
-
-TODO
-
 Other Changes
 =============
 
-TODO
-^^^^
+Error for large BMP files
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Previously, if a BMP file was too large, an ``OSError`` would be raised. Now,
+``DecompressionBombError`` is used instead, as Pillow already uses for other formats.
