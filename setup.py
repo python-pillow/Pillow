@@ -38,12 +38,16 @@ ZLIB_ROOT = None
 
 
 if sys.platform == "win32" and sys.version_info >= (3, 10):
-    warnings.warn(
-        f"Pillow {PILLOW_VERSION} does not support Python "
-        f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
-        "prebuilt Windows binaries. We do not recommend building from source on "
-        "Windows.",
-        RuntimeWarning,
+    import atexit
+
+    atexit.register(
+        lambda: warnings.warn(
+            f"Pillow {PILLOW_VERSION} does not support Python "
+            f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+            "prebuilt Windows binaries. We do not recommend building from source on "
+            "Windows.",
+            RuntimeWarning,
+        )
     )
 
 
