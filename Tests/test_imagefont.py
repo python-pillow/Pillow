@@ -203,7 +203,7 @@ class TestImageFont:
             assert_image_similar(im, target_img, self.metrics["textsize"])
 
     @pytest.mark.parametrize(
-        "text,mode,font,size,length_basic_index,length_raqm",
+        "text, mode, font, size, length_basic_index, length_raqm",
         (
             # basic test
             ("text", "L", "FreeMono.ttf", 15, 0, 36),
@@ -789,7 +789,7 @@ class TestImageFont:
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
     @pytest.mark.parametrize(
-        "anchor,left,left_old,top",
+        "anchor, left, left_old, top",
         (
             # test horizontal anchors
             ("ls", 0, 0, -36),
@@ -835,7 +835,7 @@ class TestImageFont:
             assert_image_similar(im, expected, 7)
 
     @pytest.mark.parametrize(
-        "anchor,align",
+        "anchor, align",
         (
             # test horizontal anchors
             ("lm", "left"),

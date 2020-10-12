@@ -215,7 +215,7 @@ def test_language():
 
 @pytest.mark.parametrize("mode", ("L", "1"))
 @pytest.mark.parametrize(
-    "text,direction,expected",
+    "text, direction, expected",
     (
         ("سلطنة عمان Oman", None, 173.703125),
         ("سلطنة عمان Oman", "ltr", 173.703125),
@@ -327,7 +327,7 @@ combine_tests = (
 
 # this tests various combining characters for anchor alignment and clipping
 @pytest.mark.parametrize(
-    "name,text,anchor,dir,epsilon", combine_tests, ids=[r[0] for r in combine_tests]
+    "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
 def test_combine(name, text, dir, anchor, epsilon):
     if (
@@ -356,7 +356,7 @@ def test_combine(name, text, dir, anchor, epsilon):
 
 
 @pytest.mark.parametrize(
-    "anchor,align",
+    "anchor, align",
     (
         ("lm", "left"),  # pass with getsize
         ("lm", "center"),  # fail at 2.12
