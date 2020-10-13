@@ -5,6 +5,33 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Drop support for PyPy3 < 7.2.0 #4964
+  [nulano]
+
+- Allow tuples with one item to give single color value in getink #4927
+  [radarhere, nulano]
+
+- Removed OSError in favour of DecompressionBombError for BMP #4966
+  [radarhere]
+
+- Implemented another ellipse drawing algorithm #4523
+  [xtsm, radarhere]
+
+- Removed unused JpegImagePlugin._fixup_dict function #4957
+  [radarhere]
+
+- Added reading and writing of private PNG chunks #4292
+  [radarhere]
+
+- Fixed bug in Exif __delitem__ #4942
+  [radarhere]
+
+- Fix crash in ImageTk.PhotoImage on MinGW 64-bit #4946
+  [nulano]
+
+- Moved CVE images to pillow-depends #4929
+  [radarhere]
+
 - Fixed loading profile with non-ASCII path on Windows #4914
   [radarhere]
 
