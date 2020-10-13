@@ -89,6 +89,16 @@ draws a pentagon centered at the point ``(100, 100)`` with a polygon radius of `
 Other Changes
 =============
 
+Added writing of subIFDs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving EXIF data, Pillow is now able to write subIFDs, such as the GPS IFD. This
+should happen automatically when saving an image using the EXIF data that it was opened
+with, such as in :py:meth:`~PIL.ImageOps.exif_transpose`.
+
+Previously, the code of the first tag of the subIFD was incorrectly written as the
+offset.
+
 Error for large BMP files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
