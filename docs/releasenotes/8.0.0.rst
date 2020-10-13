@@ -137,6 +137,13 @@ These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for deta
 Other Changes
 =============
 
+Improved ellipse-drawing algorithm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ellipse-drawing algorithm has been changed from drawing a 360-sided polygon to one
+which resembles Bresenham's algorithm's for circles. It should be faster and produce
+smoother curves, especially for smaller ellipses.
+
 ImageDraw.text and ImageDraw.multiline_text
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
