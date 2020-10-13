@@ -134,11 +134,6 @@ and :py:meth:`.FreeTypeFont.getbbox` return the bounding box of rendered text.
 
 These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for details.
 
-Security
-========
-
-TODO
-
 Other Changes
 =============
 
@@ -151,6 +146,16 @@ sometimes causing unexpected text alignment issues.
 The ``align`` parameter of :py:meth:`.ImageDraw.multiline_text` now gives better results in some cases.
 
 TrueType fonts with embedded bitmaps are now supported.
+
+Added writing of subIFDs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving EXIF data, Pillow is now able to write subIFDs, such as the GPS IFD. This
+should happen automatically when saving an image using the EXIF data that it was opened
+with, such as in :py:meth:`~PIL.ImageOps.exif_transpose`.
+
+Previously, the code of the first tag of the subIFD was incorrectly written as the
+offset.
 
 Error for large BMP files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
