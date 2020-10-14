@@ -36,6 +36,7 @@ import io
 import os
 import struct
 import subprocess
+import sys
 import tempfile
 import warnings
 
@@ -234,9 +235,8 @@ def SOF(self, marker):
 
 def DQT(self, marker):
     #
-    # Define quantization table.  Support baseline 8-bit tables
-    # only.  Note that there might be more than one table in
-    # each marker.
+    # Define quantization table.  Note that there might be more
+    # than one table in each marker.
 
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
@@ -244,15 +244,16 @@ def DQT(self, marker):
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
-        if len(s) < 65:
-            raise SyntaxError("bad quantization table marker")
         v = i8(s[0])
-        if v // 16 == 0:
-            self.quantization[v & 15] = array.array("B", s[1:65])
-            s = s[65:]
-        else:
-            return  # FIXME: add code to read 16-bit tables!
-            # raise SyntaxError, "bad quantization table element size"
+        precision = 1 if (v // 16 == 0) else 2  # in bytes
+        qt_length = 1 + precision * 64
+        if len(s) < qt_length:
+            raise SyntaxError("bad quantization table marker")
+        data = array.array("B" if precision == 1 else "H", s[1:qt_length])
+        if sys.byteorder == "little" and precision > 1:
+            data.byteswap()  # the values are always big-endian
+        self.quantization[v & 15] = data
+        s = s[qt_length:]
 
 
 #
@@ -676,7 +677,7 @@ def _save(im, fp, filename):
                 try:
                     if len(table) != 64:
                         raise TypeError
-                    table = array.array("B", table)
+                    table = array.array("H", table)
                 except TypeError as e:
                     raise ValueError("Invalid quantization table") from e
                 else:
