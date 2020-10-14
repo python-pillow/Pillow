@@ -1512,6 +1512,7 @@ setup_module(PyObject* m) {
 
     d = PyModule_GetDict(m);
 
+    /* this check is also in PIL.features.pilinfo() */
 #if LCMS_VERSION < 2070
     vn = LCMS_VERSION;
 #else
