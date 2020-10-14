@@ -5,11 +5,17 @@ Changelog (Pillow)
 8.0.0 (unreleased)
 ------------------
 
+- Add getlength and getbbox functions for TrueType fonts #4959
+  [nulano, radarhere, hugovk]
+
 - Drop support for PyPy3 < 7.2.0 #4964
   [nulano]
 
 - Allow tuples with one item to give single color value in getink #4927
   [radarhere, nulano]
+
+- Add support for CBDT and COLR fonts #4955
+  [nulano, hugovk]
 
 - Removed OSError in favour of DecompressionBombError for BMP #4966
   [radarhere]
@@ -23,6 +29,9 @@ Changelog (Pillow)
 - Added reading and writing of private PNG chunks #4292
   [radarhere]
 
+- Implement anchor for TrueType fonts #4930
+  [nulano, hugovk]
+
 - Fixed bug in Exif __delitem__ #4942
   [radarhere]
 
@@ -31,6 +40,9 @@ Changelog (Pillow)
 
 - Moved CVE images to pillow-depends #4929
   [radarhere]
+
+- Refactor font_getsize and font_render #4910
+  [nulano]
 
 - Fixed loading profile with non-ASCII path on Windows #4914
   [radarhere]
