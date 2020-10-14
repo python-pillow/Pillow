@@ -12,7 +12,7 @@
  */
 
 #include "Python.h"
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #define LUT_SIZE (1<<9)
 

@@ -88,7 +88,7 @@
 #endif
 #endif
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>

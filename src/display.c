@@ -25,14 +25,14 @@
 
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */
 /* Windows DIB support */
 
 #ifdef _WIN32
 
-#include "ImDib.h"
+#include "libImaging/ImDib.h"
 
 #if SIZEOF_VOID_P == 8
 #define F_HANDLE "K"

@@ -15,7 +15,7 @@
 
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #include "math.h"
 #include "float.h"

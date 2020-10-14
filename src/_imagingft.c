@@ -20,7 +20,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -53,7 +53,7 @@
 #define FT_ERROR_START_LIST  {
 #define FT_ERROR_END_LIST    { 0, 0 } };
 
-#include <raqm.h>
+#include "libImaging/raqm.h"
 
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1

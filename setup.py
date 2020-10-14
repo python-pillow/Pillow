@@ -355,8 +355,6 @@ class pil_build_ext(build_ext):
         library_dirs = []
         include_dirs = []
 
-        _add_directory(include_dirs, "src/libImaging")
-
         pkg_config = None
         if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
             pkg_config = _pkg_config
@@ -765,7 +763,7 @@ class pil_build_ext(build_ext):
             self._remove_extension("PIL._webp")
 
         tk_libs = ["psapi"] if sys.platform == "win32" else []
-        self._update_extension("PIL._imagingtk", tk_libs, include_dirs=["src/Tk"])
+        self._update_extension("PIL._imagingtk", tk_libs)
 
         build_ext.build_extensions(self)
 

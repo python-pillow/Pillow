@@ -32,12 +32,12 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
-#include "Gif.h"
-#include "Raw.h"
-#include "Bit.h"
-#include "Sgi.h"
+#include "libImaging/Gif.h"
+#include "libImaging/Raw.h"
+#include "libImaging/Bit.h"
+#include "libImaging/Sgi.h"
 
 
 /* -------------------------------------------------------------------- */
@@ -509,7 +509,7 @@ PyImaging_HexDecoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBTIFF
 
-#include "TiffDecode.h"
+#include "libImaging/TiffDecode.h"
 
 #include <string.h>
 
@@ -807,7 +807,7 @@ PyImaging_XbmDecoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBZ
 
-#include "ZipCodecs.h"
+#include "libImaging/ZipCodecs.h"
 
 PyObject*
 PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
@@ -859,7 +859,7 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
 #undef  INT16
 #undef  INT32
 
-#include "Jpeg.h"
+#include "libImaging/Jpeg.h"
 
 PyObject*
 PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
@@ -916,7 +916,7 @@ PyImaging_JpegDecoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_OPENJPEG
 
-#include "Jpeg2K.h"
+#include "libImaging/Jpeg2K.h"
 
 PyObject*
 PyImaging_Jpeg2KDecoderNew(PyObject* self, PyObject* args)

@@ -14,9 +14,9 @@
 
 
 #include "Python.h"
-#include "Imaging.h"
+#include "libImaging/Imaging.h"
 
-#include "_tkmini.h"
+#include "Tk/_tkmini.h"
 
 /* must link with Tk/tkImaging.c */
 extern void TkImaging_Init(Tcl_Interp* interp);
