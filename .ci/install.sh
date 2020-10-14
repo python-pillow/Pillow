@@ -21,7 +21,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
-if [[ $TRAVIS_CPU_ARCH == "s390x" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
+if [[ $TRAVIS_CPU_ARCH == "s390x" || $TRAVIS_CPU_ARCH == "ppc64le" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
 
 pip install --upgrade pip
 PYTHONOPTIMIZE=0 pip install cffi
