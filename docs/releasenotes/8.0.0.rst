@@ -169,3 +169,11 @@ Error for large BMP files
 
 Previously, if a BMP file was too large, an ``OSError`` would be raised. Now,
 ``DecompressionBombError`` is used instead, as Pillow already uses for other formats.
+
+Dark theme for docs
+^^^^^^^^^^^^^^^^^^^
+
+The https://pillow.readthedocs.io documentation will use a dark theme if the the user has requested the system use one. Uses the ``prefers-color-scheme`` CSS media query.
+
+
+
