@@ -31,7 +31,8 @@ pip install -U pytest
 pip install -U pytest-cov
 pip install pyroma
 pip install test-image-results
-pip install numpy
+# TODO Remove condition when numpy supports 3.10
+if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then pip install numpy ; fi
 
 # TODO Remove when 3.8 / 3.9 / PyPy3 includes setuptools 49.3.2+:
 if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then pip install -U "setuptools>=49.3.2" ; fi
