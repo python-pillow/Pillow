@@ -5,6 +5,18 @@ Changelog (Pillow)
 8.0.0 (2020-10-15)
 ------------------
 
+- Drop support for EOL Python 3.5 #4746, #4794
+  [hugovk, radarhere, nulano]
+
+- Drop support for PyPy3 < 7.2.0 #4964
+  [nulano]
+
+- Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
+  [hugovk, radarhere]
+
+- Remove long-deprecated Image.py functions #4798
+  [hugovk, nulano, radarhere]
+
 - Add support for 16-bit precision JPEG quantization values #4918
   [gofr]
 
@@ -31,9 +43,6 @@ Changelog (Pillow)
 
 - Add getlength and getbbox functions for TrueType fonts #4959
   [nulano, radarhere, hugovk]
-
-- Drop support for PyPy3 < 7.2.0 #4964
-  [nulano]
 
 - Allow tuples with one item to give single color value in getink #4927
   [radarhere, nulano]
@@ -107,20 +116,11 @@ Changelog (Pillow)
 - Read EXIF data tEXt chunk into info as bytes instead of string #4828
   [radarhere]
 
-- Remove long-deprecated Image.py functions #4798
-  [hugovk, nulano, radarhere]
-
 - Replaced distutils with setuptools #4797, #4809, #4814, #4817, #4829, #4890
   [hugovk, radarhere]
 
 - Add MIME type to PsdImagePlugin #4788
   [samamorgan]
-
-- Drop support for EOL Python 3.5 #4746, #4794
-  [hugovk, radarhere, nulano]
-
-- Remove ImageCms.CmsProfile attributes deprecated since 3.2.0 #4768
-  [hugovk, radarhere]
 
 - Allow ImageOps.autocontrast to specify low and high cutoffs separately #4749
   [millionhz, radarhere]
