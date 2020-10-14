@@ -49,7 +49,7 @@
 #define FT_ERROR_START_LIST  {
 #define FT_ERROR_END_LIST    { 0, 0 } };
 
-#include <raqm.h>
+#include "libImaging/raqm.h"
 
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
