@@ -37,7 +37,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 
 
-if sys.platform == "win32" and sys.version_info >= (3, 9):
+if sys.platform == "win32" and sys.version_info >= (3, 10):
     warnings.warn(
         f"Pillow {PILLOW_VERSION} does not support Python "
         f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
@@ -869,6 +869,7 @@ try:
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",

@@ -15,9 +15,9 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    is_pypy,
     is_win32,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
@@ -35,9 +35,30 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.3", "<2.4"): {"multiline": 30, "textsize": 12, "getters": (13, 16)},
-        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getters": (12, 16)},
-        "Default": {"multiline": 0.5, "textsize": 0.5, "getters": (12, 16)},
+        (">=2.3", "<2.4"): {
+            "multiline": 30,
+            "textsize": 12,
+            "getters": (13, 16),
+            "mask": (107, 13),
+            "multiline-anchor": 6,
+            "getlength": (36, 27, 27, 33),
+        },
+        (">=2.7",): {
+            "multiline": 6.2,
+            "textsize": 2.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+            "multiline-anchor": 4,
+            "getlength": (36, 21, 24, 33),
+        },
+        "Default": {
+            "multiline": 0.5,
+            "textsize": 0.5,
+            "getters": (12, 16),
+            "mask": (108, 13),
+            "multiline-anchor": 4,
+            "getlength": (36, 24, 24, 33),
+        },
     }
 
     @classmethod
@@ -179,6 +200,37 @@ class TestImageFont:
 
             # Epsilon ~.5 fails with FreeType 2.7
             assert_image_similar(im, target_img, self.metrics["textsize"])
+
+    @pytest.mark.parametrize(
+        "text, mode, font, size, length_basic_index, length_raqm",
+        (
+            # basic test
+            ("text", "L", "FreeMono.ttf", 15, 0, 36),
+            ("text", "1", "FreeMono.ttf", 15, 0, 36),
+            # issue 4177
+            ("rrr", "L", "DejaVuSans.ttf", 18, 1, 22.21875),
+            ("rrr", "1", "DejaVuSans.ttf", 18, 2, 22.21875),
+            # test 'l' not including extra margin
+            # using exact value 2047 / 64 for raqm, checked with debugger
+            ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+            ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+        ),
+    )
+    def test_getlength(self, text, mode, font, size, length_basic_index, length_raqm):
+        f = ImageFont.truetype(
+            "Tests/fonts/" + font, size, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        im = Image.new(mode, (1, 1), 0)
+        d = ImageDraw.Draw(im)
+
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
+            length = d.textlength(text, f)
+            assert length == self.metrics["getlength"][length_basic_index]
+        else:
+            # disable kerning, kerning metrics changed
+            length = d.textlength(text, f, features=["-kern"])
+            assert length == length_raqm
 
     def test_render_multiline(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -343,7 +395,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == (13, 108)
+        assert mask.size == self.metrics["mask"][::-1]
 
     def test_unrotated_transposed_font_get_mask(self):
         # Arrange
@@ -356,7 +408,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == (108, 13)
+        assert mask.size == self.metrics["mask"]
 
     def test_free_type_font_get_name(self):
         # Arrange
@@ -400,7 +452,7 @@ class TestImageFont:
         mask = font.getmask(text)
 
         # Assert
-        assert mask.size == (108, 13)
+        assert mask.size == self.metrics["mask"]
 
     def test_load_path_not_found(self):
         # Arrange
@@ -456,7 +508,6 @@ class TestImageFont:
         with pytest.raises(UnicodeEncodeError):
             font.getsize("’")
 
-    @pytest.mark.xfail(is_pypy(), reason="failing on PyPy with Raqm")
     def test_unicode_extended(self):
         # issue #3777
         text = "A\u278A\U0001F12B"
@@ -471,7 +522,8 @@ class TestImageFont:
         d = ImageDraw.Draw(img)
         d.text((10, 10), text, font=ttf)
 
-        assert_image_similar_tofile(img, target, self.metrics["multiline"])
+        # fails with 14.7
+        assert_image_similar_tofile(img, target, 6.2)
 
     def _test_fake_loading_font(self, monkeypatch, path_to_fake, fontname):
         # Make a copy of FreeTypeFont so we can patch the original
@@ -728,11 +780,227 @@ class TestImageFont:
 
         font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
         font.set_variation_by_axes([500, 50])
-        self._check_text(font, "Tests/images/variation_adobe_axes.png", 5.1)
+        self._check_text(font, "Tests/images/variation_adobe_axes.png", 11.05)
 
         font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
         font.set_variation_by_axes([100])
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+
+    @pytest.mark.parametrize(
+        "anchor, left, left_old, top",
+        (
+            # test horizontal anchors
+            ("ls", 0, 0, -36),
+            ("ms", -64, -65, -36),
+            ("rs", -128, -129, -36),
+            # test vertical anchors
+            ("ma", -64, -65, 16),
+            ("mt", -64, -65, 0),
+            ("mm", -64, -65, -17),
+            ("mb", -64, -65, -44),
+            ("md", -64, -65, -51),
+        ),
+        ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
+    )
+    def test_anchor(self, anchor, left, left_old, top):
+        name, text = "quick", "Quick"
+        path = f"Tests/images/test_anchor_{name}_{anchor}.png"
+
+        freetype = parse_version(features.version_module("freetype2"))
+        if freetype < parse_version("2.4"):
+            width, height = (129, 44)
+            left = left_old
+        elif self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+            width, height = (129, 44)
+        else:
+            width, height = (128, 44)
+
+        bbox_expected = (left, top, left + width, top + height)
+
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        im = Image.new("RGB", (200, 200), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 100), (200, 100)), "gray")
+        d.line(((100, 0), (100, 200)), "gray")
+        d.text((100, 100), text, fill="black", anchor=anchor, font=f)
+
+        assert d.textbbox((0, 0), text, f, anchor=anchor) == bbox_expected
+
+        with Image.open(path) as expected:
+            assert_image_similar(im, expected, 7)
+
+    @pytest.mark.parametrize(
+        "anchor, align",
+        (
+            # test horizontal anchors
+            ("lm", "left"),
+            ("lm", "center"),
+            ("lm", "right"),
+            ("mm", "left"),
+            ("mm", "center"),
+            ("mm", "right"),
+            ("rm", "left"),
+            ("rm", "center"),
+            ("rm", "right"),
+            # test vertical anchors
+            ("ma", "center"),
+            # ("mm", "center"),  # duplicate
+            ("md", "center"),
+        ),
+    )
+    def test_anchor_multiline(self, anchor, align):
+        target = f"Tests/images/test_anchor_multiline_{anchor}_{align}.png"
+        text = "a\nlong\ntext sample"
+
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", 48, layout_engine=self.LAYOUT_ENGINE
+        )
+
+        # test render
+        im = Image.new("RGB", (600, 400), "white")
+        d = ImageDraw.Draw(im)
+        d.line(((0, 200), (600, 200)), "gray")
+        d.line(((300, 0), (300, 400)), "gray")
+        d.multiline_text(
+            (300, 200), text, fill="black", anchor=anchor, font=f, align=align
+        )
+
+        with Image.open(target) as expected:
+            assert_image_similar(im, expected, self.metrics["multiline-anchor"])
+
+    def test_anchor_invalid(self):
+        font = self.get_font()
+        im = Image.new("RGB", (100, 100), "white")
+        d = ImageDraw.Draw(im)
+        d.font = font
+
+        for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
+            pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
+            pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
+            pytest.raises(
+                ValueError, lambda: d.textbbox((0, 0), "hello", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
+            )
+        for anchor in ["lt", "lb"]:
+            pytest.raises(
+                ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            )
+            pytest.raises(
+                ValueError,
+                lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
+            )
+
+    @skip_unless_feature("freetype2")
+    @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
+    def test_bitmap_font(self, bpp):
+        text = "Bitmap Font"
+        layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
+        target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
+        font = ImageFont.truetype(
+            f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+            24,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (160, 35), "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((2, 2), text, "black", font)
+
+        assert_image_equal_tofile(im, target)
+
+    def test_standard_embedded_color(self):
+        txt = "Hello World!"
+        ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
+        ttf.getsize(txt)
+
+        im = Image.new("RGB", (300, 64), "white")
+        d = ImageDraw.Draw(im)
+        d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
+
+        with Image.open("Tests/images/standard_embedded.png") as expected:
+            assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
+
+    @skip_unless_feature_version("freetype2", "2.5.0")
+    def test_cbdt(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\U0001f469", embedded_color=True, font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @skip_unless_feature_version("freetype2", "2.5.0")
+    def test_cbdt_mask(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/NotoColorEmoji.ttf",
+                size=109,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (150, 150), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((10, 10), "\U0001f469", "black", font=font)
+
+            with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
+                assert_image_similar(im, expected, self.metrics["multiline"])
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @skip_unless_feature_version("freetype2", "2.10.0")
+    def test_colr(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", embedded_color=True, font=font)
+
+        with Image.open("Tests/images/colr_bungee.png") as expected:
+            assert_image_similar(im, expected, 21)
+
+    @skip_unless_feature_version("freetype2", "2.10.0")
+    def test_colr_mask(self):
+        font = ImageFont.truetype(
+            "Tests/fonts/BungeeColor-Regular_colr_Windows.ttf",
+            size=64,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (300, 75), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((15, 5), "Bungee", "black", font=font)
+
+        with Image.open("Tests/images/colr_bungee_mask.png") as expected:
+            assert_image_similar(im, expected, 22)
 
 
 @skip_unless_feature("raqm")
@@ -740,11 +1008,9 @@ class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
 
 
+@skip_unless_feature_version("freetype2", "2.4", "Different metrics")
 def test_render_mono_size():
     # issue 4177
-
-    if parse_version(ImageFont.core.freetype2_version) < parse_version("2.4"):
-        pytest.skip("Different metrics")
 
     im = Image.new("P", (100, 30), "white")
     draw = ImageDraw.Draw(im)

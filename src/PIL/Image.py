@@ -3285,7 +3285,7 @@ class Exif(MutableMapping):
         return value
 
     def _fixup_dict(self, src_dict):
-        # Helper function for _getexif()
+        # Helper function
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
@@ -3466,7 +3466,8 @@ class Exif(MutableMapping):
     def __delitem__(self, tag):
         if self._info is not None and tag in self._info:
             del self._info[tag]
-        del self._data[tag]
+        else:
+            del self._data[tag]
 
     def __iter__(self):
         keys = set(self._data)

@@ -61,3 +61,11 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Docker Test Successful
+    steps:
+      - name: Success
+        run: echo Docker Test Successful

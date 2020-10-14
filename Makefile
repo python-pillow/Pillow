@@ -64,7 +64,7 @@ install:
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage" python3 setup.py build_ext install
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 setup.py build_ext install
 	python3 selftest.py
 
 .PHONY: debug

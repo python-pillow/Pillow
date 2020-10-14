@@ -169,17 +169,41 @@ deps = {
         ],
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
+    "libpng": {
+        "url": SF_MIRROR + "/project/libpng/libpng16/1.6.37/lpng1637.zip",
+        "filename": "lpng1637.zip",
+        "dir": "lpng1637",
+        "build": [
+            # lint: do not inline
+            cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
+            cmd_nmake(target="clean"),
+            cmd_nmake(),
+            cmd_copy("libpng16_static.lib", "libpng16.lib"),
+        ],
+        "headers": [r"png*.h"],
+        "libs": [r"libpng16.lib"],
+    },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.2.tar.gz",  # noqa: E501
-        "filename": "freetype-2.10.2.tar.gz",
-        "dir": "freetype-2.10.2",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.3.tar.gz",  # noqa: E501
+        "filename": "freetype-2.10.3.tar.gz",
+        "dir": "freetype-2.10.3",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # freetype doesn't specify SDK version, MSBuild may guess incorrectly
                 '<PropertyGroup Label="Globals">': '<PropertyGroup Label="Globals">\n    <WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>',  # noqa: E501
-            }
+            },
+            r"builds\windows\vc2010\freetype.user.props": {
+                "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ</UserDefines>",  # noqa: E501
+                "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
+                "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib</UserDependencies>",  # noqa: E501
+            },
+            r"src/autofit/afshaper.c": {
+                # link against harfbuzz.lib once it becomes available
+                "#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ": '#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ\n#pragma comment(lib, "harfbuzz.lib")',  # noqa: E501
+            },
         },
         "build": [
             cmd_rmdir("objs"),
@@ -488,7 +512,7 @@ if __name__ == "__main__":
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
         elif arg == "--no-raqm":
-            disabled += ["harfbuzz", "fribidi", "libraqm"]
+            disabled += ["fribidi", "libraqm"]
         elif arg.startswith("--depends="):
             depends_dir = arg[10:]
         elif arg.startswith("--python="):
@@ -561,6 +585,9 @@ if __name__ == "__main__":
         # script header
         "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
+
+    for k, v in deps.items():
+        prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
 

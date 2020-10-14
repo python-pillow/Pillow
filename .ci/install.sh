@@ -21,7 +21,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
-if [[ $TRAVIS_CPU_ARCH == "s390x" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
+if [[ $TRAVIS_CPU_ARCH == "s390x" || $TRAVIS_CPU_ARCH == "ppc64le" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
 
 pip install --upgrade pip
 PYTHONOPTIMIZE=0 pip install cffi
@@ -33,8 +33,10 @@ pip install pyroma
 pip install test-image-results
 pip install numpy
 
-# TODO Remove when 3.9-dev includes setuptools 49.3.2+:
-if [ "$GHA_PYTHON_VERSION" == "3.9-dev" ]; then pip install -U "setuptools>=49.3.2" ; fi
+# TODO Remove when 3.8 / 3.9 / PyPy3 includes setuptools 49.3.2+:
+if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then pip install -U "setuptools>=49.3.2" ; fi
+if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then pip install -U "setuptools>=49.3.2" ; fi
+if [ "$TRAVIS_PYTHON_VERSION" == "pypy3.6-7.3.1" ]; then pip install -U "setuptools>=49.3.2" ; fi
 
 if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:

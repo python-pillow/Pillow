@@ -63,7 +63,7 @@ ImagingFind(const char* name)
     Py_ssize_t id;
 
     /* FIXME: use CObject instead? */
-#if defined(_MSC_VER) && defined(_WIN64)
+#if defined(_WIN64)
     id = _atoi64(name);
 #else
     id = atol(name);

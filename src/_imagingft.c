@@ -25,9 +25,13 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include FT_BITMAP_H
 #include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
+#ifdef FT_COLOR_H
+#include FT_COLOR_H
+#endif
 
 #define KEEP_PY_UNICODE
 
@@ -131,8 +135,8 @@ typedef struct {
 static p_raqm_func p_raqm;
 
 
-/* round a 26.6 pixel coordinate to the nearest larger integer */
-#define PIXEL(x) ((((x)+63) & -64)>>6)
+/* round a 26.6 pixel coordinate to the nearest integer */
+#define PIXEL(x) ((((x)+32) & -64)>>6)
 
 static PyObject*
 geterror(int code)
@@ -350,7 +354,7 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
 
 static size_t
 text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                 const char* lang, GlyphInfo **glyph_info, int mask)
+                 const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
@@ -364,27 +368,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
         goto failed;
     }
 
-#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM < 0x07020000))
-    if (PyUnicode_Check(string)) {
-        Py_UNICODE *text = PyUnicode_AS_UNICODE(string);
-        Py_ssize_t size = PyUnicode_GET_SIZE(string);
-        if (! size) {
-            /* return 0 and clean up, no glyphs==no size,
-               and raqm fails with empty strings */
-            goto failed;
-        }
-        if (!(*p_raqm.set_text)(rq, (const uint32_t *)(text), size)) {
-            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
-            goto failed;
-        }
-        if (lang) {
-            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
-                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
-                goto failed;
-            }
-        }
-    }
-#else
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
         Py_ssize_t size = PyUnicode_GET_LENGTH(string);
@@ -406,7 +389,6 @@ text_layout_raqm(PyObject* string, FontObject* self, const char* dir, PyObject *
             }
         }
     }
-#endif
     else {
         PyErr_SetString(PyExc_TypeError, "expected string");
         goto failed;
@@ -529,7 +511,7 @@ failed:
 
 static size_t
 text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-                     const char* lang, GlyphInfo **glyph_info, int mask)
+                     const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     int error, load_flags;
     FT_ULong ch;
@@ -561,10 +543,15 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         return 0;
     }
 
-    load_flags = FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -585,7 +572,8 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
         }
 
         (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
-        (*glyph_info)[i].y_advance = glyph->metrics.vertAdvance;
+        // y_advance is only used in ttb, which is not supported by basic layout
+        (*glyph_info)[i].y_advance = 0;
         last_index = (*glyph_info)[i].index;
         (*glyph_info)[i].cluster = ch;
     }
@@ -594,131 +582,181 @@ text_layout_fallback(PyObject* string, FontObject* self, const char* dir, PyObje
 
 static size_t
 text_layout(PyObject* string, FontObject* self, const char* dir, PyObject *features,
-            const char* lang, GlyphInfo **glyph_info, int mask)
+            const char* lang, GlyphInfo **glyph_info, int mask, int color)
 {
     size_t count;
 
     if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info,  mask, color);
     } else {
-        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask);
+        count = text_layout_fallback(string, self, dir, features, lang, glyph_info, mask, color);
     }
     return count;
 }
 
 static PyObject*
-font_getsize(FontObject* self, PyObject* args)
+font_getlength(FontObject* self, PyObject* args)
 {
-    int x_position, x_max, x_min, y_max, y_min;
-    FT_Face face;
-    int xoffset, yoffset;
-    int horizontal_dir;
-    int mask = 0;
-    int load_flags;
+    int length; /* length along primary axis, in 26.6 precision */
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t i, count;
-    GlyphInfo *glyph_info = NULL;
     PyObject *features = Py_None;
+    PyObject *string;
 
     /* calculate size and bearing for a given string */
 
-    PyObject* string;
-    if (!PyArg_ParseTuple(args, "O|izOz:getsize", &string, &mask, &dir, &features, &lang)) {
+    if (!PyArg_ParseTuple(args, "O|zzOz:getlength", &string, &mode, &dir, &features, &lang)) {
         return NULL;
     }
 
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    face = NULL;
-    xoffset = yoffset = 0;
-    x_position = x_max = x_min = y_max = y_min = 0;
+    length = 0;
+    for (i = 0; i < count; i++) {
+        if (horizontal_dir) {
+            length += glyph_info[i].x_advance;
+        } else {
+            length -= glyph_info[i].y_advance;
+        }
+    }
+
+    if (glyph_info) {
+        PyMem_Free(glyph_info);
+        glyph_info = NULL;
+    }
+
+    return PyLong_FromLong(length);
+}
+
+static PyObject*
+font_getsize(FontObject* self, PyObject* args)
+{
+    int position; /* pen position along primary axis, in 26.6 precision */
+    int advanced; /* pen position along primary axis, in pixels */
+    int px, py; /* position of current glyph, in pixels */
+    int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
+    int x_anchor, y_anchor; /* offset of point drawn at (0, 0), in pixels */
+    int load_flags; /* FreeType load_flags parameter */
+    int error;
+    FT_Face face;
+    FT_Glyph glyph;
+    FT_BBox bbox; /* glyph bounding box */
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
+    const char *dir = NULL;
+    const char *lang = NULL;
+    const char *anchor = NULL;
+    PyObject *features = Py_None;
+    PyObject *string;
+
+    /* calculate size and bearing for a given string */
+
+    if (!PyArg_ParseTuple(args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
+        return NULL;
+    }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    if (anchor == NULL) {
+        anchor = horizontal_dir ? "la" : "lt";
+    }
+    if (strlen(anchor) != 2) {
+        goto bad_anchor;
+    }
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    load_flags = FT_LOAD_DEFAULT;
+    if (mask) {
+        load_flags |= FT_LOAD_TARGET_MONO;
+    }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
+
+    /*
+     * text bounds are given by:
+     *   - bounding boxes of individual glyphs
+     *   - pen line, i.e. 0 to `advanced` along primary axis
+     *     this means point (0, 0) is part of the text bounding box
+     */
+    face = NULL;
+    position = x_min = x_max = y_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        int index, error, offset, x_advanced;
-        FT_BBox bbox;
-        FT_Glyph glyph;
         face = self->face;
-        index = glyph_info[i].index;
-        /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960
-         *   Yifu Yu<root@jackyyf.com>, 2014-10-15
-         */
-        load_flags = FT_LOAD_NO_BITMAP;
-        if (mask) {
-            load_flags |= FT_LOAD_TARGET_MONO;
+
+        if (horizontal_dir) {
+            px = PIXEL(position + glyph_info[i].x_offset);
+            py = PIXEL(glyph_info[i].y_offset);
+
+            position += glyph_info[i].x_advance;
+            advanced = PIXEL(position);
+            if (advanced > x_max) {
+                x_max = advanced;
+            }
+        } else {
+            px = PIXEL(glyph_info[i].x_offset);
+            py = PIXEL(position + glyph_info[i].y_offset);
+
+            position += glyph_info[i].y_advance;
+            advanced = PIXEL(position);
+            if (advanced < y_min) {
+                y_min = advanced;
+            }
         }
-        error = FT_Load_Glyph(face, index, load_flags);
+
+        error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
         if (error) {
             return geterror(error);
         }
 
-        if (i == 0) {
-            if (horizontal_dir) {
-                if (face->glyph->metrics.horiBearingX < 0) {
-                    xoffset = face->glyph->metrics.horiBearingX;
-                    x_position -= xoffset;
-                }
-            } else {
-                if (face->glyph->metrics.vertBearingY < 0) {
-                    yoffset = face->glyph->metrics.vertBearingY;
-                    y_max -= yoffset;
-                }
-            }
+        error = FT_Get_Glyph(face->glyph, &glyph);
+        if (error) {
+            return geterror(error);
         }
 
-        FT_Get_Glyph(face->glyph, &glyph);
-        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_SUBPIXELS, &bbox);
-        if (horizontal_dir) {
-            x_position += glyph_info[i].x_advance;
-
-            x_advanced = x_position;
-            offset = glyph_info[i].x_advance -
-                    face->glyph->metrics.width -
-                    face->glyph->metrics.horiBearingX;
-            if (offset < 0) {
-                x_advanced -= offset;
-            }
-            if (x_advanced > x_max) {
-                x_max = x_advanced;
-            }
-
-            bbox.yMax += glyph_info[i].y_offset;
-            bbox.yMin += glyph_info[i].y_offset;
-            if (bbox.yMax > y_max) {
-                y_max = bbox.yMax;
-            }
-            if (bbox.yMin < y_min) {
-                y_min = bbox.yMin;
-            }
-
-            // find max distance of baseline from top
-            if (face->glyph->metrics.horiBearingY > yoffset) {
-                yoffset = face->glyph->metrics.horiBearingY;
-            }
-        } else {
-            y_max -= glyph_info[i].y_advance;
-
-            if (i == count - 1) {
-                // trim end gap from final glyph
-                int offset;
-                offset = -glyph_info[i].y_advance -
-                        face->glyph->metrics.height -
-                        face->glyph->metrics.vertBearingY;
-                if (offset < 0) {
-                    y_max -= offset;
-                }
-            }
-
-            if (bbox.xMax > x_max) {
-                x_max = bbox.xMax;
-            }
-            if (i == 0 || bbox.xMin < x_min) {
-                x_min = bbox.xMin;
-            }
+        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
+        bbox.xMax += px;
+        if (bbox.xMax > x_max) {
+            x_max = bbox.xMax;
+        }
+        bbox.xMin += px;
+        if (bbox.xMin < x_min) {
+            x_min = bbox.xMin;
+        }
+        bbox.yMax += py;
+        if (bbox.yMax > y_max) {
+            y_max = bbox.yMax;
+        }
+        bbox.yMin += py;
+        if (bbox.yMin < y_min) {
+            y_min = bbox.yMin;
         }
 
         FT_Done_Glyph(glyph);
@@ -729,73 +767,156 @@ font_getsize(FontObject* self, PyObject* args)
         glyph_info = NULL;
     }
 
+    x_anchor = y_anchor = 0;
     if (face) {
         if (horizontal_dir) {
-            // left bearing
-            if (xoffset < 0) {
-                x_max -= xoffset;
-            } else {
-                xoffset = 0;
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = 0;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = PIXEL(position / 2);
+                break;
+            case 'r':  // right
+                x_anchor = PIXEL(position);
+                break;
+            case 's':  // vertical baseline
+            default:
+                goto bad_anchor;
             }
-
-            /* difference between the font ascender and the distance of
-             * the baseline from the top */
-            yoffset = PIXEL(self->face->size->metrics.ascender - yoffset);
+            switch (anchor[1]) {
+            case 'a':  // ascender
+                y_anchor = PIXEL(self->face->size->metrics.ascender);
+                break;
+            case 't':  // top
+                y_anchor = y_max;
+                break;
+            case 'm':  // middle (ascender + descender) / 2
+                y_anchor = PIXEL((self->face->size->metrics.ascender + self->face->size->metrics.descender) / 2);
+                break;
+            case 's':  // horizontal baseline
+                y_anchor = 0;
+                break;
+            case 'b':  // bottom
+                y_anchor = y_min;
+                break;
+            case 'd':  // descender
+                y_anchor = PIXEL(self->face->size->metrics.descender);
+                break;
+            default:
+                goto bad_anchor;
+            }
         } else {
-            // top bearing
-            if (yoffset < 0) {
-                y_max -= yoffset;
-            } else {
-                yoffset = 0;
+            switch (anchor[0]) {
+            case 'l':  // left
+                x_anchor = x_min;
+                break;
+            case 'm':  // middle (left + right) / 2
+                x_anchor = (x_min + x_max) / 2;
+                break;
+            case 'r':  // right
+                x_anchor = x_max;
+                break;
+            case 's':  // vertical baseline
+                x_anchor = 0;
+                break;
+            default:
+                goto bad_anchor;
+            }
+            switch (anchor[1]) {
+            case 't':  // top
+                y_anchor = 0;
+                break;
+            case 'm':  // middle (top + bottom) / 2
+                y_anchor = PIXEL(position / 2);
+                break;
+            case 'b':  // bottom
+                y_anchor = PIXEL(position);
+                break;
+            case 'a':  // ascender
+            case 's':  // horizontal baseline
+            case 'd':  // descender
+            default:
+                goto bad_anchor;
             }
         }
     }
 
     return Py_BuildValue(
         "(ii)(ii)",
-        PIXEL(x_max - x_min), PIXEL(y_max - y_min),
-        PIXEL(xoffset), yoffset
-        );
+        (x_max - x_min), (y_max - y_min),
+        (-x_anchor + x_min), -(-y_anchor + y_max)
+    );
+
+bad_anchor:
+    PyErr_Format(PyExc_ValueError, "bad anchor specified: %s", anchor);
+    return NULL;
 }
 
 static PyObject*
 font_render(FontObject* self, PyObject* args)
 {
-    int x;
-    unsigned int y;
-    Imaging im;
-    int index, error, ascender, horizontal_dir;
-    int load_flags;
-    unsigned char *source;
+    int x, y; /* pen position, in 26.6 precision */
+    int px, py; /* position of current glyph, in pixels */
+    int x_min, y_max; /* text offset in 26.6 precision */
+    int load_flags; /* FreeType load_flags parameter */
+    int error;
     FT_Glyph glyph;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
+    FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
     FT_BitmapGlyph bitmap_glyph;
-    int stroke_width = 0;
     FT_Stroker stroker = NULL;
-    FT_Int left;
-    /* render string into given buffer (the buffer *must* have
-       the right size, or this will crash) */
-    PyObject* string;
+    int bitmap_converted_ready = 0; /* has bitmap_converted been initialized */
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t i, count; /* glyph_info index and length */
+    int xx, yy; /* pixel offset of current glyph bitmap */
+    int x0, x1; /* horizontal bounds of glyph bitmap to copy */
+    unsigned int bitmap_y; /* glyph bitmap y index */
+    unsigned char *source; /* glyph bitmap source buffer */
+    unsigned char convert_scale; /* scale factor for non-8bpp bitmaps */
+    Imaging im;
     Py_ssize_t id;
-    int mask = 0;
-    int temp;
-    int xx, x0, x1;
-    int yy;
-    unsigned int bitmap_y;
+    int horizontal_dir; /* is primary axis horizontal? */
+    int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0; /* is FT_LOAD_COLOR enabled? */
+    int stroke_width = 0;
+    PY_LONG_LONG foreground_ink_long = 0;
+    unsigned int foreground_ink;
+    const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
-    size_t i, count;
-    GlyphInfo *glyph_info;
-    PyObject *features = NULL;
+    PyObject *features = Py_None;
+    PyObject* string;
 
-    if (!PyArg_ParseTuple(args, "On|izOzi:render", &string,  &id, &mask, &dir, &features, &lang,
-                                                   &stroke_width)) {
+    /* render string into given buffer (the buffer *must* have
+       the right size, or this will crash) */
+
+    if (!PyArg_ParseTuple(args, "On|zzOziL:render", &string,  &id, &mode, &dir, &features, &lang,
+                                                   &stroke_width, &foreground_ink_long)) {
         return NULL;
     }
 
-    glyph_info = NULL;
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask);
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    foreground_ink = foreground_ink_long;
+
+#ifdef FT_COLOR_H
+    if (color) {
+        FT_Color foreground_color;
+        FT_Byte* ink = (FT_Byte*)&foreground_ink;
+        foreground_color.red = ink[0];
+        foreground_color.green = ink[1];
+        foreground_color.blue = ink[2];
+        foreground_color.alpha = (FT_Byte) 255; /* ink alpha is handled in ImageDraw.text */
+        FT_Palette_Set_Foreground_Color(self->face, foreground_color);
+    }
+#endif
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -813,16 +934,26 @@ font_render(FontObject* self, PyObject* args)
     }
 
     im = (Imaging) id;
-    /* Note: bitmap fonts within ttf fonts do not work, see #891/pr#960 */
-    load_flags = FT_LOAD_NO_BITMAP;
+    load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
+#ifdef FT_LOAD_COLOR
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+#endif
 
-    ascender = 0;
+    /*
+     * calculate x_min and y_max
+     * must match font_getsize or there may be clipping!
+     */
+    x = y = x_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        index = glyph_info[i].index;
-        error = FT_Load_Glyph(self->face, index, load_flags | FT_LOAD_RENDER);
+        px = PIXEL(x + glyph_info[i].x_offset);
+        py = PIXEL(y + glyph_info[i].y_offset);
+
+        error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
             return geterror(error);
         }
@@ -830,22 +961,30 @@ font_render(FontObject* self, PyObject* args)
         glyph_slot = self->face->glyph;
         bitmap = glyph_slot->bitmap;
 
-        temp = bitmap.rows - glyph_slot->bitmap_top;
-        temp -= PIXEL(glyph_info[i].y_offset);
-        if (temp > ascender) {
-            ascender = temp;
+        if (glyph_slot->bitmap_top + py > y_max) {
+            y_max = glyph_slot->bitmap_top + py;
         }
+        if (glyph_slot->bitmap_left + px < x_min) {
+            x_min = glyph_slot->bitmap_left + px;
+        }
+
+        x += glyph_info[i].x_advance;
+        y += glyph_info[i].y_advance;
     }
+
+    /* set pen position to text origin */
+    x = (-x_min + stroke_width) << 6;
+    y = (-y_max + (-stroke_width)) << 6;
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
     }
 
-    x = y = 0;
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
     for (i = 0; i < count; i++) {
-        index = glyph_info[i].index;
-        error = FT_Load_Glyph(self->face, index, load_flags);
+        px = PIXEL(x + glyph_info[i].x_offset);
+        py = PIXEL(y + glyph_info[i].y_offset);
+
+        error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
             return geterror(error);
         }
@@ -867,25 +1006,64 @@ font_render(FontObject* self, PyObject* args)
             bitmap_glyph = (FT_BitmapGlyph)glyph;
 
             bitmap = bitmap_glyph->bitmap;
-            left = bitmap_glyph->left;
+            xx = px + bitmap_glyph->left;
+            yy = -(py + bitmap_glyph->top);
         } else {
             bitmap = glyph_slot->bitmap;
-            left = glyph_slot->bitmap_left;
+            xx = px + glyph_slot->bitmap_left;
+            yy = -(py + glyph_slot->bitmap_top);
         }
 
-        if (horizontal_dir) {
-            if (i == 0 && glyph_slot->metrics.horiBearingX < 0) {
-                x = -glyph_slot->metrics.horiBearingX;
-            }
-            xx = PIXEL(x) + left;
-            xx += PIXEL(glyph_info[i].x_offset) + stroke_width;
-        } else {
-            if (glyph_slot->metrics.vertBearingX < 0) {
-                x = -glyph_slot->metrics.vertBearingX;
-            }
-            xx = im->xsize / 2 - bitmap.width / 2;
+        /* convert non-8bpp bitmaps */
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+                convert_scale = 255;
+                break;
+            case FT_PIXEL_MODE_GRAY2:
+                convert_scale = 255 / 3;
+                break;
+            case FT_PIXEL_MODE_GRAY4:
+                convert_scale = 255 / 15;
+                break;
+            default:
+                convert_scale = 1;
+        }
+        switch (bitmap.pixel_mode) {
+            case FT_PIXEL_MODE_MONO:
+            case FT_PIXEL_MODE_GRAY2:
+            case FT_PIXEL_MODE_GRAY4:
+                if (!bitmap_converted_ready) {
+
+#if FREETYPE_MAJOR > 2 ||\
+    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 6)
+                    FT_Bitmap_Init(&bitmap_converted);
+#else
+                    FT_Bitmap_New(&bitmap_converted);
+#endif
+                    bitmap_converted_ready = 1;
+                }
+                error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);
+                if (error) {
+                    geterror(error);
+                    goto glyph_error;
+                }
+                bitmap = bitmap_converted;
+                /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
+            case FT_PIXEL_MODE_GRAY:
+                break;
+#ifdef FT_LOAD_COLOR
+            case FT_PIXEL_MODE_BGRA:
+                if (color) {
+                    break;
+                }
+                /* we didn't ask for color, fall through to default */
+#endif
+            default:
+                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                goto glyph_error;
         }
 
+        /* clip glyph bitmap width to target image bounds */
         x0 = 0;
         x1 = bitmap.width;
         if (xx < 0) {
@@ -896,51 +1074,85 @@ font_render(FontObject* self, PyObject* args)
         }
 
         source = (unsigned char*) bitmap.buffer;
-        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++) {
-            if (horizontal_dir) {
-                yy = bitmap_y + im->ysize - (PIXEL(glyph_slot->metrics.horiBearingY) + ascender);
-                yy -= PIXEL(glyph_info[i].y_offset) + stroke_width * 2;
-            } else {
-                yy = bitmap_y + PIXEL(y + glyph_slot->metrics.vertBearingY) + ascender;
-                yy += PIXEL(glyph_info[i].y_offset);
-            }
+        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
+            /* clip glyph bitmap height to target image bounds */
             if (yy >= 0 && yy < im->ysize) {
-                // blend this glyph into the buffer
-                unsigned char *target = im->image8[yy] + xx;
-                if (mask) {
-                    // use monochrome mask (on palette images, etc)
-                    int j, k, m = 128;
-                    for (j = k = 0; j < x1; j++) {
-                        if (j >= x0 && (source[k] & m)) {
-                            target[j] = 255;
+                /* blend this glyph into the buffer */
+                int k;
+                unsigned char v;
+                unsigned char* target;
+                if (color) {
+                    /* target[RGB] returns the color, target[A] returns the mask */
+                    /* target bands get split again in ImageDraw.text */
+                    target = im->image[yy] + xx * 4;
+                } else {
+                    target = im->image8[yy] + xx;
+                }
+#ifdef FT_LOAD_COLOR
+                if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
+                    /* paste color glyph */
+                    for (k = x0; k < x1; k++) {
+                        if (target[k * 4 + 3] < source[k * 4 + 3]) {
+                            /* unpremultiply BGRa to RGBA */
+                            target[k * 4 + 0] = CLIP8((255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
+                            target[k * 4 + 1] = CLIP8((255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
+                            target[k * 4 + 2] = CLIP8((255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
+                            target[k * 4 + 3] = source[k * 4 + 3];
                         }
-                        if (!(m >>= 1)) {
-                            m = 128;
-                            k++;
+                    }
+                } else
+#endif
+                if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                    if (color) {
+                        unsigned char* ink = (unsigned char*)&foreground_ink;
+                        for (k = x0; k < x1; k++) {
+                            v = source[k] * convert_scale;
+                            if (target[k * 4 + 3] < v) {
+                                target[k * 4 + 0] = ink[0];
+                                target[k * 4 + 1] = ink[1];
+                                target[k * 4 + 2] = ink[2];
+                                target[k * 4 + 3] = v;
+                            }
+                        }
+                    } else {
+                        for (k = x0; k < x1; k++) {
+                            v = source[k] * convert_scale;
+                            if (target[k] < v) {
+                                target[k] = v;
+                            }
                         }
                     }
                 } else {
-                    // use antialiased rendering
-                    int k;
-                    for (k = x0; k < x1; k++) {
-                        if (target[k] < source[k]) {
-                            target[k] = source[k];
-                        }
-                    }
+                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    goto glyph_error;
                 }
             }
             source += bitmap.pitch;
         }
         x += glyph_info[i].x_advance;
-        y -= glyph_info[i].y_advance;
+        y += glyph_info[i].y_advance;
         if (stroker != NULL) {
             FT_Done_Glyph(glyph);
         }
     }
 
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
     Py_RETURN_NONE;
+
+glyph_error:
+    if (stroker != NULL) {
+        FT_Done_Glyph(glyph);
+    }
+    if (bitmap_converted_ready) {
+        FT_Bitmap_Done(library, &bitmap_converted);
+    }
+    FT_Stroker_Done(stroker);
+    PyMem_Del(glyph_info);
+    return NULL;
 }
 
 #if FREETYPE_MAJOR > 2 ||\
@@ -1122,6 +1334,7 @@ font_dealloc(FontObject* self)
 static PyMethodDef font_methods[] = {
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
+    {"getlength", (PyCFunction) font_getlength, METH_VARARGS},
 #if FREETYPE_MAJOR > 2 ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) ||\
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)

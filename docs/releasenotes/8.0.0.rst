@@ -9,6 +9,12 @@ Python 3.5
 
 Pillow has dropped support for Python 3.5, which reached end-of-life on 2020-09-13.
 
+PyPy 7.1.x
+^^^^^^^^^^
+
+Pillow has dropped support for PyPy3 7.1.1.
+PyPy3 7.2.0, released on 2019-10-14, is now the minimum compatible version.
+
 im.offset
 ^^^^^^^^^
 
@@ -40,6 +46,20 @@ Removed                   Use instead
 
 API Changes
 ===========
+
+ImageDraw.text: stroke_width
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed issue where passing ``stroke_width`` with a non-zero value
+to :py:meth:`.ImageDraw.text` would cause the text to be offset by that amount.
+
+ImageDraw.text: anchor
+^^^^^^^^^^^^^^^^^^^^^^
+
+The ``anchor`` parameter of :py:meth:`.ImageDraw.text` has been implemented.
+
+Use this parameter to change the position of text relative to the
+specified ``xy`` point. See :ref:`text-anchors` for details.
 
 Add MIME type to PsdImagePlugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,15 +106,66 @@ A new method :py:meth:`.ImageDraw.regular_polygon`, draws a regular polygon of `
 For example ``draw.regular_polygon(((100, 100), 50), 5)``
 draws a pentagon centered at the point ``(100, 100)`` with a polygon radius of ``50``.
 
-Security
-========
+ImageDraw.text: embedded_color
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The methods :py:meth:`.ImageDraw.text` and :py:meth:`.ImageDraw.multiline_text`
+now support fonts with embedded color data.
+
+To render text with embedded color data, use the parameter ``embedded_color=True``.
+
+Support for CBDT fonts requires FreeType 2.5 compiled with libpng.
+Support for COLR fonts requires FreeType 2.10.
+SBIX and SVG fonts are not yet supported.
+
+ImageDraw.textlength
+^^^^^^^^^^^^^^^^^^^^
+
+Two new methods :py:meth:`.ImageDraw.textlength` and :py:meth:`.FreeTypeFont.getlength`
+were added, returning the exact advance length of text with 1/64 pixel precision.
+
+These can be used for word-wrapping or rendering text in parts.
+
+ImageDraw.textbbox
+^^^^^^^^^^^^^^^^^^
+
+Three new methods :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.multiline_textbbox`,
+and :py:meth:`.FreeTypeFont.getbbox` return the bounding box of rendered text.
+
+These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for details.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Improved ellipse-drawing algorithm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The ellipse-drawing algorithm has been changed from drawing a 360-sided polygon to one
+which resembles Bresenham's algorithm for circles. It should be faster and produce
+smoother curves, especially for smaller ellipses.
+
+ImageDraw.text and ImageDraw.multiline_text
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed multiple issues in methods :py:meth:`.ImageDraw.text` and :py:meth:`.ImageDraw.multiline_text`
+sometimes causing unexpected text alignment issues.
+
+The ``align`` parameter of :py:meth:`.ImageDraw.multiline_text` now gives better results in some cases.
+
+TrueType fonts with embedded bitmaps are now supported.
+
+Added writing of subIFDs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving EXIF data, Pillow is now able to write subIFDs, such as the GPS IFD. This
+should happen automatically when saving an image using the EXIF data that it was opened
+with, such as in :py:meth:`~PIL.ImageOps.exif_transpose`.
+
+Previously, the code of the first tag of the subIFD was incorrectly written as the
+offset.
+
+Error for large BMP files
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, if a BMP file was too large, an ``OSError`` would be raised. Now,
+``DecompressionBombError`` is used instead, as Pillow already uses for other formats.

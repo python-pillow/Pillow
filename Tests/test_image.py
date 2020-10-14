@@ -498,6 +498,12 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
 
+    def test_one_item_tuple(self):
+        for mode in ("I", "F", "L"):
+            im = Image.new(mode, (100, 100), (5,))
+            px = im.load()
+            assert px[0, 0] == 5
+
     def test_linear_gradient_wrong_mode(self):
         # Arrange
         wrong_mode = "RGB"
@@ -650,12 +656,14 @@ class TestImage:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
             assert 258 not in exif
+            assert 274 in exif
             assert 40960 in exif
             assert exif[40963] == 450
             assert exif[11] == "gThumb 3.0.1"
 
             out = str(tmp_path / "temp.jpg")
             exif[258] = 8
+            del exif[274]
             del exif[40960]
             exif[40963] = 455
             exif[11] = "Pillow test"
@@ -663,6 +671,7 @@ class TestImage:
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
+            assert 274 not in reloaded_exif
             assert 40960 not in reloaded_exif
             assert reloaded_exif[40963] == 455
             assert reloaded_exif[11] == "Pillow test"

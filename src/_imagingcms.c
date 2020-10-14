@@ -1512,8 +1512,16 @@ setup_module(PyObject* m) {
 
     d = PyModule_GetDict(m);
 
+#if LCMS_VERSION < 2070
+    vn = LCMS_VERSION;
+#else
     vn = cmsGetEncodedCMMversion();
-    v = PyUnicode_FromFormat("%d.%d", vn / 100, vn % 100);
+#endif
+    if (vn % 10) {
+        v = PyUnicode_FromFormat("%d.%d.%d", vn / 1000, (vn / 10) % 100, vn % 10);
+    } else {
+        v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
+    }
     PyDict_SetItemString(d, "littlecms_version", v);
 
     return 0;

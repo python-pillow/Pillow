@@ -475,13 +475,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup_dict(src_dict):
-    # Helper function for _getexif()
-    # returns a dict with any single item tuples/lists as individual values
-    exif = Image.Exif()
-    return exif._fixup_dict(src_dict)
-
-
 def _getexif(self):
     if "exif" not in self.info:
         return None
