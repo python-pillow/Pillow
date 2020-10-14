@@ -2,8 +2,32 @@
 Changelog (Pillow)
 ==================
 
-8.0.0 (unreleased)
+8.0.0 (2020-10-15)
 ------------------
+
+- Add support for 16-bit precision JPEG quantization values #4918
+  [gofr]
+
+- Added reading of IFD tag type #4979
+  [radarhere]
+
+- Initialize offset memory for PyImagingPhotoPut #4806
+  [nqbit]
+
+- Fix TiffDecode comparison warnings #4756
+  [nulano]
+
+- Docs: Add dark mode #4968
+  [hugovk, nulano]
+
+- Added macOS SDK install path to library and include directories #4974
+  [radarhere, fxcoudert]
+
+- Imaging.h: prevent confusion with system #4923
+  [ax3l, ,radarhere]
+
+- Avoid using pkg_resources in PIL.features.pilinfo #4975
+  [nulano]
 
 - Add getlength and getbbox functions for TrueType fonts #4959
   [nulano, radarhere, hugovk]
