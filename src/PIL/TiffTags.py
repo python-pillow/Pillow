@@ -69,6 +69,7 @@ SIGNED_LONG = 9
 SIGNED_RATIONAL = 10
 FLOAT = 11
 DOUBLE = 12
+IFD = 13
 
 TAGS_V2 = {
     254: ("NewSubfileType", LONG, 1),
