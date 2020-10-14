@@ -114,7 +114,7 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
         block.pixelSize = 1;
-        block.offset[0] = block.offset[1] = block.offset[2] = 0;
+        block.offset[0] = block.offset[1] = block.offset[2] = block.offset[3] = 0;
     } else if (strncmp(im->mode, "RGB", 3) == 0) {
         block.pixelSize = 4;
         block.offset[0] = 0;
