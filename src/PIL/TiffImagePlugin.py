@@ -665,6 +665,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 (TiffTags.SIGNED_LONG, "l", "signed long"),
                 (TiffTags.FLOAT, "f", "float"),
                 (TiffTags.DOUBLE, "d", "double"),
+                (TiffTags.IFD, "L", "long"),
             ],
         )
     )

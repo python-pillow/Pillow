@@ -385,6 +385,10 @@ class TestFileTiff:
         ret = ifd.load_double(data, False)
         assert ret == (8.540883223036124e194, 8.540883223036124e194)
 
+    def test_ifd_tag_type(self):
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            assert 0x8825 in im.tag_v2
+
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
