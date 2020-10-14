@@ -187,14 +187,16 @@ jobs:
 
     - name: Build wheel
       id: wheel
-      if: "github.event_name == 'push'"
+      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
+      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
     - uses: actions/upload-artifact@v2
-      if: "github.event_name == 'push'"
+      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
+      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
