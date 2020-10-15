@@ -94,6 +94,9 @@ DXT5_FOURCC = 0x35545844
 
 # dxgiformat.h
 
+DXGI_FORMAT_R8G8B8A8_TYPELESS = 27
+DXGI_FORMAT_R8G8B8A8_UNORM = 28
+DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29
 DXGI_FORMAT_BC7_TYPELESS = 97
 DXGI_FORMAT_BC7_UNORM = 98
 DXGI_FORMAT_BC7_UNORM_SRGB = 99
@@ -157,6 +160,15 @@ class DdsImageFile(ImageFile.ImageFile):
                     self.pixel_format = "BC7"
                     self.info["gamma"] = 1 / 2.2
                     n = 7
+                elif dxgi_format in (
+                    DXGI_FORMAT_R8G8B8A8_TYPELESS,
+                    DXGI_FORMAT_R8G8B8A8_UNORM,
+                    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+                ):
+                    self.tile = [("raw", (0, 0) + self.size, 0, ("RGBA", 0, 1))]
+                    if dxgi_format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+                        self.info["gamma"] = 1 / 2.2
+                    return
                 else:
                     raise NotImplementedError(
                         f"Unimplemented DXGI format {dxgi_format}"
