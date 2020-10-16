@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+8.1.0 (unreleased)
+------------------
+
+- Support raw rgba8888 for DDS #4760
+  [qiankanglai]
+
 8.0.0 (2020-10-15)
 ------------------
 
