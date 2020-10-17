@@ -588,7 +588,8 @@ def convert_dict_qtables(qtables):
     warnings.warn(
         "convert_dict_qtables is deprecated and will be removed in a future"
         " release. Conversion is no longer needed.",
-        DeprecationWarning)
+        DeprecationWarning,
+    )
     return qtables
 
 
@@ -670,7 +671,8 @@ def _save(im, fp, filename):
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
                 qtables = [
-                    qtables[key] for key in range(len(qtables)) if key in qtables]
+                    qtables[key] for key in range(len(qtables)) if key in qtables
+                ]
             elif isinstance(qtables, tuple):
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
