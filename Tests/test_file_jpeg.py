@@ -446,7 +446,7 @@ class TestFileJpeg:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
-                assert reloaded.quantization[0].typecode == "B"
+                assert max(reloaded.quantization[0]) <= 255
 
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
@@ -458,7 +458,8 @@ class TestFileJpeg:
 
             # valid bounds for baseline qtable
             bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
-            self.roundtrip(im, qtables=[bounds_qtable])
+            im2 = self.roundtrip(im, qtables=[bounds_qtable])
+            assert im2.quantization[0] == bounds_qtable
 
             # values from wizard.txt in jpeg9-a src package.
             standard_l_qtable = [
@@ -568,6 +569,12 @@ class TestFileJpeg:
             assert len(im2.quantization) == 2
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
+
+    def test_convert_dict_qtables_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            qtable = {0: [1, 2, 3, 4]}
+            qtable2 = JpegImagePlugin.convert_dict_qtables(qtable)
+            assert qtable == qtable2
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):

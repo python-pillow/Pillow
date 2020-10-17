@@ -252,7 +252,7 @@ def DQT(self, marker):
         data = array.array("B" if precision == 1 else "H", s[1:qt_length])
         if sys.byteorder == "little" and precision > 1:
             data.byteswap()  # the values are always big-endian
-        self.quantization[v & 15] = data
+        self.quantization[v & 15] = [data[i] for i in zigzag_index]
         s = s[qt_length:]
 
 
@@ -585,9 +585,10 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    qtables = [qtables[key] for key in range(len(qtables)) if key in qtables]
-    for idx, table in enumerate(qtables):
-        qtables[idx] = [table[i] for i in zigzag_index]
+    warnings.warn(
+        "convert_dict_qtables is deprecated and will be removed in a future"
+        " release. Conversion is no longer needed.",
+        DeprecationWarning)
     return qtables
 
 
@@ -668,7 +669,8 @@ def _save(im, fp, filename):
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
-                qtables = convert_dict_qtables(qtables)
+                qtables = [
+                    qtables[key] for key in range(len(qtables)) if key in qtables]
             elif isinstance(qtables, tuple):
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
