@@ -857,8 +857,12 @@ ext_modules = [
 with open("README.md") as f:
     long_description = f.read()
 
+remove_dist_egg = "--remove-dist-egg" in sys.argv
+if remove_dist_egg:
+    while "--remove-dist-egg" in sys.argv:
+        sys.argv.remove("--remove-dist-egg")
 try:
-    setup(
+    distribution = setup(
         name=NAME,
         version=PILLOW_VERSION,
         description="Python Imaging Library (Fork)",
@@ -921,3 +925,12 @@ which was requested by the option flag --enable-{str(err)}
 """
     sys.stderr.write(msg)
     raise DependencyException(msg)
+
+if remove_dist_egg:
+    egg_path = distribution.get_command_obj('bdist_egg').egg_output
+    if egg_path:
+        os.remove(egg_path)
+        try:
+            os.rmdir(os.path.dirname(egg_path))
+        except OSError:
+            pass
