@@ -927,7 +927,7 @@ which was requested by the option flag --enable-{str(err)}
     raise DependencyException(msg)
 
 if remove_dist_egg:
-    egg_path = distribution.get_command_obj('bdist_egg').egg_output
+    egg_path = distribution.get_command_obj("bdist_egg").egg_output
     if egg_path:
         os.remove(egg_path)
         try:
