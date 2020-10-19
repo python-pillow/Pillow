@@ -598,6 +598,10 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    @pytest.mark.skipif(
+        not os.path.exists("Tests/images/string_dimension.tiff"),
+        reason="Extra image files not installed",
+    )
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with pytest.raises(ValueError):
