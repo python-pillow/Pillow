@@ -78,6 +78,8 @@ struct j2k_decode_unpacker {
     const char          *mode;
     OPJ_COLOR_SPACE     color_space;
     unsigned            components;
+    /* bool indicating if unpacker supports subsampling */
+    int                 subsampling;
     j2k_unpacker_t      unpacker;
 };
 
@@ -332,6 +334,7 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
     int shifts[3], offsets[3], csiz[3];
+    unsigned dx[3], dy[3];
     const UINT8 *cdata[3];
     const UINT8 *cptr = tiledata;
     unsigned n, x, y;
@@ -341,6 +344,8 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
+        dx[n] = (in->comps[n].dx);
+        dy[n] = (in->comps[n].dy);
 
         if (csiz[n] == 3) {
             csiz[n] = 4;
@@ -350,14 +355,14 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             offsets[n] += 1 << (-shifts[n] - 1);
         }
 
-        cptr += csiz[n] * w * h;
+        cptr += csiz[n] * (w / dx[n]) * (h / dy[n]);
     }
 
     for (y = 0; y < h; ++y) {
         const UINT8 *data[3];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 3; ++n) {
-            data[n] = &cdata[n][csiz[n] * y * w];
+            data[n] = &cdata[n][csiz[n] * (y / dy[n]) * (w / dx[n])];
         }
 
         for (x = 0; x < w; ++x) {
@@ -365,9 +370,9 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 UINT32 word = 0;
 
                 switch (csiz[n]) {
-                case 1: word = *data[n]++; break;
-                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
-                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                case 1: word = data[n][x / dx[n]]; break;
+                case 2: word = ((const UINT16 *)data[n])[x / dx[n]]; break;
+                case 4: word = ((const UINT32 *)data[n])[x / dx[n]]; break;
                 }
 
                 row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
@@ -387,6 +392,7 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
     int shifts[3], offsets[3], csiz[3];
+    unsigned dx[3], dy[3];
     const UINT8 *cdata[3];
     const UINT8 *cptr = tiledata;
     unsigned n, x, y;
@@ -396,6 +402,8 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
+        dx[n] = (in->comps[n].dx);
+        dy[n] = (in->comps[n].dy);
 
         if (csiz[n] == 3) {
             csiz[n] = 4;
@@ -405,7 +413,7 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             offsets[n] += 1 << (-shifts[n] - 1);
         }
 
-        cptr += csiz[n] * w * h;
+        cptr += csiz[n] * (w / dx[n]) * (h / dy[n]);
     }
 
     for (y = 0; y < h; ++y) {
@@ -413,7 +421,7 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         UINT8 *row_start = row;
         for (n = 0; n < 3; ++n) {
-            data[n] = &cdata[n][csiz[n] * y * w];
+            data[n] = &cdata[n][csiz[n] * (y / dy[n]) * (w / dx[n])];
         }
 
         for (x = 0; x < w; ++x) {
@@ -421,9 +429,9 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 UINT32 word = 0;
 
                 switch (csiz[n]) {
-                case 1: word = *data[n]++; break;
-                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
-                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                case 1: word = data[n][x / dx[n]]; break;
+                case 2: word = ((const UINT16 *)data[n])[x / dx[n]]; break;
+                case 4: word = ((const UINT32 *)data[n])[x / dx[n]]; break;
                 }
 
                 row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
@@ -445,6 +453,7 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
     int shifts[4], offsets[4], csiz[4];
+    unsigned dx[4], dy[4];
     const UINT8 *cdata[4];
     const UINT8 *cptr = tiledata;
     unsigned n, x, y;
@@ -454,6 +463,8 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
+        dx[n] = (in->comps[n].dx);
+        dy[n] = (in->comps[n].dy);
 
         if (csiz[n] == 3) {
             csiz[n] = 4;
@@ -463,14 +474,14 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             offsets[n] += 1 << (-shifts[n] - 1);
         }
 
-        cptr += csiz[n] * w * h;
+        cptr += csiz[n] * (w / dx[n]) * (h / dy[n]);
     }
 
     for (y = 0; y < h; ++y) {
         const UINT8 *data[4];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         for (n = 0; n < 4; ++n) {
-            data[n] = &cdata[n][csiz[n] * y * w];
+            data[n] = &cdata[n][csiz[n] * (y / dy[n]) * (w / dx[n])];
         }
 
         for (x = 0; x < w; ++x) {
@@ -478,9 +489,9 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 UINT32 word = 0;
 
                 switch (csiz[n]) {
-                case 1: word = *data[n]++; break;
-                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
-                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                case 1: word = data[n][x / dx[n]]; break;
+                case 2: word = ((const UINT16 *)data[n])[x / dx[n]]; break;
+                case 4: word = ((const UINT32 *)data[n])[x / dx[n]]; break;
                 }
 
                 row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
@@ -499,6 +510,7 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     unsigned h = tileinfo->y1 - tileinfo->y0;
 
     int shifts[4], offsets[4], csiz[4];
+    unsigned dx[4], dy[4];
     const UINT8 *cdata[4];
     const UINT8 *cptr = tiledata;
     unsigned n, x, y;
@@ -508,6 +520,8 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         shifts[n] = 8 - in->comps[n].prec;
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
+        dx[n] = (in->comps[n].dx);
+        dy[n] = (in->comps[n].dy);
 
         if (csiz[n] == 3) {
             csiz[n] = 4;
@@ -517,7 +531,7 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
             offsets[n] += 1 << (-shifts[n] - 1);
         }
 
-        cptr += csiz[n] * w * h;
+        cptr += csiz[n] * (w / dx[n]) * (h / dy[n]);
     }
 
     for (y = 0; y < h; ++y) {
@@ -525,7 +539,7 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         UINT8 *row_start = row;
         for (n = 0; n < 4; ++n) {
-            data[n] = &cdata[n][csiz[n] * y * w];
+            data[n] = &cdata[n][csiz[n] * (y / dy[n]) * (w / dx[n])];
         }
 
         for (x = 0; x < w; ++x) {
@@ -533,9 +547,9 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
                 UINT32 word = 0;
 
                 switch (csiz[n]) {
-                case 1: word = *data[n]++; break;
-                case 2: word = *(const UINT16 *)data[n]; data[n] += 2; break;
-                case 4: word = *(const UINT32 *)data[n]; data[n] += 4; break;
+                case 1: word = data[n][x / dx[n]]; break;
+                case 2: word = ((const UINT16 *)data[n])[x / dx[n]]; break;
+                case 4: word = ((const UINT32 *)data[n])[x / dx[n]]; break;
                 }
 
                 row[n] = j2ku_shift(offsets[n] + word, shifts[n]);
@@ -548,22 +562,22 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 }
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
-    { "L", OPJ_CLRSPC_GRAY, 1, j2ku_gray_l },
-    { "I;16", OPJ_CLRSPC_GRAY, 1, j2ku_gray_i },
-    { "I;16B", OPJ_CLRSPC_GRAY, 1, j2ku_gray_i },
-    { "LA", OPJ_CLRSPC_GRAY, 2, j2ku_graya_la },
-    { "RGB", OPJ_CLRSPC_GRAY, 1, j2ku_gray_rgb },
-    { "RGB", OPJ_CLRSPC_GRAY, 2, j2ku_gray_rgb },
-    { "RGB", OPJ_CLRSPC_SRGB, 3, j2ku_srgb_rgb },
-    { "RGB", OPJ_CLRSPC_SYCC, 3, j2ku_sycc_rgb },
-    { "RGB", OPJ_CLRSPC_SRGB, 4, j2ku_srgb_rgb },
-    { "RGB", OPJ_CLRSPC_SYCC, 4, j2ku_sycc_rgb },
-    { "RGBA", OPJ_CLRSPC_GRAY, 1, j2ku_gray_rgb },
-    { "RGBA", OPJ_CLRSPC_GRAY, 2, j2ku_graya_la },
-    { "RGBA", OPJ_CLRSPC_SRGB, 3, j2ku_srgb_rgb },
-    { "RGBA", OPJ_CLRSPC_SYCC, 3, j2ku_sycc_rgb },
-    { "RGBA", OPJ_CLRSPC_SRGB, 4, j2ku_srgba_rgba },
-    { "RGBA", OPJ_CLRSPC_SYCC, 4, j2ku_sycca_rgba },
+    { "L", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l },
+    { "I;16", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i },
+    { "I;16B", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i },
+    { "LA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la },
+    { "RGB", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb },
+    { "RGB", OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb },
+    { "RGB", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb },
+    { "RGB", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb },
+    { "RGB", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb },
+    { "RGB", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb },
+    { "RGBA", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb },
+    { "RGBA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la },
+    { "RGBA", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb },
+    { "RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb },
+    { "RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba },
+    { "RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba },
 };
 
 /* -------------------------------------------------------------------- */
@@ -589,7 +603,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     j2k_unpacker_t unpack = NULL;
     size_t buffer_size = 0, tile_bytes = 0;
     unsigned n, tile_height, tile_width;
-    int components;
+    int components, subsampling;
 
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
@@ -652,11 +666,16 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         goto quick_exit;
     }
 
-    for (n = 1; n < image->numcomps; ++n) {
+    /*
+     * Find first component with subsampling.
+     *
+     * This is a heuristic to determine the colorspace if unspecified.
+     */
+    subsampling = -1;
+    for (n = 0; n < image->numcomps; ++n) {
         if (image->comps[n].dx != 1 || image->comps[n].dy != 1) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
+            subsampling = n;
+            break;
         }
     }
 
@@ -672,12 +691,14 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
 
        If colorspace is unspecified, we assume:
 
-           Number of components   Colorspace
-         -----------------------------------------
-           1                      gray
-           2                      gray (+ alpha)
-           3                      sRGB
-           4                      sRGB (+ alpha)
+           Number of components   Subsampling   Colorspace      
+         -------------------------------------------------------
+           1                      Any           gray
+           2                      Any           gray (+ alpha)
+           3                      -1, 0         sRGB
+           3                      1, 2          YCbCr
+           4                      -1, 0, 3      sRGB (+ alpha)
+           4                      1, 2          YCbCr (+ alpha)
 
     */
 
@@ -686,14 +707,23 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
 
     if (color_space == OPJ_CLRSPC_UNSPECIFIED) {
         switch (image->numcomps) {
-        case 1: case 2: color_space = OPJ_CLRSPC_GRAY; break;
-        case 3: case 4: color_space = OPJ_CLRSPC_SRGB; break;
+        case 1: case 2:
+            color_space = OPJ_CLRSPC_GRAY; break;
+        case 3: case 4:
+            switch (subsampling) {
+            case -1: case 0: case 3:
+                color_space = OPJ_CLRSPC_SRGB; break;
+            case 1: case 2:
+                color_space = OPJ_CLRSPC_SYCC;  break;
+            }
+            break;
         }
     }
 
     for (n = 0; n < sizeof(j2k_unpackers) / sizeof (j2k_unpackers[0]); ++n) {
         if (color_space == j2k_unpackers[n].color_space
             && image->numcomps == j2k_unpackers[n].components
+            && (j2k_unpackers[n].subsampling || (subsampling == -1))
             && strcmp (im->mode, j2k_unpackers[n].mode) == 0) {
             unpack = j2k_unpackers[n].unpacker;
             break;
