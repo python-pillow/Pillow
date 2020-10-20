@@ -1,3 +1,4 @@
+import os
 import re
 from io import BytesIO
 
@@ -11,6 +12,8 @@ from .helper import (
     is_big_endian,
     skip_unless_feature,
 )
+
+EXTRA_DIR = "Tests/images/jpeg2000"
 
 pytestmark = skip_unless_feature("jpg_2000")
 
@@ -233,3 +236,23 @@ def test_parser_feed():
 
     # Assert
     assert p.image.size == (640, 480)
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@pytest.mark.parametrize("name", ("subsampling_1", "subsampling_2", "zoo1", "zoo2"))
+def test_subsampling_decode(name):
+    test = f"{EXTRA_DIR}/{name}.jp2"
+    reference = f"{EXTRA_DIR}/{name}.ppm"
+
+    with Image.open(test) as im:
+        epsilon = 3  # for YCbCr images
+        with Image.open(reference) as im2:
+            width, height = im2.size
+            if name[-1] == "2":
+                # RGB reference images are downscaled
+                epsilon = 3e-3
+                width, height = width * 2, height * 2
+            expected = im2.resize((width, height), Image.NEAREST)
+        assert_image_similar(im, expected, epsilon)
