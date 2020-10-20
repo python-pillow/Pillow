@@ -4,7 +4,7 @@
 ARCHIVE_SDIR=pillow-depends-master
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.10.3
+FREETYPE_VERSION=2.10.4
 LIBPNG_VERSION=1.6.37
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9d
