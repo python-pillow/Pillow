@@ -8,6 +8,12 @@ Changelog (Pillow)
 - Support raw rgba8888 for DDS #4760
   [qiankanglai]
 
+8.0.1 (2020-10-22)
+------------------
+
+- Update FreeType used in binary wheels to 2.10.4 to fix CVE-2020-15999.
+  [radarhere]
+
 8.0.0 (2020-10-15)
 ------------------
 
