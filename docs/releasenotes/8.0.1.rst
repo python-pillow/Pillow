@@ -13,7 +13,9 @@ Update FreeType used in binary wheels to `2.10.4`_ to fix CVE-2020-15999_:
 
     If you use option ``FT_CONFIG_OPTION_USE_PNG`` you should upgrade immediately.
 
-Before Pillow 8.0.0 bitmap fonts were disabled with ``FT_LOAD_NO_BITMAP``, but it is not
+We strongly recommend updating to Pillow 8.0.1 if you are using Pillow 8.0.0, which improved support for bitmap fonts.
+
+In Pillow 7.2.0 and earlier bitmap fonts were disabled with ``FT_LOAD_NO_BITMAP``, but it is not
 clear if this prevents the exploit and we recommend updating to Pillow 8.0.1.
 
 Pillow 8.0.0 and earlier are potentially vulnerable releases, including the last release
