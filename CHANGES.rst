@@ -14,6 +14,9 @@ Changelog (Pillow)
 - Update FreeType used in binary wheels to 2.10.4 to fix CVE-2020-15999.
   [radarhere]
 
+- Moved string_dimension image to pillow-depends #4993
+  [radarhere]
+
 8.0.0 (2020-10-15)
 ------------------
 
