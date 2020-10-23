@@ -7,12 +7,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ "ubuntu-16.04" ]
+        os: [ "ubuntu-16.04", "macos-latest" ]
         python: [ "3.6", "3.7", "3.8", "3.9", "pypy3.6-7.3" ]
         platform: [ "x86_64", "i686" ]
+        exclude:
+          - os: "macos-latest"
+            platform: "i686"
       fail-fast: false
 
-    timeout-minutes: 30
     runs-on: ${{ matrix.os }}
 
     name: ${{ matrix.python }} ${{ matrix.os }} ${{ matrix.platform }}
@@ -22,7 +24,7 @@ jobs:
       BUILD_COMMIT: HEAD
       BUILD_DEPENDS: ""
       TEST_DEPENDS: "pytest pytest-cov"
-      MACOSX_DEPLOYMENT_TARGET: 10.10
+      MACOSX_DEPLOYMENT_TARGET: "10.10"
       WHEEL_SDIR: wheelhouse
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
@@ -37,13 +39,14 @@ jobs:
         with:
           python-version: 3.8
 
-      # Run everything in a single step because GHA doesn't share envvars
       - name: Build Wheel
         run: |
           echo "::group::Install a virtualenv"
             if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
               # pretend we are on Travis CI
               TRAVIS_OS_NAME="osx"
+              # these cause a conflict with built webp and libtiff
+              brew remove --ignore-dependencies webp zstd xz libtiff
             fi
             if [[ "${{ matrix.python }}" == "pypy3.6-7.3" ]]; then
               # PyPy specific settings
@@ -56,6 +59,8 @@ jobs:
             fi
             source multibuild/common_utils.sh
             source multibuild/travis_steps.sh
+            # can't use default 7.3.1 on macOS due to https://foss.heptapod.net/pypy/pypy/-/issues/3229
+            LATEST_PP_7p3=7.3.2
             pip install virtualenv
             before_install
           echo "::endgroup::"
@@ -69,7 +74,14 @@ jobs:
             ls -l "${GITHUB_WORKSPACE}/${WHEEL_SDIR}/"
           echo "::endgroup::"
 
-          install_run $PLAT
+          echo "::group::Test wheel"
+            install_run $PLAT
+          echo "::endgroup::"
+
+#     Uncomment to get SSH access for testing
+#      - name: Setup tmate session
+#        if: failure()
+#        uses: mxschmitt/action-tmate@v3
 
       - uses: actions/upload-artifact@v2
         with:
