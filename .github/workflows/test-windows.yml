@@ -71,7 +71,7 @@ jobs:
         winbuild\depends\gs9533w32.exe /S
         echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
 
-        xcopy /s winbuild\depends\test_images\* Tests\images\
+        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
       shell: pwsh
 
     - name: Cache build
