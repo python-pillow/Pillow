@@ -61,7 +61,7 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Build wheel"
-            if [[ "${{ startsWith(github.ref, 'refs/tags') }}" == "false" ]]; then
+            if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "false" ]]; then
               BUILD_COMMIT=master
             fi
             clean_code $REPO_DIR $BUILD_COMMIT
@@ -75,3 +75,18 @@ jobs:
         with:
           name: wheels
           path: wheelhouse/*.whl
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: wheels
+      - name: Upload Release
+        uses: fnkr/github-action-ghr@v1.3
+        env:
+          GHR_PATH: .
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
