@@ -1,7 +1,7 @@
 
 name: Wheels
 
-on: [push, pull_request, create]
+on: [push, pull_request]
 
 env:
   REPO_DIR: Pillow
