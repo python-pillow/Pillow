@@ -951,6 +951,10 @@ When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, the
 following options are available when the ``save_all`` argument is present and
 true.
 
+**save_all**
+    If present and true, all frames of the image will be saved. If
+    not, then only the first frame of a multiframe image will be saved.
+
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
