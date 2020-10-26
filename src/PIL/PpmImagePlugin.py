@@ -14,6 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import struct
 
 from . import Image, ImageFile
 
@@ -23,21 +24,25 @@ from . import Image, ImageFile
 b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
-    # standard
-    b"P4": "1",
-    b"P5": "L",
-    b"P6": "RGB",
+    # standard, plain
+    b"P1": ("PPM", "1"),
+    b"P2": ("PPM", "L"),
+    b"P3": ("PPM", "RGB"),
+    # standard, raw
+    b"P4": ("raw", "1"),
+    b"P5": ("raw", "L"),
+    b"P6": ("raw", "RGB"),
     # extensions
-    b"P0CMYK": "CMYK",
+    b"P0CMYK": ("raw", "CMYK"),
     # PIL extensions (for test purposes only)
-    b"PyP": "P",
-    b"PyRGBA": "RGBA",
-    b"PyCMYK": "CMYK",
+    b"PyP": ("raw", "P"),
+    b"PyRGBA": ("raw", "RGBA"),
+    b"PyCMYK": ("raw", "CMYK"),
 }
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"P" and prefix[1] in b"0456y"
+    return prefix[0:1] == b"P" and prefix[1] in b"0123456y"
 
 
 ##
@@ -68,9 +73,12 @@ class PpmImageFile(ImageFile.ImageFile):
         if s != b"P":
             raise SyntaxError("not a PPM file")
         magic_number = self._token(s)
-        mode = MODES[magic_number]
+        decoder, mode = MODES[magic_number]
 
         self.custom_mimetype = {
+            b"P1": "image/x-portable-bitmap",
+            b"P2": "image/x-portable-graymap",
+            b"P3": "image/x-portable-pixmap",
             b"P4": "image/x-portable-bitmap",
             b"P5": "image/x-portable-graymap",
             b"P6": "image/x-portable-pixmap",
@@ -113,11 +121,51 @@ class PpmImageFile(ImageFile.ImageFile):
                         rawmode = "I;32B"
 
         self._size = xsize, ysize
-        self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
+        self.tile = [(decoder, (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
 
 
-#
-# --------------------------------------------------------------------
+class PpmPlainDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        data = b""
+        size = self.state.xsize * self.state.ysize
+
+        if self.mode == "1":
+            translate = bytes.maketrans(b"01", b"\xFF\x00")
+            delete = bytes(range(48)) + bytes(range(50, 256))
+
+        for line in self.fd:
+            line = line[: line.find("#")]
+            if self.mode == "1":
+                bytes_per_pixel = 1
+                data += line.translate(translate, delete)
+            else:
+                values = map(int, line.split())
+                if self.mode == "L":
+                    bytes_per_pixel = 1
+                    data += bytes(values)
+                elif self.mode == "I;16B":
+                    bytes_per_pixel = 2
+                    values = list(values)
+                    data += struct.pack(f">{len(values)}H", *values)
+                elif self.mode == "I;32B":
+                    bytes_per_pixel = 4
+                    values = list(values)
+                    data += struct.pack(f">{len(values)}L", *values)
+                else:
+                    bytes_per_pixel = 3
+                    data += bytes(values)
+
+            if len(data) >= size * bytes_per_pixel:
+                break
+
+        if self.mode == "1":
+            self.im.putdata(data[0:size])
+        else:
+            self.set_as_raw(data, rawmode=self.args[0])
+
+        return -1, 0
 
 
 def _save(im, fp, filename):
@@ -156,6 +204,7 @@ def _save(im, fp, filename):
 # --------------------------------------------------------------------
 
 
+Image.register_decoder("PPM", PpmPlainDecoder)
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
 
