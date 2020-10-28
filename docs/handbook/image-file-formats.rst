@@ -947,9 +947,10 @@ Saving sequences
     library is v0.5.0 or later. You can check webp animation support at
     runtime by calling ``features.check("webp_anim")``.
 
-When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, the
-following options are available when the ``save_all`` argument is present and
-true.
+When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+options will also be available.
 
 **append_images**
     A list of images to append as additional frames. Each of the
