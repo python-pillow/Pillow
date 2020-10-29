@@ -112,11 +112,27 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     int err = 0;
     int status;
 
+    /* size check */
+    if (im->xsize > INT_MAX / im->bands ||
+        im->ysize > INT_MAX / im->bands) {
+        return IMAGING_CODEC_MEMORY;
+    }
+
     /* Get all data from File descriptor */
     c = (SGISTATE*)state->context;
     _imaging_seek_pyFd(state->fd, 0L, SEEK_END);
     c->bufsize = _imaging_tell_pyFd(state->fd);
     c->bufsize -= SGI_HEADER_SIZE;
+
+    c->tablen = im->bands * im->ysize;
+    /* below, we populate the starttab and lentab into the bufsize,
+       each with 4 bytes per element of tablen
+       Check here before we allocate any memory
+    */
+    if (c->bufsize < 8*c->tablen) {
+        return IMAGING_CODEC_MEMORY;
+    }
+
     ptr = malloc(sizeof(UINT8) * c->bufsize);
     if (!ptr) {
         return IMAGING_CODEC_MEMORY;
@@ -134,18 +150,11 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
         state->ystep = 1;
     }
 
-    if (im->xsize > INT_MAX / im->bands ||
-        im->ysize > INT_MAX / im->bands) {
-        err = IMAGING_CODEC_MEMORY;
-        goto sgi_finish_decode;
-    }
-
     /* Allocate memory for RLE tables and rows */
     free(state->buffer);
     state->buffer = NULL;
     /* malloc overflow check above */
     state->buffer = calloc(im->xsize * im->bands, sizeof(UINT8) * 2);
-    c->tablen = im->bands * im->ysize;
     c->starttab = calloc(c->tablen, sizeof(UINT32));
     c->lengthtab = calloc(c->tablen, sizeof(UINT32));
     if (!state->buffer ||
