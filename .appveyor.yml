@@ -1,5 +1,4 @@
 version: '{build}'
-image: Visual Studio 2017
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -12,10 +11,12 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python38
+  - PYTHON: C:/Python39
     ARCHITECTURE: x86
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   - PYTHON: C:/Python36-x64
     ARCHITECTURE: x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 install:
@@ -32,6 +33,7 @@ install:
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
+- '%PYTHON%\%PIP_DIR%\pip.exe install -U "setuptools>=49.3.2"'
 
 build_script:
 - ps: |
