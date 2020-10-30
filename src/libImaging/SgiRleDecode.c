@@ -115,7 +115,8 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     /* size check */
     if (im->xsize > INT_MAX / im->bands ||
         im->ysize > INT_MAX / im->bands) {
-        return IMAGING_CODEC_MEMORY;
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
     }
 
     /* Get all data from File descriptor */
@@ -130,12 +131,14 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
        Check here before we allocate any memory
     */
     if (c->bufsize < 8*c->tablen) {
-        return IMAGING_CODEC_MEMORY;
+        state->errcode = IMAGING_CODEC_OVERRUN;
+        return -1;
     }
 
     ptr = malloc(sizeof(UINT8) * c->bufsize);
     if (!ptr) {
-        return IMAGING_CODEC_MEMORY;
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
     }
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
     _imaging_read_pyFd(state->fd, (char*)ptr, c->bufsize);
@@ -185,7 +188,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 
             if (c->rleoffset + c->rlelength > c->bufsize) {
                 state->errcode = IMAGING_CODEC_OVERRUN;
-                return -1;
+                goto sgi_finish_decode;
             }
 
             /* row decompression */
@@ -197,7 +200,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
             }
             if (status == -1) {
                 state->errcode = IMAGING_CODEC_OVERRUN;
-                return -1;
+                goto sgi_finish_decode;
             } else if (status == 1) {
                 goto sgi_finish_decode;
             }
@@ -218,7 +221,8 @@ sgi_finish_decode: ;
     free(c->lengthtab);
     free(ptr);
     if (err != 0){
-        return err;
+        state->errcode=err;
+        return -1;
     }
     return state->count - c->bufsize;
 }
