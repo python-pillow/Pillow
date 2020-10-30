@@ -5,8 +5,8 @@ This repository creates wheels for tagged versions of Pillow::
 
     ./update-pillow-tag.sh <VERSION>
 
-.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg
-   :target: https://travis-ci.org/python-pillow/pillow-wheels
+.. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg
+   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
    :alt: Travis CI build status (wheels)
 
 Archives
