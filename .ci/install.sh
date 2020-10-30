@@ -47,8 +47,8 @@ if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
   fi
 fi
 
-# docs only on Python 3.8
-if [ "$TRAVIS_PYTHON_VERSION" == "3.8" ]; then python3 -m pip install -r requirements.txt ; fi
+# docs only on Python 3.9
+if [ "$TRAVIS_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -r requirements.txt ; fi
 
 # webp
 pushd depends && ./install_webp.sh && popd
