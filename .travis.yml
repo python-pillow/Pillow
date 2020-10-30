@@ -46,7 +46,7 @@ matrix:
 install:
   - |
     if [ "$LINT" == "true" ]; then
-      pip install tox
+      python3 -m pip install tox
     else
       .ci/install.sh;
     fi

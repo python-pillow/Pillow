@@ -7,7 +7,6 @@ init:
 
 environment:
   EXECUTABLE: python.exe
-  PIP_DIR: Scripts
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
@@ -33,7 +32,7 @@ install:
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
-- '%PYTHON%\%PIP_DIR%\pip.exe install -U "setuptools>=49.3.2"'
+- '%PYTHON%\%EXECUTABLE% -m pip install -U "setuptools>=49.3.2"'
 
 build_script:
 - ps: |
@@ -44,13 +43,13 @@ build_script:
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%PIP_DIR%\pip.exe install pytest pytest-cov'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
-- pip install codecov
+- python -m pip install codecov
 - codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
@@ -67,7 +66,7 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
+  - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
   - cd c:\pillow\winbuild\
   - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
   - cd c:\pillow
