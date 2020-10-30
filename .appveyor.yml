@@ -7,7 +7,6 @@ init:
 
 environment:
   EXECUTABLE: python.exe
-  PIP_DIR: Scripts
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
