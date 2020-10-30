@@ -94,7 +94,7 @@ jobs:
         path: Tests/errors
 
     - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.8
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
         python3 -m pip install sphinx-removed-in sphinx-rtd-theme
         make doccheck
