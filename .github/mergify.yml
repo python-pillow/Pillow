@@ -3,7 +3,7 @@ pull_request_rules:
     conditions:
       - "#approved-reviews-by>=1"
       - label=automerge
-      - status-success=continuous-integration/travis-ci/pr
+      - status-success=Travis CI - Pull Request
     actions:
       merge:
         method: merge
