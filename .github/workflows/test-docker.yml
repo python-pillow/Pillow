@@ -20,8 +20,8 @@ jobs:
           centos-8-amd64,
           amazon-1-amd64,
           amazon-2-amd64,
-          fedora-31-amd64,
           fedora-32-amd64,
+          fedora-33-amd64,
         ]
         dockerTag: [master]
 

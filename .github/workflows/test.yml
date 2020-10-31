@@ -45,7 +45,7 @@ jobs:
     - name: Get pip cache dir
       id: pip-cache
       run: |
-        echo "::set-output name=dir::$(pip cache dir)"
+        echo "::set-output name=dir::$(python3 -m pip cache dir)"
 
     - name: pip cache
       uses: actions/cache@v2
@@ -95,9 +95,9 @@ jobs:
         path: Tests/errors
 
     - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.8
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
-        pip install sphinx-removed-in sphinx-rtd-theme
+        python3 -m pip install sphinx-removed-in sphinx-rtd-theme
         make doccheck
 
     - name: After success

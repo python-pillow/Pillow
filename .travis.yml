@@ -28,8 +28,8 @@ matrix:
 
     - python: "pypy3.6-7.3.1"
       name: "PyPy3 Xenial"
-    - python: "3.9-dev"
-      name: "3.9-dev Xenial"
+    - python: "3.9"
+      name: "3.9 Xenial"
       services: xvfb
     - python: "3.8"
       name: "3.8 Xenial"
@@ -43,13 +43,10 @@ matrix:
       env: PYTHONOPTIMIZE=1
       services: xvfb
 
-  allow_failures:
-  - python: "3.9-dev"
-
 install:
   - |
     if [ "$LINT" == "true" ]; then
-      pip install tox
+      python3 -m pip install tox
     else
       .ci/install.sh;
     fi
