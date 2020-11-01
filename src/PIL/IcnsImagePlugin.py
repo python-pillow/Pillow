@@ -6,7 +6,7 @@
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
-# 2020-04-04 Save in icns format to support all operating systems.
+# 2020-04-04 Allow saving on all operating systems.
 #
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
