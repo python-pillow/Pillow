@@ -318,7 +318,7 @@ def _save(im, fp, filename):
     if hasattr(fp, "flush"):
         fp.flush()
 
-    # size
+    # Size
     sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
     size_str = ["ic07", "ic08", "ic09", "ic11", "ic12", "ic13", "ic14", "ic10"]
     file_size = 0
