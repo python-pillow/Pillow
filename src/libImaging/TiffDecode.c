@@ -181,63 +181,6 @@ int ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
 }
 
 
-int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
-    uint16 photometric = 0;
-
-    TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
-
-    // To avoid dealing with YCbCr subsampling, let libtiff handle it
-    if (photometric == PHOTOMETRIC_YCBCR) {
-        UINT32 tile_width, tile_height, swap_line_size, i_row;
-        UINT32* swap_line;
-
-        TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tile_width);
-        TIFFGetField(tiff, TIFFTAG_TILELENGTH, &tile_height);
-
-        swap_line_size = tile_width * sizeof(UINT32);
-        if (tile_width != swap_line_size / sizeof(UINT32)) {
-            return -1;
-        }
-
-        /* Read the tile into an RGBA array */
-        if (!TIFFReadRGBATile(tiff, col, row, buffer)) {
-            return -1;
-        }
-
-        swap_line = (UINT32*)malloc(swap_line_size);
-        if (swap_line == NULL) {
-            return -1;
-        }
-        /*
-         * For some reason the TIFFReadRGBATile() function chooses the
-         * lower left corner as the origin.  Vertically mirror scanlines.
-         */
-        for(i_row = 0; i_row < tile_height / 2; i_row++) {
-            UINT32 *top_line, *bottom_line;
-
-            top_line = buffer + tile_width * i_row;
-            bottom_line = buffer + tile_width * (tile_height - i_row - 1);
-
-            memcpy(swap_line, top_line, 4*tile_width);
-            memcpy(top_line, bottom_line, 4*tile_width);
-            memcpy(bottom_line, swap_line, 4*tile_width);
-        }
-
-        free(swap_line);
-
-        return 0;
-    }
-
-    if (TIFFReadTile(tiff, (tdata_t)buffer, col, row, 0, 0) == -1) {
-        TRACE(("Decode Error, Tile at %dx%d\n", col, row));
-        return -1;
-    }
-
-    TRACE(("Successfully read tile at %dx%d; \n\n", col, row));
-
-    return 0;
-}
-
 int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     // To avoid dealing with YCbCr subsampling, let libtiff handle it
     // Use a TIFFRGBAImage wrapping the tiff image, and let libtiff handle
@@ -250,7 +193,6 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     int ret;
     TIFFRGBAImage img;
     char emsg[1024] = "";
-    int ok;
 
     ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
     if (ret != 1) {
@@ -261,7 +203,7 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     if (!(TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg))) {
         TRACE(("Decode error, msg: %s", emsg));
         state->errcode = IMAGING_CODEC_BROKEN;
-        TIFFClose(tiff);
+        // nothing to clean up, just return
         return -1;
     }
 
@@ -272,17 +214,13 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
         TRACE(("Inconsistent Image Error: %d =? %d, %d =? %d",
                state->xsize, img.width, state->ysize, img.height));
         state->errcode = IMAGING_CODEC_BROKEN;
-        TIFFRGBAImageEnd(&img);
-        TIFFClose(tiff);
-        return -1;
+        goto decodeycbcr_err;
     }
 
     /* overflow check for row byte size */
     if (INT_MAX / 4 < img.width) {
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFRGBAImageEnd(&img);
-        TIFFClose(tiff);
-        return -1;
+        goto decodeycbcr_err;
     }        
     
     // TiffRGBAImages are 32bits/pixel. 
@@ -291,9 +229,7 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     /* overflow check for realloc */
     if (INT_MAX / row_byte_size < rows_per_strip) {
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFRGBAImageEnd(&img);
-        TIFFClose(tiff);
-        return -1;
+        goto decodeycbcr_err;
     }
 
     state->bytes = rows_per_strip * row_byte_size;
@@ -305,9 +241,7 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     new_data = realloc (state->buffer, state->bytes);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFRGBAImageEnd(&img);
-        TIFFClose(tiff);
-        return -1;
+        goto decodeycbcr_err;
     }
 
     state->buffer = new_data;
@@ -319,9 +253,7 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
         if (TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read) == -1) {
             TRACE(("Decode Error, y: %d\n", state->y ));
             state->errcode = IMAGING_CODEC_BROKEN;
-            TIFFRGBAImageEnd(&img);
-            TIFFClose(tiff);
-            return -1;
+            goto decodeycbcr_err;
         }
 
         TRACE(("Decoded strip for row %d \n", state->y));
@@ -339,7 +271,12 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
                            state->xsize);
         }
     }
-    TIFFRGBAImageEnd(&img);            
+
+ decodeycbcr_err:
+    TIFFRGBAImageEnd(&img);
+    if (state->errcode != 0) {
+        return -1;
+    }
     return 0;
 }
 
@@ -361,7 +298,6 @@ int _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
     /* overflow check for realloc */
     if (INT_MAX / row_byte_size < rows_per_strip) {
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFClose(tiff);
         return -1;
     }
 
@@ -375,7 +311,6 @@ int _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
         //        call to TIFFReadEncodedStrip ...
 
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFClose(tiff);
         return -1;
     }
 
@@ -384,7 +319,6 @@ int _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
     new_data = realloc (state->buffer, state->bytes);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
-        TIFFClose(tiff);
         return -1;
     }
 
@@ -394,7 +328,6 @@ int _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
         if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, 0), (tdata_t)state->buffer, -1) == -1) {
             TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
             state->errcode = IMAGING_CODEC_BROKEN;
-            TIFFClose(tiff);
             return -1;
         }
 
@@ -423,7 +356,6 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     TIFF *tiff;
     uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
     int isYCbCr = 0;
-    int ret;
 
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
@@ -480,7 +412,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         rv = TIFFSetSubDirectory(tiff, ifdoffset);
         if (!rv){
             TRACE(("error in TIFFSetSubDirectory"));
-            return -1;
+            goto decode_err;
         }
     }
 
@@ -490,7 +422,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     
     if (TIFFIsTiled(tiff)) {
         INT32 x, y, tile_y;
-        UINT32 tile_width, tile_length, current_tile_width, row_byte_size;
+        UINT32 tile_width, tile_length, current_tile_length, current_line, current_tile_width, row_byte_size;
         UINT8 *new_data;
 
         TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tile_width);
@@ -499,18 +431,26 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         /* overflow check for row_byte_size calculation */
         if ((UINT32) INT_MAX / state->bits < tile_width) {
             state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
+            goto decode_err;
         }
 
-        // We could use TIFFTileSize, but for YCbCr data it returns subsampled data size
-        row_byte_size = (tile_width * state->bits + 7) / 8;
+
+        if (isYCbCr) {
+            row_byte_size = tile_width * 4;
+            /* sanity check, we use this value in shuffle below */
+            if (im->pixelsize != 4) {
+                state->errcode = IMAGING_CODEC_BROKEN;
+                goto decode_err;
+            }
+        } else {
+            // We could use TIFFTileSize, but for YCbCr data it returns subsampled data size
+            row_byte_size = (tile_width * state->bits + 7) / 8;
+        }
 
         /* overflow check for realloc */
         if (INT_MAX / row_byte_size < tile_length) {
             state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
+            goto decode_err;
         }
 
         state->bytes = row_byte_size * tile_length;
@@ -518,8 +458,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         if (TIFFTileSize(tiff) > state->bytes) {
             // If the strip size as expected by LibTiff isn't what we're expecting, abort.
             state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
+            goto decode_err;
         }
 
         /* realloc to fit whole tile */
@@ -527,8 +466,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         new_data = realloc (state->buffer, state->bytes);
         if (!new_data) {
             state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
+            goto decode_err;
         }
 
         state->buffer = new_data;
@@ -537,26 +475,46 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
 
         for (y = state->yoff; y < state->ysize; y += tile_length) {
             for (x = state->xoff; x < state->xsize; x += tile_width) {
-                if (ReadTile(tiff, x, y, (UINT32*) state->buffer) == -1) {
-                    TRACE(("Decode Error, Tile at %dx%d\n", x, y));
-                    state->errcode = IMAGING_CODEC_BROKEN;
-                    TIFFClose(tiff);
-                    return -1;
+                if (isYCbCr) {
+                    /* To avoid dealing with YCbCr subsampling, let libtiff handle it */
+                    if (!TIFFReadRGBATile(tiff, x, y, (UINT32 *)state->buffer)) {
+                        TRACE(("Decode Error, Tile at %dx%d\n", x, y));
+                        state->errcode = IMAGING_CODEC_BROKEN;
+                        goto decode_err;
+                    }
+                } else {
+                    if (TIFFReadTile(tiff, (tdata_t)state->buffer, x, y, 0, 0) == -1) {
+                        TRACE(("Decode Error, Tile at %dx%d\n", x, y));
+                        state->errcode = IMAGING_CODEC_BROKEN;
+                        goto decode_err;
+                    }
                 }
 
                 TRACE(("Read tile at %dx%d; \n\n", x, y));
 
                 current_tile_width = min((INT32) tile_width, state->xsize - x);
-
+                current_tile_length =  min((INT32) tile_length, state->ysize - y);
                 // iterate over each line in the tile and stuff data into image
-                for (tile_y = 0; tile_y < min((INT32) tile_length, state->ysize - y); tile_y++) {
+                for (tile_y = 0; tile_y < current_tile_length; tile_y++) {
                     TRACE(("Writing tile data at %dx%d using tile_width: %d; \n", tile_y + y, x, current_tile_width));
 
                     // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
                     // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+                    /*
+                     * For some reason the TIFFReadRGBATile() function
+                     * chooses the lower left corner as the origin.
+                     * Vertically mirror by shuffling the scanlines
+                     * backwards
+                     */
 
+                    if (isYCbCr) {
+                        current_line = tile_length - tile_y - 1;
+                    } else {
+                        current_line = tile_y;
+                    }
+                            
                     state->shuffle((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
-                       state->buffer + tile_y * row_byte_size,
+                       state->buffer + current_line * row_byte_size,
                        current_tile_width
                     );
                 }
@@ -564,14 +522,14 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         }
     } else {
         if (!isYCbCr) {
-            ret = _decodeStrip(im, state, tiff);
+            _decodeStrip(im, state, tiff);
         }
         else {
-            ret = _decodeStripYCbCr(im, state, tiff);
+            _decodeStripYCbCr(im, state, tiff);
         }
-        if (ret == -1) { return ret; }
     }
 
+ decode_err:
     TIFFClose(tiff);
     TRACE(("Done Decoding, Returning \n"));
     // Returning -1 here to force ImageFile.load to break, rather than
