@@ -238,54 +238,181 @@ int ReadTile(TIFF* tiff, UINT32 col, UINT32 row, UINT32* buffer) {
     return 0;
 }
 
-int ReadStrip(TIFF* tiff, UINT32 row, UINT32* buffer) {
-    uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
-    TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
-
+int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
     // To avoid dealing with YCbCr subsampling, let libtiff handle it
-    if (photometric == PHOTOMETRIC_YCBCR) {
-        TIFFRGBAImage img;
-        char emsg[1024] = "";
-        UINT32 rows_per_strip, rows_to_read;
-        int ok;
+    // Use a TIFFRGBAImage wrapping the tiff image, and let libtiff handle
+    // all of the conversion. Metadata read from the TIFFRGBAImage could
+    // be different from the metadata that the base tiff returns. 
 
+    INT32 strip_row;
+    UINT8 *new_data;
+    UINT32 rows_per_strip, row_byte_size, rows_to_read;
+    int ret;
+    TIFFRGBAImage img;
+    char emsg[1024] = "";
+    int ok;
 
-        TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
-        if ((row % rows_per_strip) != 0) {
-            TRACE(("Row passed to ReadStrip() must be first in a strip."));
-            return -1;
-        }
-
-        if (TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg)) {
-            TRACE(("Initialized RGBAImage\n"));
-
-            img.req_orientation = ORIENTATION_TOPLEFT;
-            img.row_offset = row;
-            img.col_offset = 0;
-
-            rows_to_read = min(rows_per_strip, img.height - row);
-
-            TRACE(("rows to read: %d\n", rows_to_read));
-            ok = TIFFRGBAImageGet(&img, buffer, img.width, rows_to_read);
-
-            TIFFRGBAImageEnd(&img);
-        } else {
-            ok = 0;
-        }
-
-        if (ok == 0) {
-            TRACE(("Decode Error, row %d; msg: %s\n", row, emsg));
-            return -1;
-        }
-
-        return 0;
+    ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
+    if (ret != 1) {
+        rows_per_strip = state->ysize;
     }
+    TRACE(("RowsPerStrip: %u \n", rows_per_strip));
 
-    if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, row, 0), (tdata_t)buffer, -1) == -1) {
-        TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, row, 0)));
+    if (!(TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg))) {
+        TRACE(("Decode error, msg: %s", emsg));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        TIFFClose(tiff);
         return -1;
     }
 
+    img.req_orientation = ORIENTATION_TOPLEFT;
+    img.col_offset = 0;
+
+    if (state->xsize != img.width || state->ysize != img.height) {
+        TRACE(("Inconsistent Image Error: %d =? %d, %d =? %d",
+               state->xsize, img.width, state->ysize, img.height));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        TIFFRGBAImageEnd(&img);
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    /* overflow check for row byte size */
+    if (INT_MAX / 4 < img.width) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFRGBAImageEnd(&img);
+        TIFFClose(tiff);
+        return -1;
+    }        
+    
+    // TiffRGBAImages are 32bits/pixel. 
+    row_byte_size = img.width * 4;
+
+    /* overflow check for realloc */
+    if (INT_MAX / row_byte_size < rows_per_strip) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFRGBAImageEnd(&img);
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    state->bytes = rows_per_strip * row_byte_size;
+
+    TRACE(("StripSize: %d \n", state->bytes));
+
+    /* realloc to fit whole strip */
+    /* malloc check above */
+    new_data = realloc (state->buffer, state->bytes);
+    if (!new_data) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFRGBAImageEnd(&img);
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    state->buffer = new_data;
+
+    for (; state->y < state->ysize; state->y += rows_per_strip) {
+        img.row_offset = state->y; 
+        rows_to_read = min(rows_per_strip, img.height - state->y);
+
+        if (TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read) == -1) {
+            TRACE(("Decode Error, y: %d\n", state->y ));
+            state->errcode = IMAGING_CODEC_BROKEN;
+            TIFFRGBAImageEnd(&img);
+            TIFFClose(tiff);
+            return -1;
+        }
+
+        TRACE(("Decoded strip for row %d \n", state->y));
+
+        // iterate over each row in the strip and stuff data into image
+        for (strip_row = 0; strip_row < min((INT32) rows_per_strip, state->ysize - state->y); strip_row++) {
+            TRACE(("Writing data into line %d ; \n", state->y + strip_row));
+
+            // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
+            // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+
+            state->shuffle((UINT8*) im->image[state->y + state->yoff + strip_row] +
+                           state->xoff * im->pixelsize,
+                           state->buffer + strip_row * row_byte_size,
+                           state->xsize);
+        }
+    }
+    TIFFRGBAImageEnd(&img);            
+    return 0;
+}
+
+int _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
+    INT32 strip_row;
+    UINT8 *new_data;
+    UINT32 rows_per_strip, row_byte_size;
+    int ret;
+
+    ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
+    if (ret != 1) {
+        rows_per_strip = state->ysize;
+    }
+    TRACE(("RowsPerStrip: %u \n", rows_per_strip));
+
+    // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
+    row_byte_size = (state->xsize * state->bits + 7) / 8;
+
+    /* overflow check for realloc */
+    if (INT_MAX / row_byte_size < rows_per_strip) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    state->bytes = rows_per_strip * row_byte_size;
+
+    TRACE(("StripSize: %d \n", state->bytes));
+
+    if (TIFFStripSize(tiff) > state->bytes) {
+        // If the strip size as expected by LibTiff isn't what we're expecting, abort.
+        // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
+        //        call to TIFFReadEncodedStrip ...
+
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    /* realloc to fit whole strip */
+    /* malloc check above */
+    new_data = realloc (state->buffer, state->bytes);
+    if (!new_data) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        TIFFClose(tiff);
+        return -1;
+    }
+
+    state->buffer = new_data;
+
+    for (; state->y < state->ysize; state->y += rows_per_strip) {
+        if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, 0), (tdata_t)state->buffer, -1) == -1) {
+            TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
+            state->errcode = IMAGING_CODEC_BROKEN;
+            TIFFClose(tiff);
+            return -1;
+        }
+
+        TRACE(("Decoded strip for row %d \n", state->y));
+
+        // iterate over each row in the strip and stuff data into image
+        for (strip_row = 0; strip_row < min((INT32) rows_per_strip, state->ysize - state->y); strip_row++) {
+            TRACE(("Writing data into line %d ; \n", state->y + strip_row));
+
+            // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
+            // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+
+            state->shuffle((UINT8*) im->image[state->y + state->yoff + strip_row] +
+                           state->xoff * im->pixelsize,
+                           state->buffer + strip_row * row_byte_size,
+                           state->xsize);
+        }
+    }
     return 0;
 }
 
@@ -294,6 +421,9 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     char *filename = "tempfile.tif";
     char *mode = "r";
     TIFF *tiff;
+    uint16 photometric = 0; // init to not PHOTOMETRIC_YCBCR
+    int isYCbCr = 0;
+    int ret;
 
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
@@ -354,6 +484,10 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
         }
     }
 
+    
+    TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
+    isYCbCr = photometric == PHOTOMETRIC_YCBCR;
+    
     if (TIFFIsTiled(tiff)) {
         INT32 x, y, tile_y;
         UINT32 tile_width, tile_length, current_tile_width, row_byte_size;
@@ -429,75 +563,13 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
             }
         }
     } else {
-        INT32 strip_row;
-        UINT8 *new_data;
-        UINT32 rows_per_strip, row_byte_size;
-        int ret;
-
-        ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
-        if (ret != 1) {
-            rows_per_strip = state->ysize;
+        if (!isYCbCr) {
+            ret = _decodeStrip(im, state, tiff);
         }
-        TRACE(("RowsPerStrip: %u \n", rows_per_strip));
-
-        // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
-        row_byte_size = (state->xsize * state->bits + 7) / 8;
-
-        /* overflow check for realloc */
-        if (INT_MAX / row_byte_size < rows_per_strip) {
-            state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
+        else {
+            ret = _decodeStripYCbCr(im, state, tiff);
         }
-
-        state->bytes = rows_per_strip * row_byte_size;
-
-        TRACE(("StripSize: %d \n", state->bytes));
-
-        if (TIFFStripSize(tiff) > state->bytes) {
-            // If the strip size as expected by LibTiff isn't what we're expecting, abort.
-            // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
-            //        call to TIFFReadEncodedStrip ...
-
-            state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
-        }
-
-        /* realloc to fit whole strip */
-        /* malloc check above */
-        new_data = realloc (state->buffer, state->bytes);
-        if (!new_data) {
-            state->errcode = IMAGING_CODEC_MEMORY;
-            TIFFClose(tiff);
-            return -1;
-        }
-
-        state->buffer = new_data;
-
-        for (; state->y < state->ysize; state->y += rows_per_strip) {
-            if (ReadStrip(tiff, state->y, (UINT32 *)state->buffer) == -1) {
-                TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
-                state->errcode = IMAGING_CODEC_BROKEN;
-                TIFFClose(tiff);
-                return -1;
-            }
-
-            TRACE(("Decoded strip for row %d \n", state->y));
-
-            // iterate over each row in the strip and stuff data into image
-            for (strip_row = 0; strip_row < min((INT32) rows_per_strip, state->ysize - state->y); strip_row++) {
-                TRACE(("Writing data into line %d ; \n", state->y + strip_row));
-
-                // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
-                // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
-
-                state->shuffle((UINT8*) im->image[state->y + state->yoff + strip_row] +
-                               state->xoff * im->pixelsize,
-                               state->buffer + strip_row * row_byte_size,
-                               state->xsize);
-            }
-        }
+        if (ret == -1) { return ret; }
     }
 
     TIFFClose(tiff);

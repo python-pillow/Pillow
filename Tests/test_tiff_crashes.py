@@ -19,7 +19,12 @@ from .helper import on_ci
 
 
 @pytest.mark.parametrize(
-    "test_file", ["Tests/images/crash_1.tif", "Tests/images/crash_2.tif"]
+    "test_file",
+    [
+        "Tests/images/crash_1.tif",
+        "Tests/images/crash_2.tif",
+        "Tests/images/crash-2020-10-test.tif",
+    ],
 )
 @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
 @pytest.mark.filterwarnings("ignore:Metadata warning")
