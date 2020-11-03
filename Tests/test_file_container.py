@@ -1,63 +1,68 @@
 from PIL import ContainerIO, Image
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 TEST_FILE = "Tests/images/dummy.container"
 
 
-class TestFileContainer(PillowTestCase):
-    def test_sanity(self):
-        dir(Image)
-        dir(ContainerIO)
+def test_sanity():
+    dir(Image)
+    dir(ContainerIO)
 
-    def test_isatty(self):
-        with hopper() as im:
-            container = ContainerIO.ContainerIO(im, 0, 0)
 
-        self.assertFalse(container.isatty())
+def test_isatty():
+    with hopper() as im:
+        container = ContainerIO.ContainerIO(im, 0, 0)
 
-    def test_seek_mode_0(self):
-        # Arrange
-        mode = 0
-        with open(TEST_FILE) as fh:
-            container = ContainerIO.ContainerIO(fh, 22, 100)
+    assert container.isatty() is False
 
-            # Act
-            container.seek(33, mode)
-            container.seek(33, mode)
 
-            # Assert
-            self.assertEqual(container.tell(), 33)
+def test_seek_mode_0():
+    # Arrange
+    mode = 0
+    with open(TEST_FILE, "rb") as fh:
+        container = ContainerIO.ContainerIO(fh, 22, 100)
 
-    def test_seek_mode_1(self):
-        # Arrange
-        mode = 1
-        with open(TEST_FILE) as fh:
-            container = ContainerIO.ContainerIO(fh, 22, 100)
+        # Act
+        container.seek(33, mode)
+        container.seek(33, mode)
 
-            # Act
-            container.seek(33, mode)
-            container.seek(33, mode)
+        # Assert
+        assert container.tell() == 33
 
-            # Assert
-            self.assertEqual(container.tell(), 66)
 
-    def test_seek_mode_2(self):
-        # Arrange
-        mode = 2
-        with open(TEST_FILE) as fh:
-            container = ContainerIO.ContainerIO(fh, 22, 100)
+def test_seek_mode_1():
+    # Arrange
+    mode = 1
+    with open(TEST_FILE, "rb") as fh:
+        container = ContainerIO.ContainerIO(fh, 22, 100)
 
-            # Act
-            container.seek(33, mode)
-            container.seek(33, mode)
+        # Act
+        container.seek(33, mode)
+        container.seek(33, mode)
 
-            # Assert
-            self.assertEqual(container.tell(), 100)
+        # Assert
+        assert container.tell() == 66
 
-    def test_read_n0(self):
-        # Arrange
-        with open(TEST_FILE) as fh:
+
+def test_seek_mode_2():
+    # Arrange
+    mode = 2
+    with open(TEST_FILE, "rb") as fh:
+        container = ContainerIO.ContainerIO(fh, 22, 100)
+
+        # Act
+        container.seek(33, mode)
+        container.seek(33, mode)
+
+        # Assert
+        assert container.tell() == 100
+
+
+def test_read_n0():
+    # Arrange
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -65,11 +70,15 @@ class TestFileContainer(PillowTestCase):
             data = container.read()
 
             # Assert
-            self.assertEqual(data, "7\nThis is line 8\n")
+            if bytesmode:
+                data = data.decode()
+            assert data == "7\nThis is line 8\n"
 
-    def test_read_n(self):
-        # Arrange
-        with open(TEST_FILE) as fh:
+
+def test_read_n():
+    # Arrange
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -77,11 +86,15 @@ class TestFileContainer(PillowTestCase):
             data = container.read(3)
 
             # Assert
-            self.assertEqual(data, "7\nT")
+            if bytesmode:
+                data = data.decode()
+            assert data == "7\nT"
 
-    def test_read_eof(self):
-        # Arrange
-        with open(TEST_FILE) as fh:
+
+def test_read_eof():
+    # Arrange
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
             container = ContainerIO.ContainerIO(fh, 22, 100)
 
             # Act
@@ -89,21 +102,29 @@ class TestFileContainer(PillowTestCase):
             data = container.read()
 
             # Assert
-            self.assertEqual(data, "")
+            if bytesmode:
+                data = data.decode()
+            assert data == ""
 
-    def test_readline(self):
-        # Arrange
-        with open(TEST_FILE) as fh:
+
+def test_readline():
+    # Arrange
+    for bytesmode in (True, False):
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
             container = ContainerIO.ContainerIO(fh, 0, 120)
 
             # Act
             data = container.readline()
 
             # Assert
-            self.assertEqual(data, "This is line 1\n")
+            if bytesmode:
+                data = data.decode()
+            assert data == "This is line 1\n"
 
-    def test_readlines(self):
-        # Arrange
+
+def test_readlines():
+    # Arrange
+    for bytesmode in (True, False):
         expected = [
             "This is line 1\n",
             "This is line 2\n",
@@ -114,12 +135,13 @@ class TestFileContainer(PillowTestCase):
             "This is line 7\n",
             "This is line 8\n",
         ]
-        with open(TEST_FILE) as fh:
+        with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
             container = ContainerIO.ContainerIO(fh, 0, 120)
 
             # Act
             data = container.readlines()
 
             # Assert
-
-            self.assertEqual(data, expected)
+            if bytesmode:
+                data = [line.decode() for line in data]
+            assert data == expected

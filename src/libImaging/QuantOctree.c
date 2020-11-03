@@ -28,6 +28,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "ImagingUtils.h"
 #include "QuantOctree.h"
 
 typedef struct _ColorBucket{
@@ -44,7 +45,7 @@ typedef struct _ColorCube{
    unsigned int rWidth, gWidth, bWidth, aWidth;
    unsigned int rOffset, gOffset, bOffset, aOffset;
 
-   long size;
+   unsigned long size;
    ColorBucket buckets;
 } *ColorCube;
 
@@ -56,7 +57,9 @@ new_color_cube(int r, int g, int b, int a) {
 
    /* malloc check ok, small constant allocation */
    cube = malloc(sizeof(struct _ColorCube));
-   if (!cube) return NULL;
+   if (!cube) {
+       return NULL;
+    }
 
    cube->rBits = MAX(r, 0);
    cube->gBits = MAX(g, 0);
@@ -134,10 +137,10 @@ add_color_to_color_cube(const ColorCube cube, const Pixel *p) {
    bucket->a += p->c.a;
 }
 
-static long
+static unsigned long
 count_used_color_buckets(const ColorCube cube) {
-   long usedBuckets = 0;
-   long i;
+   unsigned long usedBuckets = 0;
+   unsigned long i;
    for (i=0; i < cube->size; i++) {
       if (cube->buckets[i].count > 0) {
          usedBuckets += 1;
@@ -150,10 +153,10 @@ static void
 avg_color_from_color_bucket(const ColorBucket bucket, Pixel *dst) {
    float count = bucket->count;
    if (count != 0) {
-       dst->c.r = (int)(bucket->r / count);
-       dst->c.g = (int)(bucket->g / count);
-       dst->c.b = (int)(bucket->b / count);
-       dst->c.a = (int)(bucket->a / count);
+       dst->c.r = CLIP8((int)(bucket->r / count));
+       dst->c.g = CLIP8((int)(bucket->g / count));
+       dst->c.b = CLIP8((int)(bucket->b / count));
+       dst->c.a = CLIP8((int)(bucket->a / count));
    } else {
        dst->c.r = 0;
        dst->c.g = 0;
@@ -175,7 +178,9 @@ create_sorted_color_palette(const ColorCube cube) {
    }
    /* malloc check ok, calloc + overflow check above for memcpy */
    buckets = calloc(cube->size, sizeof(struct _ColorBucket));
-   if (!buckets) return NULL;
+   if (!buckets) {
+       return NULL;
+   }
    memcpy(buckets, cube->buckets, sizeof(struct _ColorBucket)*cube->size);
 
    qsort(buckets, cube->size, sizeof(struct _ColorBucket),
@@ -194,7 +199,7 @@ void add_bucket_values(ColorBucket src, ColorBucket dst) {
 
 /* expand or shrink a given cube to level */
 static ColorCube copy_color_cube(const ColorCube cube,
-   int rBits, int gBits, int bBits, int aBits)
+   unsigned int rBits, unsigned int gBits, unsigned int bBits, unsigned int aBits)
 {
    unsigned int r, g, b, a;
    long src_pos, dst_pos;
@@ -203,7 +208,9 @@ static ColorCube copy_color_cube(const ColorCube cube,
    ColorCube result;
 
    result = new_color_cube(rBits, gBits, bBits, aBits);
-   if (!result) return NULL;
+   if (!result) {
+       return NULL;
+   }
 
    if (cube->rBits > rBits) {
       dst_reduce[0] = cube->rBits - result->rBits;
@@ -268,7 +275,9 @@ subtract_color_buckets(ColorCube cube, ColorBucket buckets, long nBuckets) {
       subtrahend = &buckets[i];
 
       // If the subtrahend contains no buckets, there is nothing to subtract.
-      if (subtrahend->count == 0) continue;
+      if (subtrahend->count == 0) {
+          continue;
+      }
 
       avg_color_from_color_bucket(subtrahend, &p);
       minuend = color_bucket_from_cube(cube, &p);
@@ -302,7 +311,7 @@ void add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long 
 }
 
 ColorBucket
-combined_palette(ColorBucket bucketsA, long nBucketsA, ColorBucket bucketsB, long nBucketsB) {
+combined_palette(ColorBucket bucketsA, unsigned long nBucketsA, ColorBucket bucketsB, unsigned long nBucketsB) {
    ColorBucket result;
    if (nBucketsA > LONG_MAX - nBucketsB ||
        (nBucketsA+nBucketsB) > LONG_MAX / sizeof(struct _ColorBucket)) {
@@ -325,7 +334,9 @@ create_palette_array(const ColorBucket palette, unsigned int paletteLength) {
 
    /* malloc check ok, calloc for overflow */
    paletteArray = calloc(paletteLength, sizeof(Pixel));
-   if (!paletteArray) return NULL;
+   if (!paletteArray) {
+       return NULL;
+   }
 
    for (i=0; i<paletteLength; i++) {
       avg_color_from_color_bucket(&palette[i], &paletteArray[i]);
@@ -345,8 +356,8 @@ map_image_pixels(const Pixel *pixelData,
    }
 }
 
-const int CUBE_LEVELS[8]       = {4, 4, 4, 0, 2, 2, 2, 0};
-const int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
+const unsigned int CUBE_LEVELS[8]       = {4, 4, 4, 0, 2, 2, 2, 0};
+const unsigned int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
 
 int quantize_octree(Pixel *pixelData,
           uint32_t nPixels,
@@ -365,8 +376,8 @@ int quantize_octree(Pixel *pixelData,
    ColorBucket paletteBuckets = NULL;
    uint32_t *qp = NULL;
    long i;
-   long nCoarseColors, nFineColors, nAlreadySubtracted;
-   const int *cubeBits;
+   unsigned long nCoarseColors, nFineColors, nAlreadySubtracted;
+   const unsigned int *cubeBits;
 
    if (withAlpha) {
        cubeBits = CUBE_LEVELS_ALPHA;
@@ -393,7 +404,9 @@ int quantize_octree(Pixel *pixelData,
    /* create fine cube */
    fineCube = new_color_cube(cubeBits[0], cubeBits[1],
                              cubeBits[2], cubeBits[3]);
-   if (!fineCube) goto error;
+   if (!fineCube) {
+       goto error;
+   }
    for (i=0; i<nPixels; i++) {
       add_color_to_color_cube(fineCube, &pixelData[i]);
    }
@@ -401,19 +414,24 @@ int quantize_octree(Pixel *pixelData,
    /* create coarse cube */
    coarseCube = copy_color_cube(fineCube, cubeBits[4], cubeBits[5],
                                           cubeBits[6], cubeBits[7]);
-   if (!coarseCube) goto error;
+   if (!coarseCube) {
+       goto error;
+   }
    nCoarseColors = count_used_color_buckets(coarseCube);
 
    /* limit to nQuantPixels */
-   if (nCoarseColors > nQuantPixels)
+   if (nCoarseColors > nQuantPixels) {
       nCoarseColors = nQuantPixels;
+   }
 
    /* how many space do we have in our palette for fine colors? */
    nFineColors = nQuantPixels - nCoarseColors;
 
    /* create fine color palette */
    paletteBucketsFine = create_sorted_color_palette(fineCube);
-   if (!paletteBucketsFine) goto error;
+   if (!paletteBucketsFine) {
+       goto error;
+   }
 
    /* remove the used fine colors from the coarse cube */
    subtract_color_buckets(coarseCube, paletteBucketsFine, nFineColors);
@@ -430,7 +448,9 @@ int quantize_octree(Pixel *pixelData,
 
    /* create our palette buckets with fine and coarse combined */
    paletteBucketsCoarse = create_sorted_color_palette(coarseCube);
-   if (!paletteBucketsCoarse) goto error;
+   if (!paletteBucketsCoarse) {
+       goto error;
+   }
    paletteBuckets = combined_palette(paletteBucketsCoarse, nCoarseColors,
                                      paletteBucketsFine, nFineColors);
 
@@ -438,19 +458,25 @@ int quantize_octree(Pixel *pixelData,
    paletteBucketsFine = NULL;
    free(paletteBucketsCoarse);
    paletteBucketsCoarse = NULL;
-   if (!paletteBuckets) goto error;
+   if (!paletteBuckets) {
+       goto error;
+   }
 
    /* add all coarse colors to our coarse lookup cube. */
    coarseLookupCube = new_color_cube(cubeBits[4], cubeBits[5],
                                      cubeBits[6], cubeBits[7]);
-   if (!coarseLookupCube) goto error;
+   if (!coarseLookupCube) {
+       goto error;
+   }
    add_lookup_buckets(coarseLookupCube, paletteBuckets, nCoarseColors, 0);
 
    /* expand coarse cube (64) to larger fine cube (4k). the value of each
       coarse bucket is then present in the according 64 fine buckets. */
    lookupCube = copy_color_cube(coarseLookupCube, cubeBits[0], cubeBits[1],
                                                   cubeBits[2], cubeBits[3]);
-   if (!lookupCube) goto error;
+   if (!lookupCube) {
+       goto error;
+   }
 
    /* add fine colors to the lookup cube */
    add_lookup_buckets(lookupCube, paletteBuckets, nFineColors, nCoarseColors);
@@ -458,12 +484,16 @@ int quantize_octree(Pixel *pixelData,
    /* create result pixels and map palette indices */
    /* malloc check ok, calloc for overflow */
    qp = calloc(nPixels, sizeof(Pixel));
-   if (!qp) goto error;
+   if (!qp) {
+       goto error;
+   }
    map_image_pixels(pixelData, nPixels, lookupCube, qp);
 
    /* convert palette buckets to RGB pixel palette */
    *palette = create_palette_array(paletteBuckets, nQuantPixels);
-   if (!(*palette)) goto error;
+   if (!(*palette)) {
+       goto error;
+   }
 
    *quantizedPixels = qp;
    *paletteLength = nQuantPixels;

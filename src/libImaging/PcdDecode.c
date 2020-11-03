@@ -5,13 +5,13 @@
  * decoder for uncompressed PCD image data.
  *
  * history:
- *	96-05-10 fl	Created
- *	96-05-18 fl	New tables
- *	97-01-25 fl	Use PhotoYCC unpacker
+ * 96-05-10 fl Created
+ * 96-05-18 fl New tables
+ * 97-01-25 fl Use PhotoYCC unpacker
  *
  * notes:
- *	This driver supports uncompressed PCD modes only
- *	(resolutions up to 768x512).
+ * This driver supports uncompressed PCD modes only
+ * (resolutions up to 768x512).
  *
  * Copyright (c) Fredrik Lundh 1996-97.
  * Copyright (c) Secret Labs AB 1997.
@@ -37,42 +37,45 @@ ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
 
     for (;;) {
 
-	/* We need data for two full lines before we can do anything */
-	if (bytes < chunk)
-	    return ptr - buf;
+        /* We need data for two full lines before we can do anything */
+        if (bytes < chunk) {
+            return ptr - buf;
+        }
 
-	/* Unpack first line */
-	out = state->buffer;
-	for (x = 0; x < state->xsize; x++) {
-	    out[0] = ptr[x];
-	    out[1] = ptr[(x+4*state->xsize)/2];
-	    out[2] = ptr[(x+5*state->xsize)/2];
-	    out += 3;
-	}
+        /* Unpack first line */
+        out = state->buffer;
+        for (x = 0; x < state->xsize; x++) {
+            out[0] = ptr[x];
+            out[1] = ptr[(x+4*state->xsize)/2];
+            out[2] = ptr[(x+5*state->xsize)/2];
+            out += 3;
+        }
 
-	state->shuffle((UINT8*) im->image[state->y],
-		       state->buffer, state->xsize);
+        state->shuffle((UINT8*) im->image[state->y],
+                   state->buffer, state->xsize);
 
-	if (++state->y >= state->ysize)
-	    return -1; /* This can hardly happen */
+        if (++state->y >= state->ysize) {
+            return -1; /* This can hardly happen */
+        }
 
-	/* Unpack second line */
-	out = state->buffer;
-	for (x = 0; x < state->xsize; x++) {
-	    out[0] = ptr[x+state->xsize];
-	    out[1] = ptr[(x+4*state->xsize)/2];
-	    out[2] = ptr[(x+5*state->xsize)/2];
-	    out += 3;
-	}
+        /* Unpack second line */
+        out = state->buffer;
+        for (x = 0; x < state->xsize; x++) {
+            out[0] = ptr[x+state->xsize];
+            out[1] = ptr[(x+4*state->xsize)/2];
+            out[2] = ptr[(x+5*state->xsize)/2];
+            out += 3;
+        }
 
-	state->shuffle((UINT8*) im->image[state->y],
-		       state->buffer, state->xsize);
+        state->shuffle((UINT8*) im->image[state->y],
+                   state->buffer, state->xsize);
 
-	if (++state->y >= state->ysize)
-	    return -1;
+        if (++state->y >= state->ysize) {
+            return -1;
+        }
 
-	ptr += chunk;
-	bytes -= chunk;
+        ptr += chunk;
+        bytes -= chunk;
 
     }
 }

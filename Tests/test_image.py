@@ -1,14 +1,24 @@
+import io
 import os
 import shutil
 import tempfile
-import unittest
 
-from PIL import Image, UnidentifiedImageError
+import pytest
 
-from .helper import PillowTestCase, hopper, is_win32
+import PIL
+from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
+
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    assert_not_all_same,
+    hopper,
+    is_win32,
+    skip_unless_feature,
+)
 
 
-class TestImage(PillowTestCase):
+class TestImage:
     def test_image_modes_success(self):
         for mode in [
             "1",
@@ -44,71 +54,100 @@ class TestImage(PillowTestCase):
             "BGR;24",
             "BGR;32",
         ]:
-            with self.assertRaises(ValueError) as e:
+            with pytest.raises(ValueError) as e:
                 Image.new(mode, (1, 1))
-            self.assertEqual(str(e.exception), "unrecognized image mode")
+            assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
-        self.assertTrue(issubclass(UnidentifiedImageError, IOError))
+        assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
 
         im = Image.new("L", (100, 100))
-        self.assertEqual(repr(im)[:45], "<PIL.Image.Image image mode=L size=100x100 at")
-        self.assertEqual(im.mode, "L")
-        self.assertEqual(im.size, (100, 100))
+        assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
+        assert im.mode == "L"
+        assert im.size == (100, 100)
 
         im = Image.new("RGB", (100, 100))
-        self.assertEqual(repr(im)[:45], "<PIL.Image.Image image mode=RGB size=100x100 ")
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (100, 100))
+        assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "
+        assert im.mode == "RGB"
+        assert im.size == (100, 100)
 
         Image.new("L", (100, 100), None)
         im2 = Image.new("L", (100, 100), 0)
         im3 = Image.new("L", (100, 100), "black")
 
-        self.assertEqual(im2.getcolors(), [(10000, 0)])
-        self.assertEqual(im3.getcolors(), [(10000, 0)])
+        assert im2.getcolors() == [(10000, 0)]
+        assert im3.getcolors() == [(10000, 0)]
 
-        self.assertRaises(ValueError, Image.new, "X", (100, 100))
-        self.assertRaises(ValueError, Image.new, "", (100, 100))
-        # self.assertRaises(MemoryError, Image.new, "L", (1000000, 1000000))
+        with pytest.raises(ValueError):
+            Image.new("X", (100, 100))
+        with pytest.raises(ValueError):
+            Image.new("", (100, 100))
+        # with pytest.raises(MemoryError):
+        #   Image.new("L", (1000000, 1000000))
+
+    def test_open_formats(self):
+        PNGFILE = "Tests/images/hopper.png"
+        JPGFILE = "Tests/images/hopper.jpg"
+
+        with pytest.raises(TypeError):
+            Image.open(PNGFILE, formats=123)
+
+        for formats in [["JPEG"], ("JPEG",)]:
+            with pytest.raises(UnidentifiedImageError):
+                Image.open(PNGFILE, formats=formats)
+
+            with Image.open(JPGFILE, formats=formats) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+
+        for file in [PNGFILE, JPGFILE]:
+            with Image.open(file, formats=None) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
 
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
-        self.assertEqual(im.width, 1)
-        self.assertEqual(im.height, 2)
+        assert im.width == 1
+        assert im.height == 2
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             im.size = (3, 4)
 
     def test_invalid_image(self):
         import io
 
         im = io.BytesIO(b"")
-        self.assertRaises(UnidentifiedImageError, Image.open, im)
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(im)
 
     def test_bad_mode(self):
-        self.assertRaises(ValueError, Image.open, "filename", "bad mode")
+        with pytest.raises(ValueError):
+            Image.open("filename", "bad mode")
 
-    def test_pathlib(self):
+    def test_stringio(self):
+        with pytest.raises(ValueError):
+            Image.open(io.StringIO())
+
+    def test_pathlib(self, tmp_path):
         from PIL.Image import Path
 
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
-            self.assertEqual(im.mode, "P")
-            self.assertEqual(im.size, (10, 10))
+            assert im.mode == "P"
+            assert im.size == (10, 10)
 
-        im = Image.open(Path("Tests/images/hopper.jpg"))
-        self.assertEqual(im.mode, "RGB")
-        self.assertEqual(im.size, (128, 128))
+        with Image.open(Path("Tests/images/hopper.jpg")) as im:
+            assert im.mode == "RGB"
+            assert im.size == (128, 128)
 
-        temp_file = self.tempfile("temp.jpg")
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        im.save(Path(temp_file))
+            temp_file = str(tmp_path / "temp.jpg")
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            im.save(Path(temp_file))
 
-    def test_fp_name(self):
-        temp_file = self.tempfile("temp.jpg")
+    def test_fp_name(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
             def write(a, b):
@@ -127,42 +166,44 @@ class TestImage(PillowTestCase):
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            reloaded = Image.open(fp)
-            self.assert_image_similar(im, reloaded, 20)
+            with Image.open(fp) as reloaded:
+                assert_image_similar(im, reloaded, 20)
 
-    def test_unknown_extension(self):
+    def test_unknown_extension(self, tmp_path):
         im = hopper()
-        temp_file = self.tempfile("temp.unknown")
-        self.assertRaises(ValueError, im.save, temp_file)
+        temp_file = str(tmp_path / "temp.unknown")
+        with pytest.raises(ValueError):
+            im.save(temp_file)
 
     def test_internals(self):
         im = Image.new("L", (100, 100))
         im.readonly = 1
         im._copy()
-        self.assertFalse(im.readonly)
+        assert not im.readonly
 
         im.readonly = 1
         im.paste(0, (0, 0, 100, 100))
-        self.assertFalse(im.readonly)
+        assert not im.readonly
 
-    @unittest.skipIf(is_win32(), "Test requires opening tempfile twice")
-    def test_readonly_save(self):
-        temp_file = self.tempfile("temp.bmp")
+    @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    def test_readonly_save(self, tmp_path):
+        temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
-        im = Image.open(temp_file)
-        self.assertTrue(im.readonly)
-        im.save(temp_file)
+        with Image.open(temp_file) as im:
+            assert im.readonly
+            im.save(temp_file)
 
-    def test_dump(self):
+    def test_dump(self, tmp_path):
         im = Image.new("L", (10, 10))
-        im._dump(self.tempfile("temp_L.ppm"))
+        im._dump(str(tmp_path / "temp_L.ppm"))
 
         im = Image.new("RGB", (10, 10))
-        im._dump(self.tempfile("temp_RGB.ppm"))
+        im._dump(str(tmp_path / "temp_RGB.ppm"))
 
         im = Image.new("HSV", (10, 10))
-        self.assertRaises(ValueError, im._dump, self.tempfile("temp_HSV.ppm"))
+        with pytest.raises(ValueError):
+            im._dump(str(tmp_path / "temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self):
         # Arrange
@@ -171,8 +212,8 @@ class TestImage(PillowTestCase):
 
         # Act/Assert
         # Shouldn't cause AttributeError (#774)
-        self.assertFalse(item is None)
-        self.assertFalse(item == num)
+        assert item is not None
+        assert item != num
 
     def test_expand_x(self):
         # Arrange
@@ -184,8 +225,8 @@ class TestImage(PillowTestCase):
         im = im._expand(xmargin)
 
         # Assert
-        self.assertEqual(im.size[0], orig_size[0] + 2 * xmargin)
-        self.assertEqual(im.size[1], orig_size[1] + 2 * xmargin)
+        assert im.size[0] == orig_size[0] + 2 * xmargin
+        assert im.size[1] == orig_size[1] + 2 * xmargin
 
     def test_expand_xy(self):
         # Arrange
@@ -198,32 +239,36 @@ class TestImage(PillowTestCase):
         im = im._expand(xmargin, ymargin)
 
         # Assert
-        self.assertEqual(im.size[0], orig_size[0] + 2 * xmargin)
-        self.assertEqual(im.size[1], orig_size[1] + 2 * ymargin)
+        assert im.size[0] == orig_size[0] + 2 * xmargin
+        assert im.size[1] == orig_size[1] + 2 * ymargin
 
     def test_getbands(self):
         # Assert
-        self.assertEqual(hopper("RGB").getbands(), ("R", "G", "B"))
-        self.assertEqual(hopper("YCbCr").getbands(), ("Y", "Cb", "Cr"))
+        assert hopper("RGB").getbands() == ("R", "G", "B")
+        assert hopper("YCbCr").getbands() == ("Y", "Cb", "Cr")
 
     def test_getchannel_wrong_params(self):
         im = hopper()
 
-        self.assertRaises(ValueError, im.getchannel, -1)
-        self.assertRaises(ValueError, im.getchannel, 3)
-        self.assertRaises(ValueError, im.getchannel, "Z")
-        self.assertRaises(ValueError, im.getchannel, "1")
+        with pytest.raises(ValueError):
+            im.getchannel(-1)
+        with pytest.raises(ValueError):
+            im.getchannel(3)
+        with pytest.raises(ValueError):
+            im.getchannel("Z")
+        with pytest.raises(ValueError):
+            im.getchannel("1")
 
     def test_getchannel(self):
         im = hopper("YCbCr")
         Y, Cb, Cr = im.split()
 
-        self.assert_image_equal(Y, im.getchannel(0))
-        self.assert_image_equal(Y, im.getchannel("Y"))
-        self.assert_image_equal(Cb, im.getchannel(1))
-        self.assert_image_equal(Cb, im.getchannel("Cb"))
-        self.assert_image_equal(Cr, im.getchannel(2))
-        self.assert_image_equal(Cr, im.getchannel("Cr"))
+        assert_image_equal(Y, im.getchannel(0))
+        assert_image_equal(Y, im.getchannel("Y"))
+        assert_image_equal(Cb, im.getchannel(1))
+        assert_image_equal(Cb, im.getchannel("Cb"))
+        assert_image_equal(Cr, im.getchannel(2))
+        assert_image_equal(Cr, im.getchannel("Cr"))
 
     def test_getbbox(self):
         # Arrange
@@ -233,7 +278,7 @@ class TestImage(PillowTestCase):
         bbox = im.getbbox()
 
         # Assert
-        self.assertEqual(bbox, (0, 0, 128, 128))
+        assert bbox == (0, 0, 128, 128)
 
     def test_ne(self):
         # Arrange
@@ -241,13 +286,11 @@ class TestImage(PillowTestCase):
         im2 = Image.new("RGB", (25, 25), "white")
 
         # Act / Assert
-        self.assertNotEqual(im1, im2)
+        assert im1 != im2
 
     def test_alpha_composite(self):
         # https://stackoverflow.com/questions/3374878
         # Arrange
-        from PIL import ImageDraw
-
         expected_colors = sorted(
             [
                 (1122, (128, 127, 0, 255)),
@@ -274,7 +317,7 @@ class TestImage(PillowTestCase):
 
         # Assert
         img_colors = sorted(img.getcolors())
-        self.assertEqual(img_colors, expected_colors)
+        assert img_colors == expected_colors
 
     def test_alpha_inplace(self):
         src = Image.new("RGBA", (128, 128), "blue")
@@ -288,41 +331,41 @@ class TestImage(PillowTestCase):
         # basic
         full = src.copy()
         full.alpha_composite(over)
-        self.assert_image_equal(full, target)
+        assert_image_equal(full, target)
 
         # with offset down to right
         offset = src.copy()
         offset.alpha_composite(over, (64, 64))
-        self.assert_image_equal(
-            offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63))
-        )
-        self.assertEqual(offset.size, (128, 128))
+        assert_image_equal(offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63)))
+        assert offset.size == (128, 128)
 
         # offset and crop
         box = src.copy()
         box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
-        self.assert_image_equal(box.crop((64, 64, 96, 96)), target.crop((0, 0, 32, 32)))
-        self.assert_image_equal(box.crop((96, 96, 128, 128)), src.crop((0, 0, 32, 32)))
-        self.assertEqual(box.size, (128, 128))
+        assert_image_equal(box.crop((64, 64, 96, 96)), target.crop((0, 0, 32, 32)))
+        assert_image_equal(box.crop((96, 96, 128, 128)), src.crop((0, 0, 32, 32)))
+        assert box.size == (128, 128)
 
         # source point
         source = src.copy()
         source.alpha_composite(over, (32, 32), (32, 32, 96, 96))
 
-        self.assert_image_equal(
-            source.crop((32, 32, 96, 96)), target.crop((32, 32, 96, 96))
-        )
-        self.assertEqual(source.size, (128, 128))
+        assert_image_equal(source.crop((32, 32, 96, 96)), target.crop((32, 32, 96, 96)))
+        assert source.size == (128, 128)
 
         # errors
-        self.assertRaises(ValueError, source.alpha_composite, over, "invalid source")
-        self.assertRaises(
-            ValueError, source.alpha_composite, over, (0, 0), "invalid destination"
-        )
-        self.assertRaises(ValueError, source.alpha_composite, over, 0)
-        self.assertRaises(ValueError, source.alpha_composite, over, (0, 0), 0)
-        self.assertRaises(ValueError, source.alpha_composite, over, (0, -1))
-        self.assertRaises(ValueError, source.alpha_composite, over, (0, 0), (0, -1))
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, "invalid source")
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, (0, 0), "invalid destination")
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, 0)
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, (0, 0), 0)
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, (0, -1))
+        with pytest.raises(ValueError):
+            source.alpha_composite(over, (0, 0), (0, -1))
 
     def test_registered_extensions_uninitialized(self):
         # Arrange
@@ -334,11 +377,11 @@ class TestImage(PillowTestCase):
         Image.registered_extensions()
 
         # Assert
-        self.assertEqual(Image._initialized, 2)
+        assert Image._initialized == 2
 
         # Restore the original state and assert
         Image.EXTENSION = extension
-        self.assertTrue(Image.EXTENSION)
+        assert Image.EXTENSION
 
     def test_registered_extensions(self):
         # Arrange
@@ -350,9 +393,9 @@ class TestImage(PillowTestCase):
         extensions = Image.registered_extensions()
 
         # Assert
-        self.assertTrue(extensions)
+        assert extensions
         for ext in [".cur", ".icns", ".tif", ".tiff"]:
-            self.assertIn(ext, extensions)
+            assert ext in extensions
 
     def test_effect_mandelbrot(self):
         # Arrange
@@ -364,9 +407,9 @@ class TestImage(PillowTestCase):
         im = Image.effect_mandelbrot(size, extent, quality)
 
         # Assert
-        self.assertEqual(im.size, (512, 512))
-        im2 = Image.open("Tests/images/effect_mandelbrot.png")
-        self.assert_image_equal(im, im2)
+        assert im.size == (512, 512)
+        with Image.open("Tests/images/effect_mandelbrot.png") as im2:
+            assert_image_equal(im, im2)
 
     def test_effect_mandelbrot_bad_arguments(self):
         # Arrange
@@ -377,7 +420,8 @@ class TestImage(PillowTestCase):
         quality = 1
 
         # Act/Assert
-        self.assertRaises(ValueError, Image.effect_mandelbrot, size, extent, quality)
+        with pytest.raises(ValueError):
+            Image.effect_mandelbrot(size, extent, quality)
 
     def test_effect_noise(self):
         # Arrange
@@ -388,14 +432,14 @@ class TestImage(PillowTestCase):
         im = Image.effect_noise(size, sigma)
 
         # Assert
-        self.assertEqual(im.size, (100, 100))
-        self.assertEqual(im.mode, "L")
+        assert im.size == (100, 100)
+        assert im.mode == "L"
         p0 = im.getpixel((0, 0))
         p1 = im.getpixel((0, 1))
         p2 = im.getpixel((0, 2))
         p3 = im.getpixel((0, 3))
         p4 = im.getpixel((0, 4))
-        self.assert_not_all_same([p0, p1, p2, p3, p4])
+        assert_not_all_same([p0, p1, p2, p3, p4])
 
     def test_effect_spread(self):
         # Arrange
@@ -406,34 +450,44 @@ class TestImage(PillowTestCase):
         im2 = im.effect_spread(distance)
 
         # Assert
-        self.assertEqual(im.size, (128, 128))
-        im3 = Image.open("Tests/images/effect_spread.png")
-        self.assert_image_similar(im2, im3, 110)
+        assert im.size == (128, 128)
+        with Image.open("Tests/images/effect_spread.png") as im3:
+            assert_image_similar(im2, im3, 110)
+
+    def test_effect_spread_zero(self):
+        # Arrange
+        im = hopper()
+        distance = 0
+
+        # Act
+        im2 = im.effect_spread(distance)
+
+        # Assert
+        assert_image_equal(im, im2)
 
     def test_check_size(self):
-        # Checking that the _check_size function throws value errors
-        # when we want it to.
-        with self.assertRaises(ValueError):
+        # Checking that the _check_size function throws value errors when we want it to
+        with pytest.raises(ValueError):
             Image.new("RGB", 0)  # not a tuple
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Image.new("RGB", (0,))  # Tuple too short
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Image.new("RGB", (-1, -1))  # w,h < 0
 
         # this should pass with 0 sized images, #2259
         im = Image.new("L", (0, 0))
-        self.assertEqual(im.size, (0, 0))
+        assert im.size == (0, 0)
 
         im = Image.new("L", (0, 100))
-        self.assertEqual(im.size, (0, 100))
+        assert im.size == (0, 100)
 
         im = Image.new("L", (100, 0))
-        self.assertEqual(im.size, (100, 0))
+        assert im.size == (100, 0)
 
-        self.assertTrue(Image.new("RGB", (1, 1)))
+        assert Image.new("RGB", (1, 1))
         # Should pass lists too
         i = Image.new("RGB", [1, 1])
-        self.assertIsInstance(i.size, tuple)
+        assert isinstance(i.size, tuple)
 
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
@@ -441,25 +495,22 @@ class TestImage(PillowTestCase):
         # removed Calling directly into core to test the error in
         # Storage.c, rather than the size check above
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
 
-    def test_offset_not_implemented(self):
-        # Arrange
-        with hopper() as im:
-
-            # Act / Assert
-            self.assertRaises(NotImplementedError, im.offset, None)
-
-    def test_fromstring(self):
-        self.assertRaises(NotImplementedError, Image.fromstring)
+    def test_one_item_tuple(self):
+        for mode in ("I", "F", "L"):
+            im = Image.new(mode, (100, 100), (5,))
+            px = im.load()
+            assert px[0, 0] == 5
 
     def test_linear_gradient_wrong_mode(self):
         # Arrange
         wrong_mode = "RGB"
 
         # Act / Assert
-        self.assertRaises(ValueError, Image.linear_gradient, wrong_mode)
+        with pytest.raises(ValueError):
+            Image.linear_gradient(wrong_mode)
 
     def test_linear_gradient(self):
 
@@ -471,19 +522,21 @@ class TestImage(PillowTestCase):
             im = Image.linear_gradient(mode)
 
             # Assert
-            self.assertEqual(im.size, (256, 256))
-            self.assertEqual(im.mode, mode)
-            self.assertEqual(im.getpixel((0, 0)), 0)
-            self.assertEqual(im.getpixel((255, 255)), 255)
-            target = Image.open(target_file).convert(mode)
-            self.assert_image_equal(im, target)
+            assert im.size == (256, 256)
+            assert im.mode == mode
+            assert im.getpixel((0, 0)) == 0
+            assert im.getpixel((255, 255)) == 255
+            with Image.open(target_file) as target:
+                target = target.convert(mode)
+            assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
         # Arrange
         wrong_mode = "RGB"
 
         # Act / Assert
-        self.assertRaises(ValueError, Image.radial_gradient, wrong_mode)
+        with pytest.raises(ValueError):
+            Image.radial_gradient(wrong_mode)
 
     def test_radial_gradient(self):
 
@@ -495,12 +548,13 @@ class TestImage(PillowTestCase):
             im = Image.radial_gradient(mode)
 
             # Assert
-            self.assertEqual(im.size, (256, 256))
-            self.assertEqual(im.mode, mode)
-            self.assertEqual(im.getpixel((0, 0)), 255)
-            self.assertEqual(im.getpixel((128, 128)), 0)
-            target = Image.open(target_file).convert(mode)
-            self.assert_image_equal(im, target)
+            assert im.size == (256, 256)
+            assert im.mode == mode
+            assert im.getpixel((0, 0)) == 255
+            assert im.getpixel((128, 128)) == 0
+            with Image.open(target_file) as target:
+                target = target.convert(mode)
+            assert_image_equal(im, target)
 
     def test_register_extensions(self):
         test_format = "a"
@@ -516,16 +570,15 @@ class TestImage(PillowTestCase):
         for ext in exts:
             del Image.EXTENSION[ext]
 
-        self.assertEqual(ext_individual, ext_multiple)
+        assert ext_individual == ext_multiple
 
     def test_remap_palette(self):
         # Test illegal image mode
         with hopper() as im:
-            self.assertRaises(ValueError, im.remap_palette, None)
+            with pytest.raises(ValueError):
+                im.remap_palette(None)
 
     def test__new(self):
-        from PIL import ImagePalette
-
         im = hopper("RGB")
         im_p = hopper("P")
 
@@ -536,13 +589,13 @@ class TestImage(PillowTestCase):
 
         def _make_new(base_image, im, palette_result=None):
             new_im = base_image._new(im)
-            self.assertEqual(new_im.mode, im.mode)
-            self.assertEqual(new_im.size, im.size)
-            self.assertEqual(new_im.info, base_image.info)
+            assert new_im.mode == im.mode
+            assert new_im.size == im.size
+            assert new_im.info == base_image.info
             if palette_result is not None:
-                self.assertEqual(new_im.palette.tobytes(), palette_result.tobytes())
+                assert new_im.palette.tobytes() == palette_result.tobytes()
             else:
-                self.assertIsNone(new_im.palette)
+                assert new_im.palette is None
 
         _make_new(im, im_p, im_p.palette)
         _make_new(im_p, im, None)
@@ -557,17 +610,33 @@ class TestImage(PillowTestCase):
         ]:
             im = Image.new("P", (100, 100), color)
             expected = Image.new(mode, (100, 100), color)
-            self.assert_image_equal(im.convert(mode), expected)
+            assert_image_equal(im.convert(mode), expected)
 
-    def test_no_resource_warning_on_save(self):
+    def test_showxv_deprecation(self):
+        class TestViewer(ImageShow.Viewer):
+            def show_image(self, image, **options):
+                return True
+
+        viewer = TestViewer()
+        ImageShow.register(viewer, -1)
+
+        im = Image.new("RGB", (50, 50), "white")
+
+        with pytest.warns(DeprecationWarning):
+            Image._showxv(im)
+
+        # Restore original state
+        ImageShow._viewers.pop(0)
+
+    def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = "Tests/images/hopper.png"
-        temp_file = self.tempfile("temp.jpg")
+        temp_file = str(tmp_path / "temp.jpg")
 
         # Act/Assert
         with Image.open(test_file) as im:
-            self.assert_warning(None, im.save, temp_file)
+            pytest.warns(None, im.save, temp_file)
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
@@ -581,16 +650,169 @@ class TestImage(PillowTestCase):
             with Image.open(fp) as im:
                 im.load()
 
-            self.assertFalse(fp.closed)
+            assert not fp.closed
+
+    def test_exif_jpeg(self, tmp_path):
+        with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
+            exif = im.getexif()
+            assert 258 not in exif
+            assert 274 in exif
+            assert 40960 in exif
+            assert exif[40963] == 450
+            assert exif[11] == "gThumb 3.0.1"
+
+            out = str(tmp_path / "temp.jpg")
+            exif[258] = 8
+            del exif[274]
+            del exif[40960]
+            exif[40963] = 455
+            exif[11] = "Pillow test"
+            im.save(out, exif=exif)
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif[258] == 8
+            assert 274 not in reloaded_exif
+            assert 40960 not in reloaded_exif
+            assert reloaded_exif[40963] == 455
+            assert reloaded_exif[11] == "Pillow test"
+
+        with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
+            exif = im.getexif()
+            assert 258 not in exif
+            assert 40962 in exif
+            assert exif[40963] == 200
+            assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
+
+            out = str(tmp_path / "temp.jpg")
+            exif[258] = 8
+            del exif[34665]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif[258] == 8
+            assert 34665 not in reloaded_exif
+            assert reloaded_exif[40963] == 455
+            assert reloaded_exif[305] == "Pillow test"
+
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_exif_webp(self, tmp_path):
+        with Image.open("Tests/images/hopper.webp") as im:
+            exif = im.getexif()
+            assert exif == {}
+
+            out = str(tmp_path / "temp.webp")
+            exif[258] = 8
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+
+            def check_exif():
+                with Image.open(out) as reloaded:
+                    reloaded_exif = reloaded.getexif()
+                    assert reloaded_exif[258] == 8
+                    assert reloaded_exif[40963] == 455
+                    assert reloaded_exif[305] == "Pillow test"
+
+            im.save(out, exif=exif)
+            check_exif()
+            im.save(out, exif=exif, save_all=True)
+            check_exif()
+
+    def test_exif_png(self, tmp_path):
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+            assert exif == {274: 1}
+
+            out = str(tmp_path / "temp.png")
+            exif[258] = 8
+            del exif[274]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
+
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif == {258: 8, 40963: 455, 305: "Pillow test"}
+
+    def test_exif_interop(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif.get_ifd(0xA005) == {
+                1: "R98",
+                2: b"0100",
+                4097: 2272,
+                4098: 1704,
+            }
+
+    @pytest.mark.parametrize(
+        "test_module",
+        [PIL, Image],
+    )
+    def test_pillow_version(self, test_module):
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION == PIL.__version__
+
+        with pytest.warns(DeprecationWarning):
+            str(test_module.PILLOW_VERSION)
+
+        with pytest.warns(DeprecationWarning):
+            assert int(test_module.PILLOW_VERSION[0]) >= 7
+
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION < "9.9.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION <= "9.9.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION != "7.0.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION >= "7.0.0"
+
+        with pytest.warns(DeprecationWarning):
+            assert test_module.PILLOW_VERSION > "7.0.0"
 
     def test_overrun(self):
-        for file in ["fli_overrun.bin", "sgi_overrun.bin", "pcx_overrun.bin"]:
+        """For overrun completeness, test as:
+        valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
+        """
+        for file in [
+            "fli_overrun.bin",
+            "sgi_overrun.bin",
+            "sgi_overrun_expandrow.bin",
+            "sgi_overrun_expandrow2.bin",
+            "pcx_overrun.bin",
+            "pcx_overrun2.bin",
+            "01r_00.pcx",
+        ]:
             with Image.open(os.path.join("Tests/images", file)) as im:
                 try:
                     im.load()
-                    self.assertFail()
+                    assert False
                 except OSError as e:
-                    self.assertEqual(str(e), "buffer overrun when reading image file")
+                    assert str(e) == "buffer overrun when reading image file"
+
+        with Image.open("Tests/images/fli_overrun2.bin") as im:
+            try:
+                im.seek(1)
+                assert False
+            except OSError as e:
+                assert str(e) == "buffer overrun when reading image file"
+
+    def test_show_deprecation(self, monkeypatch):
+        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
+
+        im = Image.new("RGB", (50, 50), "white")
+
+        with pytest.warns(None) as raised:
+            im.show()
+        assert not raised
+
+        with pytest.warns(DeprecationWarning):
+            im.show(command="mock")
 
 
 class MockEncoder:
@@ -603,23 +825,17 @@ def mock_encode(*args):
     return encoder
 
 
-class TestRegistry(PillowTestCase):
+class TestRegistry:
     def test_encode_registry(self):
 
         Image.register_encoder("MOCK", mock_encode)
-        self.assertIn("MOCK", Image.ENCODERS)
+        assert "MOCK" in Image.ENCODERS
 
         enc = Image._getencoder("RGB", "MOCK", ("args",), extra=("extra",))
 
-        self.assertIsInstance(enc, MockEncoder)
-        self.assertEqual(enc.args, ("RGB", "args", "extra"))
+        assert isinstance(enc, MockEncoder)
+        assert enc.args == ("RGB", "args", "extra")
 
     def test_encode_registry_fail(self):
-        self.assertRaises(
-            IOError,
-            Image._getencoder,
-            "RGB",
-            "DoesNotExist",
-            ("args",),
-            extra=("extra",),
-        )
+        with pytest.raises(OSError):
+            Image._getencoder("RGB", "DoesNotExist", ("args",), extra=("extra",))

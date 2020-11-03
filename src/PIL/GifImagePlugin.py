@@ -25,11 +25,15 @@
 #
 
 import itertools
+import math
 import os
 import subprocess
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
-from ._binary import i8, i16le as i16, o8, o16le as o16
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import o8
+from ._binary import o16le as o16
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -62,7 +66,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         # Screen
         s = self.fp.read(13)
-        if s[:6] not in [b"GIF87a", b"GIF89a"]:
+        if not _accept(s):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
@@ -129,9 +133,9 @@ class GifImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             try:
                 self._seek(f)
-            except EOFError:
+            except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in GIF file")
+                raise EOFError("no more images in GIF file") from e
 
     def _seek(self, frame):
 
@@ -150,7 +154,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError("cannot seek to frame %d" % frame)
+            raise ValueError(f"cannot seek to frame {frame}")
         self.__frame = frame
 
         self.tile = []
@@ -254,7 +258,7 @@ class GifImageFile(ImageFile.ImageFile):
 
             else:
                 pass
-                # raise IOError, "illegal GIF tag `%x`" % i8(s)
+                # raise OSError, "illegal GIF tag `%x`" % i8(s)
 
         try:
             if self.disposal_method < 2:
@@ -569,8 +573,11 @@ def _write_local_header(fp, im, offset, flags):
 
     if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
         fp.write(b"!" + o8(254))  # extension intro
-        for i in range(0, len(im.encoderinfo["comment"]), 255):
-            subblock = im.encoderinfo["comment"][i : i + 255]
+        comment = im.encoderinfo["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
             fp.write(o8(len(subblock)) + subblock)
         fp.write(o8(0))
     if "loop" in im.encoderinfo:
@@ -616,38 +623,42 @@ def _save_netpbm(im, fp, filename):
     # below for information on how to enable this.
     tempfile = im._dump()
 
-    with open(filename, "wb") as f:
-        if im.mode != "RGB":
-            subprocess.check_call(
-                ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
-            )
-        else:
-            # Pipe ppmquant output into ppmtogif
-            # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
-            quant_cmd = ["ppmquant", "256", tempfile]
-            togif_cmd = ["ppmtogif"]
-            quant_proc = subprocess.Popen(
-                quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-            )
-            togif_proc = subprocess.Popen(
-                togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=subprocess.DEVNULL
-            )
-
-            # Allow ppmquant to receive SIGPIPE if ppmtogif exits
-            quant_proc.stdout.close()
-
-            retcode = quant_proc.wait()
-            if retcode:
-                raise subprocess.CalledProcessError(retcode, quant_cmd)
-
-            retcode = togif_proc.wait()
-            if retcode:
-                raise subprocess.CalledProcessError(retcode, togif_cmd)
-
     try:
-        os.unlink(tempfile)
-    except OSError:
-        pass
+        with open(filename, "wb") as f:
+            if im.mode != "RGB":
+                subprocess.check_call(
+                    ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
+                )
+            else:
+                # Pipe ppmquant output into ppmtogif
+                # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
+                quant_cmd = ["ppmquant", "256", tempfile]
+                togif_cmd = ["ppmtogif"]
+                quant_proc = subprocess.Popen(
+                    quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+                )
+                togif_proc = subprocess.Popen(
+                    togif_cmd,
+                    stdin=quant_proc.stdout,
+                    stdout=f,
+                    stderr=subprocess.DEVNULL,
+                )
+
+                # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+                quant_proc.stdout.close()
+
+                retcode = quant_proc.wait()
+                if retcode:
+                    raise subprocess.CalledProcessError(retcode, quant_cmd)
+
+                retcode = togif_proc.wait()
+                if retcode:
+                    raise subprocess.CalledProcessError(retcode, togif_cmd)
+    finally:
+        try:
+            os.unlink(tempfile)
+        except OSError:
+            pass
 
 
 # Force optimization so that we can test performance against
@@ -694,14 +705,12 @@ def _get_optimize(im, info):
 
 def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
-    import math
-
     if not palette_bytes:
         return 0
     elif len(palette_bytes) < 9:
         return 1
     else:
-        return int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
+        return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
 def _get_header_palette(palette_bytes):

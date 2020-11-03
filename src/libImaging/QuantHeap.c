@@ -26,8 +26,8 @@
 
 struct _Heap {
    void **heap;
-   int heapsize;
-   int heapcount;
+   unsigned int heapsize;
+   unsigned int heapcount;
    HeapCmpFunc cf;
 };
 
@@ -44,17 +44,23 @@ void ImagingQuantHeapFree(Heap *h) {
    free(h);
 }
 
-static int _heap_grow(Heap *h,int newsize) {
+static int _heap_grow(Heap *h,unsigned int newsize) {
    void *newheap;
-   if (!newsize) newsize=h->heapsize<<1;
-   if (newsize<h->heapsize) return 0;
+   if (!newsize) {
+       newsize=h->heapsize<<1;
+   }
+   if (newsize<h->heapsize) {
+       return 0;
+   }
    if (newsize > INT_MAX / sizeof(void *)){
        return 0;
    }
    /* malloc check ok, using calloc for overflow, also checking
       above due to memcpy below*/
    newheap=calloc(newsize, sizeof(void *));
-   if (!newheap) return 0;
+   if (!newheap) {
+       return 0;
+   }
    memcpy(newheap,h->heap,sizeof(void *)*h->heapsize);
    free(h->heap);
    h->heap=newheap;
@@ -64,7 +70,7 @@ static int _heap_grow(Heap *h,int newsize) {
 
 #ifdef DEBUG
 static int _heap_test(Heap *h) {
-   int k;
+   unsigned int k;
    for (k=1;k*2<=h->heapcount;k++) {
       if (h->cf(h,h->heap[k],h->heap[k*2])<0) {
          printf ("heap is bad\n");
@@ -80,7 +86,7 @@ static int _heap_test(Heap *h) {
 #endif
 
 int ImagingQuantHeapRemove(Heap* h,void **r) {
-   int k,l;
+   unsigned int k,l;
    void *v;
 
    if (!h->heapcount) {
@@ -140,7 +146,9 @@ Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
 
    /* malloc check ok, small constant allocation */
    h=malloc(sizeof(Heap));
-   if (!h) return NULL;
+   if (!h) {
+       return NULL;
+   }
    h->heapsize=INITIAL_SIZE;
    /* malloc check ok, using calloc for overflow */
    h->heap=calloc(h->heapsize, sizeof(void *));

@@ -84,10 +84,11 @@ struct j2k_decode_unpacker {
 static inline
 unsigned j2ku_shift(unsigned x, int n)
 {
-    if (n < 0)
+    if (n < 0) {
         return x >> -n;
-    else
+    } else {
         return x << n;
+    }
 }
 
 static void
@@ -104,35 +105,41 @@ j2ku_gray_l(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
     unsigned x, y;
 
-    if (csiz == 3)
+    if (csiz == 3) {
         csiz = 4;
+    }
 
-    if (shift < 0)
+    if (shift < 0) {
         offset += 1 << (-shift - 1);
+    }
 
+    /* csiz*h*w + offset = tileinfo.datasize */
     switch (csiz) {
     case 1:
         for (y = 0; y < h; ++y) {
             const UINT8 *data = &tiledata[y * w];
             UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     case 2:
         for (y = 0; y < h; ++y) {
             const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
             UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     case 4:
         for (y = 0; y < h; ++y) {
             const UINT32 *data = (const UINT32 *)&tiledata[4 * y * w];
             UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     }
@@ -153,35 +160,40 @@ j2ku_gray_i(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
     unsigned x, y;
 
-    if (csiz == 3)
+    if (csiz == 3) {
         csiz = 4;
+    }
 
-    if (shift < 0)
+    if (shift < 0) {
         offset += 1 << (-shift - 1);
+    }
 
     switch (csiz) {
     case 1:
         for (y = 0; y < h; ++y) {
             const UINT8 *data = &tiledata[y * w];
             UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     case 2:
         for (y = 0; y < h; ++y) {
             const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
             UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     case 4:
         for (y = 0; y < h; ++y) {
             const UINT32 *data = (const UINT32 *)&tiledata[4 * y * w];
             UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
-            for (x = 0; x < w; ++x)
+            for (x = 0; x < w; ++x) {
                 *row++ = j2ku_shift(offset + *data++, shift);
+            }
         }
         break;
     }
@@ -202,11 +214,13 @@ j2ku_gray_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
     unsigned x, y;
 
-    if (shift < 0)
+    if (shift < 0) {
         offset += 1 << (-shift - 1);
+    }
 
-    if (csiz == 3)
+    if (csiz == 3) {
         csiz = 4;
+    }
 
     switch (csiz) {
     case 1:
@@ -266,15 +280,19 @@ j2ku_graya_la(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
 
     unsigned x, y;
 
-    if (csiz == 3)
+    if (csiz == 3) {
         csiz = 4;
-    if (acsiz == 3)
+    }
+    if (acsiz == 3) {
         acsiz = 4;
+    }
 
-    if (shift < 0)
+    if (shift < 0) {
         offset += 1 << (-shift - 1);
-    if (ashift < 0)
+    }
+    if (ashift < 0) {
         aoffset += 1 << (-ashift - 1);
+    }
 
     atiledata = tiledata + csiz * w * h;
 
@@ -324,11 +342,13 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
 
-        if (csiz[n] == 3)
+        if (csiz[n] == 3) {
             csiz[n] = 4;
+        }
 
-        if (shifts[n] < 0)
+        if (shifts[n] < 0) {
             offsets[n] += 1 << (-shifts[n] - 1);
+        }
 
         cptr += csiz[n] * w * h;
     }
@@ -336,8 +356,9 @@ j2ku_srgb_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     for (y = 0; y < h; ++y) {
         const UINT8 *data[3];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
-        for (n = 0; n < 3; ++n)
+        for (n = 0; n < 3; ++n) {
             data[n] = &cdata[n][csiz[n] * y * w];
+        }
 
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
@@ -376,11 +397,13 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
 
-        if (csiz[n] == 3)
+        if (csiz[n] == 3) {
             csiz[n] = 4;
+        }
 
-        if (shifts[n] < 0)
+        if (shifts[n] < 0) {
             offsets[n] += 1 << (-shifts[n] - 1);
+        }
 
         cptr += csiz[n] * w * h;
     }
@@ -389,8 +412,9 @@ j2ku_sycc_rgb(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         const UINT8 *data[3];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         UINT8 *row_start = row;
-        for (n = 0; n < 3; ++n)
+        for (n = 0; n < 3; ++n) {
             data[n] = &cdata[n][csiz[n] * y * w];
+        }
 
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 3; ++n) {
@@ -431,11 +455,13 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
 
-        if (csiz[n] == 3)
+        if (csiz[n] == 3) {
             csiz[n] = 4;
+        }
 
-        if (shifts[n] < 0)
+        if (shifts[n] < 0) {
             offsets[n] += 1 << (-shifts[n] - 1);
+        }
 
         cptr += csiz[n] * w * h;
     }
@@ -443,8 +469,9 @@ j2ku_srgba_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
     for (y = 0; y < h; ++y) {
         const UINT8 *data[4];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
-        for (n = 0; n < 4; ++n)
+        for (n = 0; n < 4; ++n) {
             data[n] = &cdata[n][csiz[n] * y * w];
+        }
 
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
@@ -482,11 +509,13 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         offsets[n] = in->comps[n].sgnd ? 1 << (in->comps[n].prec - 1) : 0;
         csiz[n] = (in->comps[n].prec + 7) >> 3;
 
-        if (csiz[n] == 3)
+        if (csiz[n] == 3) {
             csiz[n] = 4;
+        }
 
-        if (shifts[n] < 0)
+        if (shifts[n] < 0) {
             offsets[n] += 1 << (-shifts[n] - 1);
+        }
 
         cptr += csiz[n] * w * h;
     }
@@ -495,8 +524,9 @@ j2ku_sycca_rgba(opj_image_t *in, const JPEG2KTILEINFO *tileinfo,
         const UINT8 *data[4];
         UINT8 *row = (UINT8 *)im->image[y0 + y] + x0 * 4;
         UINT8 *row_start = row;
-        for (n = 0; n < 4; ++n)
+        for (n = 0; n < 4; ++n) {
             data[n] = &cdata[n][csiz[n] * y * w];
+        }
 
         for (x = 0; x < w; ++x) {
             for (n = 0; n < 4; ++n) {
@@ -557,8 +587,10 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
-    size_t buffer_size = 0;
-    unsigned n;
+    size_t buffer_size = 0, tile_bytes = 0;
+    unsigned n, tile_height, tile_width;
+    int components;
+
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -581,10 +613,11 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
        possibly support is 4GB.  We can't go larger than this, because
        OpenJPEG truncates this value for the final box in the file, and
        the box lengths in OpenJPEG are currently 32 bit. */
-    if (context->length < 0)
+    if (context->length < 0) {
         opj_stream_set_user_data_length(stream, 0xffffffff);
-    else
+    } else {
         opj_stream_set_user_data_length(stream, context->length);
+    }
 #endif
 
     /* Setup decompression context */
@@ -693,8 +726,9 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
             goto quick_exit;
         }
 
-        if (!should_continue)
+        if (!should_continue) {
             break;
+        }
 
         /* Adjust the tile co-ordinates based on the reduction (OpenJPEG
            doesn't do this for us) */
@@ -703,8 +737,44 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         tile_info.x1 = (tile_info.x1 + correction) >> context->reduce;
         tile_info.y1 = (tile_info.y1 + correction) >> context->reduce;
 
+        /* Check the tile bounds; if the tile is outside the image area,
+           or if it has a negative width or height (i.e. the coordinates are
+           swapped), bail. */
+        if (tile_info.x0 >= tile_info.x1
+            || tile_info.y0 >= tile_info.y1
+            || tile_info.x0 < (OPJ_INT32)image->x0
+            || tile_info.y0 < (OPJ_INT32)image->y0
+            || tile_info.x1 - image->x0 > im->xsize
+            || tile_info.y1 - image->y0 > im->ysize) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        /* Sometimes the tile_info.datasize we get back from openjpeg
+           is less than numcomps*w*h, and we overflow in the
+           shuffle stage */
+
+        tile_width = tile_info.x1 - tile_info.x0;
+        tile_height = tile_info.y1 - tile_info.y0;
+        components = tile_info.nb_comps == 3 ? 4 : tile_info.nb_comps;
+        if (( tile_width > UINT_MAX / components ) ||
+            ( tile_height > UINT_MAX / components ) ||
+            ( tile_width > UINT_MAX / (tile_height * components )) ||
+            ( tile_height > UINT_MAX / (tile_width * components ))) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        tile_bytes = tile_width * tile_height * components;
+
+        if (tile_bytes > tile_info.data_size) {
+            tile_info.data_size = tile_bytes;
+        }
+
         if (buffer_size < tile_info.data_size) {
-            /* malloc check ok, tile_info.data_size from openjpeg */
+            /* malloc check ok, overflow and tile size sanity check above */
             UINT8 *new = realloc (state->buffer, tile_info.data_size);
             if (!new) {
                 state->errcode = IMAGING_CODEC_MEMORY;
@@ -715,25 +785,12 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
             buffer_size = tile_info.data_size;
         }
 
+
         if (!opj_decode_tile_data(codec,
                                   tile_info.tile_index,
                                   (OPJ_BYTE *)state->buffer,
                                   tile_info.data_size,
                                   stream)) {
-            state->errcode = IMAGING_CODEC_BROKEN;
-            state->state = J2K_STATE_FAILED;
-            goto quick_exit;
-        }
-
-        /* Check the tile bounds; if the tile is outside the image area,
-           or if it has a negative width or height (i.e. the coordinates are
-           swapped), bail. */
-        if (tile_info.x0 >= tile_info.x1
-            || tile_info.y0 >= tile_info.y1
-            || tile_info.x0 < image->x0
-            || tile_info.y0 < image->y0
-            || tile_info.x1 - image->x0 > im->xsize
-            || tile_info.y1 - image->y0 > im->ysize) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
@@ -758,12 +815,15 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     }
 
  quick_exit:
-    if (codec)
+    if (codec) {
         opj_destroy_codec(codec);
-    if (image)
+    }
+    if (image) {
         opj_image_destroy(image);
-    if (stream)
+    }
+    if (stream) {
         opj_stream_destroy(stream);
+    }
 
     return -1;
 }
@@ -778,8 +838,9 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t 
         return -1;
     }
 
-    if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED)
+    if (state->state == J2K_STATE_DONE || state->state == J2K_STATE_FAILED) {
         return -1;
+    }
 
     if (state->state == J2K_STATE_START) {
         state->state = J2K_STATE_DECODING;

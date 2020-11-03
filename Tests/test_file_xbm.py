@@ -1,8 +1,10 @@
 from io import BytesIO
 
+import pytest
+
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import hopper
 
 PIL151 = b"""
 #define basic_width 32
@@ -28,34 +30,53 @@ static char basic_bits[] = {
 """
 
 
-class TestFileXbm(PillowTestCase):
-    def test_pil151(self):
-        im = Image.open(BytesIO(PIL151))
-
+def test_pil151():
+    with Image.open(BytesIO(PIL151)) as im:
         im.load()
-        self.assertEqual(im.mode, "1")
-        self.assertEqual(im.size, (32, 32))
+        assert im.mode == "1"
+        assert im.size == (32, 32)
 
-    def test_open(self):
-        # Arrange
-        # Created with `convert hopper.png hopper.xbm`
-        filename = "Tests/images/hopper.xbm"
 
-        # Act
-        with Image.open(filename) as im:
+def test_open():
+    # Arrange
+    # Created with `convert hopper.png hopper.xbm`
+    filename = "Tests/images/hopper.xbm"
 
-            # Assert
-            self.assertEqual(im.mode, "1")
-            self.assertEqual(im.size, (128, 128))
+    # Act
+    with Image.open(filename) as im:
 
-    def test_open_filename_with_underscore(self):
-        # Arrange
-        # Created with `convert hopper.png hopper_underscore.xbm`
-        filename = "Tests/images/hopper_underscore.xbm"
+        # Assert
+        assert im.mode == "1"
+        assert im.size == (128, 128)
 
-        # Act
-        with Image.open(filename) as im:
 
-            # Assert
-            self.assertEqual(im.mode, "1")
-            self.assertEqual(im.size, (128, 128))
+def test_open_filename_with_underscore():
+    # Arrange
+    # Created with `convert hopper.png hopper_underscore.xbm`
+    filename = "Tests/images/hopper_underscore.xbm"
+
+    # Act
+    with Image.open(filename) as im:
+
+        # Assert
+        assert im.mode == "1"
+        assert im.size == (128, 128)
+
+
+def test_save_wrong_mode(tmp_path):
+    im = hopper()
+    out = str(tmp_path / "temp.xbm")
+
+    with pytest.raises(OSError):
+        im.save(out)
+
+
+def test_hotspot(tmp_path):
+    im = hopper("1")
+    out = str(tmp_path / "temp.xbm")
+
+    hotspot = (0, 7)
+    im.save(out, hotspot=hotspot)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.info["hotspot"] == hotspot

@@ -1,14 +1,16 @@
 dist: xenial
 language: python
-cache: pip
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pre-commit
 
 notifications:
   irc: "chat.freenode.net#pil"
 
 # Run fast lint first to get fast feedback.
-# Run slow PyPy next, to give it a headstart and reduce waiting time.
-# Run latest 3.x next, to get quick compatibility results.
-# Then run the remainder, with fastest Docker jobs last.
+# Run slower CPUs next, to give them a headstart and reduce waiting time.
+# Then run the remainder.
 
 matrix:
   fast_finish: true
@@ -16,64 +18,50 @@ matrix:
     - python: "3.6"
       name: "Lint"
       env: LINT="true"
-    - python: "pypy3"
+
+    - python: "3.6"
+      arch: arm64
+    - python: "3.7"
+      arch: ppc64le
+    - python: "3.8"
+      arch: s390x
+
+    - python: "pypy3.6-7.3.1"
       name: "PyPy3 Xenial"
+    - python: "3.9"
+      name: "3.9 Xenial"
+      services: xvfb
     - python: "3.8"
       name: "3.8 Xenial"
       services: xvfb
     - python: '3.7'
-      name: "3.7 Xenial"
+      name: "3.7 Xenial PYTHONOPTIMIZE=2"
+      env: PYTHONOPTIMIZE=2
       services: xvfb
     - python: '3.6'
       name: "3.6 Xenial PYTHONOPTIMIZE=1"
       env: PYTHONOPTIMIZE=1
       services: xvfb
-    - python: '3.5'
-      name: "3.5 Xenial PYTHONOPTIMIZE=2"
-      env: PYTHONOPTIMIZE=2
-      services: xvfb
-    - env: DOCKER="alpine" DOCKER_TAG="master"
-    - env: DOCKER="arch" DOCKER_TAG="master" # contains PyQt5
-    - env: DOCKER="ubuntu-16.04-xenial-amd64" DOCKER_TAG="master"
-    - env: DOCKER="ubuntu-18.04-bionic-amd64" DOCKER_TAG="master"
-    - env: DOCKER="debian-9-stretch-x86" DOCKER_TAG="master"
-    - env: DOCKER="debian-10-buster-x86" DOCKER_TAG="master"
-    - env: DOCKER="centos-6-amd64" DOCKER_TAG="master"
-    - env: DOCKER="centos-7-amd64" DOCKER_TAG="master"
-    - env: DOCKER="amazon-1-amd64" DOCKER_TAG="master"
-    - env: DOCKER="amazon-2-amd64" DOCKER_TAG="master"
-    - env: DOCKER="fedora-30-amd64" DOCKER_TAG="master"
-    - env: DOCKER="fedora-31-amd64" DOCKER_TAG="master"
-
-services:
-  - docker
-
-before_install:
-  - if [ "$DOCKER" ]; then travis_retry docker pull pythonpillow/$DOCKER:$DOCKER_TAG; fi
 
 install:
   - |
     if [ "$LINT" == "true" ]; then
-      pip install tox
-    elif [ "$DOCKER" == "" ]; then
-      .travis/install.sh;
+      python3 -m pip install tox
+    else
+      .ci/install.sh;
     fi
 
 script:
 - |
   if [ "$LINT" == "true" ]; then
     tox -e lint
-  elif [ "$DOCKER" == "" ]; then
-    .travis/build.sh
-    .travis/test.sh
-  elif [ "$DOCKER" ]; then
-    # the Pillow user in the docker container is UID 1000
-    sudo chown -R 1000 $TRAVIS_BUILD_DIR
-    docker run -v $TRAVIS_BUILD_DIR:/Pillow pythonpillow/$DOCKER:$DOCKER_TAG
+  else
+    .ci/build.sh
+    .ci/test.sh
   fi
 
 after_success:
 - |
   if [ "$LINT" == "" ]; then
-    .travis/after_success.sh
+    .ci/after_success.sh
   fi

@@ -69,6 +69,27 @@ There has been a longstanding warning that the defaults of ``Image.frombuffer``
 may change in the future for the "raw" decoder. The change will now take place
 in Pillow 7.0.
 
+Security
+========
+
+This release catches several buffer overruns, as well as addressing
+CVE-2019-16865. The CVE is regarding DOS problems, such as consuming large
+amounts of memory, or taking a large amount of time to process an image.
+
+In RawDecode.c, an error is now thrown if skip is calculated to be less than
+zero. It is intended to skip padding between lines, not to go backwards.
+
+In PsdImagePlugin, if the combined sizes of the individual parts is larger than
+the declared size of the extra data field, then it looked for the next layer by
+seeking backwards. This is now corrected by seeking to (the start of the layer
++ the size of the extra data field) instead of (the read parts of the layer +
+the rest of the layer).
+
+Decompression bomb checks have been added to GIF and ICO formats.
+
+An error is now raised if a TIFF dimension is a string, rather than trying to
+perform operations on it.
+
 Other Changes
 =============
 

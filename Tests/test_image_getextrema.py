@@ -1,25 +1,25 @@
 from PIL import Image
 
-from .helper import PillowTestCase, hopper
+from .helper import hopper
 
 
-class TestImageGetExtrema(PillowTestCase):
-    def test_extrema(self):
-        def extrema(mode):
-            return hopper(mode).getextrema()
+def test_extrema():
+    def extrema(mode):
+        return hopper(mode).getextrema()
 
-        self.assertEqual(extrema("1"), (0, 255))
-        self.assertEqual(extrema("L"), (0, 255))
-        self.assertEqual(extrema("I"), (0, 255))
-        self.assertEqual(extrema("F"), (0, 255))
-        self.assertEqual(extrema("P"), (0, 225))  # fixed palette
-        self.assertEqual(extrema("RGB"), ((0, 255), (0, 255), (0, 255)))
-        self.assertEqual(extrema("RGBA"), ((0, 255), (0, 255), (0, 255), (255, 255)))
-        self.assertEqual(extrema("CMYK"), ((0, 255), (0, 255), (0, 255), (0, 0)))
-        self.assertEqual(extrema("I;16"), (0, 255))
+    assert extrema("1") == (0, 255)
+    assert extrema("L") == (1, 255)
+    assert extrema("I") == (1, 255)
+    assert extrema("F") == (1, 255)
+    assert extrema("P") == (0, 225)  # fixed palette
+    assert extrema("RGB") == ((0, 255), (0, 255), (0, 255))
+    assert extrema("RGBA") == ((0, 255), (0, 255), (0, 255), (255, 255))
+    assert extrema("CMYK") == ((0, 255), (0, 255), (0, 255), (0, 0))
+    assert extrema("I;16") == (1, 255)
 
-    def test_true_16(self):
-        im = Image.open("Tests/images/16_bit_noise.tif")
-        self.assertEqual(im.mode, "I;16")
+
+def test_true_16():
+    with Image.open("Tests/images/16_bit_noise.tif") as im:
+        assert im.mode == "I;16"
         extrema = im.getextrema()
-        self.assertEqual(extrema, (106, 285))
+    assert extrema == (106, 285)

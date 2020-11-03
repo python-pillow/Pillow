@@ -29,7 +29,10 @@ import io
 import logging
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16le as i16, o8, o16le as o16
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import o8
+from ._binary import o16le as o16
 
 logger = logging.getLogger(__name__)
 
@@ -131,8 +134,8 @@ def _save(im, fp, filename):
 
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
-    except KeyError:
-        raise ValueError("Cannot save %s images as PCX" % im.mode)
+    except KeyError as e:
+        raise ValueError(f"Cannot save {im.mode} images as PCX") from e
 
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8

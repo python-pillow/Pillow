@@ -46,7 +46,7 @@ class DcxImageFile(PcxImageFile):
 
         # Header
         s = self.fp.read(4)
-        if i32(s) != MAGIC:
+        if not _accept(s):
             raise SyntaxError("not a DCX file")
 
         # Component directory
@@ -59,15 +59,9 @@ class DcxImageFile(PcxImageFile):
 
         self.__fp = self.fp
         self.frame = None
+        self.n_frames = len(self._offset)
+        self.is_animated = self.n_frames > 1
         self.seek(0)
-
-    @property
-    def n_frames(self):
-        return len(self._offset)
-
-    @property
-    def is_animated(self):
-        return len(self._offset) > 1
 
     def seek(self, frame):
         if not self._seek_check(frame):

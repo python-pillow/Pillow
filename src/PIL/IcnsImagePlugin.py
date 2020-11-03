@@ -23,10 +23,10 @@ import subprocess
 import sys
 import tempfile
 
-from PIL import Image, ImageFile, PngImagePlugin
+from PIL import Image, ImageFile, PngImagePlugin, features
 from PIL._binary import i8
 
-enable_jpeg2k = hasattr(Image.core, "jp2klib_version")
+enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
@@ -83,7 +83,7 @@ def read_32(fobj, start_length, size):
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
-                raise SyntaxError("Error reading channel [%r left]" % bytesleft)
+                raise SyntaxError(f"Error reading channel [{repr(bytesleft)} left]")
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -321,7 +321,7 @@ def _save(im, fp, filename):
         last_w = None
         second_path = None
         for w in [16, 32, 128, 256, 512]:
-            prefix = "icon_{}x{}".format(w, w)
+            prefix = f"icon_{w}x{w}"
 
             first_path = os.path.join(iconset, prefix + ".png")
             if last_w == w:
@@ -337,6 +337,10 @@ def _save(im, fp, filename):
 
         # iconutil -c icns -o {} {}
 
+        fp_only = not filename
+        if fp_only:
+            f, filename = tempfile.mkstemp(".icns")
+            os.close(f)
         convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
         convert_proc = subprocess.Popen(
             convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
@@ -348,6 +352,10 @@ def _save(im, fp, filename):
 
         if retcode:
             raise subprocess.CalledProcessError(retcode, convert_cmd)
+
+        if fp_only:
+            with open(filename, "rb") as f:
+                fp.write(f.read())
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
@@ -365,13 +373,12 @@ if __name__ == "__main__":
         print("Syntax: python IcnsImagePlugin.py [file]")
         sys.exit()
 
-    imf = IcnsImageFile(open(sys.argv[1], "rb"))
-    for size in imf.info["sizes"]:
-        imf.size = size
-        imf.load()
-        im = imf.im
-        im.save("out-%s-%s-%s.png" % size)
-    im = Image.open(sys.argv[1])
-    im.save("out.png")
-    if sys.platform == "windows":
-        os.startfile("out.png")
+    with open(sys.argv[1], "rb") as fp:
+        imf = IcnsImageFile(fp)
+        for size in imf.info["sizes"]:
+            imf.size = size
+            imf.save("out-%s-%s-%s.png" % size)
+        with Image.open(sys.argv[1]) as im:
+            im.save("out.png")
+        if sys.platform == "windows":
+            os.startfile("out.png")

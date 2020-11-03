@@ -8,10 +8,6 @@ import time
 import zlib
 
 
-def make_bytes(s):
-    return s.encode("us-ascii")
-
-
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
 def encode_text(s):
@@ -179,26 +175,24 @@ class XrefTable:
             else:
                 contiguous_keys = keys
                 keys = None
-            f.write(make_bytes("%d %d\n" % (contiguous_keys[0], len(contiguous_keys))))
+            f.write(b"%d %d\n" % (contiguous_keys[0], len(contiguous_keys)))
             for object_id in contiguous_keys:
                 if object_id in self.new_entries:
-                    f.write(make_bytes("%010d %05d n \n" % self.new_entries[object_id]))
+                    f.write(b"%010d %05d n \n" % self.new_entries[object_id])
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
                     check_format_condition(
                         object_id == this_deleted_object_id,
-                        "expected the next deleted object ID to be %s, instead found %s"
-                        % (object_id, this_deleted_object_id),
+                        f"expected the next deleted object ID to be {object_id}, "
+                        f"instead found {this_deleted_object_id}",
                     )
                     try:
                         next_in_linked_list = deleted_keys[0]
                     except IndexError:
                         next_in_linked_list = 0
                     f.write(
-                        make_bytes(
-                            "%010d %05d f \n"
-                            % (next_in_linked_list, self.deleted_entries[object_id])
-                        )
+                        b"%010d %05d f \n"
+                        % (next_in_linked_list, self.deleted_entries[object_id])
                     )
         return startxref
 
@@ -224,7 +218,7 @@ class PdfName:
         return hash(self.name)
 
     def __repr__(self):
-        return "PdfName(%s)" % repr(self.name)
+        return f"PdfName({repr(self.name)})"
 
     @classmethod
     def from_pdf_stream(cls, data):
@@ -238,17 +232,13 @@ class PdfName:
             if b in self.allowed_chars:
                 result.append(b)
             else:
-                result.extend(make_bytes("#%02X" % b))
+                result.extend(b"#%02X" % b)
         return bytes(result)
-
-    __str__ = __bytes__
 
 
 class PdfArray(list):
     def __bytes__(self):
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
-
-    __str__ = __bytes__
 
 
 class PdfDict(collections.UserDict):
@@ -261,8 +251,8 @@ class PdfDict(collections.UserDict):
     def __getattr__(self, key):
         try:
             value = self[key.encode("us-ascii")]
-        except KeyError:
-            raise AttributeError(key)
+        except KeyError as e:
+            raise AttributeError(key) from e
         if isinstance(value, bytes):
             value = decode_text(value)
         if key.endswith("Date"):
@@ -304,7 +294,7 @@ class PdfBinary:
         self.data = data
 
     def __bytes__(self):
-        return make_bytes("<%s>" % "".join("%02X" % b for b in self.data))
+        return b"<%s>" % b"".join(b"%02X" % b for b in self.data)
 
 
 class PdfStream:
@@ -325,7 +315,7 @@ class PdfStream:
             return zlib.decompress(self.buf, bufsize=int(expected_length))
         else:
             raise NotImplementedError(
-                "stream filter %s unknown/unsupported" % repr(self.dictionary.Filter)
+                f"stream filter {repr(self.dictionary.Filter)} unknown/unsupported"
             )
 
 
@@ -433,7 +423,7 @@ class PdfParser:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
-        self.f.write(("% {}\n".format(s)).encode("utf-8"))
+        self.f.write(f"% {s}\n".encode("utf-8"))
 
     def write_catalog(self):
         self.del_root()
@@ -495,7 +485,7 @@ class PdfParser:
         self.f.write(
             b"trailer\n"
             + bytes(PdfDict(trailer_dict))
-            + make_bytes("\nstartxref\n%d\n%%%%EOF" % start_xref)
+            + b"\nstartxref\n%d\n%%%%EOF" % start_xref
         )
 
     def write_page(self, ref, *objs, **dict_obj):
@@ -821,11 +811,11 @@ class PdfParser:
             if m:
                 try:
                     stream_len = int(result[b"Length"])
-                except (TypeError, KeyError, ValueError):
+                except (TypeError, KeyError, ValueError) as e:
                     raise PdfFormatError(
                         "bad or missing Length in stream dict (%r)"
                         % result.get(b"Length", None)
-                    )
+                    ) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")
@@ -976,9 +966,8 @@ class PdfParser:
         offset, generation = self.xref_table[ref[0]]
         check_format_condition(
             generation == ref[1],
-            "expected to find generation %s for object ID %s in xref table, "
-            "instead found generation %s at offset %s"
-            % (ref[1], ref[0], generation, offset),
+            f"expected to find generation {ref[1]} for object ID {ref[0]} in xref "
+            f"table, instead found generation {generation} at offset {offset}",
         )
         value = self.get_value(
             self.buf,

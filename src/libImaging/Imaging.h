@@ -185,8 +185,6 @@ extern Imaging ImagingNew2Dirty(const char* mode, Imaging imOut, Imaging imIn);
 extern void    ImagingDelete(Imaging im);
 
 extern Imaging ImagingNewBlock(const char* mode, int xsize, int ysize);
-extern Imaging ImagingNewMap(const char* filename, int readonly,
-                             const char* mode, int xsize, int ysize);
 
 extern Imaging ImagingNewPrologue(const char *mode,
                                   int xsize, int ysize);
@@ -229,7 +227,7 @@ extern void ImagingSectionLeave(ImagingSectionCookie* cookie);
 /* Exceptions */
 /* ---------- */
 
-extern void* ImagingError_IOError(void);
+extern void* ImagingError_OSError(void);
 extern void* ImagingError_MemoryError(void);
 extern void* ImagingError_ModeError(void); /* maps to ValueError by default */
 extern void* ImagingError_Mismatch(void); /* maps to ValueError by default */
@@ -313,6 +311,7 @@ extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTranspose(Imaging imOut, Imaging imIn);
 extern Imaging ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
+extern Imaging ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
 extern Imaging ImagingTransform(
     Imaging imOut, Imaging imIn, int method, int x0, int y0, int x1, int y1,
     double *a, int filter, int fill);
@@ -338,14 +337,14 @@ extern Imaging ImagingChopSubtract(
     Imaging imIn1, Imaging imIn2, float scale, int offset);
 extern Imaging ImagingChopAddModulo(Imaging imIn1, Imaging imIn2);
 extern Imaging ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2);
+extern Imaging ImagingChopSoftLight(Imaging imIn1, Imaging imIn2);
+extern Imaging ImagingChopHardLight(Imaging imIn1, Imaging imIn2);
+extern Imaging ImagingOverlay(Imaging imIn1, Imaging imIn2);
 
 /* "1" images only */
 extern Imaging ImagingChopAnd(Imaging imIn1, Imaging imIn2);
 extern Imaging ImagingChopOr(Imaging imIn1, Imaging imIn2);
 extern Imaging ImagingChopXor(Imaging imIn1, Imaging imIn2);
-
-/* Image measurement */
-extern void ImagingCrack(Imaging im, int x0, int y0);
 
 /* Graphics */
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
@@ -392,10 +391,6 @@ extern Imaging ImagingEffectNoise(int xsize, int ysize, float sigma);
 extern Imaging ImagingEffectMandelbrot(int xsize, int ysize,
                                        double extent[4], int quality);
 
-/* Obsolete */
-extern int ImagingToString(Imaging im, int orientation, char *buffer);
-extern int ImagingFromString(Imaging im, int orientation, char *buffer);
-
 
 /* File I/O */
 /* -------- */
@@ -403,9 +398,6 @@ extern int ImagingFromString(Imaging im, int orientation, char *buffer);
 /* Built-in drivers */
 extern Imaging ImagingOpenPPM(const char* filename);
 extern int ImagingSavePPM(Imaging im, const char* filename);
-
-/* Utility functions */
-extern UINT32 ImagingCRC32(UINT32 crc, UINT8* buffer, int bytes);
 
 /* Codecs */
 typedef struct ImagingCodecStateInstance *ImagingCodecState;
@@ -469,7 +461,6 @@ extern int ImagingRawEncode(Imaging im, ImagingCodecState state,
                             UINT8* buffer, int bytes);
 extern int ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, Py_ssize_t bytes);
-extern int ImagingSgiRleDecodeCleanup(ImagingCodecState state);
 extern int ImagingSunRleDecode(Imaging im, ImagingCodecState state,
                                UINT8* buffer, Py_ssize_t bytes);
 extern int ImagingTgaRleDecode(Imaging im, ImagingCodecState state,

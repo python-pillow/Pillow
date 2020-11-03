@@ -28,7 +28,9 @@ from io import BytesIO
 from math import ceil, log
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
-from ._binary import i8, i16le as i16, i32le as i32
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
 
 #
 # --------------------------------------------------------------------
@@ -63,8 +65,9 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
+        # TODO: invent a more convenient method for proportional scalings
         tmp = im.copy()
-        tmp.thumbnail(size, Image.LANCZOS)
+        tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()

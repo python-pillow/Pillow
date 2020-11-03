@@ -67,7 +67,9 @@ static uint32_t _findPrime(uint32_t start,int dir) {
          continue;
       }
       for (t=2;t<sqrt((double)start);t++) {
-         if (!start%t) break;
+         if (!start%t) {
+             break;
+         }
       }
       if (t>=sqrt((double)start)) {
          break;
@@ -144,7 +146,9 @@ static int _hashtable_insert_node(HashTable *h,HashNode *node,int resize,int upd
       node->next=*n;
       *n=node;
       h->count++;
-      if (resize) _hashtable_resize(h);
+      if (resize) {
+          _hashtable_resize(h);
+      }
       return 1;
    } else {
       return 0;
@@ -169,13 +173,17 @@ static int _hashtable_insert(HashTable *h,HashKey_t key,HashVal_t val,int resize
    }
    if (!update) {
       t=malloc(sizeof(HashNode));
-      if (!t) return 0;
+      if (!t) {
+          return 0;
+      }
       t->next=*n;
       *n=t;
       t->key=key;
       t->value=val;
       h->count++;
-      if (resize) _hashtable_resize(h);
+      if (resize) {
+          _hashtable_resize(h);
+      }
       return 1;
    } else {
       return 0;
@@ -206,7 +214,9 @@ int hashtable_insert_or_update_computed(HashTable *h,
       }
    }
    t=malloc(sizeof(HashNode));
-   if (!t) return 0;
+   if (!t) {
+       return 0;
+   }
    t->key=key;
    t->next=*n;
    *n=t;

@@ -14,14 +14,16 @@
 # See the README file for information on usage and redistribution.
 #
 
-##
-# A file object that provides read access to a part of an existing
-# file (for example a TAR file).
 
 import io
 
 
 class ContainerIO:
+    """
+    A file object that provides read access to a part of an existing
+    file (for example a TAR file).
+    """
+
     def __init__(self, file, offset, length):
         """
         Create file object.
@@ -82,7 +84,7 @@ class ContainerIO:
         else:
             n = self.length - self.pos
         if not n:  # EOF
-            return ""
+            return b"" if "b" in self.fh.mode else ""
         self.pos = self.pos + n
         return self.fh.read(n)
 
@@ -92,13 +94,14 @@ class ContainerIO:
 
         :returns: An 8-bit string.
         """
-        s = ""
+        s = b"" if "b" in self.fh.mode else ""
+        newline_character = b"\n" if "b" in self.fh.mode else "\n"
         while True:
             c = self.read(1)
             if not c:
                 break
             s = s + c
-            if c == "\n":
+            if c == newline_character:
                 break
         return s
 

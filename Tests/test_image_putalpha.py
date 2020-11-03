@@ -1,52 +1,48 @@
 from PIL import Image
 
-from .helper import PillowTestCase
+
+def test_interface():
+    im = Image.new("RGBA", (1, 1), (1, 2, 3, 0))
+    assert im.getpixel((0, 0)) == (1, 2, 3, 0)
+
+    im = Image.new("RGBA", (1, 1), (1, 2, 3))
+    assert im.getpixel((0, 0)) == (1, 2, 3, 255)
+
+    im.putalpha(Image.new("L", im.size, 4))
+    assert im.getpixel((0, 0)) == (1, 2, 3, 4)
+
+    im.putalpha(5)
+    assert im.getpixel((0, 0)) == (1, 2, 3, 5)
 
 
-class TestImagePutAlpha(PillowTestCase):
-    def test_interface(self):
+def test_promote():
+    im = Image.new("L", (1, 1), 1)
+    assert im.getpixel((0, 0)) == 1
 
-        im = Image.new("RGBA", (1, 1), (1, 2, 3, 0))
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 0))
+    im.putalpha(2)
+    assert im.mode == "LA"
+    assert im.getpixel((0, 0)) == (1, 2)
 
-        im = Image.new("RGBA", (1, 1), (1, 2, 3))
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 255))
+    im = Image.new("P", (1, 1), 1)
+    assert im.getpixel((0, 0)) == 1
 
-        im.putalpha(Image.new("L", im.size, 4))
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))
+    im.putalpha(2)
+    assert im.mode == "PA"
+    assert im.getpixel((0, 0)) == (1, 2)
 
-        im.putalpha(5)
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 5))
+    im = Image.new("RGB", (1, 1), (1, 2, 3))
+    assert im.getpixel((0, 0)) == (1, 2, 3)
 
-    def test_promote(self):
+    im.putalpha(4)
+    assert im.mode == "RGBA"
+    assert im.getpixel((0, 0)) == (1, 2, 3, 4)
 
-        im = Image.new("L", (1, 1), 1)
-        self.assertEqual(im.getpixel((0, 0)), 1)
 
-        im.putalpha(2)
-        self.assertEqual(im.mode, "LA")
-        self.assertEqual(im.getpixel((0, 0)), (1, 2))
+def test_readonly():
+    im = Image.new("RGB", (1, 1), (1, 2, 3))
+    im.readonly = 1
 
-        im = Image.new("P", (1, 1), 1)
-        self.assertEqual(im.getpixel((0, 0)), 1)
-
-        im.putalpha(2)
-        self.assertEqual(im.mode, "PA")
-        self.assertEqual(im.getpixel((0, 0)), (1, 2))
-
-        im = Image.new("RGB", (1, 1), (1, 2, 3))
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3))
-
-        im.putalpha(4)
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))
-
-    def test_readonly(self):
-
-        im = Image.new("RGB", (1, 1), (1, 2, 3))
-        im.readonly = 1
-
-        im.putalpha(4)
-        self.assertFalse(im.readonly)
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.getpixel((0, 0)), (1, 2, 3, 4))
+    im.putalpha(4)
+    assert not im.readonly
+    assert im.mode == "RGBA"
+    assert im.getpixel((0, 0)) == (1, 2, 3, 4)

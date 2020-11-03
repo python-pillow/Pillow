@@ -184,8 +184,9 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
     int edgeB = MAX(imIn->xsize - radius - 1, 0);
 
     UINT32 *lineOut = calloc(imIn->xsize, sizeof(UINT32));
-    if (lineOut == NULL)
+    if (lineOut == NULL) {
         return ImagingError_MemoryError();
+    }
 
     // printf(">>> %d %d %d\n", radius, ww, fw);
 
@@ -248,11 +249,13 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
         imIn->type  != imOut->type  ||
         imIn->bands != imOut->bands ||
         imIn->xsize != imOut->xsize ||
-        imIn->ysize != imOut->ysize)
+        imIn->ysize != imOut->ysize) {
         return ImagingError_Mismatch();
+    }
 
-    if (imIn->type != IMAGING_TYPE_UINT8)
+    if (imIn->type != IMAGING_TYPE_UINT8) {
         return ImagingError_ModeError();
+    }
 
     if (!(strcmp(imIn->mode, "RGB") == 0 ||
           strcmp(imIn->mode, "RGBA") == 0 ||
@@ -261,12 +264,14 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n)
           strcmp(imIn->mode, "CMYK") == 0 ||
           strcmp(imIn->mode, "L") == 0 ||
           strcmp(imIn->mode, "LA") == 0 ||
-          strcmp(imIn->mode, "La") == 0))
+          strcmp(imIn->mode, "La") == 0)) {
         return ImagingError_ModeError();
+    }
 
     imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
-    if (!imTransposed)
+    if (!imTransposed) {
         return NULL;
+    }
 
     /* Apply blur in one dimension.
        Use imOut as a destination at first pass,
