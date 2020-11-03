@@ -78,8 +78,9 @@ jobs:
         .ci/build.sh
 
     - name: Test
-      run: |
-        .ci/test.sh
+      uses: GabrielBB/xvfb-action@v1
+      with:
+        run: .ci/test.sh
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
 

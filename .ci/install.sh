@@ -39,13 +39,13 @@ if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then python3 -m pip install -U "setuptool
 if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 if [ "$TRAVIS_PYTHON_VERSION" == "pypy3.6-7.3.1" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 
-if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
+# PyQt5 doesn't support PyPy3
+# Wheel doesn't yet support 3.10
+if [[ $GHA_PYTHON_VERSION == 3.* && $GHA_PYTHON_VERSION != "3.10-dev" ]]; then
   # arm64, ppc64le, s390x CPUs:
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"
-  if [[ $TRAVIS_CPU_ARCH == "amd64" ]]; then
     sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools
     python3 -m pip install pyqt5
-  fi
 fi
 
 # docs only on Python 3.9
