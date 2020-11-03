@@ -22,9 +22,9 @@ jobs:
         ]
         include:
         - python-version: "3.6"
-          env: PYTHONOPTIMIZE=1
+          PYTHONOPTIMIZE: 1
         - python-version: "3.7"
-          env: PYTHONOPTIMIZE=2
+          PYTHONOPTIMIZE: 2
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu
@@ -80,6 +80,8 @@ jobs:
     - name: Test
       run: |
         .ci/test.sh
+      env:
+        PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
 
     - name: Prepare to upload errors
       if: failure()
