@@ -127,8 +127,8 @@ following options are available::
     images in the list can be single or multiframe images.
     This is currently supported for GIF, PDF, TIFF, and WebP.
 
-    It is also supported for ICNS. If images are passed in of relevant sizes,
-    they will be used instead of scaling down the main image.
+    It is also supported for ICO and ICNS. If images are passed in of relevant
+    sizes, they will be used instead of scaling down the main image.
 
 **include_color_table**
     Whether or not to include local color table.
@@ -237,6 +237,15 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
     (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
     size or 256 will be ignored.
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**append_images**
+    A list of images to replace the scaled down versions of the image.
+    The order of the images does not matter, as their use is determined by
+    the size of each image.
+
+    .. versionadded:: 8.1.0
 
 IM
 ^^
