@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image, assert_image_similar, hopper
+from .helper import assert_image, assert_image_similar, hopper, is_ppc64le
 
 
 def test_sanity():
@@ -17,6 +17,7 @@ def test_sanity():
     assert_image_similar(converted.convert("RGB"), image, 60)
 
 
+@pytest.mark.xfail(is_ppc64le(), reason="failing on ppc64le on GHA")
 def test_libimagequant_quantize():
     image = hopper()
     try:
