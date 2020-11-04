@@ -78,9 +78,12 @@ jobs:
         .ci/build.sh
 
     - name: Test
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: .ci/test.sh
+      run: |
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+        else
+          .ci/test.sh
+        fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
 
