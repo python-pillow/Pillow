@@ -125,7 +125,7 @@ following options are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for GIF, PDF, TIFF, and WebP.
+    This is currently supported for GIF, PDF, PNG, TIFF, and WebP.
 
     It is also supported for ICNS. If images are passed in of relevant sizes,
     they will be used instead of scaling down the main image.
