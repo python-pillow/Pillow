@@ -39,7 +39,7 @@ jobs:
           submodules: true
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Build Wheel
         run: .github/workflows/build.sh
       - uses: actions/upload-artifact@v2
@@ -80,7 +80,7 @@ jobs:
           submodules: true
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Build Wheel
         run: .github/workflows/build.sh
       - uses: actions/upload-artifact@v2
