@@ -2905,6 +2905,8 @@ def open(fp, mode="r", formats=None):
 
     def _open_core(fp, filename, prefix, formats):
         for i in formats:
+            if i not in OPEN:
+                init()
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
