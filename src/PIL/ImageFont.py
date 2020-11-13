@@ -285,7 +285,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :return: Width for horizontal, height for vertical text.
@@ -338,7 +338,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :param stroke_width: The width of the text stroke.
@@ -398,7 +398,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -455,7 +455,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -539,7 +539,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -625,7 +625,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
