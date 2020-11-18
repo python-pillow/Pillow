@@ -234,8 +234,6 @@ static struct PyMethodDef methods[] = {
     {"releasedc", (PyCFunction)_releasedc, 1},
     {"frombytes", (PyCFunction)_frombytes, 1},
     {"tobytes", (PyCFunction)_tobytes, 1},
-    {"fromstring", (PyCFunction)_frombytes, 1},
-    {"tostring", (PyCFunction)_tobytes, 1},
     {NULL, NULL} /* sentinel */
 };
 
