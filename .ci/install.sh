@@ -34,10 +34,9 @@ python3 -m pip install test-image-results
 # TODO Remove condition when numpy supports 3.10
 if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy ; fi
 
-# TODO Remove when 3.8 / 3.9 / PyPy3 includes setuptools 49.3.2+:
+# TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
 if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
-if [ "$TRAVIS_PYTHON_VERSION" == "pypy3.6-7.3.1" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 
 # PyQt5 doesn't support PyPy3
 # Wheel doesn't yet support 3.10
@@ -47,9 +46,6 @@ if [[ $GHA_PYTHON_VERSION == 3.* && $GHA_PYTHON_VERSION != "3.10-dev" ]]; then
     sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools
     python3 -m pip install pyqt5
 fi
-
-# docs only on Python 3.9
-if [ "$TRAVIS_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -r requirements.txt ; fi
 
 # webp
 pushd depends && ./install_webp.sh && popd
