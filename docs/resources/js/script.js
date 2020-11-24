@@ -30,7 +30,6 @@ jQuery(document).ready(function ($) {
                         if (!$upperA.find('.toctree-expand').length) {
                             $upperA.prepend($('<span />').addClass('toctree-expand'));
                         }
-                        $a.css('background-color', '#c9c9c9');
                         $a.css('padding-left', '5em');
                     } else {
                         $a.css('background-color', '#bdbdbd');
