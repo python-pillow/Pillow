@@ -64,6 +64,7 @@ jobs:
       run: python -m pip install -U "setuptools>=49.3.2"
 
     - name: Install dependencies
+      id: install
       run: |
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
@@ -72,6 +73,9 @@ jobs:
         echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+
+        # make cache key depend on VS version
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
       shell: pwsh
 
     - name: Cache build
@@ -80,7 +84,7 @@ jobs:
       with:
         path: winbuild\build
         key:
-          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}
+          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
 
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
