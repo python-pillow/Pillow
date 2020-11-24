@@ -1196,6 +1196,10 @@
         color: rgb(166, 158, 146);
     }
 
+    .wy-menu-vertical li.toctree-l3.current a {
+        background-color: #363636;
+    }
+
     .wy-menu-vertical li ul li a {
         color: rgb(208, 204, 198);
     }
