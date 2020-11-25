@@ -300,9 +300,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libraqm": {
-        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
-        "filename": "libraqm-0.7.0.zip",
-        "dir": "libraqm-0.7.0",
+        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.1.zip",
+        "filename": "libraqm-0.7.1.zip",
+        "dir": "libraqm-0.7.1",
         "build": [
             cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
