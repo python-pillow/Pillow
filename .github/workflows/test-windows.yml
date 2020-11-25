@@ -137,13 +137,10 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
+    # Raqm dependencies
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
-
-    - name: Build dependencies / Raqm
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     # trim ~150MB x 9
     - name: Optimize build cache
