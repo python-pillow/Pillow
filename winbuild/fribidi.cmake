@@ -99,4 +99,4 @@ add_library(fribidi STATIC
 	${FRIBIDI_SOURCES_GENERATED})
 fribidi_definitions(fribidi)
 target_compile_definitions(fribidi
-	PUBLIC -DFRIBIDI_ENTRY=extern)
+	PUBLIC -DFRIBIDI_LIB_STATIC)
