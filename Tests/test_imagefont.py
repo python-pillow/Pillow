@@ -35,14 +35,6 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.3", "<2.4"): {
-            "multiline": 30,
-            "textsize": 12,
-            "getters": (13, 16),
-            "mask": (107, 13),
-            "multiline-anchor": 6,
-            "getlength": (36, 27, 27, 33),
-        },
         (">=2.7",): {
             "multiline": 6.2,
             "textsize": 2.5,
