@@ -10,6 +10,20 @@
 
 #include "fribidi.h"
 
+
+/* ..._ex adds bracket_types param, ignore and call legacy function */
+FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
+    const FriBidiCharType *bidi_types,
+    const FriBidiBracketType *bracket_types,
+    const FriBidiStrIndex len,
+    FriBidiParType *pbase_dir,
+    FriBidiLevel *embedding_levels)
+{
+    return fribidi_get_par_embedding_levels(
+        bidi_types, len, pbase_dir, embedding_levels);
+}
+
+
 int load_fribidi(void) {
     int error = 0;
 
@@ -17,11 +31,22 @@ int load_fribidi(void) {
 
     /* Microsoft needs a totally different system */
 #ifndef _WIN32
-    p_fribidi = dlopen("libfribidi.so.1", RTLD_LAZY);
+#define LOAD_FUNCTION(func) \
+    func = (t_##func)dlsym(p_fribidi, #func); \
+    error = error || (func == 0);
+
+    p_fribidi = dlopen("libfribidi.so", RTLD_LAZY);
+    if (!p_fribidi) {
+        p_fribidi = dlopen("libfribidi.so.0", RTLD_LAZY);
+    }
     if (!p_fribidi) {
         p_fribidi = dlopen("libfribidi.dylib", RTLD_LAZY);
     }
 #else
+#define LOAD_FUNCTION(func) \
+    func = (t_##func)GetProcAddress(p_fribidi, #func); \
+    error = error || (func == 0);
+
     p_fribidi = LoadLibrary("fribidi");
     /* MSYS2 */
     if (!p_fribidi) {
@@ -33,20 +58,17 @@ int load_fribidi(void) {
         return 1;
     }
 
-#ifndef _WIN32
-#define LOAD_FUNCTION(func) \
-    func = (t_##func)dlsym(p_fribidi, #func); \
-    error = error || (func == 0);
-#else
-#define LOAD_FUNCTION(func) \
-    func = (t_##func)GetProcAddress(p_fribidi, #func); \
-    error = error || (func == 0);
-#endif
+    /* load ..._ex first to preserve error variable */
+    LOAD_FUNCTION(fribidi_get_par_embedding_levels_ex);
+    if (error) {
+        /* using FriBiDi 0.x, emulate ..._ex function */
+        fribidi_get_par_embedding_levels_ex = &fribidi_get_par_embedding_levels_ex_compat;
+        error = 0;
+    }
 
     LOAD_FUNCTION(fribidi_get_bidi_types);
     LOAD_FUNCTION(fribidi_get_bracket_types);
-    LOAD_FUNCTION(fribidi_get_par_embedding_levels_ex);
-//    LOAD_FUNCTION(fribidi_get_par_embedding_levels);
+    LOAD_FUNCTION(fribidi_get_par_embedding_levels);
     LOAD_FUNCTION(fribidi_unicode_to_charset);
     LOAD_FUNCTION(fribidi_charset_to_unicode);
 

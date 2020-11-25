@@ -83,9 +83,9 @@ FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels_ex,
     const FriBidiCharType *, const FriBidiBracketType *, const FriBidiStrIndex,
     FriBidiParType *, FriBidiLevel *);
 
-//FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
-//    const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,
-//    FriBidiLevel *);
+FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
+    const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,
+    FriBidiLevel *);
 
 FRIBIDI_FUNC(FriBidiStrIndex, fribidi_unicode_to_charset,
     FriBidiCharSet, const FriBidiChar *, FriBidiStrIndex, char *);
