@@ -29,6 +29,8 @@ def get_version():
 NAME = "Pillow"
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
+HARFBUZZ_ROOT = None
+FRIBIDI_ROOT = None
 IMAGEQUANT_ROOT = None
 JPEG2K_ROOT = None
 JPEG_ROOT = None
@@ -417,6 +419,8 @@ class pil_build_ext(build_ext):
             TIFF_ROOT=("libtiff-5", "libtiff-4"),
             ZLIB_ROOT="zlib",
             FREETYPE_ROOT="freetype2",
+            HARFBUZZ_ROOT="harfbuzz",
+            FRIBIDI_ROOT="fribidi",
             LCMS_ROOT="lcms2",
             IMAGEQUANT_ROOT="libimagequant",
         ).items():
