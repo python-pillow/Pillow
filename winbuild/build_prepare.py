@@ -296,21 +296,7 @@ deps = {
             cmd_nmake(target="clean"),
             cmd_nmake(target="fribidi"),
         ],
-        "headers": [r"lib\*.h"],
-        "libs": [r"*.lib"],
-    },
-    "libraqm": {
-        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.1.zip",
-        "filename": "libraqm-0.7.1.zip",
-        "dir": "libraqm-0.7.1",
-        "build": [
-            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="libraqm"),
-        ],
-        "headers": [r"src\*.h"],
-        "bins": [r"libraqm.dll"],
+        "bins": [r"*.dll"],
     },
 }
 
@@ -511,8 +497,8 @@ if __name__ == "__main__":
             verbose = True
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
-        elif arg == "--no-raqm":
-            disabled += ["fribidi", "libraqm"]
+        elif arg == "--no-raqm" or arg == "--no-fribidi":
+            disabled += ["fribidi"]
         elif arg.startswith("--depends="):
             depends_dir = arg[10:]
         elif arg.startswith("--python="):

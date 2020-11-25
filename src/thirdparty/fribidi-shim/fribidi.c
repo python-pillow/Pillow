@@ -1,0 +1,68 @@
+
+#ifndef _WIN32
+#include <dlfcn.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
+#define FRIBIDI_SHIM_IMPLEMENTATION
+
+#include "fribidi.h"
+
+int load_fribidi(void) {
+    int error = 0;
+
+    p_fribidi = NULL;
+
+    /* Microsoft needs a totally different system */
+#ifndef _WIN32
+    p_fribidi = dlopen("libfribidi.so.1", RTLD_LAZY);
+    if (!p_fribidi) {
+        p_fribidi = dlopen("libfribidi.dylib", RTLD_LAZY);
+    }
+#else
+    p_fribidi = LoadLibrary("fribidi");
+    /* MSYS2 */
+    if (!p_fribidi) {
+        p_fribidi = LoadLibrary("libfribidi-1");
+    }
+#endif
+
+    if (!p_fribidi) {
+        return 1;
+    }
+
+#ifndef _WIN32
+#define LOAD_FUNCTION(func) \
+    func = (t_##func)dlsym(p_fribidi, #func); \
+    error = error || (func == NULL);
+#else
+#define LOAD_FUNCTION(func) \
+    func = (t_##func)GetProcAddress(p_fribidi, #func); \
+    error = error || (func == NULL);
+#endif
+
+    LOAD_FUNCTION(fribidi_get_bidi_types);
+    LOAD_FUNCTION(fribidi_get_bracket_types);
+    LOAD_FUNCTION(fribidi_get_par_embedding_levels_ex);
+//    LOAD_FUNCTION(fribidi_get_par_embedding_levels);
+    LOAD_FUNCTION(fribidi_unicode_to_charset);
+    LOAD_FUNCTION(fribidi_charset_to_unicode);
+
+#ifndef _WIN32
+    if (dlerror() || error) {
+        dlclose(p_fribidi);
+        p_fribidi = NULL;
+        return 2;
+    }
+#else
+    if (error) {
+        FreeLibrary(p_fribidi);
+        p_fribidi = NULL;
+        return 2;
+    }
+#endif
+
+    return 0;
+}

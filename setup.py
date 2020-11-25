@@ -267,6 +267,7 @@ class pil_build_ext(build_ext):
             "jpeg",
             "tiff",
             "freetype",
+            "harfbuzz",
             "lcms",
             "webp",
             "webpmux",
@@ -656,6 +657,12 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
+        if feature.want("harfbuzz"):
+            _dbg("Looking for harfbuzz")
+            if _find_include_file(self, "hb-version.h"):
+                if _find_library_file(self, "harfbuzz"):
+                    feature.harfbuzz = "harfbuzz"
+
         if feature.want("lcms"):
             _dbg("Looking for lcms")
             if _find_include_file(self, "lcms2.h"):
@@ -850,7 +857,14 @@ for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
     Extension("PIL._imaging", files),
-    Extension("PIL._imagingft", ["src/_imagingft.c"]),
+    Extension(
+        "PIL._imagingft",
+        [
+            "src/_imagingft.c",
+            "src/thirdparty/raqm/raqm.c",
+            "src/thirdparty/fribidi-shim/fribidi.c",
+        ],
+    ),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),

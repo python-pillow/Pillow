@@ -30,15 +30,16 @@
 #include <assert.h>
 #include <string.h>
 
-#include <fribidi.h>
+#include "../fribidi-shim/fribidi.h"
+
 #include <hb.h>
 #include <hb-ft.h>
 
 #include "raqm.h"
 
-#if FRIBIDI_MAJOR_VERSION >= 1
+//#if FRIBIDI_MAJOR_VERSION >= 1
 #define USE_FRIBIDI_EX_API
-#endif
+//#endif
 
 /**
  * SECTION:raqm
