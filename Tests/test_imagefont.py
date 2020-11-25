@@ -35,22 +35,8 @@ class TestImageFont:
     # Freetype has different metrics depending on the version.
     # (and, other things, but first things first)
     METRICS = {
-        (">=2.7",): {
-            "multiline": 6.2,
-            "textsize": 2.5,
-            "getters": (12, 16),
-            "mask": (108, 13),
-            "multiline-anchor": 4,
-            "getlength": (36, 21, 24, 33),
-        },
-        "Default": {
-            "multiline": 0.5,
-            "textsize": 0.5,
-            "getters": (12, 16),
-            "mask": (108, 13),
-            "multiline-anchor": 4,
-            "getlength": (36, 24, 24, 33),
-        },
+        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getlength": (36, 21, 24, 33)},
+        "Default": {"multiline": 0.5, "textsize": 0.5, "getlength": (36, 24, 24, 33)},
     }
 
     @classmethod
@@ -387,7 +373,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == self.metrics["mask"][::-1]
+        assert mask.size == (13, 108)
 
     def test_unrotated_transposed_font_get_mask(self):
         # Arrange
@@ -400,7 +386,7 @@ class TestImageFont:
         mask = transposed_font.getmask(text)
 
         # Assert
-        assert mask.size == self.metrics["mask"]
+        assert mask.size == (108, 13)
 
     def test_free_type_font_get_name(self):
         # Arrange
@@ -444,7 +430,7 @@ class TestImageFont:
         mask = font.getmask(text)
 
         # Assert
-        assert mask.size == self.metrics["mask"]
+        assert mask.size == (108, 13)
 
     def test_load_path_not_found(self):
         # Arrange
@@ -625,7 +611,7 @@ class TestImageFont:
         assert t.font.glyphs == 4177
         assert t.getsize("A") == (12, 16)
         assert t.getsize("AB") == (24, 16)
-        assert t.getsize("M") == self.metrics["getters"]
+        assert t.getsize("M") == (12, 16)
         assert t.getsize("y") == (12, 20)
         assert t.getsize("a") == (12, 16)
         assert t.getsize_multiline("A") == (12, 16)
@@ -861,7 +847,7 @@ class TestImageFont:
         )
 
         with Image.open(target) as expected:
-            assert_image_similar(im, expected, self.metrics["multiline-anchor"])
+            assert_image_similar(im, expected, 4)
 
     def test_anchor_invalid(self):
         font = self.get_font()
