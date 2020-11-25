@@ -51,13 +51,15 @@ int load_fribidi(void) {
     LOAD_FUNCTION(fribidi_charset_to_unicode);
 
 #ifndef _WIN32
-    if (dlerror() || error) {
+    fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
+    if (dlerror() || error || (fribidi_version_info == NULL)) {
         dlclose(p_fribidi);
         p_fribidi = NULL;
         return 2;
     }
 #else
-    if (error) {
+    fribidi_version_info = *(const char**)GetProcAddress(p_fribidi, "fribidi_version_info");
+    if (error || (fribidi_version_info == NULL)) {
         FreeLibrary(p_fribidi);
         p_fribidi = NULL;
         return 2;

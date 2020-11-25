@@ -1,4 +1,6 @@
 
+#define FRIBIDI_MAJOR_VERSION 1
+
 /* fribidi-types.h */
 
 # if defined (_SVR4) || defined (SVR4) || defined (__OpenBSD__) || \
@@ -92,6 +94,9 @@ FRIBIDI_FUNC(FriBidiStrIndex, fribidi_charset_to_unicode,
     FriBidiCharSet, const char *, FriBidiStrIndex, FriBidiChar *);
 
 #undef FRIBIDI_FUNC
+
+/* constant, not a function */
+FRIBIDI_ENTRY const char *fribidi_version_info;
 
 
 

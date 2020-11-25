@@ -267,7 +267,7 @@ class pil_build_ext(build_ext):
             "jpeg",
             "tiff",
             "freetype",
-            "harfbuzz",
+            "raqm",
             "lcms",
             "webp",
             "webpmux",
@@ -277,6 +277,7 @@ class pil_build_ext(build_ext):
         ]
 
         required = {"jpeg", "zlib"}
+        system = set()
 
         def __init__(self):
             for f in self.features:
@@ -288,6 +289,9 @@ class pil_build_ext(build_ext):
         def want(self, feat):
             return getattr(self, feat) is None
 
+        def want_system(self, feat):
+            return feat in self.system
+
         def __iter__(self):
             yield from self.features
 
@@ -297,6 +301,10 @@ class pil_build_ext(build_ext):
         build_ext.user_options
         + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
         + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
+        + [
+            (f"system-{x}", None, f"Use system version of {x}")
+            for x in ("raqm", "fribidi")
+        ]
         + [
             ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
             ("debug", None, "Debug logging"),
@@ -311,6 +319,8 @@ class pil_build_ext(build_ext):
         for x in self.feature:
             setattr(self, f"disable_{x}", None)
             setattr(self, f"enable_{x}", None)
+        for x in ("raqm", "fribidi"):
+            setattr(self, f"system_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -335,18 +345,40 @@ class pil_build_ext(build_ext):
                     raise ValueError(
                         f"Conflicting options: --enable-{x} and --disable-{x}"
                     )
+                if x == "freetype":
+                    _dbg("--disable-freetype implies --disable-raqm")
+                    if getattr(self, "enable_raqm"):
+                        raise ValueError(
+                            "Conflicting options: --enable-raqm and --disable-freetype"
+                        )
+                    setattr(self, "disable_raqm", True)
             if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
+                if x == "raqm":
+                    _dbg("--enable-raqm implies --enable-freetype")
+                    self.feature.required.add("freetype")
+        for x in ("raqm", "fribidi"):
+            if getattr(self, f"system_{x}"):
+                if getattr(self, f"disable_raqm"):
+                    raise ValueError(
+                        f"Conflicting options: --system-{x} and --disable-raqm"
+                    )
+                if x == "fribidi" and getattr(self, f"system_raqm"):
+                    raise ValueError(
+                        f"Conflicting options: --system-{x} and --system-raqm"
+                    )
+                _dbg("Using system version of %s", x)
+                self.feature.system.add(x)
 
-    def _update_extension(self, name, libraries, define_macros=None, include_dirs=None):
+    def _update_extension(self, name, libraries, define_macros=None, sources=None):
         for extension in self.extensions:
             if extension.name == name:
                 extension.libraries += libraries
                 if define_macros is not None:
                     extension.define_macros += define_macros
-                if include_dirs is not None:
-                    extension.include_dirs += include_dirs
+                if sources is not None:
+                    extension.sources += sources
                 break
 
     def _remove_extension(self, name):
@@ -657,11 +689,27 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
-        if feature.want("harfbuzz"):
-            _dbg("Looking for harfbuzz")
-            if _find_include_file(self, "hb-version.h"):
-                if _find_library_file(self, "harfbuzz"):
-                    feature.harfbuzz = "harfbuzz"
+        if feature.want("raqm"):
+            if feature.want_system("raqm"):  # want system Raqm
+                _dbg("Looking for Raqm")
+                if _find_include_file(self, "raqm.h"):
+                    if _find_library_file(self, "raqm"):
+                        feature.harfbuzz = "raqm"
+                    elif _find_library_file(self, "libraqm"):
+                        feature.harfbuzz = "libraqm"
+            else:  # want to build Raqm
+                _dbg("Looking for HarfBuzz")
+                if _find_include_file(self, "hb.h"):
+                    if _find_library_file(self, "harfbuzz"):
+                        feature.harfbuzz = "harfbuzz"
+                if feature.harfbuzz:
+                    if feature.want_system("fribidi"):  # want system FriBiDi
+                        _dbg("Looking for FriBiDi")
+                        if _find_include_file(self, "fribidi.h"):
+                            if _find_library_file(self, "fribidi"):
+                                feature.harfbuzz = "fribidi"
+                    else:  # want to build FriBiDi shim
+                        feature.raqm = True
 
         if feature.want("lcms"):
             _dbg("Looking for lcms")
@@ -758,9 +806,25 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
+            srcs = []
             libs = ["freetype"]
             defs = []
-            self._update_extension("PIL._imagingft", libs, defs)
+            if feature.raqm:
+                if feature.want_system("raqm"):  # using system Raqm
+                    defs.append(("HAVE_RAQM", None))
+                    defs.append(("HAVE_RAQM_SYSTEM", None))
+                    libs.append(feature.raqm)
+                else:  # building Raqm
+                    defs.append(("HAVE_RAQM", None))
+                    srcs.append("src/thirdparty/raqm/raqm.c")
+                    libs.append(feature.harfbuzz)
+                    if feature.want_system("fribidi"):  # using system FriBiDi
+                        defs.append(("HAVE_FRIBIDI_SYSTEM", None))
+                        libs.append(feature.fribidi)
+                    else:  # building our FriBiDi shim
+                        srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
+            self._update_extension("PIL._imagingft", libs, defs, srcs)
+
         else:
             self._remove_extension("PIL._imagingft")
 
@@ -814,6 +878,7 @@ class pil_build_ext(build_ext):
             (feature.imagequant, "LIBIMAGEQUANT"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
+            (feature.raqm, "RAQM (Text shaping)"),  # TODO!!!
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
@@ -857,14 +922,7 @@ for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
     Extension("PIL._imaging", files),
-    Extension(
-        "PIL._imagingft",
-        [
-            "src/_imagingft.c",
-            "src/thirdparty/raqm/raqm.c",
-            "src/thirdparty/fribidi-shim/fribidi.c",
-        ],
-    ),
+    Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),

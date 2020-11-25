@@ -30,16 +30,20 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef HAVE_FRIBIDI_SYSTEM
+#include <fribidi.h>
+#else
 #include "../fribidi-shim/fribidi.h"
+#endif
 
 #include <hb.h>
 #include <hb-ft.h>
 
 #include "raqm.h"
 
-//#if FRIBIDI_MAJOR_VERSION >= 1
+#if FRIBIDI_MAJOR_VERSION >= 1
 #define USE_FRIBIDI_EX_API
-//#endif
+#endif
 
 /**
  * SECTION:raqm
