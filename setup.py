@@ -123,7 +123,7 @@ _LIB_IMAGING = (
     "codec_fd",
 )
 
-DEBUG = False
+DEBUG = True
 
 
 class DependencyException(Exception):
@@ -226,6 +226,19 @@ def _find_library_file(self, library):
     else:
         _dbg("Couldn't find library %s in %s", (library, self.compiler.library_dirs))
     return ret
+
+
+def _find_include_dir(self, dirname, include):
+    for directory in self.compiler.include_dirs:
+        _dbg("Checking for include file %s in %s", (include, directory))
+        if os.path.isfile(os.path.join(directory, include)):
+            _dbg("Found %s in %s", (include, directory))
+            return True
+        subdir = os.path.join(directory, dirname)
+        _dbg("Checking for include file %s in %s", (include, subdir))
+        if os.path.isfile(os.path.join(subdir, include)):
+            _dbg("Found %s in %s", (include, subdir))
+            return subdir
 
 
 def _cmd_exists(cmd):
@@ -689,25 +702,36 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
-        if feature.want("raqm"):
+        if feature.freetype and feature.want("raqm"):
             if feature.want_system("raqm"):  # want system Raqm
                 _dbg("Looking for Raqm")
                 if _find_include_file(self, "raqm.h"):
                     if _find_library_file(self, "raqm"):
-                        feature.harfbuzz = "raqm"
+                        feature.raqm = "raqm"
                     elif _find_library_file(self, "libraqm"):
-                        feature.harfbuzz = "libraqm"
+                        feature.raqm = "libraqm"
             else:  # want to build Raqm
                 _dbg("Looking for HarfBuzz")
-                if _find_include_file(self, "hb.h"):
+                feature.harfbuzz = None
+                hb_dir = _find_include_dir(self, "harfbuzz", "hb.h")
+                if hb_dir:
+                    if isinstance(hb_dir, str):
+                        _add_directory(self.compiler.include_dirs, hb_dir, 0)
                     if _find_library_file(self, "harfbuzz"):
                         feature.harfbuzz = "harfbuzz"
                 if feature.harfbuzz:
                     if feature.want_system("fribidi"):  # want system FriBiDi
                         _dbg("Looking for FriBiDi")
-                        if _find_include_file(self, "fribidi.h"):
+                        feature.fribidi = None
+                        fribidi_dir = _find_include_dir(self, "fribidi", "fribidi.h")
+                        if fribidi_dir:
+                            if isinstance(fribidi_dir, str):
+                                _add_directory(
+                                    self.compiler.include_dirs, fribidi_dir, 0
+                                )
                             if _find_library_file(self, "fribidi"):
-                                feature.harfbuzz = "fribidi"
+                                feature.fribidi = "fribidi"
+                                feature.raqm = True
                     else:  # want to build FriBiDi shim
                         feature.raqm = True
 

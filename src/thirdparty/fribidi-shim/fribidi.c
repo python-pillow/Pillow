@@ -25,7 +25,7 @@ int load_fribidi(void) {
     p_fribidi = LoadLibrary("fribidi");
     /* MSYS2 */
     if (!p_fribidi) {
-        p_fribidi = LoadLibrary("libfribidi-1");
+        p_fribidi = LoadLibrary("libfribidi-0");
     }
 #endif
 
