@@ -373,11 +373,11 @@ class pil_build_ext(build_ext):
                     self.feature.required.add("freetype")
         for x in ("raqm", "fribidi"):
             if getattr(self, f"system_{x}"):
-                if getattr(self, f"disable_raqm"):
+                if getattr(self, "disable_raqm"):
                     raise ValueError(
                         f"Conflicting options: --system-{x} and --disable-raqm"
                     )
-                if x == "fribidi" and getattr(self, f"system_raqm"):
+                if x == "fribidi" and getattr(self, "system_raqm"):
                     raise ValueError(
                         f"Conflicting options: --system-{x} and --system-raqm"
                     )
