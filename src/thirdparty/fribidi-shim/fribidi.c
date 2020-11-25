@@ -13,7 +13,7 @@
 int load_fribidi(void) {
     int error = 0;
 
-    p_fribidi = NULL;
+    p_fribidi = 0;
 
     /* Microsoft needs a totally different system */
 #ifndef _WIN32
@@ -36,11 +36,11 @@ int load_fribidi(void) {
 #ifndef _WIN32
 #define LOAD_FUNCTION(func) \
     func = (t_##func)dlsym(p_fribidi, #func); \
-    error = error || (func == NULL);
+    error = error || (func == 0);
 #else
 #define LOAD_FUNCTION(func) \
     func = (t_##func)GetProcAddress(p_fribidi, #func); \
-    error = error || (func == NULL);
+    error = error || (func == 0);
 #endif
 
     LOAD_FUNCTION(fribidi_get_bidi_types);
@@ -52,16 +52,16 @@ int load_fribidi(void) {
 
 #ifndef _WIN32
     fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
-    if (dlerror() || error || (fribidi_version_info == NULL)) {
+    if (dlerror() || error || (fribidi_version_info == 0)) {
         dlclose(p_fribidi);
-        p_fribidi = NULL;
+        p_fribidi = 0;
         return 2;
     }
 #else
     fribidi_version_info = *(const char**)GetProcAddress(p_fribidi, "fribidi_version_info");
-    if (error || (fribidi_version_info == NULL)) {
+    if (error || (fribidi_version_info == 0)) {
         FreeLibrary(p_fribidi);
-        p_fribidi = NULL;
+        p_fribidi = 0;
         return 2;
     }
 #endif
