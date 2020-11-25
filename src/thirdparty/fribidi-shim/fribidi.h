@@ -43,7 +43,7 @@ typedef signed char FriBidiLevel;
 
 #define FRIBIDI_TYPE_LTR_VAL 0x00000110L
 #define FRIBIDI_TYPE_RTL_VAL 0x00000111L
-#define FRIBIDI_TYPE_ON_VAL	0x00000040L
+#define FRIBIDI_TYPE_ON_VAL 0x00000040L
 
 typedef uint32_t FriBidiCharType;
 #define FRIBIDI_TYPE_LTR FRIBIDI_TYPE_LTR_VAL
