@@ -1397,10 +1397,10 @@ setup_module(PyObject *m) {
         PyDict_SetItemString(d, "raqm_version", v);
 
 #ifdef FRIBIDI_MAJOR_VERSION
-        a = strchr(fribidi_version_info, '1');
+        a = strchr(fribidi_version_info, ')');
         b = strchr(fribidi_version_info, '\n');
         if (a && b) {
-            v = PyUnicode_FromStringAndSize(a, b - a);
+            v = PyUnicode_FromStringAndSize(a + 2, b - a - 2);
         } else {
             v = Py_None;
         }

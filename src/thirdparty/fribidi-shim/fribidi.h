@@ -72,26 +72,28 @@ typedef uint32_t FriBidiParType;
     typedef ret (*t_##name) (__VA_ARGS__); \
     FRIBIDI_ENTRY t_##name name;
 
-FRIBIDI_FUNC(void, fribidi_get_bidi_types,
-    const FriBidiChar *, const FriBidiStrIndex, FriBidiCharType *);
-
-FRIBIDI_FUNC(void, fribidi_get_bracket_types,
-    const FriBidiChar *, const FriBidiStrIndex, const FriBidiCharType *,
-    FriBidiBracketType *);
-
-FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels_ex,
-    const FriBidiCharType *, const FriBidiBracketType *, const FriBidiStrIndex,
-    FriBidiParType *, FriBidiLevel *);
-
-FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
-    const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,
-    FriBidiLevel *);
-
 FRIBIDI_FUNC(FriBidiStrIndex, fribidi_unicode_to_charset,
     FriBidiCharSet, const FriBidiChar *, FriBidiStrIndex, char *);
 
 FRIBIDI_FUNC(FriBidiStrIndex, fribidi_charset_to_unicode,
     FriBidiCharSet, const char *, FriBidiStrIndex, FriBidiChar *);
+
+FRIBIDI_FUNC(void, fribidi_get_bidi_types,
+    const FriBidiChar *, const FriBidiStrIndex, FriBidiCharType *);
+
+FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
+    const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,
+    FriBidiLevel *);
+
+/* FriBiDi>=1.0.0 */
+FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels_ex,
+    const FriBidiCharType *, const FriBidiBracketType *, const FriBidiStrIndex,
+    FriBidiParType *, FriBidiLevel *);
+
+/* FriBiDi>=1.0.0 */
+FRIBIDI_FUNC(void, fribidi_get_bracket_types,
+    const FriBidiChar *, const FriBidiStrIndex, const FriBidiCharType *,
+    FriBidiBracketType *);
 
 #undef FRIBIDI_FUNC
 

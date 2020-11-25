@@ -11,7 +11,7 @@
 #include "fribidi.h"
 
 
-/* ..._ex adds bracket_types param, ignore and call legacy function */
+/* FriBiDi>=1.0.0 adds bracket_types param, ignore and call legacy function */
 FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
     const FriBidiCharType *bidi_types,
     const FriBidiBracketType *bracket_types,
@@ -22,6 +22,14 @@ FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
     return fribidi_get_par_embedding_levels(
         bidi_types, len, pbase_dir, embedding_levels);
 }
+
+/* FriBiDi>=1.0.0 gets bracket types here, ignore */
+void fribidi_get_bracket_types_compat(
+    const FriBidiChar *str,
+    const FriBidiStrIndex len,
+    const FriBidiCharType *types,
+    FriBidiBracketType *btypes)
+{ /* no-op*/ }
 
 
 int load_fribidi(void) {
@@ -58,19 +66,20 @@ int load_fribidi(void) {
         return 1;
     }
 
-    /* load ..._ex first to preserve error variable */
+    /* load FriBiDi>=1.0.0 functions first, use error to detect version */
     LOAD_FUNCTION(fribidi_get_par_embedding_levels_ex);
+    LOAD_FUNCTION(fribidi_get_bracket_types);
     if (error) {
-        /* using FriBiDi 0.x, emulate ..._ex function */
-        fribidi_get_par_embedding_levels_ex = &fribidi_get_par_embedding_levels_ex_compat;
+        /* using FriBiDi<1.0.0, ignore new parameters */
         error = 0;
+        fribidi_get_par_embedding_levels_ex = &fribidi_get_par_embedding_levels_ex_compat;
+        fribidi_get_bracket_types = &fribidi_get_bracket_types_compat;
     }
 
-    LOAD_FUNCTION(fribidi_get_bidi_types);
-    LOAD_FUNCTION(fribidi_get_bracket_types);
-    LOAD_FUNCTION(fribidi_get_par_embedding_levels);
     LOAD_FUNCTION(fribidi_unicode_to_charset);
     LOAD_FUNCTION(fribidi_charset_to_unicode);
+    LOAD_FUNCTION(fribidi_get_bidi_types);
+    LOAD_FUNCTION(fribidi_get_par_embedding_levels);
 
 #ifndef _WIN32
     fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
