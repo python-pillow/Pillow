@@ -2,7 +2,7 @@
 
 set -e
 
-brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype openblas
+brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype openblas libraqm
 
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
