@@ -24,7 +24,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.0*`
-* [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
 
 ## Point Release
@@ -56,7 +56,7 @@ Released as needed for security, installation or critical bug fixes.
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.1*`
-* [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
 ## Embargoed Release
 
@@ -80,7 +80,7 @@ Released as needed privately to individual vendors for critical security-related
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
-* [ ] Create a [new release on GitHub](https://github.com/python-pillow/Pillow/releases/new)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
 ## Binary Distributions
 
