@@ -1304,8 +1304,7 @@ class Image:
         elif self.mode in ("RGBA", "CMYK"):
             channels = 4
         else:
-            tb = sys.exc_info()[2]
-            raise ValueError("Unsupported image mode").with_traceback(tb)
+            raise ValueError("Unsupported image mode")
 
         def euclidean(p1, p2):
             if channels == 1:
