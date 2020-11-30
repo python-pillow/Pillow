@@ -868,6 +868,11 @@ class PngImageFile(ImageFile.ImageFile):
             self.decoderconfig = self.decoderconfig + (1,)
 
         self.__idat = self.__prepare_idat  # used by load_read()
+
+        # Use prev_im as base image
+        if self.is_animated and self._prev_im:
+            self.im = self._prev_im.copy()
+
         ImageFile.ImageFile.load_prepare(self)
 
     def load_read(self, read_bytes):
