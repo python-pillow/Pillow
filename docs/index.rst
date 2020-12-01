@@ -9,12 +9,12 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://img.shields.io/travis/python-pillow/Pillow/master.svg?label=Linux%20build
-   :target: https://travis-ci.org/python-pillow/Pillow
+.. image:: https://img.shields.io/travis/com/python-pillow/Pillow/master.svg?label=Linux%20build
+   :target: https://travis-ci.com/github/python-pillow/Pillow
    :alt: Travis CI build status (Linux)
 
-.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg?label=macOS%20build
-   :target: https://travis-ci.org/python-pillow/pillow-wheels
+.. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build
+   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
    :alt: Travis CI build status (macOS)
 
 .. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build

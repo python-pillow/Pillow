@@ -12,7 +12,7 @@ if [[ $TRAVIS ]]; then
     codecov --flags TravisCI
 fi
 
-if [ "$TRAVIS_PYTHON_VERSION" == "3.8" ]; then
+if [ "$TRAVIS_PYTHON_VERSION" == "3.9" ]; then
     # Coverage and quality reports on just the latest diff.
     depends/diffcover-install.sh
     depends/diffcover-run.sh

@@ -22,7 +22,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 #include "libImaging/Imaging.h"
@@ -196,7 +196,7 @@ static PyObject*
 _frombytes(ImagingDisplayObject* display, PyObject* args)
 {
     char* ptr;
-    int bytes;
+    Py_ssize_t bytes;
 
     if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes)) {
         return NULL;
@@ -234,8 +234,6 @@ static struct PyMethodDef methods[] = {
     {"releasedc", (PyCFunction)_releasedc, 1},
     {"frombytes", (PyCFunction)_frombytes, 1},
     {"tobytes", (PyCFunction)_tobytes, 1},
-    {"fromstring", (PyCFunction)_frombytes, 1},
-    {"tostring", (PyCFunction)_tobytes, 1},
     {NULL, NULL} /* sentinel */
 };
 
@@ -777,7 +775,7 @@ PyImaging_DrawWmf(PyObject* self, PyObject* args)
     char* ptr;
 
     char* data;
-    int datasize;
+    Py_ssize_t datasize;
     int width, height;
     int x0, y0, x1, y1;
     if (!PyArg_ParseTuple(args, "y#(ii)(iiii):_load", &data, &datasize,

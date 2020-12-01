@@ -21,7 +21,7 @@ def test_libimagequant_quantize():
     image = hopper()
     try:
         converted = image.quantize(100, Image.LIBIMAGEQUANT)
-    except ValueError as ex:
+    except ValueError as ex:  # pragma: no cover
         if "dependency" in str(ex).lower():
             pytest.skip("libimagequant support not available")
         else:

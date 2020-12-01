@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "pypy3"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10-dev", "pypy3"]
         architecture: ["x86", "x64"]
         include:
           - architecture: "x86"
@@ -52,15 +52,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
 
-    - name: Set up TCL
-      if: "contains(matrix.python-version, 'pypy')"
-      run: echo "TCL_LIBRARY=$env:pythonLocation\tcl\tcl8.5" >> $env:GITHUB_ENV
-      shell: pwsh
-
     - name: Print build system information
       run: python .github/workflows/system-info.py
 
-    - name: pip install wheel pytest pytest-cov
+    - name: python -m pip install wheel pytest pytest-cov
       run: python -m pip install wheel pytest pytest-cov
 
     # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
@@ -69,6 +64,7 @@ jobs:
       run: python -m pip install -U "setuptools>=49.3.2"
 
     - name: Install dependencies
+      id: install
       run: |
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
@@ -76,7 +72,10 @@ jobs:
         winbuild\depends\gs9533w32.exe /S
         echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
 
-        xcopy /s winbuild\depends\test_images\* Tests\images\
+        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+
+        # make cache key depend on VS version
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
       shell: pwsh
 
     - name: Cache build
@@ -85,7 +84,7 @@ jobs:
       with:
         path: winbuild\build
         key:
-          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}
+          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
 
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -96,25 +95,32 @@ jobs:
     - name: Build dependencies / libjpeg-turbo
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libjpeg.cmd"
+
     - name: Build dependencies / zlib
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_zlib.cmd"
+
     - name: Build dependencies / LibTiff
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libtiff.cmd"
+
     - name: Build dependencies / WebP
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
+
     # for FreeType CBDT font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
     - name: Build dependencies / FreeType
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_freetype.cmd"
+
     - name: Build dependencies / LCMS2
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_lcms2.cmd"
+
     - name: Build dependencies / OpenJPEG
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_openjpeg.cmd"
@@ -128,9 +134,11 @@ jobs:
     - name: Build dependencies / HarfBuzz
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
+
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
+
     - name: Build dependencies / Raqm
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libraqm.cmd"
@@ -187,14 +195,16 @@ jobs:
 
     - name: Build wheel
       id: wheel
-      if: "github.event_name == 'push'"
+      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
+      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
     - uses: actions/upload-artifact@v2
-      if: "github.event_name == 'push'"
+      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
+      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl

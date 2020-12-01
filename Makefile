@@ -91,6 +91,8 @@ release-test:
 	python3 selftest.py
 	python3 -m pytest Tests
 	python3 setup.py install
+	-rm dist/*.egg
+	-rmdir dist
 	python3 -m pytest -qq
 	check-manifest
 	pyroma .

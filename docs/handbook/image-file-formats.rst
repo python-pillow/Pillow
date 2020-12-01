@@ -125,7 +125,7 @@ following options are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for GIF, PDF, TIFF, and WebP.
+    This is currently supported for GIF, PDF, PNG, TIFF, and WebP.
 
     It is also supported for ICNS. If images are passed in of relevant sizes,
     they will be used instead of scaling down the main image.
@@ -561,8 +561,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 .. note::
 
     To enable PNG support, you need to build and install the ZLIB compression
-    library before building the Python Imaging Library. See the `installation
-    documentation <../installation.html>`_ for details.
+    library before building the Python Imaging Library. See the
+    :doc:`installation documentation <../installation>` for details.
 
 .. _apng-sequences:
 
@@ -947,9 +947,10 @@ Saving sequences
     library is v0.5.0 or later. You can check webp animation support at
     runtime by calling ``features.check("webp_anim")``.
 
-When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, the
-following options are available when the ``save_all`` argument is present and
-true.
+When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+options will also be available.
 
 **append_images**
     A list of images to append as additional frames. Each of the

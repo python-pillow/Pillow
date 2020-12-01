@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.5/libjpeg-turbo-2.0.5.tar.gz",
-        "filename": "libjpeg-turbo-2.0.5.tar.gz",
-        "dir": "libjpeg-turbo-2.0.5",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.6/libjpeg-turbo-2.0.6.tar.gz",
+        "filename": "libjpeg-turbo-2.0.6.tar.gz",
+        "dir": "libjpeg-turbo-2.0.6",
         "build": [
             cmd_cmake(
                 [
@@ -184,9 +184,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.3.tar.gz",  # noqa: E501
-        "filename": "freetype-2.10.3.tar.gz",
-        "dir": "freetype-2.10.3",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz",  # noqa: E501
+        "filename": "freetype-2.10.4.tar.gz",
+        "dir": "freetype-2.10.4",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -287,9 +287,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.9.zip",
-        "filename": "fribidi-1.0.9.zip",
-        "dir": "fribidi-1.0.9",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.10.zip",
+        "filename": "fribidi-1.0.10.zip",
+        "dir": "fribidi-1.0.10",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
@@ -300,9 +300,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libraqm": {
-        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.0.zip",
-        "filename": "libraqm-0.7.0.zip",
-        "dir": "libraqm-0.7.0",
+        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.1.zip",
+        "filename": "libraqm-0.7.1.zip",
+        "dir": "libraqm-0.7.1",
         "build": [
             cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
             cmd_cmake(),

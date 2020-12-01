@@ -14,6 +14,7 @@ jobs:
         ]
         python-version: [
           "pypy3",
+          "3.10-dev",
           "3.9",
           "3.8",
           "3.7",
@@ -21,9 +22,9 @@ jobs:
         ]
         include:
         - python-version: "3.6"
-          env: PYTHONOPTIMIZE=1
+          PYTHONOPTIMIZE: 1
         - python-version: "3.7"
-          env: PYTHONOPTIMIZE=2
+          PYTHONOPTIMIZE: 2
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu
@@ -44,7 +45,7 @@ jobs:
     - name: Get pip cache dir
       id: pip-cache
       run: |
-        echo "::set-output name=dir::$(pip cache dir)"
+        echo "::set-output name=dir::$(python3 -m pip cache dir)"
 
     - name: pip cache
       uses: actions/cache@v2
@@ -78,7 +79,13 @@ jobs:
 
     - name: Test
       run: |
-        .ci/test.sh
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+        else
+          .ci/test.sh
+        fi
+      env:
+        PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
 
     - name: Prepare to upload errors
       if: failure()
@@ -94,9 +101,9 @@ jobs:
         path: Tests/errors
 
     - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.8
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
-        pip install sphinx-removed-in sphinx-rtd-theme
+        python3 -m pip install sphinx-removed-in sphinx-rtd-theme
         make doccheck
 
     - name: After success

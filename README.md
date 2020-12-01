@@ -24,12 +24,12 @@ As of 2019, Pillow development is
     <tr>
         <th>tests</th>
         <td>
-            <a href="https://travis-ci.org/python-pillow/Pillow"><img
+            <a href="https://travis-ci.com/github/python-pillow/Pillow"><img
                 alt="Travis CI build status (Linux)"
-                src="https://img.shields.io/travis/python-pillow/Pillow/master.svg?label=Linux%20build"></a>
-            <a href="https://travis-ci.org/python-pillow/pillow-wheels"><img
+                src="https://img.shields.io/travis/com/python-pillow/Pillow/master.svg?label=Linux%20build"></a>
+            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
                 alt="Travis CI build status (macOS)"
-                src="https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg?label=macOS%20build"></a>
+                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build"></a>
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
                 alt="AppVeyor CI build status (Windows)"
                 src="https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build"></a>

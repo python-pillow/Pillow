@@ -11,6 +11,8 @@ BungeeColor-Regular_colr_Windows.ttf, from https://github.com/djrrb/bungee
 
 All of the above fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
 
+FreeMono.ttf is licensed under GPLv3, with the GPL font exception.
+
 OpenSansCondensed-LightItalic.tt, from https://fonts.google.com/specimen/Open+Sans, under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
 DejaVuSans-24-{1,2,4,8}-stripped.ttf are based on DejaVuSans.ttf converted using FontForge to add bitmap strikes and keep only the ASCII range.
