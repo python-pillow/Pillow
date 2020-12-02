@@ -877,6 +877,10 @@ try:
             "Source": "https://github.com/python-pillow/Pillow",
             "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
             "utm_source=pypi-pillow&utm_medium=pypi",
+            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
+            "index.html",
+            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
+            "CHANGES.rst",
         },
         classifiers=[
             "Development Status :: 6 - Mature",

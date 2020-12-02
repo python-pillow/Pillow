@@ -96,6 +96,7 @@ The core image library is designed for fast access to data stored in a few basic
 - [Contribute](https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md)
   - [Issues](https://github.com/python-pillow/Pillow/issues)
   - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
+- [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
 - [Changelog](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork)
 
