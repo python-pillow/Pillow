@@ -4039,8 +4039,8 @@ Changelog (Pillow)
 1.0 (07/30/2010)
 ----------------
 
-- Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
-- Forked PIL based on `Hanno Schlichting's re-packaging <https://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
+- Remove support for ``import Image``. ``from PIL import Image`` now required.
+- Forked PIL based on `Chris McDonough and Hanno Schlichting's setuptools compatible re-packaging <https://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
   [aclark4life]
 
 Pre-fork
