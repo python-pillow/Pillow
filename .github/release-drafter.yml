@@ -4,7 +4,7 @@ change-template: '- $TITLE #$NUMBER [@$AUTHOR]'
 
 categories:
   - title: "Dependencies"
-    label: "Dependencies"
+    label: "Dependency"
   - title: "Deprecations"
     label: "Deprecation"
   - title: "Documentation"
