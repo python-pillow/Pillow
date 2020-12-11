@@ -133,7 +133,7 @@ def APP(self, marker):
                 photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
-            except struct.error:
+            except (struct.error, IndexError):
                 break  # insufficient data
 
     elif marker == 0xFFEE and s[:5] == b"Adobe":
