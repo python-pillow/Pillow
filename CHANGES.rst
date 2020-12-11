@@ -5,6 +5,18 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Moved warning to end of execution #4965
+  [radarhere]
+
+- Removed unused fromstring and tostring C methods #5026
+  [radarhere]
+
+- init() if one of the formats is unrecognised #5037
+  [radarhere]
+
+- Moved string_dimension CVE image to pillow-depends #4993
+  [radarhere]
+
 - Support raw rgba8888 for DDS #4760
   [qiankanglai]
 
