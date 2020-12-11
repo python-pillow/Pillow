@@ -69,7 +69,7 @@ def raise_oserror(error):
 
 def raise_ioerror(error):
     warnings.warn(
-        "raise_ioerror is deprecated and will be removed in a future release. "
+        "raise_ioerror is deprecated and will be removed in Pillow 9 (2022-01-02). "
         "Use raise_oserror instead.",
         DeprecationWarning,
     )

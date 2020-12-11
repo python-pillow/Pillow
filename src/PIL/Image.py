@@ -2197,8 +2197,8 @@ class Image:
 
         if command is not None:
             warnings.warn(
-                "The command parameter is deprecated and will be removed in a future "
-                "release. Use a subclass of ImageShow.Viewer instead.",
+                "The command parameter is deprecated and will be removed in Pillow 9 "
+                "(2022-01-02). Use a subclass of ImageShow.Viewer instead.",
                 DeprecationWarning,
             )
 
@@ -3176,7 +3176,7 @@ def _showxv(image, title=None, **options):
         del options["_internal_pillow"]
     else:
         warnings.warn(
-            "_showxv is deprecated and will be removed in a future release. "
+            "_showxv is deprecated and will be removed in Pillow 9 (2022-01-02). "
             "Use Image.show instead.",
             DeprecationWarning,
         )
