@@ -278,6 +278,12 @@ def is_big_endian():
     return sys.byteorder == "big"
 
 
+def is_ppc64le():
+    import platform
+
+    return platform.machine() == "ppc64le"
+
+
 def is_win32():
     return sys.platform.startswith("win32")
 
