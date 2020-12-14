@@ -24,15 +24,6 @@ As of 2019, Pillow development is
     <tr>
         <th>tests</th>
         <td>
-            <a href="https://travis-ci.com/github/python-pillow/Pillow"><img
-                alt="Travis CI build status (Linux)"
-                src="https://img.shields.io/travis/com/python-pillow/Pillow/master.svg?label=Linux%20build"></a>
-            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
-                alt="Travis CI build status (macOS)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build"></a>
             <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint"><img
                 alt="GitHub Actions build status (Lint)"
                 src="https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg"></a>
@@ -45,6 +36,12 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
+            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
+                alt="AppVeyor CI build status (Windows)"
+                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build"></a>
+            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
+                alt="Travis CI build status (macOS)"
+                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build"></a>
             <a href="https://codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg"></a>
