@@ -21,8 +21,6 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
-if [[ $TRAVIS_CPU_ARCH == "s390x" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
-
 python3 -m pip install --upgrade pip
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage

@@ -7,7 +7,3 @@ if [[ $MATRIX_DOCKER ]]; then
 else
   coverage xml
 fi
-
-if [[ $TRAVIS ]]; then
-    codecov --flags TravisCI
-fi
