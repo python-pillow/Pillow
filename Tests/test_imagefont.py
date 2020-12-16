@@ -998,3 +998,15 @@ def test_render_mono_size():
 
     draw.text((10, 10), "r" * 10, "black", ttf)
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
+
+
+def test_freetype_deprecation(monkeypatch):
+    # Arrange: mock features.version_module to return fake FreeType version
+    def fake_version_module(module):
+        return "2.7"
+
+    monkeypatch.setattr(features, "version_module", fake_version_module)
+
+    # Act / Assert
+    with pytest.warns(DeprecationWarning):
+        ImageFont.truetype(FONT_PATH, FONT_SIZE)

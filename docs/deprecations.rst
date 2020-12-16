@@ -12,6 +12,20 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+FreeType 2.7
+~~~~~~~~~~~~
+
+.. deprecated:: 8.1.0
+
+Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
+when FreeType 2.8 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (CVE-2020-15999_).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+.. _CVE-2020-15999: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15999
+
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

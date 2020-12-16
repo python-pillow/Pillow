@@ -28,9 +28,12 @@
 import base64
 import os
 import sys
+import warnings
 from io import BytesIO
 
-from . import Image
+from packaging.version import parse as parse_version
+
+from . import Image, features
 from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
@@ -163,6 +166,15 @@ class FreeTypeFont:
         self.size = size
         self.index = index
         self.encoding = encoding
+
+        freetype_version = parse_version(features.version_module("freetype2"))
+        if freetype_version < parse_version("2.8"):
+            warnings.warn(
+                "Support for FreeType 2.7 is deprecated and will be removed in Pillow "
+                "9 (2022-01-02). Please upgrade to FreeType 2.8 or newer, preferably "
+                "FreeType 2.10.4 which fixes CVE-2020-15999.",
+                DeprecationWarning,
+            )
 
         if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
             layout_engine = LAYOUT_BASIC
