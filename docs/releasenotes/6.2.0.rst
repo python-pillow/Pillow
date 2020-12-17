@@ -96,7 +96,7 @@ Other Changes
 Removed bdist_wininst .exe installers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.exe installers fell out of favour with PEP 527, and will be deprecated in
+.exe installers fell out of favour with :pep:`527`, and will be deprecated in
 Python 3.8. Pillow will no longer be distributing them. Wheels should be used
 instead.
 
