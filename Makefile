@@ -33,7 +33,7 @@ doccheck:
 
 .PHONY: docserve
 docserve:
-	cd docs/_build/html && python3 -mSimpleHTTPServer 2> /dev/null&
+	cd docs/_build/html && python3 -m http.server 2> /dev/null&
 
 .PHONY: help
 help:
