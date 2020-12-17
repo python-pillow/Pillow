@@ -103,7 +103,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
-        python3 -m pip install sphinx-removed-in sphinx-rtd-theme
+        python3 -m pip install sphinx-issues sphinx-removed-in sphinx-rtd-theme
         make doccheck
 
     - name: After success

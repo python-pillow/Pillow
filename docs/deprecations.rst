@@ -21,10 +21,9 @@ Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022
 when FreeType 2.8 will be the minimum supported.
 
 We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
-vulnerability introduced in FreeType 2.6 (CVE-2020-15999_).
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
-.. _CVE-2020-15999: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15999
 
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

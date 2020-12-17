@@ -4,12 +4,10 @@
 Security
 ========
 
-Update FreeType used in binary wheels to `2.10.4`_ to fix CVE-2020-15999_:
+Update FreeType used in binary wheels to `2.10.4`_ to fix :cve:`CVE-2020-15999`:
 
   - A heap buffer overflow has been found  in the handling of embedded PNG bitmaps,
     introduced in FreeType version 2.6.
-
-      https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15999
 
     If you use option ``FT_CONFIG_OPTION_USE_PNG`` you should upgrade immediately.
 
@@ -22,4 +20,3 @@ Pillow 8.0.0 and earlier are potentially vulnerable releases, including the last
 to support Python 2.7, namely Pillow 6.2.2.
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
-.. _CVE-2020-15999: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15999
