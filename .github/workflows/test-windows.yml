@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10-dev", "pypy3"]
+        python-version: ["pypy-3.6", "pypy-3.7", "3.6", "3.7", "3.8", "3.9", "3.10-dev"]
         architecture: ["x86", "x64"]
         include:
           - architecture: "x86"
@@ -19,7 +19,9 @@ jobs:
             platform-msbuild: "x64"
         exclude:
           # PyPy does not support 64-bit on Windows
-          - python-version: "pypy3"
+          - python-version: "pypy-3.6"
+            architecture: "x64"
+          - python-version: "pypy-3.7"
             architecture: "x64"
     timeout-minutes: 30
 
