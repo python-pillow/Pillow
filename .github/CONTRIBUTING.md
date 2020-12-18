@@ -9,7 +9,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Fork the Pillow repository.
 - Create a branch from master.
 - Develop bug fixes, features, tests, etc.
-- Run the test suite. You can enable [GitHub Actions](http://github.com/MY-USERNAME/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
+- Run the test suite. You can enable GitHub Actions (https://github.com/MY-USERNAME/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
 - Create a pull request to pull the changes from your branch to the Pillow master.
 
 ### Guidelines
