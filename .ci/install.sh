@@ -21,8 +21,6 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
-if [[ $TRAVIS_CPU_ARCH == "s390x" ]]; then sudo chown $USER ~/.cache/pip/wheels ; fi
-
 python3 -m pip install --upgrade pip
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
@@ -37,7 +35,6 @@ if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy 
 # TODO Remove when 3.8 / 3.9 / PyPy3 includes setuptools 49.3.2+:
 if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
-if [ "$TRAVIS_PYTHON_VERSION" == "pypy3.6-7.3.1" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
 
 # PyQt5 doesn't support PyPy3
 # Wheel doesn't yet support 3.10
@@ -49,7 +46,7 @@ if [[ $GHA_PYTHON_VERSION == 3.* && $GHA_PYTHON_VERSION != "3.10-dev" ]]; then
 fi
 
 # docs only on Python 3.9
-if [ "$TRAVIS_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -r requirements.txt ; fi
+if [ "$GHA_PYTHON_VERSION" == "3.9" ]; then python3 -m pip install -r requirements.txt ; fi
 
 # webp
 pushd depends && ./install_webp.sh && popd

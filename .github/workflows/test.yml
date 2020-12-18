@@ -87,6 +87,8 @@ jobs:
         fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
+        GHA_OS: ${{ matrix.os }}
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Prepare to upload errors
       if: failure()
@@ -110,6 +112,8 @@ jobs:
     - name: After success
       run: |
         .ci/after_success.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Upload coverage
       run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}

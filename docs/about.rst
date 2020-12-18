@@ -6,11 +6,10 @@ Goals
 
 The fork author's goal is to foster and support active development of PIL through:
 
-- Continuous integration testing via `Travis CI`_, `AppVeyor`_ and `GitHub Actions`_
+- Continuous integration testing via `AppVeyor`_ and `GitHub Actions`_
 - Publicized development activity on `GitHub`_
 - Regular releases to the `Python Package Index`_
 
-.. _Travis CI: https://travis-ci.com/github/python-pillow/Pillow
 .. _AppVeyor: https://ci.appveyor.com/project/Python-pillow/pillow
 .. _GitHub Actions: https://github.com/python-pillow/Pillow/actions
 .. _GitHub: https://github.com/python-pillow/Pillow

@@ -9,7 +9,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Fork the Pillow repository.
 - Create a branch from master.
 - Develop bug fixes, features, tests, etc.
-- Run the test suite. You can enable [Travis CI](https://travis-ci.com/account/repositories) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
+- Run the test suite. You can enable GitHub Actions and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
 - Create a pull request to pull the changes from your branch to the Pillow master.
 
 ### Guidelines
@@ -17,7 +17,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Separate code commits from reformatting commits.
 - Provide tests for any newly added code.
 - Follow PEP 8.
-- When committing only documentation changes please include `[ci skip]` in the commit message to avoid running tests on Travis CI and AppVeyor.
+- When committing only documentation changes please include `[ci skip]` in the commit message to avoid running tests on AppVeyor.
 
 ## Reporting Issues
 
