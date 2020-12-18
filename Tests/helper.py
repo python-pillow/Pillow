@@ -270,7 +270,7 @@ def on_github_actions():
 
 
 def on_ci():
-    # GitHub Actions, Travis and AppVeyor have "CI"
+    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
