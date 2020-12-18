@@ -1,4 +1,5 @@
 import array
+import math
 import struct
 
 import pytest
@@ -62,6 +63,106 @@ def test_path():
     else:
         p = ImagePath.Path(arr.tostring())
     assert list(p) == [(0.0, 1.0)]
+
+
+def test_invalid_coords():
+    # Arrange
+    coords = ["a", "b"]
+
+    # Act / Assert
+    with pytest.raises(SystemError):
+        ImagePath.Path(coords)
+
+
+def test_path_odd_number_of_coordinates():
+    # Arrange
+    coords = [0]
+
+    # Act / Assert
+    with pytest.raises(ValueError) as e:
+        ImagePath.Path(coords)
+
+    assert str(e.value) == "wrong number of coordinates"
+
+
+@pytest.mark.parametrize(
+    "coords, expected",
+    [
+        ([0, 1, 2, 3], (0.0, 1.0, 2.0, 3.0)),
+        ([3, 2, 1, 0], (1.0, 0.0, 3.0, 2.0)),
+    ],
+)
+def test_getbbox(coords, expected):
+    # Arrange
+    p = ImagePath.Path(coords)
+
+    # Act / Assert
+    assert p.getbbox() == expected
+
+
+def test_getbbox_no_args():
+    # Arrange
+    p = ImagePath.Path([0, 1, 2, 3])
+
+    # Act / Assert
+    with pytest.raises(TypeError):
+        p.getbbox(1)
+
+
+@pytest.mark.parametrize(
+    "coords, expected",
+    [
+        (0, []),
+        (list(range(6)), [(0.0, 3.0), (4.0, 9.0), (8.0, 15.0)]),
+    ],
+)
+def test_map(coords, expected):
+    # Arrange
+    p = ImagePath.Path(coords)
+
+    # Act
+    # Modifies the path in-place
+    p.map(lambda x, y: (x * 2, y * 3))
+
+    # Assert
+    assert list(p) == expected
+
+
+def test_transform():
+    # Arrange
+    p = ImagePath.Path([0, 1, 2, 3])
+    theta = math.pi / 15
+
+    # Act
+    # Affine transform, in-place
+    p.transform(
+        (math.cos(theta), math.sin(theta), 20, -math.sin(theta), math.cos(theta), 20),
+    )
+
+    # Assert
+    assert p.tolist() == [
+        (20.20791169081776, 20.978147600733806),
+        (22.58003027392089, 22.518619420565898),
+    ]
+
+
+def test_transform_with_wrap():
+    # Arrange
+    p = ImagePath.Path([0, 1, 2, 3])
+    theta = math.pi / 15
+
+    # Act
+    # Affine transform, in-place, with wrap parameter
+    p.transform(
+        (math.cos(theta), math.sin(theta), 20, -math.sin(theta), math.cos(theta), 20),
+        1.0,
+    )
+
+    # Assert
+    assert p.tolist() == [
+        (0.20791169081775962, 20.978147600733806),
+        (0.5800302739208902, 22.518619420565898),
+    ]
 
 
 def test_overflow_segfault():
