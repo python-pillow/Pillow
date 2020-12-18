@@ -32,36 +32,6 @@ pytestmark = skip_unless_feature("freetype2")
 class TestImageFont:
     LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
 
-    # Freetype has different metrics depending on the version.
-    # (and, other things, but first things first)
-    METRICS = {
-        (">=2.7",): {"multiline": 6.2, "textsize": 2.5, "getlength": (36, 21, 24, 33)},
-        "Default": {"multiline": 0.5, "textsize": 0.5, "getlength": (36, 24, 24, 33)},
-    }
-
-    @classmethod
-    def setup_class(self):
-        freetype = parse_version(features.version_module("freetype2"))
-
-        self.metrics = self.METRICS["Default"]
-        for conditions, metrics in self.METRICS.items():
-            if not isinstance(conditions, tuple):
-                continue
-
-            for condition in conditions:
-                version = parse_version(re.sub("[<=>]", "", condition))
-                if (condition.startswith(">=") and freetype >= version) or (
-                    condition.startswith("<") and freetype < version
-                ):
-                    # Condition was met
-                    continue
-
-                # Condition failed
-                break
-            else:
-                # All conditions were met
-                self.metrics = metrics
-
     def get_font(self):
         return ImageFont.truetype(
             FONT_PATH, FONT_SIZE, layout_engine=self.LAYOUT_ENGINE
@@ -177,24 +147,24 @@ class TestImageFont:
         with Image.open(target) as target_img:
 
             # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, self.metrics["textsize"])
+            assert_image_similar(im, target_img, 2.5)
 
     @pytest.mark.parametrize(
-        "text, mode, font, size, length_basic_index, length_raqm",
+        "text, mode, font, size, length_basic, length_raqm",
         (
             # basic test
-            ("text", "L", "FreeMono.ttf", 15, 0, 36),
-            ("text", "1", "FreeMono.ttf", 15, 0, 36),
+            ("text", "L", "FreeMono.ttf", 15, 36, 36),
+            ("text", "1", "FreeMono.ttf", 15, 36, 36),
             # issue 4177
-            ("rrr", "L", "DejaVuSans.ttf", 18, 1, 22.21875),
-            ("rrr", "1", "DejaVuSans.ttf", 18, 2, 22.21875),
+            ("rrr", "L", "DejaVuSans.ttf", 18, 21, 22.21875),
+            ("rrr", "1", "DejaVuSans.ttf", 18, 24, 22.21875),
             # test 'l' not including extra margin
             # using exact value 2047 / 64 for raqm, checked with debugger
-            ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
-            ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 3, 31.984375),
+            ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
+            ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
         ),
     )
-    def test_getlength(self, text, mode, font, size, length_basic_index, length_raqm):
+    def test_getlength(self, text, mode, font, size, length_basic, length_raqm):
         f = ImageFont.truetype(
             "Tests/fonts/" + font, size, layout_engine=self.LAYOUT_ENGINE
         )
@@ -204,7 +174,7 @@ class TestImageFont:
 
         if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
             length = d.textlength(text, f)
-            assert length == self.metrics["getlength"][length_basic_index]
+            assert length == length_basic
         else:
             # disable kerning, kerning metrics changed
             length = d.textlength(text, f, features=["-kern"])
@@ -227,7 +197,7 @@ class TestImageFont:
             # some versions of freetype have different horizontal spacing.
             # setting a tight epsilon, I'm showing the original test failure
             # at epsilon = ~38.
-            assert_image_similar(im, target_img, self.metrics["multiline"])
+            assert_image_similar(im, target_img, 6.2)
 
     def test_render_multiline_text(self):
         ttf = self.get_font()
@@ -242,7 +212,7 @@ class TestImageFont:
         with Image.open(target) as target_img:
 
             # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, self.metrics["multiline"])
+            assert_image_similar(im, target_img, 6.2)
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -261,7 +231,7 @@ class TestImageFont:
             with Image.open(target) as target_img:
 
                 # Epsilon ~.5 fails with FreeType 2.7
-                assert_image_similar(im, target_img, self.metrics["multiline"])
+                assert_image_similar(im, target_img, 6.2)
 
     def test_unknown_align(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -319,7 +289,7 @@ class TestImageFont:
         with Image.open(target) as target_img:
 
             # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, self.metrics["multiline"])
+            assert_image_similar(im, target_img, 6.2)
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -906,7 +876,7 @@ class TestImageFont:
         d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
         with Image.open("Tests/images/standard_embedded.png") as expected:
-            assert_image_similar(im, expected, max(self.metrics["multiline"], 3))
+            assert_image_similar(im, expected, 6.2)
 
     @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt(self):
@@ -923,7 +893,7 @@ class TestImageFont:
             d.text((10, 10), "\U0001f469", embedded_color=True, font=font)
 
             with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
-                assert_image_similar(im, expected, self.metrics["multiline"])
+                assert_image_similar(im, expected, 6.2)
         except IOError as e:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
@@ -943,7 +913,7 @@ class TestImageFont:
             d.text((10, 10), "\U0001f469", "black", font=font)
 
             with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
-                assert_image_similar(im, expected, self.metrics["multiline"])
+                assert_image_similar(im, expected, 6.2)
         except IOError as e:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
