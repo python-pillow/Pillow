@@ -4,6 +4,7 @@ check-manifest
 coverage
 jarn.viewdoc
 olefile
+packaging
 pyroma
 pytest
 pytest-cov
