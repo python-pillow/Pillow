@@ -3180,6 +3180,10 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
 
     /* Copy list of vertices to array */
     ixy = (int*) calloc(n, 2 * sizeof(int));
+    if (ixy == NULL) {
+        free(xy);
+        return NULL;
+    }
 
     for (i = 0; i < n; i++) {
         ixy[i+i] = (int) xy[i+i];
