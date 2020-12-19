@@ -4,8 +4,6 @@ check-manifest
 coverage
 jarn.viewdoc
 olefile
-pycodestyle
-pyflakes
 packaging
 pyroma
 pytest
