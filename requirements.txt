@@ -6,6 +6,7 @@ jarn.viewdoc
 olefile
 pycodestyle
 pyflakes
+packaging
 pyroma
 pytest
 pytest-cov
