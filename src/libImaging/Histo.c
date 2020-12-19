@@ -29,10 +29,12 @@
 void
 ImagingHistogramDelete(ImagingHistogram h)
 {
-    if (h->histogram) {
-        free(h->histogram);
+    if (h) {
+        if (h->histogram) {
+            free(h->histogram);
+        }
+        free(h);
     }
-    free(h);
 }
 
 ImagingHistogram
@@ -42,11 +44,18 @@ ImagingHistogramNew(Imaging im)
 
     /* Create histogram descriptor */
     h = calloc(1, sizeof(struct ImagingHistogramInstance));
+    if (h == NULL) {
+        return NULL;
+    }
     strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH-1);
     h->mode[IMAGING_MODE_LENGTH-1] = 0;
 
     h->bands = im->bands;
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
+    if (h->histogram == NULL) {
+        free(h);
+        return NULL;
+    }
 
     return h;
 }
@@ -75,6 +84,9 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
     }
 
     h = ImagingHistogramNew(im);
+    if (h == NULL) {
+        return NULL;
+    }
 
     if (imMask) {
         /* mask */
