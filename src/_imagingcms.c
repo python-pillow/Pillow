@@ -1147,10 +1147,6 @@ cms_profile_getattr_media_white_point_temperature(CmsProfileObject *self, void* 
     }
 
     XYZ = (cmsCIEXYZ*) cmsReadTag(self->profile, info);
-    if (!XYZ) {
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
     if (XYZ == NULL || XYZ->X == 0) {
         Py_INCREF(Py_None);
         return Py_None;
@@ -1498,8 +1494,6 @@ setup_module(PyObject* m) {
     PyObject *d;
     PyObject *v;
     int vn;
-
-    d = PyModule_GetDict(m);
 
     CmsProfile_Type.tp_new = PyType_GenericNew;
 
