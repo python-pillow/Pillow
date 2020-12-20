@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_issues",
     "sphinx_removed_in",
 ]
 
