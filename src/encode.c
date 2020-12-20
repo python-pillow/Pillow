@@ -1005,8 +1005,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     qarrays = (unsigned int*) malloc(num_tables * DCTSIZE2 * sizeof(unsigned int));
     if (!qarrays) {
         Py_DECREF(tables);
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
     for (i = 0; i < num_tables; i++) {
         table = PySequence_Fast_GET_ITEM(tables, i);

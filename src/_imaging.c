@@ -2711,8 +2711,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
         free(text);
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     b = 0;
@@ -3933,8 +3932,7 @@ _set_blocks_max(PyObject* self, PyObject* args)
 
 
     if ( ! ImagingMemorySetBlocksMax(&ImagingDefaultArena, blocks_max)) {
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     Py_INCREF(Py_None);
