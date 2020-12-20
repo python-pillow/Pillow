@@ -59,7 +59,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ "ubuntu-16.04", "macos-latest" ]
-        python: [ "pypy3.7-7.3", "pypy3.6-7.3", "3.6", "3.7", "3.8", "3.9" ]
+        python: [ "pypy3.7-7.3.3", "pypy3.6-7.3", "3.6", "3.7", "3.8", "3.9" ]
         platform: [ "x86_64", "i686" ]
         exclude:
           - os: "macos-latest"
