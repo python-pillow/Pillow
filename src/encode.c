@@ -72,7 +72,7 @@ PyImaging_EncoderNew(int contextsize)
         context = (void*) calloc(1, contextsize);
         if (!context) {
             Py_DECREF(encoder);
-            (void) PyErr_NoMemory();
+            (void) ImagingError_MemoryError();
             return NULL;
         }
     } else {
@@ -194,7 +194,7 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
     /* malloc check ok, either constant int, or checked by PyArg_ParseTuple */
     buf = (UINT8*) malloc(bufsize);
     if (!buf) {
-        return PyErr_NoMemory();
+        return ImagingError_MemoryError();
     }
 
     ImagingSectionEnter(&cookie);
@@ -271,13 +271,13 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
         if (state->xsize > ((INT_MAX / state->bits)-7)) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
         state->bytes = (state->bits * state->xsize+7)/8;
         /* malloc check ok, overflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes);
         if (!state->buffer) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
     }
 
@@ -604,7 +604,7 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
         /* malloc check ok, size comes from PyArg_ParseTuple */
         char* p = malloc(dictionary_size);
         if (!p) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
         memcpy(p, dictionary, dictionary_size);
         dictionary = p;
@@ -1005,8 +1005,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     qarrays = (unsigned int*) malloc(num_tables * DCTSIZE2 * sizeof(unsigned int));
     if (!qarrays) {
         Py_DECREF(tables);
-        PyErr_NoMemory();
-        return NULL;
+        return ImagingError_MemoryError();
     }
     for (i = 0; i < num_tables; i++) {
         table = PySequence_Fast_GET_ITEM(tables, i);
@@ -1091,7 +1090,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
         /* malloc check ok, length is from python parsearg */
         char* p = malloc(extra_size); // Freed in JpegEncode, Case 5
         if (!p) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
         memcpy(p, extra, extra_size);
         extra = p;
@@ -1106,7 +1105,7 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
             if (extra) {
                 free(extra);
             }
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;

@@ -377,7 +377,7 @@ getlist(PyObject* arg, Py_ssize_t* length, const char* wrong_length, int type)
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
     if ( ! list) {
-        return PyErr_NoMemory();
+        return ImagingError_MemoryError();
     }
 
     seq = PySequence_Fast(arg, must_be_sequence);
@@ -789,7 +789,7 @@ _prepare_lut_table(PyObject* table, Py_ssize_t table_size)
         if (free_table_data) {
             free(table_data);
         }
-        return (INT16*) PyErr_NoMemory();
+        return (INT16*) ImagingError_MemoryError();
     }
 
     for (i = 0; i < table_size; i++) {
@@ -2234,7 +2234,7 @@ _getprojection(ImagingObject* self, PyObject* args)
     if (xprofile == NULL || yprofile == NULL) {
         free(xprofile);
         free(yprofile);
-        return PyErr_NoMemory();
+        return ImagingError_MemoryError();
     }
 
     ImagingGetProjection(self->image, (unsigned char *)xprofile, (unsigned char *)yprofile);
@@ -2711,8 +2711,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
     im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im) {
         free(text);
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     b = 0;
@@ -3933,8 +3932,7 @@ _set_blocks_max(PyObject* self, PyObject* args)
 
 
     if ( ! ImagingMemorySetBlocksMax(&ImagingDefaultArena, blocks_max)) {
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     Py_INCREF(Py_None);

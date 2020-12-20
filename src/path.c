@@ -53,16 +53,14 @@ alloc_array(Py_ssize_t count)
 {
     double* xy;
     if (count < 0) {
-        PyErr_NoMemory();
-        return NULL;
+        return ImagingError_MemoryError();
     }
     if ((unsigned long long)count > (SIZE_MAX / (2 * sizeof(double))) - 1 ) {
-        PyErr_NoMemory();
-        return NULL;
+        return ImagingError_MemoryError();
     }
     xy = malloc(2 * count * sizeof(double) + 1);
     if (!xy) {
-        PyErr_NoMemory();
+        ImagingError_MemoryError();
     }
     return xy;
 }
