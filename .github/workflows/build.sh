@@ -1,6 +1,6 @@
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-  if [[ "$MB_PYTHON_VERSION" == "pypy3.6-7.3" ]]; then
+  if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
     # for https://foss.heptapod.net/pypy/pypy/-/issues/3229
     # TODO remove when that is fixed
     brew install tcl-tk
@@ -10,7 +10,7 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   brew remove --ignore-dependencies webp zstd xz libtiff curl
 fi
 
-if [[ "$MB_PYTHON_VERSION" == "pypy3.6-7.3" ]]; then
+if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
   if [[ "$TRAVIS_OS_NAME" != "macos-latest" ]]; then
     MB_ML_VER="2010"
     DOCKER_TEST_IMAGE="multibuild/xenial_$PLAT"
