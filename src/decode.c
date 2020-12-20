@@ -80,7 +80,7 @@ PyImaging_DecoderNew(int contextsize)
         context = (void*) calloc(1, contextsize);
         if (!context) {
             Py_DECREF(decoder);
-            (void) PyErr_NoMemory();
+            (void) ImagingError_MemoryError();
             return NULL;
         }
     } else {
@@ -204,14 +204,14 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
     if (state->bits > 0) {
         if (!state->bytes) {
             if (state->xsize > ((INT_MAX / state->bits)-7)){
-                return PyErr_NoMemory();
+                return ImagingError_MemoryError();
             }
             state->bytes = (state->bits * state->xsize+7)/8;
         }
         /* malloc check ok, overflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes);
         if (!state->buffer) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
     }
 
