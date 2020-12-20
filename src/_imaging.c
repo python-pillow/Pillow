@@ -3182,7 +3182,7 @@ _draw_polygon(ImagingDrawObject* self, PyObject* args)
     ixy = (int*) calloc(n, 2 * sizeof(int));
     if (ixy == NULL) {
         free(xy);
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     for (i = 0; i < n; i++) {
