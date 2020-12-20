@@ -54,7 +54,7 @@ ImagingHistogramNew(Imaging im)
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
     if (h->histogram == NULL) {
         free(h);
-        return NULL;
+        return (ImagingHistogram) ImagingError_MemoryError();
     }
 
     return h;
