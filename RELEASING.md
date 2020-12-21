@@ -20,7 +20,7 @@ PATCH versions ("Point Release" or "Embargoed Release" in the checklist below) a
 security, installation or critical bug fixes. These are less common as it is preferred
 to stick to quarterly releases.
 
-Between quarterly releases, ".dev0" is appended to the version, indicating that this is
+Between quarterly releases, ".dev0" is appended to the `master` branch, indicating that this is
 not a formally released copy.
 
 # Release Checklist
