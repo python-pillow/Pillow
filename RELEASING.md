@@ -18,12 +18,17 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   git push --all
   git push --tags
   ```
-* [ ] Create source distributions e.g.:
+* [ ] Create and check source distribution:
   ```bash
   make sdist
+  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
-* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.0*`
+* [ ] Check and upload all binaries and source distributions e.g.:
+  ```bash
+  twine check dist/*
+  twine upload dist/Pillow-5.2.0*
+  ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
 
@@ -50,12 +55,17 @@ Released as needed for security, installation or critical bug fixes.
   git push
   git push --tags
   ```
-* [ ] Create source distributions e.g.:
+* [ ] Create and check source distribution:
   ```bash
   make sdist
+  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
-* [ ] Upload all binaries and source distributions e.g. `twine upload dist/Pillow-5.2.1*`
+* [ ] Check and upload all binaries and source distributions e.g.:
+  ```bash
+  twine check dist/*
+  twine upload dist/Pillow-5.2.1*
+  ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
 ## Embargoed Release
@@ -75,9 +85,10 @@ Released as needed privately to individual vendors for critical security-related
   git push origin 2.5.x
   git push origin --tags
   ```
-* [ ] Create source distributions e.g.:
+* [ ] Create and check source distribution:
   ```bash
   make sdist
+  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
@@ -86,7 +97,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ### Windows
 * [ ] Contact `@cgohlke` for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
-* [ ] Download and extract tarball from `@cgohlke` and `twine upload *`.
+* [ ] Download and extract tarball from `@cgohlke` and copy into `dist/`
 
 ### Mac and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
@@ -95,7 +106,8 @@ Released as needed privately to individual vendors for critical security-related
   cd pillow-wheels
   ./update-pillow-tag.sh [[release tag]]
   ```
-* [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases).
+* [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases)
+  and copy into `dist/`
 
 ## Publicize Release
 

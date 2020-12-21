@@ -96,7 +96,7 @@ release-test:
 	python3 -m pytest -qq
 	check-manifest
 	pyroma .
-	viewdoc
+	$(MAKE) readme
 
 .PHONY: sdist
 sdist:
@@ -108,4 +108,4 @@ test:
 
 .PHONY: readme
 readme:
-	viewdoc
+	python3 setup.py --long-description | markdown2 > .long-description.html && open .long-description.html
