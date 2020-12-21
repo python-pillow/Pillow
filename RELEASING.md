@@ -1,5 +1,8 @@
 # Release Checklist
 
+See https://pillow.readthedocs.io/en/stable/releasenotes/versioning.html for
+information about how the version numbers line up with releases.
+
 ## Main Release
 
 Released quarterly on January 2nd, April 1st, July 1st and October 15th.
