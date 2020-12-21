@@ -11,7 +11,7 @@ Quarterly releases (referred to as "Main Release" in the checklist below) bump a
 least the MINOR version, as new functionality has likely been added in the prior three
 months.
 
-A quarterly release bumps the MAJOR version when make incompatible API changes are
+A quarterly release bumps the MAJOR version when incompatible API changes are
 made, such as removing deprecated APIs or dropping an EOL Python version. In practice,
 these occur every 12-18 months, guided by Python's EOL schedule, and any APIs that have
 been deprecated for at least a year are removed at the same time.
