@@ -20,7 +20,7 @@ from . import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
+B_WHITESPACE = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
     # standard
@@ -49,25 +49,39 @@ class PpmImageFile(ImageFile.ImageFile):
     format = "PPM"
     format_description = "Pbmplus image"
 
-    def _token(self, s=b""):
+    def _read_token(self, token=b""):
+        def _ignore_comment():  # ignores rest of the line; stops at CR, LF or EOF
+            while True:
+                c = self.fp.read(1)
+                if c in b"\r\n":
+                    break
+
+        while True:  # read until non-whitespace is found
+            c = self.fp.read(1)
+            if c == b"#":  # found comment, ignore it
+                _ignore_comment()
+                continue
+            if c in B_WHITESPACE:  # found whitespace, ignore it
+                if c == b"":  # reached EOF
+                    raise EOFError("Reached EOF while reading header")
+                continue
+            break
+
+        token += c
+
         while True:  # read until next whitespace
             c = self.fp.read(1)
-            if not c or c in b_whitespace:
+            if c == b"#":
+                _ignore_comment()
+                continue
+            if c in B_WHITESPACE:  # token ended
                 break
-            if c > b"\x79":
-                raise ValueError("Expected ASCII value, found binary")
-            s = s + c
-            if len(s) > 9:
-                raise ValueError("Expected int, got > 9 digits")
-        return s
+            token += c
+        return token
 
     def _open(self):
-
-        # check magic
-        s = self.fp.read(1)
-        if s != b"P":
-            raise SyntaxError("not a PPM file")
-        magic_number = self._token(s)
+        P = self.fp.read(1)
+        magic_number = self._read_token(P)
         mode = MODES[magic_number]
 
         self.custom_mimetype = {
@@ -83,29 +97,21 @@ class PpmImageFile(ImageFile.ImageFile):
             self.mode = rawmode = mode
 
         for ix in range(3):
-            while True:
-                while True:
-                    s = self.fp.read(1)
-                    if s not in b_whitespace:
-                        break
-                    if s == b"":
-                        raise ValueError("File does not extend beyond magic number")
-                if s != b"#":
-                    break
-                s = self.fp.readline()
-            s = int(self._token(s))
-            if ix == 0:
-                xsize = s
-            elif ix == 1:
-                ysize = s
+            try:  # check token sanity
+                token = int(self._read_token())
+            except ValueError:
+                raise SyntaxError("Non-decimal-ASCII found in header")
+            if ix == 0:  # token is the x size
+                xsize = token
+            elif ix == 1:  # token is the y size
+                ysize = token
                 if mode == "1":
                     break
-            elif ix == 2:
-                # maxgrey
-                if s > 255:
+            elif ix == 2:  # token is maxval
+                if token > 255:
                     if not mode == "L":
-                        raise ValueError(f"Too many colors for band: {s}")
-                    if s < 2 ** 16:
+                        raise SyntaxError(f"Too many colors for band: {token}")
+                    if token < 2 ** 16:
                         self.mode = "I"
                         rawmode = "I;16B"
                     else:
