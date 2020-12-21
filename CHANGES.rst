@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Deprecate FreeType 2.7 #5098
+  [hugovk, radarhere]
+
 - Moved warning to end of execution #4965
   [radarhere]
 
