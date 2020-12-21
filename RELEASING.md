@@ -64,7 +64,7 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
   twine check dist/*
-  twine upload dist/Pillow-5.2.0*
+  twine upload dist/Pillow-5.2.1*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
