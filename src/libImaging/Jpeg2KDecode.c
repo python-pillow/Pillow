@@ -742,10 +742,12 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
            swapped), bail. */
         if (tile_info.x0 >= tile_info.x1
             || tile_info.y0 >= tile_info.y1
-            || tile_info.x0 < (OPJ_INT32)image->x0
-            || tile_info.y0 < (OPJ_INT32)image->y0
-            || tile_info.x1 - image->x0 > im->xsize
-            || tile_info.y1 - image->y0 > im->ysize) {
+            || tile_info.x0 < 0
+            || tile_info.y0 < 0
+            || (OPJ_UINT32)tile_info.x0 < image->x0
+            || (OPJ_UINT32)tile_info.y0 < image->y0
+            || (OPJ_INT32)(tile_info.x1 - image->x0) > im->xsize
+            || (OPJ_INT32)(tile_info.y1 - image->y0) > im->ysize) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;

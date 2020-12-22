@@ -1115,7 +1115,7 @@ int clip_tree_do_clip(clip_node* root, int32_t x0, int32_t y, int32_t x1, event_
       if ((root->type == CT_OR && (
               (t->type == 1 && (tail == NULL || tail->type == -1)) ||
               (t->type == -1 && k1 == 0 && k2 == 0)
-          )) || 
+          )) ||
           (root->type == CT_AND && (
               (t->type == 1 && (tail == NULL || tail->type == -1) && k1 > 0 && k2 > 0) ||
               (t->type == -1 && tail != NULL && tail->type == 1 && (k1 == 0 || k2 == 0))
@@ -1359,7 +1359,7 @@ void pie_init(clip_ellipse_state* s, int32_t a, int32_t b, int32_t w, float al, 
   rc->a = yr;
   rc->b = -xr;
   rc->c = 0;
-        
+
   s->root = s->nodes + s->node_count++;
   s->root->l = lc;
   s->root->r = rc;
@@ -1630,7 +1630,7 @@ allocate(ImagingOutline outline, int extra)
             /* malloc check ok, uses calloc for overflow */
             e = calloc(outline->size, sizeof(Edge));
         } else {
-            if (outline->size > INT_MAX / sizeof(Edge)) {
+            if (outline->size > INT_MAX / (int)sizeof(Edge)) {
                 return NULL;
             }
             /* malloc check ok, overflow checked above */
