@@ -208,7 +208,7 @@ precompute_coeffs(int inSize, float in0, float in1, int outSize,
     ksize = (int) ceil(support) * 2 + 1;
 
     // check for overflow
-    if (outSize > INT_MAX / (ksize * sizeof(double))) {
+    if (outSize > INT_MAX / (ksize * (int)sizeof(double))) {
         ImagingError_MemoryError();
         return 0;
     }
