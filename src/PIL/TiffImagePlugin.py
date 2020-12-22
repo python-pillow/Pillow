@@ -89,6 +89,7 @@ ARTIST = 315
 PREDICTOR = 317
 COLORMAP = 320
 TILEOFFSETS = 324
+SUBIFD = 330
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
 JPEGTABLES = 347
@@ -1559,12 +1560,14 @@ def _save(im, fp, filename):
         # The other tags expect arrays with a certain length (fixed or depending on
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
+        # SUBIFD may also cause a segfault.
         blocklist = [
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,
+            SUBIFD,
         ]
 
         atts = {}
