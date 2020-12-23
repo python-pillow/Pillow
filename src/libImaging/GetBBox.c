@@ -198,7 +198,7 @@ ImagingGetExtrema(Imaging im, void *extrema)
           imin = imax = v;
           for (y = 0; y < im->ysize; y++) {
               for (x = 0; x < im->xsize; x++) {
-                  pixel = im->image[y] + x * sizeof(v);
+                  pixel = (UINT8*)im->image[y] + x * sizeof(v);
 #ifdef WORDS_BIGENDIAN
                   v = pixel[0] + (pixel[1] << 8);
 #else
