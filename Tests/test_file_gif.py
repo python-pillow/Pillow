@@ -307,6 +307,20 @@ def test_dispose_none():
             pass
 
 
+def test_dispose_none_load_end():
+    # Test image created with:
+    #
+    # im = Image.open("transparent.gif")
+    # im_rotated = im.rotate(180)
+    # im.save("dispose_none_load_end.gif",
+    #         save_all=True, append_images=[im_rotated], disposal=[1,2])
+    with Image.open("Tests/images/dispose_none_load_end.gif") as img:
+        img.seek(1)
+
+        with Image.open("Tests/images/dispose_none_load_end_second.gif") as expected:
+            assert_image_equal(img, expected)
+
+
 def test_dispose_background():
     with Image.open("Tests/images/dispose_bgnd.gif") as img:
         try:
