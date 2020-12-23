@@ -85,8 +85,8 @@ def test_only_save_relevant_sizes(tmp_path):
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
-def test_only_save_append_images(tmp_path):
-    """append_images should work to provide alternative sizes"""
+def test_save_append_images(tmp_path):
+    # append_images should be used for scaled down versions of the image
     im = hopper("RGBA")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
     outfile = str(tmp_path / "temp_saved_multi_icon.ico")
