@@ -105,6 +105,31 @@ def test_apng_dispose_region():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_dispose_op_previous_frame():
+    # Test that the dispose settings being used are from the previous frame
+    #
+    # Image created with:
+    # red = Image.new("RGBA", (128, 64), (255, 0, 0, 255))
+    # green = red.copy()
+    # green.paste(Image.new("RGBA", (64, 32), (0, 255, 0, 255)))
+    # blue = red.copy()
+    # blue.paste(Image.new("RGBA", (64, 32), (0, 255, 0, 255)), (64, 32))
+    #
+    # red.save(
+    #     "Tests/images/apng/dispose_op_previous_frame.png",
+    #     save_all=True,
+    #     append_images=[green, blue],
+    #     disposal=[
+    #         PngImagePlugin.APNG_DISPOSE_OP_NONE,
+    #         PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS,
+    #         PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS
+    #     ],
+    # )
+    with Image.open("Tests/images/apng/dispose_op_previous_frame.png") as im:
+        im.seek(im.n_frames - 1)
+        assert im.getpixel((0, 0)) == (255, 0, 0, 255)
+
+
 def test_apng_dispose_op_background_p_mode():
     with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
         im.seek(1)
