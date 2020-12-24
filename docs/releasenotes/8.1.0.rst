@@ -26,10 +26,15 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Append images to ICO
+^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When saving an ICO image, the file may contain versions of the image at different
+sizes. By default, Pillow will scale down the main image to create these copies.
+
+With this release, a list of images can be provided to the ``append_images`` parameter
+when saving, to replace the scaled down versions. This is the same functionality that
+already exists for the ICNS format.
 
 Security
 ========
