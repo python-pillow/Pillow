@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Added append_images support for ICO #4568
+  [ziplantil, radarhere]
+
+- Block TIFFTAG_SUBIFD #5120
+  [radarhere]
+
+- Fixed dereferencing potential null pointer #5108
+  [cgohlke]
+
 - Deprecate FreeType 2.7 #5098
   [hugovk, radarhere]
 
