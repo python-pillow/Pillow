@@ -1084,7 +1084,7 @@ font_render(FontObject* self, PyObject* args)
                 if (color) {
                     /* target[RGB] returns the color, target[A] returns the mask */
                     /* target bands get split again in ImageDraw.text */
-                    target = im->image[yy] + xx * 4;
+                    target = (unsigned char*)im->image[yy] + xx * 4;
                 } else {
                     target = im->image8[yy] + xx;
                 }
