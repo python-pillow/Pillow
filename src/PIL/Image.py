@@ -1318,6 +1318,10 @@ class Image:
 
         return self._exif
 
+ def getxmp(self):
+
+        return "Hi"
+
     def getim(self):
         """
         Returns a capsule that points to the internal image memory.
