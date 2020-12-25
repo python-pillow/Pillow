@@ -1319,7 +1319,7 @@ class Image:
         return self._exif
 
     def getxmp(self):
-        return "Hi"
+        return "Hello"
 
     def getim(self):
         """
