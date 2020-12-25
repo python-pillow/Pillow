@@ -44,7 +44,7 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+PyPy wheels
+^^^^^^^^^^^
 
-TODO
+Wheels have been added for PyPy 3.7.
