@@ -1,10 +1,5 @@
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-  if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
-    # for https://foss.heptapod.net/pypy/pypy/-/issues/3229
-    # TODO remove when that is fixed
-    brew install tcl-tk
-  fi
   # these cause a conflict with built webp and libtiff,
   # curl from brew requires zstd, use system curl
   brew remove --ignore-dependencies webp zstd xz libtiff curl
