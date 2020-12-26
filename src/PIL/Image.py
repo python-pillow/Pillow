@@ -1332,7 +1332,7 @@ class Image:
                         xmp_atribs = []
                         for child, value in element.attrib.items():
                             xmp_atribs.append({child.split('}')[1]: value})
-                        xmp.update({element.tag.split('}')[1]: atrib})
+                        xmp.update({element.tag.split('}')[1]: xmp_atribs})
 
 
         return xmp
