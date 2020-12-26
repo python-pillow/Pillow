@@ -1320,23 +1320,22 @@ class Image:
 
     def getxmp(self):
 
-    for segment, content in self.applist:
-        if segment == 'APP1':
-            marker, xmp_tags = content.rsplit(b'\x00', 1)
-            #print(marker)
-            print(xmp_tags)
-            if marker == b'http://ns.adobe.com/xap/1.0/':
-                print(xmp_tags.decode('latin-1'))
-                root = ET.fromstring(xmp_tags)
-                print(root)
-                for element in root.findall('.//'):
-                    print(element.tag.split('}')[1])
-                    print(element.attrib)
-                    for child, value in element.attrib.items():
-                        print(child.split('}')[1] + ": " + value)
+        for segment, content in self.applist:
+            if segment == 'APP1':
+                marker, xmp_tags = content.rsplit(b'\x00', 1)
+                #print(marker)
+                print(xmp_tags)
+                if marker == b'http://ns.adobe.com/xap/1.0/':
+                    print(xmp_tags.decode('latin-1'))
+                    root = ET.fromstring(xmp_tags)
+                    print(root)
+                    for element in root.findall('.//'):
+                        print(element.tag.split('}')[1])
+                        print(element.attrib)
+                        for child, value in element.attrib.items():
+                            print(child.split('}')[1] + ": " + value)
 
-
-        return root
+            return root
 
     def getim(self):
         """
