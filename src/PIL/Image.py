@@ -1319,7 +1319,7 @@ class Image:
         return self._exif
 
     def getxmp(self):
-
+        
         for segment, content in self.applist:
             if segment == 'APP1':
                 marker, xmp_tags = content.rsplit(b'\x00', 1)
@@ -1327,7 +1327,7 @@ class Image:
                 print(xmp_tags)
                 if marker == b'http://ns.adobe.com/xap/1.0/':
                     print(xmp_tags.decode('latin-1'))
-                    root = ET.fromstring(xmp_tags)
+                    root = xml.etree.ElementTree.fromstring(xmp_tags)
                     print(root)
                     for element in root.findall('.//'):
                         print(element.tag.split('}')[1])
@@ -1335,7 +1335,7 @@ class Image:
                         for child, value in element.attrib.items():
                             print(child.split('}')[1] + ": " + value)
 
-            return root
+        return root
 
     def getim(self):
         """
