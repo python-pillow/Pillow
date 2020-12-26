@@ -233,6 +233,13 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                         }
 
                 }
+                /* Potential special case for xsize==1 */
+                if (state->x < state->xsize) {
+                    this = state->buffer[state->x++];
+                } else {
+                    EMIT_RUN(label0);
+                    break;
+                }
 
                 this = state->buffer[state->x++];
 

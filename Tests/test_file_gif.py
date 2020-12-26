@@ -74,10 +74,10 @@ def test_optimize():
         im.save(test_file, "GIF", optimize=optimize)
         return len(test_file.getvalue())
 
-    assert test_grayscale(0) == 800
-    assert test_grayscale(1) == 44
-    assert test_bilevel(0) == 800
-    assert test_bilevel(1) == 800
+    assert test_grayscale(0) == 799
+    assert test_grayscale(1) == 43
+    assert test_bilevel(0) == 799
+    assert test_bilevel(1) == 799
 
 
 def test_optimize_correctness():
