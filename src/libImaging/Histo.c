@@ -44,7 +44,7 @@ ImagingHistogramNew(Imaging im)
 
     /* Create histogram descriptor */
     h = calloc(1, sizeof(struct ImagingHistogramInstance));
-    if (h == NULL) {
+    if (!h) {
         return (ImagingHistogram) ImagingError_MemoryError();
     }
     strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH-1);
@@ -52,7 +52,7 @@ ImagingHistogramNew(Imaging im)
 
     h->bands = im->bands;
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
-    if (h->histogram == NULL) {
+    if (!h->histogram) {
         free(h);
         return (ImagingHistogram) ImagingError_MemoryError();
     }
@@ -84,7 +84,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
     }
 
     h = ImagingHistogramNew(im);
-    if (h == NULL) {
+    if (!h) {
         return NULL;
     }
 
