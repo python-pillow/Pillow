@@ -877,7 +877,6 @@ font_render(FontObject* self, PyObject* args)
     unsigned char convert_scale; /* scale factor for non-8bpp bitmaps */
     Imaging im;
     Py_ssize_t id;
-    int horizontal_dir; /* is primary axis horizontal? */
     int mask = 0; /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     int stroke_width = 0;
@@ -896,8 +895,6 @@ font_render(FontObject* self, PyObject* args)
                                                    &stroke_width, &foreground_ink_long)) {
         return NULL;
     }
-
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
     mask = mode && strcmp(mode, "1") == 0;
     color = mode && strcmp(mode, "RGBA") == 0;
