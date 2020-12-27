@@ -1334,7 +1334,6 @@ class Image:
                             xmp_atribs.append({child.split('}')[1]: value})
                         xmp.update({element.tag.split('}')[1]: xmp_atribs})
 
-
         return xmp
 
     def getim(self):
