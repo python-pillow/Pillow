@@ -573,7 +573,6 @@ int ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length){
     // Refer to libtiff docs (http://www.simplesystems.org/libtiff/addingtags.html)
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
-    char field_name[10];
     uint32 n;
     int status = 0;
 
@@ -586,7 +585,7 @@ int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_typ
     int passcount = 0;
 
     TIFFFieldInfo info[] = {
-        { key, readcount, writecount, field_type, FIELD_CUSTOM, 1, passcount, field_name }
+        { key, readcount, writecount, field_type, FIELD_CUSTOM, 1, passcount, "CustomField" }
     };
 
     if (is_var_length) {
