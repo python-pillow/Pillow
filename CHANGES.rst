@@ -11,8 +11,8 @@ Changelog (Pillow)
 - Block TIFFTAG_SUBIFD #5120
   [radarhere]
 
-- Fixed dereferencing potential null pointer #5108
-  [cgohlke]
+- Fixed dereferencing potential null pointers #5108, #5111
+  [cgohlke, radarhere]
 
 - Deprecate FreeType 2.7 #5098
   [hugovk, radarhere]
