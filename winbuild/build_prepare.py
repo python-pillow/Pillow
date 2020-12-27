@@ -275,9 +275,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.3.zip",
-        "filename": "harfbuzz-2.7.3.zip",
-        "dir": "harfbuzz-2.7.3",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.zip",
+        "filename": "harfbuzz-2.7.4.zip",
+        "dir": "harfbuzz-2.7.4",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
