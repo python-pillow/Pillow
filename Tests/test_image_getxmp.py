@@ -6,4 +6,4 @@ def test_getxmp():
     type_repr = repr(type(im.getxmp()))
 
     assert "dict" in type_repr
-    assert isinstance(im.getxmp()['Description'][0]['Version'], str)
+    assert isinstance(im.getxmp()["Description"][0]["Version"], str)
