@@ -1327,7 +1327,7 @@ class Image:
 
         if self._xmp is None:
             self._xmp = {}
-            
+
         for segment, content in self.applist:
             if segment == "APP1":
                 marker, xmp_tags = content.rsplit(b"\x00", 1)
