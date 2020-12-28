@@ -539,6 +539,7 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+        self._xmp = None
 
     @property
     def width(self):
@@ -1323,8 +1324,8 @@ class Image:
         Returns an object containing the xmp tags for a given image.
         :returns: XMP tags in an object.
         """
-
-        xmp = {}
+        if self._xmp is None:
+            self._xmp = {}
 
         for segment, content in self.applist:
             if segment == "APP1":
@@ -1335,9 +1336,9 @@ class Image:
                         xmp_atribs = []
                         for child, value in element.attrib.items():
                             xmp_atribs.append({child.split("}")[1]: value})
-                        xmp.update({element.tag.split("}")[1]: xmp_atribs})
+                        self._xmp.update({element.tag.split("}")[1]: xmp_atribs})
 
-        return xmp
+        return self._xmp
 
     def getim(self):
         """
