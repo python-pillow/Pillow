@@ -1318,7 +1318,7 @@ class Image:
 
         return self._exif
 
-def getxmp(self):
+    def getxmp(self):
         """
         Returns an object containing the xmp tags for a given image.
         :returns: XMP tags in an object.
