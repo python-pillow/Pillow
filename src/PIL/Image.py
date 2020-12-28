@@ -1318,6 +1318,27 @@ class Image:
 
         return self._exif
 
+def getxmp(self):
+        """
+        Returns an object containing the xmp tags for a given image.
+        :returns: XMP tags in an object.
+        """
+
+        xmp = {}
+
+        for segment, content in self.applist:
+            if segment == "APP1":
+                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                if marker == b"http://ns.adobe.com/xap/1.0/":
+                    root = xml.etree.ElementTree.fromstring(xmp_tags)
+                    for element in root.findall(".//"):
+                        xmp_atribs = []
+                        for child, value in element.attrib.items():
+                            xmp_atribs.append({child.split("}")[1]: value})
+                        xmp.update({element.tag.split("}")[1]: xmp_atribs})
+
+        return xmp
+
     def getim(self):
         """
         Returns a capsule that points to the internal image memory.
