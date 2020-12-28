@@ -22,13 +22,20 @@ from io import BytesIO
 from . import Image
 from ._util import isPath
 
-qt_versions = [["5", "PyQt5"], ["side2", "PySide2"]]
+qt_versions = [
+    ["side6", "PySide6"],
+    ["5", "PyQt5"],
+    ["side2", "PySide2"],
+]
 
 # If a version has already been imported, attempt it first
 qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
 for qt_version, qt_module in qt_versions:
     try:
-        if qt_module == "PyQt5":
+        if qt_module == "PySide6":
+            from PySide6.QtCore import QBuffer, QIODevice
+            from PySide6.QtGui import QImage, QPixmap, qRgba
+        elif qt_module == "PyQt5":
             from PyQt5.QtCore import QBuffer, QIODevice
             from PyQt5.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PySide2":

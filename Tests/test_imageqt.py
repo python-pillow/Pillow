@@ -14,7 +14,9 @@ def test_rgb():
     # typedef QRgb
     # An ARGB quadruplet on the format #AARRGGBB,
     # equivalent to an unsigned int.
-    if ImageQt.qt_version == "5":
+    if ImageQt.qt_version == "side6":
+        from PySide6.QtGui import qRgb
+    elif ImageQt.qt_version == "5":
         from PyQt5.QtGui import qRgb
     elif ImageQt.qt_version == "side2":
         from PySide2.QtGui import qRgb
