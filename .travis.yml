@@ -98,7 +98,6 @@ install:
     # Maybe get and clean and patch source
     - if [[ -n "$LATEST" ]]; then BUILD_COMMIT=master; fi
     - clean_code $REPO_DIR $BUILD_COMMIT
-    - cat DEPENDENCIES_LICENSE >> Pillow/LICENSE
     - build_wheel $REPO_DIR $PLAT
     - ls -l "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/"
 

@@ -68,6 +68,12 @@ function pre_build {
     else
         build_freetype
     fi
+
+    # Append licenses
+    for filename in dependency_licenses/*; do
+      echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> Pillow/LICENSE
+      cat $filename >> Pillow/LICENSE
+    done
 }
 
 function run_tests_in_repo {

@@ -25,7 +25,6 @@ echo "::endgroup::"
 
 echo "::group::Build wheel"
   clean_code $REPO_DIR $BUILD_COMMIT
-  cat DEPENDENCIES_LICENSE >> Pillow/LICENSE
   build_wheel $REPO_DIR $PLAT
   ls -l "${GITHUB_WORKSPACE}/${WHEEL_SDIR}/"
 echo "::endgroup::"
