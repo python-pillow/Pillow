@@ -1324,6 +1324,7 @@ class Image:
         Returns an object containing the xmp tags for a given image.
         :returns: XMP tags in an object.
         """
+
         if self._xmp is None:
             self._xmp = {}
 
@@ -1337,7 +1338,6 @@ class Image:
                         for child, value in element.attrib.items():
                             xmp_atribs.append({child.split("}")[1]: value})
                         self._xmp.update({element.tag.split("}")[1]: xmp_atribs})
-
         return self._xmp
 
     def getim(self):
