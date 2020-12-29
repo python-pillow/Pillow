@@ -1634,7 +1634,7 @@ class Image:
                     self.im = im
                 self.pyaccess = None
                 self.mode = self.im.mode
-            except (KeyError, ValueError) as e:
+            except KeyError as e:
                 raise ValueError("illegal image mode") from e
 
         if self.mode in ("LA", "PA"):
