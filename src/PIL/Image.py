@@ -815,9 +815,15 @@ class Image:
         """
         if self.im and self.palette and self.palette.dirty:
             # realize palette
-            self.im.putpalette(*self.palette.getdata())
+            mode, arr = self.palette.getdata()
+            if mode == "RGBA":
+                mode = "RGB"
+                self.info["transparency"] = arr[3::4]
+                arr = bytes(
+                    value for (index, value) in enumerate(arr) if index % 4 != 3
+                )
+            self.im.putpalette(mode, arr)
             self.palette.dirty = 0
-            self.palette.mode = "RGB"
             self.palette.rawmode = None
             if "transparency" in self.info:
                 if isinstance(self.info["transparency"], int):
@@ -825,6 +831,8 @@ class Image:
                 else:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
+            else:
+                self.palette.mode = "RGB"
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
@@ -1672,12 +1680,14 @@ class Image:
 
     def putpalette(self, data, rawmode="RGB"):
         """
-        Attaches a palette to this image.  The image must be a "P",
-        "PA", "L" or "LA" image, and the palette sequence must contain
-        768 integer values, where each group of three values represent
-        the red, green, and blue values for the corresponding pixel
-        index. Instead of an integer sequence, you can use an 8-bit
-        string.
+        Attaches a palette to this image.  The image must be a "P", "PA", "L"
+        or "LA" image.
+
+        The palette sequence must contain either 768 integer values, or 1024
+        integer values if alpha is included. Each group of values represents
+        the red, green, blue (and alpha if included) values for the
+        corresponding pixel index. Instead of an integer sequence, you can use
+        an 8-bit string.
 
         :param data: A palette sequence (either a list or a string).
         :param rawmode: The raw mode of the palette.
