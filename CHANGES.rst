@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Allow putpalette to accept 1024 integers to include alpha values #5089
+  [radarhere]
+
 - Fix OOB Read when writing TIFF with custom Metadata #5148
   [wiredfool]
 
