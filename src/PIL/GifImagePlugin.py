@@ -301,13 +301,14 @@ class GifImageFile(ImageFile.ImageFile):
 
         # if the disposal method is 'do not dispose', transparent
         # pixels should show the content of the previous frame
-        if self._prev_im and self.disposal_method == 1:
+        if self._prev_im and self._prev_disposal_method == 1:
             # we do this by pasting the updated area onto the previous
             # frame which we then use as the current image content
             updated = self._crop(self.im, self.dispose_extent)
             self._prev_im.paste(updated, self.dispose_extent, updated.convert("RGBA"))
             self.im = self._prev_im
         self._prev_im = self.im.copy()
+        self._prev_disposal_method = self.disposal_method
 
     def _close__fp(self):
         try:
