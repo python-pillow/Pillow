@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Use previous disposal method in GIF load_end #5125
+  [radarhere]
+
 - Allow putpalette to accept 1024 integers to include alpha values #5089
   [radarhere]
 
