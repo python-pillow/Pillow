@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Fix OOB Read when writing TIFF with custom Metadata #5148
+  [wiredfool]
+
 - Added append_images support for ICO #4568
   [ziplantil, radarhere]
 
