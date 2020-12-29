@@ -670,7 +670,10 @@ class Image:
         :returns: png version of the image as bytes
         """
         b = io.BytesIO()
-        self.save(b, "PNG")
+        try:
+            self.save(b, "PNG")
+        except Exception as e:
+            raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
     @property
