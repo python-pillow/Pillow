@@ -39,7 +39,7 @@ already exists for the ICNS format.
 Security
 ========
 
-TODO
+OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including security fixes.
 
 Other Changes
 =============
