@@ -6,4 +6,4 @@ def test_getxmp():
         xmp = im.getxmp()
 
         assert isinstance(xmp, dict)
-        assert xmp["Description"][0]["Version"] == "10.4"
+        assert xmp["Description"]["Version"] == "10.4"
