@@ -159,6 +159,14 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
+            if sys.platform == "win32":
+                profile_bytes_path = profile.encode()
+                try:
+                    profile_bytes_path.decode("ascii")
+                except UnicodeDecodeError:
+                    with open(profile, "rb") as f:
+                        self._set(core.profile_frombytes(f.read()))
+                    return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))
@@ -192,9 +200,9 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
     """
     Transform.  This can be used with the procedural API, or with the standard
-    Image.point() method.
+    :py:func:`~PIL.Image.Image.point` method.
 
-    Will return the output profile in the output.info['icc_profile'].
+    Will return the output profile in the ``output.info['icc_profile']``.
     """
 
     def __init__(
@@ -250,8 +258,10 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
 
 def get_display_profile(handle=None):
-    """ (experimental) Fetches the profile for the current display device.
-    :returns: None if the profile is not known.
+    """
+    (experimental) Fetches the profile for the current display device.
+
+    :returns: ``None`` if the profile is not known.
     """
 
     if sys.platform != "win32":
@@ -275,8 +285,8 @@ def get_display_profile(handle=None):
 
 class PyCMSError(Exception):
 
-    """ (pyCMS) Exception class.
-    This is used for all errors in the pyCMS API. """
+    """(pyCMS) Exception class.
+    This is used for all errors in the pyCMS API."""
 
     pass
 
@@ -292,27 +302,28 @@ def profileToProfile(
 ):
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
-    inputProfile to outputProfile.
+    ``inputProfile`` to ``outputProfile``.
 
     If the input or output profiles specified are not valid filenames, a
-    PyCMSError will be raised.  If inPlace is True and outputMode != im.mode,
-    a PyCMSError will be raised.  If an error occurs during application of
-    the profiles, a PyCMSError will be raised.  If outputMode is not a mode
-    supported by the outputProfile (or by pyCMS), a PyCMSError will be
-    raised.
+    :exc:`PyCMSError` will be raised.  If ``inPlace`` is ``True`` and
+    ``outputMode != im.mode``, a :exc:`PyCMSError` will be raised.
+    If an error occurs during application of the profiles,
+    a :exc:`PyCMSError` will be raised.
+    If ``outputMode`` is not a mode supported by the ``outputProfile`` (or by pyCMS),
+    a :exc:`PyCMSError` will be raised.
 
-    This function applies an ICC transformation to im from inputProfile's
-    color space to outputProfile's color space using the specified rendering
+    This function applies an ICC transformation to im from ``inputProfile``'s
+    color space to ``outputProfile``'s color space using the specified rendering
     intent to decide how to handle out-of-gamut colors.
 
-    OutputMode can be used to specify that a color mode conversion is to
+    ``outputMode`` can be used to specify that a color mode conversion is to
     be done using these profiles, but the specified profiles must be able
     to handle that mode.  I.e., if converting im from RGB to CMYK using
     profiles, the input profile must handle RGB data, and the output
     profile must handle CMYK data.
 
-    :param im: An open PIL image object (i.e. Image.new(...) or
-        Image.open(...), etc.)
+    :param im: An open :py:class:`~PIL.Image.Image` object (i.e. Image.new(...)
+        or Image.open(...), etc.)
     :param inputProfile: String, as a valid filename path to the ICC input
         profile you wish to use for this image, or a profile object
     :param outputProfile: String, as a valid filename path to the ICC output
@@ -332,12 +343,12 @@ def profileToProfile(
         MUST be the same mode as the input, or omitted completely.  If
         omitted, the outputMode will be the same as the mode of the input
         image (im.mode)
-    :param inPlace: Boolean.  If True, the original image is modified in-place,
-        and None is returned.  If False (default), a new Image object is
-        returned with the transform applied.
+    :param inPlace: Boolean.  If ``True``, the original image is modified in-place,
+        and ``None`` is returned.  If ``False`` (default), a new
+        :py:class:`~PIL.Image.Image` object is returned with the transform applied.
     :param flags: Integer (0-...) specifying additional flags
-    :returns: Either None or a new PIL image object, depending on value of
-        inPlace
+    :returns: Either None or a new :py:class:`~PIL.Image.Image` object, depending on
+        the value of ``inPlace``
     :exception PyCMSError:
     """
 
@@ -369,7 +380,7 @@ def profileToProfile(
         else:
             imOut = transform.apply(im)
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
     return imOut
 
@@ -381,8 +392,8 @@ def getOpenProfile(profileFilename):
     The PyCMSProfile object can be passed back into pyCMS for use in creating
     transforms and such (as in ImageCms.buildTransformFromOpenProfiles()).
 
-    If profileFilename is not a valid filename for an ICC profile, a PyCMSError
-    will be raised.
+    If ``profileFilename`` is not a valid filename for an ICC profile,
+    a :exc:`PyCMSError` will be raised.
 
     :param profileFilename: String, as a valid filename path to the ICC profile
         you wish to open, or a file-like object.
@@ -393,7 +404,7 @@ def getOpenProfile(profileFilename):
     try:
         return ImageCmsProfile(profileFilename)
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def buildTransform(
@@ -405,21 +416,21 @@ def buildTransform(
     flags=0,
 ):
     """
-    (pyCMS) Builds an ICC transform mapping from the inputProfile to the
-    outputProfile.  Use applyTransform to apply the transform to a given
+    (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
+    ``outputProfile``. Use applyTransform to apply the transform to a given
     image.
 
     If the input or output profiles specified are not valid filenames, a
-    PyCMSError will be raised.  If an error occurs during creation of the
-    transform, a PyCMSError will be raised.
+    :exc:`PyCMSError` will be raised. If an error occurs during creation
+    of the transform, a :exc:`PyCMSError` will be raised.
 
-    If inMode or outMode are not a mode supported by the outputProfile (or
-    by pyCMS), a PyCMSError will be raised.
+    If ``inMode`` or ``outMode`` are not a mode supported by the ``outputProfile``
+    (or by pyCMS), a :exc:`PyCMSError` will be raised.
 
-    This function builds and returns an ICC transform from the inputProfile
-    to the outputProfile using the renderingIntent to determine what to do
+    This function builds and returns an ICC transform from the ``inputProfile``
+    to the ``outputProfile`` using the ``renderingIntent`` to determine what to do
     with out-of-gamut colors.  It will ONLY work for converting images that
-    are in inMode to images that are in outMode color format (PIL mode,
+    are in ``inMode`` to images that are in ``outMode`` color format (PIL mode,
     i.e. "RGB", "RGBA", "CMYK", etc.).
 
     Building the transform is a fair part of the overhead in
@@ -432,7 +443,7 @@ def buildTransform(
     The reason pyCMS returns a class object rather than a handle directly
     to the transform is that it needs to keep track of the PIL input/output
     modes that the transform is meant for.  These attributes are stored in
-    the "inMode" and "outMode" attributes of the object (which can be
+    the ``inMode`` and ``outMode`` attributes of the object (which can be
     manually overridden if you really want to, but I don't know of any
     time that would be of use, or would even work).
 
@@ -474,7 +485,7 @@ def buildTransform(
             inputProfile, outputProfile, inMode, outMode, renderingIntent, flags=flags
         )
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def buildProofTransform(
@@ -488,25 +499,25 @@ def buildProofTransform(
     flags=FLAGS["SOFTPROOFING"],
 ):
     """
-    (pyCMS) Builds an ICC transform mapping from the inputProfile to the
-    outputProfile, but tries to simulate the result that would be
-    obtained on the proofProfile device.
+    (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
+    ``outputProfile``, but tries to simulate the result that would be
+    obtained on the ``proofProfile`` device.
 
     If the input, output, or proof profiles specified are not valid
-    filenames, a PyCMSError will be raised.
+    filenames, a :exc:`PyCMSError` will be raised.
 
-    If an error occurs during creation of the transform, a PyCMSError will
-    be raised.
+    If an error occurs during creation of the transform,
+    a :exc:`PyCMSError` will be raised.
 
-    If inMode or outMode are not a mode supported by the outputProfile
-    (or by pyCMS), a PyCMSError will be raised.
+    If ``inMode`` or ``outMode`` are not a mode supported by the ``outputProfile``
+    (or by pyCMS), a :exc:`PyCMSError` will be raised.
 
-    This function builds and returns an ICC transform from the inputProfile
-    to the outputProfile, but tries to simulate the result that would be
-    obtained on the proofProfile device using renderingIntent and
-    proofRenderingIntent to determine what to do with out-of-gamut
+    This function builds and returns an ICC transform from the ``inputProfile``
+    to the ``outputProfile``, but tries to simulate the result that would be
+    obtained on the ``proofProfile`` device using ``renderingIntent`` and
+    ``proofRenderingIntent`` to determine what to do with out-of-gamut
     colors.  This is known as "soft-proofing".  It will ONLY work for
-    converting images that are in inMode to images that are in outMode
+    converting images that are in ``inMode`` to images that are in outMode
     color format (PIL mode, i.e. "RGB", "RGBA", "CMYK", etc.).
 
     Usage of the resulting transform object is exactly the same as with
@@ -514,7 +525,7 @@ def buildProofTransform(
 
     Proof profiling is generally used when using an output device to get a
     good idea of what the final printed/displayed image would look like on
-    the proofProfile device when it's quicker and easier to use the
+    the ``proofProfile`` device when it's quicker and easier to use the
     output device for judging color.  Generally, this means that the
     output device is a monitor, or a dye-sub printer (etc.), and the simulated
     device is something more expensive, complicated, or time consuming
@@ -585,7 +596,7 @@ def buildProofTransform(
             flags,
         )
     except (OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 buildTransformFromOpenProfiles = buildTransform
@@ -596,39 +607,40 @@ def applyTransform(im, transform, inPlace=False):
     """
     (pyCMS) Applies a transform to a given image.
 
-    If im.mode != transform.inMode, a PyCMSError is raised.
+    If ``im.mode != transform.inMode``, a :exc:`PyCMSError` is raised.
 
-    If inPlace is True and transform.inMode != transform.outMode, a
-    PyCMSError is raised.
+    If ``inPlace`` is ``True`` and ``transform.inMode != transform.outMode``, a
+    :exc:`PyCMSError` is raised.
 
-    If im.mode, transform.inMode, or transform.outMode is not supported by
-    pyCMSdll or the profiles you used for the transform, a PyCMSError is
-    raised.
+    If ``im.mode``, ``transform.inMode`` or ``transform.outMode`` is not
+    supported by pyCMSdll or the profiles you used for the transform, a
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while the transform is being applied, a PyCMSError
-    is raised.
+    If an error occurs while the transform is being applied,
+    a :exc:`PyCMSError` is raised.
 
     This function applies a pre-calculated transform (from
     ImageCms.buildTransform() or ImageCms.buildTransformFromOpenProfiles())
-    to an image.  The transform can be used for multiple images, saving
+    to an image. The transform can be used for multiple images, saving
     considerable calculation time if doing the same conversion multiple times.
 
     If you want to modify im in-place instead of receiving a new image as
-    the return value, set inPlace to True.  This can only be done if
-    transform.inMode and transform.outMode are the same, because we can't
+    the return value, set ``inPlace`` to ``True``.  This can only be done if
+    ``transform.inMode`` and ``transform.outMode`` are the same, because we can't
     change the mode in-place (the buffer sizes for some modes are
-    different).  The  default behavior is to return a new Image object of
-    the same dimensions in mode transform.outMode.
+    different).  The default behavior is to return a new :py:class:`~PIL.Image.Image`
+    object of the same dimensions in mode ``transform.outMode``.
 
-    :param im: A PIL Image object, and im.mode must be the same as the inMode
-        supported by the transform.
+    :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
+        as the ``inMode`` supported by the transform.
     :param transform: A valid CmsTransform class object
-    :param inPlace: Bool.  If True, im is modified in place and None is
-        returned, if False, a new Image object with the transform applied is
-        returned (and im is not changed). The default is False.
-    :returns: Either None, or a new PIL Image object, depending on the value of
-        inPlace. The profile will be returned in the image's
-        info['icc_profile'].
+    :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
+        returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
+        transform applied is returned (and ``im`` is not changed). The default is
+        ``False``.
+    :returns: Either ``None``, or a new :py:class:`~PIL.Image.Image` object,
+        depending on the value of ``inPlace``. The profile will be returned in
+        the image's ``info['icc_profile']``.
     :exception PyCMSError:
     """
 
@@ -639,7 +651,7 @@ def applyTransform(im, transform, inPlace=False):
         else:
             imOut = transform.apply(im)
     except (TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
     return imOut
 
@@ -648,11 +660,14 @@ def createProfile(colorSpace, colorTemp=-1):
     """
     (pyCMS) Creates a profile.
 
-    If colorSpace not in ["LAB", "XYZ", "sRGB"], a PyCMSError is raised
+    If colorSpace not in ``["LAB", "XYZ", "sRGB"]``,
+    a :exc:`PyCMSError` is raised.
 
-    If using LAB and colorTemp != a positive integer, a PyCMSError is raised.
+    If using LAB and ``colorTemp`` is not a positive integer,
+    a :exc:`PyCMSError` is raised.
 
-    If an error occurs while creating the profile, a PyCMSError is raised.
+    If an error occurs while creating the profile,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to create common profiles on-the-fly instead of
     having to supply a profile on disk and knowing the path to it.  It
@@ -673,22 +688,21 @@ def createProfile(colorSpace, colorTemp=-1):
 
     if colorSpace not in ["LAB", "XYZ", "sRGB"]:
         raise PyCMSError(
-            "Color space not supported for on-the-fly profile creation (%s)"
-            % colorSpace
+            f"Color space not supported for on-the-fly profile creation ({colorSpace})"
         )
 
     if colorSpace == "LAB":
         try:
             colorTemp = float(colorTemp)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             raise PyCMSError(
-                'Color temperature must be numeric, "%s" not valid' % colorTemp
-            )
+                f'Color temperature must be numeric, "{colorTemp}" not valid'
+            ) from e
 
     try:
         return core.createProfile(colorSpace, colorTemp)
     except (TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileName(profile):
@@ -696,9 +710,9 @@ def getProfileName(profile):
 
     (pyCMS) Gets the internal product name for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised If an error occurs while trying to obtain the
-    name tag, a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile,
+    a :exc:`PyCMSError` is raised If an error occurs while trying
+    to obtain the name tag, a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the INTERNAL name of the profile (stored
     in an ICC tag in the profile itself), usually the one used when the
@@ -727,21 +741,21 @@ def getProfileName(profile):
             return (profile.profile.profile_description or "") + "\n"
         if not manufacturer or len(model) > 30:
             return model + "\n"
-        return "{} - {}\n".format(model, manufacturer)
+        return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileInfo(profile):
     """
     (pyCMS) Gets the internal product information for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile,
+    a :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the info tag, a PyCMSError
-    is raised
+    If an error occurs while trying to obtain the info tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     info tag.  This often contains details about the profile, and how it
@@ -770,18 +784,18 @@ def getProfileInfo(profile):
         return "\r\n\r\n".join(arr) + "\r\n\r\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileCopyright(profile):
     """
     (pyCMS) Gets the copyright for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the copyright tag, a PyCMSError
-    is raised
+    If an error occurs while trying to obtain the copyright tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     copyright tag.
@@ -798,18 +812,18 @@ def getProfileCopyright(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.copyright or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileManufacturer(profile):
     """
     (pyCMS) Gets the manufacturer for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
+    :exc:`PyCMSError` is raised.
 
     If an error occurs while trying to obtain the manufacturer tag, a
-    PyCMSError is raised
+    :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     manufacturer tag.
@@ -826,18 +840,18 @@ def getProfileManufacturer(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.manufacturer or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileModel(profile):
     """
     (pyCMS) Gets the model for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the model tag, a PyCMSError
-    is raised
+    If an error occurs while trying to obtain the model tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     model tag.
@@ -855,18 +869,18 @@ def getProfileModel(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.model or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getProfileDescription(profile):
     """
     (pyCMS) Gets the description for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
+    :exc:`PyCMSError` is raised.
 
-    If an error occurs while trying to obtain the description tag, a PyCMSError
-    is raised
+    If an error occurs while trying to obtain the description tag,
+    a :exc:`PyCMSError` is raised.
 
     Use this function to obtain the information stored in the profile's
     description tag.
@@ -884,18 +898,18 @@ def getProfileDescription(profile):
             profile = ImageCmsProfile(profile)
         return (profile.profile.profile_description or "") + "\n"
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def getDefaultIntent(profile):
     """
     (pyCMS) Gets the default intent name for the given profile.
 
-    If profile isn't a valid CmsProfile object or filename to a profile,
-    a PyCMSError is raised.
+    If ``profile`` isn't a valid CmsProfile object or filename to a profile, a
+    :exc:`PyCMSError` is raised.
 
     If an error occurs while trying to obtain the default intent, a
-    PyCMSError is raised.
+    :exc:`PyCMSError` is raised.
 
     Use this function to determine the default (and usually best optimized)
     rendering intent for this profile.  Most profiles support multiple
@@ -923,7 +937,7 @@ def getDefaultIntent(profile):
             profile = ImageCmsProfile(profile)
         return profile.profile.rendering_intent
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def isIntentSupported(profile, intent, direction):
@@ -931,15 +945,15 @@ def isIntentSupported(profile, intent, direction):
     (pyCMS) Checks if a given intent is supported.
 
     Use this function to verify that you can use your desired
-    renderingIntent with profile, and that profile can be used for the
+    ``intent`` with ``profile``, and that ``profile`` can be used for the
     input/output/proof profile as you desire.
 
     Some profiles are created specifically for one "direction", can cannot
-    be used for others.  Some profiles can only be used for certain
-    rendering intents... so it's best to either verify this before trying
+    be used for others. Some profiles can only be used for certain
+    rendering intents, so it's best to either verify this before trying
     to create a transform with them (using this function), or catch the
-    potential PyCMSError that will occur if they don't support the modes
-    you select.
+    potential :exc:`PyCMSError` that will occur if they don't
+    support the modes you select.
 
     :param profile: EITHER a valid CmsProfile object, OR a string of the
         filename of an ICC profile.
@@ -974,7 +988,7 @@ def isIntentSupported(profile, intent, direction):
         else:
             return -1
     except (AttributeError, OSError, TypeError, ValueError) as v:
-        raise PyCMSError(v)
+        raise PyCMSError(v) from v
 
 
 def versions():

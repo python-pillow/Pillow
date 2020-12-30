@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, assert_image_similar, hopper
@@ -64,7 +65,7 @@ def test_neg_ppm():
     # has been removed. The default opener doesn't accept negative
     # sizes.
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open("Tests/images/negative_size.ppm")
 
 

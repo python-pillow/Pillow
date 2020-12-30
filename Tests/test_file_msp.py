@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import Image, MspImagePlugin
 
 from .helper import assert_image_equal, hopper
@@ -86,5 +87,5 @@ def test_cannot_save_wrong_mode(tmp_path):
     filename = str(tmp_path / "temp.msp")
 
     # Act/Assert
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         im.save(filename)

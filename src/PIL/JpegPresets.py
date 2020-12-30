@@ -1,9 +1,11 @@
 """
 JPEG quality settings equivalent to the Photoshop settings.
+Can be used when saving JPEG files.
 
-More presets can be added to the presets dict if needed.
-
-Can be use when saving JPEG file.
+The following presets are available by default:
+``web_low``, ``web_medium``, ``web_high``, ``web_very_high``, ``web_maximum``,
+``low``, ``medium``, ``high``, ``maximum``.
+More presets can be added to the :py:data:`presets` dict if needed.
 
 To apply the preset, specify::
 
@@ -21,7 +23,6 @@ Example::
 
   im.save("image_name.jpg", quality="web_high")
 
-
 Subsampling
 -----------
 
@@ -33,7 +34,7 @@ Possible subsampling values are 0, 1 and 2 that correspond to 4:4:4, 4:2:2 and
 4:2:0.
 
 You can get the subsampling of a JPEG with the
-`JpegImagePlugin.get_sampling(im)` function.
+:func:`.JpegImagePlugin.get_sampling` function.
 
 In JPEG compressed data a JPEG marker is used instead of an EXIF tag.
 (ref.: https://www.exiv2.org/tags.html)
@@ -63,7 +64,7 @@ The tables format between im.quantization and quantization in presets differ in
 3. The zigzag order is remove in the preset (needed by libjpeg >= 6a).
 
 You can convert the dict format to the preset format with the
-`JpegImagePlugin.convert_dict_qtables(dict_qtables)` function.
+:func:`.JpegImagePlugin.convert_dict_qtables()` function.
 
 Libjpeg ref.:
 https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/libjpeg-3.html
@@ -71,7 +72,7 @@ https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/li
 """
 
 # fmt: off
-presets = {  # noqa: E128
+presets = {
             'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [20, 16, 25, 39, 50, 46, 62, 68,
@@ -112,16 +113,16 @@ presets = {  # noqa: E128
                              ]},
             'web_high':     {'subsampling':  0,  # "4:4:4"
                              'quantization': [
-                                [6,  4,  4,  6,  9, 11, 12, 16,
-                                 4,  5,  5,  6,  8, 10, 12, 12,
-                                 4,  5,  5,  6, 10, 12, 14, 19,
-                                 6,  6,  6, 11, 12, 15, 19, 28,
-                                 9,  8, 10, 12, 16, 20, 27, 31,
+                               [6,   4,  4,  6,  9, 11, 12, 16,
+                                4,   5,  5,  6,  8, 10, 12, 12,
+                                4,   5,  5,  6, 10, 12, 14, 19,
+                                6,   6,  6, 11, 12, 15, 19, 28,
+                                9,   8, 10, 12, 16, 20, 27, 31,
                                 11, 10, 12, 15, 20, 27, 31, 31,
                                 12, 12, 14, 19, 27, 31, 31, 31,
                                 16, 12, 19, 28, 31, 31, 31, 31],
-                                [7,  7, 13, 24, 26, 31, 31, 31,
-                                 7, 12, 16, 21, 31, 31, 31, 31,
+                               [7,   7, 13, 24, 26, 31, 31, 31,
+                                7,  12, 16, 21, 31, 31, 31, 31,
                                 13, 16, 17, 31, 31, 31, 31, 31,
                                 24, 21, 31, 31, 31, 31, 31, 31,
                                 26, 31, 31, 31, 31, 31, 31, 31,
@@ -131,18 +132,18 @@ presets = {  # noqa: E128
                              ]},
             'web_very_high': {'subsampling':  0,  # "4:4:4"
                               'quantization': [
-                                [2,  2,  2,  2,  3,  4,  5,  6,
-                                 2,  2,  2,  2,  3,  4,  5,  6,
-                                 2,  2,  2,  2,  4,  5,  7,  9,
-                                 2,  2,  2,  4,  5,  7,  9, 12,
-                                 3,  3,  4,  5,  8, 10, 12, 12,
-                                 4,  4,  5,  7, 10, 12, 12, 12,
-                                 5,  5,  7,  9, 12, 12, 12, 12,
-                                 6,  6,  9, 12, 12, 12, 12, 12],
-                                [3,  3,  5,  9, 13, 15, 15, 15,
-                                 3,  4,  6, 11, 14, 12, 12, 12,
-                                 5,  6,  9, 14, 12, 12, 12, 12,
-                                 9, 11, 14, 12, 12, 12, 12, 12,
+                               [2,   2,  2,  2,  3,  4,  5,  6,
+                                2,   2,  2,  2,  3,  4,  5,  6,
+                                2,   2,  2,  2,  4,  5,  7,  9,
+                                2,   2,  2,  4,  5,  7,  9, 12,
+                                3,   3,  4,  5,  8, 10, 12, 12,
+                                4,   4,  5,  7, 10, 12, 12, 12,
+                                5,   5,  7,  9, 12, 12, 12, 12,
+                                6,   6,  9, 12, 12, 12, 12, 12],
+                               [3,   3,  5,  9, 13, 15, 15, 15,
+                                3,   4,  6, 11, 14, 12, 12, 12,
+                                5,   6,  9, 14, 12, 12, 12, 12,
+                                9,  11, 14, 12, 12, 12, 12, 12,
                                 13, 14, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12,
@@ -189,8 +190,8 @@ presets = {  # noqa: E128
             'medium':       {'subsampling':  2,  # "4:2:0"
                              'quantization': [
                                [12,  8,  8, 12, 17, 21, 24, 17,
-                                 8,  9,  9, 11, 15, 19, 12, 12,
-                                 8,  9, 10, 12, 19, 12, 12, 12,
+                                8,   9,  9, 11, 15, 19, 12, 12,
+                                8,   9, 10, 12, 19, 12, 12, 12,
                                 12, 11, 12, 21, 12, 12, 12, 12,
                                 17, 15, 19, 12, 12, 12, 12, 12,
                                 21, 19, 12, 12, 12, 12, 12, 12,
@@ -207,16 +208,16 @@ presets = {  # noqa: E128
                              ]},
             'high':         {'subsampling':  0,  # "4:4:4"
                              'quantization': [
-                                [6,  4,  4,  6,  9, 11, 12, 16,
-                                 4,  5,  5,  6,  8, 10, 12, 12,
-                                 4,  5,  5,  6, 10, 12, 12, 12,
-                                 6,  6,  6, 11, 12, 12, 12, 12,
-                                 9,  8, 10, 12, 12, 12, 12, 12,
+                               [6,   4,  4,  6,  9, 11, 12, 16,
+                                4,   5,  5,  6,  8, 10, 12, 12,
+                                4,   5,  5,  6, 10, 12, 12, 12,
+                                6,   6,  6, 11, 12, 12, 12, 12,
+                                9,   8, 10, 12, 12, 12, 12, 12,
                                 11, 10, 12, 12, 12, 12, 12, 12,
                                 12, 12, 12, 12, 12, 12, 12, 12,
                                 16, 12, 12, 12, 12, 12, 12, 12],
-                                [7,  7, 13, 24, 20, 20, 17, 17,
-                                 7, 12, 16, 14, 14, 12, 12, 12,
+                               [7,   7, 13, 24, 20, 20, 17, 17,
+                                7,  12, 16, 14, 14, 12, 12, 12,
                                 13, 16, 14, 14, 12, 12, 12, 12,
                                 24, 14, 14, 12, 12, 12, 12, 12,
                                 20, 14, 12, 12, 12, 12, 12, 12,
@@ -226,18 +227,18 @@ presets = {  # noqa: E128
                              ]},
             'maximum':      {'subsampling':  0,  # "4:4:4"
                              'quantization': [
-                                [2,  2,  2,  2,  3,  4,  5,  6,
-                                 2,  2,  2,  2,  3,  4,  5,  6,
-                                 2,  2,  2,  2,  4,  5,  7,  9,
-                                 2,  2,  2,  4,  5,  7,  9, 12,
-                                 3,  3,  4,  5,  8, 10, 12, 12,
-                                 4,  4,  5,  7, 10, 12, 12, 12,
-                                 5,  5,  7,  9, 12, 12, 12, 12,
-                                 6,  6,  9, 12, 12, 12, 12, 12],
-                                [3,  3,  5,  9, 13, 15, 15, 15,
-                                 3,  4,  6, 10, 14, 12, 12, 12,
-                                 5,  6,  9, 14, 12, 12, 12, 12,
-                                 9, 10, 14, 12, 12, 12, 12, 12,
+                               [2,   2,  2,  2,  3,  4,  5,  6,
+                                2,   2,  2,  2,  3,  4,  5,  6,
+                                2,   2,  2,  2,  4,  5,  7,  9,
+                                2,   2,  2,  4,  5,  7,  9, 12,
+                                3,   3,  4,  5,  8, 10, 12, 12,
+                                4,   4,  5,  7, 10, 12, 12, 12,
+                                5,   5,  7,  9, 12, 12, 12, 12,
+                                6,   6,  9, 12, 12, 12, 12, 12],
+                               [3,   3,  5,  9, 13, 15, 15, 15,
+                                3,   4,  6, 10, 14, 12, 12, 12,
+                                5,   6,  9, 14, 12, 12, 12, 12,
+                                9,  10, 14, 12, 12, 12, 12, 12,
                                 13, 14, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12,

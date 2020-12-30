@@ -118,10 +118,10 @@ def Ghostscript(tile, size, fp, scale=1):
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
         "-sDEVICE=ppmraw",  # ppm driver
-        "-sOutputFile=%s" % outfile,  # output file
+        f"-sOutputFile={outfile}",  # output file
         # adjust for image origin
         "-c",
-        "%d %d translate" % (-bbox[0], -bbox[1]),
+        f"{-bbox[0]} {-bbox[1]} translate",
         "-f",
         infile,  # input file
         # showpage (see https://bugs.ghostscript.com/show_bug.cgi?id=698272)
@@ -191,7 +191,7 @@ def _accept(prefix):
 
 
 ##
-# Image plugin for Encapsulated Postscript.  This plugin supports only
+# Image plugin for Encapsulated PostScript.  This plugin supports only
 # a few variants of this format.
 
 
@@ -231,8 +231,8 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 try:
                     m = split.match(s)
-                except re.error:
-                    raise SyntaxError("not an EPS file")
+                except re.error as e:
+                    raise SyntaxError("not an EPS file") from e
 
                 if m:
                     k, v = m.group(1, 2)
@@ -262,7 +262,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         else:
                             self.info[k] = ""
                     elif s[0] == "%":
-                        # handle non-DSC Postscript comments that some
+                        # handle non-DSC PostScript comments that some
                         # tools mistakenly put in the Comments section
                         pass
                     else:
@@ -352,7 +352,7 @@ def _save(im, fp, filename, eps=1):
     im.load()
 
     #
-    # determine postscript image mode
+    # determine PostScript image mode
     if im.mode == "L":
         operator = (8, 1, "image")
     elif im.mode == "RGB":
@@ -386,10 +386,10 @@ def _save(im, fp, filename, eps=1):
         # image header
         fp.write("gsave\n")
         fp.write("10 dict begin\n")
-        fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
+        fp.write(f"/buf {im.size[0] * operator[1]} string def\n")
         fp.write("%d %d scale\n" % im.size)
         fp.write("%d %d 8\n" % im.size)  # <= bits
-        fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+        fp.write(f"[{im.size[0]} 0 0 -{im.size[1]} 0 {im.size[1]}]\n")
         fp.write("{ currentfile buf readhexstring pop } bind\n")
         fp.write(operator[2] + "\n")
         if hasattr(fp, "flush"):

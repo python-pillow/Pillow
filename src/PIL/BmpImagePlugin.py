@@ -25,7 +25,12 @@
 
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16le as i16, i32le as i32, o8, o16le as o16, o32le as o32
+from ._binary import i8
+from ._binary import i16le as i16
+from ._binary import i32le as i32
+from ._binary import o8
+from ._binary import o16le as o16
+from ._binary import o32le as o32
 
 #
 # --------------------------------------------------------------------
@@ -144,7 +149,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     file_info["a_mask"],
                 )
         else:
-            raise OSError("Unsupported BMP header type (%d)" % file_info["header_size"])
+            raise OSError(f"Unsupported BMP header type ({file_info['header_size']})")
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
@@ -157,14 +162,10 @@ class BmpImageFile(ImageFile.ImageFile):
             else (1 << file_info["bits"])
         )
 
-        # ------------------------------- Check abnormal values for DOS attacks
-        if file_info["width"] * file_info["height"] > 2 ** 31:
-            raise OSError("Unsupported BMP Size: (%dx%d)" % self.size)
-
         # ---------------------- Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
         if self.mode is None:
-            raise OSError("Unsupported BMP pixel depth (%d)" % file_info["bits"])
+            raise OSError(f"Unsupported BMP pixel depth ({file_info['bits']})")
 
         # ---------------- Process BMP with Bitfields compression (not palette)
         if file_info["compression"] == self.BITFIELDS:
@@ -209,14 +210,14 @@ class BmpImageFile(ImageFile.ImageFile):
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
                 raw_mode, self.mode = "BGRA", "RGBA"
         else:
-            raise OSError("Unsupported BMP compression (%d)" % file_info["compression"])
+            raise OSError(f"Unsupported BMP compression ({file_info['compression']})")
 
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
 
             # ---------------------------------------------------- 1-bit images
             if not (0 < file_info["colors"] <= 65536):
-                raise OSError("Unsupported BMP Palette size (%d)" % file_info["colors"])
+                raise OSError(f"Unsupported BMP Palette size ({file_info['colors']})")
             else:
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
@@ -263,7 +264,7 @@ class BmpImageFile(ImageFile.ImageFile):
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
-        if head_data[0:2] != b"BM":
+        if not _accept(head_data):
             raise SyntaxError("Not a BMP file")
         # read the start position of the BMP image data (u32)
         offset = i32(head_data[10:14])
@@ -304,8 +305,8 @@ def _dib_save(im, fp, filename):
 def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as BMP" % im.mode)
+    except KeyError as e:
+        raise OSError(f"cannot write mode {im.mode} as BMP") from e
 
     info = im.encoderinfo
 

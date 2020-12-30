@@ -17,7 +17,8 @@
 import olefile
 
 from . import Image, ImageFile
-from ._binary import i8, i32le as i32
+from ._binary import i8
+from ._binary import i32le as i32
 
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
@@ -59,8 +60,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
         try:
             self.ole = olefile.OleFileIO(self.fp)
-        except OSError:
-            raise SyntaxError("not an FPX file; invalid OLE file")
+        except OSError as e:
+            raise SyntaxError("not an FPX file; invalid OLE file") from e
 
         if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
             raise SyntaxError("not an FPX file; bad root CLSID")
@@ -72,7 +73,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # get the Image Contents Property Set
 
         prop = self.ole.getproperties(
-            ["Data Object Store %06d" % index, "\005Image Contents"]
+            [f"Data Object Store {index:06d}", "\005Image Contents"]
         )
 
         # size (highest resolution)
@@ -99,7 +100,7 @@ class FpxImageFile(ImageFile.ImageFile):
         colors = []
         bands = i32(s, 4)
         if bands > 4:
-            raise IOError("Invalid number of bands")
+            raise OSError("Invalid number of bands")
         for i in range(bands):
             # note: for now, we ignore the "uncalibrated" flag
             colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
@@ -120,8 +121,8 @@ class FpxImageFile(ImageFile.ImageFile):
         # setup tile descriptors for a given subimage
 
         stream = [
-            "Data Object Store %06d" % index,
-            "Resolution %04d" % subimage,
+            f"Data Object Store {index:06d}",
+            f"Resolution {subimage:04d}",
             "Subimage 0000 Header",
         ]
 

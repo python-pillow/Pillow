@@ -22,10 +22,10 @@ import os
 import struct
 import sys
 
-from PIL import Image, ImageFile, PngImagePlugin
+from PIL import Image, ImageFile, PngImagePlugin, features
 from PIL._binary import i8
 
-enable_jpeg2k = hasattr(Image.core, "jp2klib_version")
+enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
@@ -82,7 +82,7 @@ def read_32(fobj, start_length, size):
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
-                raise SyntaxError("Error reading channel [%r left]" % bytesleft)
+                raise SyntaxError(f"Error reading channel [{repr(bytesleft)} left]")
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}

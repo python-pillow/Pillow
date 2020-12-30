@@ -3,9 +3,10 @@ import os
 import shutil
 import tempfile
 
-import PIL
 import pytest
-from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
+
+import PIL
+from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
 
 from .helper import (
     assert_image_equal,
@@ -13,6 +14,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
+    skip_unless_feature,
 )
 
 
@@ -57,7 +59,7 @@ class TestImage:
             assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
-        assert issubclass(UnidentifiedImageError, IOError)
+        assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
 
@@ -84,6 +86,26 @@ class TestImage:
             Image.new("", (100, 100))
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
+
+    def test_open_formats(self):
+        PNGFILE = "Tests/images/hopper.png"
+        JPGFILE = "Tests/images/hopper.jpg"
+
+        with pytest.raises(TypeError):
+            Image.open(PNGFILE, formats=123)
+
+        for formats in [["JPEG"], ("JPEG",)]:
+            with pytest.raises(UnidentifiedImageError):
+                Image.open(PNGFILE, formats=formats)
+
+            with Image.open(JPGFILE, formats=formats) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+
+        for file in [PNGFILE, JPGFILE]:
+            with Image.open(file, formats=None) as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
 
     def test_width_height(self):
         im = Image.new("RGB", (1, 2))
@@ -432,6 +454,17 @@ class TestImage:
         with Image.open("Tests/images/effect_spread.png") as im3:
             assert_image_similar(im2, im3, 110)
 
+    def test_effect_spread_zero(self):
+        # Arrange
+        im = hopper()
+        distance = 0
+
+        # Act
+        im2 = im.effect_spread(distance)
+
+        # Assert
+        assert_image_equal(im, im2)
+
     def test_check_size(self):
         # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):
@@ -465,17 +498,11 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.core.fill("RGB", (2, -2), (0, 0, 0))
 
-    def test_offset_not_implemented(self):
-        # Arrange
-        with hopper() as im:
-
-            # Act / Assert
-            with pytest.raises(NotImplementedError):
-                im.offset(None)
-
-    def test_fromstring(self):
-        with pytest.raises(NotImplementedError):
-            Image.fromstring()
+    def test_one_item_tuple(self):
+        for mode in ("I", "F", "L"):
+            im = Image.new(mode, (100, 100), (5,))
+            px = im.load()
+            assert px[0, 0] == 5
 
     def test_linear_gradient_wrong_mode(self):
         # Arrange
@@ -585,6 +612,22 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
+    def test_showxv_deprecation(self):
+        class TestViewer(ImageShow.Viewer):
+            def show_image(self, image, **options):
+                return True
+
+        viewer = TestViewer()
+        ImageShow.register(viewer, -1)
+
+        im = Image.new("RGB", (50, 50), "white")
+
+        with pytest.warns(DeprecationWarning):
+            Image._showxv(im)
+
+        # Restore original state
+        ImageShow._viewers.pop(0)
+
     def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -609,8 +652,103 @@ class TestImage:
 
             assert not fp.closed
 
+    def test_exif_jpeg(self, tmp_path):
+        with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
+            exif = im.getexif()
+            assert 258 not in exif
+            assert 274 in exif
+            assert 40960 in exif
+            assert exif[40963] == 450
+            assert exif[11] == "gThumb 3.0.1"
+
+            out = str(tmp_path / "temp.jpg")
+            exif[258] = 8
+            del exif[274]
+            del exif[40960]
+            exif[40963] = 455
+            exif[11] = "Pillow test"
+            im.save(out, exif=exif)
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif[258] == 8
+            assert 274 not in reloaded_exif
+            assert 40960 not in reloaded_exif
+            assert reloaded_exif[40963] == 455
+            assert reloaded_exif[11] == "Pillow test"
+
+        with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
+            exif = im.getexif()
+            assert 258 not in exif
+            assert 40962 in exif
+            assert exif[40963] == 200
+            assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
+
+            out = str(tmp_path / "temp.jpg")
+            exif[258] = 8
+            del exif[34665]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif[258] == 8
+            assert 34665 not in reloaded_exif
+            assert reloaded_exif[40963] == 455
+            assert reloaded_exif[305] == "Pillow test"
+
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_exif_webp(self, tmp_path):
+        with Image.open("Tests/images/hopper.webp") as im:
+            exif = im.getexif()
+            assert exif == {}
+
+            out = str(tmp_path / "temp.webp")
+            exif[258] = 8
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+
+            def check_exif():
+                with Image.open(out) as reloaded:
+                    reloaded_exif = reloaded.getexif()
+                    assert reloaded_exif[258] == 8
+                    assert reloaded_exif[40963] == 455
+                    assert reloaded_exif[305] == "Pillow test"
+
+            im.save(out, exif=exif)
+            check_exif()
+            im.save(out, exif=exif, save_all=True)
+            check_exif()
+
+    def test_exif_png(self, tmp_path):
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+            assert exif == {274: 1}
+
+            out = str(tmp_path / "temp.png")
+            exif[258] = 8
+            del exif[274]
+            exif[40963] = 455
+            exif[305] = "Pillow test"
+            im.save(out, exif=exif)
+
+        with Image.open(out) as reloaded:
+            reloaded_exif = reloaded.getexif()
+            assert reloaded_exif == {258: 8, 40963: 455, 305: "Pillow test"}
+
+    def test_exif_interop(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif.get_ifd(0xA005) == {
+                1: "R98",
+                2: b"0100",
+                4097: 2272,
+                4098: 1704,
+            }
+
     @pytest.mark.parametrize(
-        "test_module", [PIL, Image],
+        "test_module",
+        [PIL, Image],
     )
     def test_pillow_version(self, test_module):
         with pytest.warns(DeprecationWarning):
@@ -638,7 +776,7 @@ class TestImage:
             assert test_module.PILLOW_VERSION > "7.0.0"
 
     def test_overrun(self):
-        """ For overrun completeness, test as:
+        """For overrun completeness, test as:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
         for file in [
@@ -664,6 +802,18 @@ class TestImage:
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
 
+    def test_show_deprecation(self, monkeypatch):
+        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
+
+        im = Image.new("RGB", (50, 50), "white")
+
+        with pytest.warns(None) as raised:
+            im.show()
+        assert not raised
+
+        with pytest.warns(DeprecationWarning):
+            im.show(command="mock")
+
 
 class MockEncoder:
     pass
@@ -687,5 +837,5 @@ class TestRegistry:
         assert enc.args == ("RGB", "args", "extra")
 
     def test_encode_registry_fail(self):
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image._getencoder("RGB", "DoesNotExist", ("args",), extra=("extra",))

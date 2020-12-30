@@ -2,7 +2,7 @@
 # The Python Imaging Library
 # $Id$
 #
-# screen grabber (macOS and Windows only)
+# screen grabber
 #
 # History:
 # 2001-04-26 fl  created
@@ -21,8 +21,8 @@ from . import Image
 
 if sys.platform == "darwin":
     import os
-    import tempfile
     import subprocess
+    import tempfile
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
@@ -60,7 +60,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:
-        raise IOError("Pillow was built without XCB support")
+        raise OSError("Pillow was built without XCB support")
     size, data = Image.core.grabscreen_x11(xdisplay)
     im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
     if bbox:
@@ -93,12 +93,28 @@ def grabclipboard():
         os.unlink(filepath)
         return im
     elif sys.platform == "win32":
-        data = Image.core.grabclipboard_win32()
+        fmt, data = Image.core.grabclipboard_win32()
+        if fmt == "file":  # CF_HDROP
+            import struct
+
+            o = struct.unpack_from("I", data)[0]
+            if data[16] != 0:
+                files = data[o:].decode("utf-16le").split("\0")
+            else:
+                files = data[o:].decode("mbcs").split("\0")
+            return files[: files.index("")]
         if isinstance(data, bytes):
-            from . import BmpImagePlugin
             import io
 
-            return BmpImagePlugin.DibImageFile(io.BytesIO(data))
-        return data
+            data = io.BytesIO(data)
+            if fmt == "png":
+                from . import PngImagePlugin
+
+                return PngImagePlugin.PngImageFile(data)
+            elif fmt == "DIB":
+                from . import BmpImagePlugin
+
+                return BmpImagePlugin.DibImageFile(data)
+        return None
     else:
         raise NotImplementedError("ImageGrab.grabclipboard() is macOS and Windows only")

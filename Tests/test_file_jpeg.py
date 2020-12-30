@@ -3,7 +3,16 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import ExifTags, Image, ImageFile, JpegImagePlugin
+
+from PIL import (
+    ExifTags,
+    Image,
+    ImageFile,
+    ImageOps,
+    JpegImagePlugin,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image,
@@ -31,7 +40,7 @@ class TestFileJpeg:
         return im
 
     def gen_random_image(self, size, mode="RGB"):
-        """ Generates a very hard to compress file
+        """Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
 
@@ -41,7 +50,7 @@ class TestFileJpeg:
     def test_sanity(self):
 
         # internal version number
-        assert re.search(r"\d+\.\d+$", Image.core.jpeglib_version)
+        assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
 
         with Image.open(TEST_FILE) as im:
             im.load()
@@ -90,9 +99,13 @@ class TestFileJpeg:
             ]
             assert k > 0.9
 
-    def test_dpi(self):
+    @pytest.mark.parametrize(
+        "test_image_path",
+        [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
+    )
+    def test_dpi(self, test_image_path):
         def test(xdpi, ydpi=None):
-            with Image.open(TEST_FILE) as im:
+            with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
 
@@ -147,7 +160,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
             f = str(tmp_path / "temp.jpg")
             icc_profile = im.info["icc_profile"]
-            # Should not raise IOError for image with icc larger than image size.
+            # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
                 format="JPEG",
@@ -213,23 +226,58 @@ class TestFileJpeg:
             # Should not raise a TypeError
             im._getexif()
 
-    def test_exif_gps(self):
-        # Arrange
+    def test_exif_gps(self, tmp_path):
+        expected_exif_gps = {
+            0: b"\x00\x00\x00\x01",
+            2: 4294967295,
+            5: b"\x01",
+            30: 65535,
+            29: "1999:99:99 99:99:99",
+        }
+        gps_index = 34853
+
+        # Reading
         with Image.open("Tests/images/exif_gps.jpg") as im:
-            gps_index = 34853
-            expected_exif_gps = {
-                0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
-                5: b"\x01",
-                30: 65535,
-                29: "1999:99:99 99:99:99",
-            }
-
-            # Act
             exif = im._getexif()
+            assert exif[gps_index] == expected_exif_gps
 
-        # Assert
-        assert exif[gps_index] == expected_exif_gps
+        # Writing
+        f = str(tmp_path / "temp.jpg")
+        exif = Image.Exif()
+        exif[gps_index] = expected_exif_gps
+        hopper().save(f, exif=exif)
+
+        with Image.open(f) as reloaded:
+            exif = reloaded._getexif()
+            assert exif[gps_index] == expected_exif_gps
+
+    def test_empty_exif_gps(self):
+        with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
+            exif = im.getexif()
+            del exif[0x8769]
+
+            # Assert that it needs to be transposed
+            assert exif[0x0112] == Image.TRANSVERSE
+
+            # Assert that the GPS IFD is present and empty
+            assert exif[0x8825] == {}
+
+            transposed = ImageOps.exif_transpose(im)
+        exif = transposed.getexif()
+        assert exif[0x8825] == {}
+
+        # Assert that it was transposed
+        assert 0x0112 not in exif
+
+    def test_exif_equality(self):
+        # In 7.2.0, Exif rationals were changed to be read as
+        # TiffImagePlugin.IFDRational. This class had a bug in __eq__,
+        # breaking the self-equality of Exif data
+        exifs = []
+        for i in range(2):
+            with Image.open("Tests/images/exif-200dpcm.jpg") as im:
+                exifs.append(im._getexif())
+        assert exifs[0] == exifs[1]
 
     def test_exif_rollback(self):
         # rolling back exif support in 3.1 to pre-3.0 formatting.
@@ -241,7 +289,7 @@ class TestFileJpeg:
             36867: "2099:09:29 10:10:10",
             34853: {
                 0: b"\x00\x00\x00\x01",
-                2: (4294967295, 1),
+                2: 4294967295,
                 5: b"\x01",
                 30: 65535,
                 29: "1999:99:99 99:99:99",
@@ -253,11 +301,11 @@ class TestFileJpeg:
             271: "Make",
             272: "XXX-XXX",
             305: "PIL",
-            42034: ((1, 1), (1, 1), (1, 1), (1, 1)),
+            42034: (1, 1, 1, 1),
             42035: "LensMake",
             34856: b"\xaa\xaa\xaa\xaa\xaa\xaa",
-            282: (4294967295, 1),
-            33434: (4294967295, 1),
+            282: 4294967295,
+            33434: 4294967295,
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
@@ -379,14 +427,14 @@ class TestFileJpeg:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
             assert im.getbbox() is not None
 
-    def test_truncated_jpeg_throws_IOError(self):
+    def test_truncated_jpeg_throws_oserror(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         with Image.open(filename) as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     def test_qtables(self, tmp_path):
@@ -398,6 +446,7 @@ class TestFileJpeg:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
+                assert reloaded.quantization[0].typecode == "B"
 
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
@@ -496,11 +545,35 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
+    def test_load_16bit_qtables(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert len(im.quantization) == 2
+            assert len(im.quantization[0]) == 64
+            assert max(im.quantization[0]) > 255
+
+    def test_save_multiple_16bit_qtables(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            im2 = self.roundtrip(im, qtables="keep")
+            assert im.quantization == im2.quantization
+
+    def test_save_single_16bit_qtable(self):
+        with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            im2 = self.roundtrip(im, qtables={0: im.quantization[0]})
+            assert len(im2.quantization) == 1
+            assert im2.quantization[0] == im.quantization[0]
+
+    def test_save_low_quality_baseline_qtables(self):
+        with Image.open(TEST_FILE) as im:
+            im2 = self.roundtrip(im, quality=10)
+            assert len(im2.quantization) == 2
+            assert max(im2.quantization[0]) <= 255
+            assert max(im2.quantization[1]) <= 255
+
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 0)
+            assert_image_similar(img, Image.open(TEST_FILE), 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -552,7 +625,7 @@ class TestFileJpeg:
         out = BytesIO()
         for mode in ["LA", "La", "RGBA", "RGBa", "P"]:
             img = Image.new(mode, (20, 20))
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 img.save(out, "JPEG")
 
     def test_save_tiff_with_dpi(self, tmp_path):
@@ -647,6 +720,19 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
+    def test_exif_x_resolution(self, tmp_path):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif[282] == 180
+
+            out = str(tmp_path / "out.jpg")
+            with pytest.warns(None) as record:
+                im.save(out, exif=exif)
+            assert len(record) == 0
+
+        with Image.open(out) as reloaded:
+            assert reloaded.getexif()[282] == 180
+
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
         with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
@@ -689,6 +775,28 @@ class TestFileJpeg:
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
 
+    def test_icc_after_SOF(self):
+        with Image.open("Tests/images/icc-after-SOF.jpg") as im:
+            assert im.info["icc_profile"] == b"profile"
+
+    def test_jpeg_magic_number(self):
+        size = 4097
+        buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
+        buffer.max_pos = 0
+        orig_read = buffer.read
+
+        def read(n=-1):
+            res = orig_read(n)
+            buffer.max_pos = max(buffer.max_pos, buffer.tell())
+            return res
+
+        buffer.read = read
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(buffer)
+
+        # Assert the entire file has not been read
+        assert 0 < buffer.max_pos < size
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")
@@ -702,7 +810,7 @@ class TestFileCloseW32:
         im = Image.open(tmpfile)
         fp = im.fp
         assert not fp.closed
-        with pytest.raises(WindowsError):
+        with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
         assert fp.closed

@@ -3,7 +3,8 @@ import zlib
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, PngImagePlugin
+
+from PIL import Image, ImageFile, PngImagePlugin, features
 
 from .helper import (
     PillowLeakTestCase,
@@ -12,7 +13,6 @@ from .helper import (
     hopper,
     is_big_endian,
     is_win32,
-    on_ci,
     skip_unless_feature,
 )
 
@@ -69,11 +69,11 @@ class TestFilePng:
                     png.crc(cid, s)
         return chunks
 
-    @pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_sanity(self, tmp_path):
 
         # internal version number
-        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", Image.core.zlib_version)
+        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
 
         test_file = str(tmp_path / "temp.png")
 
@@ -105,7 +105,7 @@ class TestFilePng:
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open(test_file)
 
     def test_bad_text(self):
@@ -334,7 +334,7 @@ class TestFilePng:
     def test_verify_struct_error(self):
         # Check open/load/verify exception (#1755)
 
-        # offsets to test, -10: breaks in i32() in read. (IOError)
+        # offsets to test, -10: breaks in i32() in read. (OSError)
         #                  -13: breaks in crc, txt chunk.
         #                  -14: malformed chunk
 
@@ -344,7 +344,7 @@ class TestFilePng:
 
             with Image.open(BytesIO(test_file)) as im:
                 assert im.fp is not None
-                with pytest.raises((IOError, SyntaxError)):
+                with pytest.raises((OSError, SyntaxError)):
                     im.verify()
 
     def test_verify_ignores_crc_error(self):
@@ -463,7 +463,7 @@ class TestFilePng:
             data = b"\x89" + fd.read()
 
         pngfile = BytesIO(data)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open(pngfile)
 
     def test_trns_rgb(self):
@@ -537,6 +537,12 @@ class TestFilePng:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
+    def test_repr_png_error(self):
+        im = hopper("F")
+
+        with pytest.raises(ValueError):
+            im._repr_png_()
+
     def test_chunk_order(self, tmp_path):
         with Image.open("Tests/images/icc_profile.png") as im:
             test_file = str(tmp_path / "temp.png")
@@ -564,6 +570,28 @@ class TestFilePng:
         chunks = PngImagePlugin.getchunks(im)
         assert len(chunks) == 3
 
+    def test_read_private_chunks(self):
+        im = Image.open("Tests/images/exif.png")
+        assert im.private_chunks == [(b"orNT", b"\x01")]
+
+    def test_roundtrip_private_chunk(self):
+        # Check private chunk roundtripping
+
+        with Image.open(TEST_PNG_FILE) as im:
+            info = PngImagePlugin.PngInfo()
+            info.add(b"prIV", b"VALUE")
+            info.add(b"atEC", b"VALUE2")
+            info.add(b"prIV", b"VALUE3", True)
+
+            im = roundtrip(im, pnginfo=info)
+        assert im.private_chunks == [(b"prIV", b"VALUE"), (b"atEC", b"VALUE2")]
+        im.load()
+        assert im.private_chunks == [
+            (b"prIV", b"VALUE"),
+            (b"atEC", b"VALUE2"),
+            (b"prIV", b"VALUE3", True),
+        ]
+
     def test_textual_chunks_after_idat(self):
         with Image.open("Tests/images/hopper.png") as im:
             assert "comment" in im.text.keys()
@@ -575,13 +603,13 @@ class TestFilePng:
 
         # Raises a SyntaxError in load_end
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
         # Raises a UnicodeDecodeError in load_end
         with Image.open("Tests/images/truncated_image.png") as im:
             # The file is truncated
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.text()
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             assert isinstance(im.text, dict)
@@ -591,17 +619,31 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
-    @pytest.mark.parametrize(
-        "test_file",
-        [
-            "Tests/images/exif.png",  # With an EXIF chunk
-            "Tests/images/exif_imagemagick.png",  # With an ImageMagick zTXt chunk
-        ],
-    )
-    def test_exif(self, test_file):
-        with Image.open(test_file) as im:
+    def test_exif(self):
+        # With an EXIF chunk
+        with Image.open("Tests/images/exif.png") as im:
             exif = im._getexif()
         assert exif[274] == 1
+
+        # With an ImageMagick zTXt chunk
+        with Image.open("Tests/images/exif_imagemagick.png") as im:
+            exif = im._getexif()
+            assert exif[274] == 1
+
+            # Assert that info still can be extracted
+            # when the image is no longer a PngImageFile instance
+            exif = im.copy().getexif()
+            assert exif[274] == 1
+
+        # With a tEXt chunk
+        with Image.open("Tests/images/exif_text.png") as im:
+            exif = im._getexif()
+        assert exif[274] == 1
+
+        # With XMP tags
+        with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+            exif = im.getexif()
+        assert exif[274] == 3
 
     def test_exif_save(self, tmp_path):
         with Image.open("Tests/images/exif.png") as im:
@@ -636,6 +678,9 @@ class TestFilePng:
     def test_seek(self):
         with Image.open(TEST_PNG_FILE) as im:
             im.seek(0)
+
+            with pytest.raises(EOFError):
+                im.seek(1)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

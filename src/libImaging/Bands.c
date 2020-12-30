@@ -26,23 +26,28 @@ ImagingGetBand(Imaging imIn, int band)
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8)
+    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
         return (Imaging) ImagingError_ModeError();
+    }
 
-    if (band < 0 || band >= imIn->bands)
+    if (band < 0 || band >= imIn->bands) {
         return (Imaging) ImagingError_ValueError("band index out of range");
+    }
 
     /* Shortcuts */
-    if (imIn->bands == 1)
+    if (imIn->bands == 1) {
         return ImagingCopy(imIn);
+    }
 
     /* Special case for LXXA etc */
-    if (imIn->bands == 2 && band == 1)
+    if (imIn->bands == 2 && band == 1) {
         band = 3;
+    }
 
     imOut = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     /* Extract band from image */
     for (y = 0; y < imIn->ysize; y++) {
@@ -173,24 +178,29 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band)
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->bands != 1 || !imOut)
+    if (!imIn || imIn->bands != 1 || !imOut) {
         return (Imaging) ImagingError_ModeError();
+    }
 
-    if (band < 0 || band >= imOut->bands)
+    if (band < 0 || band >= imOut->bands) {
         return (Imaging) ImagingError_ValueError("band index out of range");
+    }
 
     if (imIn->type  != imOut->type  ||
         imIn->xsize != imOut->xsize ||
-        imIn->ysize != imOut->ysize)
+        imIn->ysize != imOut->ysize) {
         return (Imaging) ImagingError_Mismatch();
+    }
 
     /* Shortcuts */
-    if (imOut->bands == 1)
+    if (imOut->bands == 1) {
         return ImagingCopy2(imOut, imIn);
+    }
 
     /* Special case for LXXA etc */
-    if (imOut->bands == 2 && band == 1)
+    if (imOut->bands == 2 && band == 1) {
         band = 3;
+    }
 
     /* Insert band into image */
     for (y = 0; y < imIn->ysize; y++) {
@@ -211,15 +221,18 @@ ImagingFillBand(Imaging imOut, int band, int color)
     int x, y;
 
     /* Check arguments */
-    if (!imOut || imOut->type != IMAGING_TYPE_UINT8)
+    if (!imOut || imOut->type != IMAGING_TYPE_UINT8) {
         return (Imaging) ImagingError_ModeError();
+    }
 
-    if (band < 0 || band >= imOut->bands)
+    if (band < 0 || band >= imOut->bands) {
         return (Imaging) ImagingError_ValueError("band index out of range");
+    }
 
     /* Special case for LXXA etc */
-    if (imOut->bands == 2 && band == 1)
+    if (imOut->bands == 2 && band == 1) {
         band = 3;
+    }
 
     color = CLIP8(color);
 
@@ -263,16 +276,18 @@ ImagingMerge(const char* mode, Imaging bands[4])
     bandsCount = i;
 
     imOut = ImagingNewDirty(mode, firstBand->xsize, firstBand->ysize);
-    if ( ! imOut)
+    if ( ! imOut) {
         return NULL;
+    }
 
     if (imOut->bands != bandsCount) {
         ImagingDelete(imOut);
         return (Imaging) ImagingError_ValueError("wrong number of bands");
     }
 
-    if (imOut->bands == 1)
+    if (imOut->bands == 1) {
         return ImagingCopy2(imOut, firstBand);
+    }
 
     if (imOut->bands == 2) {
         for (y = 0; y < imOut->ysize; y++) {

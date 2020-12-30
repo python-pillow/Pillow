@@ -35,7 +35,6 @@ import numbers
 
 from . import Image, ImageColor
 
-
 """
 A simple 2D drawing interface for PIL images.
 <p>
@@ -119,7 +118,7 @@ class ImageDraw:
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None, width=0):
+    def arc(self, xy, start, end, fill=None, width=1):
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
@@ -156,6 +155,8 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
+                if not isinstance(xy[0], (list, tuple)):
+                    xy = [tuple(xy[i : i + 2]) for i in range(0, len(xy), 2)]
                 for i in range(1, len(xy) - 1):
                     point = xy[i]
                     angles = [
@@ -241,6 +242,13 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_polygon(xy, ink, 0)
 
+    def regular_polygon(
+        self, bounding_circle, n_sides, rotation=0, fill=None, outline=None
+    ):
+        """Draw a regular polygon."""
+        xy = _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
+        self.polygon(xy, fill, outline)
+
     def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
@@ -274,8 +282,9 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         stroke_fill=None,
+        embedded_color=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if self._multiline_check(text):
             return self.multiline_text(
@@ -291,7 +300,11 @@ class ImageDraw:
                 language,
                 stroke_width,
                 stroke_fill,
+                embedded_color,
             )
+
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
 
         if font is None:
             font = self.getfont()
@@ -303,15 +316,20 @@ class ImageDraw:
             return ink
 
         def draw_text(ink, stroke_width=0, stroke_offset=None):
+            mode = self.fontmode
+            if stroke_width == 0 and embedded_color:
+                mode = "RGBA"
             coord = xy
             try:
                 mask, offset = font.getmask2(
                     text,
-                    self.fontmode,
+                    mode,
                     direction=direction,
                     features=features,
                     language=language,
                     stroke_width=stroke_width,
+                    anchor=anchor,
+                    ink=ink,
                     *args,
                     **kwargs,
                 )
@@ -320,11 +338,13 @@ class ImageDraw:
                 try:
                     mask = font.getmask(
                         text,
-                        self.fontmode,
+                        mode,
                         direction,
                         features,
                         language,
                         stroke_width,
+                        anchor,
+                        ink,
                         *args,
                         **kwargs,
                     )
@@ -332,7 +352,15 @@ class ImageDraw:
                     mask = font.getmask(text)
             if stroke_offset:
                 coord = coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]
-            self.draw.draw_bitmap(coord, mask, ink)
+            if mode == "RGBA":
+                # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
+                # extract mask and set text alpha
+                color, mask = mask, mask.getband(3)
+                color.fillband(3, (ink >> 24) & 0xFF)
+                coord2 = coord[0] + mask.size[0], coord[1] + mask.size[1]
+                self.im.paste(color, coord + coord2, mask)
+            else:
+                self.draw.draw_bitmap(coord, mask, ink)
 
         ink = getink(fill)
         if ink is not None:
@@ -345,7 +373,7 @@ class ImageDraw:
                 draw_text(stroke_ink, stroke_width)
 
                 # Draw normal text
-                draw_text(ink, 0, (stroke_width, stroke_width))
+                draw_text(ink, 0)
             else:
                 # Only draw normal text
                 draw_text(ink)
@@ -364,7 +392,18 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         stroke_fill=None,
+        embedded_color=False,
     ):
+        if direction == "ttb":
+            raise ValueError("ttb direction is unsupported for multiline text")
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            raise ValueError("anchor must be a 2 character string")
+        elif anchor[1] in "tb":
+            raise ValueError("anchor not supported for multiline text")
+
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
@@ -372,26 +411,38 @@ class ImageDraw:
             self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
         )
         for line in lines:
-            line_width, line_height = self.textsize(
-                line,
-                font,
-                direction=direction,
-                features=features,
-                language=language,
-                stroke_width=stroke_width,
+            line_width = self.textlength(
+                line, font, direction=direction, features=features, language=language
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
-        left, top = xy
+
+        top = xy[1]
+        if anchor[1] == "m":
+            top -= (len(lines) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            top -= (len(lines) - 1) * line_spacing
+
         for idx, line in enumerate(lines):
+            left = xy[0]
+            width_difference = max_width - widths[idx]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                left -= width_difference / 2.0
+            elif anchor[0] == "r":
+                left -= width_difference
+
+            # then align by align parameter
             if align == "left":
-                pass  # left = x
+                pass
             elif align == "center":
-                left += (max_width - widths[idx]) / 2.0
+                left += width_difference / 2.0
             elif align == "right":
-                left += max_width - widths[idx]
+                left += width_difference
             else:
                 raise ValueError('align must be "left", "center" or "right"')
+
             self.text(
                 (left, top),
                 line,
@@ -403,9 +454,9 @@ class ImageDraw:
                 language=language,
                 stroke_width=stroke_width,
                 stroke_fill=stroke_fill,
+                embedded_color=embedded_color,
             )
             top += line_spacing
-            left = xy[0]
 
     def textsize(
         self,
@@ -448,6 +499,172 @@ class ImageDraw:
             )
             max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
+
+    def textlength(
+        self,
+        text,
+        font=None,
+        direction=None,
+        features=None,
+        language=None,
+        embedded_color=False,
+    ):
+        """Get the length of a given string, in pixels with 1/64 precision."""
+        if self._multiline_check(text):
+            raise ValueError("can't measure length of multiline text")
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+
+        if font is None:
+            font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
+        try:
+            return font.getlength(text, mode, direction, features, language)
+        except AttributeError:
+            size = self.textsize(
+                text, font, direction=direction, features=features, language=language
+            )
+            if direction == "ttb":
+                return size[1]
+            return size[0]
+
+    def textbbox(
+        self,
+        xy,
+        text,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        embedded_color=False,
+    ):
+        """Get the bounding box of a given string, in pixels."""
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+
+        if self._multiline_check(text):
+            return self.multiline_textbbox(
+                xy,
+                text,
+                font,
+                anchor,
+                spacing,
+                align,
+                direction,
+                features,
+                language,
+                stroke_width,
+                embedded_color,
+            )
+
+        if font is None:
+            font = self.getfont()
+        mode = "RGBA" if embedded_color else self.fontmode
+        bbox = font.getbbox(
+            text, mode, direction, features, language, stroke_width, anchor
+        )
+        return bbox[0] + xy[0], bbox[1] + xy[1], bbox[2] + xy[0], bbox[3] + xy[1]
+
+    def multiline_textbbox(
+        self,
+        xy,
+        text,
+        font=None,
+        anchor=None,
+        spacing=4,
+        align="left",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        embedded_color=False,
+    ):
+        if direction == "ttb":
+            raise ValueError("ttb direction is unsupported for multiline text")
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            raise ValueError("anchor must be a 2 character string")
+        elif anchor[1] in "tb":
+            raise ValueError("anchor not supported for multiline text")
+
+        widths = []
+        max_width = 0
+        lines = self._multiline_split(text)
+        line_spacing = (
+            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
+        )
+        for line in lines:
+            line_width = self.textlength(
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                embedded_color=embedded_color,
+            )
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+
+        top = xy[1]
+        if anchor[1] == "m":
+            top -= (len(lines) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            top -= (len(lines) - 1) * line_spacing
+
+        bbox = None
+
+        for idx, line in enumerate(lines):
+            left = xy[0]
+            width_difference = max_width - widths[idx]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                left -= width_difference / 2.0
+            elif anchor[0] == "r":
+                left -= width_difference
+
+            # then align by align parameter
+            if align == "left":
+                pass
+            elif align == "center":
+                left += width_difference / 2.0
+            elif align == "right":
+                left += width_difference
+            else:
+                raise ValueError('align must be "left", "center" or "right"')
+
+            bbox_line = self.textbbox(
+                (left, top),
+                line,
+                font,
+                anchor,
+                direction=direction,
+                features=features,
+                language=language,
+                stroke_width=stroke_width,
+                embedded_color=embedded_color,
+            )
+            if bbox is None:
+                bbox = bbox_line
+            else:
+                bbox = (
+                    min(bbox[0], bbox_line[0]),
+                    min(bbox[1], bbox_line[1]),
+                    max(bbox[2], bbox_line[2]),
+                    max(bbox[3], bbox_line[3]),
+                )
+
+            top += line_spacing
+
+        if bbox is None:
+            return xy[0], xy[1], xy[0], xy[1]
+        return bbox
 
 
 def Draw(im, mode=None):
@@ -552,6 +769,123 @@ def floodfill(image, xy, value, border=None, thresh=0):
                         new_edge.add((s, t))
         full_edge = edge  # discard pixels processed
         edge = new_edge
+
+
+def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
+    """
+    Generate a list of vertices for a 2D regular polygon.
+
+    :param bounding_circle: The bounding circle is a tuple defined
+        by a point and radius. The polygon is inscribed in this circle.
+        (e.g. ``bounding_circle=(x, y, r)`` or ``((x, y), r)``)
+    :param n_sides: Number of sides
+        (e.g. ``n_sides=3`` for a triangle, ``6`` for a hexagon)
+    :param rotation: Apply an arbitrary rotation to the polygon
+        (e.g. ``rotation=90``, applies a 90 degree rotation)
+    :return: List of regular polygon vertices
+        (e.g. ``[(25, 50), (50, 50), (50, 25), (25, 25)]``)
+
+    How are the vertices computed?
+    1. Compute the following variables
+        - theta: Angle between the apothem & the nearest polygon vertex
+        - side_length: Length of each polygon edge
+        - centroid: Center of bounding circle (1st, 2nd elements of bounding_circle)
+        - polygon_radius: Polygon radius (last element of bounding_circle)
+        - angles: Location of each polygon vertex in polar grid
+            (e.g. A square with 0 degree rotation => [225.0, 315.0, 45.0, 135.0])
+
+    2. For each angle in angles, get the polygon vertex at that angle
+        The vertex is computed using the equation below.
+            X= xcos(φ) + ysin(φ)
+            Y= −xsin(φ) + ycos(φ)
+
+        Note:
+            φ = angle in degrees
+            x = 0
+            y = polygon_radius
+
+        The formula above assumes rotation around the origin.
+        In our case, we are rotating around the centroid.
+        To account for this, we use the formula below
+            X = xcos(φ) + ysin(φ) + centroid_x
+            Y = −xsin(φ) + ycos(φ) + centroid_y
+    """
+    # 1. Error Handling
+    # 1.1 Check `n_sides` has an appropriate value
+    if not isinstance(n_sides, int):
+        raise TypeError("n_sides should be an int")
+    if n_sides < 3:
+        raise ValueError("n_sides should be an int > 2")
+
+    # 1.2 Check `bounding_circle` has an appropriate value
+    if not isinstance(bounding_circle, (list, tuple)):
+        raise TypeError("bounding_circle should be a tuple")
+
+    if len(bounding_circle) == 3:
+        *centroid, polygon_radius = bounding_circle
+    elif len(bounding_circle) == 2:
+        centroid, polygon_radius = bounding_circle
+    else:
+        raise ValueError(
+            "bounding_circle should contain 2D coordinates "
+            "and a radius (e.g. (x, y, r) or ((x, y), r) )"
+        )
+
+    if not all(isinstance(i, (int, float)) for i in (*centroid, polygon_radius)):
+        raise ValueError("bounding_circle should only contain numeric data")
+
+    if not len(centroid) == 2:
+        raise ValueError(
+            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
+        )
+
+    if polygon_radius <= 0:
+        raise ValueError("bounding_circle radius should be > 0")
+
+    # 1.3 Check `rotation` has an appropriate value
+    if not isinstance(rotation, (int, float)):
+        raise ValueError("rotation should be an int or float")
+
+    # 2. Define Helper Functions
+    def _apply_rotation(point, degrees, centroid):
+        return (
+            round(
+                point[0] * math.cos(math.radians(360 - degrees))
+                - point[1] * math.sin(math.radians(360 - degrees))
+                + centroid[0],
+                2,
+            ),
+            round(
+                point[1] * math.cos(math.radians(360 - degrees))
+                + point[0] * math.sin(math.radians(360 - degrees))
+                + centroid[1],
+                2,
+            ),
+        )
+
+    def _compute_polygon_vertex(centroid, polygon_radius, angle):
+        start_point = [polygon_radius, 0]
+        return _apply_rotation(start_point, angle, centroid)
+
+    def _get_angles(n_sides, rotation):
+        angles = []
+        degrees = 360 / n_sides
+        # Start with the bottom left polygon vertex
+        current_angle = (270 - 0.5 * degrees) + rotation
+        for _ in range(0, n_sides):
+            angles.append(current_angle)
+            current_angle += degrees
+            if current_angle > 360:
+                current_angle -= 360
+        return angles
+
+    # 3. Variable Declarations
+    angles = _get_angles(n_sides, rotation)
+
+    # 4. Compute Vertices
+    return [
+        _compute_polygon_vertex(centroid, polygon_radius, angle) for angle in angles
+    ]
 
 
 def _color_diff(color1, color2):

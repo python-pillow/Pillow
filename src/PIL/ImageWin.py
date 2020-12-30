@@ -59,7 +59,7 @@ class Dib:
     with 20 greylevels.
 
     To make sure that palettes work properly under Windows, you must call the
-    **palette** method upon certain events from Windows.
+    ``palette`` method upon certain events from Windows.
 
     :param image: Either a PIL image, or a mode string. If a mode string is
                   used, a size must also be given.  The mode can be one of "1",
@@ -88,8 +88,8 @@ class Dib:
         Copy the bitmap contents to a device context.
 
         :param handle: Device context (HDC), cast to a Python integer, or an
-                       HDC or HWND instance.  In PythonWin, you can use the
-                       :py:meth:`CDC.GetHandleAttrib` to get a suitable handle.
+                       HDC or HWND instance.  In PythonWin, you can use
+                       ``CDC.GetHandleAttrib()`` to get a suitable handle.
         """
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
@@ -173,7 +173,7 @@ class Dib:
         Load display memory contents from byte data.
 
         :param buffer: A buffer containing display data (usually
-                       data returned from <b>tobytes</b>)
+                       data returned from :py:func:`~PIL.ImageWin.Dib.tobytes`)
         """
         return self.image.frombytes(buffer)
 

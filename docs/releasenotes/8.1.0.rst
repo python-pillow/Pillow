@@ -1,0 +1,50 @@
+8.1.0
+-----
+
+Deprecations
+============
+
+FreeType 2.7
+^^^^^^^^^^^^
+
+Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
+when FreeType 2.8 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Append images to ICO
+^^^^^^^^^^^^^^^^^^^^
+
+When saving an ICO image, the file may contain versions of the image at different
+sizes. By default, Pillow will scale down the main image to create these copies.
+
+With this release, a list of images can be provided to the ``append_images`` parameter
+when saving, to replace the scaled down versions. This is the same functionality that
+already exists for the ICNS format.
+
+Security
+========
+
+OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including security fixes.
+
+Other Changes
+=============
+
+PyPy wheels
+^^^^^^^^^^^
+
+Wheels have been added for PyPy 3.7.

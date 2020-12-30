@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import assert_image_equal, assert_image_similar, skip_unless_feature
@@ -68,8 +69,8 @@ def test_textsize(request, tmp_path):
         (dx, dy) = font.getsize(chr(i))
         assert dy == 20
         assert dx in (0, 10)
-    for l in range(len(message)):
-        msg = message[: l + 1]
+    for i in range(len(message)):
+        msg = message[: i + 1]
         assert font.getsize(msg) == (len(msg) * 10, 20)
 
 

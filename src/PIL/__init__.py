@@ -26,7 +26,7 @@ __version__ = _version.__version__
 # Use __version__ instead.
 def _raise_version_warning():
     warnings.warn(
-        "PILLOW_VERSION is deprecated and will be removed in a future release. "
+        "PILLOW_VERSION is deprecated and will be removed in Pillow 9 (2022-01-02). "
         "Use __version__ instead.",
         DeprecationWarning,
         stacklevel=3,
@@ -39,7 +39,7 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
-        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, name))
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:
@@ -131,5 +131,9 @@ _plugins = [
 ]
 
 
-class UnidentifiedImageError(IOError):
+class UnidentifiedImageError(OSError):
+    """
+    Raised in :py:meth:`PIL.Image.open` if an image cannot be opened and identified.
+    """
+
     pass

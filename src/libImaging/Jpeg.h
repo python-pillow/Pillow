@@ -14,13 +14,13 @@
 
 
 typedef struct {
-    struct jpeg_error_mgr pub;	/* "public" fields */
-    jmp_buf setjmp_buffer;	/* for return to caller */
+    struct jpeg_error_mgr pub;    /* "public" fields */
+    jmp_buf setjmp_buffer;        /* for return to caller */
 } JPEGERROR;
 
 
 /* -------------------------------------------------------------------- */
-/* Decoder								*/
+/* Decoder                                                              */
 
 typedef struct {
     struct jpeg_source_mgr pub;
@@ -56,7 +56,7 @@ typedef struct {
 
 
 /* -------------------------------------------------------------------- */
-/* Encoder								*/
+/* Encoder                                                              */
 
 typedef struct {
     struct jpeg_destination_mgr pub;
@@ -110,7 +110,7 @@ typedef struct {
 
     int extra_offset;
 
-    int rawExifLen;   /* EXIF data length */
+    size_t rawExifLen;   /* EXIF data length */
     char* rawExif;  /* EXIF buffer pointer */
 
 } JPEGENCODERSTATE;

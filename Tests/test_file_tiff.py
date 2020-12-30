@@ -1,10 +1,10 @@
-import logging
 import os
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, TiffImagePlugin
-from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
+from PIL.TiffImagePlugin import RESOLUTION_UNIT, SUBIFD, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
     assert_image_equal,
@@ -15,8 +15,6 @@ from .helper import (
     is_pypy,
     is_win32,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class TestFileTiff:
@@ -163,6 +161,14 @@ class TestFileTiff:
                     reloaded.load()
                     assert (round(dpi), round(dpi)) == reloaded.info["dpi"]
 
+    def test_subifd(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            im.tag_v2[SUBIFD] = 10000
+
+            # Should not segfault
+            im.save(outfile)
+
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
         Image.open("Tests/images/10ct_32bit_128.tiff").save(
@@ -196,7 +202,7 @@ class TestFileTiff:
     def test_save_unsupported_mode(self, tmp_path):
         im = hopper("HSV")
         outfile = str(tmp_path / "temp.tif")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(outfile)
 
     def test_little_endian(self):
@@ -227,8 +233,8 @@ class TestFileTiff:
             assert im.getpixel((0, 1)) == 0
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
 
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             # to make the target --
@@ -249,7 +255,7 @@ class TestFileTiff:
             assert im.getextrema() == (-3.140936851501465, 3.140684127807617)
 
     def test_unknown_pixel_mode(self):
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             Image.open("Tests/images/hopper_unknown_pixel_mode.tif")
 
     def test_n_frames(self):
@@ -386,6 +392,10 @@ class TestFileTiff:
         data = b"abcdefghabcdefgh"
         ret = ifd.load_double(data, False)
         assert ret == (8.540883223036124e194, 8.540883223036124e194)
+
+    def test_ifd_tag_type(self):
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            assert 0x8825 in im.tag_v2
 
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
@@ -596,6 +606,10 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    @pytest.mark.skipif(
+        not os.path.exists("Tests/images/string_dimension.tiff"),
+        reason="Extra image files not installed",
+    )
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with pytest.raises(ValueError):
@@ -614,7 +628,7 @@ class TestFileTiffW32:
         im = Image.open(tmpfile)
         fp = im.fp
         assert not fp.closed
-        with pytest.raises(WindowsError):
+        with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
         assert fp.closed

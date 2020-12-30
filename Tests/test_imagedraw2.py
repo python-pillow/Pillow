@@ -55,7 +55,7 @@ def helper_ellipse(mode, bbox):
     draw = ImageDraw2.Draw(im)
     pen = ImageDraw2.Pen("blue", width=2)
     brush = ImageDraw2.Brush("green")
-    expected = "Tests/images/imagedraw_ellipse_{}.png".format(mode)
+    expected = f"Tests/images/imagedraw_ellipse_{mode}.png"
 
     # Act
     draw.ellipse(bbox, pen, brush)
@@ -79,7 +79,7 @@ def test_ellipse_edge():
     brush = ImageDraw2.Brush("white")
 
     # Act
-    draw.ellipse(((0, 0), (W - 1, H)), brush)
+    draw.ellipse(((0, 0), (W - 1, H - 1)), brush)
 
     # Assert
     assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)

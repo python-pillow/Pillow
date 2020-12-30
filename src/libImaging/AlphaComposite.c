@@ -33,19 +33,22 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
     if (!imDst || !imSrc ||
         strcmp(imDst->mode, "RGBA") ||
         imDst->type != IMAGING_TYPE_UINT8 ||
-        imDst->bands != 4)
+        imDst->bands != 4) {
         return ImagingError_ModeError();
+    }
 
     if (strcmp(imDst->mode, imSrc->mode) ||
         imDst->type  != imSrc->type  ||
         imDst->bands != imSrc->bands ||
         imDst->xsize != imSrc->xsize ||
-        imDst->ysize != imSrc->ysize)
+        imDst->ysize != imSrc->ysize) {
         return ImagingError_Mismatch();
+    }
 
     imOut = ImagingNewDirty(imDst->mode, imDst->xsize, imDst->ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     for (y = 0; y < imDst->ysize; y++) {
         rgba8* dst = (rgba8*) imDst->image[y];

@@ -25,12 +25,14 @@ ImagingModeFilter(Imaging im, int size)
     UINT8 maxpixel;
     int histogram[256];
 
-    if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8)
+    if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
         return (Imaging) ImagingError_ModeError();
+    }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
-    if (!imOut)
+    if (!imOut) {
         return NULL;
+    }
 
     size = size / 2;
 
@@ -46,27 +48,32 @@ ImagingModeFilter(Imaging im, int size)
                the added complexity... */
 
             memset(histogram, 0, sizeof(histogram));
-            for (yy = y - size; yy <= y + size; yy++)
+            for (yy = y - size; yy <= y + size; yy++) {
                 if (yy >= 0 && yy < imOut->ysize) {
                     UINT8* in = &IMAGING_PIXEL_L(im, 0, yy);
-                    for (xx = x - size; xx <= x + size; xx++)
-                        if (xx >= 0 && xx < imOut->xsize)
+                    for (xx = x - size; xx <= x + size; xx++) {
+                        if (xx >= 0 && xx < imOut->xsize) {
                             histogram[in[xx]]++;
+                        }
+                    }
                 }
+            }
 
             /* find most frequent pixel value in this region */
             maxpixel = 0;
             maxcount = histogram[maxpixel];
-            for (i = 1; i < 256; i++)
+            for (i = 1; i < 256; i++) {
                 if (histogram[i] > maxcount) {
                     maxcount = histogram[i];
                     maxpixel = (UINT8) i;
                 }
+            }
 
-            if (maxcount > 2)
+            if (maxcount > 2) {
                 out[x] = maxpixel;
-            else
+            } else {
                 out[x] = IMAGING_PIXEL_L(im, x, y);
+            }
 
         }
 

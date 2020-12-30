@@ -1,6 +1,7 @@
 import io
 
 import pytest
+
 from PIL import IcoImagePlugin, Image, ImageDraw
 
 from .helper import assert_image_equal, hopper
@@ -83,6 +84,20 @@ def test_only_save_relevant_sizes(tmp_path):
     with Image.open(outfile) as im_saved:
         # Assert
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
+
+
+def test_save_append_images(tmp_path):
+    # append_images should be used for scaled down versions of the image
+    im = hopper("RGBA")
+    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
+    outfile = str(tmp_path / "temp_saved_multi_icon.ico")
+    im.save(outfile, sizes=[(32, 32), (128, 128)], append_images=[provided_im])
+
+    with Image.open(outfile) as reread:
+        assert_image_equal(reread, hopper("RGBA"))
+
+        reread.size = (32, 32)
+        assert_image_equal(reread, provided_im)
 
 
 def test_unexpected_size():

@@ -311,8 +311,8 @@ def test_subtract():
 
     # Assert
     assert new.getbbox() == (25, 50, 76, 76)
-    assert new.getpixel((50, 50)) == GREEN
-    assert new.getpixel((50, 51)) == BLACK
+    assert new.getpixel((50, 51)) == GREEN
+    assert new.getpixel((50, 52)) == BLACK
 
 
 def test_subtract_scale_offset():
@@ -350,8 +350,8 @@ def test_subtract_modulo():
 
     # Assert
     assert new.getbbox() == (25, 50, 76, 76)
-    assert new.getpixel((50, 50)) == GREEN
-    assert new.getpixel((50, 51)) == BLACK
+    assert new.getpixel((50, 51)) == GREEN
+    assert new.getpixel((50, 52)) == BLACK
 
 
 def test_subtract_modulo_no_clip():

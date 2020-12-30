@@ -1,7 +1,8 @@
 import pytest
+
 from PIL import Image, ImageShow
 
-from .helper import hopper, is_win32, on_ci, on_github_actions
+from .helper import hopper, is_win32, on_ci
 
 
 def test_sanity():
@@ -17,19 +18,22 @@ def test_register():
     ImageShow._viewers.pop()
 
 
-def test_viewer_show():
+@pytest.mark.parametrize(
+    "order",
+    [-1, 0],
+)
+def test_viewer_show(order):
     class TestViewer(ImageShow.Viewer):
-        methodCalled = False
-
         def show_image(self, image, **options):
             self.methodCalled = True
             return True
 
     viewer = TestViewer()
-    ImageShow.register(viewer, -1)
+    ImageShow.register(viewer, order)
 
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
-        with hopper() as im:
+        viewer.methodCalled = False
+        with hopper(mode) as im:
             assert ImageShow.show(im)
         assert viewer.methodCalled
 
@@ -38,8 +42,8 @@ def test_viewer_show():
 
 
 @pytest.mark.skipif(
-    not on_ci() or (is_win32() and on_github_actions()),
-    reason="Only run on CIs; hangs on Windows on GitHub Actions",
+    not on_ci() or is_win32(),
+    reason="Only run on CIs; hangs on Windows CIs",
 )
 def test_show():
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):

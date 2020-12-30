@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.12)
 
 project(libraqm)
 
@@ -7,7 +7,7 @@ find_library(fribidi NAMES fribidi)
 find_library(harfbuzz NAMES harfbuzz)
 find_library(freetype NAMES freetype)
 
-add_definitions(-DFRIBIDI_ENTRY=extern)
+add_definitions(-DFRIBIDI_LIB_STATIC)
 
 
 function(raqm_conf)

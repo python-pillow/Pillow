@@ -20,8 +20,8 @@
 int
 quantize_pngquant(
     Pixel *pixelData,
-    int width,
-    int height,
+    unsigned int width,
+    unsigned int height,
     uint32_t quantPixels,
     Pixel **palette,
     uint32_t *paletteLength,
@@ -95,9 +95,15 @@ quantize_pngquant(
     result = 1;
 
 err:
-    if (attr) liq_attr_destroy(attr);
-    if (image) liq_image_destroy(image);
-    if (remap) liq_result_destroy(remap);
+    if (attr) {
+        liq_attr_destroy(attr);
+    }
+    if (image) {
+        liq_image_destroy(image);
+    }
+    if (remap) {
+        liq_result_destroy(remap);
+    }
     free(charMatrix);
     free(charMatrixRows);
     if (!result)  {
@@ -105,6 +111,15 @@ err:
         free(*palette);
     }
     return result;
+}
+
+const char*
+ImagingImageQuantVersion(void)
+{
+    static char version[20];
+    int number = liq_version();
+    sprintf(version, "%d.%d.%d", number / 10000, (number / 100) % 100, number % 100);
+    return version;
 }
 
 #endif

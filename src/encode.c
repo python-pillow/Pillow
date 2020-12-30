@@ -25,8 +25,8 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
-#include "Imaging.h"
-#include "Gif.h"
+#include "libImaging/Imaging.h"
+#include "libImaging/Gif.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> /* write */
@@ -55,12 +55,14 @@ PyImaging_EncoderNew(int contextsize)
     ImagingEncoderObject *encoder;
     void *context;
 
-    if(PyType_Ready(&ImagingEncoderType) < 0)
+    if(PyType_Ready(&ImagingEncoderType) < 0) {
         return NULL;
+    }
 
     encoder = PyObject_New(ImagingEncoderObject, &ImagingEncoderType);
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
     /* Clear the encoder state */
     memset(&encoder->state, 0, sizeof(encoder->state));
@@ -70,11 +72,12 @@ PyImaging_EncoderNew(int contextsize)
         context = (void*) calloc(1, contextsize);
         if (!context) {
             Py_DECREF(encoder);
-            (void) PyErr_NoMemory();
+            (void) ImagingError_MemoryError();
             return NULL;
         }
-    } else
+    } else {
         context = 0;
+    }
 
     /* Initialize encoder context */
     encoder->state.context = context;
@@ -93,8 +96,9 @@ PyImaging_EncoderNew(int contextsize)
 static void
 _dealloc(ImagingEncoderObject* encoder)
 {
-    if (encoder->cleanup)
+    if (encoder->cleanup) {
         encoder->cleanup(&encoder->state);
+    }
     free(encoder->state.buffer);
     free(encoder->state.context);
     Py_XDECREF(encoder->lock);
@@ -125,19 +129,22 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
 
     Py_ssize_t bufsize = 16384;
 
-    if (!PyArg_ParseTuple(args, "|n", &bufsize))
+    if (!PyArg_ParseTuple(args, "|n", &bufsize)) {
         return NULL;
+    }
 
     buf = PyBytes_FromStringAndSize(NULL, bufsize);
-    if (!buf)
+    if (!buf) {
         return NULL;
+    }
 
     status = encoder->encode(encoder->im, &encoder->state,
                              (UINT8*) PyBytes_AsString(buf), bufsize);
 
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0)
+    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0) {
         return NULL;
+    }
 
     result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
 
@@ -179,14 +186,16 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
     Py_ssize_t fh;
     Py_ssize_t bufsize = 16384;
 
-    if (!PyArg_ParseTuple(args, "n|n", &fh, &bufsize))
+    if (!PyArg_ParseTuple(args, "n|n", &fh, &bufsize)) {
         return NULL;
+    }
 
     /* Allocate an encoder buffer */
     /* malloc check ok, either constant int, or checked by PyArg_ParseTuple */
     buf = (UINT8*) malloc(bufsize);
-    if (!buf)
-        return PyErr_NoMemory();
+    if (!buf) {
+        return ImagingError_MemoryError();
+    }
 
     ImagingSectionEnter(&cookie);
 
@@ -197,12 +206,13 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
 
         status = encoder->encode(encoder->im, &encoder->state, buf, bufsize);
 
-        if (status > 0)
+        if (status > 0) {
             if (write(fh, buf, status) < 0) {
                 ImagingSectionLeave(&cookie);
                 free(buf);
-                return PyErr_SetFromErrno(PyExc_IOError);
+                return PyErr_SetFromErrno(PyExc_OSError);
             }
+        }
 
     } while (encoder->state.errcode == 0);
 
@@ -228,11 +238,13 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
     x0 = y0 = x1 = y1 = 0;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O|(nnnn)", &op, &x0, &y0, &x1, &y1))
+    if (!PyArg_ParseTuple(args, "O|(nnnn)", &op, &x0, &y0, &x1, &y1)) {
         return NULL;
+    }
     im = PyImaging_AsImaging(op);
-    if (!im)
+    if (!im) {
         return NULL;
+    }
 
     encoder->im = im;
 
@@ -259,13 +271,14 @@ _setimage(ImagingEncoderObject* encoder, PyObject* args)
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
         if (state->xsize > ((INT_MAX / state->bits)-7)) {
-            return PyErr_NoMemory();
+            return ImagingError_MemoryError();
         }
         state->bytes = (state->bits * state->xsize+7)/8;
         /* malloc check ok, overflow checked above */
         state->buffer = (UINT8*) malloc(state->bytes);
-        if (!state->buffer)
-            return PyErr_NoMemory();
+        if (!state->buffer) {
+            return ImagingError_MemoryError();
+        }
     }
 
     /* Keep a reference to the image object, to make sure it doesn't
@@ -284,8 +297,9 @@ _setfd(ImagingEncoderObject* encoder, PyObject* args)
     PyObject* fd;
     ImagingCodecState state;
 
-    if (!PyArg_ParseTuple(args, "O", &fd))
+    if (!PyArg_ParseTuple(args, "O", &fd)) {
         return NULL;
+    }
 
     state = &encoder->state;
 
@@ -386,8 +400,9 @@ PyImaging_EpsEncoderNew(PyObject* self, PyObject* args)
     ImagingEncoderObject* encoder;
 
     encoder = PyImaging_EncoderNew(0);
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
     encoder->encode = ImagingEpsEncode;
 
@@ -408,15 +423,18 @@ PyImaging_GifEncoderNew(PyObject* self, PyObject* args)
     char *rawmode;
     Py_ssize_t bits = 8;
     Py_ssize_t interlace = 0;
-    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &bits, &interlace))
+    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &bits, &interlace)) {
         return NULL;
+    }
 
     encoder = PyImaging_EncoderNew(sizeof(GIFENCODERSTATE));
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
+    }
 
     encoder->encode = ImagingGifEncode;
 
@@ -473,15 +491,18 @@ PyImaging_RawEncoderNew(PyObject* self, PyObject* args)
     Py_ssize_t stride = 0;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &stride, &ystep))
+    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &stride, &ystep)) {
         return NULL;
+    }
 
     encoder = PyImaging_EncoderNew(0);
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
+    }
 
     encoder->encode = ImagingRawEncode;
 
@@ -505,15 +526,18 @@ PyImaging_TgaRleEncoderNew(PyObject* self, PyObject* args)
     char *rawmode;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &ystep))
+    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &ystep)) {
         return NULL;
+    }
 
     encoder = PyImaging_EncoderNew(0);
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
+    }
 
     encoder->encode = ImagingTgaRleEncode;
 
@@ -534,11 +558,13 @@ PyImaging_XbmEncoderNew(PyObject* self, PyObject* args)
     ImagingEncoderObject* encoder;
 
     encoder = PyImaging_EncoderNew(0);
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
-    if (get_packer(encoder, "1", "1;R") < 0)
+    if (get_packer(encoder, "1", "1;R") < 0) {
         return NULL;
+    }
 
     encoder->encode = ImagingXbmEncode;
 
@@ -552,7 +578,7 @@ PyImaging_XbmEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBZ
 
-#include "Zip.h"
+#include "libImaging/ZipCodecs.h"
 
 PyObject*
 PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
@@ -569,19 +595,22 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "ss|nnny#", &mode, &rawmode,
                           &optimize,
                           &compress_level, &compress_type,
-                          &dictionary, &dictionary_size))
+                          &dictionary, &dictionary_size)) {
         return NULL;
+    }
 
     /* Copy to avoid referencing Python's memory */
     if (dictionary && dictionary_size > 0) {
         /* malloc check ok, size comes from PyArg_ParseTuple */
         char* p = malloc(dictionary_size);
-        if (!p)
-            return PyErr_NoMemory();
+        if (!p) {
+            return ImagingError_MemoryError();
+        }
         memcpy(p, dictionary, dictionary_size);
         dictionary = p;
-    } else
+    } else {
         dictionary = NULL;
+    }
 
     encoder = PyImaging_EncoderNew(sizeof(ZIPSTATE));
     if (encoder == NULL) {
@@ -597,9 +626,10 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
     encoder->encode = ImagingZipEncode;
     encoder->cleanup = ImagingZipEncodeCleanup;
 
-    if (rawmode[0] == 'P')
+    if (rawmode[0] == 'P') {
         /* disable filtering */
         ((ZIPSTATE*)encoder->state.context)->mode = ZIP_PNG_PALETTE;
+    }
 
     ((ZIPSTATE*)encoder->state.context)->optimize = optimize;
     ((ZIPSTATE*)encoder->state.context)->compress_level = compress_level;
@@ -618,7 +648,7 @@ PyImaging_ZipEncoderNew(PyObject* self, PyObject* args)
 
 #ifdef HAVE_LIBTIFF
 
-#include "TiffDecode.h"
+#include "libImaging/TiffDecode.h"
 
 #include <string.h>
 
@@ -641,7 +671,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     // This list also exists in TiffTags.py
     const int core_tags[] = {
         256, 257, 258, 259, 262, 263, 266, 269, 274, 277, 278, 280, 281, 340,
-        341, 282, 283, 284, 286, 287, 296, 297, 321, 338, 32995, 32998, 32996,
+        341, 282, 283, 284, 286, 287, 296, 297, 320, 321, 338, 32995, 32998, 32996,
         339, 32997, 330, 531, 530, 65537
     };
 
@@ -675,11 +705,13 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
     TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
+    }
 
     if (! ImagingLibTiffEncodeInit(&encoder->state, filename, fp)) {
         Py_DECREF(encoder);
@@ -729,12 +761,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
             }
         }
 
-        if (PyBytes_Check(value) &&
-                (type == TIFF_BYTE || type == TIFF_UNDEFINED)) {
-            // For backwards compatibility
-            type = TIFF_ASCII;
-        }
-
         if (PyTuple_Check(value)) {
             Py_ssize_t len;
             len = PyTuple_Size(value);
@@ -758,25 +784,40 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 
         if (!is_core_tag) {
             // Register field for non core tags.
+            if (type == TIFF_BYTE) {
+                is_var_length = 1;
+            }
             if (ImagingLibTiffMergeFieldInfo(&encoder->state, type, key_int, is_var_length)) {
                 continue;
             }
         }
 
-        if (is_var_length) {
+        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+            status = ImagingLibTiffSetField(&encoder->state,
+                    (ttag_t) key_int,
+                    PyBytes_Size(value), PyBytes_AsString(value));
+        } else if (is_var_length) {
             Py_ssize_t len,i;
             TRACE(("Setting from Tuple: %d \n", key_int));
             len = PyTuple_Size(value);
 
-            if (type == TIFF_BYTE) {
-                UINT8 *av;
+            if (key_int == TIFFTAG_COLORMAP) {
+                int stride = 256;
+                if (len != 768) {
+                    PyErr_SetString(PyExc_ValueError, "Requiring 768 items for for Colormap");
+                    return NULL;
+                }
+                UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
-                av = calloc(len, sizeof(UINT8));
+                av = calloc(len, sizeof(UINT16));
                 if (av) {
                     for (i=0;i<len;i++) {
-                        av[i] = (UINT8)PyLong_AsLong(PyTuple_GetItem(value,i));
+                        av[i] = (UINT16)PyLong_AsLong(PyTuple_GetItem(value,i));
                     }
-                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int, len, av);
+                    status = ImagingLibTiffSetField(&encoder->state, (ttag_t) key_int,
+                                                    av,
+                                                    av + stride,
+                                                    av + stride * 2);
                     free(av);
                 }
             } else if (type == TIFF_SHORT) {
@@ -882,10 +923,6 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
                 status = ImagingLibTiffSetField(&encoder->state,
                         (ttag_t) key_int,
                         (FLOAT64)PyFloat_AsDouble(value));
-            } else if (type == TIFF_BYTE) {
-                status = ImagingLibTiffSetField(&encoder->state,
-                        (ttag_t) key_int,
-                        (UINT8)PyLong_AsLong(value));
             } else if (type == TIFF_SBYTE) {
                 status = ImagingLibTiffSetField(&encoder->state,
                         (ttag_t) key_int,
@@ -938,7 +975,7 @@ PyImaging_LibTiffEncoderNew(PyObject* self, PyObject* args)
 #undef  INT16
 #undef  INT32
 
-#include "Jpeg.h"
+#include "libImaging/Jpeg.h"
 
 static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     PyObject* tables;
@@ -968,8 +1005,7 @@ static unsigned int* get_qtables_arrays(PyObject* qtables, int* qtablesLen) {
     qarrays = (unsigned int*) malloc(num_tables * DCTSIZE2 * sizeof(unsigned int));
     if (!qarrays) {
         Py_DECREF(tables);
-        PyErr_NoMemory();
-        return NULL;
+        return ImagingError_MemoryError();
     }
     for (i = 0; i < num_tables; i++) {
         table = PySequence_Fast_GET_ITEM(tables, i);
@@ -1027,12 +1063,14 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
                           &mode, &rawmode, &quality,
                           &progressive, &smooth, &optimize, &streamtype,
                           &xdpi, &ydpi, &subsampling, &qtables, &extra, &extra_size,
-                          &rawExif, &rawExifLen))
+                          &rawExif, &rawExifLen)) {
         return NULL;
+    }
 
     encoder = PyImaging_EncoderNew(sizeof(JPEGENCODERSTATE));
-    if (encoder == NULL)
+    if (encoder == NULL) {
         return NULL;
+    }
 
     // libjpeg-turbo supports different output formats.
     // We are choosing Pillow's native format (3 color bytes + 1 padding)
@@ -1041,8 +1079,9 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
         rawmode = "RGBX";
     }
 
-    if (get_packer(encoder, mode, rawmode) < 0)
+    if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
+    }
 
     // Freed in JpegEncode, Case 5
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
@@ -1050,24 +1089,29 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     if (extra && extra_size > 0) {
         /* malloc check ok, length is from python parsearg */
         char* p = malloc(extra_size); // Freed in JpegEncode, Case 5
-        if (!p)
-            return PyErr_NoMemory();
+        if (!p) {
+            return ImagingError_MemoryError();
+        }
         memcpy(p, extra, extra_size);
         extra = p;
-    } else
+    } else {
         extra = NULL;
+    }
 
     if (rawExif && rawExifLen > 0) {
         /* malloc check ok, length is from python parsearg */
         char* pp = malloc(rawExifLen); // Freed in JpegEncode, Case 5
         if (!pp) {
-            if (extra) free(extra);
-            return PyErr_NoMemory();
+            if (extra) {
+                free(extra);
+            }
+            return ImagingError_MemoryError();
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
-    } else
+    } else {
         rawExif = NULL;
+    }
 
     encoder->encode = ImagingJpegEncode;
 
@@ -1095,12 +1139,12 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
 
 
 /* -------------------------------------------------------------------- */
-/* JPEG	2000								*/
+/* JPEG 2000                                                            */
 /* -------------------------------------------------------------------- */
 
 #ifdef HAVE_OPENJPEG
 
-#include "Jpeg2K.h"
+#include "libImaging/Jpeg2K.h"
 
 static void
 j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y)
@@ -1111,10 +1155,12 @@ j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y)
         *x = (int)PyLong_AsLong(PyTuple_GET_ITEM(tuple, 0));
         *y = (int)PyLong_AsLong(PyTuple_GET_ITEM(tuple, 1));
 
-        if (*x < 0)
+        if (*x < 0) {
             *x = 0;
-        if (*y < 0)
+        }
+        if (*y < 0) {
             *y = 0;
+        }
     }
 }
 
@@ -1144,45 +1190,50 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
                           &quality_mode, &quality_layers, &num_resolutions,
                           &cblk_size, &precinct_size,
                           &irreversible, &progression, &cinema_mode,
-                          &fd))
+                          &fd)) {
         return NULL;
+    }
 
-    if (strcmp (format, "j2k") == 0)
+    if (strcmp (format, "j2k") == 0) {
         codec_format = OPJ_CODEC_J2K;
-    else if (strcmp (format, "jpt") == 0)
+    } else if (strcmp (format, "jpt") == 0) {
         codec_format = OPJ_CODEC_JPT;
-    else if (strcmp (format, "jp2") == 0)
+    } else if (strcmp (format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
-    else
+    } else {
         return NULL;
+    }
 
-    if (strcmp(progression, "LRCP") == 0)
+    if (strcmp(progression, "LRCP") == 0) {
         prog_order = OPJ_LRCP;
-    else if (strcmp(progression, "RLCP") == 0)
+    } else if (strcmp(progression, "RLCP") == 0) {
         prog_order = OPJ_RLCP;
-    else if (strcmp(progression, "RPCL") == 0)
+    } else if (strcmp(progression, "RPCL") == 0) {
         prog_order = OPJ_RPCL;
-    else if (strcmp(progression, "PCRL") == 0)
+    } else if (strcmp(progression, "PCRL") == 0) {
         prog_order = OPJ_PCRL;
-    else if (strcmp(progression, "CPRL") == 0)
+    } else if (strcmp(progression, "CPRL") == 0) {
         prog_order = OPJ_CPRL;
-    else
+    } else {
         return NULL;
+    }
 
-    if (strcmp(cinema_mode, "no") == 0)
+    if (strcmp(cinema_mode, "no") == 0) {
         cine_mode = OPJ_OFF;
-    else if (strcmp(cinema_mode, "cinema2k-24") == 0)
+    } else if (strcmp(cinema_mode, "cinema2k-24") == 0) {
         cine_mode = OPJ_CINEMA2K_24;
-    else if (strcmp(cinema_mode, "cinema2k-48") == 0)
+    } else if (strcmp(cinema_mode, "cinema2k-48") == 0) {
         cine_mode = OPJ_CINEMA2K_48;
-    else if (strcmp(cinema_mode, "cinema4k-24") == 0)
+    } else if (strcmp(cinema_mode, "cinema4k-24") == 0) {
         cine_mode = OPJ_CINEMA4K_24;
-    else
+    } else {
         return NULL;
+    }
 
     encoder = PyImaging_EncoderNew(sizeof(JPEG2KENCODESTATE));
-    if (!encoder)
+    if (!encoder) {
         return NULL;
+    }
 
     encoder->encode = ImagingJpeg2KEncode;
     encoder->cleanup = ImagingJpeg2KEncodeCleanup;

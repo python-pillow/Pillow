@@ -86,16 +86,16 @@ OPEN = {
 
 # ifunc95 extensions
 for i in ["8", "8S", "16", "16S", "32", "32F"]:
-    OPEN["L %s image" % i] = ("F", "F;%s" % i)
-    OPEN["L*%s image" % i] = ("F", "F;%s" % i)
+    OPEN[f"L {i} image"] = ("F", f"F;{i}")
+    OPEN[f"L*{i} image"] = ("F", f"F;{i}")
 for i in ["16", "16L", "16B"]:
-    OPEN["L %s image" % i] = ("I;%s" % i, "I;%s" % i)
-    OPEN["L*%s image" % i] = ("I;%s" % i, "I;%s" % i)
+    OPEN[f"L {i} image"] = (f"I;{i}", f"I;{i}")
+    OPEN[f"L*{i} image"] = (f"I;{i}", f"I;{i}")
 for i in ["32S"]:
-    OPEN["L %s image" % i] = ("I", "I;%s" % i)
-    OPEN["L*%s image" % i] = ("I", "I;%s" % i)
+    OPEN[f"L {i} image"] = ("I", f"I;{i}")
+    OPEN[f"L*{i} image"] = ("I", f"I;{i}")
 for i in range(2, 33):
-    OPEN["L*%s image" % i] = ("F", "F;%s" % i)
+    OPEN[f"L*{i} image"] = ("F", f"F;{i}")
 
 
 # --------------------------------------------------------------------
@@ -163,8 +163,8 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error:
-                raise SyntaxError("not an IM file")
+            except re.error as e:
+                raise SyntaxError("not an IM file") from e
 
             if m:
 
@@ -341,12 +341,12 @@ def _save(im, fp, filename):
 
     try:
         image_type, rawmode = SAVE[im.mode]
-    except KeyError:
-        raise ValueError("Cannot save %s images as IM" % im.mode)
+    except KeyError as e:
+        raise ValueError(f"Cannot save {im.mode} images as IM") from e
 
     frames = im.encoderinfo.get("frames", 1)
 
-    fp.write(("Image type: %s image\r\n" % image_type).encode("ascii"))
+    fp.write(f"Image type: {image_type} image\r\n".encode("ascii"))
     if filename:
         # Each line must be 100 characters or less,
         # or: SyntaxError("not an IM file")
@@ -355,9 +355,9 @@ def _save(im, fp, filename):
         name, ext = os.path.splitext(os.path.basename(filename))
         name = "".join([name[: 92 - len(ext)], ext])
 
-        fp.write(("Name: %s\r\n" % name).encode("ascii"))
+        fp.write(f"Name: {name}\r\n".encode("ascii"))
     fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode("ascii"))
-    fp.write(("File size (no of images): %d\r\n" % frames).encode("ascii"))
+    fp.write(f"File size (no of images): {frames}\r\n".encode("ascii"))
     if im.mode in ["P", "PA"]:
         fp.write(b"Lut: 1\r\n")
     fp.write(b"\000" * (511 - fp.tell()) + b"\032")

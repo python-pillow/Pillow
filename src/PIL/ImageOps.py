@@ -61,20 +61,25 @@ def _lut(image, lut):
 # actions
 
 
-def autocontrast(image, cutoff=0, ignore=None):
+def autocontrast(image, cutoff=0, ignore=None, mask=None):
     """
     Maximize (normalize) image contrast. This function calculates a
-    histogram of the input image, removes **cutoff** percent of the
+    histogram of the input image (or mask region), removes ``cutoff`` percent of the
     lightest and darkest pixels from the histogram, and remaps the image
     so that the darkest pixel becomes black (0), and the lightest
     becomes white (255).
 
     :param image: The image to process.
-    :param cutoff: How many percent to cut off from the histogram.
+    :param cutoff: The percent to cut off from the histogram on the low and
+                   high ends. Either a tuple of (low, high), or a single
+                   number for both.
     :param ignore: The background pixel value (use None for no background).
+    :param mask: Histogram used in contrast operation is computed using pixels
+                 within the mask. If no mask is given the entire image is used
+                 for histogram computation.
     :return: An image.
     """
-    histogram = image.histogram()
+    histogram = image.histogram(mask)
     lut = []
     for layer in range(0, len(histogram), 256):
         h = histogram[layer : layer + 256]
@@ -88,12 +93,14 @@ def autocontrast(image, cutoff=0, ignore=None):
                     h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
+            if not isinstance(cutoff, tuple):
+                cutoff = (cutoff, cutoff)
             # get number of pixels
             n = 0
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff // 100
+            cut = n * cutoff[0] // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -103,8 +110,8 @@ def autocontrast(image, cutoff=0, ignore=None):
                     cut = 0
                 if cut <= 0:
                     break
-            # remove cutoff% samples from the hi end
-            cut = n * cutoff // 100
+            # remove cutoff% samples from the high end
+            cut = n * cutoff[1] // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
@@ -142,14 +149,14 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
     Colorize grayscale image.
     This function calculates a color wedge which maps all black pixels in
     the source image to the first color and all white pixels to the
-    second color. If **mid** is specified, it uses three-color mapping.
-    The **black** and **white** arguments should be RGB tuples or color names;
-    optionally you can use three-color mapping by also specifying **mid**.
+    second color. If ``mid`` is specified, it uses three-color mapping.
+    The ``black`` and ``white`` arguments should be RGB tuples or color names;
+    optionally you can use three-color mapping by also specifying ``mid``.
     Mapping positions for any of the colors can be specified
-    (e.g. **blackpoint**), where these parameters are the integer
+    (e.g. ``blackpoint``), where these parameters are the integer
     value corresponding to where the corresponding color should be mapped.
     These parameters must have logical order, such that
-    **blackpoint** <= **midpoint** <= **whitepoint** (if **mid** is specified).
+    ``blackpoint <= midpoint <= whitepoint`` (if ``mid`` is specified).
 
     :param image: The image to colorize.
     :param black: The color to use for black input pixels.
@@ -308,7 +315,7 @@ def deform(image, deformer, resample=Image.BILINEAR):
 
     :param image: The image to deform.
     :param deformer: A deformer object.  Any object that implements a
-                    **getmesh** method can be used.
+                    ``getmesh`` method can be used.
     :param resample: An optional resampling filter. Same values possible as
        in the PIL.Image.transform function.
     :return: An image.

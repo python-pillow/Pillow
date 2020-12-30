@@ -69,6 +69,7 @@ SIGNED_LONG = 9
 SIGNED_RATIONAL = 10
 FLOAT = 11
 DOUBLE = 12
+IFD = 13
 
 TAGS_V2 = {
     254: ("NewSubfileType", LONG, 1),
@@ -483,7 +484,6 @@ LIBTIFF_CORE = {
     65537,
 }
 
-LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
 

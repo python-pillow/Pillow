@@ -1,13 +1,14 @@
 import base64
 import io
 import itertools
-import logging
 import os
+import re
 from collections import namedtuple
 from ctypes import c_float
 
 import pytest
-from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags
+
+from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
 
 from .helper import (
     assert_image_equal,
@@ -15,10 +16,9 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_big_endian,
     skip_unless_feature,
 )
-
-logger = logging.getLogger(__name__)
 
 
 @skip_unless_feature("libtiff")
@@ -47,6 +47,9 @@ class LibTiffTestCase:
 
 
 class TestFileLibTiff(LibTiffTestCase):
+    def test_version(self):
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("libtiff"))
+
     def test_g4_tiff(self, tmp_path):
         """Test the ordinary file path load path"""
 
@@ -169,18 +172,18 @@ class TestFileLibTiff(LibTiffTestCase):
                             assert (
                                 c_float(val[0][0] / val[0][1]).value
                                 == c_float(value[0][0] / value[0][1]).value
-                            ), ("%s didn't roundtrip" % tag)
+                            ), f"{tag} didn't roundtrip"
                         else:
-                            assert c_float(val).value == c_float(value).value, (
-                                "%s didn't roundtrip" % tag
-                            )
+                            assert (
+                                c_float(val).value == c_float(value).value
+                            ), f"{tag} didn't roundtrip"
                     else:
-                        assert val == value, "%s didn't roundtrip" % tag
+                        assert val == value, f"{tag} didn't roundtrip"
 
             # https://github.com/python-pillow/Pillow/issues/1561
             requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
             for field in requested_fields:
-                assert field in reloaded, "%s not in metadata" % field
+                assert field in reloaded, f"{field} not in metadata"
 
     def test_additional_metadata(self, tmp_path):
         # these should not crash. Seriously dummy data, most of it doesn't make
@@ -203,6 +206,7 @@ class TestFileLibTiff(LibTiffTestCase):
                     del core_items[tag]
                 except KeyError:
                     pass
+            del core_items[320]  # colormap is special, tested below
 
             # Type codes:
             #     2: "ascii",
@@ -299,9 +303,6 @@ class TestFileLibTiff(LibTiffTestCase):
                             )
                             continue
 
-                        if libtiff and isinstance(value, bytes):
-                            value = value.decode()
-
                         assert reloaded_value == value
 
             # Test with types
@@ -321,6 +322,17 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_xmlpacket_tag(self, tmp_path):
+        TiffImagePlugin.WRITE_LIBTIFF = True
+
+        out = str(tmp_path / "temp.tif")
+        hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            if 700 in reloaded.tag_v2:
+                assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, tmp_path):
         # issue #1765
@@ -391,8 +403,8 @@ class TestFileLibTiff(LibTiffTestCase):
             assert "temp.tif" == reread.tag[269][0]
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             im.load()
@@ -448,6 +460,14 @@ class TestFileLibTiff(LibTiffTestCase):
         assert size_compressed > size_jpeg
         assert size_jpeg > size_jpeg_30
 
+    def test_tiff_jpeg_compression(self, tmp_path):
+        im = hopper("RGB")
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_jpeg")
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["compression"] == "jpeg"
+
     def test_quality(self, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
@@ -471,19 +491,31 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as im2:
             assert_image_equal(im, im2)
 
+    def test_palette_save(self, tmp_path):
+        im = hopper("P")
+        out = str(tmp_path / "temp.tif")
+
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            # colormap/palette tag
+            assert len(reloaded.tag_v2[320]) == 768
+
     def xtest_bw_compression_w_rgb(self, tmp_path):
-        """ This test passes, but when running all tests causes a failure due
-            to output on stderr from the error thrown by libtiff. We need to
-            capture that but not now"""
+        """This test passes, but when running all tests causes a failure due
+        to output on stderr from the error thrown by libtiff. We need to
+        capture that but not now"""
 
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="tiff_ccitt")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="group3")
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.save(out, compression="group4")
 
     def test_fp_leak(self):
@@ -667,6 +699,26 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.READ_LIBTIFF = False
         assert icc == icc_libtiff
 
+    def test_write_icc(self, tmp_path):
+        def check_write(libtiff):
+            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+
+            with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+                icc_profile = img.info["icc_profile"]
+
+                out = str(tmp_path / "temp.tif")
+                img.save(out, icc_profile=icc_profile)
+            with Image.open(out) as reloaded:
+                assert icc_profile == reloaded.info["icc_profile"]
+
+        libtiffs = []
+        if Image.core.libtiff_support_custom_tags:
+            libtiffs.append(True)
+        libtiffs.append(False)
+
+        for libtiff in libtiffs:
+            check_write(libtiff)
+
     def test_multipage_compression(self):
         with Image.open("Tests/images/compression.tif") as im:
 
@@ -717,7 +769,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.mode == "RGBA"
             assert im.size == (100, 40)
             assert im.tile, [
-                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236),)
+                ("libtiff", (0, 0, 100, 40), 0, ("RGBa;16N", "tiff_lzw", False, 38236))
             ]
             im.load()
 
@@ -762,11 +814,13 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -777,16 +831,19 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
+    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_old_style_jpeg(self):
         infile = "Tests/images/old-style-jpeg-compression.tif"
         with Image.open(infile) as im:
@@ -831,7 +888,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_realloc_overflow(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:
-            with pytest.raises(IOError) as e:
+            with pytest.raises(OSError) as e:
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY

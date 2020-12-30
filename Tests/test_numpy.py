@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper
@@ -87,6 +88,11 @@ def test_3d_array():
     size = (TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], 5)
     a = numpy.ones(size, dtype=numpy.uint8)
     assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
+
+
+def test_1d_array():
+    a = numpy.ones(5, dtype=numpy.uint8)
+    assert_image(Image.fromarray(a), "L", (1, 5))
 
 
 def _test_img_equals_nparray(img, np):

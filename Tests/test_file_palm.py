@@ -2,15 +2,10 @@ import os.path
 import subprocess
 
 import pytest
+
 from PIL import Image
 
-from .helper import (
-    IMCONVERT,
-    assert_image_equal,
-    hopper,
-    imagemagick_available,
-    skip_known_bad_test,
-)
+from .helper import IMCONVERT, assert_image_equal, hopper, imagemagick_available
 
 _roundtrip = imagemagick_available()
 
@@ -62,29 +57,29 @@ def test_monochrome(tmp_path):
     roundtrip(tmp_path, mode)
 
 
+@pytest.mark.xfail(reason="Palm P image is wrong")
 def test_p_mode(tmp_path):
     # Arrange
     mode = "P"
 
     # Act / Assert
     helper_save_as_palm(tmp_path, mode)
-    skip_known_bad_test("Palm P image is wrong")
     roundtrip(tmp_path, mode)
 
 
-def test_l_ioerror(tmp_path):
+def test_l_oserror(tmp_path):
     # Arrange
     mode = "L"
 
     # Act / Assert
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         helper_save_as_palm(tmp_path, mode)
 
 
-def test_rgb_ioerror(tmp_path):
+def test_rgb_oserror(tmp_path):
     # Arrange
     mode = "RGB"
 
     # Act / Assert
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         helper_save_as_palm(tmp_path, mode)

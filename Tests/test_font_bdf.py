@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import BdfFontFile, FontFile
 
 filename = "Tests/images/courB08.bdf"

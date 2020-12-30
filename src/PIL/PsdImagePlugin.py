@@ -19,7 +19,9 @@
 import io
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, i16be as i16, i32be as i32
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -61,7 +63,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
+        if not _accept(s) or i16(s[4:]) != 1:
             raise SyntaxError("not a PSD file")
 
         psd_bits = i16(s[22:])
@@ -119,6 +121,8 @@ class PsdImageFile(ImageFile.ImageFile):
             if size:
                 self.layers = _layerinfo(self.fp)
             self.fp.seek(end)
+        self.n_frames = len(self.layers)
+        self.is_animated = self.n_frames > 1
 
         #
         # image descriptor
@@ -129,14 +133,6 @@ class PsdImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self.frame = 1
         self._min_frame = 1
-
-    @property
-    def n_frames(self):
-        return len(self.layers)
-
-    @property
-    def is_animated(self):
-        return len(self.layers) > 1
 
     def seek(self, layer):
         if not self._seek_check(layer):
@@ -150,8 +146,8 @@ class PsdImageFile(ImageFile.ImageFile):
             self.frame = layer
             self.fp = self.__fp
             return name, bbox
-        except IndexError:
-            raise EOFError("no such layer")
+        except IndexError as e:
+            raise EOFError("no such layer") from e
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)
@@ -313,3 +309,5 @@ def _maketile(file, mode, bbox, channels):
 Image.register_open(PsdImageFile.format, PsdImageFile, _accept)
 
 Image.register_extension(PsdImageFile.format, ".psd")
+
+Image.register_mime(PsdImageFile.format, "image/vnd.adobe.photoshop")

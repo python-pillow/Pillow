@@ -1,21 +1,22 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`ImageFont` Module
-==========================
+:py:mod:`~PIL.ImageFont` Module
+===============================
 
-The :py:mod:`ImageFont` module defines a class with the same name. Instances of
+The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.Draw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
-PIL uses its own font file format to store bitmap fonts. You can use the
-:command:`pilfont` utility to convert BDF and PCF font descriptors (X window
-font formats) to this format.
+PIL uses its own font file format to store bitmap fonts, limited to 256 characters. You can use
+`pilfont.py <https://github.com/python-pillow/pillow-scripts/blob/master/Scripts/pilfont.py>`_
+from `pillow-scripts <https://pypi.org/project/pillow-scripts/>`_ to convert BDF and
+PCF font descriptors (X window font formats) to this format.
 
 Starting with version 1.1.4, PIL can be configured to support TrueType and
 OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
-the imToolkit package
+the imToolkit package.
 
 Example
 -------
@@ -55,3 +56,19 @@ Methods
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
+
+Constants
+---------
+
+.. data:: PIL.ImageFont.LAYOUT_BASIC
+
+    Use basic text layout for TrueType font.
+    Advanced features such as text direction are not supported.
+
+.. data:: PIL.ImageFont.LAYOUT_RAQM
+
+    Use Raqm text layout for TrueType font.
+    Advanced features are supported.
+
+    Requires Raqm, you can check support using
+    :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

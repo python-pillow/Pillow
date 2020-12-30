@@ -111,8 +111,8 @@ class SpiderImageFile(ImageFile.ImageFile):
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
                 raise SyntaxError("not a valid Spider file")
-        except struct.error:
-            raise SyntaxError("not a valid Spider file")
+        except struct.error as e:
+            raise SyntaxError("not a valid Spider file") from e
 
         h = (99,) + t  # add 1 value : spider header index starts at 1
         iform = int(h[5])
@@ -213,7 +213,7 @@ def loadImageSeries(filelist=None):
     imglist = []
     for img in filelist:
         if not os.path.exists(img):
-            print("unable to find %s" % img)
+            print(f"unable to find {img}")
             continue
         try:
             with Image.open(img) as im:
@@ -318,7 +318,7 @@ if __name__ == "__main__":
             # perform some image operation
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
             print(
-                "saving a flipped version of %s as %s "
-                % (os.path.basename(filename), outfile)
+                f"saving a flipped version of {os.path.basename(filename)} "
+                f"as {outfile} "
             )
             im.save(outfile, SpiderImageFile.format)

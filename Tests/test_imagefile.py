@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import EpsImagePlugin, Image, ImageFile, features
 
 from .helper import (
@@ -71,7 +72,7 @@ class TestImageFile:
             im1, im2 = roundtrip("JPEG")  # lossy compression
             assert_image(im1, im2.mode, im2.size)
 
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             roundtrip("PDF")
 
     def test_ico(self):
@@ -95,7 +96,13 @@ class TestImageFile:
 
     def test_raise_ioerror(self):
         with pytest.raises(IOError):
-            ImageFile.raise_ioerror(1)
+            with pytest.warns(DeprecationWarning) as record:
+                ImageFile.raise_ioerror(1)
+        assert len(record) == 1
+
+    def test_raise_oserror(self):
+        with pytest.raises(OSError):
+            ImageFile.raise_oserror(1)
 
     def test_raise_typeerror(self):
         with pytest.raises(TypeError):
@@ -107,17 +114,17 @@ class TestImageFile:
             input = f.read()
         p = ImageFile.Parser()
         p.feed(input)
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             p.close()
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
         with Image.open("Tests/images/truncated_image.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -132,7 +139,7 @@ class TestImageFile:
     @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self):
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            with pytest.raises(IOError):
+            with pytest.raises(OSError):
                 im.load()
 
     @skip_unless_feature("zlib")
@@ -238,93 +245,7 @@ class TestPyDecoder:
         assert im.format is None
         assert im.get_format_mimetype() is None
 
-    def test_exif_jpeg(self, tmp_path):
-        with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
-            exif = im.getexif()
-            assert 258 not in exif
-            assert 40960 in exif
-            assert exif[40963] == 450
-            assert exif[11] == "gThumb 3.0.1"
-
-            out = str(tmp_path / "temp.jpg")
-            exif[258] = 8
-            del exif[40960]
-            exif[40963] = 455
-            exif[11] = "Pillow test"
-            im.save(out, exif=exif)
-        with Image.open(out) as reloaded:
-            reloaded_exif = reloaded.getexif()
-            assert reloaded_exif[258] == 8
-            assert 40960 not in exif
-            assert reloaded_exif[40963] == 455
-            assert exif[11] == "Pillow test"
-
-        with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
-            exif = im.getexif()
-            assert 258 not in exif
-            assert 40962 in exif
-            assert exif[40963] == 200
-            assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
-
-            out = str(tmp_path / "temp.jpg")
-            exif[258] = 8
-            del exif[34665]
-            exif[40963] = 455
-            exif[305] = "Pillow test"
-            im.save(out, exif=exif)
-        with Image.open(out) as reloaded:
-            reloaded_exif = reloaded.getexif()
-            assert reloaded_exif[258] == 8
-            assert 40960 not in exif
-            assert reloaded_exif[40963] == 455
-            assert exif[305] == "Pillow test"
-
-    @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
-    def test_exif_webp(self, tmp_path):
-        with Image.open("Tests/images/hopper.webp") as im:
-            exif = im.getexif()
-            assert exif == {}
-
-            out = str(tmp_path / "temp.webp")
-            exif[258] = 8
-            exif[40963] = 455
-            exif[305] = "Pillow test"
-
-            def check_exif():
-                with Image.open(out) as reloaded:
-                    reloaded_exif = reloaded.getexif()
-                    assert reloaded_exif[258] == 8
-                    assert reloaded_exif[40963] == 455
-                    assert exif[305] == "Pillow test"
-
-            im.save(out, exif=exif)
-            check_exif()
-            im.save(out, exif=exif, save_all=True)
-            check_exif()
-
-    def test_exif_png(self, tmp_path):
-        with Image.open("Tests/images/exif.png") as im:
-            exif = im.getexif()
-            assert exif == {274: 1}
-
-            out = str(tmp_path / "temp.png")
-            exif[258] = 8
-            del exif[274]
-            exif[40963] = 455
-            exif[305] = "Pillow test"
-            im.save(out, exif=exif)
-
-        with Image.open(out) as reloaded:
-            reloaded_exif = reloaded.getexif()
-            assert reloaded_exif == {258: 8, 40963: 455, 305: "Pillow test"}
-
-    def test_exif_interop(self):
-        with Image.open("Tests/images/flower.jpg") as im:
-            exif = im.getexif()
-            assert exif.get_ifd(0xA005) == {
-                1: "R98",
-                2: b"0100",
-                4097: 2272,
-                4098: 1704,
-            }
+    def test_oserror(self):
+        im = Image.new("RGB", (1, 1))
+        with pytest.raises(OSError):
+            im.save(BytesIO(), "JPEG2000")

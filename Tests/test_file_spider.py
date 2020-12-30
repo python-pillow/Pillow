@@ -2,6 +2,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
@@ -134,7 +135,7 @@ def test_is_int_not_a_number():
 def test_invalid_file():
     invalid_file = "Tests/images/invalid.spider"
 
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         Image.open(invalid_file)
 
 
