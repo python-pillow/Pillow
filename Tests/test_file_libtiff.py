@@ -185,7 +185,7 @@ class TestFileLibTiff(LibTiffTestCase):
             for field in requested_fields:
                 assert field in reloaded, f"{field} not in metadata"
 
-    @pytest.mark.valgrind_known_error(reason="Known Invalid Metadata")
+    @pytest.mark.valgrind_known_error(reason="Known invalid metadata")
     def test_additional_metadata(self, tmp_path):
         # these should not crash. Seriously dummy data, most of it doesn't make
         # any sense, so we're running up against limits where we're asking
