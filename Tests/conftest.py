@@ -1,4 +1,7 @@
 import io
+import warnings
+
+import pytest
 
 
 def pytest_report_header(config):
@@ -16,10 +19,6 @@ def pytest_configure(config):
     # We're marking some tests to ignore valgrind errors and XFAIL them.
     # Ensure that the mark is defined
     # even in cases where pytest-valgrind isn't installed
-
-    import warnings
-
-    import pytest
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
