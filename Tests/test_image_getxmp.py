@@ -2,8 +2,8 @@ from PIL import Image
 
 
 def test_getxmp():
-    im = Image.open("Tests/images/xmp_test.jpg")
-    type_repr = repr(type(im.getxmp()))
+    with Image.open("Tests/images/xmp_test.jpg") as im:
+        xmp = im.getxmp()
 
-    assert "dict" in type_repr
-    assert isinstance(im.getxmp()["Description"][0]["Version"], str)
+        assert isinstance(xmp, dict)
+        assert xmp["Description"]["Version"] == "10.4"
