@@ -58,13 +58,13 @@ class SunImageFile(ImageFile.ImageFile):
 
         offset = 32
 
-        self._size = i32(s[4:8]), i32(s[8:12])
+        self._size = i32(s, 4), i32(s, 8)
 
-        depth = i32(s[12:16])
-        # data_length = i32(s[16:20])   # unreliable, ignore.
-        file_type = i32(s[20:24])
-        palette_type = i32(s[24:28])  # 0: None, 1: RGB, 2: Raw/arbitrary
-        palette_length = i32(s[28:32])
+        depth = i32(s, 12)
+        # data_length = i32(s, 16)   # unreliable, ignore.
+        file_type = i32(s, 20)
+        palette_type = i32(s, 24)  # 0: None, 1: RGB, 2: Raw/arbitrary
+        palette_length = i32(s, 28)
 
         if depth == 1:
             self.mode, rawmode = "1", "1;I"

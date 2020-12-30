@@ -50,7 +50,7 @@ from . import (
     _plugins,
     _raise_version_warning,
 )
-from ._binary import i8, i32le
+from ._binary import i32le
 from ._util import deferred_error, isPath
 
 if sys.version_info >= (3, 7):
@@ -1378,7 +1378,7 @@ class Image:
 
         self.load()
         x, y = self.im.getprojection()
-        return [i8(c) for c in x], [i8(c) for c in y]
+        return list(x), list(y)
 
     def histogram(self, mask=None, extrema=None):
         """
@@ -3374,7 +3374,7 @@ class Exif(MutableMapping):
 
                 if self[0x927C][:8] == b"FUJIFILM":
                     exif_data = self[0x927C]
-                    ifd_offset = i32le(exif_data[8:12])
+                    ifd_offset = i32le(exif_data, 8)
                     ifd_data = exif_data[ifd_offset:]
 
                     makernote = {}

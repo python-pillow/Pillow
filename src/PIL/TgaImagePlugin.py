@@ -20,7 +20,6 @@
 import warnings
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
@@ -56,16 +55,16 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        id_len = i8(s[0])
+        id_len = s[0]
 
-        colormaptype = i8(s[1])
-        imagetype = i8(s[2])
+        colormaptype = s[1]
+        imagetype = s[2]
 
-        depth = i8(s[16])
+        depth = s[16]
 
-        flags = i8(s[17])
+        flags = s[17]
 
-        self._size = i16(s[12:]), i16(s[14:])
+        self._size = i16(s, 12), i16(s, 14)
 
         # validate header fields
         if (
@@ -111,7 +110,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
         if colormaptype:
             # read palette
-            start, size, mapdepth = i16(s[3:]), i16(s[5:]), i16(s[7:])
+            start, size, mapdepth = i16(s, 3), i16(s, 5), i16(s, 7)
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
                     "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size)
