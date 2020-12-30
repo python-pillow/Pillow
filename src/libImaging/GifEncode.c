@@ -241,8 +241,6 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     break;
                 }
 
-                this = state->buffer[state->x++];
-
                 if (this == context->last) {
                     context->count++;
                 } else {
