@@ -7,13 +7,6 @@ clean:
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
 
-BRANCHES=`git branch -a | grep -v HEAD | grep -v master | grep remote`
-.PHONY: co
-co:
-	-for i in $(BRANCHES) ; do \
-        git checkout -t $$i ; \
-    done
-
 .PHONY: coverage
 coverage:
 	pytest -qq
