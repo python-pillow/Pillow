@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := release-test
+.DEFAULT_GOAL := help
 
 .PHONY: clean
 clean:
