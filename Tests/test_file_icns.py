@@ -53,7 +53,6 @@ def test_save_append_images(tmp_path):
             assert_image_equal(reread, provided_im)
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save_fp():
     fp = io.BytesIO()
 
