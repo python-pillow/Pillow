@@ -1334,10 +1334,10 @@ class Image:
                 if marker == b"http://ns.adobe.com/xap/1.0/":
                     root = xml.etree.ElementTree.fromstring(xmp_tags)
                     for element in root.findall(".//"):
-                        xmp_atribs = []
+                        xmp_attribs = []
                         for child, value in element.attrib.items():
-                            xmp_atribs.append({child.split("}")[1]: value})
-                        self._xmp.update({element.tag.split("}")[1]: xmp_atribs})
+                            xmp_attribs.append({child.split("}")[1]: value})
+                        self._xmp.update({element.tag.split("}")[1]: xmp_attribs})
         return self._xmp
 
     def getim(self):
