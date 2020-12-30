@@ -378,7 +378,7 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
             TIFFClose(tiff);
             return -1;
         }
-        
+
         state->bytes = row_byte_size * tile_length;
 
         if (TIFFTileSize(tiff) > state->bytes) {
@@ -578,7 +578,7 @@ int ImagingLibTiffMergeFieldInfo(ImagingCodecState state, TIFFDataType field_typ
 
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
     // decoding, ignore readcount;
-    int readcount = 0;
+    int readcount = 1;
     // we support writing a single value, or a variable number of values
     int writecount = 1;
     // whether the first value should encode the number of values.

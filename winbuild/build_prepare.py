@@ -141,9 +141,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
-        "filename": "tiff-4.1.0.tar.gz",
-        "dir": "tiff-4.1.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.2.0.tar.gz",
+        "filename": "tiff-4.2.0.tar.gz",
+        "dir": "tiff-4.2.0",
         "build": [
             cmd_copy(r"{winbuild_dir}\tiff.opt", "nmake.opt"),
             cmd_nmake("makefile.vc", "clean"),
