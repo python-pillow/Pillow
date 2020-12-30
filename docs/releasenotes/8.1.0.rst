@@ -39,7 +39,14 @@ already exists for the ICNS format.
 Security
 ========
 
-OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including security fixes.
+An out-of-bounds read when saving TIFFs with custom metadata through libtiff has been
+fixed.
+
+Dependencies
+^^^^^^^^^^^^
+
+OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including
+security fixes.
 
 Other Changes
 =============
