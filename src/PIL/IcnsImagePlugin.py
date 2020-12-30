@@ -313,7 +313,6 @@ def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
     that are then converted to a .icns file
-
     """
     if hasattr(fp, "flush"):
         fp.flush()
