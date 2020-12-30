@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Added exception explaining that _repr_png_ saves to PNG #5139
+  [radarhere]
+
 - Use previous disposal method in GIF load_end #5125
   [radarhere]
 
