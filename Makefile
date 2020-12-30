@@ -84,6 +84,10 @@ install-venv:
 	virtualenv .
 	bin/pip install -r requirements.txt
 
+.PHONY: lint
+lint:
+	tox -e lint
+
 .PHONY: release-test
 release-test:
 	$(MAKE) install-req
