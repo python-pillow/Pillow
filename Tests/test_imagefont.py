@@ -897,6 +897,46 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or unsupported")
 
+    @skip_unless_feature_version("freetype2", "2.5.1")
+    def test_sbix(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/chromacheck-sbix.woff",
+                size=300,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (400, 400), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((50, 50), "\uE901", embedded_color=True, font=font)
+
+            with Image.open("Tests/images/chromacheck-sbix.png") as expected:
+                assert_image_similar(im, expected, 1)
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
+    @skip_unless_feature_version("freetype2", "2.5.1")
+    def test_sbix_mask(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/chromacheck-sbix.woff",
+                size=300,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (400, 400), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((50, 50), "\uE901", (100, 0, 0), font=font)
+
+            with Image.open("Tests/images/chromacheck-sbix_mask.png") as expected:
+                assert_image_similar(im, expected, 1)
+        except IOError as e:
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or unsupported")
+
     @skip_unless_feature_version("freetype2", "2.10.0")
     def test_colr(self):
         font = ImageFont.truetype(
