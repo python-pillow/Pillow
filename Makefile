@@ -102,3 +102,9 @@ test:
 .PHONY: readme
 readme:
 	python3 setup.py --long-description | markdown2 > .long-description.html && open .long-description.html
+
+
+.PHONY: lint
+lint:
+	tox --help > /dev/null || pip install tox
+	tox -e lint
