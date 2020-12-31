@@ -108,5 +108,5 @@ readme:
 
 .PHONY: lint
 lint:
-	tox --help > /dev/null || pip install tox
+	tox --help > /dev/null || python3 -m pip install tox
 	tox -e lint
