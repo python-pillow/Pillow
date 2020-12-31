@@ -110,3 +110,7 @@ readme:
 lint:
 	tox --help > /dev/null || python3 -m pip install tox
 	tox -e lint
+
+.PHONY: lint-fix
+lint-fix:
+	black --target-version py36 .
