@@ -802,60 +802,76 @@ class PngImageFile(ImageFile.ImageFile):
             self.blend_op = self.info.get("blend")
             self.dispose_extent = self.info.get("bbox")
             self.__frame = 0
-            return
         else:
             if frame != self.__frame + 1:
                 raise ValueError(f"cannot seek to frame {frame}")
 
-        # ensure previous frame was loaded
-        self.load()
+            # ensure previous frame was loaded
+            self.load()
 
-        self.fp = self.__fp
+            if self.dispose:
+                self.im.paste(self.dispose, self.dispose_extent)
+            self._prev_im = self.im.copy()
 
-        # advance to the next frame
-        if self.__prepare_idat:
-            ImageFile._safe_read(self.fp, self.__prepare_idat)
-            self.__prepare_idat = 0
-        frame_start = False
-        while True:
-            self.fp.read(4)  # CRC
+            self.fp = self.__fp
 
-            try:
-                cid, pos, length = self.png.read()
-            except (struct.error, SyntaxError):
-                break
+            # advance to the next frame
+            if self.__prepare_idat:
+                ImageFile._safe_read(self.fp, self.__prepare_idat)
+                self.__prepare_idat = 0
+            frame_start = False
+            while True:
+                self.fp.read(4)  # CRC
 
-            if cid == b"IEND":
-                raise EOFError("No more images in APNG file")
-            if cid == b"fcTL":
-                if frame_start:
-                    # there must be at least one fdAT chunk between fcTL chunks
-                    raise SyntaxError("APNG missing frame data")
-                frame_start = True
+                try:
+                    cid, pos, length = self.png.read()
+                except (struct.error, SyntaxError):
+                    break
 
-            try:
-                self.png.call(cid, pos, length)
-            except UnicodeDecodeError:
-                break
-            except EOFError:
-                if cid == b"fdAT":
-                    length -= 4
+                if cid == b"IEND":
+                    raise EOFError("No more images in APNG file")
+                if cid == b"fcTL":
                     if frame_start:
-                        self.__prepare_idat = length
-                        break
-                ImageFile._safe_read(self.fp, length)
-            except AttributeError:
-                logger.debug("%r %s %s (unknown)", cid, pos, length)
-                ImageFile._safe_read(self.fp, length)
+                        # there must be at least one fdAT chunk between fcTL chunks
+                        raise SyntaxError("APNG missing frame data")
+                    frame_start = True
 
-        self.__frame = frame
-        self.tile = self.png.im_tile
-        self.dispose_op = self.info.get("disposal")
-        self.blend_op = self.info.get("blend")
-        self.dispose_extent = self.info.get("bbox")
+                try:
+                    self.png.call(cid, pos, length)
+                except UnicodeDecodeError:
+                    break
+                except EOFError:
+                    if cid == b"fdAT":
+                        length -= 4
+                        if frame_start:
+                            self.__prepare_idat = length
+                            break
+                    ImageFile._safe_read(self.fp, length)
+                except AttributeError:
+                    logger.debug("%r %s %s (unknown)", cid, pos, length)
+                    ImageFile._safe_read(self.fp, length)
 
-        if not self.tile:
-            raise EOFError
+            self.__frame = frame
+            self.tile = self.png.im_tile
+            self.dispose_op = self.info.get("disposal")
+            self.blend_op = self.info.get("blend")
+            self.dispose_extent = self.info.get("bbox")
+
+            if not self.tile:
+                raise EOFError
+
+        # setup frame disposal (actual disposal done when needed in the next _seek())
+        if self._prev_im is None and self.dispose_op == APNG_DISPOSE_OP_PREVIOUS:
+            self.dispose_op = APNG_DISPOSE_OP_BACKGROUND
+
+        if self.dispose_op == APNG_DISPOSE_OP_PREVIOUS:
+            self.dispose = self._prev_im.copy()
+            self.dispose = self._crop(self.dispose, self.dispose_extent)
+        elif self.dispose_op == APNG_DISPOSE_OP_BACKGROUND:
+            self.dispose = Image.core.fill(self.mode, self.size)
+            self.dispose = self._crop(self.dispose, self.dispose_extent)
+        else:
+            self.dispose = None
 
     def tell(self):
         return self.__frame
@@ -938,19 +954,6 @@ class PngImageFile(ImageFile.ImageFile):
             self.png.close()
             self.png = None
         else:
-            # setup frame disposal (actual disposal done when needed in _seek())
-            if self._prev_im is None and self.dispose_op == APNG_DISPOSE_OP_PREVIOUS:
-                self.dispose_op = APNG_DISPOSE_OP_BACKGROUND
-
-            if self.dispose_op == APNG_DISPOSE_OP_PREVIOUS:
-                dispose = self._prev_im.copy()
-                dispose = self._crop(dispose, self.dispose_extent)
-            elif self.dispose_op == APNG_DISPOSE_OP_BACKGROUND:
-                dispose = Image.core.fill(self.im.mode, self.size)
-                dispose = self._crop(dispose, self.dispose_extent)
-            else:
-                dispose = None
-
             if self._prev_im and self.blend_op == APNG_BLEND_OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
                 self._prev_im.paste(
@@ -959,10 +962,6 @@ class PngImageFile(ImageFile.ImageFile):
                 self.im = self._prev_im
                 if self.pyaccess:
                     self.pyaccess = None
-            self._prev_im = self.im.copy()
-
-            if dispose:
-                self._prev_im.paste(dispose, self.dispose_extent)
 
     def _getexif(self):
         if "exif" not in self.info:
