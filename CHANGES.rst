@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Use disposal settings from previous frame in APNG #5126
+  [radarhere]
+
 - Added exception explaining that _repr_png_ saves to PNG #5139
   [radarhere]
 
