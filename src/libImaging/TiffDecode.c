@@ -365,6 +365,8 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
     UINT8 planes = 1;
     ImagingShuffler unpackers[4];
 
+    memset(unpackers, 0, sizeof(ImagingShuffler *) * 4);
+
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
 
