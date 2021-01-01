@@ -42,7 +42,7 @@ help:
 	@echo "  install-req        install documentation and test dependencies"
 	@echo "  install-venv       (deprecated) install in virtualenv"
 	@echo "  lint               run the lint checks"
-	@echo "  lint-fix           run black to (mostly) fix lint issues."
+	@echo "  lint-fix           run black and isort to (mostly) fix lint issues."
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed pillow"
 	@echo "  upload             build and upload sdists to PyPI"
