@@ -55,3 +55,9 @@ PyPy wheels
 ^^^^^^^^^^^
 
 Wheels have been added for PyPy 3.7.
+
+PySide6
+^^^^^^^
+
+Support has been added for PySide6. If it is installed, it will be used instead of
+PyQt5 or PySide2, since it is based on a newer Qt.
