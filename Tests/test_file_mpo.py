@@ -96,7 +96,10 @@ def test_ignore_frame_size():
         assert im.size == (64, 64)
 
         im.seek(1)
-        assert im.mpinfo[0xB002][1]['Attribute']['MPType'] == "Multi-Frame Image: (Disparity)"
+        assert (
+            im.mpinfo[0xB002][1]["Attribute"]["MPType"]
+            == "Multi-Frame Image: (Disparity)"
+        )
         assert im.size == (64, 64)
 
 
