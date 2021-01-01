@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Add support for PySide6 #5161
+  [hugovk]
+
 - Use disposal settings from previous frame in APNG #5126
   [radarhere]
 
