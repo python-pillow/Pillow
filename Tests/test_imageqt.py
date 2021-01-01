@@ -9,27 +9,6 @@ if ImageQt.qt_is_installed:
 
 
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
-class PillowQPixmapTestCase:
-    @classmethod
-    def setup_class(self):
-        try:
-            if ImageQt.qt_version == "5":
-                from PyQt5.QtGui import QGuiApplication
-            elif ImageQt.qt_version == "side2":
-                from PySide2.QtGui import QGuiApplication
-        except ImportError:
-            pytest.skip("QGuiApplication not installed")
-            return
-
-        self.app = QGuiApplication([])
-
-    @classmethod
-    def teardown_class(self):
-        self.app.quit()
-        self.app = None
-
-
-@pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_rgb():
     # from https://doc.qt.io/archives/qt-4.8/qcolor.html
     # typedef QRgb
