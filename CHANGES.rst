@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Fix OOB Read when saving GIF of xsize=1 #5149
+  [wiredfool]
+
 - Makefile updates #5159
   [wiredfool, radarhere]
 
