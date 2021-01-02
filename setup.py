@@ -125,7 +125,7 @@ _LIB_IMAGING = (
     "codec_fd",
 )
 
-DEBUG = True
+DEBUG = False
 
 
 class DependencyException(Exception):
@@ -292,7 +292,7 @@ class pil_build_ext(build_ext):
         ]
 
         required = {"jpeg", "zlib"}
-        system = set()
+        vendor = set()
 
         def __init__(self):
             for f in self.features:
@@ -305,7 +305,7 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def want_system(self, feat):
-            return feat in self.system
+            return feat not in self.vendor
 
         def __iter__(self):
             yield from self.features
@@ -317,7 +317,7 @@ class pil_build_ext(build_ext):
         + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
         + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
         + [
-            (f"system-{x}", None, f"Use system version of {x}")
+            (f"_vendor-{x}", None, f"Use vendored version of {x}")
             for x in ("raqm", "fribidi")
         ]
         + [
@@ -335,7 +335,7 @@ class pil_build_ext(build_ext):
             setattr(self, f"disable_{x}", None)
             setattr(self, f"enable_{x}", None)
         for x in ("raqm", "fribidi"):
-            setattr(self, f"system_{x}", None)
+            setattr(self, f"_vendor_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -374,17 +374,17 @@ class pil_build_ext(build_ext):
                     _dbg("--enable-raqm implies --enable-freetype")
                     self.feature.required.add("freetype")
         for x in ("raqm", "fribidi"):
-            if getattr(self, f"system_{x}"):
+            if getattr(self, f"_vendor_{x}"):
                 if getattr(self, "disable_raqm"):
                     raise ValueError(
-                        f"Conflicting options: --system-{x} and --disable-raqm"
+                        f"Conflicting options: --_vendor-{x} and --disable-raqm"
                     )
-                if x == "fribidi" and getattr(self, "system_raqm"):
+                if x == "fribidi" and not getattr(self, "_vendor_raqm"):
                     raise ValueError(
-                        f"Conflicting options: --system-{x} and --system-raqm"
+                        f"Conflicting options: --_vendor-{x} and not --_vendor-raqm"
                     )
-                _dbg("Using system version of %s", x)
-                self.feature.system.add(x)
+                _dbg("Using vendored version of %s", x)
+                self.feature.vendor.add(x)
 
     def _update_extension(self, name, libraries, define_macros=None, sources=None):
         for extension in self.extensions:

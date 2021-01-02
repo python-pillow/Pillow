@@ -472,7 +472,7 @@ def build_pillow():
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
         cmd_set("MSSdk", "1"),  # for PyPy3.6
         cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
-        r'"{python_dir}\{python_exe}" setup.py build_ext %*',
+        r'"{python_dir}\{python_exe}" setup.py build_ext --_vendor-raqm --_vendor-fribidi %*',
     ]
 
     write_script("build_pillow.cmd", lines)
