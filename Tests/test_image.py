@@ -775,7 +775,9 @@ class TestImage:
         with pytest.warns(DeprecationWarning):
             assert test_module.PILLOW_VERSION > "7.0.0"
 
-    @pytest.mark.parametrize("path", [
+    @pytest.mark.parametrize(
+        "path",
+        [
             "fli_overrun.bin",
             "sgi_overrun.bin",
             "sgi_overrun_expandrow.bin",
@@ -784,7 +786,8 @@ class TestImage:
             "pcx_overrun2.bin",
             "ossfuzz-4836216264589312.pcx",
             "01r_00.pcx",
-        ])
+        ],
+    )
     def test_overrun(self, path):
         """For overrun completeness, test as:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
@@ -794,8 +797,10 @@ class TestImage:
                 im.load()
                 assert False
             except OSError as e:
-                assert (str(e) == "buffer overrun when reading image file" or
-                        "image file is truncated" in str(e))
+                buffer_overrun = str(e) == "buffer overrun when reading image file"
+                truncated = "image file is truncated" in str(e)
+
+                assert buffer_overrun or truncated
 
     def test_fli_overrun2(self):
         with Image.open("Tests/images/fli_overrun2.bin") as im:
