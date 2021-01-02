@@ -121,7 +121,12 @@ function run_tests_in_repo {
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
+if [ -z "$IS_OSX" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]]; then
+  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux xcb"
+else
+  # can't find FriBiDi
+  EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
+fi
 
 function run_tests {
     if [ -n "$IS_OSX" ]; then
