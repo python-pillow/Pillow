@@ -104,6 +104,9 @@ function pre_build {
 
 function pip_wheel_cmd {
     local abs_wheelhouse=$1
+    if [ -z "$IS_OSX" ]; then
+        CFLAGS="$CFLAGS --std=c99"  # for Raqm
+    fi
     pip wheel $(pip_opts) \
         --global-option build_ext --global-option --enable-raqm \
         --global-option --vendor-raqm --global-option --vendor-fribidi \
