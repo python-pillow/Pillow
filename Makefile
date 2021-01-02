@@ -76,6 +76,7 @@ install-req:
 
 .PHONY: install-venv
 install-venv:
+	echo "'install-venv' is deprecated and will be removed in a future Pillow release"
 	virtualenv .
 	bin/pip install -r requirements.txt
 
