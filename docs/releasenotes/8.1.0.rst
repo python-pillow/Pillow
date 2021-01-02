@@ -44,7 +44,7 @@ This release includes security fixes.
 
 The PCX image decoder used the reported image stride to calculate the row buffer,
 rather than calculating it from the image size. This issue dates back to the PIL fork.
-Thanks to Google's OSS-Fuzz project for finding this.
+Thanks to Google's `OSS-Fuzz`_ project for finding this.
 
 * :cve:`CVE-2020-35654` Fix TIFF OOB Write error
 
@@ -58,9 +58,10 @@ bounds write in TiffDecode.c. This potentially affects Pillow versions from 6.0.
 
 4 byte read overflow in SGIRleDecode.c, where the code was not correctly checking the
 offsets and length tables. Independently reported through `Tidelift`_ and Google's
-OSS-Fuzz. This vulnerability covers Pillow versions 4.3.0->8.0.1.
+`OSS-Fuzz`_. This vulnerability covers Pillow versions 4.3.0->8.0.1.
 
 .. _Tidelift: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pillow&utm_medium=referral&utm_campaign=docs
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
 Dependencies
 ^^^^^^^^^^^^
