@@ -40,7 +40,7 @@ Security
 ========
 
 An out-of-bounds read when saving TIFFs with custom metadata through libtiff has been
-fixed.
+fixed, as well as when saving a GIF of 1px width.
 
 Dependencies
 ^^^^^^^^^^^^
