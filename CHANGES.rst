@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Fix TIFF OOB Write error. CVE-2020-35654 #5175
+  [wiredfool]
+
+- Fix for Read Overflow in PCX Decoding. CVE-2020-35653 #5174
+  [wiredfool, radarhere]
+
+- Fix for SGI Decode buffer overrun. CVE-2020-35655 #5173
+  [wiredfool, radarhere]
+
 - Fix OOB Read when saving GIF of xsize=1 #5149
   [wiredfool]
 
