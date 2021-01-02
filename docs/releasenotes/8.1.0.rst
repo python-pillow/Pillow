@@ -53,6 +53,9 @@ Dependencies
 OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including
 security fixes.
 
+LibTIFF in the macOS and Linux wheels has been updated from 4.1.0 to 4.2.0, including
+security fixes discovered by fuzzers.
+
 Other Changes
 =============
 
