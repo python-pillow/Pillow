@@ -11,7 +11,6 @@ from PIL import Image
         "Tests/images/sgi_crash.bin",
         "Tests/images/crash-6b7f2244da6d0ae297ee0754a424213444e92778.sgi",
         "Tests/images/ossfuzz-5730089102868480.sgi",
-
     ],
 )
 def test_crashes(test_file):
