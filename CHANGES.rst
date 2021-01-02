@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.1.0 (unreleased)
 ------------------
 
+- Makefile updates #5159
+  [wiredfool, radarhere]
+
 - Add support for PySide6 #5161
   [hugovk]
 
