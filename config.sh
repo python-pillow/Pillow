@@ -94,6 +94,14 @@ function pre_build {
     done
 }
 
+function pip_wheel_cmd {
+    local abs_wheelhouse=$1
+    pip wheel $(pip_opts) \
+        --global-option build_ext --global-option --enable-raqm \
+        --global-option --vendor-raqm --global-option --vendor-fribidi \
+        -w $abs_wheelhouse --no-deps .
+}
+
 function run_tests_in_repo {
     # Run Pillow tests from within source repo
     python3 selftest.py
