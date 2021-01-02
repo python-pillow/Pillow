@@ -85,7 +85,15 @@ function pre_build {
         build_freetype
     fi
 
+    if [ -z "$IS_OSX" ]; then
+        export FREETYPE_LIBS=-lfreetype
+        export FREETYPE_CFLAGS=-I/usr/local/include/freetype2/
+    fi
     build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
+    if [ -z "$IS_OSX" ]; then
+        export FREETYPE_LIBS=''
+        export FREETYPE_CFLAGS=''
+    fi
 
     # Append licenses
     for filename in dependency_licenses/*; do
