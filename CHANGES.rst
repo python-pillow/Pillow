@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-8.1.0 (unreleased)
+8.1.0 (2020-01-02)
 ------------------
 
 - Fix TIFF OOB Write error. CVE-2020-35654 #5175
