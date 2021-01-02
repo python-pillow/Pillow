@@ -20,14 +20,6 @@ Makefile
 
 The 'install-venv' target has been deprecated.
 
-API Changes
-===========
-
-TODO
-^^^^
-
-TODO
-
 API Additions
 =============
 
@@ -44,8 +36,29 @@ already exists for the ICNS format.
 Security
 ========
 
-An out-of-bounds read when saving TIFFs with custom metadata through libtiff has been
-fixed, as well as when saving a GIF of 1px width.
+This release includes security fixes.
+
+* An out-of-bounds read when saving TIFFs with custom metadata through libtiff
+* An out-of-bounds read when saving a GIF of 1px width
+* :cve:`CVE-2020-35653` Buffer Read Overrun in PCX Decoding.
+
+The PCX Image decoder used the reported image stride to calculate the row buffer,
+rather than calculating it from the image size. This issue dates back to the PIL fork.
+Thanks to Google's OSS-Fuzz project for finding this.
+
+* :cve:`CVE-2020-35654` Fix TIFF OOB Write error
+
+OOB Write in TiffDecode.c when reading corrupt YCbCr files in some LibTiff versions
+(4.1.0/Ubuntu 20.04, but not 4.0.9/Ubuntu 18.04). In some cases libtiff's
+interpretation of the file is different when reading in RGBA mode, leading to an Out of
+bounds write in TiffDecode.c. This potentially affects Pillow versions from 6.0.0 to
+8.0.1, depending on the version of LibTiff. This was reported through Tidelift.
+
+* :cve:`CVE-2020-35655` Fix for SGI Decode buffer overrun
+
+4 Byte Read Overflow in SGIRleDecode.c, where the code was not correctly checking the
+offsets and length tables. Independently reported through Tidelift and Google's OSS-Fuzz.
+This vulnerability covers Pillow versions 4.3.0->8.0.1.
 
 Dependencies
 ^^^^^^^^^^^^
