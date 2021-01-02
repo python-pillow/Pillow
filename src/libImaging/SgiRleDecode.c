@@ -112,14 +112,33 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
     int err = 0;
     int status;
 
+    /* size check */
+    if (im->xsize > INT_MAX / im->bands ||
+        im->ysize > INT_MAX / im->bands) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
+    }
+
     /* Get all data from File descriptor */
     c = (SGISTATE*)state->context;
     _imaging_seek_pyFd(state->fd, 0L, SEEK_END);
     c->bufsize = _imaging_tell_pyFd(state->fd);
     c->bufsize -= SGI_HEADER_SIZE;
+
+    c->tablen = im->bands * im->ysize;
+    /* below, we populate the starttab and lentab into the bufsize,
+       each with 4 bytes per element of tablen
+       Check here before we allocate any memory
+    */
+    if (c->bufsize < 8*c->tablen) {
+        state->errcode = IMAGING_CODEC_OVERRUN;
+        return -1;
+    }
+
     ptr = malloc(sizeof(UINT8) * c->bufsize);
     if (!ptr) {
-        return IMAGING_CODEC_MEMORY;
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
     }
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
     _imaging_read_pyFd(state->fd, (char*)ptr, c->bufsize);
@@ -134,18 +153,11 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
         state->ystep = 1;
     }
 
-    if (im->xsize > INT_MAX / im->bands ||
-        im->ysize > INT_MAX / im->bands) {
-        err = IMAGING_CODEC_MEMORY;
-        goto sgi_finish_decode;
-    }
-
     /* Allocate memory for RLE tables and rows */
     free(state->buffer);
     state->buffer = NULL;
     /* malloc overflow check above */
     state->buffer = calloc(im->xsize * im->bands, sizeof(UINT8) * 2);
-    c->tablen = im->bands * im->ysize;
     c->starttab = calloc(c->tablen, sizeof(UINT32));
     c->lengthtab = calloc(c->tablen, sizeof(UINT32));
     if (!state->buffer ||
@@ -176,7 +188,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
 
             if (c->rleoffset + c->rlelength > c->bufsize) {
                 state->errcode = IMAGING_CODEC_OVERRUN;
-                return -1;
+                goto sgi_finish_decode;
             }
 
             /* row decompression */
@@ -188,7 +200,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state,
             }
             if (status == -1) {
                 state->errcode = IMAGING_CODEC_OVERRUN;
-                return -1;
+                goto sgi_finish_decode;
             } else if (status == 1) {
                 goto sgi_finish_decode;
             }
@@ -209,7 +221,8 @@ sgi_finish_decode: ;
     free(c->lengthtab);
     free(ptr);
     if (err != 0){
-        return err;
+        state->errcode=err;
+        return -1;
     }
     return state->count - c->bufsize;
 }
