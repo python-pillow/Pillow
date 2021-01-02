@@ -317,7 +317,7 @@ class pil_build_ext(build_ext):
         + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
         + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
         + [
-            (f"_vendor-{x}", None, f"Use vendored version of {x}")
+            (f"vendor-{x}", None, f"Use vendored version of {x}")
             for x in ("raqm", "fribidi")
         ]
         + [
@@ -335,7 +335,7 @@ class pil_build_ext(build_ext):
             setattr(self, f"disable_{x}", None)
             setattr(self, f"enable_{x}", None)
         for x in ("raqm", "fribidi"):
-            setattr(self, f"_vendor_{x}", None)
+            setattr(self, f"vendor_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -374,14 +374,14 @@ class pil_build_ext(build_ext):
                     _dbg("--enable-raqm implies --enable-freetype")
                     self.feature.required.add("freetype")
         for x in ("raqm", "fribidi"):
-            if getattr(self, f"_vendor_{x}"):
+            if getattr(self, f"vendor_{x}"):
                 if getattr(self, "disable_raqm"):
                     raise ValueError(
-                        f"Conflicting options: --_vendor-{x} and --disable-raqm"
+                        f"Conflicting options: --vendor-{x} and --disable-raqm"
                     )
-                if x == "fribidi" and not getattr(self, "_vendor_raqm"):
+                if x == "fribidi" and not getattr(self, "vendor_raqm"):
                     raise ValueError(
-                        f"Conflicting options: --_vendor-{x} and not --_vendor-raqm"
+                        f"Conflicting options: --vendor-{x} and not --vendor-raqm"
                     )
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
