@@ -61,6 +61,7 @@ jobs:
               mingw-w64-x86_64-libimagequant \
               mingw-w64-x86_64-libjpeg-turbo \
               mingw-w64-x86_64-libraqm \
+              mingw-w64-x86_64-libavif \
               mingw-w64-x86_64-libtiff \
               mingw-w64-x86_64-libwebp \
               mingw-w64-x86_64-openjpeg2 \

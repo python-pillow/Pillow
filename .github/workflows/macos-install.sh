@@ -13,7 +13,11 @@ brew install \
     libtiff \
     little-cms2 \
     openjpeg \
-    webp
+    webp \
+    dav1d \
+    aom \
+    rav1e \
+    ninja
 if [[ "$ImageOS" == "macos13" ]]; then
     brew install --ignore-dependencies libraqm
 else
@@ -30,6 +34,9 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 python3 -m pip install numpy
+
+# libavif
+pushd depends && ./install_libavif.sh && popd
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd

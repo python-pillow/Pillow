@@ -86,6 +86,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
+        python -m pip install meson
+
         choco install ghostscript --version=10.4.0 --no-progress
         echo "C:\Program Files\gs\gs10.04.0\bin" >> $env:GITHUB_PATH
 
@@ -136,6 +138,18 @@ jobs:
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    - name: Build dependencies / rav1e
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_rav1e.cmd"
+
+    - name: Build dependencies / meson
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\install_meson.cmd"
+
+    - name: Build dependencies / libavif
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libavif.cmd"
 
     # for FreeType WOFF2 font support
     - name: Build dependencies / brotli

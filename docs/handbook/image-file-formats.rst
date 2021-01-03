@@ -235,7 +235,7 @@ following options are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for GIF, PDF, PNG, TIFF, and WebP.
+    This is currently supported for GIF, PDF, PNG, TIFF, WebP, and AVIF.
 
     It is also supported for ICO and ICNS. If images are passed in of relevant
     sizes, they will be used instead of scaling down the main image.
@@ -1310,6 +1310,79 @@ XBM
 ^^^
 
 Pillow reads and writes X bitmap files (mode ``1``).
+
+AVIF
+^^^^
+
+Pillow reads and writes AVIF files, including AVIF sequence images. Currently,
+it is only possible to save 8-bit AVIF images, and all AVIF images are decoded
+as 8-bit RGB(A).
+
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**quality**
+    Integer, 1-100, Defaults to 90. 0 gives the smallest size and poorest
+    quality, 100 the largest and best quality. The value of this setting
+    controls the ``qmin`` and ``qmax`` encoder options.
+
+**qmin** / **qmax**
+    Integer, 0-63. The quality of images created by an AVIF encoder are
+    controlled by minimum and maximum quantizer values. The higher these
+    values are, the worse the quality.
+
+**subsampling**
+    If present, sets the subsampling for the encoder. Defaults to ``"4:2:0``".
+    Options include:
+
+    * ``"4:0:0"``
+    * ``"4:2:0"``
+    * ``"4:2:2"``
+    * ``"4:4:4"``
+
+**speed**
+    Quality/speed trade-off (0=slower-better, 10=fastest). Defaults to 8.
+
+**range**
+    YUV range, either "full" or "limited." Defaults to "full"
+
+**codec**
+    AV1 codec to use for encoding. Possible values are "aom", "rav1e", and
+    "svt", depending on what codecs were compiled with libavif. Defaults to
+    "auto", which will choose the first available codec in the order of the
+    preceding list.
+
+**tile_rows** / **tile_cols**
+    For tile encoding, the (log 2) number of tile rows and columns to use.
+    Valid values are 0-6, default 0.
+
+**alpha_premultiplied**
+    Encode the image with premultiplied alpha, defaults ``False``
+
+**icc_profile**
+    The ICC Profile to include in the saved file.
+
+**exif**
+    The exif data to include in the saved file.
+
+**xmp**
+    The XMP data to include in the saved file.
+
+Saving sequences
+~~~~~~~~~~~~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an AVIF file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+options will also be available.
+
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images.
+
+**duration**
+    The display duration of each frame, in milliseconds. Pass a single
+    integer for a constant duration, or a list or tuple to set the
+    duration for each frame separately.
 
 Read-only formats
 -----------------
