@@ -14,18 +14,15 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-
 Imaging
-ImagingOffset(Imaging im, int xoffset, int yoffset)
-{
+ImagingOffset(Imaging im, int xoffset, int yoffset) {
     int x, y;
     Imaging imOut;
 
     if (!im) {
-        return (Imaging) ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError();
     }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
@@ -48,13 +45,13 @@ ImagingOffset(Imaging im, int xoffset, int yoffset)
         yoffset += im->ysize;
     }
 
-#define OFFSET(image)\
-    for (y = 0; y < im->ysize; y++) {\
-        for (x = 0; x < im->xsize; x++) {\
-            int yi = (y + yoffset) % im->ysize;\
-            int xi = (x + xoffset) % im->xsize;\
-            imOut->image[y][x] = im->image[yi][xi];\
-        }\
+#define OFFSET(image)                               \
+    for (y = 0; y < im->ysize; y++) {               \
+        for (x = 0; x < im->xsize; x++) {           \
+            int yi = (y + yoffset) % im->ysize;     \
+            int xi = (x + xoffset) % im->xsize;     \
+            imOut->image[y][x] = im->image[yi][xi]; \
+        }                                           \
     }
 
     if (im->image8) {
