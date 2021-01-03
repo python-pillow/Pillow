@@ -1321,8 +1321,8 @@ class Image:
 
     def getxmp(self):
         """
-        Returns an object containing the xmp tags for a given image.
-        :returns: XMP tags in an object.
+        Returns a dictionary containing the xmp tags for a given image.
+        :returns: XMP tags in a dictionary.
         """
 
         if self._xmp is None:
