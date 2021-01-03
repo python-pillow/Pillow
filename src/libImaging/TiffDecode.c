@@ -250,7 +250,7 @@ int _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
         img.row_offset = state->y; 
         rows_to_read = min(rows_per_strip, img.height - state->y);
 
-        if (TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read) == -1) {
+        if (!TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read)) {
             TRACE(("Decode Error, y: %d\n", state->y ));
             state->errcode = IMAGING_CODEC_BROKEN;
             goto decodeycbcr_err;
