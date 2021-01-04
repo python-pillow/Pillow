@@ -13,23 +13,22 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-#define HEX(v) ((v >= '0' && v <= '9') ? v - '0' :\
-        (v >= 'a' && v <= 'f') ? v - 'a' + 10 :\
-        (v >= 'A' && v <= 'F') ? v - 'A' + 10 : -1)
+#define HEX(v)                               \
+    ((v >= '0' && v <= '9')   ? v - '0'      \
+     : (v >= 'a' && v <= 'f') ? v - 'a' + 10 \
+     : (v >= 'A' && v <= 'F') ? v - 'A' + 10 \
+                              : -1)
 
 int
-ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
-{
-    UINT8* ptr;
+ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+    UINT8 *ptr;
     int a, b;
 
     ptr = buf;
 
     for (;;) {
-
         if (bytes < 2) {
             return ptr - buf;
         }
@@ -38,22 +37,19 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         b = HEX(ptr[1]);
 
         if (a < 0 || b < 0) {
-
             ptr++;
             bytes--;
 
         } else {
-
             ptr += 2;
             bytes -= 2;
 
-            state->buffer[state->x] = (a<<4) + b;
+            state->buffer[state->x] = (a << 4) + b;
 
             if (++state->x >= state->bytes) {
-
                 /* Got a full line, unpack it */
-                state->shuffle((UINT8*) im->image[state->y], state->buffer,
-                           state->xsize);
+                state->shuffle(
+                    (UINT8 *)im->image[state->y], state->buffer, state->xsize);
 
                 state->x = 0;
 
@@ -62,7 +58,6 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
                     return -1;
                 }
             }
-
         }
     }
 }

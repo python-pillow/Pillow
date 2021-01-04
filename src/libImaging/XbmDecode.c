@@ -13,19 +13,19 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-#define HEX(v) ((v >= '0' && v <= '9') ? v - '0' :\
-        (v >= 'a' && v <= 'f') ? v - 'a' + 10 :\
-        (v >= 'A' && v <= 'F') ? v - 'A' + 10 : 0)
+#define HEX(v)                               \
+    ((v >= '0' && v <= '9')   ? v - '0'      \
+     : (v >= 'a' && v <= 'f') ? v - 'a' + 10 \
+     : (v >= 'A' && v <= 'F') ? v - 'A' + 10 \
+                              : 0)
 
 int
-ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t bytes)
-{
+ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     enum { BYTE = 1, SKIP };
 
-    UINT8* ptr;
+    UINT8 *ptr;
 
     if (!state->state) {
         state->state = SKIP;
@@ -34,9 +34,7 @@ ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
     ptr = buf;
 
     for (;;) {
-
         if (state->state == SKIP) {
-
             /* Skip forward until next 'x' */
 
             while (bytes > 0) {
@@ -52,20 +50,17 @@ ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
             }
 
             state->state = BYTE;
-
         }
 
         if (bytes < 3) {
             return ptr - buf;
         }
 
-        state->buffer[state->x] = (HEX(ptr[1])<<4) + HEX(ptr[2]);
+        state->buffer[state->x] = (HEX(ptr[1]) << 4) + HEX(ptr[2]);
 
         if (++state->x >= state->bytes) {
-
             /* Got a full line, unpack it */
-            state->shuffle((UINT8*) im->image[state->y], state->buffer,
-                   state->xsize);
+            state->shuffle((UINT8 *)im->image[state->y], state->buffer, state->xsize);
 
             state->x = 0;
 
@@ -79,7 +74,5 @@ ImagingXbmDecode(Imaging im, ImagingCodecState state, UINT8* buf, Py_ssize_t byt
         bytes -= 3;
 
         state->state = SKIP;
-
     }
-
 }
