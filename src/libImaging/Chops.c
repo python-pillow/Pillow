@@ -16,58 +16,60 @@
  * See the README file for details on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-#define CHOP(operation, mode)\
-    int x, y;\
-    Imaging imOut;\
-    imOut = create(imIn1, imIn2, mode);\
-    if (!imOut)\
-        return NULL;\
-    for (y = 0; y < imOut->ysize; y++) {\
-        UINT8* out = (UINT8*) imOut->image[y];\
-        UINT8* in1 = (UINT8*) imIn1->image[y];\
-        UINT8* in2 = (UINT8*) imIn2->image[y];\
-        for (x = 0; x < imOut->linesize; x++) {\
-            int temp = operation;\
-            if (temp <= 0)\
-                out[x] = 0;\
-            else if (temp >= 255)\
-                out[x] = 255;\
-            else\
-                out[x] = temp;\
-        }\
-    }\
+#define CHOP(operation)                         \
+    int x, y;                                   \
+    Imaging imOut;                              \
+    imOut = create(imIn1, imIn2, NULL);         \
+    if (!imOut) {                               \
+        return NULL;                            \
+    }                                           \
+    for (y = 0; y < imOut->ysize; y++) {        \
+        UINT8 *out = (UINT8 *)imOut->image[y];  \
+        UINT8 *in1 = (UINT8 *)imIn1->image[y];  \
+        UINT8 *in2 = (UINT8 *)imIn2->image[y];  \
+        for (x = 0; x < imOut->linesize; x++) { \
+            int temp = operation;               \
+            if (temp <= 0) {                    \
+                out[x] = 0;                     \
+            } else if (temp >= 255) {           \
+                out[x] = 255;                   \
+            } else {                            \
+                out[x] = temp;                  \
+            }                                   \
+        }                                       \
+    }                                           \
     return imOut;
 
-#define CHOP2(operation, mode)\
-    int x, y;\
-    Imaging imOut;\
-    imOut = create(imIn1, imIn2, mode);\
-    if (!imOut)\
-        return NULL;\
-    for (y = 0; y < imOut->ysize; y++) {\
-        UINT8* out = (UINT8*) imOut->image[y];\
-        UINT8* in1 = (UINT8*) imIn1->image[y];\
-        UINT8* in2 = (UINT8*) imIn2->image[y];\
-        for (x = 0; x < imOut->linesize; x++) {\
-            out[x] = operation;\
-        }\
-    }\
+#define CHOP2(operation, mode)                  \
+    int x, y;                                   \
+    Imaging imOut;                              \
+    imOut = create(imIn1, imIn2, mode);         \
+    if (!imOut) {                               \
+        return NULL;                            \
+    }                                           \
+    for (y = 0; y < imOut->ysize; y++) {        \
+        UINT8 *out = (UINT8 *)imOut->image[y];  \
+        UINT8 *in1 = (UINT8 *)imIn1->image[y];  \
+        UINT8 *in2 = (UINT8 *)imIn2->image[y];  \
+        for (x = 0; x < imOut->linesize; x++) { \
+            out[x] = operation;                 \
+        }                                       \
+    }                                           \
     return imOut;
 
 static Imaging
-create(Imaging im1, Imaging im2, char* mode)
-{
+create(Imaging im1, Imaging im2, char *mode) {
     int xsize, ysize;
 
     if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
-        (mode != NULL && (strcmp(im1->mode, "1") || strcmp(im2->mode, "1"))))
-        return (Imaging) ImagingError_ModeError();
-    if (im1->type  != im2->type  ||
-        im1->bands != im2->bands)
-        return (Imaging) ImagingError_Mismatch();
+        (mode != NULL && (strcmp(im1->mode, "1") || strcmp(im2->mode, "1")))) {
+        return (Imaging)ImagingError_ModeError();
+    }
+    if (im1->type != im2->type || im1->bands != im2->bands) {
+        return (Imaging)ImagingError_Mismatch();
+    }
 
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;
     ysize = (im1->ysize < im2->ysize) ? im1->ysize : im2->ysize;
@@ -76,73 +78,85 @@ create(Imaging im1, Imaging im2, char* mode)
 }
 
 Imaging
-ImagingChopLighter(Imaging imIn1, Imaging imIn2)
-{
-    CHOP((in1[x] > in2[x]) ? in1[x] : in2[x], NULL);
+ImagingChopLighter(Imaging imIn1, Imaging imIn2) {
+    CHOP((in1[x] > in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
-ImagingChopDarker(Imaging imIn1, Imaging imIn2)
-{
-    CHOP((in1[x] < in2[x]) ? in1[x] : in2[x], NULL);
+ImagingChopDarker(Imaging imIn1, Imaging imIn2) {
+    CHOP((in1[x] < in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
-ImagingChopDifference(Imaging imIn1, Imaging imIn2)
-{
-    CHOP(abs((int) in1[x] - (int) in2[x]), NULL);
+ImagingChopDifference(Imaging imIn1, Imaging imIn2) {
+    CHOP(abs((int)in1[x] - (int)in2[x]));
 }
 
 Imaging
-ImagingChopMultiply(Imaging imIn1, Imaging imIn2)
-{
-    CHOP((int) in1[x] * (int) in2[x] / 255, NULL);
+ImagingChopMultiply(Imaging imIn1, Imaging imIn2) {
+    CHOP((int)in1[x] * (int)in2[x] / 255);
 }
 
 Imaging
-ImagingChopScreen(Imaging imIn1, Imaging imIn2)
-{
-    CHOP(255 - ((int) (255 - in1[x]) * (int) (255 - in2[x])) / 255, NULL);
+ImagingChopScreen(Imaging imIn1, Imaging imIn2) {
+    CHOP(255 - ((int)(255 - in1[x]) * (int)(255 - in2[x])) / 255);
 }
 
 Imaging
-ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset)
-{
-    CHOP(((int) in1[x] + (int) in2[x]) / scale + offset, NULL);
+ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset) {
+    CHOP(((int)in1[x] + (int)in2[x]) / scale + offset);
 }
 
 Imaging
-ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset)
-{
-    CHOP(((int) in1[x] - (int) in2[x]) / scale + offset, NULL);
+ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset) {
+    CHOP(((int)in1[x] - (int)in2[x]) / scale + offset);
 }
 
 Imaging
-ImagingChopAnd(Imaging imIn1, Imaging imIn2)
-{
+ImagingChopAnd(Imaging imIn1, Imaging imIn2) {
     CHOP2((in1[x] && in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopOr(Imaging imIn1, Imaging imIn2)
-{
+ImagingChopOr(Imaging imIn1, Imaging imIn2) {
     CHOP2((in1[x] || in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopXor(Imaging imIn1, Imaging imIn2)
-{
+ImagingChopXor(Imaging imIn1, Imaging imIn2) {
     CHOP2(((in1[x] != 0) ^ (in2[x] != 0)) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopAddModulo(Imaging imIn1, Imaging imIn2)
-{
+ImagingChopAddModulo(Imaging imIn1, Imaging imIn2) {
     CHOP2(in1[x] + in2[x], NULL);
 }
 
 Imaging
-ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2)
-{
+ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2) {
     CHOP2(in1[x] - in2[x], NULL);
+}
+
+Imaging
+ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) {
+    CHOP2(
+        (((255 - in1[x]) * (in1[x] * in2[x])) / 65536) +
+            (in1[x] * (255 - ((255 - in1[x]) * (255 - in2[x]) / 255))) / 255,
+        NULL);
+}
+
+Imaging
+ImagingChopHardLight(Imaging imIn1, Imaging imIn2) {
+    CHOP2(
+        (in2[x] < 128) ? ((in1[x] * in2[x]) / 127)
+                       : 255 - (((255 - in2[x]) * (255 - in1[x])) / 127),
+        NULL);
+}
+
+Imaging
+ImagingOverlay(Imaging imIn1, Imaging imIn2) {
+    CHOP2(
+        (in1[x] < 128) ? ((in1[x] * in2[x]) / 127)
+                       : 255 - (((255 - in1[x]) * (255 - in2[x])) / 127),
+        NULL);
 }

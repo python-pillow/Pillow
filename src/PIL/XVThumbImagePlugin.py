@@ -18,7 +18,7 @@
 #
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8, o8
+from ._binary import o8
 
 _MAGIC = b"P7 332"
 
@@ -59,7 +59,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
             s = self.fp.readline()
             if not s:
                 raise SyntaxError("Unexpected EOF reading XV thumbnail file")
-            if i8(s[0]) != 35:  # ie. when not a comment: '#'
+            if s[0] != 35:  # ie. when not a comment: '#'
                 break
 
         # parse header line (already read)

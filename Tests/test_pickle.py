@@ -1,125 +1,94 @@
+import pickle
+
+import pytest
+
 from PIL import Image
 
-from .helper import PillowTestCase
+from .helper import skip_unless_feature
 
 
-class TestPickle(PillowTestCase):
-    def helper_pickle_file(self, pickle, protocol=0, mode=None):
-        # Arrange
-        with Image.open("Tests/images/hopper.jpg") as im:
-            filename = self.tempfile("temp.pkl")
-            if mode:
-                im = im.convert(mode)
+def helper_pickle_file(tmp_path, pickle, protocol, test_file, mode):
+    # Arrange
+    with Image.open(test_file) as im:
+        filename = str(tmp_path / "temp.pkl")
+        if mode:
+            im = im.convert(mode)
 
-            # Act
-            with open(filename, "wb") as f:
-                pickle.dump(im, f, protocol)
-            with open(filename, "rb") as f:
-                loaded_im = pickle.load(f)
+        # Act
+        with open(filename, "wb") as f:
+            pickle.dump(im, f, protocol)
+        with open(filename, "rb") as f:
+            loaded_im = pickle.load(f)
 
-            # Assert
-            self.assertEqual(im, loaded_im)
+        # Assert
+        assert im == loaded_im
 
-    def helper_pickle_string(
-        self, pickle, protocol=0, test_file="Tests/images/hopper.jpg", mode=None
-    ):
-        with Image.open(test_file) as im:
-            if mode:
-                im = im.convert(mode)
 
-            # Act
-            dumped_string = pickle.dumps(im, protocol)
-            loaded_im = pickle.loads(dumped_string)
+def helper_pickle_string(pickle, protocol, test_file, mode):
+    with Image.open(test_file) as im:
+        if mode:
+            im = im.convert(mode)
 
-            # Assert
-            self.assertEqual(im, loaded_im)
+        # Act
+        dumped_string = pickle.dumps(im, protocol)
+        loaded_im = pickle.loads(dumped_string)
 
-    def test_pickle_image(self):
-        # Arrange
-        import pickle
+        # Assert
+        assert im == loaded_im
 
-        # Act / Assert
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(pickle, protocol)
-            self.helper_pickle_file(pickle, protocol)
 
-    def test_cpickle_image(self):
-        # Arrange
-        try:
-            import cPickle
-        except ImportError:
-            return
+@pytest.mark.parametrize(
+    ("test_file", "test_mode"),
+    [
+        ("Tests/images/hopper.jpg", None),
+        ("Tests/images/hopper.jpg", "L"),
+        ("Tests/images/hopper.jpg", "PA"),
+        pytest.param(
+            "Tests/images/hopper.webp", None, marks=skip_unless_feature("webp")
+        ),
+        ("Tests/images/hopper.tif", None),
+        ("Tests/images/test-card.png", None),
+        ("Tests/images/zero_bb.png", None),
+        ("Tests/images/zero_bb_scale2.png", None),
+        ("Tests/images/non_zero_bb.png", None),
+        ("Tests/images/non_zero_bb_scale2.png", None),
+        ("Tests/images/p_trns_single.png", None),
+        ("Tests/images/pil123p.png", None),
+        ("Tests/images/itxt_chunks.png", None),
+    ],
+)
+def test_pickle_image(tmp_path, test_file, test_mode):
+    # Act / Assert
+    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        helper_pickle_string(pickle, protocol, test_file, test_mode)
+        helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
 
-        # Act / Assert
-        for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(cPickle, protocol)
-            self.helper_pickle_file(cPickle, protocol)
 
-    def test_pickle_p_mode(self):
-        # Arrange
-        import pickle
+def test_pickle_la_mode_with_palette(tmp_path):
+    # Arrange
+    filename = str(tmp_path / "temp.pkl")
+    with Image.open("Tests/images/hopper.jpg") as im:
+        im = im.convert("PA")
 
-        # Act / Assert
-        for test_file in [
-            "Tests/images/test-card.png",
-            "Tests/images/zero_bb.png",
-            "Tests/images/zero_bb_scale2.png",
-            "Tests/images/non_zero_bb.png",
-            "Tests/images/non_zero_bb_scale2.png",
-            "Tests/images/p_trns_single.png",
-            "Tests/images/pil123p.png",
-            "Tests/images/itxt_chunks.png",
-        ]:
-            for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-                self.helper_pickle_string(
-                    pickle, protocol=protocol, test_file=test_file
-                )
+    # Act / Assert
+    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        im.mode = "LA"
+        with open(filename, "wb") as f:
+            pickle.dump(im, f, protocol)
+        with open(filename, "rb") as f:
+            loaded_im = pickle.load(f)
 
-    def test_pickle_pa_mode(self):
-        # Arrange
-        import pickle
+        im.mode = "PA"
+        assert im == loaded_im
 
-        # Act / Assert
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(pickle, protocol, mode="PA")
-            self.helper_pickle_file(pickle, protocol, mode="PA")
 
-    def test_pickle_l_mode(self):
-        # Arrange
-        import pickle
+@skip_unless_feature("webp")
+def test_pickle_tell():
+    # Arrange
+    image = Image.open("Tests/images/hopper.webp")
 
-        # Act / Assert
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(pickle, protocol, mode="L")
-            self.helper_pickle_file(pickle, protocol, mode="L")
+    # Act: roundtrip
+    unpickled_image = pickle.loads(pickle.dumps(image))
 
-    def test_pickle_la_mode_with_palette(self):
-        # Arrange
-        import pickle
-
-        filename = self.tempfile("temp.pkl")
-        with Image.open("Tests/images/hopper.jpg") as im:
-            im = im.convert("PA")
-
-        # Act / Assert
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            im.mode = "LA"
-            with open(filename, "wb") as f:
-                pickle.dump(im, f, protocol)
-            with open(filename, "rb") as f:
-                loaded_im = pickle.load(f)
-
-            im.mode = "PA"
-            self.assertEqual(im, loaded_im)
-
-    def test_cpickle_l_mode(self):
-        # Arrange
-        try:
-            import cPickle
-        except ImportError:
-            return
-
-        # Act / Assert
-        for protocol in range(0, cPickle.HIGHEST_PROTOCOL + 1):
-            self.helper_pickle_string(cPickle, protocol, mode="L")
-            self.helper_pickle_file(cPickle, protocol, mode="L")
+    # Assert
+    assert unpickled_image.tell() == 0

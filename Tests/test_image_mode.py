@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageMode
 
 from .helper import hopper
 
@@ -7,8 +7,6 @@ def test_sanity():
 
     with hopper() as im:
         im.mode
-
-    from PIL import ImageMode
 
     ImageMode.getmode("1")
     ImageMode.getmode("L")

@@ -27,7 +27,8 @@ import io
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16le as i16, o16le as o16
+from ._binary import i16le as i16
+from ._binary import o16le as o16
 
 #
 # read MSP files
@@ -51,18 +52,18 @@ class MspImageFile(ImageFile.ImageFile):
 
         # Header
         s = self.fp.read(32)
-        if s[:4] not in [b"DanM", b"LinS"]:
+        if not _accept(s):
             raise SyntaxError("not an MSP file")
 
         # Header checksum
         checksum = 0
         for i in range(0, 32, 2):
-            checksum = checksum ^ i16(s[i : i + 2])
+            checksum = checksum ^ i16(s, i)
         if checksum != 0:
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
-        self._size = i16(s[4:]), i16(s[6:])
+        self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":
             self.tile = [("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
@@ -114,10 +115,10 @@ class MspDecoder(ImageFile.PyDecoder):
         try:
             self.fd.seek(32)
             rowmap = struct.unpack_from(
-                "<%dH" % (self.state.ysize), self.fd.read(self.state.ysize * 2)
+                f"<{self.state.ysize}H", self.fd.read(self.state.ysize * 2)
             )
-        except struct.error:
-            raise OSError("Truncated MSP file in row map")
+        except struct.error as e:
+            raise OSError("Truncated MSP file in row map") from e
 
         for x, rowlen in enumerate(rowmap):
             try:
@@ -131,7 +132,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     )
                 idx = 0
                 while idx < rowlen:
-                    runtype = i8(row[idx])
+                    runtype = row[idx]
                     idx += 1
                     if runtype == 0:
                         (runcount, runval) = struct.unpack_from("Bc", row, idx)
@@ -142,8 +143,8 @@ class MspDecoder(ImageFile.PyDecoder):
                         img.write(row[idx : idx + runcount])
                         idx += runcount
 
-            except struct.error:
-                raise OSError("Corrupted MSP file in row %d" % x)
+            except struct.error as e:
+                raise OSError(f"Corrupted MSP file in row {x}") from e
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
@@ -160,7 +161,7 @@ Image.register_decoder("MSP", MspDecoder)
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise OSError("cannot write mode %s as MSP" % im.mode)
+        raise OSError(f"cannot write mode {im.mode} as MSP")
 
     # create MSP header
     header = [0] * 16

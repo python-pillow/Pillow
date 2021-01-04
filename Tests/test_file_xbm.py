@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pytest
+
 from PIL import Image
 
 from .helper import hopper

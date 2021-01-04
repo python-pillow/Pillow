@@ -1,14 +1,14 @@
 Pillow Tests
 ============
 
-Test scripts are named ``test_xxx.py`` and use the ``unittest`` module. A base class and helper functions can be found in ``helper.py``.
+Test scripts are named ``test_xxx.py``. Helper classes and functions can be found in ``helper.py``.
 
 Dependencies
 ------------
 
 Install::
 
-    pip install pytest pytest-cov
+    python3 -m pip install pytest pytest-cov
 
 Execution
 ---------

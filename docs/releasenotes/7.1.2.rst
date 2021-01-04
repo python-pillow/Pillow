@@ -1,0 +1,16 @@
+7.1.2
+-----
+
+Fix another regression seeking PNG files
+========================================
+
+This fixes a regression introduced in 7.1.0 when adding support for APNG files.
+
+When calling ``seek(n)`` on a regular PNG where ``n > 0``, it failed to raise an
+``EOFError`` as it should have done, resulting in:
+
+.. code-block:: pycon
+
+    AttributeError: 'NoneType' object has no attribute 'read'
+
+Pillow 7.1.2 now raises the correct exception.

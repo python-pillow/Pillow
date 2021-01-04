@@ -77,7 +77,7 @@ def _save(im, fp, filename, save_all=False):
 
     existing_pdf.start_writing()
     existing_pdf.write_header()
-    existing_pdf.write_comment("created by Pillow {} PDF driver".format(__version__))
+    existing_pdf.write_comment(f"created by Pillow {__version__} PDF driver")
 
     #
     # pages
@@ -121,6 +121,7 @@ def _save(im, fp, filename, save_all=False):
 
             bits = 8
             params = None
+            decode = None
 
             if im.mode == "1":
                 filter = "ASCIIHexDecode"
@@ -129,7 +130,7 @@ def _save(im, fp, filename, save_all=False):
                 bits = 1
             elif im.mode == "L":
                 filter = "DCTDecode"
-                # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
+                # params = f"<< /Predictor 15 /Columns {width-2} >>"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
@@ -150,8 +151,9 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
+                decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
-                raise ValueError("cannot save mode %s" % im.mode)
+                raise ValueError(f"cannot save mode {im.mode}")
 
             #
             # image
@@ -173,7 +175,7 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "RunLengthDecode":
                 ImageFile._save(im, op, [("packbits", (0, 0) + im.size, 0, im.mode)])
             else:
-                raise ValueError("unsupported PDF filter (%s)" % filter)
+                raise ValueError(f"unsupported PDF filter ({filter})")
 
             #
             # Get image characteristics
@@ -189,6 +191,7 @@ def _save(im, fp, filename, save_all=False):
                 Height=height,  # * 72.0 / resolution,
                 Filter=PdfParser.PdfName(filter),
                 BitsPerComponent=bits,
+                Decode=decode,
                 DecodeParams=params,
                 ColorSpace=colorspace,
             )

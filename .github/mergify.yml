@@ -1,0 +1,13 @@
+pull_request_rules:
+  - name: Automatic merge
+    conditions:
+      - "#approved-reviews-by>=1"
+      - label=automerge
+      - status-success=Lint
+      - status-success=Test Successful
+      - status-success=Docker Test Successful
+      - status-success=Windows Test Successful
+      - status-success=continuous-integration/appveyor/pr
+    actions:
+      merge:
+        method: merge

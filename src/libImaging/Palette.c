@@ -16,98 +16,97 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
 #include <math.h>
 
-
 ImagingPalette
-ImagingPaletteNew(const char* mode)
-{
+ImagingPaletteNew(const char *mode) {
     /* Create a palette object */
 
     int i;
     ImagingPalette palette;
 
-    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA"))
-        return (ImagingPalette) ImagingError_ModeError();
+    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA")) {
+        return (ImagingPalette)ImagingError_ModeError();
+    }
 
     palette = calloc(1, sizeof(struct ImagingPaletteInstance));
-    if (!palette)
-        return (ImagingPalette) ImagingError_MemoryError();
+    if (!palette) {
+        return (ImagingPalette)ImagingError_MemoryError();
+    }
 
-    strncpy(palette->mode, mode, IMAGING_MODE_LENGTH-1);
-    palette->mode[IMAGING_MODE_LENGTH-1] = 0;
+    strncpy(palette->mode, mode, IMAGING_MODE_LENGTH - 1);
+    palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
     /* Initialize to ramp */
     for (i = 0; i < 256; i++) {
-        palette->palette[i*4+0] =
-        palette->palette[i*4+1] =
-        palette->palette[i*4+2] = (UINT8) i;
-        palette->palette[i*4+3] = 255; /* opaque */
+        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
+            palette->palette[i * 4 + 2] = (UINT8)i;
+        palette->palette[i * 4 + 3] = 255; /* opaque */
     }
 
     return palette;
 }
 
 ImagingPalette
-ImagingPaletteNewBrowser(void)
-{
+ImagingPaletteNewBrowser(void) {
     /* Create a standard "browser" palette object */
 
     int i, r, g, b;
     ImagingPalette palette;
 
     palette = ImagingPaletteNew("RGB");
-    if (!palette)
+    if (!palette) {
         return NULL;
+    }
 
     /* Blank out unused entries */
     /* FIXME: Add 10-level windows palette here? */
 
     for (i = 0; i < 10; i++) {
-        palette->palette[i*4+0] =
-        palette->palette[i*4+1] =
-        palette->palette[i*4+2] = 0;
+        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
+            palette->palette[i * 4 + 2] = 0;
     }
 
     /* Simple 6x6x6 colour cube */
 
-    for (b = 0; b < 256; b += 51)
-        for (g = 0; g < 256; g += 51)
+    for (b = 0; b < 256; b += 51) {
+        for (g = 0; g < 256; g += 51) {
             for (r = 0; r < 256; r += 51) {
-                palette->palette[i*4+0] = r;
-                palette->palette[i*4+1] = g;
-                palette->palette[i*4+2] = b;
+                palette->palette[i * 4 + 0] = r;
+                palette->palette[i * 4 + 1] = g;
+                palette->palette[i * 4 + 2] = b;
                 i++;
             }
+        }
+    }
 
     /* Blank out unused entries */
     /* FIXME: add 30-level greyscale wedge here? */
 
     for (; i < 256; i++) {
-        palette->palette[i*4+0] =
-        palette->palette[i*4+1] =
-        palette->palette[i*4+2] = 0;
+        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
+            palette->palette[i * 4 + 2] = 0;
     }
 
     return palette;
 }
 
 ImagingPalette
-ImagingPaletteDuplicate(ImagingPalette palette)
-{
+ImagingPaletteDuplicate(ImagingPalette palette) {
     /* Duplicate palette descriptor */
 
     ImagingPalette new_palette;
 
-    if (!palette)
+    if (!palette) {
         return NULL;
+    }
     /* malloc check ok, small constant allocation */
     new_palette = malloc(sizeof(struct ImagingPaletteInstance));
-    if (!new_palette)
-        return (ImagingPalette) ImagingError_MemoryError();
+    if (!new_palette) {
+        return (ImagingPalette)ImagingError_MemoryError();
+    }
 
     memcpy(new_palette, palette, sizeof(struct ImagingPaletteInstance));
 
@@ -118,17 +117,16 @@ ImagingPaletteDuplicate(ImagingPalette palette)
 }
 
 void
-ImagingPaletteDelete(ImagingPalette palette)
-{
+ImagingPaletteDelete(ImagingPalette palette) {
     /* Destroy palette object */
 
     if (palette) {
-        if (palette->cache)
+        if (palette->cache) {
             free(palette->cache);
+        }
         free(palette);
     }
 }
-
 
 /* -------------------------------------------------------------------- */
 /* Colour mapping                                                       */
@@ -147,27 +145,26 @@ ImagingPaletteDelete(ImagingPalette palette)
 #define DIST(a, b, s) (a - b) * (a - b) * s
 
 /* Colour weights (no scaling, for now) */
-#define RSCALE  1
-#define GSCALE  1
-#define BSCALE  1
+#define RSCALE 1
+#define GSCALE 1
+#define BSCALE 1
 
 /* Calculated scaled distances */
-#define RDIST(a, b) DIST(a, b, RSCALE*RSCALE)
-#define GDIST(a, b) DIST(a, b, GSCALE*GSCALE)
-#define BDIST(a, b) DIST(a, b, BSCALE*BSCALE)
+#define RDIST(a, b) DIST(a, b, RSCALE *RSCALE)
+#define GDIST(a, b) DIST(a, b, GSCALE *GSCALE)
+#define BDIST(a, b) DIST(a, b, BSCALE *BSCALE)
 
 /* Incremental steps */
-#define RSTEP   (4 * RSCALE)
-#define GSTEP   (4 * GSCALE)
-#define BSTEP   (4 * BSCALE)
+#define RSTEP (4 * RSCALE)
+#define GSTEP (4 * GSCALE)
+#define BSTEP (4 * BSCALE)
 
-#define BOX     8
+#define BOX 8
 
-#define BOXVOLUME BOX*BOX*BOX
+#define BOXVOLUME BOX *BOX *BOX
 
 void
-ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
-{
+ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
     int i, j;
     unsigned int dmin[256], dmax;
     int r0, g0, b0;
@@ -179,39 +176,44 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
     /* Get box boundaries for the given (r,g,b)-triplet.  Each box
        covers eight cache slots (32 colour values, that is). */
 
-    r0 = r & 0xe0; r1 = r0 + 0x1f; rc = (r0 + r1) / 2;
-    g0 = g & 0xe0; g1 = g0 + 0x1f; gc = (g0 + g1) / 2;
-    b0 = b & 0xe0; b1 = b0 + 0x1f; bc = (b0 + b1) / 2;
+    r0 = r & 0xe0;
+    r1 = r0 + 0x1f;
+    rc = (r0 + r1) / 2;
+    g0 = g & 0xe0;
+    g1 = g0 + 0x1f;
+    gc = (g0 + g1) / 2;
+    b0 = b & 0xe0;
+    b1 = b0 + 0x1f;
+    bc = (b0 + b1) / 2;
 
     /* Step 1 -- Select relevant palette entries (after Heckbert) */
 
     /* For each palette entry, calculate the min and max distances to
      * any position in the box given by the colour we're looking for. */
 
-    dmax = (unsigned int) ~0;
+    dmax = (unsigned int)~0;
 
     for (i = 0; i < 256; i++) {
-
         int r, g, b;
         unsigned int tmin, tmax;
 
         /* Find min and max distances to any point in the box */
-        r = palette->palette[i*4+0];
+        r = palette->palette[i * 4 + 0];
         tmin = (r < r0) ? RDIST(r, r1) : (r > r1) ? RDIST(r, r0) : 0;
         tmax = (r <= rc) ? RDIST(r, r1) : RDIST(r, r0);
 
-        g = palette->palette[i*4+1];
+        g = palette->palette[i * 4 + 1];
         tmin += (g < g0) ? GDIST(g, g1) : (g > g1) ? GDIST(g, g0) : 0;
         tmax += (g <= gc) ? GDIST(g, g1) : GDIST(g, g0);
 
-        b = palette->palette[i*4+2];
+        b = palette->palette[i * 4 + 2];
         tmin += (b < b0) ? BDIST(b, b1) : (b > b1) ? BDIST(b, b0) : 0;
         tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
 
         dmin[i] = tmin;
-        if (tmax < dmax)
+        if (tmax < dmax) {
             dmax = tmax; /* keep the smallest max distance only */
-
+        }
     }
 
     /* Step 2 -- Incrementally update cache slot (after Thomas) */
@@ -220,22 +222,21 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
      * all slots in that box.  We only check boxes for which the min
      * distance is less than or equal the smallest max distance */
 
-    for (i = 0; i < BOXVOLUME; i++)
-        d[i] = (unsigned int) ~0;
+    for (i = 0; i < BOXVOLUME; i++) {
+        d[i] = (unsigned int)~0;
+    }
 
-    for (i = 0; i < 256; i++)
-
+    for (i = 0; i < 256; i++) {
         if (dmin[i] <= dmax) {
-
             int rd, gd, bd;
             int ri, gi, bi;
             int rx, gx, bx;
 
-            ri = (r0 - palette->palette[i*4+0]) * RSCALE;
-            gi = (g0 - palette->palette[i*4+1]) * GSCALE;
-            bi = (b0 - palette->palette[i*4+2]) * BSCALE;
+            ri = (r0 - palette->palette[i * 4 + 0]) * RSCALE;
+            gi = (g0 - palette->palette[i * 4 + 1]) * GSCALE;
+            bi = (b0 - palette->palette[i * 4 + 2]) * BSCALE;
 
-            rd = ri*ri + gi*gi + bi*bi;
+            rd = ri * ri + gi * gi + bi * bi;
 
             ri = ri * (2 * RSTEP) + RSTEP * RSTEP;
             gi = gi * (2 * GSTEP) + GSTEP * GSTEP;
@@ -243,13 +244,15 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
 
             rx = ri;
             for (r = j = 0; r < BOX; r++) {
-                gd = rd; gx = gi;
+                gd = rd;
+                gx = gi;
                 for (g = 0; g < BOX; g++) {
-                    bd = gd; bx = bi;
+                    bd = gd;
+                    bx = bi;
                     for (b = 0; b < BOX; b++) {
-                        if ((unsigned int) bd < d[j]) {
+                        if ((unsigned int)bd < d[j]) {
                             d[j] = bd;
-                            c[j] = (UINT8) i;
+                            c[j] = (UINT8)i;
                         }
                         bd += bx;
                         bx += 2 * BSTEP * BSTEP;
@@ -262,6 +265,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
                 rx += 2 * RSTEP * RSTEP;
             }
         }
+    }
 
     /* Step 3 -- Update cache */
 
@@ -269,46 +273,44 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b)
      * cache slot in the box.  Update the cache. */
 
     j = 0;
-    for (r = r0; r < r1; r+=4)
-        for (g = g0; g < g1; g+=4)
-            for (b = b0; b < b1; b+=4)
+    for (r = r0; r < r1; r += 4) {
+        for (g = g0; g < g1; g += 4) {
+            for (b = b0; b < b1; b += 4) {
                 ImagingPaletteCache(palette, r, g, b) = c[j++];
+            }
+        }
+    }
 }
 
-
 int
-ImagingPaletteCachePrepare(ImagingPalette palette)
-{
+ImagingPaletteCachePrepare(ImagingPalette palette) {
     /* Add a colour cache to a palette */
 
     int i;
-    int entries = 64*64*64;
+    int entries = 64 * 64 * 64;
 
     if (palette->cache == NULL) {
-
         /* The cache is 512k.  It might be a good idea to break it
            up into a pointer array (e.g. an 8-bit image?) */
 
         /* malloc check ok, small constant allocation */
-        palette->cache = (INT16*) malloc(entries * sizeof(INT16));
+        palette->cache = (INT16 *)malloc(entries * sizeof(INT16));
         if (!palette->cache) {
-            (void) ImagingError_MemoryError();
+            (void)ImagingError_MemoryError();
             return -1;
         }
 
         /* Mark all entries as empty */
-        for (i = 0; i < entries; i++)
+        for (i = 0; i < entries; i++) {
             palette->cache[i] = 0x100;
-
+        }
     }
 
     return 0;
 }
 
-
 void
-ImagingPaletteCacheDelete(ImagingPalette palette)
-{
+ImagingPaletteCacheDelete(ImagingPalette palette) {
     /* Release the colour cache, if any */
 
     if (palette && palette->cache) {

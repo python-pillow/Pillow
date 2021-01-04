@@ -1,13 +1,13 @@
 import sys
 
-from PIL import Image
+import pytest
 
-from .helper import PillowTestCase
+from PIL import Image
 
 X = 255
 
 
-class TestLibPack(PillowTestCase):
+class TestLibPack:
     def assert_pack(self, mode, rawmode, data, *pixels):
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -20,7 +20,7 @@ class TestLibPack(PillowTestCase):
             data_len = data * len(pixels)
             data = bytes(range(1, data_len + 1))
 
-        self.assertEqual(data, im.tobytes("raw", rawmode))
+        assert data == im.tobytes("raw", rawmode)
 
     def test_1(self):
         self.assert_pack("1", "1", b"\x01", 0, 0, 0, 0, 0, 0, 0, X)
@@ -222,7 +222,7 @@ class TestLibPack(PillowTestCase):
             )
 
 
-class TestLibUnpack(PillowTestCase):
+class TestLibUnpack:
     def assert_unpack(self, mode, rawmode, data, *pixels):
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -234,7 +234,7 @@ class TestLibUnpack(PillowTestCase):
         im = Image.frombytes(mode, (len(pixels), 1), data, "raw", rawmode, 0, 1)
 
         for x, pixel in enumerate(pixels):
-            self.assertEqual(pixel, im.getpixel((x, 0)))
+            assert pixel == im.getpixel((x, 0))
 
     def test_1(self):
         self.assert_unpack("1", "1", b"\x01", 0, 0, 0, 0, 0, 0, 0, X)
@@ -719,6 +719,9 @@ class TestLibUnpack(PillowTestCase):
             self.assert_unpack("CMYK", "CMYK;16N", 8, (1, 3, 5, 7), (9, 11, 13, 15))
 
     def test_value_error(self):
-        self.assertRaises(ValueError, self.assert_unpack, "L", "L", 0, 0)
-        self.assertRaises(ValueError, self.assert_unpack, "RGB", "RGB", 2, 0)
-        self.assertRaises(ValueError, self.assert_unpack, "CMYK", "CMYK", 2, 0)
+        with pytest.raises(ValueError):
+            self.assert_unpack("L", "L", 0, 0)
+        with pytest.raises(ValueError):
+            self.assert_unpack("RGB", "RGB", 2, 0)
+        with pytest.raises(ValueError):
+            self.assert_unpack("CMYK", "CMYK", 2, 0)

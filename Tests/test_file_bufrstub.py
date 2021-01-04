@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import BufrStubImagePlugin, Image
 
 from .helper import hopper
@@ -32,7 +33,7 @@ def test_load():
     with Image.open(TEST_FILE) as im:
 
         # Act / Assert: stub cannot load without an implemented handler
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             im.load()
 
 
@@ -42,5 +43,5 @@ def test_save(tmp_path):
     tmpfile = str(tmp_path / "temp.bufr")
 
     # Act / Assert: stub cannot save without an implemented handler
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         im.save(tmpfile)

@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImagePath
 .. py:currentmodule:: PIL.ImagePath
 
-:py:mod:`ImagePath` Module
-==========================
+:py:mod:`~PIL.ImagePath` Module
+===============================
 
-The :py:mod:`ImagePath` module is used to store and manipulate 2-dimensional
+The :py:mod:`~PIL.ImagePath` module is used to store and manipulate 2-dimensional
 vector data. Path objects can be passed to the methods on the
 :py:mod:`~PIL.ImageDraw` module.
 
@@ -33,7 +33,7 @@ vector data. Path objects can be passed to the methods on the
     method modifies the path in place, and returns the number of points left in
     the path.
 
-    **distance** is measured as `Manhattan distance`_ and defaults to two
+    ``distance`` is measured as `Manhattan distance`_ and defaults to two
     pixels.
 
 .. _Manhattan distance: https://en.wikipedia.org/wiki/Manhattan_distance
@@ -55,7 +55,7 @@ vector data. Path objects can be passed to the methods on the
     :param flat: By default, this function returns a list of 2-tuples
                  [(x, y), ...].  If this argument is ``True``, it
                  returns a flat list [x, y, ...] instead.
-    :return: A list of coordinates. See **flat**.
+    :return: A list of coordinates. See ``flat``.
 
 .. py:method:: PIL.ImagePath.Path.transform(matrix)
 

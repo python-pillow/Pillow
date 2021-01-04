@@ -7,31 +7,46 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         docker: [
+          # Run slower jobs first to give them a headstart and reduce waiting time
+          ubuntu-20.04-focal-arm64v8,
+          ubuntu-20.04-focal-ppc64le,
+          ubuntu-20.04-focal-s390x,
+          # Then run the remainder
           alpine,
+          amazon-2-amd64,
           arch,
-          ubuntu-16.04-xenial-amd64,
-          ubuntu-18.04-bionic-amd64,
-          debian-9-stretch-x86,
-          debian-10-buster-x86,
-          centos-6-amd64,
           centos-7-amd64,
           centos-8-amd64,
-          amazon-1-amd64,
-          amazon-2-amd64,
-          fedora-30-amd64,
-          fedora-31-amd64,
+          debian-10-buster-x86,
+          fedora-32-amd64,
+          fedora-33-amd64,
+          ubuntu-18.04-bionic-amd64,
+          ubuntu-20.04-focal-amd64,
         ]
         dockerTag: [master]
+        include:
+          - docker: "ubuntu-20.04-focal-arm64v8"
+            qemu-arch: "aarch64"
+          - docker: "ubuntu-20.04-focal-ppc64le"
+            qemu-arch: "ppc64le"
+          - docker: "ubuntu-20.04-focal-s390x"
+            qemu-arch: "s390x"
 
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: Build system information
       run: python .github/workflows/system-info.py
+
+    - name: Set up QEMU
+      if: "matrix.qemu-arch"
+      run: |
+        docker run --rm --privileged aptman/qus -s -- -p ${{ matrix.qemu-arch }}
 
     - name: Docker pull
       run: |
@@ -45,7 +60,6 @@ jobs:
         sudo chown -R runner $GITHUB_WORKSPACE
 
     - name: After success
-      if: success()
       run: |
         PATH="$PATH:~/.local/bin"
         docker start pillow_container
@@ -57,14 +71,16 @@ jobs:
       env:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
-    - name: Prepare coverage token
-      if: success() && github.repository == 'python-pillow/Pillow'
-      run: cp .github/codecov-upstream.yml codecov.yml
-
     - name: Upload coverage
-      if: success()
       uses: codecov/codecov-action@v1
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
         flags: GHA_Docker
         name: ${{ matrix.docker }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Docker Test Successful
+    steps:
+      - name: Success
+        run: echo Docker Test Successful

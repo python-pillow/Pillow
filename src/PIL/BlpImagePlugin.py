@@ -250,7 +250,7 @@ class BlpImageFile(ImageFile.ImageFile):
             decoder = "BLP2"
             self.mode = "RGBA" if self._blp_alpha_depth else "RGB"
         else:
-            raise BLPFormatError("Bad BLP magic %r" % (self.magic))
+            raise BLPFormatError(f"Bad BLP magic {repr(self.magic)}")
 
         self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
@@ -282,8 +282,8 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             self.magic = self.fd.read(4)
             self._read_blp_header()
             self._load()
-        except struct.error:
-            raise OSError("Truncated Blp file")
+        except struct.error as e:
+            raise OSError("Truncated Blp file") from e
         return 0, 0
 
     def _read_palette(self):
@@ -336,11 +336,11 @@ class BLP1Decoder(_BLPBaseDecoder):
                 self.set_as_raw(bytes(data))
             else:
                 raise BLPFormatError(
-                    "Unsupported BLP encoding %r" % (self._blp_encoding)
+                    f"Unsupported BLP encoding {repr(self._blp_encoding)}"
                 )
         else:
             raise BLPFormatError(
-                "Unsupported BLP compression %r" % (self._blp_encoding)
+                f"Unsupported BLP compression {repr(self._blp_encoding)}"
             )
 
     def _decode_jpeg_stream(self):
@@ -400,13 +400,15 @@ class BLP2Decoder(_BLPBaseDecoder):
                             data += d
                 else:
                     raise BLPFormatError(
-                        "Unsupported alpha encoding %r" % (self._blp_alpha_encoding)
+                        f"Unsupported alpha encoding {repr(self._blp_alpha_encoding)}"
                     )
             else:
-                raise BLPFormatError("Unknown BLP encoding %r" % (self._blp_encoding))
+                raise BLPFormatError(f"Unknown BLP encoding {repr(self._blp_encoding)}")
 
         else:
-            raise BLPFormatError("Unknown BLP compression %r" % (self._blp_compression))
+            raise BLPFormatError(
+                f"Unknown BLP compression {repr(self._blp_compression)}"
+            )
 
         self.set_as_raw(bytes(data))
 

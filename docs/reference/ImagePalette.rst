@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImagePalette
 .. py:currentmodule:: PIL.ImagePalette
 
-:py:mod:`ImagePalette` Module
-=============================
+:py:mod:`~PIL.ImagePalette` Module
+==================================
 
-The :py:mod:`ImagePalette` module contains a class of the same name to
+The :py:mod:`~PIL.ImagePalette` module contains a class of the same name to
 represent the color palette of palette mapped images.
 
 .. note::

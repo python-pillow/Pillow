@@ -29,7 +29,7 @@ from ._binary import i32be as i32
 
 
 def _accept(prefix):
-    return len(prefix) >= 8 and i32(prefix[:4]) >= 20 and i32(prefix[4:8]) in (1, 2)
+    return len(prefix) >= 8 and i32(prefix, 0) >= 20 and i32(prefix, 4) in (1, 2)
 
 
 ##
@@ -47,7 +47,7 @@ class GbrImageFile(ImageFile.ImageFile):
         if header_size < 20:
             raise SyntaxError("not a GIMP brush")
         if version not in (1, 2):
-            raise SyntaxError("Unsupported GIMP brush version: %s" % version)
+            raise SyntaxError(f"Unsupported GIMP brush version: {version}")
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
@@ -55,7 +55,7 @@ class GbrImageFile(ImageFile.ImageFile):
         if width <= 0 or height <= 0:
             raise SyntaxError("not a GIMP brush")
         if color_depth not in (1, 4):
-            raise SyntaxError("Unsupported GIMP brush color depth: %s" % color_depth)
+            raise SyntaxError(f"Unsupported GIMP brush color depth: {color_depth}")
 
         if version == 1:
             comment_length = header_size - 20
@@ -84,6 +84,10 @@ class GbrImageFile(ImageFile.ImageFile):
         self._data_size = width * height * color_depth
 
     def load(self):
+        if self.im:
+            # Already loaded
+            return
+
         self.im = Image.core.new(self.mode, self.size)
         self.frombytes(self.fp.read(self._data_size))
 

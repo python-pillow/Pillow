@@ -1,0 +1,1 @@
+Is this because a file-originating field is being interpreted as a *signed* int32, allowing it to provide negative values for 'advance'?

@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageColor
 .. py:currentmodule:: PIL.ImageColor
 
-:py:mod:`ImageColor` Module
-===========================
+:py:mod:`~PIL.ImageColor` Module
+================================
 
-The :py:mod:`ImageColor` module contains color tables and converters from
+The :py:mod:`~PIL.ImageColor` module contains color tables and converters from
 CSS3-style color specifiers to RGB tuples. This module is used by
 :py:meth:`PIL.Image.new` and the :py:mod:`~PIL.ImageDraw` module, among
 others.

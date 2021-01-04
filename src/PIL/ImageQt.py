@@ -22,18 +22,25 @@ from io import BytesIO
 from . import Image
 from ._util import isPath
 
-qt_versions = [["5", "PyQt5"], ["side2", "PySide2"]]
+qt_versions = [
+    ["side6", "PySide6"],
+    ["5", "PyQt5"],
+    ["side2", "PySide2"],
+]
 
 # If a version has already been imported, attempt it first
 qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
 for qt_version, qt_module in qt_versions:
     try:
-        if qt_module == "PyQt5":
-            from PyQt5.QtGui import QImage, qRgba, QPixmap
+        if qt_module == "PySide6":
+            from PySide6.QtCore import QBuffer, QIODevice
+            from PySide6.QtGui import QImage, QPixmap, qRgba
+        elif qt_module == "PyQt5":
             from PyQt5.QtCore import QBuffer, QIODevice
+            from PyQt5.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PySide2":
-            from PySide2.QtGui import QImage, qRgba, QPixmap
             from PySide2.QtCore import QBuffer, QIODevice
+            from PySide2.QtGui import QImage, QPixmap, qRgba
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True
@@ -142,15 +149,10 @@ def _toqclass_helper(im):
         data = im.tobytes("raw", "BGRX")
         format = QImage.Format_RGB32
     elif im.mode == "RGBA":
-        try:
-            data = im.tobytes("raw", "BGRA")
-        except SystemError:
-            # workaround for earlier versions
-            r, g, b, a = im.split()
-            im = Image.merge("RGBA", (b, g, r, a))
+        data = im.tobytes("raw", "BGRA")
         format = QImage.Format_ARGB32
     else:
-        raise ValueError("unsupported image mode %r" % im.mode)
+        raise ValueError(f"unsupported image mode {repr(im.mode)}")
 
     __data = data or align8to32(im.tobytes(), im.size[0], im.mode)
     return {"data": __data, "im": im, "format": format, "colortable": colortable}

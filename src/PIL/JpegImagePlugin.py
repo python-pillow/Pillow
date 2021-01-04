@@ -36,11 +36,14 @@ import io
 import os
 import struct
 import subprocess
+import sys
 import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
-from ._binary import i8, i16be as i16, i32be as i32, o8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
 from .JpegPresets import presets
 
 #
@@ -71,7 +74,7 @@ def APP(self, marker):
         self.info["jfif_version"] = divmod(version, 256)
         # extract JFIF properties
         try:
-            jfif_unit = i8(s[7])
+            jfif_unit = s[7]
             jfif_density = i16(s, 8), i16(s, 10)
         except Exception:
             pass
@@ -111,7 +114,7 @@ def APP(self, marker):
                 code = i16(s, offset)
                 offset += 2
                 # resource name (usually empty)
-                name_len = i8(s[offset])
+                name_len = s[offset]
                 # name = s[offset+1:offset+1+name_len]
                 offset += 1 + name_len
                 offset += offset & 1  # align
@@ -121,10 +124,10 @@ def APP(self, marker):
                 data = s[offset : offset + size]
                 if code == 0x03ED:  # ResolutionInfo
                     data = {
-                        "XResolution": i32(data[:4]) / 65536,
-                        "DisplayedUnitsX": i16(data[4:8]),
-                        "YResolution": i32(data[8:12]) / 65536,
-                        "DisplayedUnitsY": i16(data[12:]),
+                        "XResolution": i32(data, 0) / 65536,
+                        "DisplayedUnitsX": i16(data, 4),
+                        "YResolution": i32(data, 8) / 65536,
+                        "DisplayedUnitsY": i16(data, 12),
                     }
                 photoshop[code] = data
                 offset += size
@@ -136,7 +139,7 @@ def APP(self, marker):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
-            adobe_transform = i8(s[1])
+            adobe_transform = s[1]
         except Exception:
             pass
         else:
@@ -176,6 +179,7 @@ def COM(self, marker):
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
+    self.info["comment"] = s
     self.app["COM"] = s  # compatibility
     self.applist.append(("COM", s))
 
@@ -190,13 +194,13 @@ def SOF(self, marker):
 
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
-    self._size = i16(s[3:]), i16(s[1:])
+    self._size = i16(s, 3), i16(s, 1)
 
-    self.bits = i8(s[0])
+    self.bits = s[0]
     if self.bits != 8:
-        raise SyntaxError("cannot handle %d-bit layers" % self.bits)
+        raise SyntaxError(f"cannot handle {self.bits}-bit layers")
 
-    self.layers = i8(s[5])
+    self.layers = s[5]
     if self.layers == 1:
         self.mode = "L"
     elif self.layers == 3:
@@ -204,7 +208,7 @@ def SOF(self, marker):
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
-        raise SyntaxError("cannot handle %d-layer images" % self.layers)
+        raise SyntaxError(f"cannot handle {self.layers}-layer images")
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
         self.info["progressive"] = self.info["progression"] = 1
@@ -212,7 +216,7 @@ def SOF(self, marker):
     if self.icclist:
         # fixup icc profile
         self.icclist.sort()  # sort by sequence number
-        if i8(self.icclist[0][13]) == len(self.icclist):
+        if self.icclist[0][13] == len(self.icclist):
             profile = []
             for p in self.icclist:
                 profile.append(p[14:])
@@ -220,19 +224,18 @@ def SOF(self, marker):
         else:
             icc_profile = None  # wrong number of fragments
         self.info["icc_profile"] = icc_profile
-        self.icclist = None
+        self.icclist = []
 
     for i in range(6, len(s), 3):
         t = s[i : i + 3]
         # 4-tuples: id, vsamp, hsamp, qtable
-        self.layer.append((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
+        self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
 def DQT(self, marker):
     #
-    # Define quantization table.  Support baseline 8-bit tables
-    # only.  Note that there might be more than one table in
-    # each marker.
+    # Define quantization table.  Note that there might be more
+    # than one table in each marker.
 
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
@@ -240,15 +243,16 @@ def DQT(self, marker):
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
-        if len(s) < 65:
+        v = s[0]
+        precision = 1 if (v // 16 == 0) else 2  # in bytes
+        qt_length = 1 + precision * 64
+        if len(s) < qt_length:
             raise SyntaxError("bad quantization table marker")
-        v = i8(s[0])
-        if v // 16 == 0:
-            self.quantization[v & 15] = array.array("B", s[1:65])
-            s = s[65:]
-        else:
-            return  # FIXME: add code to read 16-bit tables!
-            # raise SyntaxError, "bad quantization table element size"
+        data = array.array("B" if precision == 1 else "H", s[1:qt_length])
+        if sys.byteorder == "little" and precision > 1:
+            data.byteswap()  # the values are always big-endian
+        self.quantization[v & 15] = data
+        s = s[qt_length:]
 
 
 #
@@ -322,7 +326,8 @@ MARKER = {
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"\377"
+    # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
+    return prefix[0:3] == b"\xFF\xD8\xFF"
 
 
 ##
@@ -336,10 +341,11 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-        s = self.fp.read(1)
+        s = self.fp.read(3)
 
-        if i8(s) != 255:
+        if not _accept(s):
             raise SyntaxError("not a JPEG file")
+        s = b"\xFF"
 
         # Create attributes
         self.bits = self.layers = 0
@@ -355,7 +361,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         while True:
 
-            i = i8(s)
+            i = s[0]
             if i == 0xFF:
                 s = s + self.fp.read(1)
                 i = i16(s)
@@ -448,9 +454,9 @@ class JpegImageFile(ImageFile.ImageFile):
             raise ValueError("Invalid Filename")
 
         try:
-            _im = Image.open(path)
-            _im.load()
-            self.im = _im.im
+            with Image.open(path) as _im:
+                _im.load()
+                self.im = _im.im
         finally:
             try:
                 os.unlink(path)
@@ -469,13 +475,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _fixup_dict(src_dict):
-    # Helper function for _getexif()
-    # returns a dict with any single item tuples/lists as individual values
-    exif = Image.Exif()
-    return exif._fixup_dict(src_dict)
-
-
 def _getexif(self):
     if "exif" not in self.info:
         return None
@@ -485,7 +484,7 @@ def _getexif(self):
 def _getmp(self):
     # Extract MP information.  This method was inspired by the "highly
     # experimental" _getexif version that's been in use for years now,
-    # itself based on the ImageFileDirectory class in the TIFF plug-in.
+    # itself based on the ImageFileDirectory class in the TIFF plugin.
 
     # The MP record essentially consists of a TIFF file embedded in a JPEG
     # application marker.
@@ -502,20 +501,20 @@ def _getmp(self):
         file_contents.seek(info.next)
         info.load(file_contents)
         mp = dict(info)
-    except Exception:
-        raise SyntaxError("malformed MP Index (unreadable directory)")
+    except Exception as e:
+        raise SyntaxError("malformed MP Index (unreadable directory)") from e
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
-    except KeyError:
-        raise SyntaxError("malformed MP Index (no number of images)")
+    except KeyError as e:
+        raise SyntaxError("malformed MP Index (no number of images)") from e
     # get MP entries
     mpentries = []
     try:
         rawmpentries = mp[0xB002]
         for entrynum in range(0, quant):
             unpackedentry = struct.unpack_from(
-                "{}LLLHH".format(endianness), rawmpentries, entrynum * 16
+                f"{endianness}LLLHH", rawmpentries, entrynum * 16
             )
             labels = ("Attribute", "Size", "DataOffset", "EntryNo1", "EntryNo2")
             mpentry = dict(zip(labels, unpackedentry))
@@ -544,8 +543,8 @@ def _getmp(self):
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError:
-        raise SyntaxError("malformed MP Index (bad MP Entry)")
+    except KeyError as e:
+        raise SyntaxError("malformed MP Index (bad MP Entry)") from e
     # Next we should try and parse the individual image unique ID list;
     # we don't because I've never seen this actually used in a real MPO
     # file and so can't test it.
@@ -592,9 +591,9 @@ def convert_dict_qtables(qtables):
 
 
 def get_sampling(im):
-    # There's no subsampling when image have only 1 layer
+    # There's no subsampling when images have only 1 layer
     # (grayscale images) or when they are CMYK (4 layers),
-    # so set subsampling to default value.
+    # so set subsampling to the default value.
     #
     # NOTE: currently Pillow can't encode JPEG to YCCK format.
     # If YCCK support is added in the future, subsampling code will have
@@ -609,24 +608,24 @@ def _save(im, fp, filename):
 
     try:
         rawmode = RAWMODE[im.mode]
-    except KeyError:
-        raise OSError("cannot write mode %s as JPEG" % im.mode)
+    except KeyError as e:
+        raise OSError(f"cannot write mode {im.mode} as JPEG") from e
 
     info = im.encoderinfo
 
     dpi = [round(x) for x in info.get("dpi", (0, 0))]
 
-    quality = info.get("quality", 0)
+    quality = info.get("quality", -1)
     subsampling = info.get("subsampling", -1)
     qtables = info.get("qtables")
 
     if quality == "keep":
-        quality = 0
+        quality = -1
         subsampling = "keep"
         qtables = "keep"
     elif quality in presets:
         preset = presets[quality]
-        quality = 0
+        quality = -1
         subsampling = preset.get("subsampling", -1)
         qtables = preset.get("quantization")
     elif not isinstance(quality, int):
@@ -662,8 +661,8 @@ def _save(im, fp, filename):
                     for line in qtables.splitlines()
                     for num in line.split("#", 1)[0].split()
                 ]
-            except ValueError:
-                raise ValueError("Invalid quantization table")
+            except ValueError as e:
+                raise ValueError("Invalid quantization table") from e
             else:
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
@@ -677,9 +676,9 @@ def _save(im, fp, filename):
                 try:
                     if len(table) != 64:
                         raise TypeError
-                    table = array.array("B", table)
-                except TypeError:
-                    raise ValueError("Invalid quantization table")
+                    table = array.array("H", table)
+                except TypeError as e:
+                    raise ValueError("Invalid quantization table") from e
                 else:
                     qtables[idx] = list(table)
             return qtables
@@ -749,8 +748,8 @@ def _save(im, fp, filename):
         # CMYK can be bigger
         if im.mode == "CMYK":
             bufsize = 4 * im.size[0] * im.size[1]
-        # keep sets quality to 0, but the actual value may be high.
-        elif quality >= 95 or quality == 0:
+        # keep sets quality to -1, but the actual value may be high.
+        elif quality >= 95 or quality == -1:
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]

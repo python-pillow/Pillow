@@ -1,0 +1,1 @@
+im = Image.open(d); im.seek(0); im.getdata()
