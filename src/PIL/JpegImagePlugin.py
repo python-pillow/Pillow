@@ -25,7 +25,6 @@
 # 2009-09-06 fl   Added icc_profile support (from Florian Hoech)
 # 2009-03-06 fl   Changed CMYK handling; always use Adobe polarity (0.6)
 # 2009-03-08 fl   Added subsampling support (from Justin Huff).
-# 2019-07-05 fl   Use Adobe APP14 marker ColorTransform tag.
 #
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
