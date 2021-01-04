@@ -1,165 +1,166 @@
-from .helper import PillowTestCase
+import pytest
 
 from PIL import Image
 
-try:
-    from PIL import _webp
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    is_big_endian,
+    skip_unless_feature,
+)
 
-    HAVE_WEBP = True
-except ImportError:
-    HAVE_WEBP = False
+pytestmark = [
+    skip_unless_feature("webp"),
+    skip_unless_feature("webp_anim"),
+]
 
 
-class TestFileWebpAnimation(PillowTestCase):
-    def setUp(self):
-        if not HAVE_WEBP:
-            self.skipTest("WebP support not installed")
-            return
+def test_n_frames():
+    """Ensure that WebP format sets n_frames and is_animated attributes correctly."""
 
-        if not _webp.HAVE_WEBPANIM:
-            self.skipTest(
-                "WebP library does not contain animation support, "
-                "not testing animation"
-            )
+    with Image.open("Tests/images/hopper.webp") as im:
+        assert im.n_frames == 1
+        assert not im.is_animated
 
-    def test_n_frames(self):
-        """
-        Ensure that WebP format sets n_frames and is_animated
-        attributes correctly.
-        """
+    with Image.open("Tests/images/iss634.webp") as im:
+        assert im.n_frames == 42
+        assert im.is_animated
 
-        im = Image.open("Tests/images/hopper.webp")
-        self.assertEqual(im.n_frames, 1)
-        self.assertFalse(im.is_animated)
 
-        im = Image.open("Tests/images/iss634.webp")
-        self.assertEqual(im.n_frames, 42)
-        self.assertTrue(im.is_animated)
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
+def test_write_animation_L(tmp_path):
+    """
+    Convert an animated GIF to animated WebP, then compare the frame count, and first
+    and last frames to ensure they're visually similar.
+    """
 
-    def test_write_animation_L(self):
-        """
-        Convert an animated GIF to animated WebP, then compare the
-        frame count, and first and last frames to ensure they're
-        visually similar.
-        """
+    with Image.open("Tests/images/iss634.gif") as orig:
+        assert orig.n_frames > 1
 
-        orig = Image.open("Tests/images/iss634.gif")
-        self.assertGreater(orig.n_frames, 1)
-
-        temp_file = self.tempfile("temp.webp")
+        temp_file = str(tmp_path / "temp.webp")
         orig.save(temp_file, save_all=True)
-        im = Image.open(temp_file)
-        self.assertEqual(im.n_frames, orig.n_frames)
+        with Image.open(temp_file) as im:
+            assert im.n_frames == orig.n_frames
 
-        # Compare first and last frames to the original animated GIF
-        orig.load()
-        im.load()
-        self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
-        orig.seek(orig.n_frames - 1)
-        im.seek(im.n_frames - 1)
-        orig.load()
-        im.load()
-        self.assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            # Compare first and last frames to the original animated GIF
+            orig.load()
+            im.load()
+            assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            orig.seek(orig.n_frames - 1)
+            im.seek(im.n_frames - 1)
+            orig.load()
+            im.load()
+            assert_image_similar(im, orig.convert("RGBA"), 25.0)
 
-    def test_write_animation_RGB(self):
-        """
-        Write an animated WebP from RGB frames, and ensure the frames
-        are visually similar to the originals.
-        """
 
-        def check(temp_file):
-            im = Image.open(temp_file)
-            self.assertEqual(im.n_frames, 2)
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
+def test_write_animation_RGB(tmp_path):
+    """
+    Write an animated WebP from RGB frames, and ensure the frames
+    are visually similar to the originals.
+    """
+
+    def check(temp_file):
+        with Image.open(temp_file) as im:
+            assert im.n_frames == 2
 
             # Compare first frame to original
             im.load()
-            self.assert_image_equal(im, frame1.convert("RGBA"))
+            assert_image_equal(im, frame1.convert("RGBA"))
 
             # Compare second frame to original
             im.seek(1)
             im.load()
-            self.assert_image_equal(im, frame2.convert("RGBA"))
+            assert_image_equal(im, frame2.convert("RGBA"))
 
-        frame1 = Image.open("Tests/images/anim_frame1.webp")
-        frame2 = Image.open("Tests/images/anim_frame2.webp")
+    with Image.open("Tests/images/anim_frame1.webp") as frame1:
+        with Image.open("Tests/images/anim_frame2.webp") as frame2:
+            temp_file1 = str(tmp_path / "temp.webp")
+            frame1.copy().save(
+                temp_file1, save_all=True, append_images=[frame2], lossless=True
+            )
+            check(temp_file1)
 
-        temp_file1 = self.tempfile("temp.webp")
-        frame1.copy().save(
-            temp_file1, save_all=True, append_images=[frame2], lossless=True
-        )
-        check(temp_file1)
+            # Tests appending using a generator
+            def imGenerator(ims):
+                yield from ims
 
-        # Tests appending using a generator
-        def imGenerator(ims):
-            for im in ims:
-                yield im
+            temp_file2 = str(tmp_path / "temp_generator.webp")
+            frame1.copy().save(
+                temp_file2,
+                save_all=True,
+                append_images=imGenerator([frame2]),
+                lossless=True,
+            )
+            check(temp_file2)
 
-        temp_file2 = self.tempfile("temp_generator.webp")
-        frame1.copy().save(
-            temp_file2,
-            save_all=True,
-            append_images=imGenerator([frame2]),
-            lossless=True,
-        )
-        check(temp_file2)
 
-    def test_timestamp_and_duration(self):
-        """
-        Try passing a list of durations, and make sure the encoded
-        timestamps and durations are correct.
-        """
+def test_timestamp_and_duration(tmp_path):
+    """
+    Try passing a list of durations, and make sure the encoded
+    timestamps and durations are correct.
+    """
 
-        durations = [0, 10, 20, 30, 40]
-        temp_file = self.tempfile("temp.webp")
-        frame1 = Image.open("Tests/images/anim_frame1.webp")
-        frame2 = Image.open("Tests/images/anim_frame2.webp")
-        frame1.save(
-            temp_file,
-            save_all=True,
-            append_images=[frame2, frame1, frame2, frame1],
-            duration=durations,
-        )
+    durations = [0, 10, 20, 30, 40]
+    temp_file = str(tmp_path / "temp.webp")
+    with Image.open("Tests/images/anim_frame1.webp") as frame1:
+        with Image.open("Tests/images/anim_frame2.webp") as frame2:
+            frame1.save(
+                temp_file,
+                save_all=True,
+                append_images=[frame2, frame1, frame2, frame1],
+                duration=durations,
+            )
 
-        im = Image.open(temp_file)
-        self.assertEqual(im.n_frames, 5)
-        self.assertTrue(im.is_animated)
+    with Image.open(temp_file) as im:
+        assert im.n_frames == 5
+        assert im.is_animated
 
         # Check that timestamps and durations match original values specified
         ts = 0
         for frame in range(im.n_frames):
             im.seek(frame)
             im.load()
-            self.assertEqual(im.info["duration"], durations[frame])
-            self.assertEqual(im.info["timestamp"], ts)
+            assert im.info["duration"] == durations[frame]
+            assert im.info["timestamp"] == ts
             ts += durations[frame]
 
-    def test_seeking(self):
-        """
-        Create an animated WebP file, and then try seeking through
-        frames in reverse-order, verifying the timestamps and durations
-        are correct.
-        """
 
-        dur = 33
-        temp_file = self.tempfile("temp.webp")
-        frame1 = Image.open("Tests/images/anim_frame1.webp")
-        frame2 = Image.open("Tests/images/anim_frame2.webp")
-        frame1.save(
-            temp_file,
-            save_all=True,
-            append_images=[frame2, frame1, frame2, frame1],
-            duration=dur,
-        )
+def test_seeking(tmp_path):
+    """
+    Create an animated WebP file, and then try seeking through frames in reverse-order,
+    verifying the timestamps and durations are correct.
+    """
 
-        im = Image.open(temp_file)
-        self.assertEqual(im.n_frames, 5)
-        self.assertTrue(im.is_animated)
+    dur = 33
+    temp_file = str(tmp_path / "temp.webp")
+    with Image.open("Tests/images/anim_frame1.webp") as frame1:
+        with Image.open("Tests/images/anim_frame2.webp") as frame2:
+            frame1.save(
+                temp_file,
+                save_all=True,
+                append_images=[frame2, frame1, frame2, frame1],
+                duration=dur,
+            )
+
+    with Image.open(temp_file) as im:
+        assert im.n_frames == 5
+        assert im.is_animated
 
         # Traverse frames in reverse, checking timestamps and durations
         ts = dur * (im.n_frames - 1)
         for frame in reversed(range(im.n_frames)):
             im.seek(frame)
             im.load()
-            self.assertEqual(im.info["duration"], dur)
-            self.assertEqual(im.info["timestamp"], ts)
+            assert im.info["duration"] == dur
+            assert im.info["timestamp"] == ts
             ts -= dur
+
+
+def test_seek_errors():
+    with Image.open("Tests/images/iss634.webp") as im:
+        with pytest.raises(EOFError):
+            im.seek(-1)
+
+        with pytest.raises(EOFError):
+            im.seek(42)

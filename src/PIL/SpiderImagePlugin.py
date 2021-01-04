@@ -32,13 +32,11 @@
 # Details about the Spider image format:
 # https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
-
-from __future__ import print_function
-
-from PIL import Image, ImageFile
 import os
 import struct
 import sys
+
+from PIL import Image, ImageFile
 
 
 def isInt(f):
@@ -113,8 +111,8 @@ class SpiderImageFile(ImageFile.ImageFile):
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
                 raise SyntaxError("not a valid Spider file")
-        except struct.error:
-            raise SyntaxError("not a valid Spider file")
+        except struct.error as e:
+            raise SyntaxError("not a valid Spider file") from e
 
         h = (99,) + t  # add 1 value : spider header index starts at 1
         iform = int(h[5])
@@ -215,10 +213,11 @@ def loadImageSeries(filelist=None):
     imglist = []
     for img in filelist:
         if not os.path.exists(img):
-            print("unable to find %s" % img)
+            print(f"unable to find {img}")
             continue
         try:
-            im = Image.open(img).convert2byte()
+            with Image.open(img) as im:
+                im = im.convert2byte()
         except Exception:
             if not isSpiderImage(img):
                 print(img + " is not a Spider image file")
@@ -235,7 +234,7 @@ def loadImageSeries(filelist=None):
 def makeSpiderHeader(im):
     nsam, nrow = im.size
     lenbyt = nsam * 4  # There are labrec records in the header
-    labrec = 1024 / lenbyt
+    labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
     labbyt = labrec * lenbyt
@@ -272,7 +271,7 @@ def _save(im, fp, filename):
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
-        raise IOError("Error creating Spider header")
+        raise OSError("Error creating Spider header")
 
     # write the SPIDER header
     fp.writelines(hdr)
@@ -305,21 +304,21 @@ if __name__ == "__main__":
         print("input image must be in Spider format")
         sys.exit()
 
-    im = Image.open(filename)
-    print("image: " + str(im))
-    print("format: " + str(im.format))
-    print("size: " + str(im.size))
-    print("mode: " + str(im.mode))
-    print("max, min: ", end=" ")
-    print(im.getextrema())
+    with Image.open(filename) as im:
+        print("image: " + str(im))
+        print("format: " + str(im.format))
+        print("size: " + str(im.size))
+        print("mode: " + str(im.mode))
+        print("max, min: ", end=" ")
+        print(im.getextrema())
 
-    if len(sys.argv) > 2:
-        outfile = sys.argv[2]
+        if len(sys.argv) > 2:
+            outfile = sys.argv[2]
 
-        # perform some image operation
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        print(
-            "saving a flipped version of %s as %s "
-            % (os.path.basename(filename), outfile)
-        )
-        im.save(outfile, SpiderImageFile.format)
+            # perform some image operation
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            print(
+                f"saving a flipped version of {os.path.basename(filename)} "
+                f"as {outfile} "
+            )
+            im.save(outfile, SpiderImageFile.format)

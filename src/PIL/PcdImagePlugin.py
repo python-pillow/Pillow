@@ -16,12 +16,6 @@
 
 
 from . import Image, ImageFile
-from ._binary import i8
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
 
 ##
 # Image plugin for PhotoCD images.  This plugin only reads the 768x512
@@ -43,7 +37,7 @@ class PcdImageFile(ImageFile.ImageFile):
         if s[:4] != b"PCD_":
             raise SyntaxError("not a PCD file")
 
-        orientation = i8(s[1538]) & 3
+        orientation = s[1538] & 3
         self.tile_post_rotate = None
         if orientation == 1:
             self.tile_post_rotate = 90

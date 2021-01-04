@@ -60,7 +60,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr("_handler", "save"):
-        raise IOError("BUFR save handler not installed")
+        raise OSError("BUFR save handler not installed")
     _handler.save(im, fp, filename)
 
 

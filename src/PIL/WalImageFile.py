@@ -1,4 +1,3 @@
-# encoding: utf-8
 #
 # The Python Imaging Library.
 # $Id$
@@ -13,23 +12,21 @@
 # See the README file for information on usage and redistribution.
 #
 
-# NOTE: This format cannot be automatically recognized, so the reader
-# is not registered for use with Image.open().  To open a WAL file, use
-# the WalImageFile.open() function instead.
+"""
+This reader is based on the specification available from:
+https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+and has been tested with a few sample files found using google.
 
-# This reader is based on the specification available from:
-#    https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
-# and has been tested with a few sample files found using google.
+.. note::
+    This format cannot be automatically recognized, so the reader
+    is not registered for use with :py:func:`PIL.Image.open()`.
+    To open a WAL file, use the :py:func:`PIL.WalImageFile.open()` function instead.
+"""
+
+import builtins
 
 from . import Image
 from ._binary import i32le as i32
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-
-    builtins = __builtin__
 
 
 def open(filename):
@@ -37,7 +34,7 @@ def open(filename):
     Load texture from a Quake2 WAL texture file.
 
     By default, a Quake2 standard palette is attached to the texture.
-    To override the palette, use the <b>putpalette</b> method.
+    To override the palette, use the :py:func:`PIL.Image.Image.putpalette()` method.
 
     :param filename: WAL file name, or an opened file handle.
     :returns: An image instance.

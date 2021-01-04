@@ -1,27 +1,14 @@
 # Development, documentation & testing requirements.
--e .
-alabaster
-Babel
-black; python_version >= '3.6'
+black
 check-manifest
-cov-core
 coverage
-coveralls
-docopt
-docutils
-jarn.viewdoc
-Jinja2
-MarkupSafe
+markdown2
 olefile
-pycodestyle
-pyflakes
-Pygments
+packaging
 pyroma
 pytest
 pytest-cov
-pytz
-requests
-six
-snowballstemmer
-Sphinx
+sphinx>=2.4
+sphinx-issues
+sphinx-removed-in
 sphinx-rtd-theme

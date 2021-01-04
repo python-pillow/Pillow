@@ -15,14 +15,12 @@
 #
 
 import re
+
 from ._binary import o8
 
 
-##
-# File handler for GIMP's palette format.
-
-
-class GimpPaletteFile(object):
+class GimpPaletteFile:
+    """File handler for GIMP's palette format."""
 
     rawmode = "RGB"
 

@@ -19,65 +19,54 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
-
 
 /* exception state */
 
 void *
-ImagingError_IOError(void)
-{
+ImagingError_OSError(void) {
     fprintf(stderr, "*** exception: file access error\n");
     return NULL;
 }
 
 void *
-ImagingError_MemoryError(void)
-{
+ImagingError_MemoryError(void) {
     fprintf(stderr, "*** exception: out of memory\n");
     return NULL;
 }
 
 void *
-ImagingError_ModeError(void)
-{
+ImagingError_ModeError(void) {
     return ImagingError_ValueError("bad image mode");
-    return NULL;
 }
 
 void *
-ImagingError_Mismatch(void)
-{
+ImagingError_Mismatch(void) {
     return ImagingError_ValueError("images don't match");
-    return NULL;
 }
 
 void *
-ImagingError_ValueError(const char *message)
-{
-    if (!message)
-	message = "exception: bad argument to function";
+ImagingError_ValueError(const char *message) {
+    if (!message) {
+        message = "exception: bad argument to function";
+    }
     fprintf(stderr, "*** %s\n", message);
     return NULL;
 }
 
 void
-ImagingError_Clear(void)
-{
+ImagingError_Clear(void) {
     /* nop */;
 }
 
 /* thread state */
 
 void
-ImagingSectionEnter(ImagingSectionCookie* cookie)
-{
+ImagingSectionEnter(ImagingSectionCookie *cookie) {
     /* pass */
 }
 
 void
-ImagingSectionLeave(ImagingSectionCookie* cookie)
-{
+ImagingSectionLeave(ImagingSectionCookie *cookie) {
     /* pass */
 }

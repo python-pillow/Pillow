@@ -25,14 +25,11 @@
 import struct
 import warnings
 from io import BytesIO
+from math import ceil, log
 
-from . import Image, ImageFile, BmpImagePlugin, PngImagePlugin
-from ._binary import i8, i16le as i16, i32le as i32
-from math import log, ceil
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
+from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
+from ._binary import i16le as i16
+from ._binary import i32le as i32
 
 #
 # --------------------------------------------------------------------
@@ -56,6 +53,7 @@ def _save(im, fp, filename):
     sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
+    provided_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
     for size in sizes:
         width, height = size
         # 0 means 256
@@ -67,8 +65,11 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
-        tmp = im.copy()
-        tmp.thumbnail(size, Image.LANCZOS)
+        tmp = provided_images.get(size)
+        if not tmp:
+            # TODO: invent a more convenient method for proportional scalings
+            tmp = im.copy()
+            tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()
@@ -86,7 +87,7 @@ def _accept(prefix):
     return prefix[:4] == _MAGIC
 
 
-class IcoFile(object):
+class IcoFile:
     def __init__(self, buf):
         """
         Parse image from file-like object containing ico file data
@@ -101,21 +102,21 @@ class IcoFile(object):
         self.entry = []
 
         # Number of items in file
-        self.nb_items = i16(s[4:])
+        self.nb_items = i16(s, 4)
 
         # Get headers for each item
         for i in range(self.nb_items):
             s = buf.read(16)
 
             icon_header = {
-                "width": i8(s[0]),
-                "height": i8(s[1]),
-                "nb_color": i8(s[2]),  # No. of colors in image (0 if >=8bpp)
-                "reserved": i8(s[3]),
-                "planes": i16(s[4:]),
-                "bpp": i16(s[6:]),
-                "size": i32(s[8:]),
-                "offset": i32(s[12:]),
+                "width": s[0],
+                "height": s[1],
+                "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
+                "reserved": s[3],
+                "planes": i16(s, 4),
+                "bpp": i16(s, 6),
+                "size": i32(s, 8),
+                "offset": i32(s, 12),
             }
 
             # See Wikipedia
@@ -180,6 +181,7 @@ class IcoFile(object):
         else:
             # XOR + AND mask bmp frame
             im = BmpImagePlugin.DibImageFile(self.buf)
+            Image._decompression_bomb_check(im.size)
 
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
@@ -262,6 +264,9 @@ class IcoImageFile(ImageFile.ImageFile):
     in the icon file.
 
     Handles classic, XP and Vista icon formats.
+
+    When saving, PNG compression is used. Support for this was only added in
+    Windows Vista.
 
     This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
     <casadebender@gmail.com>.

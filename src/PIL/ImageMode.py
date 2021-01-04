@@ -17,7 +17,7 @@
 _modes = None
 
 
-class ModeDescriptor(object):
+class ModeDescriptor:
     """Wrapper for mode strings."""
 
     def __init__(self, mode, bands, basemode, basetype):

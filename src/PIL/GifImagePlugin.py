@@ -24,15 +24,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, ImagePalette, ImageChops, ImageSequence
-from ._binary import i8, i16le as i16, o8, o16le as o16
-
 import itertools
+import math
+import os
+import subprocess
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.9"
-
+from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
+from ._binary import i16le as i16
+from ._binary import o8
+from ._binary import o16le as o16
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -57,30 +57,30 @@ class GifImageFile(ImageFile.ImageFile):
 
     def data(self):
         s = self.fp.read(1)
-        if s and i8(s):
-            return self.fp.read(i8(s))
+        if s and s[0]:
+            return self.fp.read(s[0])
         return None
 
     def _open(self):
 
         # Screen
         s = self.fp.read(13)
-        if s[:6] not in [b"GIF87a", b"GIF89a"]:
+        if not _accept(s):
             raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
-        self._size = i16(s[6:]), i16(s[8:])
+        self._size = i16(s, 6), i16(s, 8)
         self.tile = []
-        flags = i8(s[10])
+        flags = s[10]
         bits = (flags & 7) + 1
 
         if flags & 128:
             # get global palette
-            self.info["background"] = i8(s[11])
+            self.info["background"] = s[11]
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
             for i in range(0, len(p), 3):
-                if not (i // 3 == i8(p[i]) == i8(p[i + 1]) == i8(p[i + 2])):
+                if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                     p = ImagePalette.raw("RGB", p)
                     self.global_palette = self.palette = p
                     break
@@ -132,9 +132,9 @@ class GifImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             try:
                 self._seek(f)
-            except EOFError:
+            except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in GIF file")
+                raise EOFError("no more images in GIF file") from e
 
     def _seek(self, frame):
 
@@ -153,7 +153,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError("cannot seek to frame %d" % frame)
+            raise ValueError(f"cannot seek to frame {frame}")
         self.__frame = frame
 
         self.tile = []
@@ -186,14 +186,14 @@ class GifImageFile(ImageFile.ImageFile):
                 #
                 s = self.fp.read(1)
                 block = self.data()
-                if i8(s) == 249:
+                if s[0] == 249:
                     #
                     # graphic control extension
                     #
-                    flags = i8(block[0])
+                    flags = block[0]
                     if flags & 1:
-                        info["transparency"] = i8(block[3])
-                    info["duration"] = i16(block[1:3]) * 10
+                        info["transparency"] = block[3]
+                    info["duration"] = i16(block, 1) * 10
 
                     # disposal method - find the value of bits 4 - 6
                     dispose_bits = 0b00011100 & flags
@@ -204,7 +204,7 @@ class GifImageFile(ImageFile.ImageFile):
                         # correct, but it seems to prevent the last
                         # frame from looking odd for some animations
                         self.disposal_method = dispose_bits
-                elif i8(s) == 254:
+                elif s[0] == 254:
                     #
                     # comment extension
                     #
@@ -215,15 +215,15 @@ class GifImageFile(ImageFile.ImageFile):
                             info["comment"] = block
                         block = self.data()
                     continue
-                elif i8(s) == 255:
+                elif s[0] == 255:
                     #
                     # application extension
                     #
                     info["extension"] = block, self.fp.tell()
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
-                        if len(block) >= 3 and i8(block[0]) == 1:
-                            info["loop"] = i16(block[1:3])
+                        if len(block) >= 3 and block[0] == 1:
+                            info["loop"] = i16(block, 1)
                 while self.data():
                     pass
 
@@ -234,12 +234,12 @@ class GifImageFile(ImageFile.ImageFile):
                 s = self.fp.read(9)
 
                 # extent
-                x0, y0 = i16(s[0:]), i16(s[2:])
-                x1, y1 = x0 + i16(s[4:]), y0 + i16(s[6:])
+                x0, y0 = i16(s, 0), i16(s, 2)
+                x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if x1 > self.size[0] or y1 > self.size[1]:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
                 self.dispose_extent = x0, y0, x1, y1
-                flags = i8(s[8])
+                flags = s[8]
 
                 interlace = (flags & 64) != 0
 
@@ -248,7 +248,7 @@ class GifImageFile(ImageFile.ImageFile):
                     self.palette = ImagePalette.raw("RGB", self.fp.read(3 << bits))
 
                 # image data
-                bits = i8(self.fp.read(1))
+                bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 self.tile = [
                     ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace))
@@ -257,7 +257,7 @@ class GifImageFile(ImageFile.ImageFile):
 
             else:
                 pass
-                # raise IOError, "illegal GIF tag `%x`" % i8(s)
+                # raise OSError, "illegal GIF tag `%x`" % s[0]
 
         try:
             if self.disposal_method < 2:
@@ -265,6 +265,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.dispose = None
             elif self.disposal_method == 2:
                 # replace with background colour
+                Image._decompression_bomb_check(self.size)
                 self.dispose = Image.core.fill("P", self.size, self.info["background"])
             else:
                 # replace with previous contents
@@ -299,13 +300,14 @@ class GifImageFile(ImageFile.ImageFile):
 
         # if the disposal method is 'do not dispose', transparent
         # pixels should show the content of the previous frame
-        if self._prev_im and self.disposal_method == 1:
+        if self._prev_im and self._prev_disposal_method == 1:
             # we do this by pasting the updated area onto the previous
             # frame which we then use as the current image content
             updated = self._crop(self.im, self.dispose_extent)
             self._prev_im.paste(updated, self.dispose_extent, updated.convert("RGBA"))
             self.im = self._prev_im
         self._prev_im = self.im.copy()
+        self._prev_disposal_method = self.disposal_method
 
     def _close__fp(self):
         try:
@@ -489,6 +491,11 @@ def _write_multiple_frames(im, fp, palette):
                 offset = frame_data["bbox"][:2]
             _write_frame_data(fp, im_frame, offset, frame_data["encoderinfo"])
         return True
+    elif "duration" in im.encoderinfo and isinstance(
+        im.encoderinfo["duration"], (list, tuple)
+    ):
+        # Since multiple frames will not be written, add together the frame durations
+        im.encoderinfo["duration"] = sum(im.encoderinfo["duration"])
 
 
 def _save_all(im, fp, filename):
@@ -566,8 +573,11 @@ def _write_local_header(fp, im, offset, flags):
 
     if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
         fp.write(b"!" + o8(254))  # extension intro
-        for i in range(0, len(im.encoderinfo["comment"]), 255):
-            subblock = im.encoderinfo["comment"][i : i + 255]
+        comment = im.encoderinfo["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
             fp.write(o8(len(subblock)) + subblock)
         fp.write(o8(0))
     if "loop" in im.encoderinfo:
@@ -611,42 +621,44 @@ def _save_netpbm(im, fp, filename):
     # If you need real GIF compression and/or RGB quantization, you
     # can use the external NETPBM/PBMPLUS utilities.  See comments
     # below for information on how to enable this.
-
-    import os
-    from subprocess import Popen, check_call, PIPE, CalledProcessError
-
     tempfile = im._dump()
 
-    with open(filename, "wb") as f:
-        if im.mode != "RGB":
-            with open(os.devnull, "wb") as devnull:
-                check_call(["ppmtogif", tempfile], stdout=f, stderr=devnull)
-        else:
-            # Pipe ppmquant output into ppmtogif
-            # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
-            quant_cmd = ["ppmquant", "256", tempfile]
-            togif_cmd = ["ppmtogif"]
-            with open(os.devnull, "wb") as devnull:
-                quant_proc = Popen(quant_cmd, stdout=PIPE, stderr=devnull)
-                togif_proc = Popen(
-                    togif_cmd, stdin=quant_proc.stdout, stdout=f, stderr=devnull
+    try:
+        with open(filename, "wb") as f:
+            if im.mode != "RGB":
+                subprocess.check_call(
+                    ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
+                )
+            else:
+                # Pipe ppmquant output into ppmtogif
+                # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
+                quant_cmd = ["ppmquant", "256", tempfile]
+                togif_cmd = ["ppmtogif"]
+                quant_proc = subprocess.Popen(
+                    quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+                )
+                togif_proc = subprocess.Popen(
+                    togif_cmd,
+                    stdin=quant_proc.stdout,
+                    stdout=f,
+                    stderr=subprocess.DEVNULL,
                 )
 
-            # Allow ppmquant to receive SIGPIPE if ppmtogif exits
-            quant_proc.stdout.close()
+                # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+                quant_proc.stdout.close()
 
-            retcode = quant_proc.wait()
-            if retcode:
-                raise CalledProcessError(retcode, quant_cmd)
+                retcode = quant_proc.wait()
+                if retcode:
+                    raise subprocess.CalledProcessError(retcode, quant_cmd)
 
-            retcode = togif_proc.wait()
-            if retcode:
-                raise CalledProcessError(retcode, togif_cmd)
-
-    try:
-        os.unlink(tempfile)
-    except OSError:
-        pass
+                retcode = togif_proc.wait()
+                if retcode:
+                    raise subprocess.CalledProcessError(retcode, togif_cmd)
+    finally:
+        try:
+            os.unlink(tempfile)
+        except OSError:
+            pass
 
 
 # Force optimization so that we can test performance against
@@ -693,14 +705,12 @@ def _get_optimize(im, info):
 
 def _get_color_table_size(palette_bytes):
     # calculate the palette size for the header
-    import math
-
     if not palette_bytes:
         return 0
     elif len(palette_bytes) < 9:
         return 1
     else:
-        return int(math.ceil(math.log(len(palette_bytes) // 3, 2))) - 1
+        return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
 def _get_header_palette(palette_bytes):
@@ -847,7 +857,7 @@ def getdata(im, offset=(0, 0), **params):
 
     """
 
-    class Collector(object):
+    class Collector:
         data = []
 
         def write(self, data):

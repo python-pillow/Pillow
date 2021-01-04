@@ -20,15 +20,11 @@
 # Image plugin for PDF images (output only).
 ##
 
-from . import Image, ImageFile, ImageSequence, PdfParser
 import io
 import os
 import time
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.5"
-
+from . import Image, ImageFile, ImageSequence, PdfParser, __version__
 
 #
 # --------------------------------------------------------------------
@@ -81,7 +77,7 @@ def _save(im, fp, filename, save_all=False):
 
     existing_pdf.start_writing()
     existing_pdf.write_header()
-    existing_pdf.write_comment("created by PIL PDF driver " + __version__)
+    existing_pdf.write_comment(f"created by Pillow {__version__} PDF driver")
 
     #
     # pages
@@ -125,6 +121,7 @@ def _save(im, fp, filename, save_all=False):
 
             bits = 8
             params = None
+            decode = None
 
             if im.mode == "1":
                 filter = "ASCIIHexDecode"
@@ -133,7 +130,7 @@ def _save(im, fp, filename, save_all=False):
                 bits = 1
             elif im.mode == "L":
                 filter = "DCTDecode"
-                # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
+                # params = f"<< /Predictor 15 /Columns {width-2} >>"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
@@ -154,8 +151,9 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
+                decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
-                raise ValueError("cannot save mode %s" % im.mode)
+                raise ValueError(f"cannot save mode {im.mode}")
 
             #
             # image
@@ -177,7 +175,7 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "RunLengthDecode":
                 ImageFile._save(im, op, [("packbits", (0, 0) + im.size, 0, im.mode)])
             else:
-                raise ValueError("unsupported PDF filter (%s)" % filter)
+                raise ValueError(f"unsupported PDF filter ({filter})")
 
             #
             # Get image characteristics
@@ -193,6 +191,7 @@ def _save(im, fp, filename, save_all=False):
                 Height=height,  # * 72.0 / resolution,
                 Filter=PdfParser.PdfName(filter),
                 BitsPerComponent=bits,
+                Decode=decode,
                 DecodeParams=params,
                 ColorSpace=colorspace,
             )
@@ -218,9 +217,9 @@ def _save(im, fp, filename, save_all=False):
             #
             # page contents
 
-            page_contents = PdfParser.make_bytes(
-                "q %d 0 0 %d 0 0 cm /image Do Q\n"
-                % (int(width * 72.0 / resolution), int(height * 72.0 / resolution))
+            page_contents = b"q %d 0 0 %d 0 0 cm /image Do Q\n" % (
+                int(width * 72.0 / resolution),
+                int(height * 72.0 / resolution),
             )
 
             existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)

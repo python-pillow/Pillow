@@ -1,0 +1,58 @@
+7.2.0
+-----
+
+API Changes
+===========
+
+Replaced TiffImagePlugin DEBUG with logging
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``TiffImagePlugin.DEBUG = True`` has been a way to print various debugging
+information when interacting with TIFF images. This has now been removed
+in favour of Python's ``logging`` module, already used in other places in the
+Pillow source code.
+
+Corrected default offset when writing EXIF data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the default ``offset`` argument for
+:py:meth:`~PIL.Image.Exif.tobytes` was 0, which did not include the magic
+header. It is now 8.
+
+Moved to ImageFileDirectory_v2 in Image.Exif
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Moved from the legacy :py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v1` to
+:py:class:`PIL.TiffImagePlugin.ImageFileDirectory_v2` in
+:py:class:`PIL.Image.Exif`. This means that Exif RATIONALs and SIGNED_RATIONALs
+are now read as :py:class:`PIL.TiffImagePlugin.IFDRational`, instead of as a
+tuple with a numerator and a denominator.
+
+TIFF BYTE tags format
+^^^^^^^^^^^^^^^^^^^^^
+
+TIFF BYTE tags were previously read as a tuple containing a bytestring. They
+are now read as just a single bytestring.
+
+Deprecations
+^^^^^^^^^^^^
+
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``command`` parameter was deprecated and will be removed in a future release.
+Use a subclass of :py:class:`PIL.ImageShow.Viewer` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+``Image._showxv`` has been deprecated. Use :py:meth:`~PIL.Image.Image.show`
+instead. If custom behaviour is required, use :py:meth:`~PIL.ImageShow.register` to add
+a custom :py:class:`~PIL.ImageShow.Viewer` class.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+is now deprecated and will be removed in a future release. Use
+``ImageFile.raise_oserror`` instead.

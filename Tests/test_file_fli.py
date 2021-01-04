@@ -1,6 +1,8 @@
-from .helper import PillowTestCase
+import pytest
 
-from PIL import Image, FliImagePlugin
+from PIL import FliImagePlugin, Image
+
+from .helper import assert_image_equal, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -10,89 +12,115 @@ static_test_file = "Tests/images/hopper.fli"
 animated_test_file = "Tests/images/a.fli"
 
 
-class TestFileFli(PillowTestCase):
-    def test_sanity(self):
+def test_sanity():
+    with Image.open(static_test_file) as im:
+        im.load()
+        assert im.mode == "P"
+        assert im.size == (128, 128)
+        assert im.format == "FLI"
+        assert not im.is_animated
+
+    with Image.open(animated_test_file) as im:
+        assert im.mode == "P"
+        assert im.size == (320, 200)
+        assert im.format == "FLI"
+        assert im.info["duration"] == 71
+        assert im.is_animated
+
+
+@pytest.mark.skipif(is_pypy(), reason="Requires CPython")
+def test_unclosed_file():
+    def open():
         im = Image.open(static_test_file)
         im.load()
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "FLI")
-        self.assertFalse(im.is_animated)
 
-        im = Image.open(animated_test_file)
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (320, 200))
-        self.assertEqual(im.format, "FLI")
-        self.assertEqual(im.info["duration"], 71)
-        self.assertTrue(im.is_animated)
+    pytest.warns(ResourceWarning, open)
 
-    def test_unclosed_file(self):
-        def open():
-            im = Image.open(static_test_file)
+
+def test_closed_file():
+    def open():
+        im = Image.open(static_test_file)
+        im.load()
+        im.close()
+
+    pytest.warns(None, open)
+
+
+def test_context_manager():
+    def open():
+        with Image.open(static_test_file) as im:
             im.load()
 
-        self.assert_warning(None, open)
+    pytest.warns(None, open)
 
-    def test_tell(self):
-        # Arrange
-        im = Image.open(static_test_file)
+
+def test_tell():
+    # Arrange
+    with Image.open(static_test_file) as im:
 
         # Act
         frame = im.tell()
 
         # Assert
-        self.assertEqual(frame, 0)
+        assert frame == 0
 
-    def test_invalid_file(self):
-        invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, FliImagePlugin.FliImageFile, invalid_file)
+def test_invalid_file():
+    invalid_file = "Tests/images/flower.jpg"
 
-    def test_n_frames(self):
-        im = Image.open(static_test_file)
-        self.assertEqual(im.n_frames, 1)
-        self.assertFalse(im.is_animated)
+    with pytest.raises(SyntaxError):
+        FliImagePlugin.FliImageFile(invalid_file)
 
-        im = Image.open(animated_test_file)
-        self.assertEqual(im.n_frames, 384)
-        self.assertTrue(im.is_animated)
 
-    def test_eoferror(self):
-        im = Image.open(animated_test_file)
+def test_n_frames():
+    with Image.open(static_test_file) as im:
+        assert im.n_frames == 1
+        assert not im.is_animated
+
+    with Image.open(animated_test_file) as im:
+        assert im.n_frames == 384
+        assert im.is_animated
+
+
+def test_eoferror():
+    with Image.open(animated_test_file) as im:
         n_frames = im.n_frames
 
         # Test seeking past the last frame
-        self.assertRaises(EOFError, im.seek, n_frames)
-        self.assertLess(im.tell(), n_frames)
+        with pytest.raises(EOFError):
+            im.seek(n_frames)
+        assert im.tell() < n_frames
 
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
 
-    def test_seek_tell(self):
-        im = Image.open(animated_test_file)
+
+def test_seek_tell():
+    with Image.open(animated_test_file) as im:
 
         layer_number = im.tell()
-        self.assertEqual(layer_number, 0)
+        assert layer_number == 0
 
         im.seek(0)
         layer_number = im.tell()
-        self.assertEqual(layer_number, 0)
+        assert layer_number == 0
 
         im.seek(1)
         layer_number = im.tell()
-        self.assertEqual(layer_number, 1)
+        assert layer_number == 1
 
         im.seek(2)
         layer_number = im.tell()
-        self.assertEqual(layer_number, 2)
+        assert layer_number == 2
 
         im.seek(1)
         layer_number = im.tell()
-        self.assertEqual(layer_number, 1)
+        assert layer_number == 1
 
-    def test_seek(self):
-        im = Image.open(animated_test_file)
+
+def test_seek():
+    with Image.open(animated_test_file) as im:
         im.seek(50)
 
-        expected = Image.open("Tests/images/a_fli.png")
-        self.assert_image_equal(im, expected)
+        with Image.open("Tests/images/a_fli.png") as expected:
+            assert_image_equal(im, expected)

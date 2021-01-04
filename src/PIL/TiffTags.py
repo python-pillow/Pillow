@@ -24,7 +24,7 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
     __slots__ = []
 
     def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
-        return super(TagInfo, cls).__new__(cls, value, name, type, length, enum or {})
+        return super().__new__(cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value):
         # Using get will call hash(value), which can be expensive
@@ -69,6 +69,7 @@ SIGNED_LONG = 9
 SIGNED_RATIONAL = 10
 FLOAT = 11
 DOUBLE = 12
+IFD = 13
 
 TAGS_V2 = {
     254: ("NewSubfileType", LONG, 1),
@@ -120,7 +121,7 @@ TAGS_V2 = {
     277: ("SamplesPerPixel", SHORT, 1),
     278: ("RowsPerStrip", LONG, 1),
     279: ("StripByteCounts", LONG, 0),
-    280: ("MinSampleValue", LONG, 0),
+    280: ("MinSampleValue", SHORT, 0),
     281: ("MaxSampleValue", SHORT, 0),
     282: ("XResolution", RATIONAL, 1),
     283: ("YResolution", RATIONAL, 1),
@@ -175,13 +176,14 @@ TAGS_V2 = {
     530: ("YCbCrSubSampling", SHORT, 2),
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", RATIONAL, 6),
-    700: ("XMP", BYTE, 1),
+    700: ("XMP", BYTE, 0),
     33432: ("Copyright", ASCII, 1),
-    34377: ("PhotoshopInfo", BYTE, 1),
+    33723: ("IptcNaaInfo", UNDEFINED, 0),
+    34377: ("PhotoshopInfo", BYTE, 0),
     # FIXME add more tags here
-    34665: ("ExifIFD", SHORT, 1),
+    34665: ("ExifIFD", LONG, 1),
     34675: ("ICCProfile", UNDEFINED, 1),
-    34853: ("GPSInfoIFD", BYTE, 1),
+    34853: ("GPSInfoIFD", LONG, 1),
     # MPInfo
     45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
@@ -482,7 +484,6 @@ LIBTIFF_CORE = {
     65537,
 }
 
-LIBTIFF_CORE.remove(320)  # Array of short, crashes
 LIBTIFF_CORE.remove(301)  # Array of short, crashes
 LIBTIFF_CORE.remove(532)  # Array of long, crashes
 

@@ -14,17 +14,14 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
-from . import Image, ImageFile
-from ._binary import i8, i16be as i16, i32be as i32, o8
 import os
 import tempfile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
+from . import Image, ImageFile
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
 
@@ -65,22 +62,22 @@ class IptcImageFile(ImageFile.ImageFile):
         if not len(s):
             return None, 0
 
-        tag = i8(s[1]), i8(s[2])
+        tag = s[1], s[2]
 
         # syntax
-        if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
+        if s[0] != 0x1C or tag[0] < 1 or tag[0] > 9:
             raise SyntaxError("invalid IPTC/NAA file")
 
         # field size
-        size = i8(s[3])
+        size = s[3]
         if size > 132:
-            raise IOError("illegal field length in IPTC/NAA file")
+            raise OSError("illegal field length in IPTC/NAA file")
         elif size == 128:
             size = 0
         elif size > 128:
             size = i(self.fp.read(size - 128))
         else:
-            size = i16(s[3:])
+            size = i16(s, 3)
 
         return tag, size
 
@@ -124,8 +121,8 @@ class IptcImageFile(ImageFile.ImageFile):
         # compression
         try:
             compression = COMPRESSION[self.getint((3, 120))]
-        except KeyError:
-            raise IOError("Unknown IPTC image compression")
+        except KeyError as e:
+            raise OSError("Unknown IPTC image compression") from e
 
         # tile
         if tag == (8, 10):
@@ -164,9 +161,9 @@ class IptcImageFile(ImageFile.ImageFile):
         o.close()
 
         try:
-            _im = Image.open(outfile)
-            _im.load()
-            self.im = _im.im
+            with Image.open(outfile) as _im:
+                _im.load()
+                self.im = _im.im
         finally:
             try:
                 os.unlink(outfile)
@@ -187,8 +184,9 @@ def getiptcinfo(im):
     :returns: A dictionary containing IPTC information, or None if
         no IPTC information block was found.
     """
-    from . import TiffImagePlugin, JpegImagePlugin
     import io
+
+    from . import JpegImagePlugin, TiffImagePlugin
 
     data = None
 
@@ -214,7 +212,7 @@ def getiptcinfo(im):
         return None  # no properties
 
     # create an IptcImagePlugin object without initializing it
-    class FakeImage(object):
+    class FakeImage:
         pass
 
     im = FakeImage()

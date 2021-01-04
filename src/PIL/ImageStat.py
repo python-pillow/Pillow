@@ -21,12 +21,12 @@
 # See the README file for information on usage and redistribution.
 #
 
+import functools
 import math
 import operator
-import functools
 
 
-class Stat(object):
+class Stat:
     def __init__(self, image_or_list, mask=None):
         try:
             if mask:

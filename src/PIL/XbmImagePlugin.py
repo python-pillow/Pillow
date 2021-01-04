@@ -20,11 +20,8 @@
 #
 
 import re
-from . import Image, ImageFile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.6"
+from . import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
@@ -72,15 +69,15 @@ class XbmImageFile(ImageFile.ImageFile):
 def _save(im, fp, filename):
 
     if im.mode != "1":
-        raise IOError("cannot write mode %s as XBM" % im.mode)
+        raise OSError(f"cannot write mode {im.mode} as XBM")
 
-    fp.write(("#define im_width %d\n" % im.size[0]).encode("ascii"))
-    fp.write(("#define im_height %d\n" % im.size[1]).encode("ascii"))
+    fp.write(f"#define im_width {im.size[0]}\n".encode("ascii"))
+    fp.write(f"#define im_height {im.size[1]}\n".encode("ascii"))
 
     hotspot = im.encoderinfo.get("hotspot")
     if hotspot:
-        fp.write(("#define im_x_hot %d\n" % hotspot[0]).encode("ascii"))
-        fp.write(("#define im_y_hot %d\n" % hotspot[1]).encode("ascii"))
+        fp.write(f"#define im_x_hot {hotspot[0]}\n".encode("ascii"))
+        fp.write(f"#define im_y_hot {hotspot[1]}\n".encode("ascii"))
 
     fp.write(b"static char im_bits[] = {\n")
 

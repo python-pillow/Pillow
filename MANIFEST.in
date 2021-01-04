@@ -6,6 +6,7 @@ include *.py
 include *.rst
 include *.sh
 include *.txt
+include *.yaml
 include LICENSE
 include Makefile
 include tox.ini
@@ -14,17 +15,15 @@ graft src
 graft depends
 graft winbuild
 graft docs
-prune docs/_static
 
 # build/src control detritus
 exclude .appveyor.yml
+exclude .clang-format
 exclude .coveragerc
-exclude .codecov.yml
 exclude .editorconfig
 exclude .readthedocs.yml
-exclude azure-pipelines.yml
+exclude codecov.yml
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
-prune .azure-pipelines
-prune .travis
+prune .ci

@@ -17,8 +17,13 @@
 #
 
 import io
-from . import Image, FontFile
-from ._binary import i8, i16le as l16, i32le as l32, i16be as b16, i32be as b32
+
+from . import FontFile, Image
+from ._binary import i8
+from ._binary import i16be as b16
+from ._binary import i16le as l16
+from ._binary import i32be as b32
+from ._binary import i32le as l32
 
 # --------------------------------------------------------------------
 # declarations
@@ -47,21 +52,20 @@ def sz(s, o):
     return s[o : s.index(b"\0", o)]
 
 
-##
-# Font file plugin for the X11 PCF format.
-
-
 class PcfFontFile(FontFile.FontFile):
+    """Font file plugin for the X11 PCF format."""
 
     name = "name"
 
-    def __init__(self, fp):
+    def __init__(self, fp, charset_encoding="iso8859-1"):
+
+        self.charset_encoding = charset_encoding
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
             raise SyntaxError("not a PCF file")
 
-        FontFile.FontFile.__init__(self)
+        super().__init__()
 
         count = l32(fp.read(4))
         self.toc = {}
@@ -183,7 +187,7 @@ class PcfFontFile(FontFile.FontFile):
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise IOError("Wrong number of bitmaps")
+            raise OSError("Wrong number of bitmaps")
 
         offsets = []
         for i in range(nbitmaps):
@@ -228,12 +232,17 @@ class PcfFontFile(FontFile.FontFile):
 
         nencoding = (lastCol - firstCol + 1) * (lastRow - firstRow + 1)
 
-        for i in range(nencoding):
-            encodingOffset = i16(fp.read(2))
-            if encodingOffset != 0xFFFF:
-                try:
-                    encoding[i + firstCol] = encodingOffset
-                except IndexError:
-                    break  # only load ISO-8859-1 glyphs
+        encodingOffsets = [i16(fp.read(2)) for _ in range(nencoding)]
+
+        for i in range(firstCol, len(encoding)):
+            try:
+                encodingOffset = encodingOffsets[
+                    ord(bytearray([i]).decode(self.charset_encoding))
+                ]
+                if encodingOffset != 0xFFFF:
+                    encoding[i] = encodingOffset
+            except UnicodeDecodeError:
+                # character is not supported in selected encoding
+                pass
 
         return encoding

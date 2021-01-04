@@ -23,25 +23,30 @@
 import logging
 import sys
 
-from cffi import FFI
+try:
+    from cffi import FFI
 
+    defs = """
+    struct Pixel_RGBA {
+        unsigned char r,g,b,a;
+    };
+    struct Pixel_I16 {
+        unsigned char l,r;
+    };
+    """
+    ffi = FFI()
+    ffi.cdef(defs)
+except ImportError as ex:
+    # Allow error import for doc purposes, but error out when accessing
+    # anything in core.
+    from ._util import deferred_error
+
+    FFI = ffi = deferred_error(ex)
 
 logger = logging.getLogger(__name__)
 
 
-defs = """
-struct Pixel_RGBA {
-    unsigned char r,g,b,a;
-};
-struct Pixel_I16 {
-    unsigned char l,r;
-};
-"""
-ffi = FFI()
-ffi.cdef(defs)
-
-
-class PyAccess(object):
+class PyAccess:
     def __init__(self, img, readonly=False):
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly

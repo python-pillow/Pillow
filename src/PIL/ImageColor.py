@@ -17,8 +17,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
 import re
+
+from . import Image
 
 
 def getrgb(color):
@@ -112,7 +113,7 @@ def getrgb(color):
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)))
-    raise ValueError("unknown color specifier: %r" % color)
+    raise ValueError(f"unknown color specifier: {repr(color)}")
 
 
 def getcolor(color, mode):
@@ -133,7 +134,9 @@ def getcolor(color, mode):
 
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        color = (r * 299 + g * 587 + b * 114) // 1000
+        # ITU-R Recommendation 601-2 for nonlinear RGB
+        # scaled to 24 bits to match the convert's implementation.
+        color = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
         if mode[-1] == "A":
             return (color, alpha)
     else:

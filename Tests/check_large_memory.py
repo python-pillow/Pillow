@@ -1,6 +1,8 @@
 import sys
 
-from .helper import unittest, PillowTestCase
+import pytest
+
+from PIL import Image
 
 # This test is not run automatically.
 #
@@ -11,7 +13,6 @@ from .helper import unittest, PillowTestCase
 # Raspberry Pis). It does succeed on a 3gb Ubuntu 12.04x64 VM on Python
 # 2.7 and 3.2.
 
-from PIL import Image
 
 try:
     import numpy
@@ -22,26 +23,26 @@ YDIM = 32769
 XDIM = 48000
 
 
-@unittest.skipIf(sys.maxsize <= 2 ** 32, "requires 64-bit system")
-class LargeMemoryTest(PillowTestCase):
-    def _write_png(self, xdim, ydim):
-        f = self.tempfile("temp.png")
-        im = Image.new("L", (xdim, ydim), 0)
-        im.save(f)
-
-    def test_large(self):
-        """ succeeded prepatch"""
-        self._write_png(XDIM, YDIM)
-
-    def test_2gpx(self):
-        """failed prepatch"""
-        self._write_png(XDIM, XDIM)
-
-    @unittest.skipIf(numpy is None, "Numpy is not installed")
-    def test_size_greater_than_int(self):
-        arr = numpy.ndarray(shape=(16394, 16394))
-        Image.fromarray(arr)
+pytestmark = pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="requires 64-bit system")
 
 
-if __name__ == "__main__":
-    unittest.main()
+def _write_png(tmp_path, xdim, ydim):
+    f = str(tmp_path / "temp.png")
+    im = Image.new("L", (xdim, ydim), 0)
+    im.save(f)
+
+
+def test_large(tmp_path):
+    """ succeeded prepatch"""
+    _write_png(tmp_path, XDIM, YDIM)
+
+
+def test_2gpx(tmp_path):
+    """failed prepatch"""
+    _write_png(tmp_path, XDIM, XDIM)
+
+
+@pytest.mark.skipif(numpy is None, reason="Numpy is not installed")
+def test_size_greater_than_int():
+    arr = numpy.ndarray(shape=(16394, 16394))
+    Image.fromarray(arr)

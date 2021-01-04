@@ -7,7 +7,6 @@
 # Final rating: 10/10
 # Your cheese is so fresh most people think it's a cream: Mascarpone
 # ------------------------------
-from __future__ import print_function
 
 import os
 import re
@@ -15,22 +14,40 @@ import struct
 import subprocess
 import sys
 import warnings
-from distutils import ccompiler, sysconfig
-from distutils.command.build_ext import build_ext
 
 from setuptools import Extension, setup
-
-# monkey patch import hook. Even though flake8 says it's not used, it is.
-# comment this out to disable multi threaded builds.
-import mp_compile
+from setuptools.command.build_ext import build_ext
 
 
-if sys.platform == "win32" and sys.version_info >= (3, 8):
-    warnings.warn(
-        "Pillow does not yet support Python {}.{} and does not yet provide "
-        "prebuilt Windows binaries. We do not recommend building from "
-        "source on Windows.".format(sys.version_info.major, sys.version_info.minor),
-        RuntimeWarning,
+def get_version():
+    version_file = "src/PIL/_version.py"
+    with open(version_file) as f:
+        exec(compile(f.read(), version_file, "exec"))
+    return locals()["__version__"]
+
+
+NAME = "Pillow"
+PILLOW_VERSION = get_version()
+FREETYPE_ROOT = None
+IMAGEQUANT_ROOT = None
+JPEG2K_ROOT = None
+JPEG_ROOT = None
+LCMS_ROOT = None
+TIFF_ROOT = None
+ZLIB_ROOT = None
+
+
+if sys.platform == "win32" and sys.version_info >= (3, 10):
+    import atexit
+
+    atexit.register(
+        lambda: warnings.warn(
+            f"Pillow {PILLOW_VERSION} does not support Python "
+            f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+            "prebuilt Windows binaries. We do not recommend building from source on "
+            "Windows.",
+            RuntimeWarning,
+        )
     )
 
 
@@ -40,6 +57,7 @@ _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
     "Resample",
+    "Reduce",
     "Bands",
     "BcnDecode",
     "BitDecode",
@@ -116,7 +134,7 @@ class RequiredDependencyException(Exception):
     pass
 
 
-PLATFORM_MINGW = "mingw" in ccompiler.get_default_compiler()
+PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 PLATFORM_PYPY = hasattr(sys, "pypy_version_info")
 
 
@@ -148,7 +166,7 @@ def _find_library_dirs_ldconfig():
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
         args = ["/sbin/ldconfig", "-p"]
-        expr = r".*\(%s.*\) => (.*)" % abi_type
+        expr = fr".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
@@ -158,10 +176,10 @@ def _find_library_dirs_ldconfig():
         expr = r".* => (.*)"
         env = {}
 
-    null = open(os.devnull, "wb")
     try:
-        with null:
-            p = subprocess.Popen(args, stderr=null, stdout=subprocess.PIPE, env=env)
+        p = subprocess.Popen(
+            args, stderr=subprocess.DEVNULL, stdout=subprocess.PIPE, env=env
+        )
     except OSError:  # E.g. command not found
         return []
     [data, _] = p.communicate()
@@ -217,29 +235,6 @@ def _cmd_exists(cmd):
     )
 
 
-def _read(file):
-    with open(file, "rb") as fp:
-        return fp.read()
-
-
-def get_version():
-    version_file = "src/PIL/_version.py"
-    with open(version_file, "r") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
-
-
-NAME = "Pillow"
-PILLOW_VERSION = get_version()
-JPEG_ROOT = None
-JPEG2K_ROOT = None
-ZLIB_ROOT = None
-IMAGEQUANT_ROOT = None
-TIFF_ROOT = None
-FREETYPE_ROOT = None
-LCMS_ROOT = None
-
-
 def _pkg_config(name):
     try:
         command = os.environ.get("PKG_CONFIG", "pkg-config")
@@ -277,6 +272,7 @@ class pil_build_ext(build_ext):
             "webpmux",
             "jpeg2000",
             "imagequant",
+            "xcb",
         ]
 
         required = {"jpeg", "zlib"}
@@ -292,15 +288,14 @@ class pil_build_ext(build_ext):
             return getattr(self, feat) is None
 
         def __iter__(self):
-            for x in self.features:
-                yield x
+            yield from self.features
 
     feature = feature()
 
     user_options = (
         build_ext.user_options
-        + [("disable-%s" % x, None, "Disable support for %s" % x) for x in feature]
-        + [("enable-%s" % x, None, "Enable support for %s" % x) for x in feature]
+        + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
+        + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
         + [
             ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
             ("debug", None, "Debug logging"),
@@ -313,39 +308,56 @@ class pil_build_ext(build_ext):
         self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
-            setattr(self, "disable_%s" % x, None)
-            setattr(self, "enable_%s" % x, None)
+            setattr(self, f"disable_{x}", None)
+            setattr(self, f"enable_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
         if self.debug:
             global DEBUG
             DEBUG = True
-        if sys.version_info.major >= 3 and not self.parallel:
-            # For Python 2.7, we monkeypatch distutils to have parallel
-            # builds. If --parallel (or -j) wasn't specified, we want to
-            # reproduce the same behavior as before, that is, auto-detect the
-            # number of jobs.
-            self.parallel = mp_compile.MAX_PROCS
+        if not self.parallel:
+            # If --parallel (or -j) wasn't specified, we want to reproduce the same
+            # behavior as before, that is, auto-detect the number of jobs.
+            try:
+                self.parallel = int(
+                    os.environ.get("MAX_CONCURRENCY", min(4, os.cpu_count()))
+                )
+            except TypeError:
+                self.parallel = None
         for x in self.feature:
-            if getattr(self, "disable_%s" % x):
+            if getattr(self, f"disable_{x}"):
                 setattr(self.feature, x, False)
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
-                if getattr(self, "enable_%s" % x):
+                if getattr(self, f"enable_{x}"):
                     raise ValueError(
-                        "Conflicting options: --enable-%s and --disable-%s" % (x, x)
+                        f"Conflicting options: --enable-{x} and --disable-{x}"
                     )
-            if getattr(self, "enable_%s" % x):
+            if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
+
+    def _update_extension(self, name, libraries, define_macros=None, include_dirs=None):
+        for extension in self.extensions:
+            if extension.name == name:
+                extension.libraries += libraries
+                if define_macros is not None:
+                    extension.define_macros += define_macros
+                if include_dirs is not None:
+                    extension.include_dirs += include_dirs
+                break
+
+    def _remove_extension(self, name):
+        for extension in self.extensions:
+            if extension.name == name:
+                self.extensions.remove(extension)
+                break
 
     def build_extensions(self):
 
         library_dirs = []
         include_dirs = []
-
-        _add_directory(include_dirs, "src/libImaging")
 
         pkg_config = None
         if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
@@ -371,12 +383,12 @@ class pil_build_ext(build_ext):
             if root is None and pkg_config:
                 if isinstance(lib_name, tuple):
                     for lib_name2 in lib_name:
-                        _dbg("Looking for `%s` using pkg-config." % lib_name2)
+                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
                         root = pkg_config(lib_name2)
                         if root:
                             break
                 else:
-                    _dbg("Looking for `%s` using pkg-config." % lib_name)
+                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
                     root = pkg_config(lib_name)
 
             if isinstance(root, tuple):
@@ -406,10 +418,8 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        prefix = sysconfig.get_config_var("prefix")
-        if prefix:
-            _add_directory(library_dirs, os.path.join(prefix, "lib"))
-            _add_directory(include_dirs, os.path.join(prefix, "include"))
+        _add_directory(library_dirs, os.path.join(sys.prefix, "lib"))
+        _add_directory(include_dirs, os.path.join(sys.prefix, "include"))
 
         #
         # add platform directories
@@ -421,7 +431,9 @@ class pil_build_ext(build_ext):
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
             _add_directory(
                 library_dirs,
-                os.path.join("/usr/lib", "python%s" % sys.version[:3], "config"),
+                os.path.join(
+                    "/usr/lib", "python{}.{}".format(*sys.version_info), "config"
+                ),
             )
 
         elif sys.platform == "darwin":
@@ -452,6 +464,9 @@ class pil_build_ext(build_ext):
                 # add Homebrew's include and lib directories
                 _add_directory(library_dirs, os.path.join(prefix, "lib"))
                 _add_directory(include_dirs, os.path.join(prefix, "include"))
+                _add_directory(
+                    include_dirs, os.path.join(prefix, "opt", "zlib", "include")
+                )
                 ft_prefix = os.path.join(prefix, "opt", "freetype")
 
             if ft_prefix and os.path.isdir(ft_prefix):
@@ -464,6 +479,18 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
+            # SDK install path
+            try:
+                sdk_path = (
+                    subprocess.check_output(["xcrun", "--show-sdk-path"])
+                    .strip()
+                    .decode("latin1")
+                )
+            except Exception:
+                sdk_path = None
+            if sdk_path:
+                _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+                _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
         elif (
             sys.platform.startswith("linux")
             or sys.platform.startswith("gnu")
@@ -503,11 +530,6 @@ class pil_build_ext(build_ext):
             _add_directory(library_dirs, "/lib")
 
         if sys.platform == "win32":
-            if PLATFORM_MINGW:
-                _add_directory(
-                    include_dirs, "C:\\msys64\\mingw32\\include\\libimagequant"
-                )
-
             # on Windows, look for the OpenJPEG libraries in the location that
             # the official installer puts them
             program_files = os.environ.get("ProgramFiles", "")
@@ -565,7 +587,7 @@ class pil_build_ext(build_ext):
                 try:
                     listdir = os.listdir(directory)
                 except Exception:
-                    # WindowsError, FileNotFoundError
+                    # OSError, FileNotFoundError
                     continue
                 for name in listdir:
                     if name.startswith("openjpeg-") and os.path.isfile(
@@ -668,6 +690,12 @@ class pil_build_ext(build_ext):
                 ):
                     feature.webpmux = "libwebpmux"
 
+        if feature.want("xcb"):
+            _dbg("Looking for xcb")
+            if _find_include_file(self, "xcb/xcb.h"):
+                if _find_library_file(self, "xcb"):
+                    feature.xcb = "xcb"
+
         for f in feature:
             if not getattr(feature, f) and feature.require(f):
                 if f in ("jpeg", "zlib"):
@@ -677,12 +705,6 @@ class pil_build_ext(build_ext):
         #
         # core library
 
-        files = ["src/_imaging.c"]
-        for src_file in _IMAGING:
-            files.append("src/" + src_file + ".c")
-        for src_file in _LIB_IMAGING:
-            files.append(os.path.join("src/libImaging", src_file + ".c"))
-
         libs = self.add_imaging_libs.split()
         defs = []
         if feature.jpeg:
@@ -691,7 +713,7 @@ class pil_build_ext(build_ext):
         if feature.jpeg2000:
             libs.append(feature.jpeg2000)
             defs.append(("HAVE_OPENJPEG", None))
-            if sys.platform == "win32":
+            if sys.platform == "win32" and not PLATFORM_MINGW:
                 defs.append(("OPJ_STATIC", None))
         if feature.zlib:
             libs.append(feature.zlib)
@@ -702,17 +724,28 @@ class pil_build_ext(build_ext):
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
+            # FIXME the following define should be detected automatically
+            #       based on system libtiff, see #4237
+            if PLATFORM_MINGW:
+                defs.append(("USE_WIN32_FILEIO", None))
+        if feature.xcb:
+            libs.append(feature.xcb)
+            defs.append(("HAVE_XCB", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
-        if struct.unpack("h", "\0\1".encode("ascii"))[0] == 1:
+        if struct.unpack("h", b"\0\1")[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        if sys.platform == "win32" and not (PLATFORM_PYPY or PLATFORM_MINGW):
-            defs.append(("PILLOW_VERSION", '"\\"%s\\""' % PILLOW_VERSION))
+        if (
+            sys.platform == "win32"
+            and sys.version_info < (3, 9)
+            and not (PLATFORM_PYPY or PLATFORM_MINGW)
+        ):
+            defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
         else:
-            defs.append(("PILLOW_VERSION", '"%s"' % PILLOW_VERSION))
+            defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
-        exts = [(Extension("PIL._imaging", files, libraries=libs, define_macros=defs))]
+        self._update_extension("PIL._imaging", libs, defs)
 
         #
         # additional libraries
@@ -720,26 +753,17 @@ class pil_build_ext(build_ext):
         if feature.freetype:
             libs = ["freetype"]
             defs = []
-            exts.append(
-                Extension(
-                    "PIL._imagingft",
-                    ["src/_imagingft.c"],
-                    libraries=libs,
-                    define_macros=defs,
-                )
-            )
+            self._update_extension("PIL._imagingft", libs, defs)
+        else:
+            self._remove_extension("PIL._imagingft")
 
         if feature.lcms:
             extra = []
             if sys.platform == "win32":
                 extra.extend(["user32", "gdi32"])
-            exts.append(
-                Extension(
-                    "PIL._imagingcms",
-                    ["src/_imagingcms.c"],
-                    libraries=[feature.lcms] + extra,
-                )
-            )
+            self._update_extension("PIL._imagingcms", [feature.lcms] + extra)
+        else:
+            self._remove_extension("PIL._imagingcms")
 
         if feature.webp:
             libs = [feature.webp]
@@ -750,26 +774,12 @@ class pil_build_ext(build_ext):
                 libs.append(feature.webpmux)
                 libs.append(feature.webpmux.replace("pmux", "pdemux"))
 
-            exts.append(
-                Extension(
-                    "PIL._webp", ["src/_webp.c"], libraries=libs, define_macros=defs
-                )
-            )
+            self._update_extension("PIL._webp", libs, defs)
+        else:
+            self._remove_extension("PIL._webp")
 
         tk_libs = ["psapi"] if sys.platform == "win32" else []
-        exts.append(
-            Extension(
-                "PIL._imagingtk",
-                ["src/_imagingtk.c", "src/Tk/tkImaging.c"],
-                include_dirs=["src/Tk"],
-                libraries=tk_libs,
-            )
-        )
-
-        exts.append(Extension("PIL._imagingmath", ["src/_imagingmath.c"]))
-        exts.append(Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]))
-
-        self.extensions[:] = exts
+        self._update_extension("PIL._imagingtk", tk_libs)
 
         build_ext.build_extensions(self)
 
@@ -783,11 +793,11 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)
-        print("version      Pillow %s" % PILLOW_VERSION)
+        print(f"version      Pillow {PILLOW_VERSION}")
         v = sys.version.split("[")
-        print("platform     %s %s" % (sys.platform, v[0].strip()))
+        print(f"platform     {sys.platform} {v[0].strip()}")
         for v in v[1:]:
-            print("             [%s" % v.strip())
+            print(f"             [{v.strip()}")
         print("-" * 68)
 
         options = [
@@ -800,6 +810,7 @@ class pil_build_ext(build_ext):
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
+            (feature.xcb, "XCB (X protocol)"),
         ]
 
         all = 1
@@ -807,10 +818,10 @@ class pil_build_ext(build_ext):
             if option[0]:
                 version = ""
                 if len(option) >= 3 and option[2]:
-                    version = " (%s)" % option[2]
-                print("--- %s support available%s" % (option[1], version))
+                    version = f" ({option[2]})"
+                print(f"--- {option[1]} support available{version}")
             else:
-                print("*** %s support not available" % option[1])
+                print(f"*** {option[1]} support not available")
                 all = 0
 
         print("-" * 68)
@@ -832,28 +843,54 @@ def debug_build():
     return hasattr(sys, "gettotalrefcount")
 
 
-needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
-pytest_runner = ["pytest-runner"] if needs_pytest else []
+files = ["src/_imaging.c"]
+for src_file in _IMAGING:
+    files.append("src/" + src_file + ".c")
+for src_file in _LIB_IMAGING:
+    files.append(os.path.join("src/libImaging", src_file + ".c"))
+ext_modules = [
+    Extension("PIL._imaging", files),
+    Extension("PIL._imagingft", ["src/_imagingft.c"]),
+    Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
+    Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
+    Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
+    Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
+]
+
+with open("README.md") as f:
+    long_description = f.read()
 
 try:
     setup(
         name=NAME,
         version=PILLOW_VERSION,
         description="Python Imaging Library (Fork)",
-        long_description=_read("README.rst").decode("utf-8"),
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         license="HPND",
         author="Alex Clark (PIL Fork Author)",
         author_email="aclark@python-pillow.org",
-        url="http://python-pillow.org",
+        url="https://python-pillow.org",
+        project_urls={
+            "Documentation": "https://pillow.readthedocs.io",
+            "Source": "https://github.com/python-pillow/Pillow",
+            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
+            "utm_source=pypi-pillow&utm_medium=pypi",
+            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
+            "index.html",
+            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
+            "CHANGES.rst",
+        },
         classifiers=[
             "Development Status :: 6 - Mature",
             "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Topic :: Multimedia :: Graphics",
@@ -862,40 +899,33 @@ try:
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
         ],
-        python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+        python_requires=">=3.6",
         cmdclass={"build_ext": pil_build_ext},
-        ext_modules=[Extension("PIL._imaging", ["_imaging.c"])],
+        ext_modules=ext_modules,
         include_package_data=True,
-        setup_requires=pytest_runner,
-        tests_require=["pytest"],
         packages=["PIL"],
         package_dir={"": "src"},
         keywords=["Imaging"],
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
-    msg = """
+    msg = f"""
 
-The headers or library files could not be found for %s,
+The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
    https://pillow.readthedocs.io/en/latest/installation.html
 
-""" % (
-        str(err)
-    )
+"""
     sys.stderr.write(msg)
     raise RequiredDependencyException(msg)
 except DependencyException as err:
-    msg = """
+    msg = f"""
 
-The headers or library files could not be found for %s,
-which was requested by the option flag --enable-%s
+The headers or library files could not be found for {str(err)},
+which was requested by the option flag --enable-{str(err)}
 
-""" % (
-        str(err),
-        str(err),
-    )
+"""
     sys.stderr.write(msg)
     raise DependencyException(msg)

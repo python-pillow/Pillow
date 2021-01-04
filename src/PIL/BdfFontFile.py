@@ -17,14 +17,12 @@
 # See the README file for information on usage and redistribution.
 #
 
-from __future__ import print_function
+"""
+Parse X Bitmap Distribution Format (BDF)
+"""
 
-from . import Image, FontFile
 
-
-# --------------------------------------------------------------------
-# parse X Bitmap Distribution Format (BDF)
-# --------------------------------------------------------------------
+from . import FontFile, Image
 
 bdf_slant = {
     "R": "Roman",
@@ -80,14 +78,11 @@ def bdf_char(f):
     return id, int(props["ENCODING"]), bbox, im
 
 
-##
-# Font file plugin for the X11 BDF format.
-
-
 class BdfFontFile(FontFile.FontFile):
-    def __init__(self, fp):
+    """Font file plugin for the X11 BDF format."""
 
-        FontFile.FontFile.__init__(self)
+    def __init__(self, fp):
+        super().__init__()
 
         s = fp.readline()
         if s[:13] != b"STARTFONT 2.1":

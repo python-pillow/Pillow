@@ -12,8 +12,8 @@ Full text of the CC0 license:
 
 import struct
 from io import BytesIO
-from . import Image, ImageFile
 
+from . import Image, ImageFile
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444
@@ -94,6 +94,9 @@ DXT5_FOURCC = 0x35545844
 
 # dxgiformat.h
 
+DXGI_FORMAT_R8G8B8A8_TYPELESS = 27
+DXGI_FORMAT_R8G8B8A8_UNORM = 28
+DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29
 DXGI_FORMAT_BC7_TYPELESS = 97
 DXGI_FORMAT_BC7_UNORM = 98
 DXGI_FORMAT_BC7_UNORM_SRGB = 99
@@ -106,10 +109,10 @@ class DdsImageFile(ImageFile.ImageFile):
     def _open(self):
         magic, header_size = struct.unpack("<II", self.fp.read(8))
         if header_size != 124:
-            raise IOError("Unsupported header size %r" % (header_size))
+            raise OSError(f"Unsupported header size {repr(header_size)}")
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise IOError("Incomplete header: %s bytes" % len(header_bytes))
+            raise OSError(f"Incomplete header: {len(header_bytes)} bytes")
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -122,7 +125,7 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
-        bitcount, = struct.unpack("<I", header.read(4))
+        (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
         if pfflags & 0x40:
             # DDPF_RGB - Texture contains uncompressed RGB data
@@ -155,14 +158,23 @@ class DdsImageFile(ImageFile.ImageFile):
                     n = 7
                 elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
                     self.pixel_format = "BC7"
-                    self.im_info["gamma"] = 1 / 2.2
+                    self.info["gamma"] = 1 / 2.2
                     n = 7
+                elif dxgi_format in (
+                    DXGI_FORMAT_R8G8B8A8_TYPELESS,
+                    DXGI_FORMAT_R8G8B8A8_UNORM,
+                    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+                ):
+                    self.tile = [("raw", (0, 0) + self.size, 0, ("RGBA", 0, 1))]
+                    if dxgi_format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+                        self.info["gamma"] = 1 / 2.2
+                    return
                 else:
                     raise NotImplementedError(
-                        "Unimplemented DXGI format %d" % (dxgi_format)
+                        f"Unimplemented DXGI format {dxgi_format}"
                     )
             else:
-                raise NotImplementedError("Unimplemented pixel format %r" % (fourcc))
+                raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
 
             self.tile = [("bcn", (0, 0) + self.size, data_start, (n))]
 

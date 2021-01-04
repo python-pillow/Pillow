@@ -16,12 +16,9 @@
 
 
 import re
-from . import Image, ImageFile, ImagePalette
-from ._binary import i8, o8
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.2"
+from . import Image, ImageFile, ImagePalette
+from ._binary import o8
 
 # XPM header
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
@@ -75,7 +72,7 @@ class XpmImageFile(ImageFile.ImageFile):
             elif s[-1:] in b"\r\n":
                 s = s[:-1]
 
-            c = i8(s[1])
+            c = s[1]
             s = s[2:-2].split()
 
             for i in range(0, len(s), 2):

@@ -22,16 +22,12 @@
 #
 
 
-from . import Image, ImageFile
-from ._binary import i8, o8, i16be as i16
-from ._util import py3
-import struct
 import os
+import struct
 
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
+from . import Image, ImageFile
+from ._binary import i16be as i16
+from ._binary import o8
 
 
 def _accept(prefix):
@@ -63,27 +59,26 @@ class SgiImageFile(ImageFile.ImageFile):
         headlen = 512
         s = self.fp.read(headlen)
 
-        # magic number : 474
-        if i16(s) != 474:
+        if not _accept(s):
             raise ValueError("Not an SGI image file")
 
         # compression : verbatim or RLE
-        compression = i8(s[2])
+        compression = s[2]
 
         # bpc : 1 or 2 bytes (8bits or 16bits)
-        bpc = i8(s[3])
+        bpc = s[3]
 
         # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
-        dimension = i16(s[4:])
+        dimension = i16(s, 4)
 
         # xsize : width
-        xsize = i16(s[6:])
+        xsize = i16(s, 6)
 
         # ysize : height
-        ysize = i16(s[8:])
+        ysize = i16(s, 8)
 
         # zsize : channels count
-        zsize = i16(s[10:])
+        zsize = i16(s, 10)
 
         # layout
         layout = bpc, dimension, zsize
@@ -164,7 +159,7 @@ def _save(im, fp, filename):
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError(
-            "incorrect number of bands in SGI write: %s vs %s" % (z, len(im.getbands()))
+            f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
         )
 
     # Minimum Byte value
@@ -173,8 +168,7 @@ def _save(im, fp, filename):
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
     imgName = os.path.splitext(os.path.basename(filename))[0]
-    if py3:
-        imgName = imgName.encode("ascii", "ignore")
+    imgName = imgName.encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
     fp.write(struct.pack(">h", magicNumber))

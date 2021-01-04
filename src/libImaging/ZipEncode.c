@@ -14,25 +14,22 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-#ifdef  HAVE_LIBZ
+#ifdef HAVE_LIBZ
 
-#include "Zip.h"
+#include "ZipCodecs.h"
 
 int
-ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
-{
-    ZIPSTATE* context = (ZIPSTATE*) state->context;
+ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    ZIPSTATE *context = (ZIPSTATE *)state->context;
     int err;
     int compress_level, compress_type;
-    UINT8* ptr;
+    UINT8 *ptr;
     int i, bpp, s, sum;
     ImagingSectionCookie cookie;
 
     if (!state->state) {
-
         /* Initialization */
 
         /* Valid modes are ZIP_PNG, ZIP_PNG_PALETTE, and ZIP_TIFF */
@@ -47,14 +44,14 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
            and allocate filter buffers */
         free(state->buffer);
         /* malloc check ok, overflow checked above */
-        state->buffer = (UINT8*) malloc(state->bytes+1);
-        context->previous = (UINT8*) malloc(state->bytes+1);
-        context->prior = (UINT8*) malloc(state->bytes+1);
-        context->up = (UINT8*) malloc(state->bytes+1);
-        context->average = (UINT8*) malloc(state->bytes+1);
-        context->paeth = (UINT8*) malloc(state->bytes+1);
-        if (!state->buffer || !context->previous || !context->prior ||
-            !context->up || !context->average || !context->paeth) {
+        state->buffer = (UINT8 *)malloc(state->bytes + 1);
+        context->previous = (UINT8 *)malloc(state->bytes + 1);
+        context->prior = (UINT8 *)malloc(state->bytes + 1);
+        context->up = (UINT8 *)malloc(state->bytes + 1);
+        context->average = (UINT8 *)malloc(state->bytes + 1);
+        context->paeth = (UINT8 *)malloc(state->bytes + 1);
+        if (!state->buffer || !context->previous || !context->prior || !context->up ||
+            !context->average || !context->paeth) {
             free(context->paeth);
             free(context->average);
             free(context->up);
@@ -72,7 +69,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         context->paeth[0] = 4;
 
         /* Initialise previous buffer to black */
-        memset(context->previous, 0, state->bytes+1);
+        memset(context->previous, 0, state->bytes + 1);
 
         /* Setup compression context */
         context->z_stream.zalloc = (alloc_func)0;
@@ -81,33 +78,37 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         context->z_stream.next_in = 0;
         context->z_stream.avail_in = 0;
 
-        compress_level = (context->optimize) ? Z_BEST_COMPRESSION
-                                             : context->compress_level;
+        compress_level =
+            (context->optimize) ? Z_BEST_COMPRESSION : context->compress_level;
 
         if (context->compress_type == -1) {
-            compress_type = (context->mode == ZIP_PNG) ? Z_FILTERED
-                                                       : Z_DEFAULT_STRATEGY;
+            compress_type =
+                (context->mode == ZIP_PNG) ? Z_FILTERED : Z_DEFAULT_STRATEGY;
         } else {
             compress_type = context->compress_type;
         }
 
-        err = deflateInit2(&context->z_stream,
-                           /* compression level */
-                           compress_level,
-                           /* compression method */
-                           Z_DEFLATED,
-                           /* compression memory resources */
-                           15, 9,
-                           /* compression strategy (image data are filtered)*/
-                           compress_type);
+        err = deflateInit2(
+            &context->z_stream,
+            /* compression level */
+            compress_level,
+            /* compression method */
+            Z_DEFLATED,
+            /* compression memory resources */
+            15,
+            9,
+            /* compression strategy (image data are filtered)*/
+            compress_type);
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
             return -1;
         }
 
         if (context->dictionary && context->dictionary_size > 0) {
-            err = deflateSetDictionary(&context->z_stream, (unsigned char *)context->dictionary,
-                                       context->dictionary_size);
+            err = deflateSetDictionary(
+                &context->z_stream,
+                (unsigned char *)context->dictionary,
+                context->dictionary_size);
             if (err < 0) {
                 state->errcode = IMAGING_CODEC_CONFIG;
                 return -1;
@@ -116,7 +117,6 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         /* Ready to decode */
         state->state = 1;
-
     }
 
     /* Setup the destination buffer */
@@ -128,12 +128,13 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         if (err < 0) {
             /* Something went wrong inside the compression library */
-            if (err == Z_DATA_ERROR)
+            if (err == Z_DATA_ERROR) {
                 state->errcode = IMAGING_CODEC_BROKEN;
-            else if (err == Z_MEM_ERROR)
+            } else if (err == Z_MEM_ERROR) {
                 state->errcode = IMAGING_CODEC_MEMORY;
-            else
+            } else {
                 state->errcode = IMAGING_CODEC_CONFIG;
+            }
             free(context->paeth);
             free(context->average);
             free(context->up);
@@ -146,200 +147,194 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
     ImagingSectionEnter(&cookie);
     for (;;) {
-
         switch (state->state) {
+            case 1:
 
-        case 1:
-
-            /* Compress image data */
-            while (context->z_stream.avail_out > 0) {
-
-                if (state->y >= state->ysize) {
-                    /* End of image; now flush compressor buffers */
-                    state->state = 2;
-                    break;
-
-                }
-
-                /* Stuff image data into the compressor */
-                state->shuffle(state->buffer+1,
-                               (UINT8*) im->image[state->y + state->yoff] +
-                               state->xoff * im->pixelsize,
-                               state->xsize);
-
-                state->y++;
-
-                context->output = state->buffer;
-
-                if (context->mode == ZIP_PNG) {
-
-                    /* Filter the image data.  For each line, select
-                       the filter that gives the least total distance
-                       from zero for the filtered data (taken from
-                       LIBPNG) */
-
-                    bpp = (state->bits + 7) / 8;
-
-                    /* 0. No filter */
-                    for (i = 1, sum = 0; i <= state->bytes; i++) {
-                        UINT8 v = state->buffer[i];
-                        sum += (v < 128) ? v : 256 - v;
+                /* Compress image data */
+                while (context->z_stream.avail_out > 0) {
+                    if (state->y >= state->ysize) {
+                        /* End of image; now flush compressor buffers */
+                        state->state = 2;
+                        break;
                     }
 
-                    /* 2. Up.  We'll test this first to save time when
-                       an image line is identical to the one above. */
-                    if (sum > 0) {
-                        for (i = 1, s = 0; i <= state->bytes; i++) {
-                            UINT8 v = state->buffer[i] - context->previous[i];
-                            context->up[i] = v;
-                            s += (v < 128) ? v : 256 - v;
-                        }
-                        if (s < sum) {
-                            context->output = context->up;
-                            sum = s; /* 0 if line was duplicated */
-                        }
-                    }
+                    /* Stuff image data into the compressor */
+                    state->shuffle(
+                        state->buffer + 1,
+                        (UINT8 *)im->image[state->y + state->yoff] +
+                            state->xoff * im->pixelsize,
+                        state->xsize);
 
-                    /* 1. Prior */
-                    if (sum > 0) {
-                        for (i = 1, s = 0; i <= bpp; i++) {
+                    state->y++;
+
+                    context->output = state->buffer;
+
+                    if (context->mode == ZIP_PNG) {
+                        /* Filter the image data.  For each line, select
+                           the filter that gives the least total distance
+                           from zero for the filtered data (taken from
+                           LIBPNG) */
+
+                        bpp = (state->bits + 7) / 8;
+
+                        /* 0. No filter */
+                        for (i = 1, sum = 0; i <= state->bytes; i++) {
                             UINT8 v = state->buffer[i];
-                            context->prior[i] = v;
-                            s += (v < 128) ? v : 256 - v;
+                            sum += (v < 128) ? v : 256 - v;
                         }
-                        for (; i <= state->bytes; i++) {
-                            UINT8 v = state->buffer[i] - state->buffer[i-bpp];
-                            context->prior[i] = v;
-                            s += (v < 128) ? v : 256 - v;
+
+                        /* 2. Up.  We'll test this first to save time when
+                           an image line is identical to the one above. */
+                        if (sum > 0) {
+                            for (i = 1, s = 0; i <= state->bytes; i++) {
+                                UINT8 v = state->buffer[i] - context->previous[i];
+                                context->up[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            if (s < sum) {
+                                context->output = context->up;
+                                sum = s; /* 0 if line was duplicated */
+                            }
                         }
-                        if (s < sum) {
-                            context->output = context->prior;
-                            sum = s; /* 0 if line is solid */
+
+                        /* 1. Prior */
+                        if (sum > 0) {
+                            for (i = 1, s = 0; i <= bpp; i++) {
+                                UINT8 v = state->buffer[i];
+                                context->prior[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            for (; i <= state->bytes; i++) {
+                                UINT8 v = state->buffer[i] - state->buffer[i - bpp];
+                                context->prior[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            if (s < sum) {
+                                context->output = context->prior;
+                                sum = s; /* 0 if line is solid */
+                            }
+                        }
+
+                        /* 3. Average (not very common in real-life images,
+                           so its only used with the optimize option) */
+                        if (context->optimize && sum > 0) {
+                            for (i = 1, s = 0; i <= bpp; i++) {
+                                UINT8 v = state->buffer[i] - context->previous[i] / 2;
+                                context->average[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            for (; i <= state->bytes; i++) {
+                                UINT8 v =
+                                    state->buffer[i] -
+                                    (state->buffer[i - bpp] + context->previous[i]) / 2;
+                                context->average[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            if (s < sum) {
+                                context->output = context->average;
+                                sum = s;
+                            }
+                        }
+
+                        /* 4. Paeth */
+                        if (sum > 0) {
+                            for (i = 1, s = 0; i <= bpp; i++) {
+                                UINT8 v = state->buffer[i] - context->previous[i];
+                                context->paeth[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            for (; i <= state->bytes; i++) {
+                                UINT8 v;
+                                int a, b, c;
+                                int pa, pb, pc;
+
+                                /* fetch pixels */
+                                a = state->buffer[i - bpp];
+                                b = context->previous[i];
+                                c = context->previous[i - bpp];
+
+                                /* distances to surrounding pixels */
+                                pa = abs(b - c);
+                                pb = abs(a - c);
+                                pc = abs(a + b - 2 * c);
+
+                                /* pick predictor with the shortest distance */
+                                v = state->buffer[i] - ((pa <= pb && pa <= pc) ? a
+                                                        : (pb <= pc)           ? b
+                                                                               : c);
+                                context->paeth[i] = v;
+                                s += (v < 128) ? v : 256 - v;
+                            }
+                            if (s < sum) {
+                                context->output = context->paeth;
+                                sum = s;
+                            }
                         }
                     }
 
-                    /* 3. Average (not very common in real-life images,
-                       so its only used with the optimize option) */
-                    if (context->optimize && sum > 0) {
-                        for (i = 1, s = 0; i <= bpp; i++) {
-                            UINT8 v = state->buffer[i] - context->previous[i]/2;
-                            context->average[i] = v;
-                            s += (v < 128) ? v : 256 - v;
+                    /* Compress this line */
+                    context->z_stream.next_in = context->output;
+                    context->z_stream.avail_in = state->bytes + 1;
+
+                    err = deflate(&context->z_stream, Z_NO_FLUSH);
+
+                    if (err < 0) {
+                        /* Something went wrong inside the compression library */
+                        if (err == Z_DATA_ERROR) {
+                            state->errcode = IMAGING_CODEC_BROKEN;
+                        } else if (err == Z_MEM_ERROR) {
+                            state->errcode = IMAGING_CODEC_MEMORY;
+                        } else {
+                            state->errcode = IMAGING_CODEC_CONFIG;
                         }
-                        for (; i <= state->bytes; i++) {
-                            UINT8 v = state->buffer[i] -
-                                      (state->buffer[i-bpp] + context->previous[i])/2;
-                            context->average[i] = v;
-                            s += (v < 128) ? v : 256 - v;
-                        }
-                        if (s < sum) {
-                            context->output = context->average;
-                            sum = s;
-                        }
+                        free(context->paeth);
+                        free(context->average);
+                        free(context->up);
+                        free(context->prior);
+                        free(context->previous);
+                        deflateEnd(&context->z_stream);
+                        ImagingSectionLeave(&cookie);
+                        return -1;
                     }
 
-                    /* 4. Paeth */
-                    if (sum > 0) {
-                        for (i = 1, s = 0; i <= bpp; i++) {
-                            UINT8 v = state->buffer[i] - context->previous[i];
-                            context->paeth[i] = v;
-                            s += (v < 128) ? v : 256 - v;
-                        }
-                        for (; i <= state->bytes; i++) {
-                            UINT8 v;
-                            int a, b, c;
-                            int pa, pb, pc;
-
-                            /* fetch pixels */
-                            a = state->buffer[i-bpp];
-                            b = context->previous[i];
-                            c = context->previous[i-bpp];
-
-                            /* distances to surrounding pixels */
-                            pa = abs(b - c);
-                            pb = abs(a - c);
-                            pc = abs(a + b - 2*c);
-
-                            /* pick predictor with the shortest distance */
-                            v = state->buffer[i] -
-                                ((pa <= pb && pa <= pc) ? a :
-                                 (pb <= pc) ? b : c);
-                            context->paeth[i] = v;
-                            s += (v < 128) ? v : 256 - v;
-                        }
-                        if (s < sum) {
-                            context->output = context->paeth;
-                            sum = s;
-                        }
-                    }
+                    /* Swap buffer pointers */
+                    ptr = state->buffer;
+                    state->buffer = context->previous;
+                    context->previous = ptr;
                 }
 
-                /* Compress this line */
-                context->z_stream.next_in = context->output;
-                context->z_stream.avail_in = state->bytes+1;
-
-                err = deflate(&context->z_stream, Z_NO_FLUSH);
-
-                if (err < 0) {
-                    /* Something went wrong inside the compression library */
-                    if (err == Z_DATA_ERROR)
-                        state->errcode = IMAGING_CODEC_BROKEN;
-                    else if (err == Z_MEM_ERROR)
-                        state->errcode = IMAGING_CODEC_MEMORY;
-                    else
-                        state->errcode = IMAGING_CODEC_CONFIG;
-                    free(context->paeth);
-                    free(context->average);
-                    free(context->up);
-                    free(context->prior);
-                    free(context->previous);
-                    deflateEnd(&context->z_stream);
-                    ImagingSectionLeave(&cookie);
-                    return -1;
-                }
-
-                /* Swap buffer pointers */
-                ptr = state->buffer;
-                state->buffer = context->previous;
-                context->previous = ptr;
-
-            }
-
-            if (context->z_stream.avail_out == 0)
-                break; /* Buffer full */
-
-        case 2:
-
-            /* End of image data; flush compressor buffers */
-
-            while (context->z_stream.avail_out > 0) {
-
-                err = deflate(&context->z_stream, Z_FINISH);
-
-                if (err == Z_STREAM_END) {
-
-                    free(context->paeth);
-                    free(context->average);
-                    free(context->up);
-                    free(context->prior);
-                    free(context->previous);
-
-                    deflateEnd(&context->z_stream);
-
-                    state->errcode = IMAGING_CODEC_END;
-
-                    break;
-                }
-
-                if (context->z_stream.avail_out == 0)
+                if (context->z_stream.avail_out == 0) {
                     break; /* Buffer full */
+                }
 
-            }
+            case 2:
 
+                /* End of image data; flush compressor buffers */
+
+                while (context->z_stream.avail_out > 0) {
+                    err = deflate(&context->z_stream, Z_FINISH);
+
+                    if (err == Z_STREAM_END) {
+                        free(context->paeth);
+                        free(context->average);
+                        free(context->up);
+                        free(context->prior);
+                        free(context->previous);
+
+                        deflateEnd(&context->z_stream);
+
+                        state->errcode = IMAGING_CODEC_END;
+
+                        break;
+                    }
+
+                    if (context->z_stream.avail_out == 0) {
+                        break; /* Buffer full */
+                    }
+                }
         }
         ImagingSectionLeave(&cookie);
         return bytes - context->z_stream.avail_out;
-
     }
 
     /* Should never ever arrive here... */
@@ -354,22 +349,19 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 int
 ImagingZipEncodeCleanup(ImagingCodecState state) {
-    ZIPSTATE* context = (ZIPSTATE*) state->context;
+    ZIPSTATE *context = (ZIPSTATE *)state->context;
 
     if (context->dictionary) {
-        free (context->dictionary);
+        free(context->dictionary);
         context->dictionary = NULL;
     }
 
     return -1;
 }
 
-
-
-const char*
-ImagingZipVersion(void)
-{
-    return ZLIB_VERSION;
+const char *
+ImagingZipVersion(void) {
+    return zlibVersion();
 }
 
 #endif

@@ -20,16 +20,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-import re
 import io
 import os
+import re
+import subprocess
 import sys
+import tempfile
+
 from . import Image, ImageFile
 from ._binary import i32le as i32
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.5"
 
 #
 # --------------------------------------------------------------------
@@ -41,15 +40,8 @@ gs_windows_binary = None
 if sys.platform.startswith("win"):
     import shutil
 
-    if hasattr(shutil, "which"):
-        which = shutil.which
-    else:
-        # Python 2
-        import distutils.spawn
-
-        which = distutils.spawn.find_executable
     for binary in ("gswin32c", "gswin64c", "gs"):
-        if which(binary) is not None:
+        if shutil.which(binary) is not None:
             gs_windows_binary = binary
             break
     else:
@@ -60,11 +52,8 @@ def has_ghostscript():
     if gs_windows_binary:
         return True
     if not sys.platform.startswith("win"):
-        import subprocess
-
         try:
-            with open(os.devnull, "wb") as devnull:
-                subprocess.check_call(["gs", "--version"], stdout=devnull)
+            subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
             return True
         except OSError:
             # No Ghostscript
@@ -86,12 +75,9 @@ def Ghostscript(tile, size, fp, scale=1):
     size = (size[0] * scale, size[1] * scale)
     # resolution is dependent on bbox and size
     res = (
-        float((72.0 * size[0]) / (bbox[2] - bbox[0])),
-        float((72.0 * size[1]) / (bbox[3] - bbox[1])),
+        72.0 * size[0] / (bbox[2] - bbox[0]),
+        72.0 * size[1] / (bbox[3] - bbox[1]),
     )
-
-    import subprocess
-    import tempfile
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
@@ -132,10 +118,10 @@ def Ghostscript(tile, size, fp, scale=1):
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
         "-sDEVICE=ppmraw",  # ppm driver
-        "-sOutputFile=%s" % outfile,  # output file
+        f"-sOutputFile={outfile}",  # output file
         # adjust for image origin
         "-c",
-        "%d %d translate" % (-bbox[0], -bbox[1]),
+        f"{-bbox[0]} {-bbox[1]} translate",
         "-f",
         infile,  # input file
         # showpage (see https://bugs.ghostscript.com/show_bug.cgi?id=698272)
@@ -145,7 +131,7 @@ def Ghostscript(tile, size, fp, scale=1):
 
     if gs_windows_binary is not None:
         if not gs_windows_binary:
-            raise WindowsError("Unable to locate Ghostscript on paths")
+            raise OSError("Unable to locate Ghostscript on paths")
         command[0] = gs_windows_binary
 
     # push data through Ghostscript
@@ -155,8 +141,8 @@ def Ghostscript(tile, size, fp, scale=1):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         subprocess.check_call(command, startupinfo=startupinfo)
-        im = Image.open(outfile)
-        im.load()
+        out_im = Image.open(outfile)
+        out_im.load()
     finally:
         try:
             os.unlink(outfile)
@@ -165,10 +151,12 @@ def Ghostscript(tile, size, fp, scale=1):
         except OSError:
             pass
 
-    return im.im.copy()
+    im = out_im.im.copy()
+    out_im.close()
+    return im
 
 
-class PSFile(object):
+class PSFile:
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
     """
@@ -203,7 +191,7 @@ def _accept(prefix):
 
 
 ##
-# Image plugin for Encapsulated Postscript.  This plugin supports only
+# Image plugin for Encapsulated PostScript.  This plugin supports only
 # a few variants of this format.
 
 
@@ -243,8 +231,8 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 try:
                     m = split.match(s)
-                except re.error:
-                    raise SyntaxError("not an EPS file")
+                except re.error as e:
+                    raise SyntaxError("not an EPS file") from e
 
                 if m:
                     k, v = m.group(1, 2)
@@ -274,11 +262,11 @@ class EpsImageFile(ImageFile.ImageFile):
                         else:
                             self.info[k] = ""
                     elif s[0] == "%":
-                        # handle non-DSC Postscript comments that some
+                        # handle non-DSC PostScript comments that some
                         # tools mistakenly put in the Comments section
                         pass
                     else:
-                        raise IOError("bad EPS header")
+                        raise OSError("bad EPS header")
 
             s_raw = fp.readline()
             s = s_raw.strip("\r\n")
@@ -313,7 +301,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 break
 
         if not box:
-            raise IOError("cannot determine EPS bounding box")
+            raise OSError("cannot determine EPS bounding box")
 
     def _find_offset(self, fp):
 
@@ -324,14 +312,14 @@ class EpsImageFile(ImageFile.ImageFile):
             fp.seek(0, io.SEEK_END)
             length = fp.tell()
             offset = 0
-        elif i32(s[0:4]) == 0xC6D3D0C5:
+        elif i32(s, 0) == 0xC6D3D0C5:
             # FIX for: Some EPS file not handled correctly / issue #302
             # EPS can contain binary data
             # or start directly with latin coding
             # more info see:
             # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-            offset = i32(s[4:8])
-            length = i32(s[8:12])
+            offset = i32(s, 4)
+            length = i32(s, 8)
         else:
             raise SyntaxError("not an EPS file")
 
@@ -364,7 +352,7 @@ def _save(im, fp, filename, eps=1):
     im.load()
 
     #
-    # determine postscript image mode
+    # determine PostScript image mode
     if im.mode == "L":
         operator = (8, 1, "image")
     elif im.mode == "RGB":
@@ -377,9 +365,8 @@ def _save(im, fp, filename, eps=1):
     base_fp = fp
     wrapped_fp = False
     if fp != sys.stdout:
-        if sys.version_info.major > 2:
-            fp = io.TextIOWrapper(fp, encoding="latin-1")
-            wrapped_fp = True
+        fp = io.TextIOWrapper(fp, encoding="latin-1")
+        wrapped_fp = True
 
     try:
         if eps:
@@ -399,10 +386,10 @@ def _save(im, fp, filename, eps=1):
         # image header
         fp.write("gsave\n")
         fp.write("10 dict begin\n")
-        fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
+        fp.write(f"/buf {im.size[0] * operator[1]} string def\n")
         fp.write("%d %d scale\n" % im.size)
         fp.write("%d %d 8\n" % im.size)  # <= bits
-        fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+        fp.write(f"[{im.size[0]} 0 0 -{im.size[1]} 0 {im.size[1]}]\n")
         fp.write("{ currentfile buf readhexstring pop } bind\n")
         fp.write(operator[2] + "\n")
         if hasattr(fp, "flush"):

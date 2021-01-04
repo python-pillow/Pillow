@@ -1,15 +1,15 @@
 .. py:module:: PIL.ImageChops
 .. py:currentmodule:: PIL.ImageChops
 
-:py:mod:`ImageChops` ("Channel Operations") Module
-==================================================
+:py:mod:`~PIL.ImageChops` ("Channel Operations") Module
+=======================================================
 
-The :py:mod:`ImageChops` module contains a number of arithmetical image
+The :py:mod:`~PIL.ImageChops` module contains a number of arithmetical image
 operations, called channel operations (“chops”). These can be used for various
 purposes, including special effects, image compositions, algorithmic painting,
 and more.
 
-For more pre-made operations, see :py:mod:`ImageOps`.
+For more pre-made operations, see :py:mod:`~PIL.ImageOps`.
 
 At this time, most channel operations are only implemented for 8-bit images
 (e.g. “L” and “RGB”).
@@ -36,12 +36,10 @@ operations in this module).
 .. autofunction:: PIL.ImageChops.logical_or
 .. autofunction:: PIL.ImageChops.logical_xor
 .. autofunction:: PIL.ImageChops.multiply
-.. py:method:: PIL.ImageChops.offset(image, xoffset, yoffset=None)
-
-    Returns a copy of the image where data has been offset by the given
-    distances. Data wraps around the edges. If **yoffset** is omitted, it
-    is assumed to be equal to **xoffset**.
-
+.. autofunction:: PIL.ImageChops.soft_light
+.. autofunction:: PIL.ImageChops.hard_light
+.. autofunction:: PIL.ImageChops.overlay
+.. autofunction:: PIL.ImageChops.offset
 .. autofunction:: PIL.ImageChops.screen
 .. autofunction:: PIL.ImageChops.subtract
 .. autofunction:: PIL.ImageChops.subtract_modulo

@@ -17,10 +17,11 @@
 #
 
 import array
-from . import ImageColor, GimpPaletteFile, GimpGradientFile, PaletteFile
+
+from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
 
-class ImagePalette(object):
+class ImagePalette:
     """
     Color palette for palette mapped images
 
@@ -96,13 +97,13 @@ class ImagePalette(object):
         if isinstance(color, tuple):
             try:
                 return self.colors[color]
-            except KeyError:
+            except KeyError as e:
                 # allocate new color slot
                 if isinstance(self.palette, bytes):
                     self.palette = bytearray(self.palette)
                 index = len(self.colors)
                 if index >= 256:
-                    raise ValueError("cannot allocate more than 256 colors")
+                    raise ValueError("cannot allocate more than 256 colors") from e
                 self.colors[color] = index
                 self.palette[index] = color[0]
                 self.palette[index + 256] = color[1]
@@ -110,7 +111,7 @@ class ImagePalette(object):
                 self.dirty = 1
                 return index
         else:
-            raise ValueError("unknown color specifier: %r" % color)
+            raise ValueError(f"unknown color specifier: {repr(color)}")
 
     def save(self, fp):
         """Save palette to text file.
@@ -122,12 +123,12 @@ class ImagePalette(object):
         if isinstance(fp, str):
             fp = open(fp, "w")
         fp.write("# Palette\n")
-        fp.write("# Mode: %s\n" % self.mode)
+        fp.write(f"# Mode: {self.mode}\n")
         for i in range(256):
-            fp.write("%d" % i)
+            fp.write(f"{i}")
             for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
                 try:
-                    fp.write(" %d" % self.palette[j])
+                    fp.write(f" {self.palette[j]}")
                 except IndexError:
                     fp.write(" 0")
             fp.write("\n")
@@ -215,6 +216,6 @@ def load(filename):
                 # traceback.print_exc()
                 pass
         else:
-            raise IOError("cannot load palette")
+            raise OSError("cannot load palette")
 
     return lut  # data, rawmode

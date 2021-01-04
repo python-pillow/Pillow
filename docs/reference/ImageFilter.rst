@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageFilter
 .. py:currentmodule:: PIL.ImageFilter
 
-:py:mod:`ImageFilter` Module
-============================
+:py:mod:`~PIL.ImageFilter` Module
+=================================
 
-The :py:mod:`ImageFilter` module contains definitions for a pre-defined set of
+The :py:mod:`~PIL.ImageFilter` module contains definitions for a pre-defined set of
 filters, which can be be used with the :py:meth:`Image.filter()
 <PIL.Image.Image.filter>` method.
 
@@ -66,3 +66,29 @@ image enhancement filters:
 
 .. autoclass:: PIL.ImageFilter.ModeFilter
     :members:
+
+.. class:: Filter
+
+    An abstract mixin used for filtering images
+    (for use with :py:meth:`~PIL.Image.Image.filter`).
+
+    Implementors must provide the following method:
+
+    .. method:: filter(self, image)
+
+        Applies a filter to a single-band image, or a single band of an image.
+
+        :returns: A filtered copy of the image.
+
+.. class:: MultibandFilter
+
+    An abstract mixin used for filtering multi-band images
+    (for use with :py:meth:`~PIL.Image.Image.filter`).
+
+    Implementors must provide the following method:
+
+    .. method:: filter(self, image)
+
+        Applies a filter to a multi-band image.
+
+        :returns: A filtered copy of the image.
