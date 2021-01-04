@@ -49,6 +49,16 @@ class PpmImageFile(ImageFile.ImageFile):
     format = "PPM"
     format_description = "Pbmplus image"
 
+    def _read_magic(self, s=b""):
+        while True:  # read until next whitespace
+            c = self.fp.read(1)
+            if c in B_WHITESPACE:
+                break
+            s = s + c
+            if len(s) > 6:  # exceeded max magic number length
+                break
+        return s
+
     def _read_token(self, token=b""):
         def _ignore_comment():  # ignores rest of the line; stops at CR, LF or EOF
             while True:
@@ -80,9 +90,11 @@ class PpmImageFile(ImageFile.ImageFile):
         return token
 
     def _open(self):
-        P = self.fp.read(1)
-        magic_number = self._read_token(P)
-        mode = MODES[magic_number]
+        magic_number = self._read_magic()
+        try:
+            mode = MODES[magic_number]
+        except KeyError:
+            raise SyntaxError("Not a PPM image file") from None
 
         self.custom_mimetype = {
             b"P4": "image/x-portable-bitmap",
