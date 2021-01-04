@@ -15,14 +15,12 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
 #include "math.h"
 
 Imaging
-ImagingFill(Imaging im, const void* colour)
-{
+ImagingFill(Imaging im, const void *colour) {
     int x, y;
     ImagingSectionCookie cookie;
 
@@ -53,7 +51,7 @@ ImagingFill(Imaging im, const void* colour)
                 }
             }
         } else {
-            unsigned char cc = (unsigned char) *(UINT8*) colour;
+            unsigned char cc = (unsigned char)*(UINT8 *)colour;
             for (y = 0; y < im->ysize; y++) {
                 memset(im->image[y], cc, im->linesize);
             }
@@ -65,13 +63,12 @@ ImagingFill(Imaging im, const void* colour)
 }
 
 Imaging
-ImagingFillLinearGradient(const char *mode)
-{
+ImagingFillLinearGradient(const char *mode) {
     Imaging im;
     int y;
 
     if (strlen(mode) != 1) {
-        return (Imaging) ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError();
     }
 
     im = ImagingNewDirty(mode, 256, 256);
@@ -80,21 +77,20 @@ ImagingFillLinearGradient(const char *mode)
     }
 
     for (y = 0; y < 256; y++) {
-        memset(im->image8[y], (unsigned char) y, 256);
+        memset(im->image8[y], (unsigned char)y, 256);
     }
 
     return im;
 }
 
 Imaging
-ImagingFillRadialGradient(const char *mode)
-{
+ImagingFillRadialGradient(const char *mode) {
     Imaging im;
     int x, y;
     int d;
 
     if (strlen(mode) != 1) {
-        return (Imaging) ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError();
     }
 
     im = ImagingNewDirty(mode, 256, 256);
@@ -104,7 +100,8 @@ ImagingFillRadialGradient(const char *mode)
 
     for (y = 0; y < 256; y++) {
         for (x = 0; x < 256; x++) {
-            d = (int) sqrt((double) ((x-128)*(x-128) + (y-128)*(y-128)) * 2.0);
+            d = (int)sqrt(
+                (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0);
             if (d >= 255) {
                 im->image8[y][x] = 255;
             } else {

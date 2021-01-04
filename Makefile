@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := release-test
+.DEFAULT_GOAL := help
 
 .PHONY: clean
 clean:
@@ -6,13 +6,6 @@ clean:
 	rm src/PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
-
-BRANCHES=`git branch -a | grep -v HEAD | grep -v master | grep remote`
-.PHONY: co
-co:
-	-for i in $(BRANCHES) ; do \
-        git checkout -t $$i ; \
-    done
 
 .PHONY: coverage
 coverage:
@@ -33,7 +26,7 @@ doccheck:
 
 .PHONY: docserve
 docserve:
-	cd docs/_build/html && python3 -mSimpleHTTPServer 2> /dev/null&
+	cd docs/_build/html && python3 -m http.server 2> /dev/null&
 
 .PHONY: help
 help:
@@ -47,7 +40,9 @@ help:
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  install-req        install documentation and test dependencies"
-	@echo "  install-venv       install in virtualenv"
+	@echo "  install-venv       (deprecated) install in virtualenv"
+	@echo "  lint               run the lint checks"
+	@echo "  lint-fix           run black and isort to (mostly) fix lint issues."
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed pillow"
 	@echo "  upload             build and upload sdists to PyPI"
@@ -81,6 +76,7 @@ install-req:
 
 .PHONY: install-venv
 install-venv:
+	echo "'install-venv' is deprecated and will be removed in a future Pillow release"
 	virtualenv .
 	bin/pip install -r requirements.txt
 
@@ -96,7 +92,7 @@ release-test:
 	python3 -m pytest -qq
 	check-manifest
 	pyroma .
-	viewdoc
+	$(MAKE) readme
 
 .PHONY: sdist
 sdist:
@@ -108,4 +104,15 @@ test:
 
 .PHONY: readme
 readme:
-	viewdoc
+	python3 setup.py --long-description | markdown2 > .long-description.html && open .long-description.html
+
+
+.PHONY: lint
+lint:
+	tox --help > /dev/null || python3 -m pip install tox
+	tox -e lint
+
+.PHONY: lint-fix
+lint-fix:
+	black --target-version py36 .
+	isort .

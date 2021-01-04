@@ -25,7 +25,6 @@
 
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
@@ -52,7 +51,7 @@ def _accept(prefix):
 
 
 def _dib_accept(prefix):
-    return i32(prefix[:4]) in [12, 40, 64, 108, 124]
+    return i32(prefix) in [12, 40, 64, 108, 124]
 
 
 # =============================================================================
@@ -87,34 +86,34 @@ class BmpImageFile(ImageFile.ImageFile):
         # -------------------------------------------------- IBM OS/2 Bitmap v1
         # ----- This format has different offsets because of width/height types
         if file_info["header_size"] == 12:
-            file_info["width"] = i16(header_data[0:2])
-            file_info["height"] = i16(header_data[2:4])
-            file_info["planes"] = i16(header_data[4:6])
-            file_info["bits"] = i16(header_data[6:8])
+            file_info["width"] = i16(header_data, 0)
+            file_info["height"] = i16(header_data, 2)
+            file_info["planes"] = i16(header_data, 4)
+            file_info["bits"] = i16(header_data, 6)
             file_info["compression"] = self.RAW
             file_info["palette_padding"] = 3
 
         # --------------------------------------------- Windows Bitmap v2 to v5
         # v3, OS/2 v2, v4, v5
         elif file_info["header_size"] in (40, 64, 108, 124):
-            file_info["y_flip"] = i8(header_data[7]) == 0xFF
+            file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
-            file_info["width"] = i32(header_data[0:4])
+            file_info["width"] = i32(header_data, 0)
             file_info["height"] = (
-                i32(header_data[4:8])
+                i32(header_data, 4)
                 if not file_info["y_flip"]
-                else 2 ** 32 - i32(header_data[4:8])
+                else 2 ** 32 - i32(header_data, 4)
             )
-            file_info["planes"] = i16(header_data[8:10])
-            file_info["bits"] = i16(header_data[10:12])
-            file_info["compression"] = i32(header_data[12:16])
+            file_info["planes"] = i16(header_data, 8)
+            file_info["bits"] = i16(header_data, 10)
+            file_info["compression"] = i32(header_data, 12)
             # byte size of pixel data
-            file_info["data_size"] = i32(header_data[16:20])
+            file_info["data_size"] = i32(header_data, 16)
             file_info["pixels_per_meter"] = (
-                i32(header_data[20:24]),
-                i32(header_data[24:28]),
+                i32(header_data, 20),
+                i32(header_data, 24),
             )
-            file_info["colors"] = i32(header_data[28:32])
+            file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
             self.info["dpi"] = tuple(
                 int(x / 39.3701 + 0.5) for x in file_info["pixels_per_meter"]
@@ -124,7 +123,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     for idx, mask in enumerate(
                         ["r_mask", "g_mask", "b_mask", "a_mask"]
                     ):
-                        file_info[mask] = i32(header_data[36 + idx * 4 : 40 + idx * 4])
+                        file_info[mask] = i32(header_data, 36 + idx * 4)
                 else:
                     # 40 byte headers only have the three components in the
                     # bitfields masks, ref:
@@ -267,7 +266,7 @@ class BmpImageFile(ImageFile.ImageFile):
         if not _accept(head_data):
             raise SyntaxError("Not a BMP file")
         # read the start position of the BMP image data (u32)
-        offset = i32(head_data[10:14])
+        offset = i32(head_data, 10)
         # load bitmap information (offset=raster info)
         self._bitmap(offset=offset)
 

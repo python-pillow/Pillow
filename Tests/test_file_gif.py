@@ -74,10 +74,10 @@ def test_optimize():
         im.save(test_file, "GIF", optimize=optimize)
         return len(test_file.getvalue())
 
-    assert test_grayscale(0) == 800
-    assert test_grayscale(1) == 44
-    assert test_bilevel(0) == 800
-    assert test_bilevel(1) == 800
+    assert test_grayscale(0) == 799
+    assert test_grayscale(1) == 43
+    assert test_bilevel(0) == 799
+    assert test_bilevel(1) == 799
 
 
 def test_optimize_correctness():
@@ -305,6 +305,20 @@ def test_dispose_none():
                 assert img.disposal_method == 1
         except EOFError:
             pass
+
+
+def test_dispose_none_load_end():
+    # Test image created with:
+    #
+    # im = Image.open("transparent.gif")
+    # im_rotated = im.rotate(180)
+    # im.save("dispose_none_load_end.gif",
+    #         save_all=True, append_images=[im_rotated], disposal=[1,2])
+    with Image.open("Tests/images/dispose_none_load_end.gif") as img:
+        img.seek(1)
+
+        with Image.open("Tests/images/dispose_none_load_end_second.gif") as expected:
+            assert_image_equal(img, expected)
 
 
 def test_dispose_background():

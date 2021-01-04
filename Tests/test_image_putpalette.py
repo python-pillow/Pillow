@@ -1,8 +1,8 @@
 import pytest
 
-from PIL import ImagePalette
+from PIL import Image, ImagePalette
 
-from .helper import hopper
+from .helper import assert_image_equal, hopper
 
 
 def test_putpalette():
@@ -39,3 +39,20 @@ def test_imagepalette():
     im.putpalette(ImagePalette.random())
     im.putpalette(ImagePalette.sepia())
     im.putpalette(ImagePalette.wedge())
+
+
+def test_putpalette_with_alpha_values():
+    with Image.open("Tests/images/transparent.gif") as im:
+        expected = im.convert("RGBA")
+
+        palette = im.getpalette()
+        transparency = im.info.pop("transparency")
+
+        palette_with_alpha_values = []
+        for i in range(256):
+            color = palette[i * 3 : i * 3 + 3]
+            alpha = 0 if i == transparency else 255
+            palette_with_alpha_values += color + [alpha]
+        im.putpalette(palette_with_alpha_values, "RGBA")
+
+        assert_image_equal(im.convert("RGBA"), expected)

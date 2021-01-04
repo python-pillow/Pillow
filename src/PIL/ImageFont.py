@@ -28,9 +28,10 @@
 import base64
 import os
 import sys
+import warnings
 from io import BytesIO
 
-from . import Image
+from . import Image, features
 from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
@@ -164,6 +165,21 @@ class FreeTypeFont:
         self.index = index
         self.encoding = encoding
 
+        try:
+            from packaging.version import parse as parse_version
+        except ImportError:
+            pass
+        else:
+            freetype_version = parse_version(features.version_module("freetype2"))
+            if freetype_version < parse_version("2.8"):
+                warnings.warn(
+                    "Support for FreeType 2.7 is deprecated and will be removed"
+                    " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
+                    "or newer, preferably FreeType 2.10.4 which fixes "
+                    "CVE-2020-15999.",
+                    DeprecationWarning,
+                )
+
         if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
             layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
@@ -285,7 +301,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :return: Width for horizontal, height for vertical text.
@@ -338,7 +354,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :param stroke_width: The width of the text stroke.
@@ -398,7 +414,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -455,7 +471,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -539,7 +555,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -625,7 +641,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0

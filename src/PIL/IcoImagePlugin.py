@@ -28,7 +28,6 @@ from io import BytesIO
 from math import ceil, log
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 
@@ -54,6 +53,7 @@ def _save(im, fp, filename):
     sizes = list(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
+    provided_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
     for size in sizes:
         width, height = size
         # 0 means 256
@@ -65,9 +65,11 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
-        # TODO: invent a more convenient method for proportional scalings
-        tmp = im.copy()
-        tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
+        tmp = provided_images.get(size)
+        if not tmp:
+            # TODO: invent a more convenient method for proportional scalings
+            tmp = im.copy()
+            tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
         tmp.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()
@@ -100,21 +102,21 @@ class IcoFile:
         self.entry = []
 
         # Number of items in file
-        self.nb_items = i16(s[4:])
+        self.nb_items = i16(s, 4)
 
         # Get headers for each item
         for i in range(self.nb_items):
             s = buf.read(16)
 
             icon_header = {
-                "width": i8(s[0]),
-                "height": i8(s[1]),
-                "nb_color": i8(s[2]),  # No. of colors in image (0 if >=8bpp)
-                "reserved": i8(s[3]),
-                "planes": i16(s[4:]),
-                "bpp": i16(s[6:]),
-                "size": i32(s[8:]),
-                "offset": i32(s[12:]),
+                "width": s[0],
+                "height": s[1],
+                "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
+                "reserved": s[3],
+                "planes": i16(s, 4),
+                "bpp": i16(s, 6),
+                "size": i32(s, 8),
+                "offset": i32(s, 12),
             }
 
             # See Wikipedia

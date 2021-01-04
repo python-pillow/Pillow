@@ -296,7 +296,7 @@ Methods
     Draws the string at the given position.
 
     :param xy: The anchor coordinates of the text.
-    :param text: Text to be drawn. If it contains any newline characters,
+    :param text: String to be drawn. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
     :param fill: Color to use for the text.
@@ -362,7 +362,7 @@ Methods
     Draws the string at the given position.
 
     :param xy: The anchor coordinates of the text.
-    :param text: Text to be drawn.
+    :param text: String to be drawn.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
 

@@ -38,12 +38,16 @@ ZLIB_ROOT = None
 
 
 if sys.platform == "win32" and sys.version_info >= (3, 10):
-    warnings.warn(
-        f"Pillow {PILLOW_VERSION} does not support Python "
-        f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
-        "prebuilt Windows binaries. We do not recommend building from source on "
-        "Windows.",
-        RuntimeWarning,
+    import atexit
+
+    atexit.register(
+        lambda: warnings.warn(
+            f"Pillow {PILLOW_VERSION} does not support Python "
+            f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+            "prebuilt Windows binaries. We do not recommend building from source on "
+            "Windows.",
+            RuntimeWarning,
+        )
     )
 
 
@@ -873,6 +877,10 @@ try:
             "Source": "https://github.com/python-pillow/Pillow",
             "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
             "utm_source=pypi-pillow&utm_medium=pypi",
+            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
+            "index.html",
+            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
+            "CHANGES.rst",
         },
         classifiers=[
             "Development Status :: 6 - Mature",

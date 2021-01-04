@@ -35,12 +35,11 @@ enum { INIT, ENCODE, ENCODE_EOF, FLUSH, EXIT };
    necessary. */
 
 static inline int
-emit(GIFENCODERSTATE *context, int byte)
-{
+emit(GIFENCODERSTATE *context, int byte) {
     /* write a byte to the output buffer */
 
     if (!context->block || context->block->size == 255) {
-        GIFENCODERBLOCK* block;
+        GIFENCODERBLOCK *block;
 
         /* no room in the current block (or no current block);
            allocate a new one */
@@ -74,7 +73,6 @@ emit(GIFENCODERSTATE *context, int byte)
         block->next = NULL;
 
         context->block = block;
-
     }
 
     /* write new byte to block */
@@ -86,68 +84,68 @@ emit(GIFENCODERSTATE *context, int byte)
 /* write a code word to the current block.  this is a macro to make
    sure it's inlined on all platforms */
 
-#define EMIT(code) {\
-    context->bitbuffer |= ((INT32) (code)) << context->bitcount;\
-    context->bitcount += 9;\
-    while (context->bitcount >= 8) {\
-        if (!emit(context, (UINT8) context->bitbuffer)) {\
-            state->errcode = IMAGING_CODEC_MEMORY;\
-            return 0;\
-        }\
-        context->bitbuffer >>= 8;\
-        context->bitcount -= 8;\
-    }\
-}
+#define EMIT(code)                                                  \
+    {                                                               \
+        context->bitbuffer |= ((INT32)(code)) << context->bitcount; \
+        context->bitcount += 9;                                     \
+        while (context->bitcount >= 8) {                            \
+            if (!emit(context, (UINT8)context->bitbuffer)) {        \
+                state->errcode = IMAGING_CODEC_MEMORY;              \
+                return 0;                                           \
+            }                                                       \
+            context->bitbuffer >>= 8;                               \
+            context->bitcount -= 8;                                 \
+        }                                                           \
+    }
 
 /* write a run.  we use a combination of literals and combinations of
    literals.  this can give quite decent compression for images with
    long stretches of identical pixels.  but remember: if you want
    really good compression, use another file format. */
 
-#define EMIT_RUN(label) {\
-label:\
-    while (context->count > 0) {\
-        int run = 2;\
-        EMIT(context->last);\
-        context->count--;\
-        if (state->count++ == LAST_CODE) {\
-            EMIT(CLEAR_CODE);\
-            state->count = FIRST_CODE;\
-            goto label;\
-        }\
-        while (context->count >= run) {\
-            EMIT(state->count - 1);\
-            context->count -= run;\
-            run++;\
-            if (state->count++ == LAST_CODE) {\
-                EMIT(CLEAR_CODE);\
-                state->count = FIRST_CODE;\
-                goto label;\
-            }\
-        }\
-        if (context->count > 1) {\
-            EMIT(state->count - 1 - (run - context->count));\
-            context->count = 0;\
-            if (state->count++ == LAST_CODE) {\
-                EMIT(CLEAR_CODE);\
-                state->count = FIRST_CODE;\
-            }\
-            break;\
-        }\
-    }\
-}
+#define EMIT_RUN(label)                                          \
+    {                                                            \
+    label:                                                       \
+        while (context->count > 0) {                             \
+            int run = 2;                                         \
+            EMIT(context->last);                                 \
+            context->count--;                                    \
+            if (state->count++ == LAST_CODE) {                   \
+                EMIT(CLEAR_CODE);                                \
+                state->count = FIRST_CODE;                       \
+                goto label;                                      \
+            }                                                    \
+            while (context->count >= run) {                      \
+                EMIT(state->count - 1);                          \
+                context->count -= run;                           \
+                run++;                                           \
+                if (state->count++ == LAST_CODE) {               \
+                    EMIT(CLEAR_CODE);                            \
+                    state->count = FIRST_CODE;                   \
+                    goto label;                                  \
+                }                                                \
+            }                                                    \
+            if (context->count > 1) {                            \
+                EMIT(state->count - 1 - (run - context->count)); \
+                context->count = 0;                              \
+                if (state->count++ == LAST_CODE) {               \
+                    EMIT(CLEAR_CODE);                            \
+                    state->count = FIRST_CODE;                   \
+                }                                                \
+                break;                                           \
+            }                                                    \
+        }                                                        \
+    }
 
 int
-ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
-{
-    UINT8* ptr;
+ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    UINT8 *ptr;
     int this;
 
-    GIFENCODERBLOCK* block;
-    GIFENCODERSTATE *context = (GIFENCODERSTATE*) state->context;
+    GIFENCODERBLOCK *block;
+    GIFENCODERSTATE *context = (GIFENCODERSTATE *)state->context;
 
     if (!state->state) {
-
         /* place a clear code in the output buffer */
         context->bitbuffer = CLEAR_CODE;
         context->bitcount = 9;
@@ -167,22 +165,17 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         if (state->xsize <= 0 || state->ysize <= 0) {
             state->state = ENCODE_EOF;
         }
-
     }
 
     ptr = buf;
 
-    for (;;)
-
-        switch (state->state) {
-
+    for (;;) switch (state->state) {
             case INIT:
             case ENCODE:
 
                 /* identify and store a run of pixels */
 
                 if (state->x == 0 || state->x >= state->xsize) {
-
                     if (!context->interlace && state->y >= state->ysize) {
                         state->state = ENCODE_EOF;
                         break;
@@ -196,9 +189,9 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     /* get another line of data */
                     state->shuffle(
                         state->buffer,
-                        (UINT8*) im->image[state->y + state->yoff] +
-                        state->xoff * im->pixelsize, state->xsize
-                    );
+                        (UINT8 *)im->image[state->y + state->yoff] +
+                            state->xoff * im->pixelsize,
+                        state->xsize);
 
                     state->x = 0;
 
@@ -231,10 +224,14 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                                 /* just make sure we don't loop forever */
                                 context->interlace = 0;
                         }
-
                 }
-
-                this = state->buffer[state->x++];
+                /* Potential special case for xsize==1 */
+                if (state->x < state->xsize) {
+                    this = state->buffer[state->x++];
+                } else {
+                    EMIT_RUN(label0);
+                    break;
+                }
 
                 if (this == context->last) {
                     context->count++;
@@ -244,7 +241,6 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     context->count = 1;
                 }
                 break;
-
 
             case ENCODE_EOF:
 
@@ -256,7 +252,7 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 /* empty the bit buffer */
                 while (context->bitcount > 0) {
-                    if (!emit(context, (UINT8) context->bitbuffer)) {
+                    if (!emit(context, (UINT8)context->bitbuffer)) {
                         state->errcode = IMAGING_CODEC_MEMORY;
                         return 0;
                     }
@@ -266,7 +262,7 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
                 /* flush the last block, and exit */
                 if (context->block) {
-                    GIFENCODERBLOCK* block;
+                    GIFENCODERBLOCK *block;
                     block = context->flush;
                     while (block && block->next) {
                         block = block->next;
@@ -286,45 +282,41 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             case EXIT:
             case FLUSH:
 
-                    while (context->flush) {
+                while (context->flush) {
+                    /* get a block from the flush queue */
+                    block = context->flush;
 
-                        /* get a block from the flush queue */
-                        block = context->flush;
-
-                        if (block->size > 0) {
-
-                            /* make sure it fits into the output buffer */
-                            if (bytes < block->size+1) {
-                                return ptr - buf;
-                            }
-
-                            ptr[0] = block->size;
-                            memcpy(ptr+1, block->data, block->size);
-
-                            ptr += block->size+1;
-                            bytes -= block->size+1;
-
+                    if (block->size > 0) {
+                        /* make sure it fits into the output buffer */
+                        if (bytes < block->size + 1) {
+                            return ptr - buf;
                         }
 
-                        context->flush = block->next;
+                        ptr[0] = block->size;
+                        memcpy(ptr + 1, block->data, block->size);
 
-                        if (context->free) {
-                            free(context->free);
-                        }
-                        context->free = block;
-
+                        ptr += block->size + 1;
+                        bytes -= block->size + 1;
                     }
 
-                    if (state->state == EXIT) {
-                        /* this was the last block! */
-                        if (context->free) {
-                            free(context->free);
-                        }
-                        state->errcode = IMAGING_CODEC_END;
-                        return ptr - buf;
-                    }
+                    context->flush = block->next;
 
-                    state->state = ENCODE;
-                    break;
-    }
+                    if (context->free) {
+                        free(context->free);
+                    }
+                    context->free = block;
+                }
+
+                if (state->state == EXIT) {
+                    /* this was the last block! */
+                    if (context->free) {
+                        free(context->free);
+                    }
+                    state->errcode = IMAGING_CODEC_END;
+                    return ptr - buf;
+                }
+
+                state->state = ENCODE;
+                break;
+        }
 }

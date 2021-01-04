@@ -62,14 +62,14 @@ class IptcImageFile(ImageFile.ImageFile):
         if not len(s):
             return None, 0
 
-        tag = i8(s[1]), i8(s[2])
+        tag = s[1], s[2]
 
         # syntax
-        if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
+        if s[0] != 0x1C or tag[0] < 1 or tag[0] > 9:
             raise SyntaxError("invalid IPTC/NAA file")
 
         # field size
-        size = i8(s[3])
+        size = s[3]
         if size > 132:
             raise OSError("illegal field length in IPTC/NAA file")
         elif size == 128:
@@ -77,7 +77,7 @@ class IptcImageFile(ImageFile.ImageFile):
         elif size > 128:
             size = i(self.fp.read(size - 128))
         else:
-            size = i16(s[3:])
+            size = i16(s, 3)
 
         return tag, size
 

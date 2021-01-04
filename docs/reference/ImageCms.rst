@@ -200,7 +200,7 @@ can be easily displayed in a chromaticity diagram, for example).
 
         The chromatic adaption matrix converts a color measured using the
         actual illumination conditions and relative to the actual adopted
-        white, to an color relative to the PCS adopted white, with
+        white, to a color relative to the PCS adopted white, with
         complete adaptation from the actual adopted white chromaticity to
         the PCS adopted white chromaticity (see 9.2.15 of ICC.1:2010).
 

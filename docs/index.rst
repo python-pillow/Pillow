@@ -9,18 +9,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://img.shields.io/travis/python-pillow/Pillow/master.svg?label=Linux%20build
-   :target: https://travis-ci.org/python-pillow/Pillow
-   :alt: Travis CI build status (Linux)
-
-.. image:: https://img.shields.io/travis/python-pillow/pillow-wheels/master.svg?label=macOS%20build
-   :target: https://travis-ci.org/python-pillow/pillow-wheels
-   :alt: Travis CI build status (macOS)
-
-.. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build
-   :target: https://ci.appveyor.com/project/python-pillow/Pillow
-   :alt: AppVeyor CI build status (Windows)
-
 .. image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint
    :alt: GitHub Actions build status (Lint)
@@ -36,6 +24,14 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
 .. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22
    :alt: GitHub Actions build status (Test Windows)
+
+.. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build
+   :target: https://ci.appveyor.com/project/python-pillow/Pillow
+   :alt: AppVeyor CI build status (Windows)
+
+.. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build
+   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
+   :alt: Travis CI build status (macOS)
 
 .. image:: https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/python-pillow/Pillow

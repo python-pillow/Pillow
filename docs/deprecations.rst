@@ -12,12 +12,25 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+FreeType 2.7
+~~~~~~~~~~~~
+
+.. deprecated:: 8.1.0
+
+Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
+when FreeType 2.8 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
 
-The ``command`` parameter was deprecated and will be removed in a future release.
+The ``command`` parameter will be removed in Pillow 9.0.0 (2022-01-02).
 Use a subclass of :py:class:`.ImageShow.Viewer` instead.
 
 Image._showxv
@@ -25,26 +38,26 @@ Image._showxv
 
 .. deprecated:: 7.2.0
 
-``Image._showxv`` has been deprecated. Use :py:meth:`.Image.Image.show`
-instead. If custom behaviour is required, use :py:func:`.ImageShow.register` to add
-a custom :py:class:`.ImageShow.Viewer` class.
+``Image._showxv`` will be removed in Pillow 9.0.0 (2022-01-02).
+Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
 
-``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
-is now deprecated and will be removed in a future release. Use
-``ImageFile.raise_oserror`` instead.
+``IOError`` was merged into ``OSError`` in Python 3.3.
+So, ``ImageFile.raise_ioerror`` will be removed in Pillow 9.0.0 (2022-01-02).
+Use ``ImageFile.raise_oserror`` instead.
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 5.2.0
 
-``PILLOW_VERSION`` has been deprecated and will be removed in a future release. Use
-``__version__`` instead.
+``PILLOW_VERSION`` will be removed in Pillow 9.0.0 (2022-01-02).
+Use ``__version__`` instead.
 
 It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
 more time to upgrade.

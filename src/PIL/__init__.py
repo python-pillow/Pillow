@@ -26,7 +26,7 @@ __version__ = _version.__version__
 # Use __version__ instead.
 def _raise_version_warning():
     warnings.warn(
-        "PILLOW_VERSION is deprecated and will be removed in a future release. "
+        "PILLOW_VERSION is deprecated and will be removed in Pillow 9 (2022-01-02). "
         "Use __version__ instead.",
         DeprecationWarning,
         stacklevel=3,

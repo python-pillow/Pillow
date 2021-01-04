@@ -1,0 +1,17 @@
+name: Release drafter
+
+on:
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - master
+
+jobs:
+  update_release_draft:
+    if: github.repository == 'python-pillow/Pillow'
+    runs-on: ubuntu-latest
+    steps:
+      # Drafts your next release notes as pull requests are merged into "master"
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -50,7 +50,7 @@ from . import (
     _plugins,
     _raise_version_warning,
 )
-from ._binary import i8, i32le
+from ._binary import i32le
 from ._util import deferred_error, isPath
 
 if sys.version_info >= (3, 7):
@@ -670,7 +670,10 @@ class Image:
         :returns: png version of the image as bytes
         """
         b = io.BytesIO()
-        self.save(b, "PNG")
+        try:
+            self.save(b, "PNG")
+        except Exception as e:
+            raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
     @property
@@ -815,9 +818,15 @@ class Image:
         """
         if self.im and self.palette and self.palette.dirty:
             # realize palette
-            self.im.putpalette(*self.palette.getdata())
+            mode, arr = self.palette.getdata()
+            if mode == "RGBA":
+                mode = "RGB"
+                self.info["transparency"] = arr[3::4]
+                arr = bytes(
+                    value for (index, value) in enumerate(arr) if index % 4 != 3
+                )
+            self.im.putpalette(mode, arr)
             self.palette.dirty = 0
-            self.palette.mode = "RGB"
             self.palette.rawmode = None
             if "transparency" in self.info:
                 if isinstance(self.info["transparency"], int):
@@ -825,6 +834,8 @@ class Image:
                 else:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
+            else:
+                self.palette.mode = "RGB"
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
@@ -1367,7 +1378,7 @@ class Image:
 
         self.load()
         x, y = self.im.getprojection()
-        return [i8(c) for c in x], [i8(c) for c in y]
+        return list(x), list(y)
 
     def histogram(self, mask=None, extrema=None):
         """
@@ -1626,7 +1637,7 @@ class Image:
                     self.im = im
                 self.pyaccess = None
                 self.mode = self.im.mode
-            except (KeyError, ValueError) as e:
+            except KeyError as e:
                 raise ValueError("illegal image mode") from e
 
         if self.mode in ("LA", "PA"):
@@ -1672,12 +1683,14 @@ class Image:
 
     def putpalette(self, data, rawmode="RGB"):
         """
-        Attaches a palette to this image.  The image must be a "P",
-        "PA", "L" or "LA" image, and the palette sequence must contain
-        768 integer values, where each group of three values represent
-        the red, green, and blue values for the corresponding pixel
-        index. Instead of an integer sequence, you can use an 8-bit
-        string.
+        Attaches a palette to this image.  The image must be a "P", "PA", "L"
+        or "LA" image.
+
+        The palette sequence must contain either 768 integer values, or 1024
+        integer values if alpha is included. Each group of values represents
+        the red, green, blue (and alpha if included) values for the
+        corresponding pixel index. Instead of an integer sequence, you can use
+        an 8-bit string.
 
         :param data: A palette sequence (either a list or a string).
         :param rawmode: The raw mode of the palette.
@@ -2197,8 +2210,8 @@ class Image:
 
         if command is not None:
             warnings.warn(
-                "The command parameter is deprecated and will be removed in a future "
-                "release. Use a subclass of ImageShow.Viewer instead.",
+                "The command parameter is deprecated and will be removed in Pillow 9 "
+                "(2022-01-02). Use a subclass of ImageShow.Viewer instead.",
                 DeprecationWarning,
             )
 
@@ -2905,6 +2918,8 @@ def open(fp, mode="r", formats=None):
 
     def _open_core(fp, filename, prefix, formats):
         for i in formats:
+            if i not in OPEN:
+                init()
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
@@ -3174,7 +3189,7 @@ def _showxv(image, title=None, **options):
         del options["_internal_pillow"]
     else:
         warnings.warn(
-            "_showxv is deprecated and will be removed in a future release. "
+            "_showxv is deprecated and will be removed in Pillow 9 (2022-01-02). "
             "Use Image.show instead.",
             DeprecationWarning,
         )
@@ -3359,7 +3374,7 @@ class Exif(MutableMapping):
 
                 if self[0x927C][:8] == b"FUJIFILM":
                     exif_data = self[0x927C]
-                    ifd_offset = i32le(exif_data[8:12])
+                    ifd_offset = i32le(exif_data, 8)
                     ifd_data = exif_data[ifd_offset:]
 
                     makernote = {}

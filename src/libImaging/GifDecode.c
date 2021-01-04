@@ -21,7 +21,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
 #include <stdio.h>
@@ -29,48 +28,44 @@
 
 #include "Gif.h"
 
-
-#define NEWLINE(state, context) {\
-    state->x = 0;\
-    state->y += context->step;\
-    while (state->y >= state->ysize)\
-        switch (context->interlace) {\
-            case 1:\
-                context->repeat = state->y = 4;\
-                context->interlace = 2;\
-                break;\
-            case 2:\
-                context->step = 4;\
-                context->repeat = state->y = 2;\
-                context->interlace = 3;\
-                break;\
-            case 3:\
-                context->step = 2;\
-                context->repeat = state->y = 1;\
-                context->interlace = 0;\
-                break;\
-            default:\
-                return -1;\
-        }\
-    if (state->y < state->ysize) {\
-        out = im->image8[state->y + state->yoff] + state->xoff;\
-    }\
-}
-
+#define NEWLINE(state, context)                                        \
+    {                                                                  \
+        state->x = 0;                                                  \
+        state->y += context->step;                                     \
+        while (state->y >= state->ysize) switch (context->interlace) { \
+                case 1:                                                \
+                    context->repeat = state->y = 4;                    \
+                    context->interlace = 2;                            \
+                    break;                                             \
+                case 2:                                                \
+                    context->step = 4;                                 \
+                    context->repeat = state->y = 2;                    \
+                    context->interlace = 3;                            \
+                    break;                                             \
+                case 3:                                                \
+                    context->step = 2;                                 \
+                    context->repeat = state->y = 1;                    \
+                    context->interlace = 0;                            \
+                    break;                                             \
+                default:                                               \
+                    return -1;                                         \
+            }                                                          \
+        if (state->y < state->ysize) {                                 \
+            out = im->image8[state->y + state->yoff] + state->xoff;    \
+        }                                                              \
+    }
 
 int
-ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t bytes)
-{
-    UINT8* p;
-    UINT8* out;
+ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes) {
+    UINT8 *p;
+    UINT8 *out;
     int c, i;
     int thiscode;
-    GIFDECODERSTATE *context = (GIFDECODERSTATE*) state->context;
+    GIFDECODERSTATE *context = (GIFDECODERSTATE *)state->context;
 
     UINT8 *ptr = buffer;
 
     if (!state->state) {
-
         /* Initialise state */
         if (context->bits < 0 || context->bits > 12) {
             state->errcode = IMAGING_CODEC_CONFIG;
@@ -97,9 +92,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
     out = im->image8[state->y + state->yoff] + state->xoff + state->x;
 
     for (;;) {
-
         if (state->state == 1) {
-
             /* First free entry in table */
             context->next = context->clear + 2;
 
@@ -115,7 +108,6 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
         }
 
         if (context->bufferindex < GIFBUFFER) {
-
             /* Return whole buffer in one chunk */
             i = GIFBUFFER - context->bufferindex;
             p = &context->buffer[context->bufferindex];
@@ -123,24 +115,21 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
             context->bufferindex = GIFBUFFER;
 
         } else {
-
             /* Get current symbol */
 
             while (context->bitcount < context->codesize) {
-
                 if (context->blocksize > 0) {
-
                     /* Read next byte */
-                    c = *ptr++; bytes--;
+                    c = *ptr++;
+                    bytes--;
 
                     context->blocksize--;
 
                     /* New bits are shifted in from from the left. */
-                    context->bitbuffer |= (INT32) c << context->bitcount;
+                    context->bitbuffer |= (INT32)c << context->bitcount;
                     context->bitcount += 8;
 
                 } else {
-
                     /* New GIF block */
 
                     /* We don't start decoding unless we have a full block */
@@ -148,19 +137,19 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                         return ptr - buffer;
                     }
                     c = *ptr;
-                    if (bytes < c+1) {
+                    if (bytes < c + 1) {
                         return ptr - buffer;
                     }
 
                     context->blocksize = c;
 
-                    ptr++; bytes--;
-
+                    ptr++;
+                    bytes--;
                 }
             }
 
             /* Extract current symbol from bit buffer. */
-            c = (int) context->bitbuffer & context->codemask;
+            c = (int)context->bitbuffer & context->codemask;
 
             /* Adjust buffer */
             context->bitbuffer >>= context->codesize;
@@ -185,7 +174,6 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
             p = &context->lastdata;
 
             if (state->state == 2) {
-
                 /* First valid symbol after clear; use as is */
                 if (c > context->clear) {
                     state->errcode = IMAGING_CODEC_BROKEN;
@@ -196,7 +184,6 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                 state->state = 3;
 
             } else {
-
                 thiscode = c;
 
                 if (c > context->next) {
@@ -205,7 +192,6 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                 }
 
                 if (c == context->next) {
-
                     /* c == next is allowed. not sure why. */
 
                     if (context->bufferindex <= 0) {
@@ -213,15 +199,12 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                         return -1;
                     }
 
-                    context->buffer[--context->bufferindex] =
-                    context->lastdata;
+                    context->buffer[--context->bufferindex] = context->lastdata;
 
                     c = context->lastcode;
-
                 }
 
                 while (c >= context->clear) {
-
                     /* Copy data string to buffer (beginning from right) */
 
                     if (context->bufferindex <= 0 || c >= GIFTABLE) {
@@ -229,8 +212,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                         return -1;
                     }
 
-                    context->buffer[--context->bufferindex] =
-                    context->data[c];
+                    context->buffer[--context->bufferindex] = context->data[c];
 
                     c = context->link[c];
                 }
@@ -238,26 +220,22 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
                 context->lastdata = c;
 
                 if (context->next < GIFTABLE) {
-
                     /* We'll only add this symbol if we have room
                        for it (take advise, Netscape!) */
                     context->data[context->next] = c;
                     context->link[context->next] = context->lastcode;
 
                     if (context->next == context->codemask &&
-                    context->codesize < GIFBITS) {
-
+                        context->codesize < GIFBITS) {
                         /* Expand code size */
                         context->codesize++;
                         context->codemask = (1 << context->codesize) - 1;
                     }
 
                     context->next++;
-
                 }
 
                 context->lastcode = thiscode;
-
             }
         }
 
@@ -273,7 +251,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
         /* FIXME: should we handle the transparency index in here??? */
 
         if (i == 1) {
-            if (state->x < state->xsize-1) {
+            if (state->x < state->xsize - 1) {
                 /* Single pixel, not at the end of the line. */
                 *out++ = p[0];
                 state->x++;
@@ -282,7 +260,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_ssize_t 
         } else if (state->x + i <= state->xsize) {
             /* This string fits into current line. */
             memcpy(out, p, i);
-                out += i;
+            out += i;
             state->x += i;
             if (state->x == state->xsize) {
                 NEWLINE(state, context);
