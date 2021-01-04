@@ -16,8 +16,17 @@ Color Names
 
 The ImageColor module supports the following string formats:
 
-* Hexadecimal color specifiers, given as ``#rgb`` or ``#rrggbb``. For example,
-  ``#ff0000`` specifies pure red.
+* Hexadecimal color specifiers, given as ``#rgb``, ``#rgba``, ``#rrggbb`` or ``#rrggbbaa``, 
+  with the following placeholders: 
+    - ``r``: red
+    - ``g``: green
+    - ``b``: blue
+    - ``a``: alpha / opacity (can be used in combination with ``mode="RGBA"`` in :py:mod:`~PIL.ImageDraw`)
+  
+  Examples:
+   - ``#ff0000`` specifies pure red.
+   - ``#ff0000aa`` specifies pure red with an opacity of 66.66% (aa = 170, opacity = 170/255).
+
 
 * RGB functions, given as ``rgb(red, green, blue)`` where the color values are
   integers in the range 0 to 255. Alternatively, the color values can be given
