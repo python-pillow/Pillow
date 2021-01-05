@@ -503,8 +503,8 @@ ImagingLibTiffDecode(
     isYCbCr = photometric == PHOTOMETRIC_YCBCR;
 
     if (TIFFIsTiled(tiff)) {
-        INT32 x, y, tile_y;
-        UINT32 tile_width, tile_length, current_tile_length, current_line,
+        INT32 x, y, tile_y, current_tile_length;
+        UINT32 tile_width, tile_length, current_line,
             current_tile_width, row_byte_size;
         UINT8 *new_data;
 
