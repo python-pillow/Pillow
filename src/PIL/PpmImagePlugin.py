@@ -115,7 +115,9 @@ class PpmImageFile(ImageFile.ImageFile):
             try:  # check token sanity
                 token = int(token)
             except ValueError:
-                raise ValueError(f"Non-decimal-ASCII found in header: {token}")
+                raise ValueError(
+                    f"Non-decimal-ASCII found in header: {token}"
+                ) from None
             if ix == 0:  # token is the x size
                 xsize = token
             elif ix == 1:  # token is the y size
