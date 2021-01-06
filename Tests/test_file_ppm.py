@@ -49,13 +49,15 @@ def test_pnm(tmp_path):
         with Image.open(f) as reloaded:
             assert_image_equal(im, reloaded)
 
+
 def test_not_ppm(tmp_path):
     path = str(tmp_path / "temp.djvurle")
     with open(path, "wb") as f:
-        f.write(b"PyXX")
+        f.write(b"PyInvalid")
 
     with pytest.raises(UnidentifiedImageError):
         Image.open(path)
+
 
 def test_header_with_comments(tmp_path):
     path = str(tmp_path / "temp.ppm")
@@ -74,6 +76,7 @@ def test_nondecimal_header(tmp_path):
     with pytest.raises(ValueError):
         Image.open(path)
 
+
 def test_token_too_long(tmp_path):
     path = str(tmp_path / "temp.djvurle")
     with open(path, "wb") as f:
@@ -81,6 +84,16 @@ def test_token_too_long(tmp_path):
 
     with pytest.raises(ValueError):
         Image.open(path)
+
+
+def test_too_many_colors(tmp_path):
+    path = str(tmp_path / "temp.djvurle")
+    with open(path, "wb") as f:
+        f.write(b"P6\n1 1\n1000\n")
+
+    with pytest.raises(ValueError):
+        Image.open(path)
+
 
 def test_truncated_file(tmp_path):
     path = str(tmp_path / "temp.pgm")
