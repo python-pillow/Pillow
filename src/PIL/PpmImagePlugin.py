@@ -87,6 +87,8 @@ class PpmImageFile(ImageFile.ImageFile):
             if c in B_WHITESPACE:  # token ended
                 break
             token += c
+            if len(token) > 9:
+                raise ValueError(f"Token too long: {token}")
         return token
 
     def _open(self):
@@ -109,8 +111,9 @@ class PpmImageFile(ImageFile.ImageFile):
             self.mode = rawmode = mode
 
         for ix in range(3):
+            token = self._read_token()
             try:  # check token sanity
-                token = int(self._read_token())
+                token = int(token)
             except ValueError:
                 raise SyntaxError("Non-decimal-ASCII found in header")
             if ix == 0:  # token is the x size
