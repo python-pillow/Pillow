@@ -73,7 +73,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 continue
             if c in B_WHITESPACE:  # found whitespace, ignore it
                 if c == b"":  # reached EOF
-                    raise EOFError("Reached EOF while reading header")
+                    raise ValueError("Reached EOF while reading header")
                 continue
             break
 
@@ -115,7 +115,7 @@ class PpmImageFile(ImageFile.ImageFile):
             try:  # check token sanity
                 token = int(token)
             except ValueError:
-                raise SyntaxError("Non-decimal-ASCII found in header")
+                raise ValueError(f"Non-decimal-ASCII found in header: {token}")
             if ix == 0:  # token is the x size
                 xsize = token
             elif ix == 1:  # token is the y size
@@ -125,7 +125,7 @@ class PpmImageFile(ImageFile.ImageFile):
             elif ix == 2:  # token is maxval
                 if token > 255:
                     if not mode == "L":
-                        raise SyntaxError(f"Too many colors for band: {token}")
+                        raise ValueError(f"Too many colors for band: {token}")
                     if token < 2 ** 16:
                         self.mode = "I"
                         rawmode = "I;16B"
@@ -156,7 +156,7 @@ def _save(im, fp, filename):
     elif im.mode == "RGBA":
         rawmode, head = "RGB", b"P6"
     else:
-        raise OSError(f"cannot write mode {im.mode} as PPM")
+        raise OSError(f"Cannot write mode {im.mode} as PPM")
     fp.write(head + ("\n%d %d\n" % im.size).encode("ascii"))
     if head == b"P6":
         fp.write(b"255\n")
