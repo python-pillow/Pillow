@@ -41,7 +41,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
