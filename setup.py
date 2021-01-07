@@ -840,7 +840,7 @@ class pil_build_ext(build_ext):
 
 
 def debug_build():
-    return hasattr(sys, "gettotalrefcount")
+    return hasattr(sys, "gettotalrefcount") or os.environ.get("LIB_FUZZING_ENGINE", None)
 
 
 files = ["src/_imaging.c"]
