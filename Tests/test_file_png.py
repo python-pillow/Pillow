@@ -654,6 +654,7 @@ class TestFilePng:
             exif = reloaded._getexif()
         assert exif[274] == 1
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")

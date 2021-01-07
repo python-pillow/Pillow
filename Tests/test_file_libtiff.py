@@ -815,12 +815,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
@@ -832,12 +834,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
@@ -865,6 +869,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
                     assert_image_similar(base_im, im, 0.7)
 
+    @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
     def test_sampleformat_not_corrupted(self):
         # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
         # when saving to a new file.
