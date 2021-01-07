@@ -24,7 +24,7 @@ def pytest_configure(config):
         warnings.simplefilter("error")
         try:
             getattr(pytest.mark, "valgrind_known_error")
-        except:
+        except Exception:
             config.addinivalue_line(
                 "markers",
                 "valgrind_known_error: Tests that have known issues with valgrind",
