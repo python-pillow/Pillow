@@ -58,6 +58,7 @@ def test_invalid_file():
     with pytest.raises(SyntaxError):
         EpsImagePlugin.EpsImageFile(invalid_file)
 
+
 @pytest.mark.valgrind_known_error(reason="Known Failing")
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk():
