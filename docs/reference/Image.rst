@@ -22,7 +22,7 @@ Windows).
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open("bride.jpg")
+    im = Image.open("hopper.jpg")
     im.rotate(45).show()
 
 Create thumbnails
