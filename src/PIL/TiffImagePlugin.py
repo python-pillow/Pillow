@@ -1324,6 +1324,15 @@ class TiffImageFile(ImageFile.ImageFile):
             if ";16L" in rawmode:
                 rawmode = rawmode.replace(";16L", ";16N")
 
+            # YCbCr images with new jpeg compression with pixels in one plane
+            # unpacked straight into RGB values
+            if (
+                photo == 6
+                and self._compression == "jpeg"
+                and self._planar_configuration == 1
+            ):
+                rawmode = "RGB"
+
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
             a = (rawmode, self._compression, False, self.tag_v2.offset)

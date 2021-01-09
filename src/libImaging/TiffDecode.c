@@ -407,6 +407,7 @@ ImagingLibTiffDecode(
     char *mode = "r";
     TIFF *tiff;
     uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
+    uint16 compression;
     int isYCbCr = 0;
     uint16 planarconfig = 0;
     int planes = 1;
@@ -509,8 +510,16 @@ ImagingLibTiffDecode(
 
 
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
-    isYCbCr = photometric == PHOTOMETRIC_YCBCR;
+    TIFFGetField(tiff, TIFFTAG_COMPRESSION, &compression);
     TIFFGetFieldDefaulted(tiff, TIFFTAG_PLANARCONFIG, &planarconfig);
+
+    isYCbCr = photometric == PHOTOMETRIC_YCBCR;
+
+    if (isYCbCr && compression == COMPRESSION_JPEG && planarconfig == PLANARCONFIG_CONTIG) {
+        // If using new JPEG compression, let libjpeg do RGB convertion
+        TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
+        isYCbCr = 0;
+    }
 
     // YCbCr data is read as RGB by libtiff and we don't need to worry about planar storage in that case
     // if number of bands is 1, there is no difference with contig case
