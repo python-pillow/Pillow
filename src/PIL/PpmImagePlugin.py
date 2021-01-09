@@ -23,21 +23,25 @@ from . import Image, ImageFile
 b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
-    # standard
-    b"P4": "1",
-    b"P5": "L",
-    b"P6": "RGB",
+    # standard, plain
+    b"P1": ("plain", "1"),
+    b"P2": ("plain", "L"),
+    b"P3": ("plain", "RGB"),
+    # standard, raw
+    b"P4": ("raw", "1"),
+    b"P5": ("raw", "L"),
+    b"P6": ("raw", "RGB"),
     # extensions
-    b"P0CMYK": "CMYK",
+    b"P0CMYK": ("raw", "CMYK"),
     # PIL extensions (for test purposes only)
-    b"PyP": "P",
-    b"PyRGBA": "RGBA",
-    b"PyCMYK": "CMYK",
+    b"PyP": ("raw", "P"),
+    b"PyRGBA": ("raw", "RGBA"),
+    b"PyCMYK": ("raw", "CMYK"),
 }
 
 
 def _accept(prefix):
-    return prefix[0:1] == b"P" and prefix[1] in b"0456y"
+    return prefix[0:1] == b"P" and prefix[1] in b"0123456y"
 
 
 ##
@@ -86,21 +90,18 @@ class PpmImageFile(ImageFile.ImageFile):
     def _open(self):
         magic_number = self._read_magic()
         try:
-            mode = MODES[magic_number]
+            decoder, mode = MODES[magic_number]
         except KeyError:
             raise SyntaxError("not a PPM file")
 
         self.custom_mimetype = {
+            b"P1": "image/x-portable-bitmap",
+            b"P2": "image/x-portable-graymap",
+            b"P3": "image/x-portable-pixmap",
             b"P4": "image/x-portable-bitmap",
             b"P5": "image/x-portable-graymap",
             b"P6": "image/x-portable-pixmap",
         }.get(magic_number)
-
-        if mode == "1":
-            self.mode = "1"
-            rawmode = "1;I"
-        else:
-            self.mode = rawmode = mode
 
         for ix in range(3):
             token = int(self._read_token())
@@ -109,12 +110,16 @@ class PpmImageFile(ImageFile.ImageFile):
             elif ix == 1:  # token is the y size
                 ysize = token
                 if mode == "1":
+                    self.mode = "1"
+                    rawmode = "1;I"
                     break
+                else:
+                    self.mode = rawmode = mode
             elif ix == 2:  # token is maxval
                 maxval = token
                 if maxval > 255:
                     if not mode == "L":
-                        raise ValueError(f"Too many colors for band: {token}")
+                        raise ValueError(f"Too many colors for band: {maxval}")
                     if maxval < 2 ** 16:
                         self.mode = "I"
                         rawmode = "I;16B"
@@ -123,7 +128,14 @@ class PpmImageFile(ImageFile.ImageFile):
                         rawmode = "I;32B"
 
         self._size = xsize, ysize
-        self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
+        self.tile = [
+            (
+                decoder,  # decoder
+                (0, 0, xsize, ysize),  # region: whole image
+                self.fp.tell(),  # offset to image data
+                (rawmode, 0, 1),  # parameters for decoder
+            )
+        ]
 
 
 #
