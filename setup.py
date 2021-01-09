@@ -35,7 +35,7 @@ JPEG_ROOT = None
 LCMS_ROOT = None
 TIFF_ROOT = None
 ZLIB_ROOT = None
-FUZZING_BUILD = 'LIB_FUZZING_ENGINE' in os.environ
+FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
 if sys.platform == "win32" and sys.version_info >= (3, 10):
     import atexit
