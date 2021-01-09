@@ -1243,6 +1243,10 @@ class Image:
         """
         Returns a list of colors used in this image.
 
+        The colors will be in the image's mode. For example, an RGB image will
+        return a tuple of (red, green, blue) color values, and a P image will
+        return the index of the color in the palette.
+
         :param maxcolors: Maximum number of colors.  If this number is
            exceeded, this method returns None.  The default limit is
            256 colors.
