@@ -408,7 +408,7 @@ ImagingLibTiffDecode(
     TIFF *tiff;
     uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
     int isYCbCr = 0;
-    UINT8 planarconfig = 0;
+    uint16 planarconfig = 0;
     UINT8 planes = 1;
     ImagingShuffler unpackers[4];
 
