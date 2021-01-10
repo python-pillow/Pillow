@@ -321,7 +321,7 @@ decodeycbcr_err:
 }
 
 int
-_decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, UINT8 planes, ImagingShuffler *unpackers) {
+_decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, ImagingShuffler *unpackers) {
     INT32 strip_row = 0;
     UINT8 *new_data;
     UINT32 rows_per_strip, row_byte_size;
@@ -409,7 +409,7 @@ ImagingLibTiffDecode(
     uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
     int isYCbCr = 0;
     uint16 planarconfig = 0;
-    UINT8 planes = 1;
+    int planes = 1;
     ImagingShuffler unpackers[4];
 
     memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
