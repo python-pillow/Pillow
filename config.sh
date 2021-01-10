@@ -1,5 +1,5 @@
 # Define custom utilities
-# Test for OS X with [ -n "$IS_OSX" ]
+# Test for macOS with [ -n "$IS_MACOS" ]
 
 ARCHIVE_SDIR=pillow-depends-master
 
@@ -22,19 +22,19 @@ function pre_build {
     # Runs in the root directory of this repository.
     curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
     untar pillow-depends-master.zip
-    if [ -n "$IS_OSX" ]; then
-        # Update to latest zlib for OS X build
+    if [ -n "$IS_MACOS" ]; then
+        # Update to latest zlib for macOS build
         build_new_zlib
     fi
 
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
         ORIGINAL_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
     build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
@@ -42,7 +42,7 @@ function pre_build {
         sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
     fi
@@ -62,7 +62,7 @@ function pre_build {
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         # Custom freetype build
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no --with-brotli=no
     else
@@ -87,7 +87,7 @@ EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
 
 function run_tests {
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         brew install openblas
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
     fi
