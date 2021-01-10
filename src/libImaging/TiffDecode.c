@@ -402,11 +402,11 @@ ImagingLibTiffDecode(
     TIFF *tiff;
     uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
     int isYCbCr = 0;
-    UINT8 planarconfig = 0;
+    uint16 planarconfig = 0;
     UINT8 planes = 1;
     ImagingShuffler unpackers[4];
 
-    memset(unpackers, 0, sizeof(ImagingShuffler *) * 4);
+    memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
 
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
