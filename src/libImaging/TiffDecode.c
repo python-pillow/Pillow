@@ -367,7 +367,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     state->buffer = new_data;
 
     for (; state->y < state->ysize; state->y += rows_per_strip) {
-        UINT8 plane;
+        int plane;
         for (plane = 0; plane < planes; plane++) {
             ImagingShuffler shuffler = unpackers[plane];
             if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, plane), (tdata_t)state->buffer, -1) == -1) {
@@ -594,7 +594,7 @@ ImagingLibTiffDecode(
         TRACE(("TIFFTileSize: %d\n", state->bytes));
 
         for (y = state->yoff; y < state->ysize; y += tile_length) {
-            UINT8 plane;
+            int plane;
             for (plane = 0; plane < planes; plane++) {
                 ImagingShuffler shuffler = unpackers[plane];
                 for (x = state->xoff; x < state->xsize; x += tile_width) {
