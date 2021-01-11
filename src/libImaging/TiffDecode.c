@@ -509,7 +509,7 @@ ImagingLibTiffDecode(
     // if number of bands is 1, there is no difference with contig case
     if (planarconfig == PLANARCONFIG_SEPARATE &&
         im->bands > 1 &&
-        isYCbCr) {
+        !isYCbCr) {
 
         uint16 bits_per_sample = 8;
 
