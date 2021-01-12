@@ -4134,8 +4134,9 @@ setup_module(PyObject *m) {
     }
 #endif
 
+    PyObject *have_libjpegturbo;
 #ifdef LIBJPEG_TURBO_VERSION
-    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_True);
+    have_libjpegturbo = Py_True;
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
     PyDict_SetItemString(
@@ -4143,19 +4144,24 @@ setup_module(PyObject *m) {
 #undef tostr
 #undef tostr1
 #else
-    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", Py_False);
+    have_libjpegturbo = Py_False;
 #endif
+    Py_INCREF(have_libjpegturbo);
+    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
 
+    PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
-    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_True);
+    have_libimagequant = Py_True;
     {
         extern const char *ImagingImageQuantVersion(void);
         PyDict_SetItemString(
             d, "imagequant_version", PyUnicode_FromString(ImagingImageQuantVersion()));
     }
 #else
-    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", Py_False);
+    have_libimagequant = Py_False;
 #endif
+    Py_INCREF(have_libimagequant);
+    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", have_libimagequant);
 
 #ifdef HAVE_LIBZ
     /* zip encoding strategies */
@@ -4189,11 +4195,14 @@ setup_module(PyObject *m) {
     }
 #endif
 
+    PyObject *have_xcb;
 #ifdef HAVE_XCB
-    PyModule_AddObject(m, "HAVE_XCB", Py_True);
+    have_xcb = Py_True;
 #else
-    PyModule_AddObject(m, "HAVE_XCB", Py_False);
+    have_xcb = Py_False;
 #endif
+    Py_INCREF(have_xcb);
+    PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
     PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
 
