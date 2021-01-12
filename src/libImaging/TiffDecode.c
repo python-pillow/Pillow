@@ -292,6 +292,10 @@ _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
             goto decodeycbcr_err;
         }
 
+#if WORDS_BIGENDIAN
+        TIFFSwabArrayOfLong((UINT32 *)state->buffer, img.width * rows_to_read);
+#endif
+
         TRACE(("Decoded strip for row %d \n", state->y));
 
         // iterate over each row in the strip and stuff data into image
@@ -623,6 +627,10 @@ ImagingLibTiffDecode(
                             state->errcode = IMAGING_CODEC_BROKEN;
                             goto decode_err;
                         }
+
+#if WORDS_BIGENDIAN
+                    TIFFSwabArrayOfLong((UINT32 *)state->buffer, tile_width * tile_length);
+#endif
                     } else {
                         if (TIFFReadTile(tiff, (tdata_t)state->buffer, x, y, 0, plane) == -1) {
                             TRACE(("Decode Error, Tile at %dx%d\n", x, y));
