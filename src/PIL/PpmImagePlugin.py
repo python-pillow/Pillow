@@ -61,10 +61,8 @@ class PpmImageFile(ImageFile.ImageFile):
 
     def _read_token(self, token=b""):
         def _ignore_comment():  # ignores rest of the line; stops at CR, LF or EOF
-            while True:
-                c = self.fp.read(1)
-                if c in b"\r\n":
-                    break
+            while self.fp.read(1) not in b"\r\n":
+                pass
 
         while True:  # read until non-whitespace is found
             c = self.fp.read(1)
