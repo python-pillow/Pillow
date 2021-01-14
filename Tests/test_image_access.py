@@ -71,6 +71,10 @@ class TestImagePutPixel(AccessTest):
         pix1 = im1.load()
         pix2 = im2.load()
 
+        for x, y in ((0, "0"), ("0", 0)):
+            with pytest.raises(TypeError):
+                pix1[x, y]
+
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 pix2[x, y] = pix1[x, y]
