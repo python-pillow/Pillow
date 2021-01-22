@@ -2,10 +2,6 @@
 A Pillow loader for .ftc and .ftu files (FTEX)
 Jerome Leclanche <jerome@leclan.ch>
 
-The contents of this file are hereby released in the public domain (CC0)
-Full text of the CC0 license:
-  https://creativecommons.org/publicdomain/zero/1.0/
-
 Independence War 2: Edge Of Chaos - Texture File Format - 16 October 2001
 
 The textures used for 3D objects in Independence War 2: Edge Of Chaos are in a

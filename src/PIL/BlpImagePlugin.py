@@ -2,10 +2,6 @@
 Blizzard Mipmap Format (.blp)
 Jerome Leclanche <jerome@leclan.ch>
 
-The contents of this file are hereby released in the public domain (CC0)
-Full text of the CC0 license:
-  https://creativecommons.org/publicdomain/zero/1.0/
-
 BLP1 files, used mostly in Warcraft III, are not fully supported.
 All types of BLP2 files used in World of Warcraft are supported.
 

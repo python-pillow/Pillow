@@ -4,10 +4,6 @@ Jerome Leclanche <jerome@leclan.ch>
 
 Documentation:
   https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
-
-The contents of this file are hereby released in the public domain (CC0)
-Full text of the CC0 license:
-  https://creativecommons.org/publicdomain/zero/1.0/
 """
 
 import struct
