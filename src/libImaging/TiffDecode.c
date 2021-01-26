@@ -392,17 +392,6 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
         return -1;
     }
 
-    state->bytes = tile_bytes_size;
-
-    /* realloc to fit whole tile */
-    /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
-    if (!new_data) {
-        state->errcode = IMAGING_CODEC_MEMORY;
-        return -1;
-    }
-    state->buffer = new_data;
-
     TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tile_width);
     TIFFGetField(tiff, TIFFTAG_TILELENGTH, &tile_length);
 
@@ -412,7 +401,26 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
         return -1;
     }
 
+    if (tile_bytes_size > ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
+        // If the tile size as expected by LibTiff isn't what we're expecting, abort.
+        // man:   TIFFTileSize returns the equivalent size for a tile of data as it would be returned in a
+        //        call to TIFFReadTile ...
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
+
+    state->bytes = tile_bytes_size;
+
     TRACE(("TIFFTileSize: %d\n", state->bytes));
+
+    /* realloc to fit whole tile */
+    /* malloc check above */
+    new_data = realloc(state->buffer, state->bytes);
+    if (!new_data) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
+    }
+    state->buffer = new_data;
 
     for (y = state->yoff; y < state->ysize; y += tile_length) {
         int plane;
@@ -482,6 +490,15 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
+
+    if (strip_size > ((state->xsize * state->bits / planes + 7) / 8) * rows_per_strip) {
+        // If the strip size as expected by LibTiff isn't what we're expecting, abort.
+        // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
+        //        call to TIFFReadEncodedStrip ...
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
+
     state->bytes = strip_size;
 
     TRACE(("StripSize: %d \n", state->bytes));
