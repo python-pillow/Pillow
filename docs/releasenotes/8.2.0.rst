@@ -1,0 +1,40 @@
+8.2.0
+-----
+
+Deprecations
+============
+
+Tk/Tcl 8.4
+^^^^^^^^^^
+
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+when Tk/Tcl 8.5 will be the minimum supported.
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Security
+========
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO
