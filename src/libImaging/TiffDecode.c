@@ -365,38 +365,34 @@ decodergba_err:
 
 int
 _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, ImagingShuffler *unpackers) {
-    INT32 x, y, tile_y;
-    UINT32 tile_width, tile_length, current_tile_length, current_line,
-        current_tile_width, row_byte_size;
+    INT32 x, y, tile_y, current_tile_length, current_tile_width;
+    UINT32 tile_width, tile_length;
+    tsize_t tile_bytes_size, row_byte_size;
     UINT8 *new_data;
 
-    TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tile_width);
-    TIFFGetField(tiff, TIFFTAG_TILELENGTH, &tile_length);
+    tile_bytes_size = TIFFTileSize(tiff);
 
-    /* overflow check for row_byte_size calculation */
-    if ((UINT32)INT_MAX / state->bits < tile_width) {
-        state->errcode = IMAGING_CODEC_MEMORY;
+    if (tile_bytes_size == 0) {
+        TRACE(("Decode Error, Can not calculate TileSize\n"));
+        state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
 
-    // We could use TIFFTileSize, but for YCbCr data it returns subsampled data
-    // size
-    row_byte_size = (tile_width * state->bits / planes + 7) / 8;
+    row_byte_size = TIFFTileRowSize(tiff);
+
+    if (row_byte_size == 0 || row_byte_size > tile_bytes_size) {
+        TRACE(("Decode Error, Can not calculate TileRowSize\n"));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
 
     /* overflow check for realloc */
-    if (INT_MAX / row_byte_size < tile_length) {
+    if (tile_bytes_size > INT_MAX - 1) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
 
-    state->bytes = row_byte_size * tile_length;
-
-    if (TIFFTileSize(tiff) > state->bytes) {
-        // If the tile size as expected by LibTiff isn't what we're expecting,
-        // abort.
-        state->errcode = IMAGING_CODEC_MEMORY;
-        return -1;
-    }
+    state->bytes = tile_bytes_size;
 
     /* realloc to fit whole tile */
     /* malloc check above */
@@ -405,8 +401,16 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-
     state->buffer = new_data;
+
+    TIFFGetField(tiff, TIFFTAG_TILEWIDTH, &tile_width);
+    TIFFGetField(tiff, TIFFTAG_TILELENGTH, &tile_length);
+
+    if (tile_width > INT_MAX || tile_length > INT_MAX) {
+        // state->x and state->y are ints
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
+    }
 
     TRACE(("TIFFTileSize: %d\n", state->bytes));
 
@@ -441,10 +445,8 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
                     // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
                     // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
-                    current_line = tile_y;
-
                     shuffler((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
-                             state->buffer + current_line * row_byte_size,
+                             state->buffer + tile_y * row_byte_size,
                              current_tile_width
                              );
                 }
@@ -459,37 +461,39 @@ int
 _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, ImagingShuffler *unpackers) {
     INT32 strip_row = 0;
     UINT8 *new_data;
-    UINT32 rows_per_strip, row_byte_size;
+    UINT32 rows_per_strip;
     int ret;
+    tsize_t strip_size, row_byte_size;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
-    if (ret != 1) {
+    if (ret != 1 || rows_per_strip==(UINT32)(-1)) {
         rows_per_strip = state->ysize;
     }
-    TRACE(("RowsPerStrip: %u \n", rows_per_strip));
 
-    // We could use TIFFStripSize, but for YCbCr data it returns subsampled data size
-    row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
-
-    /* overflow check for realloc */
-    if (INT_MAX / row_byte_size < rows_per_strip) {
+    if (rows_per_strip > INT_MAX) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
 
-    state->bytes = rows_per_strip * row_byte_size;
+    TRACE(("RowsPerStrip: %u\n", rows_per_strip));
+
+    strip_size = TIFFStripSize(tiff);
+    if (strip_size > INT_MAX - 1) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return -1;
+    }
+    state->bytes = strip_size;
 
     TRACE(("StripSize: %d \n", state->bytes));
 
-    if (TIFFStripSize(tiff) > state->bytes) {
-        // If the strip size as expected by LibTiff isn't what we're expecting, abort.
-        // man:   TIFFStripSize returns the equivalent size for a strip of data as it
-        // would be returned in a
-        //        call to TIFFReadEncodedStrip ...
+    row_byte_size = TIFFScanlineSize(tiff);
 
-        state->errcode = IMAGING_CODEC_MEMORY;
+    if (row_byte_size == 0 || row_byte_size > strip_size) {
+        state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
+
+    TRACE(("RowsByteSize: %u \n", row_byte_size));
 
     /* realloc to fit whole strip */
     /* malloc check above */
