@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Added tk version to pilinfo #5226
+  [radarhere, nulano]
+
 - Support for ignoring tests when running valgrind #5150
   [wiredfool, radarhere, hugovk]
 
