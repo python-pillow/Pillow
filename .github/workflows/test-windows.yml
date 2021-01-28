@@ -249,8 +249,6 @@ jobs:
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
               ${{ matrix.package }}-python3-pyqt5 \
-              ${{ matrix.package }}-python3-pytest \
-              ${{ matrix.package }}-python3-pytest-cov \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-ghostscript \
@@ -263,7 +261,7 @@ jobs:
               ${{ matrix.package }}-openjpeg2 \
               subversion
 
-          python3 -m pip install pyroma
+          python3 -m pip install pyroma pytest pytest-cov
 
           pushd depends && ./install_extra_test_images.sh && popd
 
