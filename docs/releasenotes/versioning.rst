@@ -3,7 +3,7 @@
 Versioning
 ==========
 
-Pillow follows [Semantic Versioning](https://semver.org/):
+Pillow follows `Semantic Versioning <https://semver.org/>`_:
 
     Given a version number MAJOR.MINOR.PATCH, increment the:
 
