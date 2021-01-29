@@ -33,15 +33,17 @@ function pre_build {
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-    build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
-    if [ -n "$IS_MACOS" ]; then
-        build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
-    else
-        sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+		build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
+		if [ -n "$IS_MACOS" ]; then
+			build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
+			build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
+			build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+		else
+			sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+		fi
+		build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     fi
-    build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
@@ -56,7 +58,9 @@ function pre_build {
     build_tiff
     build_libpng
     build_lcms2
-    build_openjpeg
+    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+	    build_openjpeg
+    fi
 
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
     build_libwebp
@@ -82,9 +86,16 @@ function run_tests_in_repo {
     pytest
 }
 
-EXP_CODECS="jpg jpg_2000 libtiff zlib"
+EXP_CODECS="jpg"
+if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+    EXP_CODECS="$EXP_CODECS jpg_2000"
+fi
+EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
+EXP_FEATURES="transp_webp webp_anim webp_mux"
+if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+    EXP_FEATURES="$EXP_FEATURES xcb"
+fi
 
 function run_tests {
     if [ -n "$IS_MACOS" ]; then

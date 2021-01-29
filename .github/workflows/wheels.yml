@@ -7,7 +7,6 @@ env:
   REPO_DIR: Pillow
   BUILD_DEPENDS: ""
   TEST_DEPENDS: "pytest pytest-cov"
-  MACOSX_DEPLOYMENT_TARGET: "10.10"
   WHEEL_SDIR: wheelhouse
 
 jobs:
@@ -20,6 +19,7 @@ jobs:
         os: [ "ubuntu-16.04", "macos-latest" ]
         python: [ "pypy3.7-7.3.3","pypy3.6-7.3", "3.6", "3.7", "3.8", "3.9" ]
         platform: [ "x86_64", "i686" ]
+        macos-target: [ "10.10" ]
         exclude:
           - os: "macos-latest"
             platform: "i686"
@@ -28,11 +28,17 @@ jobs:
             os-name: "osx"
           - os: "ubuntu-16.04"
             os-name: "xenial"
+          - os: "macos-11.0"
+            os-name: "osx"
+            platform: "arm64"
+            python: "3.9"
+            macos-target: "11.0"
     env:
       BUILD_COMMIT: HEAD
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
       TRAVIS_OS_NAME: ${{ matrix.os-name }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos-target }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -61,6 +67,7 @@ jobs:
         os: [ "ubuntu-16.04", "macos-latest" ]
         python: [ "pypy3.7-7.3.3", "pypy3.6-7.3", "3.6", "3.7", "3.8", "3.9" ]
         platform: [ "x86_64", "i686" ]
+        macos-target: [ "10.10" ]
         exclude:
           - os: "macos-latest"
             platform: "i686"
@@ -69,11 +76,17 @@ jobs:
             os-name: "osx"
           - os: "ubuntu-16.04"
             os-name: "xenial"
+          - os: "macos-11.0"
+            os-name: "osx"
+            platform: "arm64"
+            python: "3.9"
+            macos-target: "11.0"
     env:
       BUILD_COMMIT: master
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
       TRAVIS_OS_NAME: ${{ matrix.os-name }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos-target }}
     steps:
       - uses: actions/checkout@v2
         with:
