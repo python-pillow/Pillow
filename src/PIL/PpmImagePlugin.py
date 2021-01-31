@@ -87,8 +87,8 @@ class PpmImageFile(ImageFile.ImageFile):
             if c in B_WHITESPACE:  # token ended
                 break
             token += c
-            if len(token) > 9:
-                raise ValueError(f"Token too long: {token}")
+            if len(token) > 10:
+                raise ValueError(f"Token too long in file header: {token}")
         return token
 
     def _open(self):
