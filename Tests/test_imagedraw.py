@@ -1327,6 +1327,7 @@ def test_compute_regular_polygon_vertices_input_error_handling(
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
     assert str(e.value) == error_message
 
+
 def test_continuous_horizontal_edges_polygon():
     with Image.open(
         os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
@@ -1343,7 +1344,7 @@ def test_continuous_horizontal_edges_polygon():
             (4, 8),
             (3, 8),
             (2, 8),
-            (2, 7)
+            (2, 7),
         ]
         img, draw = create_base_image_draw((16, 16))
         draw.polygon(xy, BLACK)
