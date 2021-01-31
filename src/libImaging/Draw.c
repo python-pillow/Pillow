@@ -496,8 +496,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
         ymax = im->ysize;
     }
 
-    Edge **horiz_e = (edge_table + edge_count);
-    qsort(horiz_e, horiz_edge_count, sizeof(Edge *), horiz_edge_cmp);
+    Edge **horiz_edge_table = (edge_table + edge_count);
+    qsort(horiz_edge_table, horiz_edge_count, sizeof(Edge *), horiz_edge_cmp);
 
     /* Process the edge table with a scan line searching for intersections */
     /* malloc check ok, using calloc */
@@ -527,7 +527,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                 // Line would be before the current position
                 continue;
             }
-            draw_horizontal_lines(im, horiz_edge_count, horiz_e, ink, &x_pos, ymin, hline);
+            draw_horizontal_lines(im, horiz_edge_count, horiz_edge_table, ink, &x_pos, ymin, hline);
             if (x_end < x_pos) {
                 // Line would be before the current position
                 continue;
@@ -545,7 +545,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
             (*hline)(im, x_start, ymin, x_end, ink);
             x_pos = x_end + 1;
         }
-        draw_horizontal_lines(im, horiz_edge_count, horiz_e, ink, &x_pos, ymin, hline);
+        draw_horizontal_lines(im, horiz_edge_count, horiz_edge_table, ink, &x_pos, ymin, hline);
     }
 
     free(xx);
