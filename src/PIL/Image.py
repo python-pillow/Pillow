@@ -586,10 +586,10 @@ class Image:
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
-        This function is only required to close images that have not
-        had their file read and closed by the
-        :py:meth:`~PIL.Image.Image.load` method. See
-        :ref:`file-handling` for more information.
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
         """
         try:
             if hasattr(self, "_close__fp"):
