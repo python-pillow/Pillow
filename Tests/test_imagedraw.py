@@ -1359,4 +1359,3 @@ def test_continuous_horizontal_edges_polygon():
         img, draw = create_base_image_draw((16, 16))
         draw.polygon(xy, BLACK)
         assert_image_equal(img, expected, "continuous horizontal edges polygon failed")
-        
