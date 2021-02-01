@@ -9,6 +9,7 @@ from ctypes import c_float
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
+from PIL.TiffImagePlugin import SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -323,6 +324,14 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_subifd(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            im.tag_v2[SUBIFD] = 10000
+
+            # Should not segfault
+            im.save(outfile)
 
     def test_xmlpacket_tag(self, tmp_path):
         TiffImagePlugin.WRITE_LIBTIFF = True
