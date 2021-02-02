@@ -102,7 +102,11 @@ function run_tests {
         brew install openblas
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
     fi
-    python3 -m pip install numpy
+    if [[ "$MB_PYTHON_VERSION" == pypy3.7-* ]] && [[ $(uname -m) == "i686" ]]; then
+        python3 -m pip install numpy==1.19.5
+    else
+        python3 -m pip install numpy
+    fi
 
     mv ../pillow-depends-master/test_images/* ../Pillow/Tests/images
 
