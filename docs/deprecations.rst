@@ -25,6 +25,14 @@ vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
+Tk/Tcl 8.4
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+when Tk/Tcl 8.5 will be the minimum supported.
+
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
