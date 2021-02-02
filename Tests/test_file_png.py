@@ -571,8 +571,8 @@ class TestFilePng:
         assert len(chunks) == 3
 
     def test_read_private_chunks(self):
-        im = Image.open("Tests/images/exif.png")
-        assert im.private_chunks == [(b"orNT", b"\x01")]
+        with Image.open("Tests/images/exif.png") as im:
+            assert im.private_chunks == [(b"orNT", b"\x01")]
 
     def test_roundtrip_private_chunk(self):
         # Check private chunk roundtripping
