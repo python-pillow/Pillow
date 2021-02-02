@@ -124,7 +124,7 @@ OPTFLAGS =	/Ox /MD /EHsc /W3 /D_CRT_SECURE_NO_DEPRECATE
 # instead of Windows specific system calls. See notes on top of tif_unix.c
 # module for details.
 #
-USE_WIN_CRT_LIB = 1
+#USE_WIN_CRT_LIB = 1
 
 # Compiler specific options. You may probably want to adjust compilation
 # parameters in CFLAGS variable. Refer to your compiler documentation
