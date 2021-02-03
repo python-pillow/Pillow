@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
+  [radarhere]
+
 - Added tk version to pilinfo #5226
   [radarhere, nulano]
 
