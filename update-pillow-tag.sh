@@ -8,8 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 git checkout master
-git submodule init
-git submodule update Pillow
+git submodule update --init Pillow
 cd Pillow
 git fetch --all
 git checkout $1
