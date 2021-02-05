@@ -94,7 +94,7 @@ class TestImage:
         with pytest.raises(TypeError):
             Image.open(PNGFILE, formats=123)
 
-        for formats in [["jPeG"], ("JpEg",)]:
+        for formats in [["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]]:
             with pytest.raises(UnidentifiedImageError):
                 Image.open(PNGFILE, formats=formats)
 
