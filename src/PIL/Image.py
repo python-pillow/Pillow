@@ -2925,7 +2925,7 @@ def open(fp, mode="r", formats=None):
             if i not in OPEN:
                 init()
             try:
-                factory, accept = OPEN[i]
+                factory, accept = OPEN[i.upper()]
                 result = not accept or accept(prefix)
                 if type(result) in [str, bytes]:
                     accept_warnings.append(result)
