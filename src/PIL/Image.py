@@ -2922,10 +2922,11 @@ def open(fp, mode="r", formats=None):
 
     def _open_core(fp, filename, prefix, formats):
         for i in formats:
+            i = i.upper()
             if i not in OPEN:
                 init()
             try:
-                factory, accept = OPEN[i.upper()]
+                factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
                 if type(result) in [str, bytes]:
                     accept_warnings.append(result)
