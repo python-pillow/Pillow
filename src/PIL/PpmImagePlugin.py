@@ -147,7 +147,6 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _read_block(self, block_size=10 ** 6):
         return bytearray(self.fd.read(block_size))
-        # return self.fd.read(block_size)
 
     def _find_comment_end(self, block, start=0):
         a = block.find(b"\n", start)
