@@ -17,8 +17,6 @@ fi
 echo "::group::Install a virtualenv"
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
-  # can't use default 7.3.1 on macOS due to https://foss.heptapod.net/pypy/pypy/-/issues/3229
-  LATEST_PP_7p3=7.3.3
   python3 -m pip install virtualenv
   before_install
 echo "::endgroup::"
