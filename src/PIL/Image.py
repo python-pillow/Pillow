@@ -1053,12 +1053,10 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: :data:`MEDIANCUT` (median cut),
-                       :data:`MAXCOVERAGE` (maximum coverage),
-                       :data:`FASTOCTREE` (fast octree),
-                       :data:`LIBIMAGEQUANT` (libimagequant; check support using
-                       :py:func:`PIL.features.check_feature`
-                       with ``feature="libimagequant"``).
+        :param method: :data:`MEDIANCUT` (default),
+                       :data:`MAXCOVERAGE`,
+                       :data:`FASTOCTREE` (default for RGBA images),
+                       :data:`LIBIMAGEQUANT`.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
