@@ -219,9 +219,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.11/lcms2-2.11.tar.gz",
-        "filename": "lcms2-2.11.tar.gz",
-        "dir": "lcms2-2.11",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.12/lcms2-2.12.tar.gz",
+        "filename": "lcms2-2.12.tar.gz",
+        "dir": "lcms2-2.12",
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
