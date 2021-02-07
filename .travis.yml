@@ -47,48 +47,6 @@ jobs:
         - MB_PYTHON_VERSION=3.9
         - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
 
-    - name: "3.6 Xenial aarch64 latest"
-      os: linux
-      arch: arm64
-      if: tag IS blank
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.6
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-        - LATEST="true"
-    - name: "3.7 Xenial aarch64 latest"
-      os: linux
-      arch: arm64
-      if: tag IS blank
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.7
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-        - LATEST="true"
-    - name: "3.8 Xenial aarch64 latest"
-      os: linux
-      arch: arm64
-      if: tag IS blank
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.8
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-        - LATEST="true"
-    - name: "3.9 Xenial aarch64 latest"
-      os: linux
-      arch: arm64
-      if: tag IS blank
-      env:
-        - PLAT=aarch64
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.9
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-        - LATEST="true"
-
-
 before_install:
     - source multibuild/common_utils.sh
     - source multibuild/travis_steps.sh
@@ -114,5 +72,4 @@ deploy:
   on:
     condition: -z "$LATEST"
     repo: python-pillow/pillow-wheels
-    tags: true
   skip_cleanup: true

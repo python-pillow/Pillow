@@ -1,5 +1,5 @@
 # Define custom utilities
-# Test for OS X with [ -n "$IS_OSX" ]
+# Test for macOS with [ -n "$IS_MACOS" ]
 
 ARCHIVE_SDIR=pillow-depends-master
 
@@ -14,7 +14,7 @@ XZ_VERSION=5.2.5
 TIFF_VERSION=4.2.0
 LCMS2_VERSION=2.11
 GIFLIB_VERSION=5.1.4
-LIBWEBP_VERSION=1.1.0
+LIBWEBP_VERSION=1.2.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
 
@@ -38,27 +38,29 @@ function pre_build {
     # Runs in the root directory of this repository.
     curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
     untar pillow-depends-master.zip
-    if [ -n "$IS_OSX" ]; then
-        # Update to latest zlib for OS X build
+    if [ -n "$IS_MACOS" ]; then
+        # Update to latest zlib for macOS build
         build_new_zlib
     fi
 
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
         ORIGINAL_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-    build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
-    if [ -n "$IS_OSX" ]; then
-        build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
-    else
-        sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+		build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
+		if [ -n "$IS_MACOS" ]; then
+			build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
+			build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
+			build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+		else
+			sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+		fi
+		build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     fi
-    build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
     fi
@@ -72,13 +74,15 @@ function pre_build {
     build_tiff
     build_libpng
     build_lcms2
-    build_openjpeg
+    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+	    build_openjpeg
+    fi
 
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         # Custom freetype build
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no --with-brotli=no
     else
@@ -119,21 +123,32 @@ function run_tests_in_repo {
     pytest
 }
 
-EXP_CODECS="jpg jpg_2000 libtiff zlib"
+EXP_CODECS="jpg"
+if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+    EXP_CODECS="$EXP_CODECS jpg_2000"
+fi
+EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 if [ -z "$IS_OSX" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]]; then
-  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux xcb"
+  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux"
 else
   # can't find FriBiDi
-  EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
+  EXP_FEATURES="transp_webp webp_anim webp_mux"
+fi
+if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
+    EXP_FEATURES="$EXP_FEATURES xcb"
 fi
 
 function run_tests {
-    if [ -n "$IS_OSX" ]; then
+    if [ -n "$IS_MACOS" ]; then
         brew install openblas
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
     fi
-    python3 -m pip install numpy
+    if [[ "$MB_PYTHON_VERSION" == pypy3.7-* ]] && [[ $(uname -m) == "i686" ]]; then
+        python3 -m pip install numpy==1.19.5
+    else
+        python3 -m pip install numpy
+    fi
 
     mv ../pillow-depends-master/test_images/* ../Pillow/Tests/images
 
