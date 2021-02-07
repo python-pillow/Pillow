@@ -479,6 +479,8 @@ Used to specify the pallete to use for the :meth:`~Image.convert` method.
 .. data:: WEB
 .. data:: ADAPTIVE
 
+.. _quantization-methods:
+
 Quantization methods
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -486,11 +488,11 @@ Used to specify the quantization method to use for the :meth:`~Image.quantize` m
 
 .. data:: MEDIANCUT
 
-    Median cut
+    Median cut. RGBA not supported.
 
 .. data:: MAXCOVERAGE
 
-    Maximum coverage
+    Maximum coverage. RGBA not supported.
 
 .. data:: FASTOCTREE
 

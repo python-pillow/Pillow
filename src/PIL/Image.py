@@ -1054,9 +1054,8 @@ class Image:
 
         :param colors: The desired number of colors, <= 256
         :param method: :data:`MEDIANCUT` (default),
-                       :data:`MAXCOVERAGE`,
-                       :data:`FASTOCTREE` (default for RGBA images),
-                       :data:`LIBIMAGEQUANT`.
+                       :data:`FASTOCTREE` (default for "RGBA" mode).
+                       See :ref:`quantization-methods` for all available methods.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
