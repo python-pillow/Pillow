@@ -455,6 +455,7 @@ class TestCoreResampleBox:
                 tiled.paste(tile, (x0, y0))
         return tiled
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_tiles(self):
         with Image.open("Tests/images/flower.jpg") as im:
             assert im.size == (480, 360)
@@ -465,6 +466,7 @@ class TestCoreResampleBox:
                 tiled = self.resize_tiled(im, dst_size, *tiles)
                 assert_image_similar(reference, tiled, 0.01)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_subsample(self):
         # This test shows advantages of the subpixel resizing
         # after supersampling (e.g. during JPEG decoding).

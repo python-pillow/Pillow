@@ -9,7 +9,7 @@ from . import Image
 
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
-    "tkinter": ("PIL._tkinter_finder", None),
+    "tkinter": ("PIL._tkinter_finder", "tk_version"),
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),

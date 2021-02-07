@@ -2,6 +2,24 @@
 Changelog (Pillow)
 ==================
 
+8.2.0 (unreleased)
+------------------
+
+- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
+  [radarhere]
+
+- Added tk version to pilinfo #5226
+  [radarhere, nulano]
+
+- Support for ignoring tests when running valgrind #5150
+  [wiredfool, radarhere, hugovk]
+
+- PyModule_AddObject fix for Python 3.10 #5194
+  [radarhere]
+
+- OSS-Fuzz support #5189
+  [wiredfool, radarhere]
+
 8.1.0 (2020-01-02)
 ------------------
 

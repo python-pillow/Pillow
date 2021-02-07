@@ -571,8 +571,8 @@ class TestFilePng:
         assert len(chunks) == 3
 
     def test_read_private_chunks(self):
-        im = Image.open("Tests/images/exif.png")
-        assert im.private_chunks == [(b"orNT", b"\x01")]
+        with Image.open("Tests/images/exif.png") as im:
+            assert im.private_chunks == [(b"orNT", b"\x01")]
 
     def test_roundtrip_private_chunk(self):
         # Check private chunk roundtripping
@@ -654,6 +654,7 @@ class TestFilePng:
             exif = reloaded._getexif()
         assert exif[274] == 1
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")

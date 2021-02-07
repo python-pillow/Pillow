@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 
 from PIL import Image, TiffImagePlugin
-from PIL.TiffImagePlugin import RESOLUTION_UNIT, SUBIFD, X_RESOLUTION, Y_RESOLUTION
+from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
     assert_image_equal,
@@ -160,14 +160,6 @@ class TestFileTiff:
                 with Image.open(outfile) as reloaded:
                     reloaded.load()
                     assert (round(dpi), round(dpi)) == reloaded.info["dpi"]
-
-    def test_subifd(self, tmp_path):
-        outfile = str(tmp_path / "temp.tif")
-        with Image.open("Tests/images/g4_orientation_6.tif") as im:
-            im.tag_v2[SUBIFD] = 10000
-
-            # Should not segfault
-            im.save(outfile)
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()

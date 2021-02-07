@@ -32,7 +32,7 @@ install:
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
-- '%PYTHON%\%EXECUTABLE% -m pip install -U "setuptools>=49.3.2"'
+- '%PYTHON%\%EXECUTABLE% -m pip install -U setuptools'
 
 build_script:
 - ps: |
@@ -45,6 +45,7 @@ test_script:
 - cd c:\pillow
 - '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
+- '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 

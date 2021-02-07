@@ -920,20 +920,26 @@ static PyMethodDef webpMethods[] = {
 
 void
 addMuxFlagToModule(PyObject *m) {
+    PyObject *have_webpmux;
 #ifdef HAVE_WEBPMUX
-    PyModule_AddObject(m, "HAVE_WEBPMUX", Py_True);
+    have_webpmux = Py_True;
 #else
-    PyModule_AddObject(m, "HAVE_WEBPMUX", Py_False);
+    have_webpmux = Py_False;
 #endif
+    Py_INCREF(have_webpmux);
+    PyModule_AddObject(m, "HAVE_WEBPMUX", have_webpmux);
 }
 
 void
 addAnimFlagToModule(PyObject *m) {
+    PyObject *have_webpanim;
 #ifdef HAVE_WEBPANIM
-    PyModule_AddObject(m, "HAVE_WEBPANIM", Py_True);
+    have_webpanim = Py_True;
 #else
-    PyModule_AddObject(m, "HAVE_WEBPANIM", Py_False);
+    have_webpanim = Py_False;
 #endif
+    Py_INCREF(have_webpanim);
+    PyModule_AddObject(m, "HAVE_WEBPANIM", have_webpanim);
 }
 
 void

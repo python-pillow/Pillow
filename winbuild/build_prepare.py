@@ -154,9 +154,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",
-        "filename": "libwebp-1.1.0.tar.gz",
-        "dir": "libwebp-1.1.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.0.tar.gz",
+        "filename": "libwebp-1.2.0.tar.gz",
+        "dir": "libwebp-1.2.0",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -219,9 +219,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.11/lcms2-2.11.tar.gz",
-        "filename": "lcms2-2.11.tar.gz",
-        "dir": "lcms2-2.11",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.12/lcms2-2.12.tar.gz",
+        "filename": "lcms2-2.12.tar.gz",
+        "dir": "lcms2-2.12",
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always

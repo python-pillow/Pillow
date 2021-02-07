@@ -159,7 +159,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.11**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
 
 * **libwebp** provides the WebP format.
 
@@ -177,7 +177,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.13.1**
+  * Pillow has been tested with libimagequant **2.6-2.14**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -465,9 +465,9 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
-| macOS 11.0 Big Sur               | 3.8, 3.9                     | 8.0.1                          |arm                    |
+| macOS 11.0 Big Sur               | 3.8, 3.9                     | 8.1.0                          |arm                    |
 |                                  +------------------------------+--------------------------------+-----------------------+
-|                                  | 3.6, 3.7, 3.8, 3.9           | 8.0.1                          |x86-64                 |
+|                                  | 3.6, 3.7, 3.8, 3.9           | 8.1.0                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9           | 8.0.1                          |x86-64                 |
 |                                  +------------------------------+--------------------------------+                       +

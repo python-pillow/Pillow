@@ -37,7 +37,7 @@ JPEG_ROOT = None
 LCMS_ROOT = None
 TIFF_ROOT = None
 ZLIB_ROOT = None
-
+FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
 if sys.platform == "win32" and sys.version_info >= (3, 10):
     import atexit
@@ -394,6 +394,9 @@ class pil_build_ext(build_ext):
                     extension.define_macros += define_macros
                 if sources is not None:
                     extension.sources += sources
+                if FUZZING_BUILD:
+                    extension.language = "c++"
+                    extension.extra_link_args = ["--stdlib=libc++"]
                 break
 
     def _remove_extension(self, name):
@@ -940,7 +943,7 @@ class pil_build_ext(build_ext):
 
 
 def debug_build():
-    return hasattr(sys, "gettotalrefcount")
+    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
 files = ["src/_imaging.c"]

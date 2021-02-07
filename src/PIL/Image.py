@@ -586,10 +586,10 @@ class Image:
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
-        This function is only required to close images that have not
-        had their file read and closed by the
-        :py:meth:`~PIL.Image.Image.load` method. See
-        :ref:`file-handling` for more information.
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
         """
         try:
             if hasattr(self, "_close__fp"):
@@ -878,7 +878,7 @@ class Image:
         The default method of converting a greyscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is :data:`NONE`, all values larger than 128 are set to 255 (white),
+        dither is :data:`NONE`, all values larger than 127 are set to 255 (white),
         all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
@@ -1242,6 +1242,10 @@ class Image:
     def getcolors(self, maxcolors=256):
         """
         Returns a list of colors used in this image.
+
+        The colors will be in the image's mode. For example, an RGB image will
+        return a tuple of (red, green, blue) color values, and a P image will
+        return the index of the color in the palette.
 
         :param maxcolors: Maximum number of colors.  If this number is
            exceeded, this method returns None.  The default limit is
