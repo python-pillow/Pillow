@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Changed Image.open formats parameter to be case-insensitive #5250
+  [Piolie, radarhere]
+
 - Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
   [radarhere]
 
