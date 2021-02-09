@@ -1361,13 +1361,9 @@ def test_continuous_horizontal_edges_polygon():
             (12, 6),
             (12, 12),
             (8, 12),
-            (8, 9),
             (8, 8),
-            (5, 8),
             (4, 8),
-            (3, 8),
             (2, 8),
-            (2, 7),
         ]
         img, draw = create_base_image_draw((16, 16))
         draw.polygon(xy, BLACK)
