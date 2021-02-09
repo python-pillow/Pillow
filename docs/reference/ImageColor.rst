@@ -22,8 +22,7 @@ The ImageColor module supports the following string formats:
     - ``r`` red
     - ``g`` green
     - ``b`` blue
-    - ``a`` alpha / opacity (can be used in combination with ``mode="RGBA"`` in
-      :py:mod:`~PIL.ImageDraw`)
+    - ``a`` alpha / opacity
 
   Examples:
 
