@@ -28,8 +28,8 @@ The ImageColor module supports the following string formats:
   Examples:
 
     - ``#ff0000`` specifies pure red.
-    - ``#ff0000aa`` specifies pure red with an opacity of 66.66% (aa = 170, opacity =
-      170/255).
+    - ``#ff0000cc`` specifies pure red with an opacity of 80% (cc = 204, opacity =
+      204/255).
 
 
 * RGB functions, given as ``rgb(red, green, blue)`` where the color values are
