@@ -34,7 +34,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+PyQt6
+^^^^^
 
-TODO
+Support has been added for PyQt6. If it is installed, it will be used instead of
+PySide6, PyQt5 or PySide2.
