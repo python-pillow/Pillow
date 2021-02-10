@@ -23,6 +23,7 @@ from . import Image
 from ._util import isPath
 
 qt_versions = [
+    ["6", "PyQt6"],
     ["side6", "PySide6"],
     ["5", "PyQt5"],
     ["side2", "PySide2"],
@@ -32,7 +33,10 @@ qt_versions = [
 qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
 for qt_version, qt_module in qt_versions:
     try:
-        if qt_module == "PySide6":
+        if qt_module == "PyQt6":
+            from PyQt6.QtCore import QBuffer, QIODevice
+            from PyQt6.QtGui import QImage, QPixmap, qRgba
+        elif qt_module == "PySide6":
             from PySide6.QtCore import QBuffer, QIODevice
             from PySide6.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PyQt5":
@@ -63,7 +67,8 @@ def fromqimage(im):
     (given either as Python string or a PyQt string object)
     """
     buffer = QBuffer()
-    buffer.open(QIODevice.ReadWrite)
+    qt_openmode = QIODevice.OpenMode if qt_version == "6" else QIODevice
+    buffer.open(qt_openmode.ReadWrite)
     # preserve alpha channel with png
     # otherwise ppm is more friendly with Image.open
     if im.hasAlphaChannel():
@@ -132,25 +137,26 @@ def _toqclass_helper(im):
     if isPath(im):
         im = Image.open(im)
 
+    qt_format = QImage.Format if qt_version == "6" else QImage
     if im.mode == "1":
-        format = QImage.Format_Mono
+        format = qt_format.Format_Mono
     elif im.mode == "L":
-        format = QImage.Format_Indexed8
+        format = qt_format.Format_Indexed8
         colortable = []
         for i in range(256):
             colortable.append(rgb(i, i, i))
     elif im.mode == "P":
-        format = QImage.Format_Indexed8
+        format = qt_format.Format_Indexed8
         colortable = []
         palette = im.getpalette()
         for i in range(0, len(palette), 3):
             colortable.append(rgb(*palette[i : i + 3]))
     elif im.mode == "RGB":
         data = im.tobytes("raw", "BGRX")
-        format = QImage.Format_RGB32
+        format = qt_format.Format_RGB32
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
-        format = QImage.Format_ARGB32
+        format = qt_format.Format_ARGB32
     else:
         raise ValueError(f"unsupported image mode {repr(im.mode)}")
 
