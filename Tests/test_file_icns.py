@@ -19,7 +19,9 @@ def test_sanity():
     with Image.open(TEST_FILE) as im:
 
         # Assert that there is no unclosed file warning
-        pytest.warns(None, im.load)
+        with pytest.warns(None) as record:
+            im.load()
+        assert len(record) == 0
 
         assert im.mode == "RGBA"
         assert im.size == (1024, 1024)

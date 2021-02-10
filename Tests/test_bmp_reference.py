@@ -20,7 +20,7 @@ def test_bad():
     either"""
     for f in get_files("b"):
 
-        def open(f):
+        with pytest.warns(None) as record:
             try:
                 with Image.open(f) as im:
                     im.load()
@@ -28,7 +28,7 @@ def test_bad():
                 pass
 
         # Assert that there is no unclosed file warning
-        pytest.warns(None, open, f)
+        assert len(record) == 0
 
 
 def test_questionable():

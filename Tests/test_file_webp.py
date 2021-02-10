@@ -145,7 +145,9 @@ class TestFileWebp:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             temp_file = str(tmp_path / "temp.webp")
-            pytest.warns(None, image.save, temp_file)
+            with pytest.warns(None) as record:
+                image.save(temp_file)
+            assert len(record) == 0
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"

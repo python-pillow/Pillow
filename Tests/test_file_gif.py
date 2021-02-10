@@ -38,20 +38,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert len(record) == 0
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(TEST_GIF) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert len(record) == 0
 
 
 def test_invalid_file():
