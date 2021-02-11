@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Added PyQt6 support #5258
+  [radarhere]
+
 - Changed Image.open formats parameter to be case-insensitive #5250
   [Piolie, radarhere]
 
