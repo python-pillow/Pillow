@@ -165,7 +165,8 @@ class TestFileWebp:
 
         # Save as GIF
         out_gif = str(tmp_path / "temp.gif")
-        Image.open(out_webp).save(out_gif)
+        with Image.open(out_webp) as im:
+            im.save(out_gif)
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))

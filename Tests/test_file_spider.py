@@ -136,7 +136,8 @@ def test_invalid_file():
     invalid_file = "Tests/images/invalid.spider"
 
     with pytest.raises(OSError):
-        Image.open(invalid_file)
+        with Image.open(invalid_file):
+            pass
 
 
 def test_nonstack_file():

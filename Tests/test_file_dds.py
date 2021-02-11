@@ -123,7 +123,8 @@ def test_dx10_r8g8b8a8_unorm_srgb():
 
 def test_unimplemented_dxgi_format():
     with pytest.raises(NotImplementedError):
-        Image.open("Tests/images/unimplemented_dxgi_format.dds")
+        with Image.open("Tests/images/unimplemented_dxgi_format.dds"):
+            pass
 
 
 def test_uncompressed_rgb():
@@ -170,7 +171,8 @@ def test_short_header():
         img_file = f.read()
 
     def short_header():
-        Image.open(BytesIO(img_file[:119]))
+        with Image.open(BytesIO(img_file[:119])):
+            pass
 
     with pytest.raises(OSError):
         short_header()
@@ -192,4 +194,5 @@ def test_short_file():
 
 def test_unimplemented_pixel_format():
     with pytest.raises(NotImplementedError):
-        Image.open("Tests/images/unimplemented_pixel_format.dds")
+        with Image.open("Tests/images/unimplemented_pixel_format.dds"):
+            pass

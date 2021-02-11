@@ -110,4 +110,5 @@ if is_win32():
         DeleteObject(dib)
         DeleteDC(hdc)
 
-        Image.open(BytesIO(bitmap)).save(opath)
+        with Image.open(BytesIO(bitmap)) as im:
+            im.save(opath)

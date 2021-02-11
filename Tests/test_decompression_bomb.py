@@ -54,15 +54,18 @@ class TestDecompressionBomb:
 
     def test_exception_ico(self):
         with pytest.raises(Image.DecompressionBombError):
-            Image.open("Tests/images/decompression_bomb.ico")
+            with Image.open("Tests/images/decompression_bomb.ico"):
+                pass
 
     def test_exception_gif(self):
         with pytest.raises(Image.DecompressionBombError):
-            Image.open("Tests/images/decompression_bomb.gif")
+            with Image.open("Tests/images/decompression_bomb.gif"):
+                pass
 
     def test_exception_bmp(self):
         with pytest.raises(Image.DecompressionBombError):
-            Image.open("Tests/images/bmp/b/reallybig.bmp")
+            with Image.open("Tests/images/bmp/b/reallybig.bmp"):
+                pass
 
 
 class TestDecompressionCrop:

@@ -798,7 +798,8 @@ class TestFileJpeg:
 
         buffer.read = read
         with pytest.raises(UnidentifiedImageError):
-            Image.open(buffer)
+            with Image.open(buffer):
+                pass
 
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size

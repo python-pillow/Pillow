@@ -56,7 +56,8 @@ def test_truncated_file(tmp_path):
         f.write("P6")
 
     with pytest.raises(ValueError):
-        Image.open(path)
+        with Image.open(path):
+            pass
 
 
 def test_neg_ppm():
@@ -66,7 +67,8 @@ def test_neg_ppm():
     # sizes.
 
     with pytest.raises(OSError):
-        Image.open("Tests/images/negative_size.ppm")
+        with Image.open("Tests/images/negative_size.ppm"):
+            pass
 
 
 def test_mimetypes(tmp_path):

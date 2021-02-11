@@ -163,9 +163,8 @@ class TestFileTiff:
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
-        Image.open("Tests/images/10ct_32bit_128.tiff").save(
-            b, format="tiff", resolution=123.45
-        )
+        with Image.open("Tests/images/10ct_32bit_128.tiff") as im:
+            im.save(b, format="tiff", resolution=123.45)
         with Image.open(b) as im:
             assert float(im.tag_v2[X_RESOLUTION]) == 123.45
             assert float(im.tag_v2[Y_RESOLUTION]) == 123.45
@@ -248,7 +247,8 @@ class TestFileTiff:
 
     def test_unknown_pixel_mode(self):
         with pytest.raises(OSError):
-            Image.open("Tests/images/hopper_unknown_pixel_mode.tif")
+            with Image.open("Tests/images/hopper_unknown_pixel_mode.tif"):
+                pass
 
     def test_n_frames(self):
         for path, n_frames in [
@@ -605,7 +605,8 @@ class TestFileTiff:
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with pytest.raises(ValueError):
-            Image.open("Tests/images/string_dimension.tiff")
+            with Image.open("Tests/images/string_dimension.tiff"):
+                pass
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
