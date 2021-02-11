@@ -733,7 +733,7 @@ class TestFileJpeg:
             out = str(tmp_path / "out.jpg")
             with pytest.warns(None) as record:
                 im.save(out, exif=exif)
-            assert len(record) == 0
+            assert not record
 
         with Image.open(out) as reloaded:
             assert reloaded.getexif()[282] == 180

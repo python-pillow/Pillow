@@ -21,7 +21,7 @@ def test_sanity():
         # Assert that there is no unclosed file warning
         with pytest.warns(None) as record:
             im.load()
-        assert len(record) == 0
+        assert not record
 
         assert im.mode == "RGBA"
         assert im.size == (1024, 1024)

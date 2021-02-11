@@ -64,14 +64,14 @@ class TestFileTiff:
             im.load()
             im.close()
 
-        assert len(record) == 0
+        assert not record
 
     def test_context_manager(self):
         with pytest.warns(None) as record:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        assert len(record) == 0
+        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]

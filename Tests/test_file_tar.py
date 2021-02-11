@@ -35,7 +35,7 @@ def test_close():
         tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
         tar.close()
 
-    assert len(record) == 0
+    assert not record
 
 
 def test_contextmanager():
@@ -43,4 +43,4 @@ def test_contextmanager():
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass
 
-    assert len(record) == 0
+    assert not record

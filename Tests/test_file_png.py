@@ -326,7 +326,7 @@ class TestFilePng:
             # Assert that there is no unclosed file warning
             with pytest.warns(None) as record:
                 im.verify()
-            assert len(record) == 0
+            assert not record
 
         with Image.open(TEST_PNG_FILE) as im:
             im.load()

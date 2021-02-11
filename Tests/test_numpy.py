@@ -236,4 +236,4 @@ def test_no_resource_warning_for_numpy_array():
         # Act/Assert
         with pytest.warns(None) as record:
             array(im)
-        assert len(record) == 0
+        assert not record

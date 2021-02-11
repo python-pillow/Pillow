@@ -28,7 +28,7 @@ def test_bad():
                 pass
 
         # Assert that there is no unclosed file warning
-        assert len(record) == 0
+        assert not record
 
 
 def test_questionable():

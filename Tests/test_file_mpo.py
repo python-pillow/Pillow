@@ -46,7 +46,7 @@ def test_closed_file():
         im.load()
         im.close()
 
-    assert len(record) == 0
+    assert not record
 
 
 def test_context_manager():
@@ -54,7 +54,7 @@ def test_context_manager():
         with Image.open(test_files[0]) as im:
             im.load()
 
-    assert len(record) == 0
+    assert not record
 
 
 def test_app():
