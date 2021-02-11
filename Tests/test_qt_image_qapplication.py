@@ -7,7 +7,9 @@ from .helper import assert_image_equal, hopper
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QPixmap
 
-    if ImageQt.qt_version == "side6":
+    if ImageQt.qt_version == "6":
+        from PyQt6.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
+    elif ImageQt.qt_version == "side6":
         from PySide6.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
     elif ImageQt.qt_version == "5":
         from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
