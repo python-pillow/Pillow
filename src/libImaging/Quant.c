@@ -789,6 +789,47 @@ resort_distance_tables(
     return 1;
 }
 
+/* build_distance_tables() below used to call qsort() from stdlib.h.
+ * qsort() is not guaranteed stable, so different implementations can
+ * give different results, causing images created on Linux and Windows
+ * to differ. Shell sort is also not stable, but having the implementation
+ * included here will give consistent results across platforms. -rdg- */
+
+/* ssort()  --  Fast, small, qsort()-compatible Shell sort */
+/* By Raymond Gardner. Released here under PIL license.    */
+static void
+ssort(void *base, uint32_t nmemb, uint32_t size,
+        int (*compar)(const void *, const void *)) {
+    uint32_t sz_nmemb, gap, sz_gap, i, j, k;
+    char *a, *b, tmp;
+
+    sz_nmemb = size * nmemb;
+    for (gap = 0; ++gap < nmemb; ) {
+        gap *= 3;
+    }
+    while (gap /= 3) {
+        sz_gap = size * gap;
+        for (i = sz_gap; i < sz_nmemb; i += size) {
+            for (j = i - sz_gap; ; j -= sz_gap) {
+                a = (char *)base + j;
+                b = a + sz_gap;
+                if ((*compar)(a, b) <= 0) {
+                    break;
+                }
+                k = size;
+                do {
+                    tmp = *a;
+                    *a++ = *b;
+                    *b++ = tmp;
+                } while (--k);
+                if (j < sz_gap) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
 static void
 build_distance_tables(
     uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
@@ -805,7 +846,7 @@ build_distance_tables(
         }
     }
     for (i = 0; i < nEntries; i++) {
-        qsort(
+        ssort(          /* was qsort() */
             avgDistSortKey + i * nEntries,
             nEntries,
             sizeof(uint32_t *),
@@ -1243,7 +1284,7 @@ error_1:
     return 0;
 }
 
-int
+static int
 quantize(
     Pixel *pixelData,
     uint32_t nPixels,
@@ -1511,7 +1552,7 @@ compute_distances(const HashTable *h, const Pixel pixel, uint32_t *dist, void *u
     }
 }
 
-int
+static int
 quantize2(
     Pixel *pixelData,
     uint32_t nPixels,
