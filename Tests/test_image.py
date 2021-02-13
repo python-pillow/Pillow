@@ -92,11 +92,13 @@ class TestImage:
         JPGFILE = "Tests/images/hopper.jpg"
 
         with pytest.raises(TypeError):
-            Image.open(PNGFILE, formats=123)
+            with Image.open(PNGFILE, formats=123):
+                pass
 
         for formats in [["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]]:
             with pytest.raises(UnidentifiedImageError):
-                Image.open(PNGFILE, formats=formats)
+                with Image.open(PNGFILE, formats=formats):
+                    pass
 
             with Image.open(JPGFILE, formats=formats) as im:
                 assert im.mode == "RGB"
@@ -120,15 +122,18 @@ class TestImage:
 
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
-            Image.open(im)
+            with Image.open(im):
+                pass
 
     def test_bad_mode(self):
         with pytest.raises(ValueError):
-            Image.open("filename", "bad mode")
+            with Image.open("filename", "bad mode"):
+                pass
 
     def test_stringio(self):
         with pytest.raises(ValueError):
-            Image.open(io.StringIO())
+            with Image.open(io.StringIO()):
+                pass
 
     def test_pathlib(self, tmp_path):
         from PIL.Image import Path

@@ -106,7 +106,8 @@ class TestFilePng:
 
         test_file = "Tests/images/broken.png"
         with pytest.raises(OSError):
-            Image.open(test_file)
+            with Image.open(test_file):
+                pass
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -464,7 +465,8 @@ class TestFilePng:
 
         pngfile = BytesIO(data)
         with pytest.raises(OSError):
-            Image.open(pngfile)
+            with Image.open(pngfile):
+                pass
 
     def test_trns_rgb(self):
         # Check writing and reading of tRNS chunks for RGB images.
