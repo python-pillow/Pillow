@@ -172,7 +172,7 @@ def test_short_header():
 
     def short_header():
         with Image.open(BytesIO(img_file[:119])):
-            pass
+            pass  # pragma: no cover
 
     with pytest.raises(OSError):
         short_header()
