@@ -56,11 +56,13 @@ function pre_build {
     CFLAGS=$ORIGINAL_CFLAGS
 
     build_tiff
+    if [ -n "$IS_MACOS" ]; then
+        # Remove existing libpng
+        rm /usr/local/lib/libpng*
+    fi
     build_libpng
     build_lcms2
-    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
-	    build_openjpeg
-    fi
+    build_openjpeg
 
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
     build_libwebp
@@ -86,10 +88,7 @@ function run_tests_in_repo {
     pytest
 }
 
-EXP_CODECS="jpg"
-if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
-    EXP_CODECS="$EXP_CODECS jpg_2000"
-fi
+EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 EXP_FEATURES="transp_webp webp_anim webp_mux"
