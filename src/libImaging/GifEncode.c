@@ -169,7 +169,8 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
     ptr = buf;
 
-    for (;;) switch (state->state) {
+    for (;;) {
+        switch (state->state) {
             case INIT:
             case ENCODE:
 
@@ -319,4 +320,5 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 state->state = ENCODE;
                 break;
         }
+    }
 }
