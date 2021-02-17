@@ -234,4 +234,6 @@ def test_no_resource_warning_for_numpy_array():
     with Image.open(test_file) as im:
 
         # Act/Assert
-        pytest.warns(None, lambda: array(im))
+        with pytest.warns(None) as record:
+            array(im)
+        assert not record

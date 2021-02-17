@@ -59,19 +59,19 @@ class TestFileTiff:
         pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
-        def open():
+        with pytest.warns(None) as record:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_context_manager(self):
-        def open():
+        with pytest.warns(None) as record:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]

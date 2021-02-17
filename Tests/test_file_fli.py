@@ -38,20 +38,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(static_test_file)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(static_test_file) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_tell():

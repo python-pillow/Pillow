@@ -641,7 +641,9 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            pytest.warns(None, im.save, temp_file)
+            with pytest.warns(None) as record:
+                im.save(temp_file)
+            assert not record
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
