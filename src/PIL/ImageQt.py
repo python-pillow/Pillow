@@ -63,8 +63,7 @@ def rgb(r, g, b, a=255):
 
 def fromqimage(im):
     """
-    :param im: A PIL Image object, or a file name
-    (given either as Python string or a PyQt string object)
+    :param im: QImage or PIL ImageQt object
     """
     buffer = QBuffer()
     qt_openmode = QIODevice.OpenMode if qt_version == "6" else QIODevice
