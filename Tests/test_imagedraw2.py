@@ -55,13 +55,13 @@ def helper_ellipse(mode, bbox):
     draw = ImageDraw2.Draw(im)
     pen = ImageDraw2.Pen("blue", width=2)
     brush = ImageDraw2.Brush("green")
-    expected = f"Tests/images/imagedraw_ellipse_{mode}.png"
 
     # Act
     draw.ellipse(bbox, pen, brush)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    with Image.open(f"Tests/images/imagedraw_ellipse_{mode}.png") as expected:
+        assert_image_similar(im, expected, 1)
 
 
 def test_ellipse1():
@@ -82,7 +82,8 @@ def test_ellipse_edge():
     draw.ellipse(((0, 0), (W - 1, H - 1)), brush)
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+    with Image.open("Tests/images/imagedraw_ellipse_edge.png") as expected:
+        assert_image_similar(im, expected, 1)
 
 
 def helper_line(points):
@@ -95,7 +96,8 @@ def helper_line(points):
     draw.line(points, pen)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    with Image.open("Tests/images/imagedraw_line.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_line1_pen():
@@ -118,7 +120,8 @@ def test_line_pen_as_brush():
     draw.line(POINTS1, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    with Image.open("Tests/images/imagedraw_line.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_polygon(points):
@@ -132,7 +135,8 @@ def helper_polygon(points):
     draw.polygon(points, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+    with Image.open("Tests/images/imagedraw_polygon.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_polygon1():
@@ -154,7 +158,8 @@ def helper_rectangle(bbox):
     draw.rectangle(bbox, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+    with Image.open("Tests/images/imagedraw_rectangle.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_rectangle1():
@@ -172,13 +177,13 @@ def test_big_rectangle():
     bbox = [(-1, -1), (W + 1, H + 1)]
     brush = ImageDraw2.Brush("orange")
     draw = ImageDraw2.Draw(im)
-    expected = "Tests/images/imagedraw_big_rectangle.png"
 
     # Act
     draw.rectangle(bbox, brush)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    with Image.open("Tests/images/imagedraw_big_rectangle.png") as expected:
+        assert_image_similar(im, expected, 1)
 
 
 @skip_unless_feature("freetype2")
@@ -187,13 +192,13 @@ def test_text():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
     font = ImageDraw2.Font("white", FONT_PATH)
-    expected = "Tests/images/imagedraw2_text.png"
 
     # Act
     draw.text((5, 5), "ImageDraw2", font)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 13)
+    with Image.open("Tests/images/imagedraw2_text.png") as expected:
+        assert_image_similar(im, expected, 13)
 
 
 @skip_unless_feature("freetype2")

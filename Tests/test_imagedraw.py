@@ -96,7 +96,8 @@ def test_arc_end_le_start():
     draw.arc(BBOX1, start=start, end=end)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_end_le_start.png"))
+    with Image.open("Tests/images/imagedraw_arc_end_le_start.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_arc_no_loops():
@@ -174,7 +175,8 @@ def test_arc_high():
     draw.arc([110, 10, 189, 189], 20, 150, width=20, fill="white")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_high.png"))
+    with Image.open("Tests/images/imagedraw_arc_high.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_bitmap():
@@ -188,7 +190,8 @@ def test_bitmap():
         draw.bitmap((10, 10), small)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_bitmap.png"))
+    with Image.open("Tests/images/imagedraw_bitmap.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_chord(mode, bbox, start, end):
@@ -260,7 +263,8 @@ def test_chord_too_fat():
     draw.chord([-150, -150, 99, 99], 15, 60, width=10, fill="white", outline="red")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_chord_too_fat.png"))
+    with Image.open("Tests/images/imagedraw_chord_too_fat.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_ellipse(mode, bbox):
@@ -417,7 +421,8 @@ def helper_line(points):
     draw.line(points, fill="yellow", width=2)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    with Image.open("Tests/images/imagedraw_line.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_line1():
@@ -446,7 +451,8 @@ def test_shape1():
     draw.shape(s, fill=1)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_shape1.png"))
+    with Image.open("Tests/images/imagedraw_shape1.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_shape2():
@@ -467,7 +473,8 @@ def test_shape2():
     draw.shape(s, outline="blue")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_shape2.png"))
+    with Image.open("Tests/images/imagedraw_shape2.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_pieslice(bbox, start, end):
@@ -539,7 +546,8 @@ def test_pieslice_wide():
     draw.pieslice([0, 0, 199, 99], 190, 170, width=10, fill="white", outline="red")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice_wide.png"))
+    with Image.open("Tests/images/imagedraw_pieslice_wide.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_point(points):
@@ -551,7 +559,8 @@ def helper_point(points):
     draw.point(points, fill="yellow")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_point.png"))
+    with Image.open("Tests/images/imagedraw_point.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_point1():
@@ -571,7 +580,8 @@ def helper_polygon(points):
     draw.polygon(points, fill="red", outline="blue")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+    with Image.open("Tests/images/imagedraw_polygon.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_polygon1():
@@ -589,13 +599,13 @@ def test_polygon_kite():
         # Arrange
         im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
-        expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
 
         # Act
         draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
 
         # Assert
-        assert_image_equal(im, Image.open(expected))
+        with Image.open(f"Tests/images/imagedraw_polygon_kite_{mode}.png") as expected:
+            assert_image_equal(im, expected)
 
 
 def test_polygon_1px_high():
@@ -603,13 +613,13 @@ def test_polygon_1px_high():
     # Arrange
     im = Image.new("RGB", (3, 3))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_polygon_1px_high.png"
 
     # Act
     draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    with Image.open("Tests/images/imagedraw_polygon_1px_high.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def helper_rectangle(bbox):
@@ -621,7 +631,8 @@ def helper_rectangle(bbox):
     draw.rectangle(bbox, fill="black", outline="green")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+    with Image.open("Tests/images/imagedraw_rectangle.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_rectangle1():
@@ -650,26 +661,26 @@ def test_rectangle_width():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_rectangle_width.png"
 
     # Act
     draw.rectangle(BBOX1, outline="green", width=5)
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    with Image.open("Tests/images/imagedraw_rectangle_width.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_rectangle_width_fill():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = "Tests/images/imagedraw_rectangle_width_fill.png"
 
     # Act
     draw.rectangle(BBOX1, fill="blue", outline="green", width=5)
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    with Image.open("Tests/images/imagedraw_rectangle_width_fill.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_rectangle_zero_width():
@@ -694,9 +705,8 @@ def test_rectangle_I16():
     draw.rectangle(BBOX1, fill="black", outline="green")
 
     # Assert
-    assert_image_equal(
-        im.convert("I"), Image.open("Tests/images/imagedraw_rectangle_I.png")
-    )
+    with Image.open("Tests/images/imagedraw_rectangle_I.png") as expected:
+        assert_image_equal(im.convert("I"), expected)
 
 
 def test_floodfill():
@@ -749,7 +759,8 @@ def test_floodfill_border():
     )
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+    with Image.open("Tests/images/imagedraw_floodfill2.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_floodfill_thresh():
@@ -765,7 +776,8 @@ def test_floodfill_thresh():
     ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"), thresh=30)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+    with Image.open("Tests/images/imagedraw_floodfill2.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def test_floodfill_not_negative():
@@ -782,9 +794,8 @@ def test_floodfill_not_negative():
     ImageDraw.floodfill(im, (int(W / 4), int(H / 4)), ImageColor.getrgb("red"))
 
     # Assert
-    assert_image_equal(
-        im, Image.open("Tests/images/imagedraw_floodfill_not_negative.png")
-    )
+    with Image.open("Tests/images/imagedraw_floodfill_not_negative.png") as expected:
+        assert_image_equal(im, expected)
 
 
 def create_base_image_draw(
@@ -1185,7 +1196,8 @@ def test_draw_regular_polygon(n_sides, rotation, polygon_name):
     draw = ImageDraw.Draw(im)
     bounding_circle = ((W // 2, H // 2), 25)
     draw.regular_polygon(bounding_circle, n_sides, rotation=rotation, fill="red")
-    assert_image_equal(im, Image.open(filename))
+    with Image.open(filename) as expected:
+        assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize(
