@@ -9,12 +9,14 @@ jobs:
       uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
       with:
         oss-fuzz-project-name: 'pillow'
+        language: python
         dry-run: false
     - name: Run Fuzzers
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
         oss-fuzz-project-name: 'pillow'
         fuzz-seconds: 600
+        language: python
         dry-run: false
     - name: Upload Crash
       uses: actions/upload-artifact@v1
