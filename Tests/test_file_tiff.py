@@ -483,8 +483,7 @@ class TestFileTiff:
             tmpfile = str(tmp_path / "temp.tif")
             im.save(tmpfile)
 
-            with Image.open(tmpfile) as reloaded:
-                assert_image_equal(im, reloaded)
+            assert_image_equal_tofile(im, tmpfile)
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"

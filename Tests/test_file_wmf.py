@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image, WmfImagePlugin
 
-from .helper import assert_image_similar, hopper
+from .helper import assert_image_similar_tofile, hopper
 
 
 def test_load_raw():
@@ -13,9 +13,7 @@ def test_load_raw():
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            with Image.open("Tests/images/drawing_emf_ref.png") as imref:
-                imref.load()
-                assert_image_similar(im, imref, 0)
+            assert_image_similar_tofile(im, "Tests/images/drawing_emf_ref.png", 0)
 
     # Test basic WMF open and rendering
     with Image.open("Tests/images/drawing.wmf") as im:
@@ -23,9 +21,7 @@ def test_load_raw():
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            with Image.open("Tests/images/drawing_wmf_ref.png") as imref:
-                imref.load()
-                assert_image_similar(im, imref, 2.0)
+            assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref.png", 2.0)
 
 
 def test_register_handler(tmp_path):
@@ -66,8 +62,7 @@ def test_load_set_dpi():
             im.load(144)
             assert im.size == (164, 164)
 
-            with Image.open("Tests/images/drawing_wmf_ref_144.png") as expected:
-                assert_image_similar(im, expected, 2.1)
+            assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
 
 
 def test_save(tmp_path):

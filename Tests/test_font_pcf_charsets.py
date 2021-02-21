@@ -2,7 +2,11 @@ import os
 
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-from .helper import assert_image_equal, assert_image_similar, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    skip_unless_feature,
+)
 
 fontname = "Tests/fonts/ter-x20b.pcf"
 
@@ -47,8 +51,7 @@ def save_font(request, tmp_path, encoding):
     font.save(tempname)
 
     with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
-        with Image.open(f"Tests/fonts/ter-x20b-{encoding}.pbm") as target:
-            assert_image_equal(loaded, target)
+        assert_image_equal_tofile(loaded, f"Tests/fonts/ter-x20b-{encoding}.pbm")
 
     with open(tempname, "rb") as f_loaded:
         with open(f"Tests/fonts/ter-x20b-{encoding}.pil", "rb") as f_target:
@@ -79,8 +82,7 @@ def _test_draw(request, tmp_path, encoding):
     draw = ImageDraw.Draw(im)
     message = charsets[encoding]["message"].encode(encoding)
     draw.text((0, 0), message, "black", font=font)
-    with Image.open(charsets[encoding]["image1"]) as target:
-        assert_image_similar(im, target, 0)
+    assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
 
 
 def test_draw_iso8859_1(request, tmp_path):

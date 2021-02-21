@@ -4,7 +4,7 @@ import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
@@ -120,5 +120,4 @@ def test_draw_reloaded(tmp_path):
 
     with Image.open(outfile) as im:
         im.save("Tests/images/hopper_draw.ico")
-        with Image.open("Tests/images/hopper_draw.ico") as reloaded:
-            assert_image_equal(im, reloaded)
+        assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")

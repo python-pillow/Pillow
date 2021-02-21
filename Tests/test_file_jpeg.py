@@ -17,7 +17,9 @@ from PIL import (
 from .helper import (
     assert_image,
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
+    assert_image_similar_tofile,
     cjpeg_available,
     djpeg_available,
     hopper,
@@ -577,7 +579,7 @@ class TestFileJpeg:
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 5)
+            assert_image_similar_tofile(img, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -585,7 +587,7 @@ class TestFileJpeg:
             tempfile = str(tmp_path / "temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar(img, Image.open(tempfile), 17)
+            assert_image_similar_tofile(img, tempfile, 17)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
@@ -767,8 +769,7 @@ class TestFileJpeg:
 
             # Test that the image can still load, even with broken Photoshop data
             # This image had the APP13 length hexedited to be smaller
-            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
-                assert_image_equal(im_broken, im)
+            assert_image_equal_tofile(im, "Tests/images/photoshop-200dpi-broken.jpg")
 
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:

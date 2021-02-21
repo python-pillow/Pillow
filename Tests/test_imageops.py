@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageOps, ImageStat, features
 from .helper import (
     assert_image_equal,
     assert_image_similar,
+    assert_image_similar_tofile,
     assert_tuple_approx_equal,
     hopper,
 )
@@ -112,10 +113,9 @@ def test_pad():
             new_im = ImageOps.pad(im, new_size, color=color, centering=centering)
             assert new_im.size == new_size
 
-            with Image.open(
-                "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg"
-            ) as target:
-                assert_image_similar(new_im, target, 6)
+            assert_image_similar_tofile(
+                new_im, "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg", 6
+            )
 
 
 def test_pil163():
