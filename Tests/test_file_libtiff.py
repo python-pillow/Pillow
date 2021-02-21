@@ -99,15 +99,13 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
         with Image.open("Tests/images/hopper_bw_500.png") as png:
-            with Image.open("Tests/images/hopper_g4_500.tif") as g4:
-                assert_image_equal(g4, png)
+            assert_image_equal_tofile(png, "Tests/images/hopper_g4_500.tif")
 
     # see https://github.com/python-pillow/Pillow/issues/279
     def test_g4_fillorder_eq_png(self):
         """ Checking that we're actually getting the data that we expect"""
-        with Image.open("Tests/images/g4-fillorder-test.png") as png:
-            with Image.open("Tests/images/g4-fillorder-test.tif") as g4:
-                assert_image_equal(g4, png)
+        with Image.open("Tests/images/g4-fillorder-test.tif") as g4:
+            assert_image_equal_tofile(g4, "Tests/images/g4-fillorder-test.png")
 
     def test_g4_write(self, tmp_path):
         """Checking to see that the saved image is the same as what we wrote"""
@@ -437,10 +435,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = im.filter(ImageFilter.GaussianBlur(4))
         im.save(out, compression="tiff_adobe_deflate")
 
-        with Image.open(out) as im2:
-            im2.load()
-
-            assert_image_equal(im, im2)
+        assert_image_equal_tofile(im, out)
 
     def test_compressions(self, tmp_path):
         # Test various tiff compressions and assert similar image content but reduced
@@ -453,8 +448,7 @@ class TestFileLibTiff(LibTiffTestCase):
         for compression in ("packbits", "tiff_lzw"):
             im.save(out, compression=compression)
             size_compressed = os.path.getsize(out)
-            with Image.open(out) as im2:
-                assert_image_equal(im, im2)
+            assert_image_equal_tofile(im, out)
 
         im.save(out, compression="jpeg")
         size_jpeg = os.path.getsize(out)
@@ -498,8 +492,7 @@ class TestFileLibTiff(LibTiffTestCase):
         out = str(tmp_path / "temp.tif")
 
         im.save(out, compression="tiff_adobe_deflate")
-        with Image.open(out) as im2:
-            assert_image_equal(im, im2)
+        assert_image_equal_tofile(im, out)
 
     def test_palette_save(self, tmp_path):
         im = hopper("P")

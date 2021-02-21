@@ -2,7 +2,7 @@ import pytest
 
 from PIL import FliImagePlugin, Image
 
-from .helper import assert_image_equal, is_pypy
+from .helper import assert_image_equal_tofile, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -122,5 +122,4 @@ def test_seek():
     with Image.open(animated_test_file) as im:
         im.seek(50)
 
-        with Image.open("Tests/images/a_fli.png") as expected:
-            assert_image_equal(im, expected)
+        assert_image_equal_tofile(im, "Tests/images/a_fli.png")

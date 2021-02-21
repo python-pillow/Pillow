@@ -6,6 +6,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
@@ -96,7 +97,7 @@ def test_arc_end_le_start():
     draw.arc(BBOX1, start=start, end=end)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_end_le_start.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_arc_end_le_start.png")
 
 
 def test_arc_no_loops():
@@ -174,7 +175,7 @@ def test_arc_high():
     draw.arc([110, 10, 189, 189], 20, 150, width=20, fill="white")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_arc_high.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_arc_high.png")
 
 
 def test_bitmap():
@@ -188,7 +189,7 @@ def test_bitmap():
         draw.bitmap((10, 10), small)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_bitmap.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_bitmap.png")
 
 
 def helper_chord(mode, bbox, start, end):
@@ -247,8 +248,7 @@ def test_chord_zero_width():
     draw.chord(BBOX1, 10, 260, fill="red", outline="yellow", width=0)
 
     # Assert
-    with Image.open("Tests/images/imagedraw_chord_zero_width.png") as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_chord_zero_width.png")
 
 
 def test_chord_too_fat():
@@ -260,7 +260,7 @@ def test_chord_too_fat():
     draw.chord([-150, -150, 99, 99], 15, 60, width=10, fill="white", outline="red")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_chord_too_fat.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_chord_too_fat.png")
 
 
 def helper_ellipse(mode, bbox):
@@ -367,8 +367,7 @@ def test_ellipse_zero_width():
     draw.ellipse(BBOX1, fill="green", outline="blue", width=0)
 
     # Assert
-    with Image.open("Tests/images/imagedraw_ellipse_zero_width.png") as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_ellipse_zero_width.png")
 
 
 def ellipse_various_sizes_helper(filled):
@@ -395,17 +394,15 @@ def ellipse_various_sizes_helper(filled):
 def test_ellipse_various_sizes():
     im = ellipse_various_sizes_helper(False)
 
-    with Image.open("Tests/images/imagedraw_ellipse_various_sizes.png") as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_ellipse_various_sizes.png")
 
 
 def test_ellipse_various_sizes_filled():
     im = ellipse_various_sizes_helper(True)
 
-    with Image.open(
-        "Tests/images/imagedraw_ellipse_various_sizes_filled.png"
-    ) as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_ellipse_various_sizes_filled.png"
+    )
 
 
 def helper_line(points):
@@ -417,7 +414,7 @@ def helper_line(points):
     draw.line(points, fill="yellow", width=2)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
 def test_line1():
@@ -446,7 +443,7 @@ def test_shape1():
     draw.shape(s, fill=1)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_shape1.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_shape1.png")
 
 
 def test_shape2():
@@ -467,7 +464,7 @@ def test_shape2():
     draw.shape(s, outline="blue")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_shape2.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_shape2.png")
 
 
 def helper_pieslice(bbox, start, end):
@@ -526,8 +523,7 @@ def test_pieslice_zero_width():
     draw.pieslice(BBOX1, 10, 260, fill="white", outline="blue", width=0)
 
     # Assert
-    with Image.open("Tests/images/imagedraw_pieslice_zero_width.png") as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_zero_width.png")
 
 
 def test_pieslice_wide():
@@ -539,7 +535,7 @@ def test_pieslice_wide():
     draw.pieslice([0, 0, 199, 99], 190, 170, width=10, fill="white", outline="red")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_pieslice_wide.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_wide.png")
 
 
 def helper_point(points):
@@ -551,7 +547,7 @@ def helper_point(points):
     draw.point(points, fill="yellow")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_point.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_point.png")
 
 
 def test_point1():
@@ -571,7 +567,7 @@ def helper_polygon(points):
     draw.polygon(points, fill="red", outline="blue")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
 
 
 def test_polygon1():
@@ -595,7 +591,7 @@ def test_polygon_kite():
         draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
 
         # Assert
-        assert_image_equal(im, Image.open(expected))
+        assert_image_equal_tofile(im, expected)
 
 
 def test_polygon_1px_high():
@@ -609,7 +605,7 @@ def test_polygon_1px_high():
     draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    assert_image_equal_tofile(im, expected)
 
 
 def helper_rectangle(bbox):
@@ -621,7 +617,7 @@ def helper_rectangle(bbox):
     draw.rectangle(bbox, fill="black", outline="green")
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
 
 
 def test_rectangle1():
@@ -656,7 +652,7 @@ def test_rectangle_width():
     draw.rectangle(BBOX1, outline="green", width=5)
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    assert_image_equal_tofile(im, expected)
 
 
 def test_rectangle_width_fill():
@@ -669,7 +665,7 @@ def test_rectangle_width_fill():
     draw.rectangle(BBOX1, fill="blue", outline="green", width=5)
 
     # Assert
-    assert_image_equal(im, Image.open(expected))
+    assert_image_equal_tofile(im, expected)
 
 
 def test_rectangle_zero_width():
@@ -681,8 +677,7 @@ def test_rectangle_zero_width():
     draw.rectangle(BBOX1, fill="blue", outline="green", width=0)
 
     # Assert
-    with Image.open("Tests/images/imagedraw_rectangle_zero_width.png") as expected:
-        assert_image_equal(im, expected)
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_zero_width.png")
 
 
 def test_rectangle_I16():
@@ -694,9 +689,7 @@ def test_rectangle_I16():
     draw.rectangle(BBOX1, fill="black", outline="green")
 
     # Assert
-    assert_image_equal(
-        im.convert("I"), Image.open("Tests/images/imagedraw_rectangle_I.png")
-    )
+    assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
 
 
 def test_floodfill():
@@ -749,7 +742,7 @@ def test_floodfill_border():
     )
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill2.png")
 
 
 def test_floodfill_thresh():
@@ -765,7 +758,7 @@ def test_floodfill_thresh():
     ImageDraw.floodfill(im, centre_point, ImageColor.getrgb("red"), thresh=30)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_floodfill2.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill2.png")
 
 
 def test_floodfill_not_negative():
@@ -782,9 +775,7 @@ def test_floodfill_not_negative():
     ImageDraw.floodfill(im, (int(W / 4), int(H / 4)), ImageColor.getrgb("red"))
 
     # Assert
-    assert_image_equal(
-        im, Image.open("Tests/images/imagedraw_floodfill_not_negative.png")
-    )
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
 
 
 def create_base_image_draw(
@@ -816,32 +807,29 @@ def test_square():
 
 
 def test_triangle_right():
-    with Image.open(os.path.join(IMAGES_PATH, "triangle_right.png")) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
-        assert_image_equal(img, expected, "triangle right failed")
+    img, draw = create_base_image_draw((20, 20))
+    draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
+    assert_image_equal_tofile(
+        img, os.path.join(IMAGES_PATH, "triangle_right.png"), "triangle right failed"
+    )
 
 
 def test_line_horizontal():
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_horizontal_w2px_normal.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 14, 5), BLACK, 2)
-        assert_image_equal(
-            img, expected, "line straight horizontal normal 2px wide failed"
-        )
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_horizontal_w2px_inverted.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((14, 5, 5, 5), BLACK, 2)
-        assert_image_equal(
-            img, expected, "line straight horizontal inverted 2px wide failed"
-        )
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 5), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_horizontal_w2px_normal.png"),
+        "line straight horizontal normal 2px wide failed",
+    )
+
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 5, 5, 5), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_horizontal_w2px_inverted.png"),
+        "line straight horizontal inverted 2px wide failed",
+    )
     with Image.open(os.path.join(IMAGES_PATH, "line_horizontal_w3px.png")) as expected:
         expected.load()
         img, draw = create_base_image_draw((20, 20))
@@ -854,45 +842,43 @@ def test_line_horizontal():
         assert_image_equal(
             img, expected, "line straight horizontal inverted 3px wide failed"
         )
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_horizontal_w101px.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((200, 110))
-        draw.line((5, 55, 195, 55), BLACK, 101)
-        assert_image_equal(img, expected, "line straight horizontal 101px wide failed")
+
+    img, draw = create_base_image_draw((200, 110))
+    draw.line((5, 55, 195, 55), BLACK, 101)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_horizontal_w101px.png"),
+        "line straight horizontal 101px wide failed",
+    )
 
 
 def test_line_h_s1_w2():
     pytest.skip("failing")
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_horizontal_slope1px_w2px.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 14, 6), BLACK, 2)
-        assert_image_equal(img, expected, "line horizontal 1px slope 2px wide failed")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 6), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_horizontal_slope1px_w2px.png"),
+        "line horizontal 1px slope 2px wide failed",
+    )
 
 
 def test_line_vertical():
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_vertical_w2px_normal.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 5, 14), BLACK, 2)
-        assert_image_equal(
-            img, expected, "line straight vertical normal 2px wide failed"
-        )
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_vertical_w2px_inverted.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 14, 5, 5), BLACK, 2)
-        assert_image_equal(
-            img, expected, "line straight vertical inverted 2px wide failed"
-        )
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 5, 14), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_vertical_w2px_normal.png"),
+        "line straight vertical normal 2px wide failed",
+    )
+
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 5, 5), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_vertical_w2px_inverted.png"),
+        "line straight vertical inverted 2px wide failed",
+    )
     with Image.open(os.path.join(IMAGES_PATH, "line_vertical_w3px.png")) as expected:
         expected.load()
         img, draw = create_base_image_draw((20, 20))
@@ -905,18 +891,21 @@ def test_line_vertical():
         assert_image_equal(
             img, expected, "line straight vertical inverted 3px wide failed"
         )
-    with Image.open(os.path.join(IMAGES_PATH, "line_vertical_w101px.png")) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((110, 200))
-        draw.line((55, 5, 55, 195), BLACK, 101)
-        assert_image_equal(img, expected, "line straight vertical 101px wide failed")
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_vertical_slope1px_w2px.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 6, 14), BLACK, 2)
-        assert_image_equal(img, expected, "line vertical 1px slope 2px wide failed")
+    img, draw = create_base_image_draw((110, 200))
+    draw.line((55, 5, 55, 195), BLACK, 101)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_vertical_w101px.png"),
+        "line straight vertical 101px wide failed",
+    )
+
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 6, 14), BLACK, 2)
+    assert_image_equal_tofile(
+        img,
+        os.path.join(IMAGES_PATH, "line_vertical_slope1px_w2px.png"),
+        "line vertical 1px slope 2px wide failed",
+    )
 
 
 def test_line_oblique_45():
@@ -1185,7 +1174,7 @@ def test_draw_regular_polygon(n_sides, rotation, polygon_name):
     draw = ImageDraw.Draw(im)
     bounding_circle = ((W // 2, H // 2), 25)
     draw.regular_polygon(bounding_circle, n_sides, rotation=rotation, fill="red")
-    assert_image_equal(im, Image.open(filename))
+    assert_image_equal_tofile(im, filename)
 
 
 @pytest.mark.parametrize(

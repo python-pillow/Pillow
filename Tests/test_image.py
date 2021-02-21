@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageErro
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_not_all_same,
     hopper,
@@ -413,8 +414,7 @@ class TestImage:
 
         # Assert
         assert im.size == (512, 512)
-        with Image.open("Tests/images/effect_mandelbrot.png") as im2:
-            assert_image_equal(im, im2)
+        assert_image_equal_tofile(im, "Tests/images/effect_mandelbrot.png")
 
     def test_effect_mandelbrot_bad_arguments(self):
         # Arrange

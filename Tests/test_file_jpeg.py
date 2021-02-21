@@ -17,6 +17,7 @@ from PIL import (
 from .helper import (
     assert_image,
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     cjpeg_available,
     djpeg_available,
@@ -767,8 +768,7 @@ class TestFileJpeg:
 
             # Test that the image can still load, even with broken Photoshop data
             # This image had the APP13 length hexedited to be smaller
-            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
-                assert_image_equal(im_broken, im)
+            assert_image_equal_tofile(im, "Tests/images/photoshop-200dpi-broken.jpg")
 
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:

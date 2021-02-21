@@ -4,7 +4,11 @@ import pytest
 
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-from .helper import assert_image_equal, assert_image_similar, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar,
+    skip_unless_feature,
+)
 
 fontname = "Tests/fonts/10x20-ISO8859-1.pcf"
 
@@ -33,8 +37,7 @@ def save_font(request, tmp_path):
     font.save(tempname)
 
     with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
-        with Image.open("Tests/fonts/10x20.pbm") as target:
-            assert_image_equal(loaded, target)
+        assert_image_equal_tofile(loaded, "Tests/fonts/10x20.pbm")
 
     with open(tempname, "rb") as f_loaded:
         with open("Tests/fonts/10x20.pil", "rb") as f_target:

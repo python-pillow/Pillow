@@ -423,15 +423,12 @@ class TestImageFont:
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)
 
-        target = "Tests/images/default_font.png"
-        with Image.open(target) as target_img:
+        # Act
+        default_font = ImageFont.load_default()
+        draw.text((10, 10), txt, font=default_font)
 
-            # Act
-            default_font = ImageFont.load_default()
-            draw.text((10, 10), txt, font=default_font)
-
-            # Assert
-            assert_image_equal(im, target_img)
+        # Assert
+        assert_image_equal_tofile(im, "Tests/images/default_font.png")
 
     def test_getsize_empty(self):
         # issue #2614
