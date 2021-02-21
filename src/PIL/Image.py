@@ -3373,6 +3373,13 @@ class Exif(MutableMapping):
         for tag, value in self.items():
             if tag in [0x8769, 0x8225] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
+                if (
+                    tag == 0x8769
+                    and 0xA005 in value
+                    and not isinstance(value[0xA005], dict)
+                ):
+                    value = value.copy()
+                    value[0xA005] = self.get_ifd(0xA005)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
