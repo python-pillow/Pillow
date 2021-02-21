@@ -8,7 +8,13 @@ import pytest
 
 from PIL import Image, ImageMode, features
 
-from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 try:
     from PIL import ImageCms
@@ -240,8 +246,7 @@ def test_lab_color():
 
     # i.save('temp.lab.tif')  # visually verified vs PS.
 
-    with Image.open("Tests/images/hopper.Lab.tif") as target:
-        assert_image_similar(i, target, 3.5)
+    assert_image_similar_tofile(i, "Tests/images/hopper.Lab.tif", 3.5)
 
 
 def test_lab_srgb():

@@ -5,7 +5,7 @@ import pytest
 
 from PIL import IcnsImagePlugin, Image, features
 
-from .helper import assert_image_equal, assert_image_similar
+from .helper import assert_image_equal, assert_image_similar_tofile
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -49,8 +49,7 @@ def test_save_append_images(tmp_path):
     with Image.open(TEST_FILE) as im:
         im.save(temp_file, append_images=[provided_im])
 
-        with Image.open(temp_file) as reread:
-            assert_image_similar(reread, im, 1)
+        assert_image_similar_tofile(im, temp_file, 1)
 
         with Image.open(temp_file) as reread:
             reread.size = (16, 16, 2)

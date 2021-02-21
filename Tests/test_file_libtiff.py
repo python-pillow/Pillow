@@ -457,8 +457,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         im.save(out, compression="jpeg", quality=30)
         size_jpeg_30 = os.path.getsize(out)
-        with Image.open(out) as im3:
-            assert_image_similar(im2, im3, 30)
+        assert_image_similar_tofile(im2, out, 30)
 
         assert size_raw > size_compressed
         assert size_compressed > size_jpeg
@@ -642,8 +641,7 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
 
-            with Image.open(buffer_io) as pilim_load:
-                assert_image_similar(pilim, pilim_load, 0)
+            assert_image_similar_tofile(pilim, buffer_io, 0)
 
         save_bytesio()
         save_bytesio("raw")

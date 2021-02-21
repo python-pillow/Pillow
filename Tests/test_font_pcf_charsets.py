@@ -4,7 +4,7 @@ from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
     assert_image_equal_tofile,
-    assert_image_similar,
+    assert_image_similar_tofile,
     skip_unless_feature,
 )
 
@@ -82,8 +82,7 @@ def _test_draw(request, tmp_path, encoding):
     draw = ImageDraw.Draw(im)
     message = charsets[encoding]["message"].encode(encoding)
     draw.text((0, 0), message, "black", font=font)
-    with Image.open(charsets[encoding]["image1"]) as target:
-        assert_image_similar(im, target, 0)
+    assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
 
 
 def test_draw_iso8859_1(request, tmp_path):

@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageErro
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
-    assert_image_similar,
+    assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
     is_win32,
@@ -172,8 +172,7 @@ class TestImage:
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            with Image.open(fp) as reloaded:
-                assert_image_similar(im, reloaded, 20)
+            assert_image_similar_tofile(im, fp, 20)
 
     def test_unknown_extension(self, tmp_path):
         im = hopper()
@@ -456,8 +455,7 @@ class TestImage:
 
         # Assert
         assert im.size == (128, 128)
-        with Image.open("Tests/images/effect_spread.png") as im3:
-            assert_image_similar(im2, im3, 110)
+        assert_image_similar_tofile(im2, "Tests/images/effect_spread.png", 110)
 
     def test_effect_spread_zero(self):
         # Arrange
