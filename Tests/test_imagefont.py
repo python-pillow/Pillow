@@ -911,8 +911,7 @@ class TestImageFont:
 
             d.text((50, 50), "\uE901", font=font, embedded_color=True)
 
-            with Image.open("Tests/images/chromacheck-sbix.png") as expected:
-                assert_image_similar(im, expected, 1)
+            assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
         except IOError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
@@ -931,8 +930,7 @@ class TestImageFont:
 
             d.text((50, 50), "\uE901", (100, 0, 0), font=font)
 
-            with Image.open("Tests/images/chromacheck-sbix_mask.png") as expected:
-                assert_image_similar(im, expected, 1)
+            assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
         except IOError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
