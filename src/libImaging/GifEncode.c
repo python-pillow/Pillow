@@ -10,6 +10,7 @@
  * 98-07-09 fl added interlace write support
  * 99-02-07 fl rewritten, now uses a run-length encoding strategy
  * 99-02-08 fl improved run-length encoding for long runs
+ * 2020-12-12 rdg Reworked for LZW compression.
  *
  * Copyright (c) Secret Labs AB 1997-99.
  * Copyright (c) Fredrik Lundh 1997.
@@ -21,136 +22,199 @@
 
 #include "Gif.h"
 
-/* codes from 0 to 255 are literals */
-#define CLEAR_CODE 256
-#define EOF_CODE 257
-#define FIRST_CODE 258
-#define LAST_CODE 511
+enum { INIT, ENCODE, FINISH };
 
-enum { INIT, ENCODE, ENCODE_EOF, FLUSH, EXIT };
+/* GIF LZW encoder by Raymond Gardner. */
+/* Released here under PIL license. */
 
-/* to make things a little less complicated, we use a simple output
-   queue to hold completed blocks.  the following inlined function
-   adds a byte to the current block.  it allocates a new block if
-   necessary. */
+/* Return values */
+#define GLZW_OK                 0
+#define GLZW_NO_INPUT_AVAIL     1
+#define GLZW_NO_OUTPUT_AVAIL    2
+#define GLZW_INTERNAL_ERROR     3
 
-static inline int
-emit(GIFENCODERSTATE *context, int byte) {
-    /* write a byte to the output buffer */
+#define CODE_LIMIT              4096
 
-    if (!context->block || context->block->size == 255) {
-        GIFENCODERBLOCK *block;
+/* Values of entry_state */
+enum { LZW_INITIAL, LZW_TRY_IN1, LZW_TRY_IN2, LZW_TRY_OUT1, LZW_TRY_OUT2,
+    LZW_FINISHED };
 
-        /* no room in the current block (or no current block);
-           allocate a new one */
+/* Values of control_state */
+enum { PUT_HEAD, PUT_INIT_CLEAR, PUT_CLEAR, PUT_LAST_HEAD, PUT_END };
 
-        /* add current block to end of flush queue */
-        if (context->block) {
-            block = context->flush;
-            while (block && block->next) {
-                block = block->next;
-            }
-            if (block) {
-                block->next = context->block;
-            } else {
-                context->flush = context->block;
-            }
-        }
-
-        /* get a new block */
-        if (context->free) {
-            block = context->free;
-            context->free = NULL;
-        } else {
-            /* malloc check ok, small constant allocation */
-            block = malloc(sizeof(GIFENCODERBLOCK));
-            if (!block) {
-                return 0;
-            }
-        }
-
-        block->size = 0;
-        block->next = NULL;
-
-        context->block = block;
-    }
-
-    /* write new byte to block */
-    context->block->data[context->block->size++] = byte;
-
-    return 1;
+static void glzwe_reset(GIFENCODERSTATE *st) {
+    st->next_code = st->end_code + 1;
+    st->max_code = 2 * st->clear_code - 1;
+    st->code_width = st->bits + 1;
+    memset(st->codes, 0, sizeof(st->codes));
 }
 
-/* write a code word to the current block.  this is a macro to make
-   sure it's inlined on all platforms */
+static void glzwe_init(GIFENCODERSTATE *st) {
+    st->clear_code = 1 << st->bits;
+    st->end_code = st->clear_code + 1;
+    glzwe_reset(st);
+    st->entry_state = LZW_INITIAL;
+    st->buf_bits_left = 8;
+    st->code_buffer = 0;
+}
 
-#define EMIT(code)                                                  \
-    {                                                               \
-        context->bitbuffer |= ((INT32)(code)) << context->bitcount; \
-        context->bitcount += 9;                                     \
-        while (context->bitcount >= 8) {                            \
-            if (!emit(context, (UINT8)context->bitbuffer)) {        \
-                state->errcode = IMAGING_CODEC_MEMORY;              \
-                return 0;                                           \
-            }                                                       \
-            context->bitbuffer >>= 8;                               \
-            context->bitcount -= 8;                                 \
-        }                                                           \
+static int glzwe(GIFENCODERSTATE *st, const UINT8 *in_ptr, UINT8 *out_ptr,
+        UINT32 *in_avail, UINT32 *out_avail,
+        UINT32 end_of_data) {
+    switch (st->entry_state) {
+
+    case LZW_TRY_IN1:
+get_first_byte:
+        if (!*in_avail) {
+            if (end_of_data) {
+                goto end_of_data;
+            }
+            st->entry_state = LZW_TRY_IN1;
+            return GLZW_NO_INPUT_AVAIL;
+        }
+        st->head = *in_ptr++;
+        (*in_avail)--;
+
+    case LZW_TRY_IN2:
+encode_loop:
+        if (!*in_avail) {
+            if (end_of_data) {
+                st->code = st->head;
+                st->put_state = PUT_LAST_HEAD;
+                goto put_code;
+            }
+            st->entry_state = LZW_TRY_IN2;
+            return GLZW_NO_INPUT_AVAIL;
+        }
+        st->tail = *in_ptr++;
+        (*in_avail)--;
+
+        /* Knuth TAOCP vol 3 sec. 6.4 algorithm D. */
+        /* Hash found experimentally to be pretty good. */
+        /* This works ONLY with TABLE_SIZE a power of 2. */
+        st->probe = ((st->head ^ (st->tail << 6)) * 31) & (TABLE_SIZE - 1);
+        while (st->codes[st->probe]) {
+            if ((st->codes[st->probe] & 0xFFFFF) ==
+                                        ((st->head << 8) | st->tail)) {
+                st->head = st->codes[st->probe] >> 20;
+                goto encode_loop;
+            } else {
+        /* Reprobe decrement must be nonzero and relatively prime to table
+         * size. So, any odd positive number for power-of-2 size. */
+                if ((st->probe -= ((st->tail << 2) | 1)) < 0) {
+                    st->probe += TABLE_SIZE;
+                }
+            }
+        }
+        /* Key not found, probe is at empty slot. */
+        st->code = st->head;
+        st->put_state = PUT_HEAD;
+        goto put_code;
+insert_code_or_clear: /* jump here after put_code */
+        if (st->next_code < CODE_LIMIT) {
+            st->codes[st->probe] = (st->next_code << 20) |
+                                    (st->head << 8) | st->tail;
+            if (st->next_code > st->max_code) {
+                st->max_code = st->max_code * 2 + 1;
+                st->code_width++;
+            }
+            st->next_code++;
+        } else {
+            st->code = st->clear_code;
+            st->put_state = PUT_CLEAR;
+            goto put_code;
+reset_after_clear: /* jump here after put_code */
+            glzwe_reset(st);
+        }
+        st->head = st->tail;
+        goto encode_loop;
+
+    case LZW_INITIAL:
+        glzwe_reset(st);
+        st->code = st->clear_code;
+        st->put_state = PUT_INIT_CLEAR;
+put_code:
+        st->code_bits_left = st->code_width;
+check_buf_bits:
+        if (!st->buf_bits_left) {   /* out buffer full */
+
+    case LZW_TRY_OUT1:
+            if (!*out_avail) {
+                st->entry_state = LZW_TRY_OUT1;
+                return GLZW_NO_OUTPUT_AVAIL;
+            }
+            *out_ptr++ = st->code_buffer;
+            (*out_avail)--;
+            st->code_buffer = 0;
+            st->buf_bits_left = 8;
+        }
+        /* code bits to pack */
+        UINT32 n = st->buf_bits_left < st->code_bits_left
+                        ? st->buf_bits_left : st->code_bits_left;
+        st->code_buffer |=
+                        (st->code & ((1 << n) - 1)) << (8 - st->buf_bits_left);
+        st->code >>= n;
+        st->buf_bits_left -= n;
+        st->code_bits_left -= n;
+        if (st->code_bits_left)
+            goto check_buf_bits;
+        switch (st->put_state) {
+        case PUT_INIT_CLEAR:
+            goto get_first_byte;
+        case PUT_HEAD:
+            goto insert_code_or_clear;
+        case PUT_CLEAR:
+            goto reset_after_clear;
+        case PUT_LAST_HEAD:
+            goto end_of_data;
+        case PUT_END:
+            goto flush_code_buffer;
+        default:
+            return GLZW_INTERNAL_ERROR;
+        }
+
+end_of_data:
+        st->code = st->end_code;
+        st->put_state = PUT_END;
+        goto put_code;
+flush_code_buffer: /* jump here after put_code */
+        if (st->buf_bits_left < 8) {
+
+    case LZW_TRY_OUT2:
+            if (!*out_avail) {
+                st->entry_state = LZW_TRY_OUT2;
+                return GLZW_NO_OUTPUT_AVAIL;
+            }
+            *out_ptr++ = st->code_buffer;
+            (*out_avail)--;
+        }
+        st->entry_state = LZW_FINISHED;
+        return GLZW_OK;
+
+    case LZW_FINISHED:
+        return GLZW_OK;
+
+    default:
+        return GLZW_INTERNAL_ERROR;
     }
-
-/* write a run.  we use a combination of literals and combinations of
-   literals.  this can give quite decent compression for images with
-   long stretches of identical pixels.  but remember: if you want
-   really good compression, use another file format. */
-
-#define EMIT_RUN(label)                                          \
-    {                                                            \
-    label:                                                       \
-        while (context->count > 0) {                             \
-            int run = 2;                                         \
-            EMIT(context->last);                                 \
-            context->count--;                                    \
-            if (state->count++ == LAST_CODE) {                   \
-                EMIT(CLEAR_CODE);                                \
-                state->count = FIRST_CODE;                       \
-                goto label;                                      \
-            }                                                    \
-            while (context->count >= run) {                      \
-                EMIT(state->count - 1);                          \
-                context->count -= run;                           \
-                run++;                                           \
-                if (state->count++ == LAST_CODE) {               \
-                    EMIT(CLEAR_CODE);                            \
-                    state->count = FIRST_CODE;                   \
-                    goto label;                                  \
-                }                                                \
-            }                                                    \
-            if (context->count > 1) {                            \
-                EMIT(state->count - 1 - (run - context->count)); \
-                context->count = 0;                              \
-                if (state->count++ == LAST_CODE) {               \
-                    EMIT(CLEAR_CODE);                            \
-                    state->count = FIRST_CODE;                   \
-                }                                                \
-                break;                                           \
-            }                                                    \
-        }                                                        \
-    }
+}
+/* -END- GIF LZW encoder. */
 
 int
-ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    UINT8 *ptr;
-    int this;
+ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
+    UINT8* ptr;
+    UINT8* sub_block_ptr;
+    UINT8* sub_block_limit;
+    UINT8* buf_limit;
+    GIFENCODERSTATE *context = (GIFENCODERSTATE*) state->context;
+    int r;
 
-    GIFENCODERBLOCK *block;
-    GIFENCODERSTATE *context = (GIFENCODERSTATE *)state->context;
+    UINT32 in_avail, in_used;
+    UINT32 out_avail, out_used;
 
-    if (!state->state) {
-        /* place a clear code in the output buffer */
-        context->bitbuffer = CLEAR_CODE;
-        context->bitcount = 9;
-
-        state->count = FIRST_CODE;
+    if (state->state == INIT) {
+        state->state = ENCODE;
+        glzwe_init(context);
 
         if (context->interlace) {
             context->interlace = 1;
@@ -159,166 +223,132 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             context->step = 1;
         }
 
-        context->last = -1;
-
+        /* Need at least 2 bytes for data sub-block; 5 for empty image */
+        if (bytes < 5) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return 0;
+        }
         /* sanity check */
         if (state->xsize <= 0 || state->ysize <= 0) {
-            state->state = ENCODE_EOF;
+            /* Is this better than an error return? */
+            /* This will handle any legal "LZW Minimum Code Size" */
+            memset(buf, 0, 5);
+            in_avail = 0;
+            out_avail = 5;
+            r = glzwe(context, (const UINT8 *)"", buf + 1, &in_avail, &out_avail, 1);
+            if (r == GLZW_OK) {
+                r = 5 - out_avail;
+                if (r < 1 || r > 3) {
+                    state->errcode = IMAGING_CODEC_BROKEN;
+                    return 0;
+                }
+                buf[0] = r;
+                state->errcode = IMAGING_CODEC_END;
+                return r + 2;
+            } else {
+                /* Should not be possible unless something external to this
+                 * routine messes with our state data */
+                state->errcode = IMAGING_CODEC_BROKEN;
+                return 0;
+            }
         }
+        /* Init state->x to make if() below true the first time through. */
+        state->x = state->xsize;
     }
 
-    ptr = buf;
+    buf_limit = buf + bytes;
+    sub_block_limit = sub_block_ptr = ptr = buf;
 
+    /* On entry, buf is output buffer, bytes is space available in buf.
+     * Loop here getting input until buf is full or image is all encoded. */
     for (;;) {
-        switch (state->state) {
-            case INIT:
-            case ENCODE:
+        /* Set up sub-block ptr and limit. sub_block_ptr stays at beginning
+         * of sub-block until it is full. ptr will advance when any data is
+         * placed in buf.
+         */
+        if (ptr >= sub_block_limit) {
+            if (buf_limit - ptr < 2) { /* Need at least 2 for data sub-block */
+                return ptr - buf;
+            }
+            sub_block_ptr = ptr;
+            sub_block_limit = sub_block_ptr +
+                (256 < buf_limit - sub_block_ptr ?
+                 256 : buf_limit - sub_block_ptr);
+            *ptr++ = 0;
+        }
 
-                /* identify and store a run of pixels */
+        /* Get next row of pixels. */
+        /* This if() originally tested state->x==0 for the first time through.
+         * This no longer works, as the loop will not advance state->x if
+         * glzwe() does not consume any input; this would advance the row
+         * spuriously.  Now pre-init state->x above for first time, and avoid
+         * entering if() when state->state is FINISH, or it will loop
+         * infinitely.
+         */
+        if (state->x >= state->xsize && state->state == ENCODE) {
+            if (!context->interlace && state->y >= state->ysize) {
+                state->state = FINISH;
+                continue;
+            }
 
-                if (state->x == 0 || state->x >= state->xsize) {
-                    if (!context->interlace && state->y >= state->ysize) {
-                        state->state = ENCODE_EOF;
+            /* get another line of data */
+            state->shuffle(
+                state->buffer,
+                (UINT8*) im->image[state->y + state->yoff] +
+                state->xoff * im->pixelsize, state->xsize
+            );
+            state->x = 0;
+
+            /* step forward, according to the interlace settings */
+            state->y += context->step;
+            while (context->interlace && state->y >= state->ysize) {
+                switch (context->interlace) {
+                    case 1:
+                        state->y = 4;
+                        context->interlace = 2;
                         break;
-                    }
-
-                    if (context->flush) {
-                        state->state = FLUSH;
+                    case 2:
+                        context->step = 4;
+                        state->y = 2;
+                        context->interlace = 3;
                         break;
-                    }
-
-                    /* get another line of data */
-                    state->shuffle(
-                        state->buffer,
-                        (UINT8 *)im->image[state->y + state->yoff] +
-                            state->xoff * im->pixelsize,
-                        state->xsize);
-
-                    state->x = 0;
-
-                    if (state->state == INIT) {
-                        /* preload the run-length buffer and get going */
-                        context->last = state->buffer[0];
-                        context->count = state->x = 1;
-                        state->state = ENCODE;
-                    }
-
-                    /* step forward, according to the interlace settings */
-                    state->y += context->step;
-                    while (context->interlace && state->y >= state->ysize)
-                        switch (context->interlace) {
-                            case 1:
-                                state->y = 4;
-                                context->interlace = 2;
-                                break;
-                            case 2:
-                                context->step = 4;
-                                state->y = 2;
-                                context->interlace = 3;
-                                break;
-                            case 3:
-                                context->step = 2;
-                                state->y = 1;
-                                context->interlace = 0;
-                                break;
-                            default:
-                                /* just make sure we don't loop forever */
-                                context->interlace = 0;
-                        }
+                    case 3:
+                        context->step = 2;
+                        state->y = 1;
+                        context->interlace = 0;
+                        break;
+                    default:
+                        /* just make sure we don't loop forever */
+                        context->interlace = 0;
                 }
-                /* Potential special case for xsize==1 */
-                if (state->x < state->xsize) {
-                    this = state->buffer[state->x++];
-                } else {
-                    EMIT_RUN(label0);
-                    break;
-                }
+            }
+        }
 
-                if (this == context->last) {
-                    context->count++;
-                } else {
-                    EMIT_RUN(label1);
-                    context->last = this;
-                    context->count = 1;
-                }
-                break;
+        in_avail = state->xsize - state->x;   /* bytes left in line */
+        out_avail = sub_block_limit - ptr;  /* bytes left in sub-block */
+        r = glzwe(context, &state->buffer[state->x], ptr, &in_avail,
+                &out_avail, state->state == FINISH);
+        out_used = sub_block_limit - ptr - out_avail;
+        *sub_block_ptr += out_used;
+        ptr += out_used;
+        in_used = state->xsize - state->x - in_avail;
+        state->x += in_used;
 
-            case ENCODE_EOF:
-
-                /* write the final run */
-                EMIT_RUN(label2);
-
-                /* write an end of image marker */
-                EMIT(EOF_CODE);
-
-                /* empty the bit buffer */
-                while (context->bitcount > 0) {
-                    if (!emit(context, (UINT8)context->bitbuffer)) {
-                        state->errcode = IMAGING_CODEC_MEMORY;
-                        return 0;
-                    }
-                    context->bitbuffer >>= 8;
-                    context->bitcount -= 8;
-                }
-
-                /* flush the last block, and exit */
-                if (context->block) {
-                    GIFENCODERBLOCK *block;
-                    block = context->flush;
-                    while (block && block->next) {
-                        block = block->next;
-                    }
-                    if (block) {
-                        block->next = context->block;
-                    } else {
-                        context->flush = context->block;
-                    }
-                    context->block = NULL;
-                }
-
-                state->state = EXIT;
-
-                /* fall through... */
-
-            case EXIT:
-            case FLUSH:
-
-                while (context->flush) {
-                    /* get a block from the flush queue */
-                    block = context->flush;
-
-                    if (block->size > 0) {
-                        /* make sure it fits into the output buffer */
-                        if (bytes < block->size + 1) {
-                            return ptr - buf;
-                        }
-
-                        ptr[0] = block->size;
-                        memcpy(ptr + 1, block->data, block->size);
-
-                        ptr += block->size + 1;
-                        bytes -= block->size + 1;
-                    }
-
-                    context->flush = block->next;
-
-                    if (context->free) {
-                        free(context->free);
-                    }
-                    context->free = block;
-                }
-
-                if (state->state == EXIT) {
-                    /* this was the last block! */
-                    if (context->free) {
-                        free(context->free);
-                    }
-                    state->errcode = IMAGING_CODEC_END;
-                    return ptr - buf;
-                }
-
-                state->state = ENCODE;
-                break;
+        if (r == GLZW_OK) {
+            /* Should not be possible when end-of-data flag is false. */
+            state->errcode = IMAGING_CODEC_END;
+            return ptr - buf;
+        } else if (r == GLZW_NO_INPUT_AVAIL) {
+            /* Used all the input line; get another line */
+            continue;
+        } else if (r == GLZW_NO_OUTPUT_AVAIL) {
+            /* subblock is full */
+            continue;
+        } else {
+            /* Should not be possible unless something external to this
+             * routine messes with our state data */
+            state->errcode = IMAGING_CODEC_BROKEN;
+            return 0;
         }
     }
 }
