@@ -160,7 +160,6 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.effect_spread
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
-.. automethod:: PIL.Image.Image.frombytes
 
 This blurs the input image using a filter from the ``ImageFilter`` module:
 
@@ -173,6 +172,7 @@ This blurs the input image using a filter from the ``ImageFilter`` module:
     # Blur the input image using the filter ImageFilter.BLUR
     im_blurred = im.filter(filter=ImageFilter.BLUR)
 
+.. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.getbands
 
 This helps to get the bands of the input image:
