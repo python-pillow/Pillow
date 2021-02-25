@@ -63,8 +63,8 @@ Take your test image, and make a really simple harness.
 ::
 
     from PIL import Image
-    im = Image.open(path)
-    im.load()
+    with Image.open(path) as im:
+        im.load()
 
 -  Run this through valgrind, but note that python triggers some issues
    on its own, so you're looking for items within the Pillow hierarchy
