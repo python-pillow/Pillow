@@ -69,7 +69,6 @@ class Viewer:
         Converts the given image to the target format and displays it.
         """
 
-        # save temporary image to disk
         if not (
             image.mode in ("1", "RGBA")
             or (self.format == "PNG" and image.mode in ("I;16", "LA"))
