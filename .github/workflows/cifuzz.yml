@@ -12,15 +12,22 @@ jobs:
         language: python
         dry-run: false
     - name: Run Fuzzers
+      id: run
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
         oss-fuzz-project-name: 'pillow'
         fuzz-seconds: 600
         language: python
         dry-run: false
-    - name: Upload Crash
-      uses: actions/upload-artifact@v1
+    - name: Upload New Crash
+      uses: actions/upload-artifact@v2
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
+    - name: Upload Legacy Crash
+      uses: actions/upload-artifact@v2
+      if: steps.run.outcome == 'success':
+      with:
+        name: crash
+        path: ./out/crash*
