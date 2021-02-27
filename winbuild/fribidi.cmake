@@ -99,4 +99,4 @@ add_library(fribidi SHARED
 	${FRIBIDI_SOURCES_GENERATED})
 fribidi_definitions(fribidi)
 target_compile_definitions(fribidi
-	PUBLIC "-DFRIBIDI_ENTRY=__declspec(dllexport)")
+	PUBLIC "-DFRIBIDI_BUILD")
