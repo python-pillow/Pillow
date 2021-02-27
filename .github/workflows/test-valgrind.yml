@@ -38,7 +38,7 @@ jobs:
       run: |
         docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
 
-    - name: Docker build
+    - name: Build and Run Valgrind
       run: |
         # The Pillow user in the docker container is UID 1000
         sudo chown -R 1000 $GITHUB_WORKSPACE
