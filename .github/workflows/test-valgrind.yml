@@ -1,0 +1,72 @@
+name: Test Valgrind
+
+# like the docker tests, but running valgrind only on *.c/*.h changes.
+
+on:
+  push:
+    paths:
+      - "**.yml" # testing, remove me
+      - "**.c"
+      - "**.h"
+  pull_request
+    paths:
+      - "**.yml" # testing, remove me
+      - "**.c"
+      - "**.h"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        docker: [
+          ubuntu-20.04-focal-amd64-valgrind,
+        ]
+        dockerTag: [master]
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Docker build
+      run: |
+        # The Pillow user in the docker container is UID 1000
+        sudo chown -R 1000 $GITHUB_WORKSPACE
+        docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        sudo chown -R runner $GITHUB_WORKSPACE
+
+    - name: After success
+      run: |
+        PATH="$PATH:~/.local/bin"
+        docker start pillow_container
+        pil_path=`docker exec pillow_container /vpy3/bin/python -c 'import os, PIL;print(os.path.realpath(os.path.dirname(PIL.__file__)))'`
+        docker stop pillow_container
+        sudo mkdir -p $pil_path
+        sudo cp src/PIL/*.py $pil_path
+        .ci/after_success.sh
+      env:
+        MATRIX_DOCKER: ${{ matrix.docker }}
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1
+      with:
+        flags: GHA_Docker
+        name: ${{ matrix.docker }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Valgrind Test Successful
+    steps:
+      - name: Success
+        run: echo Valgrind Test Successful
