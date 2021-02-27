@@ -45,24 +45,6 @@ jobs:
         docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE
 
-    - name: After success
-      run: |
-        PATH="$PATH:~/.local/bin"
-        docker start pillow_container
-        pil_path=`docker exec pillow_container /vpy3/bin/python -c 'import os, PIL;print(os.path.realpath(os.path.dirname(PIL.__file__)))'`
-        docker stop pillow_container
-        sudo mkdir -p $pil_path
-        sudo cp src/PIL/*.py $pil_path
-        .ci/after_success.sh
-      env:
-        MATRIX_DOCKER: ${{ matrix.docker }}
-
-    - name: Upload coverage
-      uses: codecov/codecov-action@v1
-      with:
-        flags: GHA_Docker
-        name: ${{ matrix.docker }}
-
   success:
     needs: build
     runs-on: ubuntu-latest
