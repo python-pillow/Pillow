@@ -8,7 +8,7 @@ on:
       - "**.yml" # testing, remove me
       - "**.c"
       - "**.h"
-  pull_request
+  pull_request:
     paths:
       - "**.yml" # testing, remove me
       - "**.c"
