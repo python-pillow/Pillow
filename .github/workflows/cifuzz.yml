@@ -27,7 +27,7 @@ jobs:
         path: ./out/artifacts
     - name: Upload Legacy Crash
       uses: actions/upload-artifact@v2
-      if: steps.run.outcome == 'success':
+      if: steps.run.outcome == 'success'
       with:
         name: crash
         path: ./out/crash*
