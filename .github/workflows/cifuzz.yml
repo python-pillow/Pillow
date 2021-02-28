@@ -42,3 +42,8 @@ jobs:
       with:
         name: crash
         path: ./out/crash*
+    - name: Fail on legacy crash
+      if: success()
+      run: |
+        [ ! -e out/crash-* ]
+        echo No legacy crash detected
