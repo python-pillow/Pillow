@@ -5,12 +5,10 @@ name: Test Valgrind
 on:
   push:
     paths:
-      - "**.yml" # testing, remove me
       - "**.c"
       - "**.h"
   pull_request:
     paths:
-      - "**.yml" # testing, remove me
       - "**.c"
       - "**.h"
 
