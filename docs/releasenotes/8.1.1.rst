@@ -23,7 +23,8 @@ since pillow 4.3.0.
 There is an Exhaustion of Memory DOS in the ICNS, ICO, and BLP
 container formats where Pillow did not properly check the reported
 size of the contained image. These images could cause arbitrariliy
-large memory allocations.
+large memory allocations. This was reported by Jiayi Lin, Luke
+Shaffer, Xinran Xie, and Akshay Ajayan of ASU.edu.
 
 
 Other Changes
