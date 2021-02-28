@@ -1,0 +1,32 @@
+8.1.1
+-----
+
+
+Security
+========
+
+CVE-2021-25289: The previous fix for CVE-2020-35654 was insufficent
+due to incorrect error checking in TiffDecode.c.
+
+CVE-2021-25290: In TiffDecode.c, there is a negative-offset memcpy
+with an invalid size
+
+CVE-2021-25291: In TiffDecode.c, invalid tile boundaries could lead to
+an OOB Read in TiffReadRGBATile
+
+CVE-2021-25292: The PDF parser has a catastrophic backtracking regex
+that could be used as a DOS attack.
+
+CVE-2021-25293: There is an Out of Bounds Read in SGIRleDecode.c,
+since pillow 4.3.0.
+
+There is an Exhaustion of Memory DOS in the ICNS, ICO, and BLP
+container formats where Pillow did not properly check the reported
+size of the contained image. These images could cause arbitrariliy
+large memory allocations.
+
+
+Other Changes
+=============
+
+A crash with the feature flags for LibJpeg and Webp on unreleased Python 3.10 has been fixed (https://github.com/python-pillow/Pillow/issues/5193)
