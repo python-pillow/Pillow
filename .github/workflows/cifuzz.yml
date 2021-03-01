@@ -1,0 +1,47 @@
+name: CIFuzz
+on:
+  push:
+    paths:
+      - "**.c"
+      - "**.h"
+  pull_request:
+    paths:
+      - "**.c"
+      - "**.h"
+
+jobs:
+  Fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build Fuzzers
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'pillow'
+        language: python
+        dry-run: false
+    - name: Run Fuzzers
+      id: run
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'pillow'
+        fuzz-seconds: 600
+        language: python
+        dry-run: false
+    - name: Upload New Crash
+      uses: actions/upload-artifact@v2
+      if: failure() && steps.build.outcome == 'success'
+      with:
+        name: artifacts
+        path: ./out/artifacts
+    - name: Upload Legacy Crash
+      uses: actions/upload-artifact@v2
+      if: steps.run.outcome == 'success'
+      with:
+        name: crash
+        path: ./out/crash*
+    - name: Fail on legacy crash
+      if: success()
+      run: |
+        [ ! -e out/crash-* ]
+        echo No legacy crash detected
