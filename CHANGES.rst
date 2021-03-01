@@ -2,6 +2,27 @@
 Changelog (Pillow)
 ==================
 
+8.1.1 (2020-03-01)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [hugovk]
+
+- Fix OOB Read in TiffDecode.c, and check the tile validity before reading. CVE-2021-25291
+  [wiredfool]
+
+- Fix negative size read in TiffDecode.c. CVE-2021-25290
+  [wiredfool]
+
+- Fix OOB read in SgiRleDecode.c. CVE-2021-25293
+  [wiredfool]
+
+- Incorrect error code checking in TiffDecode.c. CVE-2021-25289
+  [wiredfool]
+
+- PyModule_AddObject fix for Python 3.10 #5194
+  [radarhere]
+
 8.1.0 (2020-01-02)
 ------------------
 
