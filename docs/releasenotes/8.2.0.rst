@@ -21,10 +21,10 @@ TODO
 API Additions
 =============
 
-Displaying images in Google Colab
+Displaying images in IPython
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After loading the image ``ipython_display(image)`` is used to display the loaded image.
+After loading the image ``display(image)`` is used to display the loaded image.
 
 Security
 ========
