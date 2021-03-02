@@ -22,7 +22,7 @@ API Additions
 =============
 
 Displaying images in IPython
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After loading the image ``display(image)`` is used to display the loaded image.
 
