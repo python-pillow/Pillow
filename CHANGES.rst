@@ -23,7 +23,7 @@ Changelog (Pillow)
 - OSS-Fuzz support #5189
   [wiredfool, radarhere]
 
-8.1.1 (2020-03-01)
+8.1.1 (2021-03-01)
 ------------------
 
 - Use more specific regex chars to prevent ReDoS. CVE-2021-25292
@@ -44,7 +44,7 @@ Changelog (Pillow)
 - PyModule_AddObject fix for Python 3.10 #5194
   [radarhere]
 
-8.1.0 (2020-01-02)
+8.1.0 (2021-01-02)
 ------------------
 
 - Fix TIFF OOB Write error. CVE-2020-35654 #5175
