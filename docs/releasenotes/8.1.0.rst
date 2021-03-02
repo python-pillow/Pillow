@@ -46,13 +46,14 @@ The PCX image decoder used the reported image stride to calculate the row buffer
 rather than calculating it from the image size. This issue dates back to the PIL fork.
 Thanks to Google's `OSS-Fuzz`_ project for finding this.
 
-* :cve:`CVE-2020-35654` Fix TIFF OOB Write error
+* :cve:`CVE-2020-35654` Fix TIFF out-of-bounds write error
 
-OOB Write in ``TiffDecode.c`` when reading corrupt YCbCr files in some LibTIFF versions
-(4.1.0/Ubuntu 20.04, but not 4.0.9/Ubuntu 18.04). In some cases LibTIFF's
-interpretation of the file is different when reading in RGBA mode, leading to an Out of
-bounds write in ``TiffDecode.c``. This potentially affects Pillow versions from 6.0.0 to
-8.0.1, depending on the version of LibTIFF. This was reported through `Tidelift`_.
+Out-of-bounds write in ``TiffDecode.c`` when reading corrupt YCbCr files in some
+LibTIFF versions (4.1.0/Ubuntu 20.04, but not 4.0.9/Ubuntu 18.04). In some cases
+LibTIFF's interpretation of the file is different when reading in RGBA mode, leading to
+an out-of-bounds write in ``TiffDecode.c``. This potentially affects Pillow versions
+from 6.0.0 to 8.0.1, depending on the version of LibTIFF. This was reported through
+`Tidelift`_.
 
 * :cve:`CVE-2020-35655` Fix for SGI Decode buffer overrun
 
