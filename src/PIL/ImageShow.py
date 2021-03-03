@@ -228,12 +228,12 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
 
 class IPythonViewer(Viewer):
     def show_image(self, image, **options):
-        display(image)
+        ipython_display(image)
         return 1
 
 
 try:
-    from IPython.display import display
+    from IPython.display import display as ipython_display
 except ImportError:
     pass
 else:
