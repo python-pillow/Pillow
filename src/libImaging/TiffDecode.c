@@ -56,7 +56,7 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     dump_state(state);
 
     if (state->loc > state->eof) {
-        TIFFError("_tiffReadProc", "Invalid Read at loc %d, eof: %d", state->loc, state->eof);
+        TIFFError("_tiffReadProc", "Invalid Read at loc %lu, eof: %lu", state->loc, state->eof);
         return 0;
     }
     to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
