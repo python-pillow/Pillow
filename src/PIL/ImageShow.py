@@ -227,6 +227,8 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
 
 
 class IPythonViewer(Viewer):
+    """The viewer for IPython frontends."""
+
     def show_image(self, image, **options):
         ipython_display(image)
         return 1
