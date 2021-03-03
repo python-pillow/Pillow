@@ -225,6 +225,21 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
     if shutil.which("xv"):
         register(XVViewer)
 
+
+class IPythonViewer(Viewer):
+    def show_image(self, image, **options):
+        display(image)
+        return 1
+
+
+try:
+    from IPython.display import display
+except ImportError:
+    pass
+else:
+    register(IPythonViewer)
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
