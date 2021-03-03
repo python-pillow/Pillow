@@ -57,7 +57,7 @@ from 6.0.0 to 8.0.1, depending on the version of LibTIFF. This was reported thro
 
 * :cve:`CVE-2020-35655` Fix for SGI Decode buffer overrun
 
-4 byte read overflow in ``SGIRleDecode.c``, where the code was not correctly checking the
+4 byte read overflow in ``SgiRleDecode.c``, where the code was not correctly checking the
 offsets and length tables. Independently reported through `Tidelift`_ and Google's
 `OSS-Fuzz`_. This vulnerability covers Pillow versions 4.3.0->8.0.1.
 
