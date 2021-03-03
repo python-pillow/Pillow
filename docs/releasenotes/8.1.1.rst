@@ -31,5 +31,5 @@ Shaffer, Xinran Xie, and Akshay Ajayan of
 Other Changes
 =============
 
-A crash with the feature flags for libjpeg and WebP on unreleased Python 3.10 has been
-fixed (:issue:`5193`).
+A crash with the feature flags for libimagequant, libjpeg-turbo, WebP and XCB on
+unreleased Python 3.10 has been fixed (:issue:`5193`).
