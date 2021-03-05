@@ -144,5 +144,7 @@ def test_not_an_icns_file():
 
 def test_icns_decompression_bomb():
     with pytest.raises(Image.DecompressionBombError):
-        im = Image.open('Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns')
+        im = Image.open(
+            "Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns"
+        )
         im.load()
