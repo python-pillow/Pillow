@@ -1,7 +1,6 @@
 8.1.1
 -----
 
-
 Security
 ========
 
@@ -19,13 +18,6 @@ that could be used as a DOS attack.
 
 :cve:`CVE-2021-25293`: There is an out-of-bounds read in ``SgiRleDecode.c``,
 since Pillow 4.3.0.
-
-There is an exhaustion of memory DOS in the BLP (:cve:`CVE-2021-27921`),
-ICNS (:cve:`CVE-2021-27922`) and ICO (:cve:`CVE-2021-27923`) container formats
-where Pillow did not properly check the reported size of the contained image.
-These images could cause arbitrarily large memory allocations. This was reported
-by Jiayi Lin, Luke Shaffer, Xinran Xie, and Akshay Ajayan of
-`Arizona State University <https://www.asu.edu/>`_.
 
 
 Other Changes
