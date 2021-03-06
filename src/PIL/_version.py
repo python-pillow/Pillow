@@ -1,2 +1,2 @@
 # Master version for Pillow
-__version__ = "8.1.1"
+__version__ = "8.1.2"
