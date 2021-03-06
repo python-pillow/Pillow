@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+8.1.2 (2021-03-06)
+------------------
+
+- Fix Memory DOS in BLP (CVE-2021-27921), ICNS (CVE-2021-27922) and ICO (CVE-2021-27923) Image Plugins
+  [wiredfool]
+
 8.1.1 (2021-03-01)
 ------------------
 
