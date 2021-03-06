@@ -1544,8 +1544,6 @@ class Image:
             raise ValueError("Destination must be a 2-tuple")
         if min(source) < 0:
             raise ValueError("Source must be non-negative")
-        if min(dest) < 0:
-            raise ValueError("Destination must be non-negative")
 
         if len(source) == 2:
             source = source + im.size
