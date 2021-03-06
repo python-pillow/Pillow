@@ -2396,18 +2396,11 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode == "LA":
+        if self.mode in ("LA", "RGBA"):
             return (
-                self.convert("La")
+                self.convert(self.mode.replace("A", "a"))
                 .transform(size, method, data, resample, fill, fillcolor)
-                .convert("LA")
-            )
-
-        if self.mode == "RGBA":
-            return (
-                self.convert("RGBa")
-                .transform(size, method, data, resample, fill, fillcolor)
-                .convert("RGBA")
+                .convert(self.mode)
             )
 
         if isinstance(method, ImageTransformHandler):
