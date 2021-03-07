@@ -3974,8 +3974,6 @@ extern PyObject *
 PyOutline_Create(ImagingObject *self, PyObject *args);
 
 extern PyObject *
-PyImaging_Mapper(PyObject *self, PyObject *args);
-extern PyObject *
 PyImaging_MapBuffer(PyObject *self, PyObject *args);
 
 static PyMethodDef functions[] = {
@@ -4030,9 +4028,6 @@ static PyMethodDef functions[] = {
 
 /* Memory mapping */
 #ifdef WITH_MAPPING
-#ifdef _WIN32
-    {"map", (PyCFunction)PyImaging_Mapper, 1},
-#endif
     {"map_buffer", (PyCFunction)PyImaging_MapBuffer, 1},
 #endif
 

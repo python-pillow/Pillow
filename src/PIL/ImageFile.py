@@ -192,24 +192,14 @@ class ImageFile(Image.Image):
                 and args[0] in Image._MAPMODES
             ):
                 try:
-                    if hasattr(Image.core, "map"):
-                        # use built-in mapper  WIN32 only
-                        self.map = Image.core.map(self.filename)
-                        self.map.seek(offset)
-                        self.im = self.map.readimage(
-                            self.mode, self.size, args[1], args[2]
-                        )
-                    else:
-                        # use mmap, if possible
-                        import mmap
+                    # use mmap, if possible
+                    import mmap
 
-                        with open(self.filename) as fp:
-                            self.map = mmap.mmap(
-                                fp.fileno(), 0, access=mmap.ACCESS_READ
-                            )
-                        self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, offset, args
-                        )
+                    with open(self.filename) as fp:
+                        self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
+                    self.im = Image.core.map_buffer(
+                        self.map, self.size, decoder_name, offset, args
+                    )
                     readonly = 1
                     # After trashing self.im,
                     # we might need to reload the palette data.
