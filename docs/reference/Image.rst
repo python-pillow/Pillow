@@ -22,8 +22,8 @@ Windows).
 .. code-block:: python
 
     from PIL import Image
-    im = Image.open("hopper.jpg")
-    im.rotate(45).show()
+    with Image.open("hopper.jpg") as im:
+        im.rotate(45).show()
 
 Create thumbnails
 ^^^^^^^^^^^^^^^^^
@@ -40,9 +40,9 @@ current directory preserving aspect ratios with 128x128 max resolution.
 
     for infile in glob.glob("*.jpg"):
         file, ext = os.path.splitext(infile)
-        im = Image.open(infile)
-        im.thumbnail(size)
-        im.save(file + ".thumbnail", "JPEG")
+        with Image.open(infile) as im:
+            im.thumbnail(size)
+            im.save(file + ".thumbnail", "JPEG")
 
 Functions
 ---------
@@ -145,22 +145,21 @@ This crops the input image with the provided coordinates:
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
+    with Image.open("hopper.jpg") as im:
 
-    # The crop method from the Image module takes four coordinates as input.
-    # The right can also be represented as (left+width)
-    # and lower can be represented as (upper+height).
-    (left, upper, right, lower) = (20, 20, 100, 100)
+        # The crop method from the Image module takes four coordinates as input.
+        # The right can also be represented as (left+width)
+        # and lower can be represented as (upper+height).
+        (left, upper, right, lower) = (20, 20, 100, 100)
 
-    # Here the image "im" is cropped and assigned to new variable im_crop
-    im_crop = im.crop((left, upper, right, lower))
+        # Here the image "im" is cropped and assigned to new variable im_crop
+        im_crop = im.crop((left, upper, right, lower))
 
 
 .. automethod:: PIL.Image.Image.draft
 .. automethod:: PIL.Image.Image.effect_spread
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
-.. automethod:: PIL.Image.Image.frombytes
 
 This blurs the input image using a filter from the ``ImageFilter`` module:
 
@@ -168,11 +167,12 @@ This blurs the input image using a filter from the ``ImageFilter`` module:
 
     from PIL import Image, ImageFilter
 
-    im = Image.open("hopper.jpg")
+    with Image.open("hopper.jpg") as im:
 
-    # Blur the input image using the filter ImageFilter.BLUR
-    im_blurred = im.filter(filter=ImageFilter.BLUR)
+        # Blur the input image using the filter ImageFilter.BLUR
+        im_blurred = im.filter(filter=ImageFilter.BLUR)
 
+.. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.getbands
 
 This helps to get the bands of the input image:
@@ -181,8 +181,8 @@ This helps to get the bands of the input image:
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
-    print(im.getbands())  # Returns ('R', 'G', 'B')
+    with Image.open("hopper.jpg") as im:
+        print(im.getbands())  # Returns ('R', 'G', 'B')
 
 .. automethod:: PIL.Image.Image.getbbox
 
@@ -192,9 +192,9 @@ This helps to get the bounding box coordinates of the input image:
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
-    print(im.getbbox())
-    # Returns four coordinates in the format (left, upper, right, lower)
+    with Image.open("hopper.jpg") as im:
+        print(im.getbbox())
+        # Returns four coordinates in the format (left, upper, right, lower)
 
 .. automethod:: PIL.Image.Image.getchannel
 .. automethod:: PIL.Image.Image.getcolors
@@ -222,11 +222,11 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
+    with Image.open("hopper.jpg") as im:
 
-    # Provide the target width and height of the image
-    (width, height) = (im.width // 2, im.height // 2)
-    im_resized = im.resize((width, height))
+        # Provide the target width and height of the image
+        (width, height) = (im.width // 2, im.height // 2)
+        im_resized = im.resize((width, height))
 
 .. automethod:: PIL.Image.Image.rotate
 
@@ -236,12 +236,12 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
+    with Image.open("hopper.jpg") as im:
 
-    # Rotate the image by 60 degrees counter clockwise
-    theta = 60
-    # Angle is in degrees counter clockwise
-    im_rotated = im.rotate(angle=theta)
+        # Rotate the image by 60 degrees counter clockwise
+        theta = 60
+        # Angle is in degrees counter clockwise
+        im_rotated = im.rotate(angle=theta)
 
 .. automethod:: PIL.Image.Image.save
 .. automethod:: PIL.Image.Image.seek
@@ -260,12 +260,12 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
 
     from PIL import Image
 
-    im = Image.open("hopper.jpg")
+    with Image.open("hopper.jpg") as im:
 
-    # Flip the image from left to right
-    im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
-    # To flip the image from top to bottom,
-    # use the method "Image.FLIP_TOP_BOTTOM"
+        # Flip the image from left to right
+        im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
+        # To flip the image from top to bottom,
+        # use the method "Image.FLIP_TOP_BOTTOM"
 
 
 .. automethod:: PIL.Image.Image.verify

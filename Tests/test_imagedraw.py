@@ -692,6 +692,20 @@ def test_rectangle_I16():
     assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
 
 
+def test_rectangle_translucent_outline():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rectangle(BBOX1, fill="black", outline=(0, 255, 0, 127), width=5)
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rectangle_translucent_outline.png"
+    )
+
+
 def test_floodfill():
     red = ImageColor.getrgb("red")
 

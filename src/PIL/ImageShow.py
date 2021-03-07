@@ -69,7 +69,6 @@ class Viewer:
         Converts the given image to the target format and displays it.
         """
 
-        # save temporary image to disk
         if not (
             image.mode in ("1", "RGBA")
             or (self.format == "PNG" and image.mode in ("I;16", "LA"))
@@ -225,6 +224,23 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
         register(EogViewer)
     if shutil.which("xv"):
         register(XVViewer)
+
+
+class IPythonViewer(Viewer):
+    """The viewer for IPython frontends."""
+
+    def show_image(self, image, **options):
+        ipython_display(image)
+        return 1
+
+
+try:
+    from IPython.display import display as ipython_display
+except ImportError:
+    pass
+else:
+    register(IPythonViewer)
+
 
 if __name__ == "__main__":
 

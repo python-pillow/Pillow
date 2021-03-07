@@ -178,6 +178,7 @@ class IcoFile:
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
             im = PngImagePlugin.PngImageFile(self.buf)
+            Image._decompression_bomb_check(im.size)
         else:
             # XOR + AND mask bmp frame
             im = BmpImagePlugin.DibImageFile(self.buf)

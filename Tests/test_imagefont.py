@@ -51,7 +51,7 @@ class TestImageFont:
         ttf_copy = ttf.font_variant(size=FONT_SIZE + 1)
         assert ttf_copy.size == FONT_SIZE + 1
 
-        second_font_path = "Tests/fonts/DejaVuSans.ttf"
+        second_font_path = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
         ttf_copy = ttf.font_variant(font=second_font_path)
         assert ttf_copy.path == second_font_path
 
@@ -153,8 +153,8 @@ class TestImageFont:
             ("text", "L", "FreeMono.ttf", 15, 36, 36),
             ("text", "1", "FreeMono.ttf", 15, 36, 36),
             # issue 4177
-            ("rrr", "L", "DejaVuSans.ttf", 18, 21, 22.21875),
-            ("rrr", "1", "DejaVuSans.ttf", 18, 24, 22.21875),
+            ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 21, 22.21875),
+            ("rrr", "1", "DejaVuSans/DejaVuSans.ttf", 18, 24, 22.21875),
             # test 'l' not including extra margin
             # using exact value 2047 / 64 for raqm, checked with debugger
             ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
@@ -835,7 +835,7 @@ class TestImageFont:
         layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
         target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
         font = ImageFont.truetype(
-            f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+            f"Tests/fonts/DejaVuSans/DejaVuSans-24-{bpp}-stripped.ttf",
             24,
             layout_engine=self.LAYOUT_ENGINE,
         )
@@ -978,7 +978,9 @@ def test_render_mono_size():
     im = Image.new("P", (100, 30), "white")
     draw = ImageDraw.Draw(im)
     ttf = ImageFont.truetype(
-        "Tests/fonts/DejaVuSans.ttf", 18, layout_engine=ImageFont.LAYOUT_BASIC
+        "Tests/fonts/DejaVuSans/DejaVuSans.ttf",
+        18,
+        layout_engine=ImageFont.LAYOUT_BASIC,
     )
 
     draw.text((10, 10), "r" * 10, "black", ttf)

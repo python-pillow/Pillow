@@ -1,0 +1,52 @@
+name: Test Valgrind
+
+# like the docker tests, but running valgrind only on *.c/*.h changes.
+
+on:
+  push:
+    paths:
+      - "**.c"
+      - "**.h"
+  pull_request:
+    paths:
+      - "**.c"
+      - "**.h"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        docker: [
+          ubuntu-20.04-focal-amd64-valgrind,
+        ]
+        dockerTag: [master]
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Build and Run Valgrind
+      run: |
+        # The Pillow user in the docker container is UID 1000
+        sudo chown -R 1000 $GITHUB_WORKSPACE
+        docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        sudo chown -R runner $GITHUB_WORKSPACE
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Valgrind Test Successful
+    steps:
+      - name: Success
+        run: echo Valgrind Test Successful

@@ -312,3 +312,7 @@ def setup(app):
     app.add_js_file("js/script.js")
     app.add_css_file("css/dark.css")
     app.add_css_file("css/light.css")
+
+
+# GitHub repo for sphinx-issues
+issues_github_path = "python-pillow/Pillow"

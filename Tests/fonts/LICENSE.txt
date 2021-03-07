@@ -17,8 +17,9 @@ OpenSansCondensed-LightItalic.tt, from https://fonts.google.com/specimen/Open+Sa
 
 chromacheck-sbix.woff, from https://github.com/RoelN/ChromaCheck, under The MIT License (MIT), Copyright (c) 2018 Roel Nieskens, https://pixelambacht.nl Copyright (c) 2018 Google LLC
 
-DejaVuSans-24-{1,2,4,8}-stripped.ttf are based on DejaVuSans.ttf converted using FontForge to add bitmap strikes and keep only the ASCII range.
+KhmerOSBattambang-Regular.ttf is licensed under LGPL-2.1 or later.
 
+FreeMono.ttf is licensed under GPLv3.
 
 10x20-ISO8859-1.pcf, from https://packages.ubuntu.com/xenial/xfonts-base
 
