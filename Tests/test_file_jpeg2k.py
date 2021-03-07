@@ -231,3 +231,19 @@ def test_parser_feed():
 
     # Assert
     assert p.image.size == (640, 480)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/crash-4fb027452e6988530aa5dabee76eecacb3b79f8a.j2k",
+        "Tests/images/crash-7d4c83eb92150fb8f1653a697703ae06ae7c4998.j2k",
+        "Tests/images/crash-ccca68ff40171fdae983d924e127a721cab2bd50.j2k",
+        "Tests/images/crash-d2c93af851d3ab9a19e34503626368b2ecde9c03.j2k",
+    ],
+)
+def test_crashes(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            # Valgrind should not complain here
+            im.load()
