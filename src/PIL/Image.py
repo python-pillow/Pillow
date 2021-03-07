@@ -1913,7 +1913,7 @@ class Image:
             resample = NEAREST
 
         if self.mode in ["LA", "RGBA"]:
-            im = self.convert(self.mode[:-1] + "a")
+            im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
 
@@ -1963,7 +1963,7 @@ class Image:
             return self.copy()
 
         if self.mode in ["LA", "RGBA"]:
-            im = self.convert(self.mode[:-1] + "a")
+            im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.reduce(factor, box)
             return im.convert(self.mode)
 
@@ -2398,7 +2398,7 @@ class Image:
 
         if self.mode in ("LA", "RGBA"):
             return (
-                self.convert(self.mode.replace("A", "a"))
+                self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
                 .transform(size, method, data, resample, fill, fillcolor)
                 .convert(self.mode)
             )
