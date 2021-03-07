@@ -1,4 +1,5 @@
 from PIL import Image
+import pytest
 
 from .helper import assert_image_equal_tofile
 

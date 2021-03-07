@@ -625,9 +625,10 @@ class TestFileTiff:
     )
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
-        with pytest.raises(ValueError):
-            with Image.open("Tests/images/string_dimension.tiff"):
-                pass
+        with pytest.raises(OSError):
+            with Image.open("Tests/images/string_dimension.tiff") as im:
+                im.load()
+
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
