@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Allow alpha_composite destination to be negative #5313
+  [radarhere]
+
 - Ensure file is closed if it is opened by ImageQt.ImageQt #5260
   [radarhere]
 
