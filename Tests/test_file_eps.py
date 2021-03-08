@@ -1,5 +1,4 @@
 import io
-
 import pytest
 
 from PIL import EpsImagePlugin, Image, features
@@ -264,3 +263,17 @@ def test_emptyline():
     assert image.mode == "RGB"
     assert image.size == (460, 352)
     assert image.format == "EPS"
+
+
+@pytest.mark.timeout(timeout=5)
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        ("Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps")
+    ],
+)
+def test_timeout(test_file):
+    with open(test_file, "rb") as f:
+        with pytest.raises(Image.UnidentifiedImageError):
+            with Image.open(f):
+                pass
