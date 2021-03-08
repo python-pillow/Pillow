@@ -344,6 +344,12 @@ class TestImage:
         assert_image_equal(offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63)))
         assert offset.size == (128, 128)
 
+        # with negative offset
+        offset = src.copy()
+        offset.alpha_composite(over, (-64, -64))
+        assert_image_equal(offset.crop((0, 0, 63, 63)), target.crop((64, 64, 127, 127)))
+        assert offset.size == (128, 128)
+
         # offset and crop
         box = src.copy()
         box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
@@ -367,8 +373,6 @@ class TestImage:
             source.alpha_composite(over, 0)
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), 0)
-        with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, -1))
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
