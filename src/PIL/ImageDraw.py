@@ -257,6 +257,51 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
+    def rounded_rectangle(self, xy, radius=0, fill=None, outline=None, width=1):
+        """Draw a rounded rectangle."""
+        if isinstance(xy[0], (list, tuple)):
+            (x0, y0), (x1, y1) = xy
+        else:
+            x0, y0, x1, y1 = xy
+
+        # Do not allow the diameter to be greater than the width or height
+        d = min(radius * 2, x1 - x0, y1 - y0)
+        if d == 0:
+            return self.rectangle(xy, fill, outline, width)
+
+        ink, fill = self._getink(outline, fill)
+        if fill is not None:
+            self.draw.draw_pieslice((x1 - d, y0, x1, y0 + d), 270, 360, fill, 1)
+            self.draw.draw_pieslice((x1 - d, y1 - d, x1, y1), 0, 90, fill, 1)
+            self.draw.draw_pieslice((x0, y1 - d, x0 + d, y1), 90, 180, fill, 1)
+            self.draw.draw_pieslice((x0, y0, x0 + d, y0 + d), 180, 270, fill, 1)
+
+            self.draw.draw_rectangle((x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y1), fill, 1)
+            self.draw.draw_rectangle(
+                (x0, y0 + d / 2 + 1, x0 + d / 2, y1 - d / 2 - 1), fill, 1
+            )
+            self.draw.draw_rectangle(
+                (x1 - d / 2, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
+            )
+        if ink is not None and ink != fill and width != 0:
+            self.draw.draw_arc((x1 - d, y0, x1, y0 + d), 270, 360, ink, width)
+            self.draw.draw_arc((x1 - d, y1 - d, x1, y1), 0, 90, ink, width)
+            self.draw.draw_arc((x0, y1 - d, x0 + d, y1), 90, 180, ink, width)
+            self.draw.draw_arc((x0, y0, x0 + d, y0 + d), 180, 270, ink, width)
+
+            self.draw.draw_rectangle(
+                (x1 - width + 1, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), ink, 1
+            )
+            self.draw.draw_rectangle(
+                (x0 + d / 2 + 1, y1 - width + 1, x1 - d / 2 - 1, y1), ink, 1
+            )
+            self.draw.draw_rectangle(
+                (x0, y0 + d / 2 + 1, x0 + width - 1, y1 - d / 2 - 1), ink, 1
+            )
+            self.draw.draw_rectangle(
+                (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y0 + width - 1), ink, 1
+            )
+
     def _multiline_check(self, text):
         """Draw text."""
         split_character = "\n" if isinstance(text, str) else b"\n"

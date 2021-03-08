@@ -285,6 +285,20 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1)
+
+    Draws a rounded rectangle.
+
+    :param xy: Two points to define the bounding box. Sequence of either
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The second point
+            is just outside the drawn rectangle.
+    :param radius: Radius of the corners.
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+    .. versionadded:: 8.2.0
+
 .. py:method:: ImageDraw.shape(shape, fill=None, outline=None)
 
     .. warning:: This method is experimental.
