@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Ensure file is closed if it is opened by ImageQt.ImageQt #5260
+  [radarhere]
+
+- Added ImageDraw rounded_rectangle method #5208
+  [radarhere]
+
 - Added IPythonViewer #5289
   [radarhere, Kipkurui-mutai]
 
