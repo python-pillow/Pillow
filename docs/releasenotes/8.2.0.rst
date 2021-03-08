@@ -13,10 +13,13 @@ when Tk/Tcl 8.5 will be the minimum supported.
 API Changes
 ===========
 
-TODO
-^^^^
+Image.alpha_composite: dest
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When calling :py:meth:`~PIL.Image.Image.alpha_composite`, the ``dest`` argument now
+accepts negative co-ordinates, like the upper left corner of the ``box`` argument of
+:py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
+cropping the overlaid image.
 
 API Additions
 =============
