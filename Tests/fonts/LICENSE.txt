@@ -15,6 +15,8 @@ FreeMono.ttf is licensed under GPLv3, with the GPL font exception.
 
 OpenSansCondensed-LightItalic.tt, from https://fonts.google.com/specimen/Open+Sans, under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
+chromacheck-sbix.woff, from https://github.com/RoelN/ChromaCheck, under The MIT License (MIT), Copyright (c) 2018 Roel Nieskens, https://pixelambacht.nl Copyright (c) 2018 Google LLC
+
 KhmerOSBattambang-Regular.ttf is licensed under LGPL-2.1 or later.
 
 FreeMono.ttf is licensed under GPLv3.

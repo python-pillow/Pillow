@@ -352,7 +352,7 @@ Methods
 
         .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
                     .. versionadded:: 8.0.0
 
@@ -413,7 +413,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
                      .. versionadded:: 8.0.0
 
@@ -577,7 +577,7 @@ Methods
                      correct substitutions as appropriate, if available.
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -626,7 +626,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -669,7 +669,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: getdraw(im=None, hints=None)
 

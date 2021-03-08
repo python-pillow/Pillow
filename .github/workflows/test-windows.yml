@@ -110,7 +110,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
-    # for FreeType CBDT font support
+    # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
