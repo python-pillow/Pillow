@@ -174,7 +174,7 @@ jobs:
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
+      shell: bash
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
