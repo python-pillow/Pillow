@@ -9,6 +9,7 @@ All default viewers convert the image to be shown to PNG format.
 
 .. autofunction:: PIL.ImageShow.show
 
+.. autoclass:: IPythonViewer
 .. autoclass:: WindowsViewer
 .. autoclass:: MacViewer
 

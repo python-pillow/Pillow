@@ -10,7 +10,7 @@ from .helper import (
 )
 
 FONT_SIZE = 20
-FONT_PATH = "Tests/fonts/DejaVuSans.ttf"
+FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
 
 pytestmark = skip_unless_feature("raqm")
 

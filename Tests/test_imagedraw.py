@@ -692,6 +692,72 @@ def test_rectangle_I16():
     assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
 
 
+def test_rectangle_translucent_outline():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rectangle(BBOX1, fill="black", outline=(0, 255, 0, 127), width=5)
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rectangle_translucent_outline.png"
+    )
+
+
+@pytest.mark.parametrize(
+    "xy",
+    [(10, 20, 190, 180), ([10, 20], [190, 180]), ((10, 20), (190, 180))],
+)
+def test_rounded_rectangle(xy):
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(xy, 30, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
+
+
+def test_rounded_rectangle_zero_radius():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(BBOX1, 0, fill="blue", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_width_fill.png")
+
+
+@pytest.mark.parametrize(
+    "xy, suffix",
+    [
+        ((20, 10, 80, 90), "x"),
+        ((10, 20, 90, 80), "y"),
+        ((20, 20, 80, 80), "both"),
+    ],
+)
+def test_rounded_rectangle_translucent(xy, suffix):
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rounded_rectangle(
+        xy, 30, fill=(255, 0, 0, 127), outline=(0, 255, 0, 127), width=5
+    )
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_" + suffix + ".png"
+    )
+
+
 def test_floodfill():
     red = ImageColor.getrgb("red")
 

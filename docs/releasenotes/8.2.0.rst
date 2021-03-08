@@ -21,13 +21,35 @@ accepts negative co-ordinates, like the upper left corner of the ``box`` argumen
 :py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
 cropping the overlaid image.
 
+ImageDraw.rounded_rectangle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added :py:meth:`~PIL.ImageDraw.ImageDraw.rounded_rectangle`. It works the same as
+:py:meth:`~PIL.ImageDraw.ImageDraw.rectangle`, except with an additional ``radius``
+argument. ``radius`` is limited to half of the width or the height, so that users can
+create a circle, but not any other ellipse.
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(xy=(10, 20, 190, 180), radius=30, fill="red")
+
 API Additions
 =============
 
-TODO
-^^^^
+ImageShow.IPythonViewer
+^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+If IPython is present, this new ``ImageShow.Viewer`` subclass will be
+registered. It displays images on all IPython frontends. This will be helpful
+to users of Google Colab, allowing ``im.show()`` to display images.
+
+It is lower in priority than the other default Viewer instances, so it will
+only be used by ``im.show()`` or ``ImageShow.show()`` if none of the other
+viewers are available. This means that the behaviour of ``ImageShow`` will stay
+the same for most Pillow users.
 
 Security
 ========

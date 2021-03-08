@@ -5,6 +5,21 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Added IPythonViewer #5289
+  [radarhere, Kipkurui-mutai]
+
+- Only draw each rectangle outline pixel once #5183
+  [radarhere]
+
+- Use mmap instead of built-in Win32 mapper #5224
+  [radarhere, cgohlke]
+
+- Handle PCX images with an odd stride #5214
+  [radarhere]
+
+- Only read different sizes for "Large Thumbnail" MPO frames #5168
+  [radarhere]
+
 - Added PyQt6 support #5258
   [radarhere]
 
