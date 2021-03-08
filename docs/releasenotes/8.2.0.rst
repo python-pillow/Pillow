@@ -24,14 +24,14 @@ API Additions
 ImageShow.IPythonViewer
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-If IPython is present, this new ``ImageShow.Viewer`` subclass will be
+If IPython is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will be
 registered. It displays images on all IPython frontends. This will be helpful
 to users of Google Colab, allowing ``im.show()`` to display images.
 
-It is lower in priority than the other default Viewer instances, so it will
-only be used by ``im.show()`` or ``ImageShow.show()`` if none of the other
-viewers are available. This means that the behaviour of ``ImageShow`` will stay
-the same for most Pillow users.
+It is lower in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show()`
+if none of the other viewers are available. This means that the behaviour of
+:py:class:`PIL.ImageShow` will stay the same for most Pillow users.
 
 Security
 ========
