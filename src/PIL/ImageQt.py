@@ -128,6 +128,7 @@ def align8to32(bytes, width, mode):
 def _toqclass_helper(im):
     data = None
     colortable = None
+    exclusive_fp = False
 
     # handle filename, if given instead of image name
     if hasattr(im, "toUtf8"):
@@ -135,6 +136,7 @@ def _toqclass_helper(im):
         im = str(im.toUtf8(), "utf-8")
     if isPath(im):
         im = Image.open(im)
+        exclusive_fp = True
 
     qt_format = QImage.Format if qt_version == "6" else QImage
     if im.mode == "1":
@@ -157,10 +159,15 @@ def _toqclass_helper(im):
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
     else:
+        if exclusive_fp:
+            im.close()
         raise ValueError(f"unsupported image mode {repr(im.mode)}")
 
-    __data = data or align8to32(im.tobytes(), im.size[0], im.mode)
-    return {"data": __data, "im": im, "format": format, "colortable": colortable}
+    size = im.size
+    __data = data or align8to32(im.tobytes(), size[0], im.mode)
+    if exclusive_fp:
+        im.close()
+    return {"data": __data, "size": size, "format": format, "colortable": colortable}
 
 
 if qt_is_installed:
@@ -182,8 +189,8 @@ if qt_is_installed:
             self.__data = im_data["data"]
             super().__init__(
                 self.__data,
-                im_data["im"].size[0],
-                im_data["im"].size[1],
+                im_data["size"][0],
+                im_data["size"][1],
                 im_data["format"],
             )
             if im_data["colortable"]:
@@ -197,8 +204,8 @@ def toqimage(im):
 def toqpixmap(im):
     # # This doesn't work. For now using a dumb approach.
     # im_data = _toqclass_helper(im)
-    # result = QPixmap(im_data['im'].size[0], im_data['im'].size[1])
-    # result.loadFromData(im_data['data'])
+    # result = QPixmap(im_data["size"][0], im_data["size"][1])
+    # result.loadFromData(im_data["data"])
     # Fix some strange bug that causes
     if im.mode == "RGB":
         im = im.convert("RGBA")
