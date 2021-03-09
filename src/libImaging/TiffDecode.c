@@ -526,7 +526,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         int plane;
         for (plane = 0; plane < planes; plane++) {
             ImagingShuffler shuffler = unpackers[plane];
-            if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, plane), (tdata_t)state->buffer, -1) == -1) {
+            if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, plane), (tdata_t)state->buffer, strip_size) == -1) {
                 TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
                 state->errcode = IMAGING_CODEC_BROKEN;
                 return -1;
