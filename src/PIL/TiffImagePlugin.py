@@ -1481,8 +1481,9 @@ def _save(im, fp, filename):
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-    if "icc_profile" in im.info:
-        ifd[ICCPROFILE] = im.info["icc_profile"]
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
+        ifd[ICCPROFILE] = icc
 
     for key, name in [
         (IMAGEDESCRIPTION, "description"),
