@@ -57,8 +57,8 @@ jobs:
     - name: Print build system information
       run: python .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov
-      run: python -m pip install wheel pytest pytest-cov
+    - name: python -m pip install wheel pytest pytest-cov pytest-timeout
+      run: python -m pip install wheel pytest pytest-cov pytest-timeout
 
     # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
     - name: Upgrade setuptools
