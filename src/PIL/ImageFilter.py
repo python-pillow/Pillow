@@ -16,11 +16,6 @@
 #
 import functools
 
-try:
-    import numpy
-except ImportError:  # pragma: no cover
-    numpy = None
-
 
 class Filter:
     pass
@@ -368,6 +363,13 @@ class Color3DLUT(MultibandFilter):
         copy_table = kwargs.get("_copy_table", True)
         items = size[0] * size[1] * size[2]
         wrong_size = False
+
+        numpy = None
+        if hasattr(table, "shape"):
+            try:
+                import numpy
+            except ImportError:  # pragma: no cover
+                pass
 
         if numpy and isinstance(table, numpy.ndarray):
             if copy_table:
