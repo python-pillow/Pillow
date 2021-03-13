@@ -43,4 +43,5 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
   chmod u+x $OUT/$fuzzer_basename
 done
 
-find Tests/images Tests/icc Tests/fonts -print | zip -q $OUT/fuzz_pillow_seed_corpus.zip -@
+find Tests/images Tests/icc -print | zip -q $OUT/fuzz_pillow_seed_corpus.zip -@
+find Tests/fonts -print | zip -q $OUT/fuzz_font_seed_corpus.zip -@
