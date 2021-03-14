@@ -568,6 +568,28 @@ class TestFileTiff:
         with Image.open(tmpfile) as reloaded:
             assert b"Dummy value" == reloaded.info["icc_profile"]
 
+    def test_save_icc_profile(self, tmp_path):
+        im = hopper()
+        assert "icc_profile" not in im.info
+
+        outfile = str(tmp_path / "temp.tif")
+        icc_profile = b"Dummy value"
+        im.save(outfile, icc_profile=icc_profile)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.info["icc_profile"] == icc_profile
+
+    def test_discard_icc_profile(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+
+        with Image.open("Tests/images/icc_profile.png") as im:
+            assert "icc_profile" in im.info
+
+            im.save(outfile, icc_profile=None)
+
+        with Image.open(outfile) as reloaded:
+            assert "icc_profile" not in reloaded.info
+
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
