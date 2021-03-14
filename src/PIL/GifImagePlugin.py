@@ -265,12 +265,15 @@ class GifImageFile(ImageFile.ImageFile):
                 self.dispose = None
             elif self.disposal_method == 2:
                 # replace with background colour
-                Image._decompression_bomb_check(self.size)
-                self.dispose = Image.core.fill("P", self.size, self.info["background"])
 
                 # only dispose the extent in this frame
-                if self.dispose:
-                    self.dispose = self._crop(self.dispose, self.dispose_extent)
+                x0, y0, x1, y1 = self.dispose_extent
+                dispose_size = (x1 - x0, y1 - y0)
+
+                Image._decompression_bomb_check(dispose_size)
+                self.dispose = Image.core.fill(
+                    "P", dispose_size, self.info["background"]
+                )
             else:
                 # replace with previous contents
                 if self.im:
