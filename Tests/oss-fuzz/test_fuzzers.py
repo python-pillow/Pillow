@@ -8,7 +8,7 @@ from PIL import Image
 
 
 if sys.platform.startswith("win32"):
-    pytest.skip("Fuzzer is linux only", True)
+    pytest.skip("Fuzzer is linux only", allow_module_level=True)
 
 
 @pytest.mark.parametrize(
