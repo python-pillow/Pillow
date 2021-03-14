@@ -46,5 +46,9 @@ def test_fuzz_fonts(path):
     if not path:
         return
     with open(path, "rb") as f:
-        fuzzers.fuzz_font(f.read())
+        try:
+            fuzzers.fuzz_font(f.read())
+        except (Image.DecompressionBombError,
+                Image.DecompressionBombWarning):
+            pass
         assert True
