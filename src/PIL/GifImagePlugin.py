@@ -267,14 +267,15 @@ class GifImageFile(ImageFile.ImageFile):
                 # replace with background colour
                 Image._decompression_bomb_check(self.size)
                 self.dispose = Image.core.fill("P", self.size, self.info["background"])
+
+                # only dispose the extent in this frame
+                if self.dispose:
+                    self.dispose = self._crop(self.dispose, self.dispose_extent)
             else:
                 # replace with previous contents
                 if self.im:
-                    self.dispose = self.im.copy()
-
-            # only dispose the extent in this frame
-            if self.dispose:
-                self.dispose = self._crop(self.dispose, self.dispose_extent)
+                    # only dispose the extent in this frame
+                    self.dispose = self._crop(self.im, self.dispose_extent)
         except (AttributeError, KeyError):
             pass
 
