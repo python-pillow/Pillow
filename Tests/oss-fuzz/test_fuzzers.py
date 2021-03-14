@@ -20,7 +20,12 @@ def test_fuzz_images(path):
         with open(path, "rb") as f:
             fuzzers.fuzz_image(f.read())
             assert True
-    except (OSError, SyntaxError, MemoryError, ValueError, NotImplementedError):
+    except (OSError,
+            SyntaxError,
+            MemoryError,
+            ValueError,
+            NotImplementedError,
+            OverflowError):
         # Known exceptions that are through from Pillow
         assert True
     except (
