@@ -18,28 +18,21 @@ import io
 import sys
 import warnings
 
+import fuzzers
+
 import atheris_no_libfuzzer as atheris
-
-from PIL import Image, ImageFile, ImageFilter
-
 
 def TestOneInput(data):
     try:
-        with Image.open(io.BytesIO(data)) as im:
-            im.rotate(45)
-            im.filter(ImageFilter.DETAIL)
-            im.save(io.BytesIO(), "BMP")
+        fuzzers.fuzz_image(data)
     except Exception:
         # We're catching all exceptions because Pillow's exceptions are
         # directly inheriting from Exception.
         return
     return
 
-
 def main():
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    warnings.filterwarnings("ignore")
-    warnings.simplefilter("error", Image.DecompressionBombWarning)
+    fuzzers.enable_decompressionbomb_error()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
 

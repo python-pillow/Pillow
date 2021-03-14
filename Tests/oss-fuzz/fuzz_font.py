@@ -20,17 +20,11 @@ import warnings
 
 import atheris_no_libfuzzer as atheris
 
-from PIL import Image, ImageDraw, ImageFont
-
+import fuzzers
 
 def TestOneInput(data):
     try:
-        with ImageFont.load(io.BytesIO(data)) as font:
-            font.getsize_multiline("ABC\nAaaa")
-            font.getmask("test text")
-            with Image.new(mode="RGBA", size=(200, 200)) as im:
-                draw = ImageDraw.Draw(im)
-                draw.text((10,10), "Test Text", font)
+        fuzzers.fuzz_font(data)
     except Exception:
         # We're catching all exceptions because Pillow's exceptions are
         # directly inheriting from Exception.
