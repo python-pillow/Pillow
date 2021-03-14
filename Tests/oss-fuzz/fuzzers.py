@@ -1,7 +1,7 @@
 import io
 import warnings
 
-from PIL import Image, ImageDraw, ImageFile, ImageFilter, ImageFont, PcfFontFile
+from PIL import Image, ImageDraw, ImageFile, ImageFilter, ImageFont
 
 
 def enable_decompressionbomb_error():

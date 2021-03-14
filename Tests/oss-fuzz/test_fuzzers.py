@@ -1,4 +1,3 @@
-import glob
 import subprocess
 
 import fuzzers
