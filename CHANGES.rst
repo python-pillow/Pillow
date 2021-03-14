@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Save ICC profile from TIFF encoderinfo #5321
+  [radarhere]
+
+- Moved RGB fix inside ImageQt class #5268
+  [radarhere]
+
 - Allow alpha_composite destination to be negative #5313
   [radarhere]
 
