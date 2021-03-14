@@ -51,6 +51,14 @@ instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show
 if none of the other viewers are available. This means that the behaviour of
 :py:class:`PIL.ImageShow` will stay the same for most Pillow users.
 
+Saving TIFF with ICC profile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As is already possible for JPEG, PNG and WebP, the ICC profile for TIFF files can now
+be specified through a keyword argument::
+
+    im.save("out.tif", icc_profile=...)
+
 Security
 ========
 
