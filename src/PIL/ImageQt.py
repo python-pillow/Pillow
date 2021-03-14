@@ -153,7 +153,10 @@ def _toqclass_helper(im):
         for i in range(0, len(palette), 3):
             colortable.append(rgb(*palette[i : i + 3]))
     elif im.mode == "RGB":
-        data = im.tobytes("raw", "BGRX")
+        # Populate the 4th channel with 255
+        im = im.convert("RGBA")
+
+        data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_RGB32
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
@@ -206,9 +209,5 @@ def toqpixmap(im):
     # im_data = _toqclass_helper(im)
     # result = QPixmap(im_data["size"][0], im_data["size"][1])
     # result.loadFromData(im_data["data"])
-    # Fix some strange bug that causes
-    if im.mode == "RGB":
-        im = im.convert("RGBA")
-
     qimage = toqimage(im)
     return QPixmap.fromImage(qimage)
