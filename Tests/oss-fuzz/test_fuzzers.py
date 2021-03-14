@@ -6,8 +6,10 @@ import pytest
 
 from PIL import Image
 
+
 def is_win32():
     sys.platform.startswith("win32")
+
 
 @pytest.mark.skipif(is_win32(), reason="Fuzzer is linux only")
 @pytest.mark.parametrize(
@@ -20,12 +22,14 @@ def test_fuzz_images(path):
         with open(path, "rb") as f:
             fuzzers.fuzz_image(f.read())
             assert True
-    except (OSError,
-            SyntaxError,
-            MemoryError,
-            ValueError,
-            NotImplementedError,
-            OverflowError):
+    except (
+        OSError,
+        SyntaxError,
+        MemoryError,
+        ValueError,
+        NotImplementedError,
+        OverflowError,
+    ):
         # Known exceptions that are through from Pillow
         assert True
     except (
@@ -35,6 +39,7 @@ def test_fuzz_images(path):
     ):
         # Known Image.* exceptions
         assert True
+
 
 @pytest.mark.skipif(is_win32(), reason="Fuzzer is linux only")
 @pytest.mark.parametrize(
