@@ -19,8 +19,8 @@ import sys
 import warnings
 
 import atheris_no_libfuzzer as atheris
-
 import fuzzers
+
 
 def TestOneInput(data):
     try:

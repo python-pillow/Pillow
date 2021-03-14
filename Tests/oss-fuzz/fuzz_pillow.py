@@ -18,9 +18,9 @@ import io
 import sys
 import warnings
 
+import atheris_no_libfuzzer as atheris
 import fuzzers
 
-import atheris_no_libfuzzer as atheris
 
 def TestOneInput(data):
     try:
@@ -30,6 +30,7 @@ def TestOneInput(data):
         # directly inheriting from Exception.
         return
     return
+
 
 def main():
     fuzzers.enable_decompressionbomb_error()
