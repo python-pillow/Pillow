@@ -901,6 +901,9 @@ using the general tags available through tiffinfo.
 **copyright**
     Strings
 
+**icc_profile**
+    The ICC Profile to include in the saved file.
+
 **resolution_unit**
     An integer. 1 for no unit, 2 for inches and 3 for centimeters.
 
