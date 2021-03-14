@@ -43,7 +43,7 @@ def test_fuzz_images(path):
     "path", subprocess.check_output("find Tests/fonts -type f", shell=True).split(b"\n")
 )
 def test_fuzz_fonts(path):
-    if not path or b"LICENSE.txt" in path or b".pil" in path:
+    if not path:
         return
     with open(path, "rb") as f:
         fuzzers.fuzz_font(f.read())

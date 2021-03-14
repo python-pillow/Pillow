@@ -20,12 +20,12 @@ def fuzz_image(data):
 
 
 def fuzz_font(data):
-    # This should not fail on a valid font load for any of the fonts in the corpus
     wrapper = io.BytesIO(data)
     try:
         font = ImageFont.truetype(wrapper)
     except OSError:
-        # pcf/pilfonts/random garbage here here. They're different.
+        # Catch pcf/pilfonts/random garbage here. They return
+        # different font objects.
         return
 
     font.getsize_multiline("ABC\nAaaa")
