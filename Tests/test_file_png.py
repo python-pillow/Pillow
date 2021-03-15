@@ -625,6 +625,15 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
+    def test_specify_bits(self, tmp_path):
+        im = hopper("P")
+
+        out = str(tmp_path / "temp.png")
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            assert len(reloaded.png.im_palette[1]) == 48
+
     def test_exif(self):
         # With an EXIF chunk
         with Image.open("Tests/images/exif.png") as im:
