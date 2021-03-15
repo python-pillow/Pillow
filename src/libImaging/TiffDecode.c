@@ -55,6 +55,10 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TRACE(("_tiffReadProc: %d \n", (int)size));
     dump_state(state);
 
+    if (state->loc > state->eof) {
+        TIFFError("_tiffReadProc", "Invalid Read at loc %llu, eof: %llu", state->loc, state->eof);
+        return 0;
+    }
     to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
     TRACE(("to_read: %d\n", (int)to_read));
 
@@ -282,8 +286,7 @@ _decodeStripYCbCr(Imaging im, ImagingCodecState state, TIFF *tiff) {
         img.row_offset = state->y;
         rows_to_read = min(rows_per_strip, img.height - state->y);
 
-        if (TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read) ==
-            -1) {
+        if (!TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read)) {
             TRACE(("Decode Error, y: %d\n", state->y));
             state->errcode = IMAGING_CODEC_BROKEN;
             goto decodeycbcr_err;
@@ -559,6 +562,15 @@ ImagingLibTiffDecode(
 
         for (y = state->yoff; y < state->ysize; y += tile_length) {
             for (x = state->xoff; x < state->xsize; x += tile_width) {
+                /* Sanity Check. Apparently in some cases, the TiffReadRGBA* functions
+                   have a different view of the size of the tiff than we're getting from
+                   other functions. So, we need to check here. 
+                */
+                if (!TIFFCheckTile(tiff, x, y, 0, 0)) {
+                    TRACE(("Check Tile Error, Tile at %dx%d\n", x, y));
+                    state->errcode = IMAGING_CODEC_BROKEN;
+                    goto decode_err;
+                }
                 if (isYCbCr) {
                     /* To avoid dealing with YCbCr subsampling, let libtiff handle it */
                     if (!TIFFReadRGBATile(tiff, x, y, (UINT32 *)state->buffer)) {

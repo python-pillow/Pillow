@@ -5,6 +5,36 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Save ICC profile from TIFF encoderinfo #5321
+  [radarhere]
+
+- Moved RGB fix inside ImageQt class #5268
+  [radarhere]
+
+- Allow alpha_composite destination to be negative #5313
+  [radarhere]
+
+- Ensure file is closed if it is opened by ImageQt.ImageQt #5260
+  [radarhere]
+
+- Added ImageDraw rounded_rectangle method #5208
+  [radarhere]
+
+- Added IPythonViewer #5289
+  [radarhere, Kipkurui-mutai]
+
+- Only draw each rectangle outline pixel once #5183
+  [radarhere]
+
+- Use mmap instead of built-in Win32 mapper #5224
+  [radarhere, cgohlke]
+
+- Handle PCX images with an odd stride #5214
+  [radarhere]
+
+- Only read different sizes for "Large Thumbnail" MPO frames #5168
+  [radarhere]
+
 - Added PyQt6 support #5258
   [radarhere]
 
@@ -20,13 +50,37 @@ Changelog (Pillow)
 - Support for ignoring tests when running valgrind #5150
   [wiredfool, radarhere, hugovk]
 
-- PyModule_AddObject fix for Python 3.10 #5194
-  [radarhere]
-
 - OSS-Fuzz support #5189
   [wiredfool, radarhere]
 
-8.1.0 (2020-01-02)
+8.1.2 (2021-03-06)
+------------------
+
+- Fix Memory DOS in BLP (CVE-2021-27921), ICNS (CVE-2021-27922) and ICO (CVE-2021-27923) Image Plugins
+  [wiredfool]
+
+8.1.1 (2021-03-01)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [hugovk]
+
+- Fix OOB Read in TiffDecode.c, and check the tile validity before reading. CVE-2021-25291
+  [wiredfool]
+
+- Fix negative size read in TiffDecode.c. CVE-2021-25290
+  [wiredfool]
+
+- Fix OOB read in SgiRleDecode.c. CVE-2021-25293
+  [wiredfool]
+
+- Incorrect error code checking in TiffDecode.c. CVE-2021-25289
+  [wiredfool]
+
+- PyModule_AddObject fix for Python 3.10 #5194
+  [radarhere]
+
+8.1.0 (2021-01-02)
 ------------------
 
 - Fix TIFF OOB Write error. CVE-2020-35654 #5175

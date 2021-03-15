@@ -517,6 +517,8 @@ class TestFilePng:
 
     def test_discard_icc_profile(self):
         with Image.open("Tests/images/icc_profile.png") as im:
+            assert "icc_profile" in im.info
+
             im = roundtrip(im, icc_profile=None)
         assert "icc_profile" not in im.info
 

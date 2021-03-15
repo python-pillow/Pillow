@@ -31,7 +31,7 @@ def test_numpy_to_image():
         return i
 
     # Check supported 1-bit integer formats
-    assert_image(to_image(numpy.bool, 1, 1), "1", TEST_IMAGE_SIZE)
+    assert_image(to_image(bool, 1, 1), "1", TEST_IMAGE_SIZE)
     assert_image(to_image(numpy.bool8, 1, 1), "1", TEST_IMAGE_SIZE)
 
     # Check supported 8-bit integer formats
@@ -65,7 +65,7 @@ def test_numpy_to_image():
         to_image(numpy.int64)
 
     # Check floating-point formats
-    assert_image(to_image(numpy.float), "F", TEST_IMAGE_SIZE)
+    assert_image(to_image(float), "F", TEST_IMAGE_SIZE)
     with pytest.raises(TypeError):
         to_image(numpy.float16)
     assert_image(to_image(numpy.float32), "F", TEST_IMAGE_SIZE)
@@ -191,7 +191,7 @@ def test_putdata():
 
 def test_roundtrip_eye():
     for dtype in (
-        numpy.bool,
+        bool,
         numpy.bool8,
         numpy.int8,
         numpy.int16,
@@ -199,7 +199,7 @@ def test_roundtrip_eye():
         numpy.uint8,
         numpy.uint16,
         numpy.uint32,
-        numpy.float,
+        float,
         numpy.float32,
         numpy.float64,
     ):
@@ -218,7 +218,7 @@ def test_zero_size():
 
 def test_bool():
     # https://github.com/python-pillow/Pillow/issues/2044
-    a = numpy.zeros((10, 2), dtype=numpy.bool)
+    a = numpy.zeros((10, 2), dtype=bool)
     a[0][0] = True
 
     im2 = Image.fromarray(a)
