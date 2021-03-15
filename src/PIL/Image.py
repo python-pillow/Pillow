@@ -3360,6 +3360,10 @@ class Exif(MutableMapping):
             if ifd:
                 merged_dict.update(ifd)
 
+        # GPS
+        if 0x8825 in self:
+            merged_dict[0x8825] = self._get_ifd_dict(self[0x8825])
+
         return merged_dict
 
     def tobytes(self, offset=8):
@@ -3371,7 +3375,7 @@ class Exif(MutableMapping):
             head = b"MM\x00\x2A\x00\x00\x00\x08"
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
-            if tag in [0x8769, 0x8225] and not isinstance(value, dict):
+            if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
                 if (
                     tag == 0x8769
@@ -3491,8 +3495,6 @@ class Exif(MutableMapping):
     def __getitem__(self, tag):
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
-            if tag == 0x8825:
-                self._data[tag] = self.get_ifd(tag)
             del self._info[tag]
         return self._data[tag]
 

@@ -264,11 +264,11 @@ class TestFileJpeg:
             assert exif[0x0112] == Image.TRANSVERSE
 
             # Assert that the GPS IFD is present and empty
-            assert exif[0x8825] == {}
+            assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
         exif = transposed.getexif()
-        assert exif[0x8825] == {}
+        assert exif.get_ifd(0x8825) == {}
 
         # Assert that it was transposed
         assert 0x0112 not in exif
