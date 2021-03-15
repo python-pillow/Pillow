@@ -3397,6 +3397,7 @@ class Exif(MutableMapping):
                     self.get_ifd(0x8769)
                 tag_data = self._ifds[0x8769][tag]
                 if tag == 0x927C:
+                    # makernote
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -3472,7 +3473,7 @@ class Exif(MutableMapping):
                                 makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
                         self._ifds[tag] = makernote
                 else:
-                    # gpsinfo, interop
+                    # interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data)
         return self._ifds.get(tag, {})
 
