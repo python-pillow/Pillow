@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Stop flattening EXIF IFD into getexif() #4947
+  [radarhere, kkopachev]
+
 - Replaced tiff_deflate with tiff_adobe_deflate compression when saving TIFF images #5343
   [radarhere]
 
