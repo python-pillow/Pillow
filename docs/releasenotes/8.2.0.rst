@@ -21,6 +21,9 @@ accepts negative co-ordinates, like the upper left corner of the ``box`` argumen
 :py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
 cropping the overlaid image.
 
+API Additions
+=============
+
 ImageDraw.rounded_rectangle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -35,9 +38,6 @@ create a circle, but not any other ellipse.
     im = Image.new("RGB", (200, 200))
     draw = ImageDraw.Draw(im)
     draw.rounded_rectangle(xy=(10, 20, 190, 180), radius=30, fill="red")
-
-API Additions
-=============
 
 ImageShow.IPythonViewer
 ^^^^^^^^^^^^^^^^^^^^^^^
