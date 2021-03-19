@@ -1442,6 +1442,8 @@ def _save(im, fp, filename):
     elif compression == "tiff_jpeg":
         # OJPEG is obsolete, so use new-style JPEG compression instead
         compression = "jpeg"
+    elif compression == "tiff_deflate":
+        compression = "tiff_adobe_deflate"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
