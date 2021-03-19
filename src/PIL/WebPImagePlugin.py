@@ -96,7 +96,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _getexif(self):
         if "exif" not in self.info:
             return None
-        return dict(self.getexif())
+        return self.getexif()._get_merged_dict()
 
     def seek(self, frame):
         if not self._seek_check(frame):

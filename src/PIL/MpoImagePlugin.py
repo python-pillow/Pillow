@@ -84,7 +84,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
             mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
             if mptype.startswith("Large Thumbnail"):
-                exif = self.getexif()
+                exif = self.getexif().get_ifd(0x8769)
                 if 40962 in exif and 40963 in exif:
                     self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:

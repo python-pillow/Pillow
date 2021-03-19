@@ -968,7 +968,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:
             return None
-        return dict(self.getexif())
+        return self.getexif()._get_merged_dict()
 
     def getexif(self):
         if "exif" not in self.info:
