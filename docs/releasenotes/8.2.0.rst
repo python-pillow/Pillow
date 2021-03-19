@@ -21,6 +21,20 @@ accepts negative co-ordinates, like the upper left corner of the ``box`` argumen
 :py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
 cropping the overlaid image.
 
+Image.getexif: EXIF and GPS IFD
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, :py:meth:`~PIL.Image.Image.getexif` flattened the EXIF IFD into the rest of
+the data, losing information. This information is now kept separate, moved under
+``im.getexif().get_ifd(0x8769)``.
+
+Direct access to the GPS IFD dictionary was possible through ``im.getexif()[0x8825]``.
+This is now consistent with other IFDs, and must be accessed through
+``im.getexif().get_ifd(0x8825)``.
+
+These changes only affect :py:meth:`~PIL.Image.Image.getexif`, introduced in Pillow
+6.0. The older ``_getexif()`` methods are unaffected.
+
 API Additions
 =============
 
