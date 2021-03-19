@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Replaced tiff_deflate with tiff_adobe_deflate compression when saving TIFF images #5343
+  [radarhere]
+
 - Save ICC profile from TIFF encoderinfo #5321
   [radarhere]
 
