@@ -471,6 +471,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as reloaded:
             assert reloaded.info["compression"] == "jpeg"
 
+    def test_tiff_deflate_compression(self, tmp_path):
+        im = hopper("RGB")
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_deflate")
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["compression"] == "tiff_adobe_deflate"
+
     def test_quality(self, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
