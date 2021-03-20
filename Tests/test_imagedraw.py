@@ -1354,6 +1354,7 @@ def test_compute_regular_polygon_vertices_input_error_handling(
 def test_continuous_horizontal_edges_polygon():
     xy = [
         (2, 6),
+        (6, 6),
         (12, 6),
         (12, 12),
         (8, 12),
