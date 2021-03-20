@@ -1329,19 +1329,18 @@ def test_compute_regular_polygon_vertices_input_error_handling(
 
 
 def test_continuous_horizontal_edges_polygon():
-    with Image.open(
-        os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
-    ) as expected:
-        expected.load()
-        xy = [
-            (2, 6),
-            (12, 6),
-            (12, 12),
-            (8, 12),
-            (8, 8),
-            (4, 8),
-            (2, 8),
-        ]
-        img, draw = create_base_image_draw((16, 16))
-        draw.polygon(xy, BLACK)
-        assert_image_equal(img, expected, "continuous horizontal edges polygon failed")
+    xy = [
+        (2, 6),
+        (12, 6),
+        (12, 12),
+        (8, 12),
+        (8, 8),
+        (4, 8),
+        (2, 8),
+    ]
+    img, draw = create_base_image_draw((16, 16))
+    draw.polygon(xy, BLACK)
+    expected = os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
+    assert_image_equal_tofile(
+        img, expected, "continuous horizontal edges polygon failed"
+    )
