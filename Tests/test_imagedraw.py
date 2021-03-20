@@ -856,20 +856,19 @@ def create_base_image_draw(
 
 
 def test_square():
-    with Image.open(os.path.join(IMAGES_PATH, "square.png")) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((10, 10))
-        draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
-        assert_image_equal(img, expected, "square as normal polygon failed")
-        img, draw = create_base_image_draw((10, 10))
-        draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
-        assert_image_equal(img, expected, "square as inverted polygon failed")
-        img, draw = create_base_image_draw((10, 10))
-        draw.rectangle((2, 2, 7, 7), BLACK)
-        assert_image_equal(img, expected, "square as normal rectangle failed")
-        img, draw = create_base_image_draw((10, 10))
-        draw.rectangle((7, 7, 2, 2), BLACK)
-        assert_image_equal(img, expected, "square as inverted rectangle failed")
+    expected = os.path.join(IMAGES_PATH, "square.png")
+    img, draw = create_base_image_draw((10, 10))
+    draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
+    assert_image_equal_tofile(img, expected, "square as normal polygon failed")
+    img, draw = create_base_image_draw((10, 10))
+    draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
+    assert_image_equal_tofile(img, expected, "square as inverted polygon failed")
+    img, draw = create_base_image_draw((10, 10))
+    draw.rectangle((2, 2, 7, 7), BLACK)
+    assert_image_equal_tofile(img, expected, "square as normal rectangle failed")
+    img, draw = create_base_image_draw((10, 10))
+    draw.rectangle((7, 7, 2, 2), BLACK)
+    assert_image_equal_tofile(img, expected, "square as inverted rectangle failed")
 
 
 def test_triangle_right():
@@ -896,18 +895,18 @@ def test_line_horizontal():
         os.path.join(IMAGES_PATH, "line_horizontal_w2px_inverted.png"),
         "line straight horizontal inverted 2px wide failed",
     )
-    with Image.open(os.path.join(IMAGES_PATH, "line_horizontal_w3px.png")) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 14, 5), BLACK, 3)
-        assert_image_equal(
-            img, expected, "line straight horizontal normal 3px wide failed"
-        )
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((14, 5, 5, 5), BLACK, 3)
-        assert_image_equal(
-            img, expected, "line straight horizontal inverted 3px wide failed"
-        )
+
+    expected = os.path.join(IMAGES_PATH, "line_horizontal_w3px.png")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 5), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line straight horizontal normal 3px wide failed"
+    )
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 5, 5, 5), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line straight horizontal inverted 3px wide failed"
+    )
 
     img, draw = create_base_image_draw((200, 110))
     draw.line((5, 55, 195, 55), BLACK, 101)
@@ -945,18 +944,19 @@ def test_line_vertical():
         os.path.join(IMAGES_PATH, "line_vertical_w2px_inverted.png"),
         "line straight vertical inverted 2px wide failed",
     )
-    with Image.open(os.path.join(IMAGES_PATH, "line_vertical_w3px.png")) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 5, 14), BLACK, 3)
-        assert_image_equal(
-            img, expected, "line straight vertical normal 3px wide failed"
-        )
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 14, 5, 5), BLACK, 3)
-        assert_image_equal(
-            img, expected, "line straight vertical inverted 3px wide failed"
-        )
+
+    expected = os.path.join(IMAGES_PATH, "line_vertical_w3px.png")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 5, 14), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line straight vertical normal 3px wide failed"
+    )
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 5, 5), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line straight vertical inverted 3px wide failed"
+    )
+
     img, draw = create_base_image_draw((110, 200))
     draw.line((55, 5, 55, 195), BLACK, 101)
     assert_image_equal_tofile(
@@ -975,26 +975,25 @@ def test_line_vertical():
 
 
 def test_line_oblique_45():
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_oblique_45_w3px_a.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 5, 14, 14), BLACK, 3)
-        assert_image_equal(img, expected, "line oblique 45 normal 3px wide A failed")
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((14, 14, 5, 5), BLACK, 3)
-        assert_image_equal(img, expected, "line oblique 45 inverted 3px wide A failed")
-    with Image.open(
-        os.path.join(IMAGES_PATH, "line_oblique_45_w3px_b.png")
-    ) as expected:
-        expected.load()
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((14, 5, 5, 14), BLACK, 3)
-        assert_image_equal(img, expected, "line oblique 45 normal 3px wide B failed")
-        img, draw = create_base_image_draw((20, 20))
-        draw.line((5, 14, 14, 5), BLACK, 3)
-        assert_image_equal(img, expected, "line oblique 45 inverted 3px wide B failed")
+    expected = os.path.join(IMAGES_PATH, "line_oblique_45_w3px_a.png")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 5, 14, 14), BLACK, 3)
+    assert_image_equal_tofile(img, expected, "line oblique 45 normal 3px wide A failed")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 14, 5, 5), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line oblique 45 inverted 3px wide A failed"
+    )
+
+    expected = os.path.join(IMAGES_PATH, "line_oblique_45_w3px_b.png")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((14, 5, 5, 14), BLACK, 3)
+    assert_image_equal_tofile(img, expected, "line oblique 45 normal 3px wide B failed")
+    img, draw = create_base_image_draw((20, 20))
+    draw.line((5, 14, 14, 5), BLACK, 3)
+    assert_image_equal_tofile(
+        img, expected, "line oblique 45 inverted 3px wide B failed"
+    )
 
 
 def test_wide_line_dot():
