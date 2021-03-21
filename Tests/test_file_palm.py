@@ -5,9 +5,9 @@ import pytest
 
 from PIL import Image
 
-from .helper import IMCONVERT, assert_image_equal, hopper, imagemagick_available
+from .helper import CONVERT, assert_image_equal, convert_available, hopper
 
-_roundtrip = imagemagick_available()
+_roundtrip = convert_available()
 
 
 def helper_save_as_palm(tmp_path, mode):
@@ -23,13 +23,13 @@ def helper_save_as_palm(tmp_path, mode):
     assert os.path.getsize(outfile) > 0
 
 
-def open_with_imagemagick(tmp_path, f):
-    if not imagemagick_available():
+def open_with_convert(tmp_path, f):
+    if not convert_available():
         raise OSError()
 
     outfile = str(tmp_path / "temp.png")
     rc = subprocess.call(
-        [IMCONVERT, f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+        CONVERT + [f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
     )
     if rc:
         raise OSError
@@ -44,7 +44,7 @@ def roundtrip(tmp_path, mode):
     outfile = str(tmp_path / "temp.palm")
 
     im.save(outfile)
-    converted = open_with_imagemagick(tmp_path, outfile)
+    converted = open_with_convert(tmp_path, outfile)
     assert_image_equal(converted, im)
 
 
