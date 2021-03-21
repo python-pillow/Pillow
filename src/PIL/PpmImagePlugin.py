@@ -24,9 +24,9 @@ b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
     # standard, plain
-    b"P1": ("plain", "1"),
-    b"P2": ("plain", "L"),
-    b"P3": ("plain", "RGB"),
+    b"P1": ("ppm_plain", "1"),
+    b"P2": ("ppm_plain", "L"),
+    b"P3": ("ppm_plain", "RGB"),
     # standard, raw
     b"P4": ("raw", "1"),
     b"P5": ("raw", "L"),
@@ -339,7 +339,7 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 
-Image.register_decoder("plain", PpmPlainDecoder)
+Image.register_decoder("ppm_plain", PpmPlainDecoder)
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
 
