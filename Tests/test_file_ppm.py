@@ -51,7 +51,7 @@ def test_pnm(tmp_path):
 
 
 def test_not_ppm(tmp_path):
-    path = str(tmp_path / "temp.djvurle")
+    path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"PyInvalid")
 
@@ -70,7 +70,7 @@ def test_header_with_comments(tmp_path):
 
 
 def test_nondecimal_header(tmp_path):
-    path = str(tmp_path / "temp.djvurle")
+    path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"P6\n128\x00")
 
@@ -80,7 +80,7 @@ def test_nondecimal_header(tmp_path):
 
 
 def test_token_too_long(tmp_path):
-    path = str(tmp_path / "temp.djvurle")
+    path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"P6\n 0123456789")
 
@@ -90,7 +90,7 @@ def test_token_too_long(tmp_path):
 
 
 def test_too_many_colors(tmp_path):
-    path = str(tmp_path / "temp.djvurle")
+    path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"P6\n1 1\n1000\n")
 
