@@ -194,6 +194,15 @@ class DisplayViewer(UnixViewer):
         return command, executable
 
 
+class GmDisplayViewer(UnixViewer):
+    """The GraphicsMagick ``gm display`` command."""
+
+    def get_command_ex(self, file, **options):
+        executable = "gm"
+        command = "gm display"
+        return command, executable
+
+
 class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
@@ -220,6 +229,8 @@ class XVViewer(UnixViewer):
 if sys.platform not in ("win32", "darwin"):  # unixoids
     if shutil.which("display"):
         register(DisplayViewer)
+    if shutil.which("gm"):
+        register(GmDisplayViewer)
     if shutil.which("eog"):
         register(EogViewer)
     if shutil.which("xv"):
