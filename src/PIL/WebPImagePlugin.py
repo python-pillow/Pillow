@@ -192,7 +192,7 @@ def _save_all(im, fp, filename):
                 r, g, b = palette[background * 3 : (background + 1) * 3]
                 background = (r, g, b, 0)
 
-    duration = im.encoderinfo.get("duration", 0)
+    duration = im.encoderinfo.get("duration", im.info.get("duration"))
     loop = im.encoderinfo.get("loop", 0)
     minimize_size = im.encoderinfo.get("minimize_size", False)
     kmin = im.encoderinfo.get("kmin", None)
