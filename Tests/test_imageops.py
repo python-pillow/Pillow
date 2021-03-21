@@ -29,6 +29,7 @@ def test_sanity():
     ImageOps.autocontrast(hopper("L"), cutoff=(2, 10))
     ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
     ImageOps.autocontrast(hopper("L"), mask=hopper("L"))
+    ImageOps.autocontrast(hopper("L"), preserve_tone=True)
 
     ImageOps.colorize(hopper("L"), (0, 0, 0), (255, 255, 255))
     ImageOps.colorize(hopper("L"), "black", "white")
