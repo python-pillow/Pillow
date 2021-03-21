@@ -56,7 +56,8 @@ def test_not_ppm(tmp_path):
         f.write(b"PyInvalid")
 
     with pytest.raises(UnidentifiedImageError):
-        Image.open(path)
+        with Image.open(path):
+            pass
 
 
 def test_header_with_comments(tmp_path):
@@ -74,7 +75,8 @@ def test_nondecimal_header(tmp_path):
         f.write(b"P6\n128\x00")
 
     with pytest.raises(ValueError):
-        Image.open(path)
+        with Image.open(path):
+            pass
 
 
 def test_token_too_long(tmp_path):
@@ -83,7 +85,8 @@ def test_token_too_long(tmp_path):
         f.write(b"P6\n 0123456789")
 
     with pytest.raises(ValueError):
-        Image.open(path)
+        with Image.open(path):
+            pass
 
 
 def test_too_many_colors(tmp_path):
@@ -92,7 +95,8 @@ def test_too_many_colors(tmp_path):
         f.write(b"P6\n1 1\n1000\n")
 
     with pytest.raises(ValueError):
-        Image.open(path)
+        with Image.open(path):
+            pass
 
 
 def test_truncated_file(tmp_path):
