@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Use duration from info dictionary when saving WebP #5338
+  [radarhere]
+
 - Stop flattening EXIF IFD into getexif() #4947
   [radarhere, kkopachev]
 
