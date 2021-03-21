@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Allow fewer PNG palette entries than the bit depth maximum when saving #5330
+  [radarhere]
+
 - Use duration from info dictionary when saving WebP #5338
   [radarhere]
 
