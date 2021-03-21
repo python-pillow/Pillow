@@ -257,16 +257,22 @@ def netpbm_available():
     return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
 
 
-def convert_available():
-    return imagemagick_available() or graphicsmagick_available()
+def magick_command():
+    if sys.platform == "win32":
+        imagemagick = os.environ.get("MAGICK_HOME", "")
+        if imagemagick:
+            imagemagick = [os.path.join(imagemagick, "convert.exe")]
+            graphicsmagick = [os.path.join(imagemagick, "gm.exe"), "convert"]
+        else:
+            graphicsmagick = None
+    else:
+        imagemagick = ["convert"]
+        graphicsmagick = ["gm", "convert"]
 
-
-def imagemagick_available():
-    return bool(IMCONVERT and shutil.which(IMCONVERT[0]))
-
-
-def graphicsmagick_available():
-    return bool(GMCONVERT and shutil.which(GMCONVERT[0]))
+    if imagemagick and shutil.which(imagemagick[0]):
+        return imagemagick
+    elif graphicsmagick and shutil.which(graphicsmagick[0]):
+        return graphicsmagick
 
 
 def on_appveyor():
@@ -302,24 +308,6 @@ def is_pypy():
 
 def is_mingw():
     return sysconfig.get_platform() == "mingw"
-
-
-if sys.platform == "win32":
-    IMCONVERT = os.environ.get("MAGICK_HOME", "")
-    GMCONVERT = None
-    if IMCONVERT:
-        IMCONVERT = [os.path.join(IMCONVERT, "convert.exe")]
-        GMCONVERT = [os.path.join(IMCONVERT, "gm.exe"), "convert"]
-else:
-    IMCONVERT = ["convert"]
-    GMCONVERT = ["gm", "convert"]
-
-if imagemagick_available():
-    CONVERT = IMCONVERT
-elif graphicsmagick_available():
-    CONVERT = GMCONVERT
-else:
-    CONVERT = None
 
 
 class cached_property:
