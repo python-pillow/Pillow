@@ -1062,8 +1062,9 @@ class Image:
 
                        By default, :data:`MEDIANCUT` will be used.
 
-                       The exception to this is RGBA images. RGBA images use
-                       :data:`FASTOCTREE` by default instead.
+                       The exception to this is RGBA images. :data:`MEDIANCUT` and
+                       :data:`MAXCOVERAGE` do not support RGBA images, so
+                       :data:`FASTOCTREE` is used by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
