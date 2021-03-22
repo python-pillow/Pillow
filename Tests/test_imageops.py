@@ -366,7 +366,7 @@ def test_auto_contrast_mask_real_input():
 
 
 def test_autocontrast_preserve_gradient():
-    gradient = Image.linear_gradient("L"))
+    gradient = Image.linear_gradient("L")
 
     # test with a grayscale gradient that extends to 0,255.
     # Should be a noop.
@@ -394,7 +394,6 @@ def test_autocontrast_preserve_onecolor():
 
         # single color images shouldn't change
         out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
-        # remove when production
         assert_image_equal(img, out)  # single color, no cutoff
 
         # even if there is a cutoff
@@ -403,9 +402,7 @@ def test_autocontrast_preserve_onecolor():
         )  # single color 10 cutoff
         assert_image_equal(img, out)
 
-    # succeeding
     _test_one_color((255, 255, 255))
     _test_one_color((127, 255, 0))
-    # failing
     _test_one_color((127, 127, 127))
     _test_one_color((0, 0, 0))
