@@ -1059,6 +1059,11 @@ class Image:
                        :data:`LIBIMAGEQUANT` (libimagequant; check support using
                        :py:func:`PIL.features.check_feature`
                        with ``feature="libimagequant"``).
+
+                       By default, :data:`MEDIANCUT` will be used.
+
+                       The exception to this is RGBA images. RGBA images use
+                       :data:`FASTOCTREE` by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.

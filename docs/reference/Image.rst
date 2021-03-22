@@ -486,15 +486,15 @@ Used to specify the quantization method to use for the :meth:`~Image.quantize` m
 
 .. data:: MEDIANCUT
 
-    Median cut
+    Median cut. Default method, except for RGBA images.
 
 .. data:: MAXCOVERAGE
 
-    Maximum coverage
+    Maximum coverage.
 
 .. data:: FASTOCTREE
 
-    Fast octree
+    Fast octree. Default method for RGBA images.
 
 .. data:: LIBIMAGEQUANT
 
