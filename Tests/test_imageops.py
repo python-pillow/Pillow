@@ -366,9 +366,7 @@ def test_auto_contrast_mask_real_input():
 
 
 def test_autocontrast_preserve_gradient():
-    from PIL import _imaging as core
-
-    gradient = Image.Image()._new(core.linear_gradient("L"))
+    gradient = Image.linear_gradient("L"))
 
     # test with a grayscale gradient that extends to 0,255.
     # Should be a noop.
