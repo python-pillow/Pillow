@@ -363,3 +363,51 @@ def test_auto_contrast_mask_real_input():
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )
+
+
+def test_autocontrast_preserve_gradient():
+    from PIL import _imaging as core
+
+    gradient = Image.Image()._new(core.linear_gradient("L"))
+
+    # test with a grayscale gradient that extends to 0,255.
+    # Should be a noop.
+    out = ImageOps.autocontrast(gradient, cutoff=0, preserve_tone=True)
+
+    assert_image_equal(gradient, out)
+
+    # cutoff the top and bottom
+    # autocontrast should make the first and list histogram entries equal
+    # and should be 10% of the image pixels (+-, because integers)
+    out = ImageOps.autocontrast(gradient, cutoff=10, preserve_tone=True)
+    hist = out.histogram()
+    assert hist[0] == hist[-1]
+    assert hist[-1] == 256 * round(256 * 0.10)
+
+    # in rgb
+    img = gradient.convert("RGB")
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)
+
+
+def test_autocontrast_preserve_onecolor():
+    def _test_one_color(color):
+        img = Image.new("RGB", (10, 10), color)
+
+        # single color images shouldn't change
+        out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+        # remove when production
+        assert_image_equal(img, out)  # single color, no cutoff
+
+        # even if there is a cutoff
+        out = ImageOps.autocontrast(
+            img, cutoff=0, preserve_tone=True
+        )  # single color 10 cutoff
+        assert_image_equal(img, out)
+
+    # succeeding
+    _test_one_color((255, 255, 255))
+    _test_one_color((127, 255, 0))
+    # failing
+    _test_one_color((127, 127, 127))
+    _test_one_color((0, 0, 0))
