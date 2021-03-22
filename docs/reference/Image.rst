@@ -502,10 +502,3 @@ Used to specify the quantization method to use for the :meth:`~Image.quantize` m
 
     Check support using :py:func:`PIL.features.check_feature`
     with ``feature="libimagequant"``.
-
-.. comment: These are not referenced anywhere?
-    Categories
-    ^^^^^^^^^^
-    .. data:: NORMAL
-    .. data:: SEQUENCE
-    .. data:: CONTAINER
