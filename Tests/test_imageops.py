@@ -400,6 +400,6 @@ def test_autocontrast_preserve_one_color(color):
 
     # even if there is a cutoff
     out = ImageOps.autocontrast(
-        img, cutoff=0, preserve_tone=True
+        img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
