@@ -65,6 +65,18 @@ instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show
 if none of the other viewers are available. This means that the behaviour of
 :py:class:`PIL.ImageShow` will stay the same for most Pillow users.
 
+ImageShow.GmDisplayViewer
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If GraphicsMagick is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will
+be registered. It uses GraphicsMagick_, an ImageMagick_ fork, to display images.
+
+The GraphicsMagick based viewer has a lower priority than its ImageMagick
+counterpart.  Thus, if both ImageMagick and GraphicsMagick are installed,
+``im.show()`` and :py:func:`.ImageShow.show()` prefer the viewer based on
+ImageMagick, i.e the behaviour stays the same for Pillow users having
+ImageMagick installed.
+
 Saving TIFF with ICC profile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -86,3 +98,12 @@ PyQt6
 
 Support has been added for PyQt6. If it is installed, it will be used instead of
 PySide6, PyQt5 or PySide2.
+
+GraphicsMagick
+^^^^^^^^^^^^^^
+
+The test suite can now be run on systems which have GraphicsMagick_ but not
+ImageMagick_ installed.  If both are installed, the tests prefer ImageMagick.
+
+.. _GraphicsMagick: http://www.graphicsmagick.org/
+.. _ImageMagick: https://imagemagick.org/
