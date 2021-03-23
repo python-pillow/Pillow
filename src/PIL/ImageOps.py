@@ -78,6 +78,9 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None, preserve_tone=False):
                  within the mask. If no mask is given the entire image is used
                  for histogram computation.
     :param preserve_tone: Preserve image tone in Photoshop-like style autocontrast.
+
+                          .. versionadded:: 1.1.5
+
     :return: An image.
     """
     if preserve_tone:
