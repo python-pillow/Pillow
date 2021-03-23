@@ -5,12 +5,7 @@ import pytest
 
 from PIL import Image, PpmImagePlugin
 
-from .helper import (
-    assert_image_equal,
-    assert_image_equal_tofile,
-    assert_image_similar,
-    hopper,
-)
+from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -56,46 +51,36 @@ def test_pnm(tmp_path):
 
 
 def test_plain_pbm(tmp_path):
-    with Image.open("Tests/images/hopper_1bit_plain.pbm") as im1, Image.open(
-        "Tests/images/hopper_1bit.pbm"
-    ) as im2:
-        assert_image_equal(im1, im2)
+    with Image.open("Tests/images/hopper_1bit_plain.pbm") as im:
+        assert_image_equal_tofile(im, "Tests/images/hopper_1bit.pbm")
 
 
 def test_8bit_plain_pgm(tmp_path):
-    with Image.open("Tests/images/hopper_8bit_plain.pgm") as im1, Image.open(
-        "Tests/images/hopper_8bit.pgm"
-    ) as im2:
-        assert_image_equal(im1, im2)
+    with Image.open("Tests/images/hopper_8bit_plain.pgm") as im:
+        assert_image_equal_tofile(im, "Tests/images/hopper_8bit.pgm")
 
 
 def test_8bit_plain_ppm(tmp_path):
-    with Image.open("Tests/images/hopper_8bit_plain.ppm") as im1, Image.open(
-        "Tests/images/hopper_8bit.ppm"
-    ) as im2:
-        assert_image_equal(im1, im2)
+    with Image.open("Tests/images/hopper_8bit_plain.ppm") as im:
+        assert_image_equal_tofile(im, "Tests/images/hopper_8bit.ppm")
 
 
 def test_16bit_plain_pgm(tmp_path):
-    with Image.open("Tests/images/hopper_16bit_plain.pgm") as im1, Image.open(
-        "Tests/images/hopper_16bit.pgm"
-    ) as im2:
-        assert im1.mode == "I"
-        assert im1.size == (128, 128)
-        assert im1.get_format_mimetype() == "image/x-portable-graymap"
+    with Image.open("Tests/images/hopper_16bit_plain.pgm") as im:
+        assert im.mode == "I"
+        assert im.size == (128, 128)
+        assert im.get_format_mimetype() == "image/x-portable-graymap"
 
-        assert_image_equal(im1, im2)
+        assert_image_equal_tofile(im, "Tests/images/hopper_16bit.pgm")
 
 
 def test_32bit_plain_pgm(tmp_path):
-    with Image.open("Tests/images/hopper_32bit_plain.pgm") as im1, Image.open(
-        "Tests/images/hopper_32bit.pgm"
-    ) as im2:
-        assert im1.mode == "I"
-        assert im1.size == (128, 128)
-        assert im1.get_format_mimetype() == "image/x-portable-graymap"
+    with Image.open("Tests/images/hopper_32bit_plain.pgm") as im:
+        assert im.mode == "I"
+        assert im.size == (128, 128)
+        assert im.get_format_mimetype() == "image/x-portable-graymap"
 
-        assert_image_equal(im1, im2)
+        assert_image_equal_tofile(im, "Tests/images/hopper_32bit.pgm")
 
 
 def test_plain_pbm_data_with_comments(tmp_path):
@@ -106,8 +91,8 @@ def test_plain_pbm_data_with_comments(tmp_path):
         f1.write(b"P1\n2 2\n\n1010")
         f2.write(b"P1\n2 2\n" + comment + b"\n1010" + comment)
 
-    with Image.open(path1) as im1, Image.open(path2) as im2:
-        assert_image_equal(im1, im2)
+    with Image.open(path1) as im:
+        assert_image_equal_tofile(im, path2)
 
 
 def test_plain_pbm_truncated_data(tmp_path):
@@ -140,8 +125,8 @@ def test_plain_ppm_data_with_comments(tmp_path):
             b"P3\n2 2\n255\n" + comment + b"\n0 0 0 001 1 1 2 2 2 255 255 255" + comment
         )
 
-    with Image.open(path1) as im1, Image.open(path2) as im2:
-        assert_image_equal(im1, im2)
+    with Image.open(path1) as im:
+        assert_image_equal_tofile(im, path2)
 
 
 def test_plain_ppm_truncated_data(tmp_path):
