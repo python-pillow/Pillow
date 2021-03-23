@@ -388,21 +388,18 @@ def test_autocontrast_preserve_gradient():
     assert_image_equal(img, out)
 
 
-def test_autocontrast_preserve_onecolor():
-    def _test_one_color(color):
-        img = Image.new("RGB", (10, 10), color)
+@pytest.mark.parametrize(
+    "color", ((255, 255, 255), (127, 255, 0), (127, 127, 127), (0, 0, 0))
+)
+def test_autocontrast_preserve_one_color(color):
+    img = Image.new("RGB", (10, 10), color)
 
-        # single color images shouldn't change
-        out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
-        assert_image_equal(img, out)  # single color, no cutoff
+    # single color images shouldn't change
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)  # single color, no cutoff
 
-        # even if there is a cutoff
-        out = ImageOps.autocontrast(
-            img, cutoff=0, preserve_tone=True
-        )  # single color 10 cutoff
-        assert_image_equal(img, out)
-
-    _test_one_color((255, 255, 255))
-    _test_one_color((127, 255, 0))
-    _test_one_color((127, 127, 127))
-    _test_one_color((0, 0, 0))
+    # even if there is a cutoff
+    out = ImageOps.autocontrast(
+        img, cutoff=0, preserve_tone=True
+    )  # single color 10 cutoff
+    assert_image_equal(img, out)
