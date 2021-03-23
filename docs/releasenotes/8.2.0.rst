@@ -74,13 +74,13 @@ be specified through a keyword argument::
     im.save("out.tif", icc_profile=...)
 
 
-ImageOps.autocontrast: tone preserving option
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImageOps.autocontrast: preserve_tone
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default behaviour of the :py:meth:`~PIL.ImageOps.autocontrast` is to normalize separate
-histograms for each color channel, it changes tone of the image. Added ``preserve_tone``
-argument which avoids changing the tone of the image using one luminance histogram for all
-channels.
+The default behaviour of the :py:meth:`~PIL.ImageOps.autocontrast` is to normalize
+separate histograms for each color channel, changing the tone of the image. The new
+``preserve_tone`` argument keeps the tone unchanged by using one luminance histogram
+for all channels.
 
 Security
 ========
