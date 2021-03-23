@@ -79,7 +79,7 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None, preserve_tone=False):
                  for histogram computation.
     :param preserve_tone: Preserve image tone in Photoshop-like style autocontrast.
 
-                          .. versionadded:: 1.1.5
+                          .. versionadded:: 8.2.0
 
     :return: An image.
     """
