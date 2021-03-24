@@ -236,7 +236,6 @@ text_layout_raqm(
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
-//    raqm_glyph_t_01 *glyphs_01 = NULL;
     raqm_direction_t direction;
 
     rq = raqm_create();
@@ -278,12 +277,12 @@ text_layout_raqm(
             direction = RAQM_DIRECTION_LTR;
         } else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
-//            if (p_raqm.version_atleast == NULL || !(*p_raqm.version_atleast)(0, 7, 0)) {
-//                PyErr_SetString(
-//                    PyExc_ValueError,
-//                    "libraqm 0.7 or greater required for 'ttb' direction");
-//                goto failed;
-//            }
+#if !defined(RAQM_VERSION_ATLEAST) || !RAQM_VERSION_ATLEAST(0, 7, 0)
+            PyErr_SetString(
+                PyExc_ValueError,
+                "libraqm 0.7 or greater required for 'ttb' direction");
+            goto failed;
+#endif
         } else {
             PyErr_SetString(
                 PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'");
@@ -340,21 +339,12 @@ text_layout_raqm(
         goto failed;
     }
 
-//    if (p_raqm.version == 1) {
-//        glyphs_01 = raqm_get_glyphs_01(rq, &count);
-//        if (glyphs_01 == NULL) {
-//            PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
-//            count = 0;
-//            goto failed;
-//        }
-//    } else { /* version == 2 */
-        glyphs = raqm_get_glyphs(rq, &count);
-        if (glyphs == NULL) {
-            PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
-            count = 0;
-            goto failed;
-        }
-//    }
+    glyphs = raqm_get_glyphs(rq, &count);
+    if (glyphs == NULL) {
+        PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
+        count = 0;
+        goto failed;
+    }
 
     (*glyph_info) = PyMem_New(GlyphInfo, count);
     if ((*glyph_info) == NULL) {
@@ -363,25 +353,14 @@ text_layout_raqm(
         goto failed;
     }
 
-//    if (p_raqm.version == 1) {
-//        for (i = 0; i < count; i++) {
-//            (*glyph_info)[i].index = glyphs_01[i].index;
-//            (*glyph_info)[i].x_offset = glyphs_01[i].x_offset;
-//            (*glyph_info)[i].x_advance = glyphs_01[i].x_advance;
-//            (*glyph_info)[i].y_offset = glyphs_01[i].y_offset;
-//            (*glyph_info)[i].y_advance = glyphs_01[i].y_advance;
-//            (*glyph_info)[i].cluster = glyphs_01[i].cluster;
-//        }
-//    } else {
-        for (i = 0; i < count; i++) {
-            (*glyph_info)[i].index = glyphs[i].index;
-            (*glyph_info)[i].x_offset = glyphs[i].x_offset;
-            (*glyph_info)[i].x_advance = glyphs[i].x_advance;
-            (*glyph_info)[i].y_offset = glyphs[i].y_offset;
-            (*glyph_info)[i].y_advance = glyphs[i].y_advance;
-            (*glyph_info)[i].cluster = glyphs[i].cluster;
-        }
-//    }
+    for (i = 0; i < count; i++) {
+        (*glyph_info)[i].index = glyphs[i].index;
+        (*glyph_info)[i].x_offset = glyphs[i].x_offset;
+        (*glyph_info)[i].x_advance = glyphs[i].x_advance;
+        (*glyph_info)[i].y_offset = glyphs[i].y_offset;
+        (*glyph_info)[i].y_advance = glyphs[i].y_advance;
+        (*glyph_info)[i].cluster = glyphs[i].cluster;
+    }
 
 failed:
     raqm_destroy(rq);
