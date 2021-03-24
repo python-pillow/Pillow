@@ -1367,7 +1367,6 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
     if (have_raqm) {
-        const char *a, *b;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
 #else
@@ -1376,12 +1375,14 @@ setup_module(PyObject *m) {
         PyDict_SetItemString(d, "raqm_version", v);
 
 #ifdef FRIBIDI_MAJOR_VERSION
-        a = strchr(fribidi_version_info, ')');
-        b = strchr(fribidi_version_info, '\n');
-        if (a && b) {
-            v = PyUnicode_FromStringAndSize(a + 2, b - a - 2);
-        } else {
-            v = Py_None;
+        {
+            const char *a = strchr(fribidi_version_info, ')');
+            const char *b = strchr(fribidi_version_info, '\n');
+            if (a && b && a + 2 < b) {
+                v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
+            } else {
+                v = Py_None;
+            }
         }
 #else
         v = Py_None;
