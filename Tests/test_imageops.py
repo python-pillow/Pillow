@@ -376,7 +376,7 @@ def test_autocontrast_preserve_gradient():
 
     # cutoff the top and bottom
     # autocontrast should make the first and list histogram entries equal
-    # and should be 10% of the image pixels (+-, because integers)
+    # and, with rounding, should be 10% of the image pixels
     out = ImageOps.autocontrast(gradient, cutoff=10, preserve_tone=True)
     hist = out.histogram()
     assert hist[0] == hist[-1]
