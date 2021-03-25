@@ -156,8 +156,9 @@ check_buf_bits:
         st->code >>= n;
         st->buf_bits_left -= n;
         st->code_bits_left -= n;
-        if (st->code_bits_left)
+        if (st->code_bits_left) {
             goto check_buf_bits;
+        }
         switch (st->put_state) {
         case PUT_INIT_CLEAR:
             goto get_first_byte;
