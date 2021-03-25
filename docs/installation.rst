@@ -366,6 +366,10 @@ In Fedora, the command is::
 
     sudo dnf install python3-devel redhat-rpm-config
 
+In Alpine, the command is::
+
+    sudo apk add python3-dev py3-setuptools
+
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
 Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
@@ -384,6 +388,12 @@ Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with
 
 Note that the package manager may be yum or DNF, depending on the
 exact distribution.
+
+Prerequisites are installed for **Alpine** with::
+
+    sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
+        libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+        libxcb-dev libpng-dev
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
