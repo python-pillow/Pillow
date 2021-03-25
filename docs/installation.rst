@@ -88,9 +88,10 @@ libraqm, fribidi, and harfbuzz to be installed separately::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
-Most major Linux distributions, including Fedora, Debian/Ubuntu and
-ArchLinux also include Pillow in packages that previously contained
-PIL e.g. ``python-imaging``.
+Most major Linux distributions, including Fedora, Ubuntu and ArchLinux
+also include Pillow in packages that previously contained PIL e.g.
+``python-imaging``. Debian splits it into two packages, ``python3-pil``
+and ``python3-pil.imagetk``.
 
 FreeBSD Installation
 ^^^^^^^^^^^^^^^^^^^^
