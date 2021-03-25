@@ -89,12 +89,12 @@ function pre_build {
         build_freetype
     fi
 
-    if [ -z "$IS_OSX" ]; then
+    if [ -z "$IS_MACOS" ]; then
         export FREETYPE_LIBS=-lfreetype
         export FREETYPE_CFLAGS=-I/usr/local/include/freetype2/
     fi
     build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
-    if [ -z "$IS_OSX" ]; then
+    if [ -z "$IS_MACOS" ]; then
         export FREETYPE_LIBS=''
         export FREETYPE_CFLAGS=''
     fi
@@ -108,7 +108,7 @@ function pre_build {
 
 function pip_wheel_cmd {
     local abs_wheelhouse=$1
-    if [ -z "$IS_OSX" ]; then
+    if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
     fi
     pip wheel $(pip_opts) \
@@ -129,7 +129,7 @@ if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
 fi
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-if [ -z "$IS_OSX" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]]; then
+if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]]; then
   EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux"
 else
   # can't find FriBiDi
