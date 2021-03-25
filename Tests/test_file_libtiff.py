@@ -869,6 +869,11 @@ class TestFileLibTiff(LibTiffTestCase):
             im.load()
         assert im.size == (950, 975)
 
+    def test_one_strip(self):
+        with Image.open("Tests/images/one_strip.tif") as im:
+            im.load()
+        assert im.size == (1728, 2344)
+
     def test_orientation(self):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):

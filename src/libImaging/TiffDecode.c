@@ -328,7 +328,10 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff) {
     int ret;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
-    if (ret != 1) {
+    if (
+      ret != 1 ||
+      rows_per_strip == 4294967295  // 2 ** 32 - 1, the default
+    ) {
         rows_per_strip = state->ysize;
     }
     TRACE(("RowsPerStrip: %u \n", rows_per_strip));
@@ -564,7 +567,7 @@ ImagingLibTiffDecode(
             for (x = state->xoff; x < state->xsize; x += tile_width) {
                 /* Sanity Check. Apparently in some cases, the TiffReadRGBA* functions
                    have a different view of the size of the tiff than we're getting from
-                   other functions. So, we need to check here. 
+                   other functions. So, we need to check here.
                 */
                 if (!TIFFCheckTile(tiff, x, y, 0, 0)) {
                     TRACE(("Check Tile Error, Tile at %dx%d\n", x, y));
