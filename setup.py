@@ -728,6 +728,10 @@ class pil_build_ext(build_ext):
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
             if sys.platform == "win32":
+                # This define needs to be defined if-and-only-if it was defined
+                # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
+                # so we have to guess; by default it is defined in all Windows builds.
+                # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
