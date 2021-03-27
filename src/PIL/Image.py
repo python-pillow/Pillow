@@ -1080,11 +1080,11 @@ class Image:
 
         if method is None:
             # defaults:
-            method = 0
+            method = MEDIANCUT
             if self.mode == "RGBA":
-                method = 2
+                method = FASTOCTREE
 
-        if self.mode == "RGBA" and method not in (2, 3):
+        if self.mode == "RGBA" and method not in (FASTOCTREE, LIBIMAGEQUANT):
             # Caller specified an invalid mode.
             raise ValueError(
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
