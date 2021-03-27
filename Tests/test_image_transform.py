@@ -145,9 +145,8 @@ class TestImageTransform:
 
     def _test_nearest(self, op, mode):
         # create white image with half transparent,
-        # with the black half transparent.
         # do op,
-        # the image should be white with half transparent
+        # the image should remain white with half transparent
         transparent, opaque = {
             "RGBA": ((255, 255, 255, 0), (255, 255, 255, 255)),
             "LA": ((255, 0), (255, 255)),
