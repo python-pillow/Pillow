@@ -1,0 +1,89 @@
+Overview of changes leading to 0.7.1
+Sunday, November 22, 2020
+====================================
+
+Require HarfBuzz >= 2.0.0
+
+Build and documentation fixes.
+
+Overview of changes leading to 0.7.0
+Monday, May 27, 2019
+====================================
+
+New API:
+  * raqm_version
+  * raqm_version_string
+  * raqm_version_atleast
+  * RAQM_VERSION_MAJOR
+  * RAQM_VERSION_MICRO
+  * RAQM_VERSION_MINOR
+  * RAQM_VERSION_STRING
+  * RAQM_VERSION_ATLEAST
+
+Overview of changes leading to 0.6.0
+Sunday, May 5, 2019
+====================================
+
+Fix TTB direction regression from the previous release.
+
+Correctly detect script of Common and Inherite characters at start of text.
+
+Undef HAVE_CONFIG_H workaround, for older versions of Fribidi.
+
+Drop test suite dependency on GLib.
+
+Port test runner to Python instead of shell script.
+
+New API:
+* raqm_set_invisible_glyph()
+
+Overview of changes leading to 0.5.0
+Saturday, February 24, 2018
+====================================
+
+Use FriBiDi 1.x API when available.
+
+Overview of changes leading to 0.4.0
+Sunday, January 21, 2018
+====================================
+
+Set begin-of-text and end-of-text HarfBuzz buffer flags.
+
+Dynamically allocate memory instead of using stack allocation for input text.
+
+Accept zero length text and do nothing instead of treating it as error.
+
+Overview of changes leading to 0.3.0
+Monday, August 21, 2017
+====================================
+
+Fix stack corruption on MSVC.
+
+New API:
+* raqm_set_freetype_load_flags
+
+Overview of changes leading to 0.2.0
+Wednesday, August 25, 2016
+====================================
+
+Fix building with MSVC due to lacking C99 support.
+
+Make multiple fonts support actually work. Start and length now respect the
+input encoding.
+
+New API:
+* raqm_index_to_position
+* raqm_position_to_index
+* raqm_set_language
+
+Overview of changes leading to 0.1.1
+Sunday, May 1, 2016
+====================================
+
+Fix make check on 32-bit systems.
+
+Overview of changes leading to 0.1.0
+Wednesday, January 20, 2016
+====================================
+
+First release.
