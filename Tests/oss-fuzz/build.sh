@@ -31,6 +31,7 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
       --add-binary /usr/local/lib/libwebp.so.7:. \
       --add-binary /usr/local/lib/libwebpdemux.so.2:. \
       --add-binary /usr/local/lib/libwebpmux.so.3:. \
+      --add-binary /usr/local/lib/libxcb.so.1:. \
       --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   # Create execution wrapper.
