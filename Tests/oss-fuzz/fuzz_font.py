@@ -22,7 +22,7 @@ import fuzzers
 
 def TestOneInput(data):
     try:
-        fuzzers.fuzz_image(data)
+        fuzzers.fuzz_font(data)
     except Exception:
         # We're catching all exceptions because Pillow's exceptions are
         # directly inheriting from Exception.
