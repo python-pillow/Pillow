@@ -524,7 +524,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.linear_gradient(mode)
@@ -550,7 +550,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.radial_gradient(mode)
