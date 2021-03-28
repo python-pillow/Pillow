@@ -1916,7 +1916,7 @@ class Image:
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        if self.mode in ["LA", "RGBA"]:
+        if self.mode in ["LA", "RGBA"] and resample != NEAREST:
             im = self.convert(self.mode[:-1] + "a")
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
@@ -2400,14 +2400,14 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode == "LA":
+        if self.mode == "LA" and resample != NEAREST:
             return (
                 self.convert("La")
                 .transform(size, method, data, resample, fill, fillcolor)
                 .convert("LA")
             )
 
-        if self.mode == "RGBA":
+        if self.mode == "RGBA" and resample != NEAREST:
             return (
                 self.convert("RGBa")
                 .transform(size, method, data, resample, fill, fillcolor)
