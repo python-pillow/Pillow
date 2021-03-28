@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
+  [nulano]
+
+- Dynamically link FriBiDi instead of Raqm #5062
+  [nulano]
+
 - Allow fewer PNG palette entries than the bit depth maximum when saving #5330
   [radarhere]
 
