@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Fixed linear_gradient and radial_gradient I and F modes #5274
+  [radarhere]
+
+- Add support for reading TIFFs with PlanarConfiguration=2 #5364
+  [kkopachev, wiredfool, nulano]
+
+- Deprecated categories #5351
+  [radarhere]
+
 - Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
   [nulano]
 
