@@ -320,6 +320,23 @@ class TestLibUnpack:
         self.assert_unpack("RGB", "G", 1, (0, 1, 0), (0, 2, 0), (0, 3, 0))
         self.assert_unpack("RGB", "B", 1, (0, 0, 1), (0, 0, 2), (0, 0, 3))
 
+        self.assert_unpack("RGB", "R;16B", 2, (1, 0, 0), (3, 0, 0), (5, 0, 0))
+        self.assert_unpack("RGB", "G;16B", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
+        self.assert_unpack("RGB", "B;16B", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
+
+        self.assert_unpack("RGB", "R;16L", 2, (2, 0, 0), (4, 0, 0), (6, 0, 0))
+        self.assert_unpack("RGB", "G;16L", 2, (0, 2, 0), (0, 4, 0), (0, 6, 0))
+        self.assert_unpack("RGB", "B;16L", 2, (0, 0, 2), (0, 0, 4), (0, 0, 6))
+
+        if sys.byteorder == "little":
+            self.assert_unpack("RGB", "R;16N", 2, (2, 0, 0), (4, 0, 0), (6, 0, 0))
+            self.assert_unpack("RGB", "G;16N", 2, (0, 2, 0), (0, 4, 0), (0, 6, 0))
+            self.assert_unpack("RGB", "B;16N", 2, (0, 0, 2), (0, 0, 4), (0, 0, 6))
+        else:
+            self.assert_unpack("RGB", "R;16N", 2, (1, 0, 0), (3, 0, 0), (5, 0, 0))
+            self.assert_unpack("RGB", "G;16N", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
+            self.assert_unpack("RGB", "B;16N", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
+
     def test_RGBA(self):
         self.assert_unpack("RGBA", "LA", 2, (1, 1, 1, 2), (3, 3, 3, 4), (5, 5, 5, 6))
         self.assert_unpack(
@@ -449,6 +466,43 @@ class TestLibUnpack:
         self.assert_unpack("RGBA", "G", 1, (0, 1, 0, 0), (0, 2, 0, 0), (0, 3, 0, 0))
         self.assert_unpack("RGBA", "B", 1, (0, 0, 1, 0), (0, 0, 2, 0), (0, 0, 3, 0))
         self.assert_unpack("RGBA", "A", 1, (0, 0, 0, 1), (0, 0, 0, 2), (0, 0, 0, 3))
+
+        self.assert_unpack("RGBA", "R;16B", 2, (1, 0, 0, 0), (3, 0, 0, 0), (5, 0, 0, 0))
+        self.assert_unpack("RGBA", "G;16B", 2, (0, 1, 0, 0), (0, 3, 0, 0), (0, 5, 0, 0))
+        self.assert_unpack("RGBA", "B;16B", 2, (0, 0, 1, 0), (0, 0, 3, 0), (0, 0, 5, 0))
+        self.assert_unpack("RGBA", "A;16B", 2, (0, 0, 0, 1), (0, 0, 0, 3), (0, 0, 0, 5))
+
+        self.assert_unpack("RGBA", "R;16L", 2, (2, 0, 0, 0), (4, 0, 0, 0), (6, 0, 0, 0))
+        self.assert_unpack("RGBA", "G;16L", 2, (0, 2, 0, 0), (0, 4, 0, 0), (0, 6, 0, 0))
+        self.assert_unpack("RGBA", "B;16L", 2, (0, 0, 2, 0), (0, 0, 4, 0), (0, 0, 6, 0))
+        self.assert_unpack("RGBA", "A;16L", 2, (0, 0, 0, 2), (0, 0, 0, 4), (0, 0, 0, 6))
+
+        if sys.byteorder == "little":
+            self.assert_unpack(
+                "RGBA", "R;16N", 2, (2, 0, 0, 0), (4, 0, 0, 0), (6, 0, 0, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "G;16N", 2, (0, 2, 0, 0), (0, 4, 0, 0), (0, 6, 0, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "B;16N", 2, (0, 0, 2, 0), (0, 0, 4, 0), (0, 0, 6, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "A;16N", 2, (0, 0, 0, 2), (0, 0, 0, 4), (0, 0, 0, 6)
+            )
+        else:
+            self.assert_unpack(
+                "RGBA", "R;16N", 2, (1, 0, 0, 0), (3, 0, 0, 0), (5, 0, 0, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "G;16N", 2, (0, 1, 0, 0), (0, 3, 0, 0), (0, 5, 0, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "B;16N", 2, (0, 0, 1, 0), (0, 0, 3, 0), (0, 0, 5, 0)
+            )
+            self.assert_unpack(
+                "RGBA", "A;16N", 2, (0, 0, 0, 1), (0, 0, 0, 3), (0, 0, 0, 5)
+            )
 
     def test_RGBa(self):
         self.assert_unpack(
