@@ -59,6 +59,16 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
+        else:
+            categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+            if name in categories:
+                warnings.warn(
+                    "Image categories are deprecated and will be removed in Pillow 10 "
+                    "(2023-01-02). Use is_animated instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return categories[name]
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -68,6 +78,11 @@ else:
 
     # Silence warning
     assert PILLOW_VERSION
+
+    # categories
+    NORMAL = 0
+    SEQUENCE = 1
+    CONTAINER = 2
 
 
 logger = logging.getLogger(__name__)
@@ -186,11 +201,6 @@ MEDIANCUT = 0
 MAXCOVERAGE = 1
 FASTOCTREE = 2
 LIBIMAGEQUANT = 3
-
-# categories
-NORMAL = 0
-SEQUENCE = 1
-CONTAINER = 2
 
 if hasattr(core, "DEFAULT_STRATEGY"):
     DEFAULT_STRATEGY = core.DEFAULT_STRATEGY
@@ -535,10 +545,21 @@ class Image:
         self._size = (0, 0)
         self.palette = None
         self.info = {}
-        self.category = NORMAL
+        self._category = 0
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+
+    def __getattr__(self, name):
+        if name == "category":
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-01-02). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self._category
+        raise AttributeError(name)
 
     @property
     def width(self):
@@ -648,7 +669,7 @@ class Image:
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.category == other.category
+            and self._category == other._category
             and self.readonly == other.readonly
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()

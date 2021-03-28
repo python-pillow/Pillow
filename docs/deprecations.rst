@@ -33,6 +33,18 @@ Tk/Tcl 8.4
 Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
 when Tk/Tcl 8.5 will be the minimum supported.
 
+Categories
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
+
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
