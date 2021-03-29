@@ -91,6 +91,24 @@ TODO
 Other Changes
 =============
 
+Libraqm and FriBiDi linking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The way the libraqm dependency for complex text scripts is linked has been changed:
+
+Source builds will now link against the system version of libraqm at build time
+rather than at runtime by default.
+
+Binary wheels now include a statically linked modified version of libraqm that
+links against FriBiDi at runtime instead. This change is intended to address
+issues with the previous implementation on some platforms. These are created
+by building Pillow with the new build flags ``--vendor-raqm --vendor-fribidi``.
+
+Windows users will now need to install ``fribidi.dll`` (or ``fribidi-0.dll``) only,
+``libraqm.dll`` is no longer used.
+
+See :doc:`installation documentation<../installation>` for more information.
+
 PyQt6
 ^^^^^
 
