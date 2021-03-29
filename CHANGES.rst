@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Add preserve_tone option to autocontrast #5350
+  [elejke, radarhere]
+
 - Fixed linear_gradient and radial_gradient I and F modes #5274
   [radarhere]
 
