@@ -293,7 +293,7 @@ def logical_xor(image1, image2):
 
 def blend(image1, image2, alpha):
     """Blend images using constant transparency weight. Alias for
-    :py:meth:`PIL.Image.Image.blend`.
+    :py:func:`PIL.Image.blend`.
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
@@ -303,7 +303,7 @@ def blend(image1, image2, alpha):
 
 def composite(image1, image2, mask):
     """Create composite using transparency mask. Alias for
-    :py:meth:`PIL.Image.Image.composite`.
+    :py:func:`PIL.Image.composite`.
 
     :rtype: :py:class:`~PIL.Image.Image`
     """
@@ -313,8 +313,8 @@ def composite(image1, image2, mask):
 
 def offset(image, xoffset, yoffset=None):
     """Returns a copy of the image where data has been offset by the given
-    distances. Data wraps around the edges. If **yoffset** is omitted, it
-    is assumed to be equal to **xoffset**.
+    distances. Data wraps around the edges. If ``yoffset`` is omitted, it
+    is assumed to be equal to ``xoffset``.
 
     :param xoffset: The horizontal distance.
     :param yoffset: The vertical distance.  If omitted, both

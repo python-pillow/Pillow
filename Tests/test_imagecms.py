@@ -1,12 +1,20 @@
 import datetime
 import os
 import re
+import shutil
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageMode
 
-from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+from PIL import Image, ImageMode, features
+
+from .helper import (
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 try:
     from PIL import ImageCms
@@ -46,7 +54,7 @@ def test_sanity():
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+$", ImageCms.core.littlecms_version)
+    assert re.search(r"\d+\.\d+(\.\d+)?$", features.version_module("littlecms2"))
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
@@ -238,8 +246,7 @@ def test_lab_color():
 
     # i.save('temp.lab.tif')  # visually verified vs PS.
 
-    with Image.open("Tests/images/hopper.Lab.tif") as target:
-        assert_image_similar(i, target, 3.5)
+    assert_image_similar_tofile(i, "Tests/images/hopper.Lab.tif", 3.5)
 
 
 def test_lab_srgb():
@@ -435,41 +442,21 @@ def test_extended_information():
     assert p.xcolor_space == "RGB "
 
 
-def test_deprecations():
+def test_non_ascii_path(tmp_path):
     skip_missing()
-    o = ImageCms.getOpenProfile(SRGB)
+    tempfile = str(tmp_path / ("temp_" + chr(128) + ".icc"))
+    try:
+        shutil.copy(SRGB, tempfile)
+    except UnicodeEncodeError:
+        pytest.skip("Non-ASCII path could not be created")
+
+    o = ImageCms.getOpenProfile(tempfile)
     p = o.profile
-
-    def helper_deprecated(attr, expected):
-        result = pytest.warns(DeprecationWarning, getattr, p, attr)
-        assert result == expected
-
-    # p.color_space
-    helper_deprecated("color_space", "RGB")
-
-    # p.pcs
-    helper_deprecated("pcs", "XYZ")
-
-    # p.product_copyright
-    helper_deprecated(
-        "product_copyright", "Copyright International Color Consortium, 2009"
-    )
-
-    # p.product_desc
-    helper_deprecated("product_desc", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_description
-    helper_deprecated("product_description", "sRGB IEC61966-2-1 black scaled")
-
-    # p.product_manufacturer
-    helper_deprecated("product_manufacturer", "")
-
-    # p.product_model
-    helper_deprecated("product_model", "IEC 61966-2-1 Default RGB Colour Space - sRGB")
+    assert p.model == "IEC 61966-2-1 Default RGB Colour Space - sRGB"
 
 
 def test_profile_typesafety():
-    """ Profile init type safety
+    """Profile init type safety
 
     prepatch, these would segfault, postpatch they should emit a typeerror
     """
@@ -484,7 +471,7 @@ def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
     def create_test_image():
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
-        nine_grid_deltas = [  # noqa: E131
+        nine_grid_deltas = [
             (-1, -1), (-1, 0), (-1, 1),
             (0,  -1),  (0, 0),  (0, 1),
             (1,  -1),  (1, 0),  (1, 1),

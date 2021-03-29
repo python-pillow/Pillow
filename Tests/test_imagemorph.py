@@ -1,8 +1,9 @@
 # Test the ImageMorphology functionality
 import pytest
+
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal_tofile, hopper
 
 
 def string_to_img(image_string):
@@ -56,15 +57,14 @@ def assert_img_equal_img_string(A, Bstring):
 
 
 def test_str_to_img():
-    with Image.open("Tests/images/morph_a.png") as im:
-        assert_image_equal(A, im)
+    assert_image_equal_tofile(A, "Tests/images/morph_a.png")
 
 
 def create_lut():
     for op in ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge"):
         lb = ImageMorph.LutBuilder(op_name=op)
         lut = lb.build_lut()
-        with open("Tests/images/%s.lut" % op, "wb") as f:
+        with open(f"Tests/images/{op}.lut", "wb") as f:
             f.write(lut)
 
 
@@ -75,7 +75,7 @@ def test_lut():
         assert lb.get_lut() is None
 
         lut = lb.build_lut()
-        with open("Tests/images/%s.lut" % op, "rb") as f:
+        with open(f"Tests/images/{op}.lut", "rb") as f:
             assert lut == bytearray(f.read())
 
 

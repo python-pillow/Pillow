@@ -2,9 +2,6 @@
 
 set -e
 
-python -m pytest -v -x -W always --cov PIL --cov Tests --cov-report term Tests
+python3 -c "from PIL import Image"
 
-# Docs
-if [ "$TRAVIS_PYTHON_VERSION" == "3.8" ] && [ "$TRAVIS_CPU_ARCH" == "amd64" ]; then
-    make doccheck
-fi
+python3 -bb -m pytest -v -x -W always --cov PIL --cov Tests --cov-report term Tests

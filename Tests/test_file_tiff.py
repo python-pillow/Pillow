@@ -1,8 +1,8 @@
-import logging
 import os
 from io import BytesIO
 
 import pytest
+
 from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -15,8 +15,6 @@ from .helper import (
     is_pypy,
     is_win32,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class TestFileTiff:
@@ -61,19 +59,19 @@ class TestFileTiff:
         pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
-        def open():
+        with pytest.warns(None) as record:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_context_manager(self):
-        def open():
+        with pytest.warns(None) as record:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -165,9 +163,8 @@ class TestFileTiff:
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
-        Image.open("Tests/images/10ct_32bit_128.tiff").save(
-            b, format="tiff", resolution=123.45
-        )
+        with Image.open("Tests/images/10ct_32bit_128.tiff") as im:
+            im.save(b, format="tiff", resolution=123.45)
         with Image.open(b) as im:
             assert float(im.tag_v2[X_RESOLUTION]) == 123.45
             assert float(im.tag_v2[Y_RESOLUTION]) == 123.45
@@ -227,8 +224,8 @@ class TestFileTiff:
             assert im.getpixel((0, 1)) == 0
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
 
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             # to make the target --
@@ -250,7 +247,8 @@ class TestFileTiff:
 
     def test_unknown_pixel_mode(self):
         with pytest.raises(OSError):
-            Image.open("Tests/images/hopper_unknown_pixel_mode.tif")
+            with Image.open("Tests/images/hopper_unknown_pixel_mode.tif"):
+                pass
 
     def test_n_frames(self):
         for path, n_frames in [
@@ -387,6 +385,10 @@ class TestFileTiff:
         ret = ifd.load_double(data, False)
         assert ret == (8.540883223036124e194, 8.540883223036124e194)
 
+    def test_ifd_tag_type(self):
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            assert 0x8825 in im.tag_v2
+
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
@@ -481,8 +483,7 @@ class TestFileTiff:
             tmpfile = str(tmp_path / "temp.tif")
             im.save(tmpfile)
 
-            with Image.open(tmpfile) as reloaded:
-                assert_image_equal(im, reloaded)
+            assert_image_equal_tofile(im, tmpfile)
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
@@ -567,6 +568,28 @@ class TestFileTiff:
         with Image.open(tmpfile) as reloaded:
             assert b"Dummy value" == reloaded.info["icc_profile"]
 
+    def test_save_icc_profile(self, tmp_path):
+        im = hopper()
+        assert "icc_profile" not in im.info
+
+        outfile = str(tmp_path / "temp.tif")
+        icc_profile = b"Dummy value"
+        im.save(outfile, icc_profile=icc_profile)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.info["icc_profile"] == icc_profile
+
+    def test_discard_icc_profile(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+
+        with Image.open("Tests/images/icc_profile.png") as im:
+            assert "icc_profile" in im.info
+
+            im.save(outfile, icc_profile=None)
+
+        with Image.open(outfile) as reloaded:
+            assert "icc_profile" not in reloaded.info
+
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
@@ -596,10 +619,15 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    @pytest.mark.skipif(
+        not os.path.exists("Tests/images/string_dimension.tiff"),
+        reason="Extra image files not installed",
+    )
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
         with pytest.raises(ValueError):
-            Image.open("Tests/images/string_dimension.tiff")
+            with Image.open("Tests/images/string_dimension.tiff"):
+                pass
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

@@ -7,8 +7,8 @@ Reference
 
    Image
    ImageChops
-   ImageColor
    ImageCms
+   ImageColor
    ImageDraw
    ImageEnhance
    ImageFile
@@ -22,14 +22,17 @@ Reference
    ImagePath
    ImageQt
    ImageSequence
+   ImageShow
    ImageStat
    ImageTk
    ImageWin
    ExifTags
    TiffTags
+   JpegPresets
    PSDraw
    PixelAccess
    PyAccess
+   features
    ../PIL
    plugins
    internal_design

@@ -1,9 +1,10 @@
 import os
 
 import pytest
+
 from PIL import Image, SunImagePlugin
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
 EXTRA_DIR = "Tests/images/sunraster"
 
@@ -28,8 +29,7 @@ def test_sanity():
 
 def test_im1():
     with Image.open("Tests/images/sunraster.im1") as im:
-        with Image.open("Tests/images/sunraster.im1.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/sunraster.im1.png")
 
 
 @pytest.mark.skipif(
@@ -45,7 +45,4 @@ def test_others():
         with Image.open(path) as im:
             im.load()
             assert isinstance(im, SunImagePlugin.SunImageFile)
-            target_path = "%s.png" % os.path.splitext(path)[0]
-            # im.save(target_file)
-            with Image.open(target_path) as target:
-                assert_image_equal(im, target)
+            assert_image_equal_tofile(im, f"{os.path.splitext(path)[0]}.png")

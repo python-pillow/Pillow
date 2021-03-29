@@ -1,6 +1,7 @@
 import time
 
 import pytest
+
 from PIL.PdfParser import (
     IndirectObjectDef,
     IndirectReference,

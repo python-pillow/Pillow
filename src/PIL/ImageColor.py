@@ -24,8 +24,8 @@ from . import Image
 
 def getrgb(color):
     """
-     Convert a color string to an RGB tuple. If the string cannot be parsed,
-     this function raises a :py:exc:`ValueError` exception.
+     Convert a color string to an RGB or RGBA tuple. If the string cannot be
+     parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
@@ -113,7 +113,7 @@ def getrgb(color):
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)))
-    raise ValueError("unknown color specifier: %r" % color)
+    raise ValueError(f"unknown color specifier: {repr(color)}")
 
 
 def getcolor(color, mode):

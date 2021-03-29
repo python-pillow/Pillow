@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image
 
 from .helper import (
@@ -87,6 +88,7 @@ def test_no_resize():
         assert im.size == (64, 64)
 
 
+@pytest.mark.valgrind_known_error(reason="Known Failing")
 def test_DCT_scaling_edges():
     # Make an image with red borders and size (N * 8) + 1 to cross DCT grid
     im = Image.new("RGB", (257, 257), "red")

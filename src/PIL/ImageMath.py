@@ -41,7 +41,7 @@ class _Operand:
             elif im1.im.mode in ("I", "F"):
                 return im1.im
             else:
-                raise ValueError("unsupported mode: %s" % im1.im.mode)
+                raise ValueError(f"unsupported mode: {im1.im.mode}")
         else:
             # argument was a constant
             if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
@@ -57,8 +57,8 @@ class _Operand:
             im1.load()
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
-            except AttributeError:
-                raise TypeError("bad operand type for '%s'" % op)
+            except AttributeError as e:
+                raise TypeError(f"bad operand type for '{op}'") from e
             _imagingmath.unop(op, out.im.id, im1.im.id)
         else:
             # binary operation
@@ -85,8 +85,8 @@ class _Operand:
             im2.load()
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
-            except AttributeError:
-                raise TypeError("bad operand type for '%s'" % op)
+            except AttributeError as e:
+                raise TypeError(f"bad operand type for '{op}'") from e
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
         return _Operand(out)
 

@@ -2,13 +2,14 @@ import re
 from io import BytesIO
 
 import pytest
-from PIL import Image, ImageFile, Jpeg2KImagePlugin
+
+from PIL import Image, ImageFile, Jpeg2KImagePlugin, features
 
 from .helper import (
     assert_image_equal,
     assert_image_similar,
+    assert_image_similar_tofile,
     is_big_endian,
-    on_ci,
     skip_unless_feature,
 )
 
@@ -35,7 +36,7 @@ def roundtrip(im, **options):
 
 def test_sanity():
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", Image.core.jp2klib_version)
+    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
@@ -62,9 +63,7 @@ def test_invalid_file():
 def test_bytesio():
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
-    with Image.open(data) as im:
-        im.load()
-        assert_image_similar(im, test_card, 1.0e-3)
+    assert_image_similar_tofile(test_card, data, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
@@ -80,9 +79,9 @@ def test_lossless(tmp_path):
 
 
 def test_lossy_tiled():
-    with Image.open("Tests/images/test-card-lossy-tiled.jp2") as im:
-        im.load()
-        assert_image_similar(im, test_card, 2.0)
+    assert_image_similar_tofile(
+        test_card, "Tests/images/test-card-lossy-tiled.jp2", 2.0
+    )
 
 
 def test_lossless_rt():
@@ -190,18 +189,16 @@ def test_16bit_monochrome_has_correct_mode():
         assert jp2.mode == "I;16"
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_jp2_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
-            assert_image_similar(jp2, tiff_16bit, 1e-3)
+        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.jp2", 1e-3)
 
 
-@pytest.mark.xfail(is_big_endian() and on_ci(), reason="Fails on big-endian")
+@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_j2k_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
-            assert_image_similar(j2k, tiff_16bit, 1e-3)
+        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.j2k", 1e-3)
 
 
 def test_16bit_j2k_roundtrips():
@@ -219,7 +216,8 @@ def test_16bit_jp2_roundtrips():
 def test_unbound_local():
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
     with pytest.raises(OSError):
-        Image.open("Tests/images/unbound_variable.jp2")
+        with Image.open("Tests/images/unbound_variable.jp2"):
+            pass
 
 
 def test_parser_feed():

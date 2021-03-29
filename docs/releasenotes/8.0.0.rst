@@ -1,0 +1,180 @@
+8.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+Python 3.5
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.5, which reached end-of-life on 2020-09-13.
+
+PyPy 7.1.x
+^^^^^^^^^^
+
+Pillow has dropped support for PyPy3 7.1.1.
+PyPy3 7.2.0, released on 2019-10-14, is now the minimum compatible version.
+
+im.offset
+^^^^^^^^^
+
+``im.offset()`` has been removed, call :py:func:`.ImageChops.offset()` instead.
+
+Image.fromstring, im.fromstring and im.tostring
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``Image.fromstring()`` has been removed, call :py:func:`.Image.frombytes()` instead.
+* ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
+* ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
+
+ImageCms.CmsProfile attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed:
+
+========================  ===================================================
+Removed                   Use instead
+========================  ===================================================
+``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
+``pcs``                   Padded :py:attr:`~.CmsProfile.connection_space`
+``product_copyright``     Unicode :py:attr:`~.CmsProfile.copyright`
+``product_desc``          Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_description``   Unicode :py:attr:`~.CmsProfile.profile_description`
+``product_manufacturer``  Unicode :py:attr:`~.CmsProfile.manufacturer`
+``product_model``         Unicode :py:attr:`~.CmsProfile.model`
+========================  ===================================================
+
+API Changes
+===========
+
+ImageDraw.text: stroke_width
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed issue where passing ``stroke_width`` with a non-zero value
+to :py:meth:`.ImageDraw.text` would cause the text to be offset by that amount.
+
+ImageDraw.text: anchor
+^^^^^^^^^^^^^^^^^^^^^^
+
+The ``anchor`` parameter of :py:meth:`.ImageDraw.text` has been implemented.
+
+Use this parameter to change the position of text relative to the
+specified ``xy`` point. See :ref:`text-anchors` for details.
+
+Add MIME type to PsdImagePlugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+"image/vnd.adobe.photoshop" is now registered as the
+:py:class:`.PsdImagePlugin.PsdImageFile` MIME type.
+
+API Additions
+=============
+
+Image.open: add formats parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added a new ``formats`` parameter to :py:func:`.Image.open`:
+
+* A list or tuple of formats to attempt to load the file in.
+  This can be used to restrict the set of formats checked.
+  Pass ``None`` to try all supported formats. You can print the set of
+  available formats by running ``python -m PIL`` or using
+  the :py:func:`PIL.features.pilinfo` function.
+
+ImageOps.autocontrast: add mask parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`.ImageOps.autocontrast` can now take a ``mask`` parameter:
+
+* Histogram used in contrast operation is computed using pixels within the mask.
+  If no mask is given the entire image is used for histogram computation.
+
+ImageOps.autocontrast cutoffs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the ``cutoff`` parameter of :py:func:`.ImageOps.autocontrast` could only
+be a single number, used as the percent to cut off from the histogram on the low and
+high ends.
+
+Now, it can also be a tuple ``(low, high)``.
+
+ImageDraw.regular_polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method :py:meth:`.ImageDraw.regular_polygon`, draws a regular polygon of ``n_sides``, inscribed in a ``bounding_circle``.
+
+For example ``draw.regular_polygon(((100, 100), 50), 5)``
+draws a pentagon centered at the point ``(100, 100)`` with a polygon radius of ``50``.
+
+ImageDraw.text: embedded_color
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The methods :py:meth:`.ImageDraw.text` and :py:meth:`.ImageDraw.multiline_text`
+now support fonts with embedded color data.
+
+To render text with embedded color data, use the parameter ``embedded_color=True``.
+
+Support for CBDT fonts requires FreeType 2.5 compiled with libpng.
+Support for SBIX fonts requires FreeType 2.5.1 compiled with libpng.
+Support for COLR fonts requires FreeType 2.10.
+SVG fonts are not yet supported.
+
+ImageDraw.textlength
+^^^^^^^^^^^^^^^^^^^^
+
+Two new methods :py:meth:`.ImageDraw.textlength` and :py:meth:`.FreeTypeFont.getlength`
+were added, returning the exact advance length of text with 1/64 pixel precision.
+
+These can be used for word-wrapping or rendering text in parts.
+
+ImageDraw.textbbox
+^^^^^^^^^^^^^^^^^^
+
+Three new methods :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.multiline_textbbox`,
+and :py:meth:`.FreeTypeFont.getbbox` return the bounding box of rendered text.
+
+These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for details.
+
+Other Changes
+=============
+
+Improved ellipse-drawing algorithm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ellipse-drawing algorithm has been changed from drawing a 360-sided polygon to one
+which resembles Bresenham's algorithm for circles. It should be faster and produce
+smoother curves, especially for smaller ellipses.
+
+ImageDraw.text and ImageDraw.multiline_text
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed multiple issues in methods :py:meth:`.ImageDraw.text` and :py:meth:`.ImageDraw.multiline_text`
+sometimes causing unexpected text alignment issues.
+
+The ``align`` parameter of :py:meth:`.ImageDraw.multiline_text` now gives better results in some cases.
+
+TrueType fonts with embedded bitmaps are now supported.
+
+Added writing of subIFDs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving EXIF data, Pillow is now able to write subIFDs, such as the GPS IFD. This
+should happen automatically when saving an image using the EXIF data that it was opened
+with, such as in :py:meth:`~PIL.ImageOps.exif_transpose`.
+
+Previously, the code of the first tag of the subIFD was incorrectly written as the
+offset.
+
+Error for large BMP files
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, if a BMP file was too large, an ``OSError`` would be raised. Now,
+``DecompressionBombError`` is used instead, as Pillow already uses for other formats.
+
+Dark theme for docs
+^^^^^^^^^^^^^^^^^^^
+
+The https://pillow.readthedocs.io documentation will use a dark theme if the the user has requested the system use one. Uses the ``prefers-color-scheme`` CSS media query.
+
+
+

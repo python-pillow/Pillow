@@ -1,9 +1,15 @@
 import io
 
 import pytest
+
 from PIL import EpsImagePlugin, Image, features
 
-from .helper import assert_image_similar, hopper, skip_unless_feature
+from .helper import (
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+    skip_unless_feature,
+)
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -58,6 +64,7 @@ def test_invalid_file():
         EpsImagePlugin.EpsImageFile(invalid_file)
 
 
+@pytest.mark.valgrind_known_error(reason="Known Failing")
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk():
     with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
@@ -70,8 +77,9 @@ def test_cmyk():
         assert cmyk_image.mode == "RGB"
 
         if features.check("jpg"):
-            with Image.open("Tests/images/pil_sample_rgb.jpg") as target:
-                assert_image_similar(cmyk_image, target, 10)
+            assert_image_similar_tofile(
+                cmyk_image, "Tests/images/pil_sample_rgb.jpg", 10
+            )
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")

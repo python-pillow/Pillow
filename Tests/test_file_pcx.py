@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper
@@ -41,6 +42,14 @@ def test_odd(tmp_path):
         # larger, odd sized images are better here to ensure that
         # we handle interrupted scan lines properly.
         _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+
+
+def test_odd_read():
+    # Reading an image with an odd stride, making it malformed
+    with Image.open("Tests/images/odd_stride.pcx") as im:
+        im.load()
+
+        assert im.size == (371, 150)
 
 
 def test_pil184():

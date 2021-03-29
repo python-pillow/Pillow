@@ -1,9 +1,10 @@
 import io
 
 import pytest
+
 from PIL import BmpImagePlugin, Image
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
 def test_sanity(tmp_path):
@@ -110,8 +111,7 @@ def test_load_dib():
         assert im.format == "DIB"
         assert im.get_format_mimetype() == "image/bmp"
 
-        with Image.open("Tests/images/clipboard_target.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/clipboard_target.png")
 
 
 def test_save_dib(tmp_path):
@@ -135,5 +135,4 @@ def test_rgba_bitfields():
         b, g, r = im.split()[1:]
         im = Image.merge("RGB", (r, g, b))
 
-    with Image.open("Tests/images/bmp/q/rgb32bf-xbgr.bmp") as target:
-        assert_image_equal(im, target)
+    assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")

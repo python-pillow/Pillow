@@ -18,12 +18,10 @@ import io
 
 from . import ContainerIO
 
-##
-# A file object that provides read access to a given member of a TAR
-# file.
-
 
 class TarIO(ContainerIO.ContainerIO):
+    """A file object that provides read access to a given member of a TAR file."""
+
     def __init__(self, tarfile, file):
         """
         Create file object.

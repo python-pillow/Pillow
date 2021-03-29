@@ -1,7 +1,8 @@
 import pytest
+
 from PIL import Image, ImagePalette
 
-from .helper import assert_image_equal
+from .helper import assert_image_equal_tofile
 
 
 def test_sanity():
@@ -140,8 +141,7 @@ def test_2bit_palette(tmp_path):
     img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
     img.save(outfile, format="PNG")
 
-    with Image.open(outfile) as reloaded:
-        assert_image_equal(img, reloaded)
+    assert_image_equal_tofile(img, outfile)
 
 
 def test_invalid_palette():

@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, TarIO, features
 
 from .helper import is_pypy
@@ -30,16 +31,16 @@ def test_unclosed_file():
 
 
 def test_close():
-    def open():
+    with pytest.warns(None) as record:
         tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
         tar.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_contextmanager():
-    def open():
+    with pytest.warns(None) as record:
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass
 
-    pytest.warns(None, open)
+    assert not record

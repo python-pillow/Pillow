@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
 import pytest
+
 from PIL import Image, ImageDraw
 
 from .helper import assert_image_equal, assert_image_similar, hopper
@@ -81,15 +82,16 @@ class TestImagingCoreResampleAccuracy:
         for y in range(case.size[1]):
             for x in range(case.size[0]):
                 if c_px[x, y] != s_px[x, y]:
-                    message = "\nHave: \n{}\n\nExpected: \n{}".format(
-                        self.serialize_image(case), self.serialize_image(sample)
+                    message = (
+                        f"\nHave: \n{self.serialize_image(case)}\n"
+                        f"\nExpected: \n{self.serialize_image(sample)}"
                     )
                     assert s_px[x, y] == c_px[x, y], message
 
     def serialize_image(self, image):
         s_px = image.load()
         return "\n".join(
-            " ".join("{:02x}".format(s_px[x, y]) for x in range(image.size[0]))
+            " ".join(f"{s_px[x, y]:02x}" for x in range(image.size[0]))
             for y in range(image.size[1])
         )
 
@@ -218,7 +220,7 @@ class TestImagingCoreResampleAccuracy:
         assert_image_equal(im, ref)
 
 
-class CoreResampleConsistencyTest:
+class TestCoreResampleConsistency:
     def make_case(self, mode, fill):
         im = Image.new(mode, (512, 9), fill)
         return im.resize((9, 512), Image.LANCZOS), im.load()[0, 0]
@@ -229,7 +231,7 @@ class CoreResampleConsistencyTest:
         for x in range(channel.size[0]):
             for y in range(channel.size[1]):
                 if px[x, y] != color:
-                    message = "{} != {} for pixel {}".format(px[x, y], color, (x, y))
+                    message = f"{px[x, y]} != {color} for pixel {(x, y)}"
                     assert px[x, y] == color, message
 
     def test_8u(self):
@@ -253,7 +255,7 @@ class CoreResampleConsistencyTest:
         self.run_case(self.make_case("F", 1.192093e-07))
 
 
-class CoreResampleAlphaCorrectTest:
+class TestCoreResampleAlphaCorrect:
     def make_levels_case(self, mode):
         i = Image.new(mode, (256, 16))
         px = i.load()
@@ -268,13 +270,12 @@ class CoreResampleAlphaCorrectTest:
         px = i.load()
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
-            assert 256 == len(
-                used_colors
-            ), "All colors should present in resized image. Only {} on {} line.".format(
-                len(used_colors), y
+            assert 256 == len(used_colors), (
+                "All colors should be present in resized image. "
+                f"Only {len(used_colors)} on {y} line."
             )
 
-    @pytest.mark.skip("Current implementation isn't precise enough")
+    @pytest.mark.xfail(reason="Current implementation isn't precise enough")
     def test_levels_rgba(self):
         case = self.make_levels_case("RGBA")
         self.run_levels_case(case.resize((512, 32), Image.BOX))
@@ -283,7 +284,7 @@ class CoreResampleAlphaCorrectTest:
         self.run_levels_case(case.resize((512, 32), Image.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.LANCZOS))
 
-    @pytest.mark.skip("Current implementation isn't precise enough")
+    @pytest.mark.xfail(reason="Current implementation isn't precise enough")
     def test_levels_la(self):
         case = self.make_levels_case("LA")
         self.run_levels_case(case.resize((512, 32), Image.BOX))
@@ -307,8 +308,9 @@ class CoreResampleAlphaCorrectTest:
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
-                    message = "pixel at ({}, {}) is differ:\n{}\n{}".format(
-                        x, y, px[x, y], clean_pixel
+                    message = (
+                        f"pixel at ({x}, {y}) is different:\n"
+                        f"{px[x, y]}\n{clean_pixel}"
                     )
                     assert px[x, y][:3] == clean_pixel, message
 
@@ -329,7 +331,7 @@ class CoreResampleAlphaCorrectTest:
         self.run_dirty_case(case.resize((20, 20), Image.LANCZOS), (255,))
 
 
-class CoreResamplePassesTest:
+class TestCoreResamplePasses:
     @contextmanager
     def count(self, diff):
         count = Image.core.get_stats()["new_count"]
@@ -372,7 +374,7 @@ class CoreResamplePassesTest:
         assert_image_similar(with_box, cropped, 0.1)
 
 
-class CoreResampleCoefficientsTest:
+class TestCoreResampleCoefficients:
     def test_reduce(self):
         test_color = 254
 
@@ -401,7 +403,7 @@ class CoreResampleCoefficientsTest:
         assert histogram[0x100 * 3 + 0xFF] == 0x10000
 
 
-class CoreResampleBoxTest:
+class TestCoreResampleBox:
     def test_wrong_arguments(self):
         im = hopper()
         for resample in (
@@ -453,6 +455,7 @@ class CoreResampleBoxTest:
                 tiled.paste(tile, (x0, y0))
         return tiled
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_tiles(self):
         with Image.open("Tests/images/flower.jpg") as im:
             assert im.size == (480, 360)
@@ -463,6 +466,7 @@ class CoreResampleBoxTest:
                 tiled = self.resize_tiled(im, dst_size, *tiles)
                 assert_image_similar(reference, tiled, 0.01)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_subsample(self):
         # This test shows advantages of the subpixel resizing
         # after supersampling (e.g. during JPEG decoding).
@@ -503,7 +507,7 @@ class CoreResampleBoxTest:
         ]:
             res = im.resize(size, Image.LANCZOS, box)
             assert res.size == size
-            assert_image_equal(res, im.crop(box), ">>> {} {}".format(size, box))
+            assert_image_equal(res, im.crop(box), f">>> {size} {box}")
 
     def test_no_passthrough(self):
         # When resize is required
@@ -519,9 +523,7 @@ class CoreResampleBoxTest:
             assert res.size == size
             with pytest.raises(AssertionError, match=r"difference \d"):
                 # check that the difference at least that much
-                assert_image_similar(
-                    res, im.crop(box), 20, ">>> {} {}".format(size, box)
-                )
+                assert_image_similar(res, im.crop(box), 20, f">>> {size} {box}")
 
     def test_skip_horizontal(self):
         # Can skip resize for one dimension
@@ -541,7 +543,7 @@ class CoreResampleBoxTest:
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,
-                    ">>> {} {} {}".format(size, box, flt),
+                    f">>> {size} {box} {flt}",
                 )
 
     def test_skip_vertical(self):
@@ -562,5 +564,5 @@ class CoreResampleBoxTest:
                     res,
                     im.crop(box).resize(size, flt),
                     0.4,
-                    ">>> {} {} {}".format(size, box, flt),
+                    f">>> {size} {box} {flt}",
                 )

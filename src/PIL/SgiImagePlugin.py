@@ -26,7 +26,8 @@ import os
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8, i16be as i16, o8
+from ._binary import i16be as i16
+from ._binary import o8
 
 
 def _accept(prefix):
@@ -58,27 +59,26 @@ class SgiImageFile(ImageFile.ImageFile):
         headlen = 512
         s = self.fp.read(headlen)
 
-        # magic number : 474
-        if i16(s) != 474:
+        if not _accept(s):
             raise ValueError("Not an SGI image file")
 
         # compression : verbatim or RLE
-        compression = i8(s[2])
+        compression = s[2]
 
         # bpc : 1 or 2 bytes (8bits or 16bits)
-        bpc = i8(s[3])
+        bpc = s[3]
 
         # dimension : 1, 2 or 3 (depending on xsize, ysize and zsize)
-        dimension = i16(s[4:])
+        dimension = i16(s, 4)
 
         # xsize : width
-        xsize = i16(s[6:])
+        xsize = i16(s, 6)
 
         # ysize : height
-        ysize = i16(s[8:])
+        ysize = i16(s, 8)
 
         # zsize : channels count
-        zsize = i16(s[10:])
+        zsize = i16(s, 10)
 
         # layout
         layout = bpc, dimension, zsize
@@ -159,9 +159,7 @@ def _save(im, fp, filename):
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
         raise ValueError(
-            "incorrect number of bands in SGI write: {} vs {}".format(
-                z, len(im.getbands())
-            )
+            f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
         )
 
     # Minimum Byte value

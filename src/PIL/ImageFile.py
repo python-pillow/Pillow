@@ -40,6 +40,7 @@ MAXBLOCK = 65536
 SAFEBLOCK = 1024 * 1024
 
 LOAD_TRUNCATED_IMAGES = False
+"""Whether or not to load truncated image files. User code may change this."""
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -48,6 +49,7 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
+"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
 
 
 #
@@ -61,13 +63,13 @@ def raise_oserror(error):
     except AttributeError:
         message = ERRORS.get(error)
     if not message:
-        message = "decoder error %d" % error
+        message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
 
 
 def raise_ioerror(error):
     warnings.warn(
-        "raise_ioerror is deprecated and will be removed in a future release. "
+        "raise_ioerror is deprecated and will be removed in Pillow 9 (2022-01-02). "
         "Use raise_oserror instead.",
         DeprecationWarning,
     )
@@ -85,7 +87,7 @@ def _tilesort(t):
 
 
 class ImageFile(Image.Image):
-    "Base class for image file format handlers."
+    """Base class for image file format handlers."""
 
     def __init__(self, fp=None, filename=None):
         super().__init__()
@@ -95,6 +97,8 @@ class ImageFile(Image.Image):
         self.custom_mimetype = None
 
         self.tile = None
+        """ A list of tile descriptors, or ``None`` """
+
         self.readonly = 1  # until we know better
 
         self.decoderconfig = ()
@@ -122,7 +126,7 @@ class ImageFile(Image.Image):
                 EOFError,  # got header but not the first frame
                 struct.error,
             ) as v:
-                raise SyntaxError(v)
+                raise SyntaxError(v) from v
 
             if not self.mode or self.size[0] <= 0:
                 raise SyntaxError("not identified by this driver")
@@ -188,24 +192,14 @@ class ImageFile(Image.Image):
                 and args[0] in Image._MAPMODES
             ):
                 try:
-                    if hasattr(Image.core, "map"):
-                        # use built-in mapper  WIN32 only
-                        self.map = Image.core.map(self.filename)
-                        self.map.seek(offset)
-                        self.im = self.map.readimage(
-                            self.mode, self.size, args[1], args[2]
-                        )
-                    else:
-                        # use mmap, if possible
-                        import mmap
+                    # use mmap, if possible
+                    import mmap
 
-                        with open(self.filename, "r") as fp:
-                            self.map = mmap.mmap(
-                                fp.fileno(), 0, access=mmap.ACCESS_READ
-                            )
-                        self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, offset, args
-                        )
+                    with open(self.filename) as fp:
+                        self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
+                    self.im = Image.core.map_buffer(
+                        self.map, self.size, decoder_name, offset, args
+                    )
                     readonly = 1
                     # After trashing self.im,
                     # we might need to reload the palette data.
@@ -241,12 +235,12 @@ class ImageFile(Image.Image):
                         while True:
                             try:
                                 s = read(self.decodermaxblock)
-                            except (IndexError, struct.error):
+                            except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError("image file is truncated")
+                                    raise OSError("image file is truncated") from e
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
@@ -254,7 +248,7 @@ class ImageFile(Image.Image):
                                 else:
                                     raise OSError(
                                         "image file is truncated "
-                                        "(%d bytes not processed)" % len(b)
+                                        f"({len(b)} bytes not processed)"
                                     )
 
                             b = b + s
@@ -330,7 +324,7 @@ class StubImageFile(ImageFile):
     def load(self):
         loader = self._load()
         if loader is None:
-            raise OSError("cannot find loader for this %s file" % self.format)
+            raise OSError(f"cannot find loader for this {self.format} file")
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
@@ -505,7 +499,7 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation):
+    except (AttributeError, io.UnsupportedOperation) as exc:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
@@ -522,7 +516,7 @@ def _save(im, fp, tile, bufsize=0):
                     if s:
                         break
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError(f"encoder error {s} when writing image file") from exc
             e.cleanup()
     else:
         # slight speedup: compress to real file object
@@ -537,7 +531,7 @@ def _save(im, fp, tile, bufsize=0):
             else:
                 s = e.encode_to_file(fh, bufsize)
             if s < 0:
-                raise OSError("encoder error %d when writing image file" % s)
+                raise OSError(f"encoder error {s} when writing image file")
             e.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
@@ -581,7 +575,7 @@ class PyCodecState:
 class PyDecoder:
     """
     Python implementation of a format decoder. Override this class and
-    add the decoding logic in the `decode` method.
+    add the decoding logic in the :meth:`decode` method.
 
     See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
     """
@@ -613,9 +607,9 @@ class PyDecoder:
         Override to perform the decoding process.
 
         :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of (bytes consumed, errcode).
+        :returns: A tuple of ``(bytes consumed, errcode)``.
             If finished with decoding return <0 for the bytes consumed.
-            Err codes are from `ERRORS`
+            Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
 

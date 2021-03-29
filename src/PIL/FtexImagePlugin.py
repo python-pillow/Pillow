@@ -89,7 +89,7 @@ class FtexImageFile(ImageFile.ImageFile):
         elif format == FORMAT_UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:
-            raise ValueError("Invalid texture compression format: %r" % (format))
+            raise ValueError(f"Invalid texture compression format: {repr(format)}")
 
         self.fp.close()
         self.fp = BytesIO(data)

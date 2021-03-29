@@ -1,4 +1,5 @@
 import pytest
+
 from PIL import Image, PsdImagePlugin
 
 from .helper import assert_image_similar, hopper, is_pypy
@@ -12,6 +13,7 @@ def test_sanity():
         assert im.mode == "RGB"
         assert im.size == (128, 128)
         assert im.format == "PSD"
+        assert im.get_format_mimetype() == "image/vnd.adobe.photoshop"
 
         im2 = hopper()
         assert_image_similar(im, im2, 4.8)
@@ -27,20 +29,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(test_file)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(test_file) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_invalid_file():
@@ -126,4 +128,5 @@ def test_combined_larger_than_size():
     # If we instead take the 'size' of the extra data field as the source of truth,
     # then the seek can't be negative
     with pytest.raises(OSError):
-        Image.open("Tests/images/combined_larger_than_size.psd")
+        with Image.open("Tests/images/combined_larger_than_size.psd"):
+            pass

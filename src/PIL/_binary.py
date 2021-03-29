@@ -11,6 +11,10 @@
 # See the README file for information on usage and redistribution.
 #
 
+
+"""Binary input/output support routines."""
+
+
 from struct import pack, unpack_from
 
 

@@ -1,5 +1,4 @@
 version: '{build}'
-image: Visual Studio 2017
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -8,70 +7,50 @@ init:
 
 environment:
   EXECUTABLE: python.exe
-  PIP_DIR: Scripts
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python38
+  - PYTHON: C:/Python39
     ARCHITECTURE: x86
-  - PYTHON: C:/Python35-x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+  - PYTHON: C:/Python36-x64
     ARCHITECTURE: x64
-  - PYTHON: C:/msys64/mingw32
-    EXECUTABLE: bin/python3
-    ARCHITECTURE: x86
-    PIP_DIR: bin
-    TEST_OPTIONS: --processes=0
-    DEPLOY: NO
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 install:
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
 - 7z x pillow-depends.zip -oc:\
 - mv c:\pillow-depends-master c:\pillow-depends
-- xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
+- xcopy /S /Y c:\pillow-depends\test_images\* c:\pillow\tests\images
 - 7z x ..\pillow-depends\nasm-2.14.02-win64.zip -oc:\
-- curl -fsSL -o gs952.exe https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w32.exe
-- gs952.exe /S
-- path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.52\bin;%PATH%
+- ..\pillow-depends\gs9533w32.exe /S
+- path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.53.3\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_install_msys2_deps.sh
-      }
-      else
-      {
         c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
-      }
 - path C:\pillow\winbuild\build\bin;%PATH%
+- '%PYTHON%\%EXECUTABLE% -m pip install -U setuptools'
 
 build_script:
 - ps: |
-      if ($env:PYTHON -eq "c:/msys64/mingw32")
-      {
-        c:\msys64\usr\bin\bash -l -c c:\\pillow\\winbuild\\appveyor_build_msys2.sh
-        Write-Host "through install"
-        $host.SetShouldExit(0)
-      }
-      else
-      {
         c:\pillow\winbuild\build\build_pillow.cmd install
         $host.SetShouldExit(0)
-      }
 - cd c:\pillow
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%PIP_DIR%\pip.exe install pytest pytest-cov'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
+- '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
-- pip install codecov
+- python -m pip install codecov
 - codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
@@ -88,7 +67,7 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
+  - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
   - cd c:\pillow\winbuild\
   - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
   - cd c:\pillow

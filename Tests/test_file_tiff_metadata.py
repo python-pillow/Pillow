@@ -2,6 +2,7 @@ import io
 import struct
 
 import pytest
+
 from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
@@ -11,10 +12,10 @@ TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
 
 def test_rt_metadata(tmp_path):
-    """ Test writing arbitrary metadata into the tiff image directory
-        Use case is ImageJ private tags, one numeric, one arbitrary
-        data.  https://github.com/python-pillow/Pillow/issues/291
-        """
+    """Test writing arbitrary metadata into the tiff image directory
+    Use case is ImageJ private tags, one numeric, one arbitrary
+    data.  https://github.com/python-pillow/Pillow/issues/291
+    """
 
     img = hopper()
 
@@ -144,16 +145,33 @@ def test_write_metadata(tmp_path):
             assert_deep_equal(
                 original[tag],
                 value,
-                "{} didn't roundtrip, {}, {}".format(tag, original[tag], value),
+                f"{tag} didn't roundtrip, {original[tag]}, {value}",
             )
         else:
-            assert original[tag] == value, "{} didn't roundtrip, {}, {}".format(
-                tag, original[tag], value
-            )
+            assert (
+                original[tag] == value
+            ), f"{tag} didn't roundtrip, {original[tag]}, {value}"
 
     for tag, value in original.items():
         if tag not in ignored:
-            assert value == reloaded[tag], "%s didn't roundtrip" % tag
+            assert value == reloaded[tag], f"{tag} didn't roundtrip"
+
+
+def test_change_stripbytecounts_tag_type(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.tif") as im:
+        info = im.tag_v2
+
+        # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
+        im = im.resize((500, 500))
+
+        # STRIPBYTECOUNTS can be a SHORT or a LONG
+        info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
+
+        im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
 
 
 def test_no_duplicate_50741_tag():
@@ -319,13 +337,13 @@ def test_empty_values():
 
 def test_PhotoshopInfo(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
-        assert len(im.tag_v2[34377]) == 1
-        assert isinstance(im.tag_v2[34377][0], bytes)
+        assert len(im.tag_v2[34377]) == 70
+        assert isinstance(im.tag_v2[34377], bytes)
         out = str(tmp_path / "temp.tiff")
         im.save(out)
     with Image.open(out) as reloaded:
-        assert len(reloaded.tag_v2[34377]) == 1
-        assert isinstance(reloaded.tag_v2[34377][0], bytes)
+        assert len(reloaded.tag_v2[34377]) == 70
+        assert isinstance(reloaded.tag_v2[34377], bytes)
 
 
 def test_too_many_entries():

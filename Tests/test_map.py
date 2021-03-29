@@ -1,11 +1,8 @@
 import sys
 
 import pytest
+
 from PIL import Image
-
-from .helper import is_win32
-
-pytestmark = pytest.mark.skipif(is_win32(), reason="Win32 does not call map_buffer")
 
 
 def test_overflow():
@@ -24,6 +21,13 @@ def test_overflow():
             im.load()
 
     Image.MAX_IMAGE_PIXELS = max_pixels
+
+
+def test_tobytes():
+    # Previously raised an access violation on Windows
+    with Image.open("Tests/images/l2rgb_read.bmp") as im:
+        with pytest.raises((ValueError, MemoryError, OSError)):
+            im.tobytes()
 
 
 @pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="Requires 64-bit system")

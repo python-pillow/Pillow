@@ -43,16 +43,16 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # assuming a 4-byte magic label
         s = self.fp.read(4)
-        if s != b"\200\350\000\000":
+        if not _accept(s):
             raise SyntaxError("not a PIXAR file")
 
         # read rest of header
         s = s + self.fp.read(508)
 
-        self._size = i16(s[418:420]), i16(s[416:418])
+        self._size = i16(s, 418), i16(s, 416)
 
         # get channel/depth descriptions
-        mode = i16(s[424:426]), i16(s[426:428])
+        mode = i16(s, 424), i16(s, 426)
 
         if mode == (14, 2):
             self.mode = "RGB"
