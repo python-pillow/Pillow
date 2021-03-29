@@ -66,6 +66,10 @@ ZIP_SUPPORT	= 1
 ZLIB_INCLUDE	= -I$(INCLIB)
 ZLIB_LIB 	= $(INCLIB)/zlib.lib
 
+# Indicate if the compiler provides strtoll/strtoull (default 1)
+# Users of MSVC++ 14.0 ("Visual Studio 2015") and later should set this to 1
+HAVE_STRTOLL = 1
+
 #
 # Uncomment and edit following lines to enable ISO JBIG support
 #

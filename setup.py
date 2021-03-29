@@ -29,21 +29,27 @@ def get_version():
 NAME = "Pillow"
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
+HARFBUZZ_ROOT = None
+FRIBIDI_ROOT = None
 IMAGEQUANT_ROOT = None
 JPEG2K_ROOT = None
 JPEG_ROOT = None
 LCMS_ROOT = None
 TIFF_ROOT = None
 ZLIB_ROOT = None
-
+FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
 if sys.platform == "win32" and sys.version_info >= (3, 10):
-    warnings.warn(
-        f"Pillow {PILLOW_VERSION} does not support Python "
-        f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
-        "prebuilt Windows binaries. We do not recommend building from source on "
-        "Windows.",
-        RuntimeWarning,
+    import atexit
+
+    atexit.register(
+        lambda: warnings.warn(
+            f"Pillow {PILLOW_VERSION} does not support Python "
+            f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+            "prebuilt Windows binaries. We do not recommend building from source on "
+            "Windows.",
+            RuntimeWarning,
+        )
     )
 
 
@@ -224,6 +230,19 @@ def _find_library_file(self, library):
     return ret
 
 
+def _find_include_dir(self, dirname, include):
+    for directory in self.compiler.include_dirs:
+        _dbg("Checking for include file %s in %s", (include, directory))
+        if os.path.isfile(os.path.join(directory, include)):
+            _dbg("Found %s in %s", (include, directory))
+            return True
+        subdir = os.path.join(directory, dirname)
+        _dbg("Checking for include file %s in %s", (include, subdir))
+        if os.path.isfile(os.path.join(subdir, include)):
+            _dbg("Found %s in %s", (include, subdir))
+            return subdir
+
+
 def _cmd_exists(cmd):
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
@@ -263,6 +282,7 @@ class pil_build_ext(build_ext):
             "jpeg",
             "tiff",
             "freetype",
+            "raqm",
             "lcms",
             "webp",
             "webpmux",
@@ -272,6 +292,7 @@ class pil_build_ext(build_ext):
         ]
 
         required = {"jpeg", "zlib"}
+        vendor = set()
 
         def __init__(self):
             for f in self.features:
@@ -283,6 +304,9 @@ class pil_build_ext(build_ext):
         def want(self, feat):
             return getattr(self, feat) is None
 
+        def want_vendor(self, feat):
+            return feat in self.vendor
+
         def __iter__(self):
             yield from self.features
 
@@ -292,6 +316,10 @@ class pil_build_ext(build_ext):
         build_ext.user_options
         + [(f"disable-{x}", None, f"Disable support for {x}") for x in feature]
         + [(f"enable-{x}", None, f"Enable support for {x}") for x in feature]
+        + [
+            (f"vendor-{x}", None, f"Use vendored version of {x}")
+            for x in ("raqm", "fribidi")
+        ]
         + [
             ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
             ("debug", None, "Debug logging"),
@@ -306,6 +334,8 @@ class pil_build_ext(build_ext):
         for x in self.feature:
             setattr(self, f"disable_{x}", None)
             setattr(self, f"enable_{x}", None)
+        for x in ("raqm", "fribidi"):
+            setattr(self, f"vendor_{x}", None)
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -330,18 +360,43 @@ class pil_build_ext(build_ext):
                     raise ValueError(
                         f"Conflicting options: --enable-{x} and --disable-{x}"
                     )
+                if x == "freetype":
+                    _dbg("--disable-freetype implies --disable-raqm")
+                    if getattr(self, "enable_raqm"):
+                        raise ValueError(
+                            "Conflicting options: --enable-raqm and --disable-freetype"
+                        )
+                    setattr(self, "disable_raqm", True)
             if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
+                if x == "raqm":
+                    _dbg("--enable-raqm implies --enable-freetype")
+                    self.feature.required.add("freetype")
+        for x in ("raqm", "fribidi"):
+            if getattr(self, f"vendor_{x}"):
+                if getattr(self, "disable_raqm"):
+                    raise ValueError(
+                        f"Conflicting options: --vendor-{x} and --disable-raqm"
+                    )
+                if x == "fribidi" and not getattr(self, "vendor_raqm"):
+                    raise ValueError(
+                        f"Conflicting options: --vendor-{x} and not --vendor-raqm"
+                    )
+                _dbg("Using vendored version of %s", x)
+                self.feature.vendor.add(x)
 
-    def _update_extension(self, name, libraries, define_macros=None, include_dirs=None):
+    def _update_extension(self, name, libraries, define_macros=None, sources=None):
         for extension in self.extensions:
             if extension.name == name:
                 extension.libraries += libraries
                 if define_macros is not None:
                     extension.define_macros += define_macros
-                if include_dirs is not None:
-                    extension.include_dirs += include_dirs
+                if sources is not None:
+                    extension.sources += sources
+                if FUZZING_BUILD:
+                    extension.language = "c++"
+                    extension.extra_link_args = ["--stdlib=libc++"]
                 break
 
     def _remove_extension(self, name):
@@ -367,6 +422,8 @@ class pil_build_ext(build_ext):
             TIFF_ROOT=("libtiff-5", "libtiff-4"),
             ZLIB_ROOT="zlib",
             FREETYPE_ROOT="freetype2",
+            HARFBUZZ_ROOT="harfbuzz",
+            FRIBIDI_ROOT="fribidi",
             LCMS_ROOT="lcms2",
             IMAGEQUANT_ROOT="libimagequant",
         ).items():
@@ -652,6 +709,39 @@ class pil_build_ext(build_ext):
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
+        if feature.freetype and feature.want("raqm"):
+            if not feature.want_vendor("raqm"):  # want system Raqm
+                _dbg("Looking for Raqm")
+                if _find_include_file(self, "raqm.h"):
+                    if _find_library_file(self, "raqm"):
+                        feature.raqm = "raqm"
+                    elif _find_library_file(self, "libraqm"):
+                        feature.raqm = "libraqm"
+            else:  # want to build Raqm from src/thirdparty
+                _dbg("Looking for HarfBuzz")
+                feature.harfbuzz = None
+                hb_dir = _find_include_dir(self, "harfbuzz", "hb.h")
+                if hb_dir:
+                    if isinstance(hb_dir, str):
+                        _add_directory(self.compiler.include_dirs, hb_dir, 0)
+                    if _find_library_file(self, "harfbuzz"):
+                        feature.harfbuzz = "harfbuzz"
+                if feature.harfbuzz:
+                    if not feature.want_vendor("fribidi"):  # want system FriBiDi
+                        _dbg("Looking for FriBiDi")
+                        feature.fribidi = None
+                        fribidi_dir = _find_include_dir(self, "fribidi", "fribidi.h")
+                        if fribidi_dir:
+                            if isinstance(fribidi_dir, str):
+                                _add_directory(
+                                    self.compiler.include_dirs, fribidi_dir, 0
+                                )
+                            if _find_library_file(self, "fribidi"):
+                                feature.fribidi = "fribidi"
+                                feature.raqm = True
+                    else:  # want to build FriBiDi shim from src/thirdparty
+                        feature.raqm = True
+
         if feature.want("lcms"):
             _dbg("Looking for lcms")
             if _find_include_file(self, "lcms2.h"):
@@ -747,9 +837,25 @@ class pil_build_ext(build_ext):
         # additional libraries
 
         if feature.freetype:
+            srcs = []
             libs = ["freetype"]
             defs = []
-            self._update_extension("PIL._imagingft", libs, defs)
+            if feature.raqm:
+                if not feature.want_vendor("raqm"):  # using system Raqm
+                    defs.append(("HAVE_RAQM", None))
+                    defs.append(("HAVE_RAQM_SYSTEM", None))
+                    libs.append(feature.raqm)
+                else:  # building Raqm from src/thirdparty
+                    defs.append(("HAVE_RAQM", None))
+                    srcs.append("src/thirdparty/raqm/raqm.c")
+                    libs.append(feature.harfbuzz)
+                    if not feature.want_vendor("fribidi"):  # using system FriBiDi
+                        defs.append(("HAVE_FRIBIDI_SYSTEM", None))
+                        libs.append(feature.fribidi)
+                    else:  # building FriBiDi shim from src/thirdparty
+                        srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
+            self._update_extension("PIL._imagingft", libs, defs, srcs)
+
         else:
             self._remove_extension("PIL._imagingft")
 
@@ -796,6 +902,12 @@ class pil_build_ext(build_ext):
             print(f"             [{v.strip()}")
         print("-" * 68)
 
+        raqm_extra_info = ""
+        if feature.want_vendor("raqm"):
+            raqm_extra_info += "bundled"
+            if feature.want_vendor("fribidi"):
+                raqm_extra_info += ", FriBiDi shim"
+
         options = [
             (feature.jpeg, "JPEG"),
             (feature.jpeg2000, "OPENJPEG (JPEG2000)", feature.openjpeg_version),
@@ -803,6 +915,7 @@ class pil_build_ext(build_ext):
             (feature.imagequant, "LIBIMAGEQUANT"),
             (feature.tiff, "LIBTIFF"),
             (feature.freetype, "FREETYPE2"),
+            (feature.raqm, "RAQM (Text shaping)", raqm_extra_info),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
@@ -812,10 +925,10 @@ class pil_build_ext(build_ext):
         all = 1
         for option in options:
             if option[0]:
-                version = ""
+                extra_info = ""
                 if len(option) >= 3 and option[2]:
-                    version = f" ({option[2]})"
-                print(f"--- {option[1]} support available{version}")
+                    extra_info = f" ({option[2]})"
+                print(f"--- {option[1]} support available{extra_info}")
             else:
                 print(f"*** {option[1]} support not available")
                 all = 0
@@ -836,7 +949,7 @@ class pil_build_ext(build_ext):
 
 
 def debug_build():
-    return hasattr(sys, "gettotalrefcount")
+    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
 files = ["src/_imaging.c"]
@@ -873,6 +986,10 @@ try:
             "Source": "https://github.com/python-pillow/Pillow",
             "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
             "utm_source=pypi-pillow&utm_medium=pypi",
+            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
+            "index.html",
+            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
+            "CHANGES.rst",
         },
         classifiers=[
             "Development Status :: 6 - Mature",

@@ -353,6 +353,7 @@ class BLP1Decoder(_BLPBaseDecoder):
         data = jpeg_header + data
         data = BytesIO(data)
         image = JpegImageFile(data)
+        Image._decompression_bomb_check(image.size)
         self.tile = image.tile  # :/
         self.fd = image.fp
         self.mode = image.mode

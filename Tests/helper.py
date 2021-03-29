@@ -270,12 +270,18 @@ def on_github_actions():
 
 
 def on_ci():
-    # GitHub Actions, Travis and AppVeyor have "CI"
+    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
 def is_big_endian():
     return sys.byteorder == "big"
+
+
+def is_ppc64le():
+    import platform
+
+    return platform.machine() == "ppc64le"
 
 
 def is_win32():

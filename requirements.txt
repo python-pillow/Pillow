@@ -2,13 +2,14 @@
 black
 check-manifest
 coverage
-jarn.viewdoc
+markdown2
 olefile
-pycodestyle
-pyflakes
+packaging
 pyroma
 pytest
 pytest-cov
+pytest-timeout
 sphinx>=2.4
+sphinx-issues
 sphinx-removed-in
 sphinx-rtd-theme

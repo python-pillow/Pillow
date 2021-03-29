@@ -88,9 +88,10 @@ libraqm, fribidi, and harfbuzz to be installed separately::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
-Most major Linux distributions, including Fedora, Debian/Ubuntu and
-ArchLinux also include Pillow in packages that previously contained
-PIL e.g. ``python-imaging``.
+Most major Linux distributions, including Fedora, Ubuntu and ArchLinux
+also include Pillow in packages that previously contained PIL e.g.
+``python-imaging``. Debian splits it into two packages, ``python3-pil``
+and ``python3-pil.imagetk``.
 
 FreeBSD Installation
 ^^^^^^^^^^^^^^^^^^^^
@@ -159,7 +160,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.11**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
 
 * **libwebp** provides the WebP format.
 
@@ -171,13 +172,13 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0** and **2.3.1**.
+  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1** and **2.4.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.13.0**
+  * Pillow has been tested with libimagequant **2.6-2.14.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -366,6 +367,10 @@ In Fedora, the command is::
 
     sudo dnf install python3-devel redhat-rpm-config
 
+In Alpine, the command is::
+
+    sudo apk add python3-dev py3-setuptools
+
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
 Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
@@ -384,6 +389,12 @@ Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with
 
 Note that the package manager may be yum or DNF, depending on the
 exact distribution.
+
+Prerequisites are installed for **Alpine** with::
+
+    sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
+        libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+        libxcb-dev libpng-dev
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
@@ -422,11 +433,7 @@ These platforms are built and tested for every change.
 +----------------------------------+--------------------------+-----------------------+
 | Arch                             | 3.8                      |x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
-| Amazon Linux 1                   | 3.6                      |x86-64                 |
-+----------------------------------+--------------------------+-----------------------+
 | Amazon Linux 2                   | 3.7                      |x86-64                 |
-+----------------------------------+--------------------------+-----------------------+
-| CentOS 6                         | 3.6                      |x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
 | CentOS 7                         | 3.6                      |x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
@@ -468,6 +475,10 @@ These platforms have been reported to work at the versions mentioned.
 
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
+| macOS 11.0 Big Sur               | 3.8, 3.9                     | 8.1.2                          |arm                    |
+|                                  +------------------------------+--------------------------------+-----------------------+
+|                                  | 3.6, 3.7, 3.8, 3.9           | 8.1.2                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9           | 8.0.1                          |x86-64                 |
 |                                  +------------------------------+--------------------------------+                       +

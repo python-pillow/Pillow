@@ -7,7 +7,6 @@ pull_request_rules:
       - status-success=Test Successful
       - status-success=Docker Test Successful
       - status-success=Windows Test Successful
-      - status-success=Travis CI - Pull Request
       - status-success=continuous-integration/appveyor/pr
     actions:
       merge:

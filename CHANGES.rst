@@ -2,8 +2,170 @@
 Changelog (Pillow)
 ==================
 
-8.1.0 (unreleased)
+8.2.0 (unreleased)
 ------------------
+
+- Fixed linear_gradient and radial_gradient I and F modes #5274
+  [radarhere]
+
+- Add support for reading TIFFs with PlanarConfiguration=2 #5364
+  [kkopachev, wiredfool, nulano]
+
+- Deprecated categories #5351
+  [radarhere]
+
+- Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
+  [nulano]
+
+- Dynamically link FriBiDi instead of Raqm #5062
+  [nulano]
+
+- Allow fewer PNG palette entries than the bit depth maximum when saving #5330
+  [radarhere]
+
+- Use duration from info dictionary when saving WebP #5338
+  [radarhere]
+
+- Stop flattening EXIF IFD into getexif() #4947
+  [radarhere, kkopachev]
+
+- Replaced tiff_deflate with tiff_adobe_deflate compression when saving TIFF images #5343
+  [radarhere]
+
+- Save ICC profile from TIFF encoderinfo #5321
+  [radarhere]
+
+- Moved RGB fix inside ImageQt class #5268
+  [radarhere]
+
+- Allow alpha_composite destination to be negative #5313
+  [radarhere]
+
+- Ensure file is closed if it is opened by ImageQt.ImageQt #5260
+  [radarhere]
+
+- Added ImageDraw rounded_rectangle method #5208
+  [radarhere]
+
+- Added IPythonViewer #5289
+  [radarhere, Kipkurui-mutai]
+
+- Only draw each rectangle outline pixel once #5183
+  [radarhere]
+
+- Use mmap instead of built-in Win32 mapper #5224
+  [radarhere, cgohlke]
+
+- Handle PCX images with an odd stride #5214
+  [radarhere]
+
+- Only read different sizes for "Large Thumbnail" MPO frames #5168
+  [radarhere]
+
+- Added PyQt6 support #5258
+  [radarhere]
+
+- Changed Image.open formats parameter to be case-insensitive #5250
+  [Piolie, radarhere]
+
+- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
+  [radarhere]
+
+- Added tk version to pilinfo #5226
+  [radarhere, nulano]
+
+- Support for ignoring tests when running valgrind #5150
+  [wiredfool, radarhere, hugovk]
+
+- OSS-Fuzz support #5189
+  [wiredfool, radarhere]
+
+8.1.2 (2021-03-06)
+------------------
+
+- Fix Memory DOS in BLP (CVE-2021-27921), ICNS (CVE-2021-27922) and ICO (CVE-2021-27923) Image Plugins
+  [wiredfool]
+
+8.1.1 (2021-03-01)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [hugovk]
+
+- Fix OOB Read in TiffDecode.c, and check the tile validity before reading. CVE-2021-25291
+  [wiredfool]
+
+- Fix negative size read in TiffDecode.c. CVE-2021-25290
+  [wiredfool]
+
+- Fix OOB read in SgiRleDecode.c. CVE-2021-25293
+  [wiredfool]
+
+- Incorrect error code checking in TiffDecode.c. CVE-2021-25289
+  [wiredfool]
+
+- PyModule_AddObject fix for Python 3.10 #5194
+  [radarhere]
+
+8.1.0 (2021-01-02)
+------------------
+
+- Fix TIFF OOB Write error. CVE-2020-35654 #5175
+  [wiredfool]
+
+- Fix for Read Overflow in PCX Decoding. CVE-2020-35653 #5174
+  [wiredfool, radarhere]
+
+- Fix for SGI Decode buffer overrun. CVE-2020-35655 #5173
+  [wiredfool, radarhere]
+
+- Fix OOB Read when saving GIF of xsize=1 #5149
+  [wiredfool]
+
+- Makefile updates #5159
+  [wiredfool, radarhere]
+
+- Add support for PySide6 #5161
+  [hugovk]
+
+- Use disposal settings from previous frame in APNG #5126
+  [radarhere]
+
+- Added exception explaining that _repr_png_ saves to PNG #5139
+  [radarhere]
+
+- Use previous disposal method in GIF load_end #5125
+  [radarhere]
+
+- Allow putpalette to accept 1024 integers to include alpha values #5089
+  [radarhere]
+
+- Fix OOB Read when writing TIFF with custom Metadata #5148
+  [wiredfool]
+
+- Added append_images support for ICO #4568
+  [ziplantil, radarhere]
+
+- Block TIFFTAG_SUBIFD #5120
+  [radarhere]
+
+- Fixed dereferencing potential null pointers #5108, #5111
+  [cgohlke, radarhere]
+
+- Deprecate FreeType 2.7 #5098
+  [hugovk, radarhere]
+
+- Moved warning to end of execution #4965
+  [radarhere]
+
+- Removed unused fromstring and tostring C methods #5026
+  [radarhere]
+
+- init() if one of the formats is unrecognised #5037
+  [radarhere]
+
+- Moved string_dimension CVE image to pillow-depends #4993
+  [radarhere]
 
 - Support raw rgba8888 for DDS #4760
   [qiankanglai]
@@ -4039,8 +4201,8 @@ Changelog (Pillow)
 1.0 (07/30/2010)
 ----------------
 
-- Remove support for ``import Image``, etc. from the standard namespace. ``from PIL import Image`` etc. now required.
-- Forked PIL based on `Hanno Schlichting's re-packaging <https://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
+- Remove support for ``import Image``. ``from PIL import Image`` now required.
+- Forked PIL based on `Chris McDonough and Hanno Schlichting's setuptools compatible re-packaging <https://dist.plone.org/thirdparty/PIL-1.1.7.tar.gz>`_
   [aclark4life]
 
 Pre-fork

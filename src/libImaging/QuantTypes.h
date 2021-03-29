@@ -20,13 +20,13 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 typedef union {
-   struct {
-      unsigned char r,g,b,a;
-   } c;
-   struct {
-      unsigned char v[4];
-   } a;
-   uint32_t v;
+    struct {
+        unsigned char r, g, b, a;
+    } c;
+    struct {
+        unsigned char v[4];
+    } a;
+    uint32_t v;
 } Pixel;
 
 #endif

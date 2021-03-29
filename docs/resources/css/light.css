@@ -1,0 +1,8 @@
+@media (prefers-color-scheme: light) {
+
+    .wy-menu-vertical li.toctree-l2.current a,
+    .wy-menu-vertical li.toctree-l3.current a {
+        background-color: #c9c9c9;
+    }
+
+}

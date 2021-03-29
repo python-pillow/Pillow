@@ -88,3 +88,6 @@ pip-delete-this-directory.txt
 
 # JetBrains
 .idea
+
+# pyinstaller
+*.spec

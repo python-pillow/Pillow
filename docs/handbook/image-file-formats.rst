@@ -125,10 +125,10 @@ following options are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for GIF, PDF, TIFF, and WebP.
+    This is currently supported for GIF, PDF, PNG, TIFF, and WebP.
 
-    It is also supported for ICNS. If images are passed in of relevant sizes,
-    they will be used instead of scaling down the main image.
+    It is also supported for ICO and ICNS. If images are passed in of relevant
+    sizes, they will be used instead of scaling down the main image.
 
 **include_color_table**
     Whether or not to include local color table.
@@ -237,6 +237,15 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
     (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
     size or 256 will be ignored.
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**append_images**
+    A list of images to replace the scaled down versions of the image.
+    The order of the images does not matter, as their use is determined by
+    the size of each image.
+
+    .. versionadded:: 8.1.0
 
 IM
 ^^
@@ -867,10 +876,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: :data:`None`, ``"tiff_ccitt"``, ``"group3"``,
-    ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
-    ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
-    ``"tiff_sgilog24"``, ``"tiff_raw_16"``
+    methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
+    ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
+    ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
+    ``"webp"`, ``"zstd"``
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100
@@ -891,6 +900,9 @@ using the general tags available through tiffinfo.
 
 **copyright**
     Strings
+
+**icc_profile**
+    The ICC Profile to include in the saved file.
 
 **resolution_unit**
     An integer. 1 for no unit, 2 for inches and 3 for centimeters.

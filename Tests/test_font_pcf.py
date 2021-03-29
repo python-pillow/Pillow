@@ -4,7 +4,11 @@ import pytest
 
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
-from .helper import assert_image_equal, assert_image_similar, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    skip_unless_feature,
+)
 
 fontname = "Tests/fonts/10x20-ISO8859-1.pcf"
 
@@ -33,8 +37,7 @@ def save_font(request, tmp_path):
     font.save(tempname)
 
     with Image.open(tempname.replace(".pil", ".pbm")) as loaded:
-        with Image.open("Tests/fonts/10x20.pbm") as target:
-            assert_image_equal(loaded, target)
+        assert_image_equal_tofile(loaded, "Tests/fonts/10x20.pbm")
 
     with open(tempname, "rb") as f_loaded:
         with open("Tests/fonts/10x20.pil", "rb") as f_target:
@@ -58,8 +61,7 @@ def test_draw(request, tmp_path):
     im = Image.new("L", (130, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    with Image.open("Tests/images/test_draw_pbm_target.png") as target:
-        assert_image_similar(im, target, 0)
+    assert_image_similar_tofile(im, "Tests/images/test_draw_pbm_target.png", 0)
 
 
 def test_textsize(request, tmp_path):
@@ -80,8 +82,7 @@ def _test_high_characters(request, tmp_path, message):
     im = Image.new("L", (750, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    with Image.open("Tests/images/high_ascii_chars.png") as target:
-        assert_image_similar(im, target, 0)
+    assert_image_similar_tofile(im, "Tests/images/high_ascii_chars.png", 0)
 
 
 def test_high_characters(request, tmp_path):

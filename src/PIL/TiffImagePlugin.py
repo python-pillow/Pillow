@@ -49,7 +49,7 @@ from fractions import Fraction
 from numbers import Number, Rational
 
 from . import Image, ImageFile, ImagePalette, TiffTags
-from ._binary import i8, o8
+from ._binary import o8
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -89,6 +89,7 @@ ARTIST = 315
 PREDICTOR = 317
 COLORMAP = 320
 TILEOFFSETS = 324
+SUBIFD = 330
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
 JPEGTABLES = 347
@@ -1323,6 +1324,15 @@ class TiffImageFile(ImageFile.ImageFile):
             if ";16L" in rawmode:
                 rawmode = rawmode.replace(";16L", ";16N")
 
+            # YCbCr images with new jpeg compression with pixels in one plane
+            # unpacked straight into RGB values
+            if (
+                photo == 6
+                and self._compression == "jpeg"
+                and self._planar_configuration == 1
+            ):
+                rawmode = "RGB"
+
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
             a = (rawmode, self._compression, False, self.tag_v2.offset)
@@ -1441,6 +1451,8 @@ def _save(im, fp, filename):
     elif compression == "tiff_jpeg":
         # OJPEG is obsolete, so use new-style JPEG compression instead
         compression = "jpeg"
+    elif compression == "tiff_deflate":
+        compression = "tiff_adobe_deflate"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
@@ -1480,8 +1492,9 @@ def _save(im, fp, filename):
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-    if "icc_profile" in im.info:
-        ifd[ICCPROFILE] = im.info["icc_profile"]
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
+        ifd[ICCPROFILE] = icc
 
     for key, name in [
         (IMAGEDESCRIPTION, "description"),
@@ -1517,7 +1530,7 @@ def _save(im, fp, filename):
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(i8(v) * 256 for v in lut)
+        ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     ifd[ROWSPERSTRIP] = im.size[1]
@@ -1559,12 +1572,14 @@ def _save(im, fp, filename):
         # The other tags expect arrays with a certain length (fixed or depending on
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
+        # SUBIFD may also cause a segfault.
         blocklist = [
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,
+            SUBIFD,
         ]
 
         atts = {}
