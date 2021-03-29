@@ -89,6 +89,20 @@ def test_frame_size():
         assert im.size == (680, 480)
 
 
+def test_ignore_frame_size():
+    # Ignore the different size of the second frame
+    # since this is not a "Large Thumbnail" image
+    with Image.open("Tests/images/ignore_frame_size.mpo") as im:
+        assert im.size == (64, 64)
+
+        im.seek(1)
+        assert (
+            im.mpinfo[0xB002][1]["Attribute"]["MPType"]
+            == "Multi-Frame Image: (Disparity)"
+        )
+        assert im.size == (64, 64)
+
+
 def test_parallax():
     # Nintendo
     with Image.open("Tests/images/sugarshack.mpo") as im:
@@ -132,7 +146,7 @@ def test_mp_attribute():
         with Image.open(test_file) as im:
             mpinfo = im._getmp()
         frameNumber = 0
-        for mpentry in mpinfo[45058]:
+        for mpentry in mpinfo[0xB002]:
             mpattr = mpentry["Attribute"]
             if frameNumber:
                 assert not mpattr["RepresentativeImageFlag"]

@@ -10,21 +10,78 @@ Tk/Tcl 8.4
 Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
 when Tk/Tcl 8.5 will be the minimum supported.
 
+Categories
+^^^^^^^^^^
+
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
+
 API Changes
 ===========
 
-TODO
-^^^^
+Image.alpha_composite: dest
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When calling :py:meth:`~PIL.Image.Image.alpha_composite`, the ``dest`` argument now
+accepts negative co-ordinates, like the upper left corner of the ``box`` argument of
+:py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
+cropping the overlaid image.
+
+Image.getexif: EXIF and GPS IFD
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, :py:meth:`~PIL.Image.Image.getexif` flattened the EXIF IFD into the rest of
+the data, losing information. This information is now kept separate, moved under
+``im.getexif().get_ifd(0x8769)``.
+
+Direct access to the GPS IFD dictionary was possible through ``im.getexif()[0x8825]``.
+This is now consistent with other IFDs, and must be accessed through
+``im.getexif().get_ifd(0x8825)``.
+
+These changes only affect :py:meth:`~PIL.Image.Image.getexif`, introduced in Pillow
+6.0. The older ``_getexif()`` methods are unaffected.
 
 API Additions
 =============
 
-TODO
-^^^^
+ImageDraw.rounded_rectangle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Added :py:meth:`~PIL.ImageDraw.ImageDraw.rounded_rectangle`. It works the same as
+:py:meth:`~PIL.ImageDraw.ImageDraw.rectangle`, except with an additional ``radius``
+argument. ``radius`` is limited to half of the width or the height, so that users can
+create a circle, but not any other ellipse.
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(xy=(10, 20, 190, 180), radius=30, fill="red")
+
+ImageShow.IPythonViewer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If IPython is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will be
+registered. It displays images on all IPython frontends. This will be helpful
+to users of Google Colab, allowing ``im.show()`` to display images.
+
+It is lower in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show()`
+if none of the other viewers are available. This means that the behaviour of
+:py:class:`PIL.ImageShow` will stay the same for most Pillow users.
+
+Saving TIFF with ICC profile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As is already possible for JPEG, PNG and WebP, the ICC profile for TIFF files can now
+be specified through a keyword argument::
+
+    im.save("out.tif", icc_profile=...)
 
 Security
 ========

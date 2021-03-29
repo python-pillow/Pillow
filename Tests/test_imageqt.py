@@ -4,11 +4,14 @@ from PIL import ImageQt
 
 from .helper import hopper
 
+pytestmark = pytest.mark.skipif(
+    not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
+)
+
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
 
 
-@pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_rgb():
     # from https://doc.qt.io/archives/qt-4.8/qcolor.html
     # typedef QRgb
@@ -38,7 +41,13 @@ def test_rgb():
     checkrgb(0, 0, 255)
 
 
-@pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_image():
     for mode in ("1", "RGB", "RGBA", "L", "P"):
         ImageQt.ImageQt(hopper(mode))
+
+
+def test_closed_file():
+    with pytest.warns(None) as record:
+        ImageQt.ImageQt("Tests/images/hopper.gif")
+
+    assert not record

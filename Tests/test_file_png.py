@@ -517,6 +517,8 @@ class TestFilePng:
 
     def test_discard_icc_profile(self):
         with Image.open("Tests/images/icc_profile.png") as im:
+            assert "icc_profile" in im.info
+
             im = roundtrip(im, icc_profile=None)
         assert "icc_profile" not in im.info
 
@@ -622,6 +624,25 @@ class TestFilePng:
         # Raises an EOFError in load_end
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
+
+    def test_specify_bits(self, tmp_path):
+        im = hopper("P")
+
+        out = str(tmp_path / "temp.png")
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            assert len(reloaded.png.im_palette[1]) == 48
+
+    def test_plte_length(self, tmp_path):
+        im = Image.new("P", (1, 1))
+        im.putpalette((1, 1, 1))
+
+        out = str(tmp_path / "temp.png")
+        im.save(str(tmp_path / "temp.png"))
+
+        with Image.open(out) as reloaded:
+            assert len(reloaded.png.im_palette[1]) == 3
 
     def test_exif(self):
         # With an EXIF chunk

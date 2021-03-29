@@ -115,8 +115,9 @@ now support fonts with embedded color data.
 To render text with embedded color data, use the parameter ``embedded_color=True``.
 
 Support for CBDT fonts requires FreeType 2.5 compiled with libpng.
+Support for SBIX fonts requires FreeType 2.5.1 compiled with libpng.
 Support for COLR fonts requires FreeType 2.10.
-SBIX and SVG fonts are not yet supported.
+SVG fonts are not yet supported.
 
 ImageDraw.textlength
 ^^^^^^^^^^^^^^^^^^^^

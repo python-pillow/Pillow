@@ -17,7 +17,6 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
-    is_big_endian,
     skip_unless_feature,
 )
 
@@ -471,6 +470,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as reloaded:
             assert reloaded.info["compression"] == "jpeg"
 
+    def test_tiff_deflate_compression(self, tmp_path):
+        im = hopper("RGB")
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_deflate")
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["compression"] == "tiff_adobe_deflate"
+
     def test_quality(self, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
@@ -816,14 +823,12 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
     @pytest.mark.valgrind_known_error(reason="Known Failing")
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
     @pytest.mark.valgrind_known_error(reason="Known Failing")
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -835,20 +840,57 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
     @pytest.mark.valgrind_known_error(reason="Known Failing")
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
     @pytest.mark.valgrind_known_error(reason="Known Failing")
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
+    def test_strip_planar_rgb(self):
+        # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
+        # tiff_strip_raw.tif tiff_strip_planar_lzw.tiff
+        infile = "Tests/images/tiff_strip_planar_lzw.tiff"
+        with Image.open(infile) as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+
+    def test_tiled_planar_rgb(self):
+        # gdal_translate -co TILED=yes -co INTERLEAVE=BAND -co COMPRESS=LZW \
+        # tiff_tiled_raw.tif tiff_tiled_planar_lzw.tiff
+        infile = "Tests/images/tiff_tiled_planar_lzw.tiff"
+        with Image.open(infile) as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+
+    def test_tiled_planar_16bit_RGB(self):
+        # gdal_translate -co TILED=yes -co INTERLEAVE=BAND -co COMPRESS=LZW \
+        # tiff_16bit_RGB.tiff tiff_tiled_planar_16bit_RGB.tiff
+        with Image.open("Tests/images/tiff_tiled_planar_16bit_RGB.tiff") as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGB_target.png")
+
+    def test_strip_planar_16bit_RGB(self):
+        # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
+        # tiff_16bit_RGB.tiff tiff_strip_planar_16bit_RGB.tiff
+        with Image.open("Tests/images/tiff_strip_planar_16bit_RGB.tiff") as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGB_target.png")
+
+    def test_tiled_planar_16bit_RGBa(self):
+        # gdal_translate -co TILED=yes \
+        # -co INTERLEAVE=BAND -co COMPRESS=LZW -co ALPHA=PREMULTIPLIED \
+        # tiff_16bit_RGBa.tiff tiff_tiled_planar_16bit_RGBa.tiff
+        with Image.open("Tests/images/tiff_tiled_planar_16bit_RGBa.tiff") as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+
+    def test_strip_planar_16bit_RGBa(self):
+        # gdal_translate -co TILED=no \
+        # -co INTERLEAVE=BAND -co COMPRESS=LZW -co ALPHA=PREMULTIPLIED \
+        # tiff_16bit_RGBa.tiff tiff_strip_planar_16bit_RGBa.tiff
+        with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+
     def test_old_style_jpeg(self):
         infile = "Tests/images/old-style-jpeg-compression.tif"
         with Image.open(infile) as im:

@@ -285,6 +285,20 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1)
+
+    Draws a rounded rectangle.
+
+    :param xy: Two points to define the bounding box. Sequence of either
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The second point
+            is just outside the drawn rectangle.
+    :param radius: Radius of the corners.
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+    .. versionadded:: 8.2.0
+
 .. py:method:: ImageDraw.shape(shape, fill=None, outline=None)
 
     .. warning:: This method is experimental.
@@ -352,7 +366,7 @@ Methods
 
         .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
                     .. versionadded:: 8.0.0
 
@@ -413,7 +427,7 @@ Methods
 
                      .. versionadded:: 6.2.0
 
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
                      .. versionadded:: 8.0.0
 
@@ -577,7 +591,7 @@ Methods
                      correct substitutions as appropriate, if available.
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -626,7 +640,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -669,7 +683,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
-    :param embedded_color: Whether to use font embedded color glyphs (COLR or CBDT).
+    :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
 
 .. py:method:: getdraw(im=None, hints=None)
 
