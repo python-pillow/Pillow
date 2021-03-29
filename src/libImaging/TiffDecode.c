@@ -427,15 +427,6 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
         for (plane = 0; plane < planes; plane++) {
             ImagingShuffler shuffler = unpackers[plane];
             for (x = state->xoff; x < state->xsize; x += tile_width) {
-                /* Sanity Check. Apparently in some cases, the TiffReadRGBA* functions
-                   have a different view of the size of the tiff than we're getting from
-                   other functions. So, we need to check here. 
-                */
-                if (!TIFFCheckTile(tiff, x, y, 0, plane)) {
-                    TRACE(("Check Tile Error, Tile at %dx%d\n", x, y));
-                    state->errcode = IMAGING_CODEC_BROKEN;
-                    return -1;
-                }
                 if (TIFFReadTile(tiff, (tdata_t)state->buffer, x, y, 0, plane) == -1) {
                     TRACE(("Decode Error, Tile at %dx%d\n", x, y));
                     state->errcode = IMAGING_CODEC_BROKEN;
