@@ -365,6 +365,15 @@ def test_autocontrast_mask_real_input():
         )
 
 
+def test_autocontrast_preserve_tone():
+    def autocontrast(mode, preserve_tone):
+        im = hopper(mode)
+        return ImageOps.autocontrast(im, preserve_tone=preserve_tone).histogram()
+
+    assert autocontrast("RGB", True) != autocontrast("RGB", False)
+    assert autocontrast("L", True) == autocontrast("L", False)
+
+
 def test_autocontrast_preserve_gradient():
     gradient = Image.linear_gradient("L")
 
