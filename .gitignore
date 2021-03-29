@@ -88,3 +88,6 @@ Tests/images/jpeg2000
 Tests/images/msp
 Tests/images/picins
 Tests/images/sunraster
+
+# pyinstaller
+*.spec

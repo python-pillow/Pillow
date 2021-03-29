@@ -4,7 +4,8 @@ from PIL import Image, ImageDraw, ImageDraw2
 
 from .helper import (
     assert_image_equal,
-    assert_image_similar,
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
 )
@@ -61,7 +62,7 @@ def helper_ellipse(mode, bbox):
     draw.ellipse(bbox, pen, brush)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 def test_ellipse1():
@@ -82,7 +83,7 @@ def test_ellipse_edge():
     draw.ellipse(((0, 0), (W - 1, H - 1)), brush)
 
     # Assert
-    assert_image_similar(im, Image.open("Tests/images/imagedraw_ellipse_edge.png"), 1)
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_edge.png", 1)
 
 
 def helper_line(points):
@@ -95,7 +96,7 @@ def helper_line(points):
     draw.line(points, pen)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
 def test_line1_pen():
@@ -118,7 +119,7 @@ def test_line_pen_as_brush():
     draw.line(POINTS1, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_line.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
 def helper_polygon(points):
@@ -132,7 +133,7 @@ def helper_polygon(points):
     draw.polygon(points, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_polygon.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
 
 
 def test_polygon1():
@@ -154,7 +155,7 @@ def helper_rectangle(bbox):
     draw.rectangle(bbox, pen, brush)
 
     # Assert
-    assert_image_equal(im, Image.open("Tests/images/imagedraw_rectangle.png"))
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
 
 
 def test_rectangle1():
@@ -178,7 +179,7 @@ def test_big_rectangle():
     draw.rectangle(bbox, brush)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 1)
+    assert_image_similar_tofile(im, expected, 1)
 
 
 @skip_unless_feature("freetype2")
@@ -193,7 +194,7 @@ def test_text():
     draw.text((5, 5), "ImageDraw2", font)
 
     # Assert
-    assert_image_similar(im, Image.open(expected), 13)
+    assert_image_similar_tofile(im, expected, 13)
 
 
 @skip_unless_feature("freetype2")

@@ -2,7 +2,12 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
@@ -29,8 +34,7 @@ def test_read_rgba():
 
         image.tobytes()
 
-        with Image.open("Tests/images/transparent.png") as target:
-            assert_image_similar(image, target, 20.0)
+        assert_image_similar_tofile(image, "Tests/images/transparent.png", 20.0)
 
 
 def test_write_lossless_rgb(tmp_path):

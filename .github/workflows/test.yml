@@ -58,7 +58,7 @@ jobs:
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -92,7 +92,6 @@ jobs:
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
 
     - name: Upload errors
       uses: actions/upload-artifact@v2

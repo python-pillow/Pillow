@@ -8,6 +8,7 @@ packaging
 pyroma
 pytest
 pytest-cov
+pytest-timeout
 sphinx>=2.4
 sphinx-issues
 sphinx-removed-in

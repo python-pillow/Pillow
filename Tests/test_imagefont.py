@@ -13,7 +13,6 @@ from PIL import Image, ImageDraw, ImageFont, features
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
-    assert_image_similar,
     assert_image_similar_tofile,
     is_win32,
     skip_unless_feature,
@@ -52,7 +51,7 @@ class TestImageFont:
         ttf_copy = ttf.font_variant(size=FONT_SIZE + 1)
         assert ttf_copy.size == FONT_SIZE + 1
 
-        second_font_path = "Tests/fonts/DejaVuSans.ttf"
+        second_font_path = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
         ttf_copy = ttf.font_variant(font=second_font_path)
         assert ttf_copy.path == second_font_path
 
@@ -130,8 +129,7 @@ class TestImageFont:
         draw.text((10, 10), txt, font=ttf)
 
         target = "Tests/images/transparent_background_text.png"
-        with Image.open(target) as target_img:
-            assert_image_similar(im, target_img, 4.09)
+        assert_image_similar_tofile(im, target, 4.09)
 
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -143,11 +141,10 @@ class TestImageFont:
         draw.text((10, 10), txt, font=ttf)
         draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
 
-        target = "Tests/images/rectangle_surrounding_text.png"
-        with Image.open(target) as target_img:
-
-            # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, 2.5)
+        # Epsilon ~.5 fails with FreeType 2.7
+        assert_image_similar_tofile(
+            im, "Tests/images/rectangle_surrounding_text.png", 2.5
+        )
 
     @pytest.mark.parametrize(
         "text, mode, font, size, length_basic, length_raqm",
@@ -156,8 +153,8 @@ class TestImageFont:
             ("text", "L", "FreeMono.ttf", 15, 36, 36),
             ("text", "1", "FreeMono.ttf", 15, 36, 36),
             # issue 4177
-            ("rrr", "L", "DejaVuSans.ttf", 18, 21, 22.21875),
-            ("rrr", "1", "DejaVuSans.ttf", 18, 24, 22.21875),
+            ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 21, 22.21875),
+            ("rrr", "1", "DejaVuSans/DejaVuSans.ttf", 18, 24, 22.21875),
             # test 'l' not including extra margin
             # using exact value 2047 / 64 for raqm, checked with debugger
             ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
@@ -191,13 +188,10 @@ class TestImageFont:
             draw.text((0, y), line, font=ttf)
             y += line_spacing
 
-        target = "Tests/images/multiline_text.png"
-        with Image.open(target) as target_img:
-
-            # some versions of freetype have different horizontal spacing.
-            # setting a tight epsilon, I'm showing the original test failure
-            # at epsilon = ~38.
-            assert_image_similar(im, target_img, 6.2)
+        # some versions of freetype have different horizontal spacing.
+        # setting a tight epsilon, I'm showing the original test failure
+        # at epsilon = ~38.
+        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 6.2)
 
     def test_render_multiline_text(self):
         ttf = self.get_font()
@@ -208,11 +202,8 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), TEST_TEXT, font=ttf)
 
-        target = "Tests/images/multiline_text.png"
-        with Image.open(target) as target_img:
-
-            # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, 6.2)
+        # Epsilon ~.5 fails with FreeType 2.7
+        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 6.2)
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -227,11 +218,10 @@ class TestImageFont:
             draw = ImageDraw.Draw(im)
             draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
 
-            target = "Tests/images/multiline_text" + ext + ".png"
-            with Image.open(target) as target_img:
-
-                # Epsilon ~.5 fails with FreeType 2.7
-                assert_image_similar(im, target_img, 6.2)
+            # Epsilon ~.5 fails with FreeType 2.7
+            assert_image_similar_tofile(
+                im, "Tests/images/multiline_text" + ext + ".png", 6.2
+            )
 
     def test_unknown_align(self):
         im = Image.new(mode="RGB", size=(300, 100))
@@ -285,11 +275,8 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
 
-        target = "Tests/images/multiline_text_spacing.png"
-        with Image.open(target) as target_img:
-
-            # Epsilon ~.5 fails with FreeType 2.7
-            assert_image_similar(im, target_img, 6.2)
+        # Epsilon ~.5 fails with FreeType 2.7
+        assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 6.2)
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -423,15 +410,12 @@ class TestImageFont:
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)
 
-        target = "Tests/images/default_font.png"
-        with Image.open(target) as target_img:
+        # Act
+        default_font = ImageFont.load_default()
+        draw.text((10, 10), txt, font=default_font)
 
-            # Act
-            default_font = ImageFont.load_default()
-            draw.text((10, 10), txt, font=default_font)
-
-            # Assert
-            assert_image_equal(im, target_img)
+        # Assert
+        assert_image_equal_tofile(im, "Tests/images/default_font.png")
 
     def test_getsize_empty(self):
         # issue #2614
@@ -680,13 +664,11 @@ class TestImageFont:
         d.text((10, 10), "Text", font=font, fill="black")
 
         try:
-            with Image.open(path) as expected:
-                assert_image_similar(im, expected, epsilon)
+            assert_image_similar_tofile(im, path, epsilon)
         except AssertionError:
             if "_adobe" in path:
                 path = path.replace("_adobe", "_adobe_older_harfbuzz")
-                with Image.open(path) as expected:
-                    assert_image_similar(im, expected, epsilon)
+                assert_image_similar_tofile(im, path, epsilon)
             else:
                 raise
 
@@ -777,8 +759,7 @@ class TestImageFont:
 
         assert d.textbbox((0, 0), text, f, anchor=anchor) == bbox_expected
 
-        with Image.open(path) as expected:
-            assert_image_similar(im, expected, 7)
+        assert_image_similar_tofile(im, path, 7)
 
     @pytest.mark.parametrize(
         "anchor, align",
@@ -816,8 +797,7 @@ class TestImageFont:
             (300, 200), text, fill="black", anchor=anchor, font=f, align=align
         )
 
-        with Image.open(target) as expected:
-            assert_image_similar(im, expected, 4)
+        assert_image_similar_tofile(im, target, 4)
 
     def test_anchor_invalid(self):
         font = self.get_font()
@@ -855,7 +835,7 @@ class TestImageFont:
         layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
         target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
         font = ImageFont.truetype(
-            f"Tests/fonts/DejaVuSans-24-{bpp}-stripped.ttf",
+            f"Tests/fonts/DejaVuSans/DejaVuSans-24-{bpp}-stripped.ttf",
             24,
             layout_engine=self.LAYOUT_ENGINE,
         )
@@ -875,8 +855,7 @@ class TestImageFont:
         d = ImageDraw.Draw(im)
         d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
-        with Image.open("Tests/images/standard_embedded.png") as expected:
-            assert_image_similar(im, expected, 6.2)
+        assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
 
     @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt(self):
@@ -890,13 +869,12 @@ class TestImageFont:
             im = Image.new("RGB", (150, 150), "white")
             d = ImageDraw.Draw(im)
 
-            d.text((10, 10), "\U0001f469", embedded_color=True, font=font)
+            d.text((10, 10), "\U0001f469", font=font, embedded_color=True)
 
-            with Image.open("Tests/images/cbdt_notocoloremoji.png") as expected:
-                assert_image_similar(im, expected, 6.2)
-        except IOError as e:
+            assert_image_similar_tofile(im, "Tests/images/cbdt_notocoloremoji.png", 6.2)
+        except IOError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
-            pytest.skip("freetype compiled without libpng or unsupported")
+            pytest.skip("freetype compiled without libpng or CBDT support")
 
     @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt_mask(self):
@@ -912,11 +890,50 @@ class TestImageFont:
 
             d.text((10, 10), "\U0001f469", "black", font=font)
 
-            with Image.open("Tests/images/cbdt_notocoloremoji_mask.png") as expected:
-                assert_image_similar(im, expected, 6.2)
-        except IOError as e:
+            assert_image_similar_tofile(
+                im, "Tests/images/cbdt_notocoloremoji_mask.png", 6.2
+            )
+        except IOError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
-            pytest.skip("freetype compiled without libpng or unsupported")
+            pytest.skip("freetype compiled without libpng or CBDT support")
+
+    @skip_unless_feature_version("freetype2", "2.5.1")
+    def test_sbix(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/chromacheck-sbix.woff",
+                size=300,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (400, 400), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((50, 50), "\uE901", font=font, embedded_color=True)
+
+            assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
+        except IOError as e:  # pragma: no cover
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or SBIX support")
+
+    @skip_unless_feature_version("freetype2", "2.5.1")
+    def test_sbix_mask(self):
+        try:
+            font = ImageFont.truetype(
+                "Tests/fonts/chromacheck-sbix.woff",
+                size=300,
+                layout_engine=self.LAYOUT_ENGINE,
+            )
+
+            im = Image.new("RGB", (400, 400), "white")
+            d = ImageDraw.Draw(im)
+
+            d.text((50, 50), "\uE901", (100, 0, 0), font=font)
+
+            assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
+        except IOError as e:  # pragma: no cover
+            assert str(e) in ("unimplemented feature", "unknown file format")
+            pytest.skip("freetype compiled without libpng or SBIX support")
 
     @skip_unless_feature_version("freetype2", "2.10.0")
     def test_colr(self):
@@ -929,10 +946,9 @@ class TestImageFont:
         im = Image.new("RGB", (300, 75), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((15, 5), "Bungee", embedded_color=True, font=font)
+        d.text((15, 5), "Bungee", font=font, embedded_color=True)
 
-        with Image.open("Tests/images/colr_bungee.png") as expected:
-            assert_image_similar(im, expected, 21)
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee.png", 21)
 
     @skip_unless_feature_version("freetype2", "2.10.0")
     def test_colr_mask(self):
@@ -947,8 +963,7 @@ class TestImageFont:
 
         d.text((15, 5), "Bungee", "black", font=font)
 
-        with Image.open("Tests/images/colr_bungee_mask.png") as expected:
-            assert_image_similar(im, expected, 22)
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
 
 
 @skip_unless_feature("raqm")
@@ -963,7 +978,9 @@ def test_render_mono_size():
     im = Image.new("P", (100, 30), "white")
     draw = ImageDraw.Draw(im)
     ttf = ImageFont.truetype(
-        "Tests/fonts/DejaVuSans.ttf", 18, layout_engine=ImageFont.LAYOUT_BASIC
+        "Tests/fonts/DejaVuSans/DejaVuSans.ttf",
+        18,
+        layout_engine=ImageFont.LAYOUT_BASIC,
     )
 
     draw.text((10, 10), "r" * 10, "black", ttf)

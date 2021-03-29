@@ -154,9 +154,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",
-        "filename": "libwebp-1.1.0.tar.gz",
-        "dir": "libwebp-1.1.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.0.tar.gz",
+        "filename": "libwebp-1.2.0.tar.gz",
+        "dir": "libwebp-1.2.0",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -219,9 +219,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.11/lcms2-2.11.tar.gz",
-        "filename": "lcms2-2.11.tar.gz",
-        "dir": "lcms2-2.11",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.12/lcms2-2.12.tar.gz",
+        "filename": "lcms2-2.12.tar.gz",
+        "dir": "lcms2-2.12",
         "patch": {
             r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -255,10 +255,10 @@ deps = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # e5d454b: Merge tag '2.12.6' into msvc
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",  # noqa: E501
-        "filename": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",
-        "dir": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4",
+        # Merge master into msvc (matches 2.14.1 except for version bump)
+        "url": "https://github.com/ImageOptim/libimagequant/archive/16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",  # noqa: E501
+        "filename": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",
+        "dir": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a",
         "patch": {
             "CMakeLists.txt": {
                 "add_library": "add_compile_options(-openmp-)\r\nadd_library",
@@ -275,9 +275,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.zip",
-        "filename": "harfbuzz-2.7.4.zip",
-        "dir": "harfbuzz-2.7.4",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.8.0.zip",
+        "filename": "harfbuzz-2.8.0.zip",
+        "dir": "harfbuzz-2.8.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -296,21 +296,7 @@ deps = {
             cmd_nmake(target="clean"),
             cmd_nmake(target="fribidi"),
         ],
-        "headers": [r"lib\*.h"],
-        "libs": [r"*.lib"],
-    },
-    "libraqm": {
-        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.1.zip",
-        "filename": "libraqm-0.7.1.zip",
-        "dir": "libraqm-0.7.1",
-        "build": [
-            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="libraqm"),
-        ],
-        "headers": [r"src\*.h"],
-        "bins": [r"libraqm.dll"],
+        "bins": [r"*.dll"],
     },
 }
 
@@ -486,7 +472,7 @@ def build_pillow():
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
         cmd_set("MSSdk", "1"),  # for PyPy3.6
         cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
-        r'"{python_dir}\{python_exe}" setup.py build_ext %*',
+        r'"{python_dir}\{python_exe}" setup.py build_ext --vendor-raqm --vendor-fribidi %*',  # noqa: E501
     ]
 
     write_script("build_pillow.cmd", lines)
@@ -511,8 +497,8 @@ if __name__ == "__main__":
             verbose = True
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
-        elif arg == "--no-raqm":
-            disabled += ["fribidi", "libraqm"]
+        elif arg == "--no-raqm" or arg == "--no-fribidi":
+            disabled += ["fribidi"]
         elif arg.startswith("--depends="):
             depends_dir = arg[10:]
         elif arg.startswith("--python="):

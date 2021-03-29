@@ -6,6 +6,7 @@ from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, features
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     hopper,
     is_pypy,
@@ -38,20 +39,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(TEST_GIF) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_invalid_file():
@@ -317,8 +318,7 @@ def test_dispose_none_load_end():
     with Image.open("Tests/images/dispose_none_load_end.gif") as img:
         img.seek(1)
 
-        with Image.open("Tests/images/dispose_none_load_end_second.gif") as expected:
-            assert_image_equal(img, expected)
+        assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.gif")
 
 
 def test_dispose_background():
@@ -629,8 +629,7 @@ def test_comment_over_255(tmp_path):
 
 def test_zero_comment_subblocks():
     with Image.open("Tests/images/hopper_zero_comment_subblocks.gif") as im:
-        with Image.open(TEST_GIF) as expected:
-            assert_image_equal(im, expected)
+        assert_image_equal_tofile(im, TEST_GIF)
 
 
 def test_version(tmp_path):

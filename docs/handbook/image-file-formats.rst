@@ -876,10 +876,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: :data:`None`, ``"tiff_ccitt"``, ``"group3"``,
-    ``"group4"``, ``"tiff_jpeg"``, ``"tiff_adobe_deflate"``,
-    ``"tiff_thunderscan"``, ``"tiff_deflate"``, ``"tiff_sgilog"``,
-    ``"tiff_sgilog24"``, ``"tiff_raw_16"``
+    methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
+    ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
+    ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
+    ``"webp"`, ``"zstd"``
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100
@@ -900,6 +900,9 @@ using the general tags available through tiffinfo.
 
 **copyright**
     Strings
+
+**icc_profile**
+    The ICC Profile to include in the saved file.
 
 **resolution_unit**
     An integer. 1 for no unit, 2 for inches and 3 for centimeters.

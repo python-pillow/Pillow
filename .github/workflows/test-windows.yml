@@ -57,8 +57,8 @@ jobs:
     - name: Print build system information
       run: python .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov
-      run: python -m pip install wheel pytest pytest-cov
+    - name: python -m pip install wheel pytest pytest-cov pytest-timeout
+      run: python -m pip install wheel pytest pytest-cov pytest-timeout
 
     # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
     - name: Upgrade setuptools
@@ -110,7 +110,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
-    # for FreeType CBDT font support
+    # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
@@ -137,13 +137,10 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
+    # Raqm dependencies
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
-
-    - name: Build dependencies / Raqm
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     # trim ~150MB x 9
     - name: Optimize build cache
@@ -174,7 +171,7 @@ jobs:
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
+      shell: bash
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
@@ -249,8 +246,6 @@ jobs:
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
               ${{ matrix.package }}-python3-pyqt5 \
-              ${{ matrix.package }}-python3-pytest \
-              ${{ matrix.package }}-python3-pytest-cov \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-ghostscript \
@@ -263,7 +258,7 @@ jobs:
               ${{ matrix.package }}-openjpeg2 \
               subversion
 
-          python3 -m pip install pyroma
+          python3 -m pip install pyroma pytest pytest-cov
 
           pushd depends && ./install_extra_test_images.sh && popd
 
@@ -273,6 +268,7 @@ jobs:
       - name: Test Pillow
         run: |
           python3 selftest.py --installed
+          python3 -c "from PIL import Image"
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage

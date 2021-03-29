@@ -17,7 +17,9 @@ from PIL import (
 from .helper import (
     assert_image,
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
+    assert_image_similar_tofile,
     cjpeg_available,
     djpeg_available,
     hopper,
@@ -114,6 +116,7 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_icc(self, tmp_path):
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
@@ -153,6 +156,7 @@ class TestFileJpeg:
         test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_large_icc_meta(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
@@ -260,11 +264,11 @@ class TestFileJpeg:
             assert exif[0x0112] == Image.TRANSVERSE
 
             # Assert that the GPS IFD is present and empty
-            assert exif[0x8825] == {}
+            assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
         exif = transposed.getexif()
-        assert exif[0x8825] == {}
+        assert exif.get_ifd(0x8825) == {}
 
         # Assert that it was transposed
         assert 0x0112 not in exif
@@ -419,6 +423,7 @@ class TestFileJpeg:
         with Image.open(filename):
             pass
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_truncated_jpeg_should_read_all_the_data(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -437,6 +442,7 @@ class TestFileJpeg:
             with pytest.raises(OSError):
                 im.load()
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_qtables(self, tmp_path):
         def _n_qtables_helper(n, test_file):
             with Image.open(test_file) as im:
@@ -573,7 +579,7 @@ class TestFileJpeg:
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 5)
+            assert_image_similar_tofile(img, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -581,7 +587,7 @@ class TestFileJpeg:
             tempfile = str(tmp_path / "temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar(img, Image.open(tempfile), 17)
+            assert_image_similar_tofile(img, tempfile, 17)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
@@ -720,6 +726,7 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
+    @pytest.mark.valgrind_known_error(reason="Known Failing")
     def test_exif_x_resolution(self, tmp_path):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
@@ -728,7 +735,7 @@ class TestFileJpeg:
             out = str(tmp_path / "out.jpg")
             with pytest.warns(None) as record:
                 im.save(out, exif=exif)
-            assert len(record) == 0
+            assert not record
 
         with Image.open(out) as reloaded:
             assert reloaded.getexif()[282] == 180
@@ -750,6 +757,7 @@ class TestFileJpeg:
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 
+    @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
     def test_photoshop(self):
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
             assert im.info["photoshop"][0x03ED] == {
@@ -761,8 +769,7 @@ class TestFileJpeg:
 
             # Test that the image can still load, even with broken Photoshop data
             # This image had the APP13 length hexedited to be smaller
-            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
-                assert_image_equal(im_broken, im)
+            assert_image_equal_tofile(im, "Tests/images/photoshop-200dpi-broken.jpg")
 
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:
@@ -792,7 +799,8 @@ class TestFileJpeg:
 
         buffer.read = read
         with pytest.raises(UnidentifiedImageError):
-            Image.open(buffer)
+            with Image.open(buffer):
+                pass
 
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size

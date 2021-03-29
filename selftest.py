@@ -147,9 +147,7 @@ def testimage():
     ('F', (128, 128))
 
     PIL can do many other things, but I'll leave that for another
-    day.  If you're curious, check the handbook, available from:
-
-        http://www.pythonware.com
+    day.
 
     Cheers /F
     """
