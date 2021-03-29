@@ -59,7 +59,7 @@ We provide Pillow binaries for Windows compiled for the matrix of
 supported Pythons in both 32 and 64-bit versions in the wheel format.
 These binaries include support for all optional libraries except
 libimagequant and libxcb. Raqm support requires
-fribidi to be installed separately::
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -73,7 +73,7 @@ macOS Installation
 We provide binaries for macOS for each of the supported Python
 versions in the wheel format. These include support for all optional
 libraries except libimagequant. Raqm support requires
-fribidi to be installed separately::
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -84,7 +84,7 @@ Linux Installation
 We provide binaries for Linux for each of the supported Python
 versions in the manylinux wheel format. These include support for all
 optional libraries except libimagequant. Raqm support requires
-fribidi to be installed separately::
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
