@@ -27,6 +27,12 @@ enum { INIT, ENCODE, FINISH };
 /* GIF LZW encoder by Raymond Gardner. */
 /* Released here under PIL license. */
 
+/* This LZW encoder conforms to the GIF LZW format specified in the original
+ * Compuserve GIF 87a and GIF 89a specifications (see e.g.
+ * https://www.w3.org/Graphics/GIF/spec-gif87.txt Appendix C and
+ * https://www.w3.org/Graphics/GIF/spec-gif89a.txt Appendix F).
+ */
+
 /* Return values */
 #define GLZW_OK                 0
 #define GLZW_NO_INPUT_AVAIL     1
