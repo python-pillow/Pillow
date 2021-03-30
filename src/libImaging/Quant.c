@@ -753,11 +753,19 @@ annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
     return 1;
 }
 
+typedef struct {
+    uint32_t *distance;
+    uint32_t index;
+} DistanceWithIndex;
+
 static int
 _sort_ulong_ptr_keys(const void *a, const void *b) {
-    uint32_t A = **(uint32_t **)a;
-    uint32_t B = **(uint32_t **)b;
-    return (A == B) ? 0 : ((A < B) ? -1 : +1);
+    DistanceWithIndex *A = (DistanceWithIndex *)a;
+    DistanceWithIndex *B = (DistanceWithIndex *)b;
+    if (*A->distance == *B->distance) {
+        return A->index < B->index ? -1 : +1;
+    }
+    return *A->distance < *B->distance ? -1 : +1;
 }
 
 static int
@@ -793,24 +801,42 @@ static int
 build_distance_tables(
     uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
     uint32_t i, j;
+    DistanceWithIndex *dwi;
 
+    dwi = calloc(nEntries * nEntries, sizeof(DistanceWithIndex));
+    if (!dwi) {
+        return 0;
+    }
     for (i = 0; i < nEntries; i++) {
         avgDist[i * nEntries + i] = 0;
-        avgDistSortKey[i * nEntries + i] = &(avgDist[i * nEntries + i]);
+        dwi[i * nEntries + i] = (DistanceWithIndex){
+            &(avgDist[i * nEntries + i]),
+            i * nEntries + i
+        };
         for (j = 0; j < i; j++) {
             avgDist[j * nEntries + i] = avgDist[i * nEntries + j] =
                 _DISTSQR(p + i, p + j);
-            avgDistSortKey[j * nEntries + i] = &(avgDist[j * nEntries + i]);
-            avgDistSortKey[i * nEntries + j] = &(avgDist[i * nEntries + j]);
+            dwi[j * nEntries + i] = (DistanceWithIndex){
+                &(avgDist[j * nEntries + i]),
+                j * nEntries + i
+            };
+            dwi[i * nEntries + j] = (DistanceWithIndex){
+                &(avgDist[i * nEntries + j]),
+                i * nEntries + j
+            };
         }
     }
     for (i = 0; i < nEntries; i++) {
         qsort(
-            avgDistSortKey + i * nEntries,
+            dwi + i * nEntries,
             nEntries,
-            sizeof(uint32_t *),
+            sizeof(DistanceWithIndex),
             _sort_ulong_ptr_keys);
+        for (j = 0; j < nEntries; j++) {
+            avgDistSortKey[i * nEntries + j] = dwi[i * nEntries + j].distance;
+        }
     }
+    free(dwi);
     return 1;
 }
 
@@ -1176,8 +1202,10 @@ k_means(
         if (!built) {
             compute_palette_from_quantized_pixels(
                 pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp);
-            build_distance_tables(
-                avgDist, avgDistSortKey, paletteData, nPaletteEntries);
+            if (!build_distance_tables(
+                avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
+                goto error_3;
+            }
             built = 1;
         } else {
             recompute_palette_from_averages(paletteData, nPaletteEntries, avg, count);
