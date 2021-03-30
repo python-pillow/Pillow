@@ -56,6 +56,9 @@ int load_fribidi(void) {
     error = error || (func == 0);
 
     p_fribidi = LoadLibrary("fribidi");
+    if (!p_fribidi) {
+        p_fribidi = LoadLibrary("fribidi-0");
+    }
     /* MSYS2 */
     if (!p_fribidi) {
         p_fribidi = LoadLibrary("libfribidi-0");
