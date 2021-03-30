@@ -789,7 +789,7 @@ resort_distance_tables(
     return 1;
 }
 
-static void
+static int
 build_distance_tables(
     uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
     uint32_t i, j;
@@ -811,6 +811,7 @@ build_distance_tables(
             sizeof(uint32_t *),
             _sort_ulong_ptr_keys);
     }
+    return 1;
 }
 
 static int
@@ -1372,7 +1373,9 @@ quantize(
         goto error_6;
     }
 
-    build_distance_tables(avgDist, avgDistSortKey, p, nPaletteEntries);
+    if (!build_distance_tables(avgDist, avgDistSortKey, p, nPaletteEntries)) {
+        goto error_7;
+    }
 
     if (!map_image_pixels_from_median_box(
             pixelData, nPixels, p, nPaletteEntries, h, avgDist, avgDistSortKey, qp)) {
@@ -1577,7 +1580,9 @@ quantize2(
         goto error_3;
     }
 
-    build_distance_tables(avgDist, avgDistSortKey, p, nQuantPixels);
+    if (!build_distance_tables(avgDist, avgDistSortKey, p, nQuantPixels)) {
+        goto error_4;
+    }
 
     if (!map_image_pixels(
             pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
