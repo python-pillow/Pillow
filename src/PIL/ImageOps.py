@@ -61,7 +61,7 @@ def _lut(image, lut):
 # actions
 
 
-def autocontrast(image, cutoff=0, ignore=None, mask=None):
+def autocontrast(image, cutoff=0, ignore=None, mask=None, preserve_tone=False):
     """
     Maximize (normalize) image contrast. This function calculates a
     histogram of the input image (or mask region), removes ``cutoff`` percent of the
@@ -77,9 +77,17 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None):
     :param mask: Histogram used in contrast operation is computed using pixels
                  within the mask. If no mask is given the entire image is used
                  for histogram computation.
+    :param preserve_tone: Preserve image tone in Photoshop-like style autocontrast.
+
+                          .. versionadded:: 8.2.0
+
     :return: An image.
     """
-    histogram = image.histogram(mask)
+    if preserve_tone:
+        histogram = image.convert("L").histogram(mask)
+    else:
+        histogram = image.histogram(mask)
+
     lut = []
     for layer in range(0, len(histogram), 256):
         h = histogram[layer : layer + 256]

@@ -5,6 +5,66 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Add preserve_tone option to autocontrast #5350
+  [elejke, radarhere]
+
+- Fixed linear_gradient and radial_gradient I and F modes #5274
+  [radarhere]
+
+- Add support for reading TIFFs with PlanarConfiguration=2 #5364
+  [kkopachev, wiredfool, nulano]
+
+- Deprecated categories #5351
+  [radarhere]
+
+- Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
+  [nulano]
+
+- Dynamically link FriBiDi instead of Raqm #5062
+  [nulano]
+
+- Allow fewer PNG palette entries than the bit depth maximum when saving #5330
+  [radarhere]
+
+- Use duration from info dictionary when saving WebP #5338
+  [radarhere]
+
+- Stop flattening EXIF IFD into getexif() #4947
+  [radarhere, kkopachev]
+
+- Replaced tiff_deflate with tiff_adobe_deflate compression when saving TIFF images #5343
+  [radarhere]
+
+- Save ICC profile from TIFF encoderinfo #5321
+  [radarhere]
+
+- Moved RGB fix inside ImageQt class #5268
+  [radarhere]
+
+- Allow alpha_composite destination to be negative #5313
+  [radarhere]
+
+- Ensure file is closed if it is opened by ImageQt.ImageQt #5260
+  [radarhere]
+
+- Added ImageDraw rounded_rectangle method #5208
+  [radarhere]
+
+- Added IPythonViewer #5289
+  [radarhere, Kipkurui-mutai]
+
+- Only draw each rectangle outline pixel once #5183
+  [radarhere]
+
+- Use mmap instead of built-in Win32 mapper #5224
+  [radarhere, cgohlke]
+
+- Handle PCX images with an odd stride #5214
+  [radarhere]
+
+- Only read different sizes for "Large Thumbnail" MPO frames #5168
+  [radarhere]
+
 - Added PyQt6 support #5258
   [radarhere]
 

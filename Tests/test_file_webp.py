@@ -176,3 +176,16 @@ class TestFileWebp:
             [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
         )
         assert difference < 5
+
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_duration(self, tmp_path):
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
+            assert im.info["duration"] == 1000
+
+            out_webp = str(tmp_path / "temp.webp")
+            im.save(out_webp, save_all=True)
+
+        with Image.open(out_webp) as reloaded:
+            reloaded.load()
+            assert reloaded.info["duration"] == 1000

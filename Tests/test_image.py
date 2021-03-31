@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+import sys
 import tempfile
 
 import pytest
@@ -344,6 +345,12 @@ class TestImage:
         assert_image_equal(offset.crop((64, 64, 127, 127)), target.crop((0, 0, 63, 63)))
         assert offset.size == (128, 128)
 
+        # with negative offset
+        offset = src.copy()
+        offset.alpha_composite(over, (-64, -64))
+        assert_image_equal(offset.crop((0, 0, 63, 63)), target.crop((64, 64, 127, 127)))
+        assert offset.size == (128, 128)
+
         # offset and crop
         box = src.copy()
         box.alpha_composite(over, (64, 64), (0, 0, 32, 32))
@@ -367,8 +374,6 @@ class TestImage:
             source.alpha_composite(over, 0)
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), 0)
-        with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, -1))
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
@@ -519,7 +524,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.linear_gradient(mode)
@@ -545,7 +550,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.radial_gradient(mode)
@@ -663,43 +668,43 @@ class TestImage:
             exif = im.getexif()
             assert 258 not in exif
             assert 274 in exif
-            assert 40960 in exif
-            assert exif[40963] == 450
+            assert 282 in exif
+            assert exif[296] == 2
             assert exif[11] == "gThumb 3.0.1"
 
             out = str(tmp_path / "temp.jpg")
             exif[258] = 8
             del exif[274]
-            del exif[40960]
-            exif[40963] = 455
+            del exif[282]
+            exif[296] = 455
             exif[11] = "Pillow test"
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
             assert 274 not in reloaded_exif
-            assert 40960 not in reloaded_exif
-            assert reloaded_exif[40963] == 455
+            assert 282 not in reloaded_exif
+            assert reloaded_exif[296] == 455
             assert reloaded_exif[11] == "Pillow test"
 
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:  # Big endian
             exif = im.getexif()
             assert 258 not in exif
-            assert 40962 in exif
-            assert exif[40963] == 200
+            assert 306 in exif
+            assert exif[274] == 1
             assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
             out = str(tmp_path / "temp.jpg")
             exif[258] = 8
-            del exif[34665]
-            exif[40963] = 455
+            del exif[306]
+            exif[274] = 455
             exif[305] = "Pillow test"
             im.save(out, exif=exif)
         with Image.open(out) as reloaded:
             reloaded_exif = reloaded.getexif()
             assert reloaded_exif[258] == 8
-            assert 34665 not in reloaded_exif
-            assert reloaded_exif[40963] == 455
+            assert 306 not in reloaded_exif
+            assert reloaded_exif[274] == 455
             assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
@@ -751,6 +756,33 @@ class TestImage:
                 4097: 2272,
                 4098: 1704,
             }
+
+            reloaded_exif = Image.Exif()
+            reloaded_exif.load(exif.tobytes())
+            assert reloaded_exif.get_ifd(0xA005) == exif.get_ifd(0xA005)
+
+    def test_exif_ifd(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+        del exif.get_ifd(0x8769)[0xA005]
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
+
+    @pytest.mark.skipif(
+        sys.version_info < (3, 7), reason="Python 3.7 or greater required"
+    )
+    def test_categories_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            assert hopper().category == 0
+
+        with pytest.warns(DeprecationWarning):
+            assert Image.NORMAL == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.SEQUENCE == 1
+        with pytest.warns(DeprecationWarning):
+            assert Image.CONTAINER == 2
 
     @pytest.mark.parametrize(
         "test_module",

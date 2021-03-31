@@ -76,8 +76,21 @@ ImagingFillLinearGradient(const char *mode) {
         return NULL;
     }
 
-    for (y = 0; y < 256; y++) {
-        memset(im->image8[y], (unsigned char)y, 256);
+    if (im->image8) {
+        for (y = 0; y < 256; y++) {
+            memset(im->image8[y], (unsigned char)y, 256);
+        }
+    } else {
+        int x;
+        for (y = 0; y < 256; y++) {
+            for (x = 0; x < 256; x++) {
+                if (im->type == IMAGING_TYPE_FLOAT32) {
+                    IMAGING_PIXEL_FLOAT32(im, x, y) = y;
+                } else {
+                    IMAGING_PIXEL_INT32(im, x, y) = y;
+                }
+            }
+        }
     }
 
     return im;
@@ -103,9 +116,16 @@ ImagingFillRadialGradient(const char *mode) {
             d = (int)sqrt(
                 (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0);
             if (d >= 255) {
-                im->image8[y][x] = 255;
-            } else {
+                d = 255;
+            }
+            if (im->image8) {
                 im->image8[y][x] = d;
+            } else {
+                if (im->type == IMAGING_TYPE_FLOAT32) {
+                    IMAGING_PIXEL_FLOAT32(im, x, y) = d;
+                } else {
+                    IMAGING_PIXEL_INT32(im, x, y) = d;
+                }
             }
         }
     }

@@ -87,7 +87,7 @@ and install Pillow in develop mode (instead of ``python3 -m pip install --editab
 Testing Pillow
 --------------
 
-Some binary dependencies (e.g. ``libraqm.dll``) will be stored in the
+Some binary dependencies (e.g. ``fribidi.dll``) will be stored in the
 ``winbuild\build\bin`` directory; this directory should be added to ``PATH``
 before running tests.
 

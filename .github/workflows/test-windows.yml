@@ -57,8 +57,8 @@ jobs:
     - name: Print build system information
       run: python .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov
-      run: python -m pip install wheel pytest pytest-cov
+    - name: python -m pip install wheel pytest pytest-cov pytest-timeout
+      run: python -m pip install wheel pytest pytest-cov pytest-timeout
 
     # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
     - name: Upgrade setuptools
@@ -71,8 +71,8 @@ jobs:
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9533w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
+        winbuild\depends\gs9540w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs9.54.0\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
@@ -110,7 +110,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
-    # for FreeType CBDT font support
+    # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
@@ -137,13 +137,10 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
+    # Raqm dependencies
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
-
-    - name: Build dependencies / Raqm
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     # trim ~150MB x 9
     - name: Optimize build cache
@@ -174,7 +171,7 @@ jobs:
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
+      shell: bash
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
