@@ -265,7 +265,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_block);
     }
 
-    if (ret != 1) {
+    if (ret != 1 || rows_per_block==(UINT32)(-1)) {
         rows_per_block = state->ysize;
     }
 
@@ -280,17 +280,6 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     img.req_orientation = ORIENTATION_TOPLEFT;
     img.col_offset = 0;
-
-    if (state->xsize != img.width || state->ysize != img.height) {
-        TRACE(
-            ("Inconsistent Image Error: %d =? %d, %d =? %d",
-             state->xsize,
-             img.width,
-             state->ysize,
-             img.height));
-        state->errcode = IMAGING_CODEC_BROKEN;
-        goto decodergba_err;
-    }
 
     /* overflow check for row byte size */
     if (INT_MAX / 4 < img.width) {
@@ -559,6 +548,7 @@ ImagingLibTiffDecode(
     uint16 planarconfig = 0;
     int planes = 1;
     ImagingShuffler unpackers[4];
+    UINT32 img_width, img_height;
 
     memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
 
@@ -653,6 +643,20 @@ ImagingLibTiffDecode(
             TRACE(("error in TIFFSetSubDirectory"));
             goto decode_err;
         }
+    }
+
+    TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &img_width);
+    TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
+
+    if (state->xsize != img_width || state->ysize != img_height) {
+        TRACE(
+            ("Inconsistent Image Error: %d =? %d, %d =? %d",
+             state->xsize,
+             img_width,
+             state->ysize,
+             img_height));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        goto decode_err;
     }
 
 
