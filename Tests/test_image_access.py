@@ -23,6 +23,11 @@ else:
     except ImportError:
         cffi = None
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 class AccessTest:
     # initial value
@@ -66,6 +71,10 @@ class TestImagePutPixel(AccessTest):
         pix1 = im1.load()
         pix2 = im2.load()
 
+        for x, y in ((0, "0"), ("0", 0)):
+            with pytest.raises(TypeError):
+                pix1[x, y]
+
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 pix2[x, y] = pix1[x, y]
@@ -108,6 +117,13 @@ class TestImagePutPixel(AccessTest):
                 pix2[x, y] = pix1[x, y]
 
         assert_image_equal(im1, im2)
+
+    @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
+    def test_numpy(self):
+        im = hopper()
+        pix = im.load()
+
+        assert pix[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
 
 class TestImageGetPixel(AccessTest):

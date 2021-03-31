@@ -1109,7 +1109,12 @@ _getxy(PyObject *xy, int *x, int *y) {
     } else if (PyFloat_Check(value)) {
         *x = (int)PyFloat_AS_DOUBLE(value);
     } else {
-        goto badval;
+        PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
+        if (int_value != NULL && PyLong_Check(int_value)) {
+            *x = PyLong_AS_LONG(int_value);
+        } else {
+            goto badval;
+        }
     }
 
     value = PyTuple_GET_ITEM(xy, 1);
@@ -1118,7 +1123,12 @@ _getxy(PyObject *xy, int *x, int *y) {
     } else if (PyFloat_Check(value)) {
         *y = (int)PyFloat_AS_DOUBLE(value);
     } else {
-        goto badval;
+        PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
+        if (int_value != NULL && PyLong_Check(int_value)) {
+            *y = PyLong_AS_LONG(int_value);
+        } else {
+            goto badval;
+        }
     }
 
     return 0;
