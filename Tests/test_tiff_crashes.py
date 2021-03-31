@@ -34,6 +34,7 @@ from .helper import on_ci
         "Tests/images/crash-f46f5b2f43c370fe65706c11449f567ecc345e74.tif",
         "Tests/images/crash-63b1dffefc8c075ddc606c0a2f5fdc15ece78863.tif",
         "Tests/images/crash-74d2a78403a5a59db1fb0a2b8735ac068a75f6e3.tif",
+        "Tests/images/crash-81154a65438ba5aaeca73fd502fa4850fbde60f8.tif",
 
     ],
 )
