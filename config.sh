@@ -5,6 +5,7 @@ ARCHIVE_SDIR=pillow-depends-master
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.10.4
+HARFBUZZ_VERSION=2.8.0
 LIBPNG_VERSION=1.6.37
 ZLIB_VERSION=1.2.11
 JPEG_VERSION=9d
@@ -16,6 +17,21 @@ GIFLIB_VERSION=5.1.4
 LIBWEBP_VERSION=1.2.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
+
+# workaround for multibuild bug with .tar.xz
+function untar {
+    local in_fname=$1
+    if [ -z "$in_fname" ];then echo "in_fname not defined"; exit 1; fi
+    local extension=${in_fname##*.}
+    case $extension in
+        tar) tar -xf $in_fname ;;
+        gz|tgz) tar -zxf $in_fname ;;
+        bz2) tar -jxf $in_fname ;;
+        zip) unzip -qq $in_fname ;;
+        xz) unxz -c $in_fname | tar -xf - ;;
+        *) echo Did not recognize extension $extension; exit 1 ;;
+    esac
+}
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
@@ -75,11 +91,32 @@ function pre_build {
         build_freetype
     fi
 
+    if [ -z "$IS_MACOS" ]; then
+        export FREETYPE_LIBS=-lfreetype
+        export FREETYPE_CFLAGS=-I/usr/local/include/freetype2/
+    fi
+    build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
+    if [ -z "$IS_MACOS" ]; then
+        export FREETYPE_LIBS=''
+        export FREETYPE_CFLAGS=''
+    fi
+
     # Append licenses
     for filename in dependency_licenses/*; do
       echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> Pillow/LICENSE
       cat $filename >> Pillow/LICENSE
     done
+}
+
+function pip_wheel_cmd {
+    local abs_wheelhouse=$1
+    if [ -z "$IS_MACOS" ]; then
+        CFLAGS="$CFLAGS --std=c99"  # for Raqm
+    fi
+    pip wheel $(pip_opts) \
+        --global-option build_ext --global-option --enable-raqm \
+        --global-option --vendor-raqm --global-option --vendor-fribidi \
+        -w $abs_wheelhouse --no-deps .
 }
 
 function run_tests_in_repo {
@@ -91,7 +128,12 @@ function run_tests_in_repo {
 EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="transp_webp webp_anim webp_mux"
+if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]]; then
+  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux"
+else
+  # can't find FriBiDi
+  EXP_FEATURES="transp_webp webp_anim webp_mux"
+fi
 if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
     EXP_FEATURES="$EXP_FEATURES xcb"
 fi
