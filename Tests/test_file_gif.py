@@ -468,12 +468,25 @@ def test_dispose2_background(tmp_path):
         assert im.getpixel((0, 0)) == 0
 
 
-def test_iss634():
+def test_transparency_in_second_frame():
+    with Image.open("Tests/images/different_transparency.gif") as im:
+        assert im.info["transparency"] == 0
+
+        # Seek to the second frame
+        im.seek(im.tell() + 1)
+        assert im.info["transparency"] == 0
+
+        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.gif")
+
+
+def test_no_transparency_in_second_frame():
     with Image.open("Tests/images/iss634.gif") as img:
         # Seek to the second frame
         img.seek(img.tell() + 1)
+        assert "transparency" not in img.info
+
         # All transparent pixels should be replaced with the color from the first frame
-        assert img.histogram()[img.info["transparency"]] == 0
+        assert img.histogram()[255] == 0
 
 
 def test_duration(tmp_path):

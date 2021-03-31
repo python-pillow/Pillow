@@ -145,7 +145,6 @@ class GifImageFile(ImageFile.ImageFile):
             self.dispose_extent = [0, 0, 0, 0]  # x0, y0, x1, y1
             self.__frame = -1
             self.__fp.seek(self.__rewind)
-            self._prev_im = None
             self.disposal_method = 0
         else:
             # ensure that the previous frame was loaded
@@ -174,6 +173,8 @@ class GifImageFile(ImageFile.ImageFile):
         self.palette = copy(self.global_palette)
 
         info = {}
+        frame_transparency = None
+        interlace = None
         while True:
 
             s = self.fp.read(1)
@@ -192,7 +193,7 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     flags = block[0]
                     if flags & 1:
-                        info["transparency"] = block[3]
+                        frame_transparency = block[3]
                     info["duration"] = i16(block, 1) * 10
 
                     # disposal method - find the value of bits 4 - 6
@@ -250,9 +251,6 @@ class GifImageFile(ImageFile.ImageFile):
                 # image data
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
-                self.tile = [
-                    ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace))
-                ]
                 break
 
             else:
@@ -282,11 +280,26 @@ class GifImageFile(ImageFile.ImageFile):
         except (AttributeError, KeyError):
             pass
 
-        if not self.tile:
+        if interlace is not None:
+            transparency = -1
+            if frame_transparency is not None:
+                if frame == 0:
+                    self.info["transparency"] = frame_transparency
+                else:
+                    transparency = frame_transparency
+            self.tile = [
+                (
+                    "gif",
+                    (x0, y0, x1, y1),
+                    self.__offset,
+                    (bits, interlace, transparency),
+                )
+            ]
+        else:
             # self.__fp = None
             raise EOFError
 
-        for k in ["transparency", "duration", "comment", "extension", "loop"]:
+        for k in ["duration", "comment", "extension", "loop"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
@@ -298,20 +311,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
-
-    def load_end(self):
-        ImageFile.ImageFile.load_end(self)
-
-        # if the disposal method is 'do not dispose', transparent
-        # pixels should show the content of the previous frame
-        if self._prev_im and self._prev_disposal_method == 1:
-            # we do this by pasting the updated area onto the previous
-            # frame which we then use as the current image content
-            updated = self._crop(self.im, self.dispose_extent)
-            self._prev_im.paste(updated, self.dispose_extent, updated.convert("RGBA"))
-            self.im = self._prev_im
-        self._prev_im = self.im.copy()
-        self._prev_disposal_method = self.disposal_method
 
     def _close__fp(self):
         try:
