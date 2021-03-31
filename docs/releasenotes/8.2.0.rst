@@ -45,6 +45,14 @@ This is now consistent with other IFDs, and must be accessed through
 These changes only affect :py:meth:`~PIL.Image.Image.getexif`, introduced in Pillow
 6.0. The older ``_getexif()`` methods are unaffected.
 
+Image._MODEINFO
+^^^^^^^^^^^^^^^
+
+This internal dictionary has been deprecated by a comment since PIL, and is now
+removed. Instead, ``Image.getmodebase()``, ``Image.getmodetype()``,
+``Image.getmodebandnames()``, ``Image.getmodebands()`` or ``ImageMode.getmode()``
+can be used.
+
 API Additions
 =============
 
