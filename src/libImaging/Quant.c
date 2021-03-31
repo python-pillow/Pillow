@@ -1683,9 +1683,26 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
         /* true colour */
 
+        withAlpha = !strcmp(im->mode, "RGBA");
+        int transparency = 0;
+        unsigned char r, g, b;
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
+                if (withAlpha && p[i].c.a == 0) {
+                    if (transparency == 0) {
+                        transparency = 1;
+                        r = p[i].c.r;
+                        g = p[i].c.g;
+                        b = p[i].c.b;
+                    } else {
+                        /* Set all subsequent transparent pixels
+                        to the same colour as the first */
+                        p[i].c.r = r;
+                        p[i].c.g = g;
+                        p[i].c.b = b;
+                    }
+                }
             }
         }
 
@@ -1720,9 +1737,6 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 kmeans);
             break;
         case 2:
-            if (!strcmp(im->mode, "RGBA")) {
-                withAlpha = 1;
-            }
             result = quantize_octree(
                 p,
                 im->xsize * im->ysize,
@@ -1734,9 +1748,6 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             break;
         case 3:
 #ifdef HAVE_LIBIMAGEQUANT
-            if (!strcmp(im->mode, "RGBA")) {
-                withAlpha = 1;
-            }
             result = quantize_pngquant(
                 p,
                 im->xsize,
