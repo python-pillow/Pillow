@@ -265,7 +265,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_block);
     }
 
-    if (ret != 1) {
+    if (ret != 1 || rows_per_block==(UINT32)(-1)) {
         rows_per_block = state->ysize;
     }
 
@@ -280,17 +280,6 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     img.req_orientation = ORIENTATION_TOPLEFT;
     img.col_offset = 0;
-
-    if (state->xsize != img.width || state->ysize != img.height) {
-        TRACE(
-            ("Inconsistent Image Error: %d =? %d, %d =? %d",
-             state->xsize,
-             img.width,
-             state->ysize,
-             img.height));
-        state->errcode = IMAGING_CODEC_BROKEN;
-        goto decodergba_err;
-    }
 
     /* overflow check for row byte size */
     if (INT_MAX / 4 < img.width) {
@@ -462,7 +451,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     UINT8 *new_data;
     UINT32 rows_per_strip;
     int ret;
-    tsize_t strip_size, row_byte_size;
+    tsize_t strip_size, row_byte_size, unpacker_row_byte_size;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
     if (ret != 1 || rows_per_strip==(UINT32)(-1)) {
@@ -482,7 +471,8 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         return -1;
     }
 
-    if (strip_size > ((state->xsize * state->bits / planes + 7) / 8) * rows_per_strip) {
+    unpacker_row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
+    if (strip_size > (unpacker_row_byte_size * rows_per_strip)) {
         // If the strip size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
         //        call to TIFFReadEncodedStrip ...
@@ -496,7 +486,9 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
 
     row_byte_size = TIFFScanlineSize(tiff);
 
-    if (row_byte_size == 0 || row_byte_size > strip_size) {
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the strip will have a read buffer overflow.
+    if (row_byte_size == 0 || unpacker_row_byte_size > row_byte_size) {
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -559,6 +551,7 @@ ImagingLibTiffDecode(
     uint16 planarconfig = 0;
     int planes = 1;
     ImagingShuffler unpackers[4];
+    UINT32 img_width, img_height;
 
     memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
 
@@ -653,6 +646,20 @@ ImagingLibTiffDecode(
             TRACE(("error in TIFFSetSubDirectory"));
             goto decode_err;
         }
+    }
+
+    TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &img_width);
+    TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
+
+    if (state->xsize != img_width || state->ysize != img_height) {
+        TRACE(
+            ("Inconsistent Image Error: %d =? %d, %d =? %d",
+             state->xsize,
+             img_width,
+             state->ysize,
+             img_height));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        goto decode_err;
     }
 
 
