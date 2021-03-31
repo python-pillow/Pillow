@@ -35,10 +35,6 @@
 
 #define KEEP_PY_UNICODE
 
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
 #if !defined(FT_LOAD_TARGET_MONO)
 #define FT_LOAD_TARGET_MONO FT_LOAD_MONOCHROME
 #endif
@@ -56,7 +52,21 @@
     }                     \
     ;
 
-#include "libImaging/raqm.h"
+#ifdef HAVE_RAQM
+# ifdef HAVE_RAQM_SYSTEM
+#  include <raqm.h>
+# else
+#  include "thirdparty/raqm/raqm.h"
+#  ifdef HAVE_FRIBIDI_SYSTEM
+#   include <fribidi.h>
+#  else
+#   include "thirdparty/fribidi-shim/fribidi.h"
+#   include <hb.h>
+#  endif
+# endif
+#endif
+
+static int have_raqm = 0;
 
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
@@ -86,42 +96,6 @@ typedef struct {
 
 static PyTypeObject Font_Type;
 
-typedef const char *(*t_raqm_version_string)(void);
-typedef bool (*t_raqm_version_atleast)(
-    unsigned int major, unsigned int minor, unsigned int micro);
-typedef raqm_t *(*t_raqm_create)(void);
-typedef int (*t_raqm_set_text)(raqm_t *rq, const uint32_t *text, size_t len);
-typedef bool (*t_raqm_set_text_utf8)(raqm_t *rq, const char *text, size_t len);
-typedef bool (*t_raqm_set_par_direction)(raqm_t *rq, raqm_direction_t dir);
-typedef bool (*t_raqm_set_language)(
-    raqm_t *rq, const char *lang, size_t start, size_t len);
-typedef bool (*t_raqm_add_font_feature)(raqm_t *rq, const char *feature, int len);
-typedef bool (*t_raqm_set_freetype_face)(raqm_t *rq, FT_Face face);
-typedef bool (*t_raqm_layout)(raqm_t *rq);
-typedef raqm_glyph_t *(*t_raqm_get_glyphs)(raqm_t *rq, size_t *length);
-typedef raqm_glyph_t_01 *(*t_raqm_get_glyphs_01)(raqm_t *rq, size_t *length);
-typedef void (*t_raqm_destroy)(raqm_t *rq);
-
-typedef struct {
-    void *raqm;
-    int version;
-    t_raqm_version_string version_string;
-    t_raqm_version_atleast version_atleast;
-    t_raqm_create create;
-    t_raqm_set_text set_text;
-    t_raqm_set_text_utf8 set_text_utf8;
-    t_raqm_set_par_direction set_par_direction;
-    t_raqm_set_language set_language;
-    t_raqm_add_font_feature add_font_feature;
-    t_raqm_set_freetype_face set_freetype_face;
-    t_raqm_layout layout;
-    t_raqm_get_glyphs get_glyphs;
-    t_raqm_get_glyphs_01 get_glyphs_01;
-    t_raqm_destroy destroy;
-} p_raqm_func;
-
-static p_raqm_func p_raqm;
-
 /* round a 26.6 pixel coordinate to the nearest integer */
 #define PIXEL(x) ((((x) + 32) & -64) >> 6)
 
@@ -138,105 +112,6 @@ geterror(int code) {
 
     PyErr_SetString(PyExc_OSError, "unknown freetype error");
     return NULL;
-}
-
-static int
-setraqm(void) {
-    /* set the static function pointers for dynamic raqm linking */
-    p_raqm.raqm = NULL;
-
-    /* Microsoft needs a totally different system */
-#ifndef _WIN32
-    p_raqm.raqm = dlopen("libraqm.so.0", RTLD_LAZY);
-    if (!p_raqm.raqm) {
-        p_raqm.raqm = dlopen("libraqm.dylib", RTLD_LAZY);
-    }
-#else
-    p_raqm.raqm = LoadLibrary("libraqm");
-    /* MSYS */
-    if (!p_raqm.raqm) {
-        p_raqm.raqm = LoadLibrary("libraqm-0");
-    }
-#endif
-
-    if (!p_raqm.raqm) {
-        return 1;
-    }
-
-#ifndef _WIN32
-    p_raqm.version_string =
-        (t_raqm_version_string)dlsym(p_raqm.raqm, "raqm_version_string");
-    p_raqm.version_atleast =
-        (t_raqm_version_atleast)dlsym(p_raqm.raqm, "raqm_version_atleast");
-    p_raqm.create = (t_raqm_create)dlsym(p_raqm.raqm, "raqm_create");
-    p_raqm.set_text = (t_raqm_set_text)dlsym(p_raqm.raqm, "raqm_set_text");
-    p_raqm.set_text_utf8 =
-        (t_raqm_set_text_utf8)dlsym(p_raqm.raqm, "raqm_set_text_utf8");
-    p_raqm.set_par_direction =
-        (t_raqm_set_par_direction)dlsym(p_raqm.raqm, "raqm_set_par_direction");
-    p_raqm.set_language = (t_raqm_set_language)dlsym(p_raqm.raqm, "raqm_set_language");
-    p_raqm.add_font_feature =
-        (t_raqm_add_font_feature)dlsym(p_raqm.raqm, "raqm_add_font_feature");
-    p_raqm.set_freetype_face =
-        (t_raqm_set_freetype_face)dlsym(p_raqm.raqm, "raqm_set_freetype_face");
-    p_raqm.layout = (t_raqm_layout)dlsym(p_raqm.raqm, "raqm_layout");
-    p_raqm.destroy = (t_raqm_destroy)dlsym(p_raqm.raqm, "raqm_destroy");
-    if (dlsym(p_raqm.raqm, "raqm_index_to_position")) {
-        p_raqm.get_glyphs = (t_raqm_get_glyphs)dlsym(p_raqm.raqm, "raqm_get_glyphs");
-        p_raqm.version = 2;
-    } else {
-        p_raqm.version = 1;
-        p_raqm.get_glyphs_01 =
-            (t_raqm_get_glyphs_01)dlsym(p_raqm.raqm, "raqm_get_glyphs");
-    }
-    if (dlerror() ||
-        !(p_raqm.create && p_raqm.set_text && p_raqm.set_text_utf8 &&
-          p_raqm.set_par_direction && p_raqm.set_language && p_raqm.add_font_feature &&
-          p_raqm.set_freetype_face && p_raqm.layout &&
-          (p_raqm.get_glyphs || p_raqm.get_glyphs_01) && p_raqm.destroy)) {
-        dlclose(p_raqm.raqm);
-        p_raqm.raqm = NULL;
-        return 2;
-    }
-#else
-    p_raqm.version_string =
-        (t_raqm_version_string)GetProcAddress(p_raqm.raqm, "raqm_version_string");
-    p_raqm.version_atleast =
-        (t_raqm_version_atleast)GetProcAddress(p_raqm.raqm, "raqm_version_atleast");
-    p_raqm.create = (t_raqm_create)GetProcAddress(p_raqm.raqm, "raqm_create");
-    p_raqm.set_text = (t_raqm_set_text)GetProcAddress(p_raqm.raqm, "raqm_set_text");
-    p_raqm.set_text_utf8 =
-        (t_raqm_set_text_utf8)GetProcAddress(p_raqm.raqm, "raqm_set_text_utf8");
-    p_raqm.set_par_direction =
-        (t_raqm_set_par_direction)GetProcAddress(p_raqm.raqm, "raqm_set_par_direction");
-    p_raqm.set_language =
-        (t_raqm_set_language)GetProcAddress(p_raqm.raqm, "raqm_set_language");
-    p_raqm.add_font_feature =
-        (t_raqm_add_font_feature)GetProcAddress(p_raqm.raqm, "raqm_add_font_feature");
-    p_raqm.set_freetype_face =
-        (t_raqm_set_freetype_face)GetProcAddress(p_raqm.raqm, "raqm_set_freetype_face");
-    p_raqm.layout = (t_raqm_layout)GetProcAddress(p_raqm.raqm, "raqm_layout");
-    p_raqm.destroy = (t_raqm_destroy)GetProcAddress(p_raqm.raqm, "raqm_destroy");
-    if (GetProcAddress(p_raqm.raqm, "raqm_index_to_position")) {
-        p_raqm.get_glyphs =
-            (t_raqm_get_glyphs)GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
-        p_raqm.version = 2;
-    } else {
-        p_raqm.version = 1;
-        p_raqm.get_glyphs_01 =
-            (t_raqm_get_glyphs_01)GetProcAddress(p_raqm.raqm, "raqm_get_glyphs");
-    }
-    if (!(p_raqm.create && p_raqm.set_text && p_raqm.set_text_utf8 &&
-          p_raqm.set_par_direction && p_raqm.set_language && p_raqm.add_font_feature &&
-          p_raqm.set_freetype_face && p_raqm.layout &&
-          (p_raqm.get_glyphs || p_raqm.get_glyphs_01) && p_raqm.destroy)) {
-        FreeLibrary(p_raqm.raqm);
-        p_raqm.raqm = NULL;
-        return 2;
-    }
-#endif
-
-    return 0;
 }
 
 static PyObject *
@@ -346,6 +221,8 @@ font_getchar(PyObject *string, int index, FT_ULong *char_out) {
     return 0;
 }
 
+#ifdef HAVE_RAQM
+
 static size_t
 text_layout_raqm(
     PyObject *string,
@@ -359,10 +236,9 @@ text_layout_raqm(
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
-    raqm_glyph_t_01 *glyphs_01 = NULL;
     raqm_direction_t direction;
 
-    rq = (*p_raqm.create)();
+    rq = raqm_create();
     if (rq == NULL) {
         PyErr_SetString(PyExc_ValueError, "raqm_create() failed.");
         goto failed;
@@ -376,14 +252,14 @@ text_layout_raqm(
                and raqm fails with empty strings */
             goto failed;
         }
-        int set_text = (*p_raqm.set_text)(rq, text, size);
+        int set_text = raqm_set_text(rq, text, size);
         PyMem_Free(text);
         if (!set_text) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
         }
         if (lang) {
-            if (!(*p_raqm.set_language)(rq, lang, start, size)) {
+            if (!raqm_set_language(rq, lang, start, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
                 goto failed;
             }
@@ -401,12 +277,12 @@ text_layout_raqm(
             direction = RAQM_DIRECTION_LTR;
         } else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
-            if (p_raqm.version_atleast == NULL || !(*p_raqm.version_atleast)(0, 7, 0)) {
-                PyErr_SetString(
-                    PyExc_ValueError,
-                    "libraqm 0.7 or greater required for 'ttb' direction");
-                goto failed;
-            }
+#if !defined(RAQM_VERSION_ATLEAST) || !RAQM_VERSION_ATLEAST(0, 7, 0)
+            PyErr_SetString(
+                PyExc_ValueError,
+                "libraqm 0.7 or greater required for 'ttb' direction");
+            goto failed;
+#endif
         } else {
             PyErr_SetString(
                 PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'");
@@ -414,7 +290,7 @@ text_layout_raqm(
         }
     }
 
-    if (!(*p_raqm.set_par_direction)(rq, direction)) {
+    if (!raqm_set_par_direction(rq, direction)) {
         PyErr_SetString(PyExc_ValueError, "raqm_set_par_direction() failed");
         goto failed;
     }
@@ -446,37 +322,28 @@ text_layout_raqm(
                 feature = PyBytes_AS_STRING(bytes);
                 size = PyBytes_GET_SIZE(bytes);
             }
-            if (!(*p_raqm.add_font_feature)(rq, feature, size)) {
+            if (!raqm_add_font_feature(rq, feature, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
         }
     }
 
-    if (!(*p_raqm.set_freetype_face)(rq, self->face)) {
+    if (!raqm_set_freetype_face(rq, self->face)) {
         PyErr_SetString(PyExc_RuntimeError, "raqm_set_freetype_face() failed.");
         goto failed;
     }
 
-    if (!(*p_raqm.layout)(rq)) {
+    if (!raqm_layout(rq)) {
         PyErr_SetString(PyExc_RuntimeError, "raqm_layout() failed.");
         goto failed;
     }
 
-    if (p_raqm.version == 1) {
-        glyphs_01 = (*p_raqm.get_glyphs_01)(rq, &count);
-        if (glyphs_01 == NULL) {
-            PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
-            count = 0;
-            goto failed;
-        }
-    } else { /* version == 2 */
-        glyphs = (*p_raqm.get_glyphs)(rq, &count);
-        if (glyphs == NULL) {
-            PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
-            count = 0;
-            goto failed;
-        }
+    glyphs = raqm_get_glyphs(rq, &count);
+    if (glyphs == NULL) {
+        PyErr_SetString(PyExc_ValueError, "raqm_get_glyphs() failed.");
+        count = 0;
+        goto failed;
     }
 
     (*glyph_info) = PyMem_New(GlyphInfo, count);
@@ -486,30 +353,21 @@ text_layout_raqm(
         goto failed;
     }
 
-    if (p_raqm.version == 1) {
-        for (i = 0; i < count; i++) {
-            (*glyph_info)[i].index = glyphs_01[i].index;
-            (*glyph_info)[i].x_offset = glyphs_01[i].x_offset;
-            (*glyph_info)[i].x_advance = glyphs_01[i].x_advance;
-            (*glyph_info)[i].y_offset = glyphs_01[i].y_offset;
-            (*glyph_info)[i].y_advance = glyphs_01[i].y_advance;
-            (*glyph_info)[i].cluster = glyphs_01[i].cluster;
-        }
-    } else {
-        for (i = 0; i < count; i++) {
-            (*glyph_info)[i].index = glyphs[i].index;
-            (*glyph_info)[i].x_offset = glyphs[i].x_offset;
-            (*glyph_info)[i].x_advance = glyphs[i].x_advance;
-            (*glyph_info)[i].y_offset = glyphs[i].y_offset;
-            (*glyph_info)[i].y_advance = glyphs[i].y_advance;
-            (*glyph_info)[i].cluster = glyphs[i].cluster;
-        }
+    for (i = 0; i < count; i++) {
+        (*glyph_info)[i].index = glyphs[i].index;
+        (*glyph_info)[i].x_offset = glyphs[i].x_offset;
+        (*glyph_info)[i].x_advance = glyphs[i].x_advance;
+        (*glyph_info)[i].y_offset = glyphs[i].y_offset;
+        (*glyph_info)[i].y_advance = glyphs[i].y_advance;
+        (*glyph_info)[i].cluster = glyphs[i].cluster;
     }
 
 failed:
-    (*p_raqm.destroy)(rq);
+    raqm_destroy(rq);
     return count;
 }
+
+#endif
 
 static size_t
 text_layout_fallback(
@@ -606,11 +464,13 @@ text_layout(
     int mask,
     int color) {
     size_t count;
-
-    if (p_raqm.raqm && self->layout_engine == LAYOUT_RAQM) {
+#ifdef HAVE_RAQM
+    if (have_raqm && self->layout_engine == LAYOUT_RAQM) {
         count = text_layout_raqm(
-            string, self, dir, features, lang, glyph_info, mask, color);
-    } else {
+            string, self, dir, features, lang, glyph_info,  mask, color);
+    } else
+#endif
+    {
         count = text_layout_fallback(
             string, self, dir, features, lang, glyph_info, mask, color);
     }
@@ -1490,12 +1350,51 @@ setup_module(PyObject *m) {
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
     PyDict_SetItemString(d, "freetype2_version", v);
 
-    setraqm();
-    v = PyBool_FromLong(!!p_raqm.raqm);
+#ifdef HAVE_RAQM
+#if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
+    have_raqm = 1;
+#else
+    load_fribidi();
+    have_raqm = !!p_fribidi;
+#endif
+#else
+    have_raqm = 0;
+#endif
+
+    /* if we have Raqm, we have all three (but possibly no version info) */
+    v = PyBool_FromLong(have_raqm);
     PyDict_SetItemString(d, "HAVE_RAQM", v);
-    if (p_raqm.version_string) {
-        PyDict_SetItemString(
-            d, "raqm_version", PyUnicode_FromString(p_raqm.version_string()));
+    PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
+    PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
+    if (have_raqm) {
+#ifdef RAQM_VERSION_MAJOR
+        v = PyUnicode_FromString(raqm_version_string());
+#else
+        v = Py_None;
+#endif
+        PyDict_SetItemString(d, "raqm_version", v);
+
+#ifdef FRIBIDI_MAJOR_VERSION
+        {
+            const char *a = strchr(fribidi_version_info, ')');
+            const char *b = strchr(fribidi_version_info, '\n');
+            if (a && b && a + 2 < b) {
+                v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
+            } else {
+                v = Py_None;
+            }
+        }
+#else
+        v = Py_None;
+#endif
+        PyDict_SetItemString(d, "fribidi_version", v);
+
+#ifdef HB_VERSION_STRING
+        v = PyUnicode_FromString(hb_version_string());
+#else
+        v = Py_None;
+#endif
+        PyDict_SetItemString(d, "harfbuzz_version", v);
     }
 
     return 0;

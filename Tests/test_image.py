@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+import sys
 import tempfile
 
 import pytest
@@ -523,7 +524,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.linear_gradient(mode)
@@ -549,7 +550,7 @@ class TestImage:
 
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P"]:
+        for mode in ["L", "P", "I", "F"]:
 
             # Act
             im = Image.radial_gradient(mode)
@@ -768,6 +769,20 @@ class TestImage:
         reloaded_exif = Image.Exif()
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
+
+    @pytest.mark.skipif(
+        sys.version_info < (3, 7), reason="Python 3.7 or greater required"
+    )
+    def test_categories_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            assert hopper().category == 0
+
+        with pytest.warns(DeprecationWarning):
+            assert Image.NORMAL == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.SEQUENCE == 1
+        with pytest.warns(DeprecationWarning):
+            assert Image.CONTAINER == 2
 
     @pytest.mark.parametrize(
         "test_module",

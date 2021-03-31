@@ -57,8 +57,9 @@ Windows Installation
 
 We provide Pillow binaries for Windows compiled for the matrix of
 supported Pythons in both 32 and 64-bit versions in the wheel format.
-These binaries have all of the optional libraries included except
-for raqm, libimagequant, and libxcb::
+These binaries include support for all optional libraries except
+libimagequant and libxcb. Raqm support requires
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -71,8 +72,8 @@ macOS Installation
 
 We provide binaries for macOS for each of the supported Python
 versions in the wheel format. These include support for all optional
-libraries except libimagequant and libxcb. Raqm support requires
-libraqm, fribidi, and harfbuzz to be installed separately::
+libraries except libimagequant. Raqm support requires
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -83,7 +84,7 @@ Linux Installation
 We provide binaries for Linux for each of the supported Python
 versions in the manylinux wheel format. These include support for all
 optional libraries except libimagequant. Raqm support requires
-libraqm, fribidi, and harfbuzz to be installed separately::
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -191,11 +192,15 @@ Many of Pillow's features require external libraries:
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
     FriBiDi, make sure that you install them before installing libraqm
     if not available as package in your system.
-  * setting text direction or font features is not supported without
-    libraqm.
-  * libraqm is dynamically loaded in Pillow 5.0.0 and above, so support
-    is available if all the libraries are installed.
-  * Windows support: Raqm is not included in prebuilt wheels
+  * Setting text direction or font features is not supported without libraqm.
+  * Pillow wheels since version 8.2.0 include a modified version of libraqm that
+    loads libfribidi at runtime if it is installed.
+    On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
+    into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
+    <https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
+    See `Build Options`_ to see how to build this version.
+  * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
 
 * **libxcb** provides X11 screengrab support.
 
@@ -243,6 +248,12 @@ Build Options
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
+
+* Build flags: ``--vendor-raqm --vendor-fribidi``
+  These flags are used to compile a modified version of libraqm and
+  a shim that dynamically loads libfribidi at runtime. These are
+  used to compile the standard Pillow wheels. Compiling libraqm requires
+  a C99-compliant compiler.
 
 * Build flag: ``--disable-platform-guessing``. Skips all of the
   platform dependent guessing of include and library directories for

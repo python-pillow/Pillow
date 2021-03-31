@@ -486,15 +486,16 @@ Used to specify the quantization method to use for the :meth:`~Image.quantize` m
 
 .. data:: MEDIANCUT
 
-    Median cut
+    Median cut. Default method, except for RGBA images. This method does not support
+    RGBA images.
 
 .. data:: MAXCOVERAGE
 
-    Maximum coverage
+    Maximum coverage. This method does not support RGBA images.
 
 .. data:: FASTOCTREE
 
-    Fast octree
+    Fast octree. Default method for RGBA images.
 
 .. data:: LIBIMAGEQUANT
 
@@ -502,10 +503,3 @@ Used to specify the quantization method to use for the :meth:`~Image.quantize` m
 
     Check support using :py:func:`PIL.features.check_feature`
     with ``feature="libimagequant"``.
-
-.. comment: These are not referenced anywhere?
-    Categories
-    ^^^^^^^^^^
-    .. data:: NORMAL
-    .. data:: SEQUENCE
-    .. data:: CONTAINER

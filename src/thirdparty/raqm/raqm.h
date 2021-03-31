@@ -24,23 +24,22 @@
 
 #ifndef _RAQM_H_
 #define _RAQM_H_
+#define _RAQM_H_IN_
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#ifndef bool
-typedef int bool;
-#endif
-#ifndef uint32_t
-typedef UINT32 uint32_t;
-#endif
+#include <stdbool.h>
+#include <stdint.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "raqm-version.h"
 
 /**
  * raqm_t:
@@ -63,7 +62,8 @@ typedef struct _raqm raqm_t;
  *
  * Since: 0.1
  */
-typedef enum {
+typedef enum
+{
     RAQM_DIRECTION_DEFAULT,
     RAQM_DIRECTION_RTL,
     RAQM_DIRECTION_LTR,
@@ -93,64 +93,93 @@ typedef struct raqm_glyph_t {
     FT_Face ftface;
 } raqm_glyph_t;
 
-/**
- * version 0.1 of the raqm_glyph_t structure
- */
-typedef struct raqm_glyph_t_01 {
-    unsigned int index;
-    int x_advance;
-    int y_advance;
-    int x_offset;
-    int y_offset;
-    uint32_t cluster;
-} raqm_glyph_t_01;
+raqm_t *
+raqm_create (void);
 
 raqm_t *
-raqm_create(void);
-
-raqm_t *
-raqm_reference(raqm_t *rq);
+raqm_reference (raqm_t *rq);
 
 void
-raqm_destroy(raqm_t *rq);
+raqm_destroy (raqm_t *rq);
 
 bool
-raqm_set_text(raqm_t *rq, const uint32_t *text, size_t len);
+raqm_set_text (raqm_t         *rq,
+               const uint32_t *text,
+               size_t          len);
 
 bool
-raqm_set_text_utf8(raqm_t *rq, const char *text, size_t len);
+raqm_set_text_utf8 (raqm_t     *rq,
+                    const char *text,
+                    size_t      len);
 
 bool
-raqm_set_par_direction(raqm_t *rq, raqm_direction_t dir);
+raqm_set_par_direction (raqm_t          *rq,
+                        raqm_direction_t dir);
 
 bool
-raqm_set_language(raqm_t *rq, const char *lang, size_t start, size_t len);
+raqm_set_language (raqm_t       *rq,
+                   const char   *lang,
+                   size_t        start,
+                   size_t        len);
 
 bool
-raqm_add_font_feature(raqm_t *rq, const char *feature, int len);
+raqm_add_font_feature  (raqm_t     *rq,
+                        const char *feature,
+                        int         len);
 
 bool
-raqm_set_freetype_face(raqm_t *rq, FT_Face face);
+raqm_set_freetype_face (raqm_t *rq,
+                        FT_Face face);
 
 bool
-raqm_set_freetype_face_range(raqm_t *rq, FT_Face face, size_t start, size_t len);
+raqm_set_freetype_face_range (raqm_t *rq,
+                              FT_Face face,
+                              size_t  start,
+                              size_t  len);
 
 bool
-raqm_set_freetype_load_flags(raqm_t *rq, int flags);
+raqm_set_freetype_load_flags (raqm_t *rq,
+                              int flags);
 
 bool
-raqm_layout(raqm_t *rq);
+raqm_set_invisible_glyph (raqm_t *rq,
+                          int gid);
+
+bool
+raqm_layout (raqm_t *rq);
 
 raqm_glyph_t *
-raqm_get_glyphs(raqm_t *rq, size_t *length);
+raqm_get_glyphs (raqm_t *rq,
+                 size_t *length);
 
 bool
-raqm_index_to_position(raqm_t *rq, size_t *index, int *x, int *y);
+raqm_index_to_position (raqm_t *rq,
+                        size_t *index,
+                        int *x,
+                        int *y);
 
 bool
-raqm_position_to_index(raqm_t *rq, int x, int y, size_t *index);
+raqm_position_to_index (raqm_t *rq,
+                        int x,
+                        int y,
+                        size_t *index);
+
+void
+raqm_version (unsigned int *major,
+              unsigned int *minor,
+              unsigned int *micro);
+
+const char *
+raqm_version_string (void);
+
+bool
+raqm_version_atleast (unsigned int major,
+                      unsigned int minor,
+                      unsigned int micro);
+
 
 #ifdef __cplusplus
 }
 #endif
+#undef _RAQM_H_IN_
 #endif /* _RAQM_H_ */

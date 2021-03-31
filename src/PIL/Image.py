@@ -59,6 +59,16 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
+        else:
+            categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+            if name in categories:
+                warnings.warn(
+                    "Image categories are deprecated and will be removed in Pillow 10 "
+                    "(2023-01-02). Use is_animated instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return categories[name]
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -68,6 +78,11 @@ else:
 
     # Silence warning
     assert PILLOW_VERSION
+
+    # categories
+    NORMAL = 0
+    SEQUENCE = 1
+    CONTAINER = 2
 
 
 logger = logging.getLogger(__name__)
@@ -187,11 +202,6 @@ MAXCOVERAGE = 1
 FASTOCTREE = 2
 LIBIMAGEQUANT = 3
 
-# categories
-NORMAL = 0
-SEQUENCE = 1
-CONTAINER = 2
-
 if hasattr(core, "DEFAULT_STRATEGY"):
     DEFAULT_STRATEGY = core.DEFAULT_STRATEGY
     FILTERED = core.FILTERED
@@ -213,28 +223,7 @@ DECODERS = {}
 ENCODERS = {}
 
 # --------------------------------------------------------------------
-# Modes supported by this version
-
-_MODEINFO = {
-    # NOTE: this table will be removed in future versions.  use
-    # getmode* functions or ImageMode descriptors instead.
-    # official modes
-    "1": ("L", "L", ("1",)),
-    "L": ("L", "L", ("L",)),
-    "I": ("L", "I", ("I",)),
-    "F": ("L", "F", ("F",)),
-    "P": ("P", "L", ("P",)),
-    "RGB": ("RGB", "L", ("R", "G", "B")),
-    "RGBX": ("RGB", "L", ("R", "G", "B", "X")),
-    "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
-    "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
-    "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
-    "LAB": ("RGB", "L", ("L", "A", "B")),
-    "HSV": ("RGB", "L", ("H", "S", "V")),
-    # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
-    # BGR;24.  Use these modes only if you know exactly what you're
-    # doing...
-}
+# Modes
 
 if sys.byteorder == "little":
     _ENDIAN = "<"
@@ -280,7 +269,7 @@ def _conv_type_shape(im):
         return (im.size[1], im.size[0], extra), typ
 
 
-MODES = sorted(_MODEINFO)
+MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
@@ -535,10 +524,21 @@ class Image:
         self._size = (0, 0)
         self.palette = None
         self.info = {}
-        self.category = NORMAL
+        self._category = 0
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+
+    def __getattr__(self, name):
+        if name == "category":
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-01-02). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self._category
+        raise AttributeError(name)
 
     @property
     def width(self):
@@ -648,7 +648,7 @@ class Image:
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.category == other.category
+            and self._category == other._category
             and self.readonly == other.readonly
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
@@ -1059,6 +1059,12 @@ class Image:
                        :data:`LIBIMAGEQUANT` (libimagequant; check support using
                        :py:func:`PIL.features.check_feature`
                        with ``feature="libimagequant"``).
+
+                       By default, :data:`MEDIANCUT` will be used.
+
+                       The exception to this is RGBA images. :data:`MEDIANCUT` and
+                       :data:`MAXCOVERAGE` do not support RGBA images, so
+                       :data:`FASTOCTREE` is used by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
@@ -1074,11 +1080,11 @@ class Image:
 
         if method is None:
             # defaults:
-            method = 0
+            method = MEDIANCUT
             if self.mode == "RGBA":
-                method = 2
+                method = FASTOCTREE
 
-        if self.mode == "RGBA" and method not in (2, 3):
+        if self.mode == "RGBA" and method not in (FASTOCTREE, LIBIMAGEQUANT):
             # Caller specified an invalid mode.
             raise ValueError(
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
@@ -1910,7 +1916,7 @@ class Image:
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        if self.mode in ["LA", "RGBA"]:
+        if self.mode in ["LA", "RGBA"] and resample != NEAREST:
             im = self.convert(self.mode[:-1] + "a")
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
@@ -2394,14 +2400,14 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode == "LA":
+        if self.mode == "LA" and resample != NEAREST:
             return (
                 self.convert("La")
                 .transform(size, method, data, resample, fill, fillcolor)
                 .convert("LA")
             )
 
-        if self.mode == "RGBA":
+        if self.mode == "RGBA" and resample != NEAREST:
             return (
                 self.convert("RGBa")
                 .transform(size, method, data, resample, fill, fillcolor)

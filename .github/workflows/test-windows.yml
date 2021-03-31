@@ -71,8 +71,8 @@ jobs:
         7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9533w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
+        winbuild\depends\gs9540w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs9.54.0\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
@@ -137,13 +137,10 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
+    # Raqm dependencies
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
-
-    - name: Build dependencies / Raqm
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     # trim ~150MB x 9
     - name: Optimize build cache

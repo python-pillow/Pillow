@@ -221,7 +221,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 
                 if (context->next < GIFTABLE) {
                     /* We'll only add this symbol if we have room
-                       for it (take advise, Netscape!) */
+                       for it (take the advice, Netscape!) */
                     context->data[context->next] = c;
                     context->link[context->next] = context->lastcode;
 

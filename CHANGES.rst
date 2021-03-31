@@ -5,6 +5,24 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Add preserve_tone option to autocontrast #5350
+  [elejke, radarhere]
+
+- Fixed linear_gradient and radial_gradient I and F modes #5274
+  [radarhere]
+
+- Add support for reading TIFFs with PlanarConfiguration=2 #5364
+  [kkopachev, wiredfool, nulano]
+
+- Deprecated categories #5351
+  [radarhere]
+
+- Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
+  [nulano]
+
+- Dynamically link FriBiDi instead of Raqm #5062
+  [nulano]
+
 - Allow fewer PNG palette entries than the bit depth maximum when saving #5330
   [radarhere]
 
