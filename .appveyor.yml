@@ -24,8 +24,8 @@ install:
 - mv c:\pillow-depends-master c:\pillow-depends
 - xcopy /S /Y c:\pillow-depends\test_images\* c:\pillow\tests\images
 - 7z x ..\pillow-depends\nasm-2.14.02-win64.zip -oc:\
-- ..\pillow-depends\gs9533w32.exe /S
-- path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.53.3\bin;%PATH%
+- ..\pillow-depends\gs9540w32.exe /S
+- path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.54.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
         c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
