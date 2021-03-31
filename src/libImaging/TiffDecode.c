@@ -451,7 +451,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     UINT8 *new_data;
     UINT32 rows_per_strip;
     int ret;
-    tsize_t strip_size, row_byte_size;
+    tsize_t strip_size, row_byte_size, unpacker_row_byte_size;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
     if (ret != 1 || rows_per_strip==(UINT32)(-1)) {
@@ -471,7 +471,8 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         return -1;
     }
 
-    if (strip_size > ((state->xsize * state->bits / planes + 7) / 8) * rows_per_strip) {
+    unpacker_row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
+    if (strip_size > (unpacker_row_byte_size * rows_per_strip)) {
         // If the strip size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
         //        call to TIFFReadEncodedStrip ...
@@ -485,7 +486,9 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
 
     row_byte_size = TIFFScanlineSize(tiff);
 
-    if (row_byte_size == 0 || row_byte_size > strip_size) {
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the strip will have a read buffer overflow.
+    if (row_byte_size == 0 || unpacker_row_byte_size > row_byte_size) {
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
