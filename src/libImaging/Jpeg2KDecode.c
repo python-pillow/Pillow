@@ -829,7 +829,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
 
         /* Total component width = sum (component_width) e.g, it's
          legal for an la file to have a 1 byte width for l, and 4 for
-         a. and then a malicious file could have a smaller tile_bytes
+         a, and then a malicious file could have a smaller tile_bytes
         */
 
         for (n=0; n < tile_info.nb_comps; n++) {
