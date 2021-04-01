@@ -805,6 +805,13 @@ class TestFileJpeg:
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size
 
+    def test_getxmp(self):
+        with Image.open("Tests/images/xmp_test.jpg") as im:
+            xmp = im.getxmp()
+
+            assert isinstance(xmp, dict)
+            assert xmp["Description"]["Version"] == "10.4"
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")

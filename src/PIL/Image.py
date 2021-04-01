@@ -528,7 +528,6 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
-        self._xmp = None
 
     def __getattr__(self, name):
         if name == "category":
@@ -1339,27 +1338,6 @@ class Image:
                         break
 
         return self._exif
-
-    def getxmp(self):
-        """
-        Returns a dictionary containing the xmp tags for a given image.
-        :returns: XMP tags in a dictionary.
-        """
-
-        if self._xmp is None:
-            self._xmp = {}
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.rsplit(b"\x00", 1)
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    root = xml.etree.ElementTree.fromstring(xmp_tags)
-                    for element in root.findall(".//"):
-                        self._xmp[element.tag.split("}")[1]] = {
-                            child.split("}")[1]: value
-                            for child, value in element.attrib.items()
-                        }
-        return self._xmp
 
     def getim(self):
         """
