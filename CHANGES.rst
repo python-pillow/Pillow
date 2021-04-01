@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Added getxmp() method #5144
+  [UrielMaD, radarhere]
+
+- Add ImageShow support for GraphicsMagick #5349
+  [latosha-maltba, radarhere]
+
 - Do not load transparent pixels from subsequent GIF frames #5333
   [zewt, radarhere]
 
