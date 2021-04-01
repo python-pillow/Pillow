@@ -1243,7 +1243,7 @@ error_1:
     return 0;
 }
 
-int
+static int
 quantize(
     Pixel *pixelData,
     uint32_t nPixels,
@@ -1511,7 +1511,7 @@ compute_distances(const HashTable *h, const Pixel pixel, uint32_t *dist, void *u
     }
 }
 
-int
+static int
 quantize2(
     Pixel *pixelData,
     uint32_t nPixels,
