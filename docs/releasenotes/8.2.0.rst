@@ -4,12 +4,6 @@
 Deprecations
 ============
 
-Tk/Tcl 8.4
-^^^^^^^^^^
-
-Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
-when Tk/Tcl 8.5 will be the minimum supported.
-
 Categories
 ^^^^^^^^^^
 
@@ -19,6 +13,12 @@ along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
 
 To determine if an image has multiple frames or not,
 ``getattr(im, "is_animated", False)`` can be used instead.
+
+Tk/Tcl 8.4
+^^^^^^^^^^
+
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+when Tk/Tcl 8.5 will be the minimum supported.
 
 API Changes
 ===========
@@ -56,6 +56,20 @@ can be used.
 API Additions
 =============
 
+getxmp() for JPEG images
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method has been added to return
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ for JPEG
+images. It reads the XML data into a dictionary of names and values.
+
+For example::
+
+    >>> from PIL import Image
+    >>> with Image.open("Tests/images/xmp_test.jpg") as im:
+    >>>     print(im.getxmp())
+    {'RDF': {}, 'Description': {'Version': '10.4', 'ProcessVersion': '10.0', ...}, ...}
+
 ImageDraw.rounded_rectangle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -71,17 +85,13 @@ create a circle, but not any other ellipse.
     draw = ImageDraw.Draw(im)
     draw.rounded_rectangle(xy=(10, 20, 190, 180), radius=30, fill="red")
 
-ImageShow.IPythonViewer
-^^^^^^^^^^^^^^^^^^^^^^^
+ImageOps.autocontrast: preserve_tone
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If IPython is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will be
-registered. It displays images on all IPython frontends. This will be helpful
-to users of Google Colab, allowing ``im.show()`` to display images.
-
-It is lower in priority than the other default :py:class:`PIL.ImageShow.Viewer`
-instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show()`
-if none of the other viewers are available. This means that the behaviour of
-:py:class:`PIL.ImageShow` will stay the same for most Pillow users.
+The default behaviour of :py:meth:`~PIL.ImageOps.autocontrast` is to normalize
+separate histograms for each color channel, changing the tone of the image. The new
+``preserve_tone`` argument keeps the tone unchanged by using one luminance histogram
+for all channels.
 
 ImageShow.GmDisplayViewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -95,6 +105,18 @@ counterpart.  Thus, if both ImageMagick and GraphicsMagick are installed,
 ImageMagick, i.e the behaviour stays the same for Pillow users having
 ImageMagick installed.
 
+ImageShow.IPythonViewer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If IPython is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will be
+registered. It displays images on all IPython frontends. This will be helpful
+to users of Google Colab, allowing ``im.show()`` to display images.
+
+It is lower in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show()`
+if none of the other viewers are available. This means that the behaviour of
+:py:class:`PIL.ImageShow` will stay the same for most Pillow users.
+
 Saving TIFF with ICC profile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -103,28 +125,6 @@ be specified through a keyword argument::
 
     im.save("out.tif", icc_profile=...)
 
-
-ImageOps.autocontrast: preserve_tone
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The default behaviour of :py:meth:`~PIL.ImageOps.autocontrast` is to normalize
-separate histograms for each color channel, changing the tone of the image. The new
-``preserve_tone`` argument keeps the tone unchanged by using one luminance histogram
-for all channels.
-
-getxmp() for JPEG images
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-A new method has been added to return
-`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ for JPEG
-images. It reads the XML data into a dictionary of names and values.
-
-For example::
-
-    >>> from PIL import Image
-    >>> with Image.open("Tests/images/xmp_test.jpg") as im:
-    >>>     print(im.getxmp())
-    {'RDF': {}, 'Description': {'Version': '10.4', 'ProcessVersion': '10.0', ...}, ...}
 
 Security
 ========
@@ -195,6 +195,12 @@ The pixel data is encoded using the format specified in the `CompuServe GIF stan
 The older encoder used a variant of run-length encoding that was compatible but less
 efficient.
 
+GraphicsMagick
+^^^^^^^^^^^^^^
+
+The test suite can now be run on systems which have GraphicsMagick_ but not
+ImageMagick_ installed.  If both are installed, the tests prefer ImageMagick.
+
 Libraqm and FriBiDi linking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -218,12 +224,6 @@ PyQt6
 
 Support has been added for PyQt6. If it is installed, it will be used instead of
 PySide6, PyQt5 or PySide2.
-
-GraphicsMagick
-^^^^^^^^^^^^^^
-
-The test suite can now be run on systems which have GraphicsMagick_ but not
-ImageMagick_ installed.  If both are installed, the tests prefer ImageMagick.
 
 .. _GraphicsMagick: http://www.graphicsmagick.org/
 .. _ImageMagick: https://imagemagick.org/
