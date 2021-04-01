@@ -478,7 +478,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def getxmp(self):
         """
-        Returns a dictionary containing the xmp tags for a given image.
+        Returns a dictionary containing the XMP tags.
         :returns: XMP tags in a dictionary.
         """
 
