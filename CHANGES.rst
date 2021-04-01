@@ -5,6 +5,21 @@ Changelog (Pillow)
 8.2.0 (unreleased)
 ------------------
 
+- Do not load transparent pixels from subsequent GIF frames #5333
+  [zewt, radarhere]
+
+- Use LZW encoding when saving GIF images #5291
+  [raygard]
+
+- Set all transparent colors to be equal in quantize() #5282
+  [radarhere]
+
+- Allow PixelAccess to use Python __int__ when parsing x and y #5206
+  [radarhere]
+
+- Removed Image._MODEINFO #5316
+  [radarhere]
+
 - Add preserve_tone option to autocontrast #5350
   [elejke, radarhere]
 
