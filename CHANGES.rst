@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-8.2.0 (unreleased)
+8.2.0 (2021-04-01)
 ------------------
 
 - Added getxmp() method #5144
