@@ -112,6 +112,20 @@ separate histograms for each color channel, changing the tone of the image. The 
 ``preserve_tone`` argument keeps the tone unchanged by using one luminance histogram
 for all channels.
 
+getxmp() for JPEG images
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method has been added to return
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ for JPEG
+images. It reads the XML data into a dictionary of names and values.
+
+For example::
+
+    >>> from PIL import Image
+    >>> with Image.open("Tests/images/xmp_test.jpg") as im:
+    >>>     print(im.getxmp())
+    {'RDF': {}, 'Description': {'Version': '10.4', 'ProcessVersion': '10.0', ...}, ...}
+
 Security
 ========
 
