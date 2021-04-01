@@ -28,11 +28,12 @@ jobs:
             os-name: "osx"
           - os: "ubuntu-16.04"
             os-name: "xenial"
-          - os: "macos-11.0"
-            os-name: "osx"
-            platform: "arm64"
-            python: "3.9"
-            macos-target: "11.0"
+# Disable whilst not available
+#          - os: "macos-11.0"
+#            os-name: "osx"
+#            platform: "arm64"
+#            python: "3.9"
+#            macos-target: "11.0"
     env:
       BUILD_COMMIT: HEAD
       PLAT: ${{ matrix.platform }}
