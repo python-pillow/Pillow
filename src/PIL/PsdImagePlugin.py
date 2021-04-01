@@ -171,6 +171,7 @@ class PsdImageFile(ImageFile.ImageFile):
         finally:
             self.__fp = None
 
+
 def _layerinfo(fp, ct_bytes):
     # read layerinfo block
     layers = []

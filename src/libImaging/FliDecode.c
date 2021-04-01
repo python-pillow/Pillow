@@ -244,7 +244,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         }
         advance = I32(ptr);
         if (advance == 0 ) {
-            // If there's no advance, we're in in infinite loop
+            // If there's no advance, we're in an infinite loop
             state->errcode = IMAGING_CODEC_BROKEN;
             return -1;
         }

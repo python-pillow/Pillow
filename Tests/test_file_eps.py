@@ -1,4 +1,5 @@
 import io
+
 import pytest
 
 from PIL import EpsImagePlugin, Image, features
@@ -268,9 +269,7 @@ def test_emptyline():
 @pytest.mark.timeout(timeout=5)
 @pytest.mark.parametrize(
     "test_file",
-    [
-        ("Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps")
-    ],
+    ["Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
 )
 def test_timeout(test_file):
     with open(test_file, "rb") as f:

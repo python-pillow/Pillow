@@ -131,11 +131,18 @@ def test_combined_larger_than_size():
         with Image.open("Tests/images/combined_larger_than_size.psd"):
             pass
 
+
 @pytest.mark.parametrize(
     "test_file,raises",
     [
-        ("Tests/images/timeout-1ee28a249896e05b83840ae8140622de8e648ba9.psd", Image.UnidentifiedImageError),
-        ("Tests/images/timeout-598843abc37fc080ec36a2699ebbd44f795d3a6f.psd", Image.UnidentifiedImageError),
+        (
+            "Tests/images/timeout-1ee28a249896e05b83840ae8140622de8e648ba9.psd",
+            Image.UnidentifiedImageError,
+        ),
+        (
+            "Tests/images/timeout-598843abc37fc080ec36a2699ebbd44f795d3a6f.psd",
+            Image.UnidentifiedImageError,
+        ),
         ("Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd", OSError),
         ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
     ],
