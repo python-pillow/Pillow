@@ -68,8 +68,8 @@ jobs:
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
+        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
 
         winbuild\depends\gs9540w32.exe /S
         echo "C:\Program Files (x86)\gs\gs9.54.0\bin" >> $env:GITHUB_PATH
