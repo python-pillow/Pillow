@@ -1,19 +1,15 @@
-from .helper import PillowTestCase
-
 from PIL import WalImageFile
 
 
-class TestFileWal(PillowTestCase):
+def test_open():
+    # Arrange
+    TEST_FILE = "Tests/images/hopper.wal"
 
-    def test_open(self):
-        # Arrange
-        TEST_FILE = "Tests/images/hopper.wal"
+    # Act
+    im = WalImageFile.open(TEST_FILE)
 
-        # Act
-        im = WalImageFile.open(TEST_FILE)
-
-        # Assert
-        self.assertEqual(im.format, "WAL")
-        self.assertEqual(im.format_description, "Quake2 Texture")
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (128, 128))
+    # Assert
+    assert im.format == "WAL"
+    assert im.format_description == "Quake2 Texture"
+    assert im.mode == "P"
+    assert im.size == (128, 128)

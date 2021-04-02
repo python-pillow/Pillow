@@ -18,11 +18,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, JpegImagePlugin
-
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
+from . import Image, ImageFile, JpegImagePlugin
+from ._binary import i16be as i16
 
 
 def _accept(prefix):
@@ -37,6 +34,7 @@ def _save(im, fp, filename):
 ##
 # Image plugin for MPO images.
 
+
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
     format = "MPO"
@@ -46,15 +44,20 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def _open(self):
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
-        self.mpinfo = self._getmp()
-        self.__framecount = self.mpinfo[0xB001]
-        self.__mpoffsets = [mpent['DataOffset'] + self.info['mpoffset']
-                            for mpent in self.mpinfo[0xB002]]
+        self._after_jpeg_open()
+
+    def _after_jpeg_open(self, mpheader=None):
+        self.mpinfo = mpheader if mpheader is not None else self._getmp()
+        self.n_frames = self.mpinfo[0xB001]
+        self.__mpoffsets = [
+            mpent["DataOffset"] + self.info["mpoffset"] for mpent in self.mpinfo[0xB002]
+        ]
         self.__mpoffsets[0] = 0
         # Note that the following assertion will only be invalid if something
         # gets broken within JpegImagePlugin.
-        assert self.__framecount == len(self.__mpoffsets)
-        del self.info['mpoffset']  # no longer needed
+        assert self.n_frames == len(self.__mpoffsets)
+        del self.info["mpoffset"]  # no longer needed
+        self.is_animated = self.n_frames > 1
         self.__fp = self.fp  # FIXME: hack
         self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
@@ -65,22 +68,29 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def load_seek(self, pos):
         self.__fp.seek(pos)
 
-    @property
-    def n_frames(self):
-        return self.__framecount
-
-    @property
-    def is_animated(self):
-        return self.__framecount > 1
-
     def seek(self, frame):
         if not self._seek_check(frame):
             return
         self.fp = self.__fp
         self.offset = self.__mpoffsets[frame]
-        self.tile = [
-            ("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))
-        ]
+
+        self.fp.seek(self.offset + 2)  # skip SOI marker
+        segment = self.fp.read(2)
+        if not segment:
+            raise ValueError("No data found for frame")
+        if i16(segment) == 0xFFE1:  # APP1
+            n = i16(self.fp.read(2)) - 2
+            self.info["exif"] = ImageFile._safe_read(self.fp, n)
+
+            mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
+            if mptype.startswith("Large Thumbnail"):
+                exif = self.getexif().get_ifd(0x8769)
+                if 40962 in exif and 40963 in exif:
+                    self._size = (exif[40962], exif[40963])
+        elif "exif" in self.info:
+            del self.info["exif"]
+
+        self.tile = [("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))]
         self.__frame = frame
 
     def tell(self):
@@ -94,6 +104,22 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             pass
         finally:
             self.__fp = None
+
+    @staticmethod
+    def adopt(jpeg_instance, mpheader=None):
+        """
+        Transform the instance of JpegImageFile into
+        an instance of MpoImageFile.
+        After the call, the JpegImageFile is extended
+        to be an MpoImageFile.
+
+        This is essentially useful when opening a JPEG
+        file that reveals itself as an MPO, to avoid
+        double call to _open.
+        """
+        jpeg_instance.__class__ = MpoImageFile
+        jpeg_instance._after_jpeg_open(mpheader)
+        return jpeg_instance
 
 
 # ---------------------------------------------------------------------

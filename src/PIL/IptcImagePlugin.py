@@ -14,22 +14,16 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
-
-from . import Image, ImageFile
-from ._binary import i8, i16be as i16, i32be as i32, o8
 import os
 import tempfile
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.3"
+from . import Image, ImageFile
+from ._binary import i8
+from ._binary import i16be as i16
+from ._binary import i32be as i32
+from ._binary import o8
 
-COMPRESSION = {
-    1: "raw",
-    5: "jpeg"
-}
+COMPRESSION = {1: "raw", 5: "jpeg"}
 
 PAD = o8(0) * 4
 
@@ -37,19 +31,21 @@ PAD = o8(0) * 4
 #
 # Helpers
 
+
 def i(c):
     return i32((PAD + c)[-4:])
 
 
 def dump(c):
     for i in c:
-        print("%02x" % i8(i), end=' ')
+        print("%02x" % i8(i), end=" ")
     print()
 
 
 ##
 # Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields
 # from TIFF and JPEG files, use the <b>getiptcinfo</b> function.
+
 
 class IptcImageFile(ImageFile.ImageFile):
 
@@ -66,22 +62,22 @@ class IptcImageFile(ImageFile.ImageFile):
         if not len(s):
             return None, 0
 
-        tag = i8(s[1]), i8(s[2])
+        tag = s[1], s[2]
 
         # syntax
-        if i8(s[0]) != 0x1C or tag[0] < 1 or tag[0] > 9:
+        if s[0] != 0x1C or tag[0] < 1 or tag[0] > 9:
             raise SyntaxError("invalid IPTC/NAA file")
 
         # field size
-        size = i8(s[3])
+        size = s[3]
         if size > 132:
-            raise IOError("illegal field length in IPTC/NAA file")
+            raise OSError("illegal field length in IPTC/NAA file")
         elif size == 128:
             size = 0
         elif size > 128:
-            size = i(self.fp.read(size-128))
+            size = i(self.fp.read(size - 128))
         else:
-            size = i16(s[3:])
+            size = i16(s, 3)
 
         return tag, size
 
@@ -109,7 +105,7 @@ class IptcImageFile(ImageFile.ImageFile):
         layers = i8(self.info[(3, 60)][0])
         component = i8(self.info[(3, 60)][1])
         if (3, 65) in self.info:
-            id = i8(self.info[(3, 65)][0])-1
+            id = i8(self.info[(3, 65)][0]) - 1
         else:
             id = 0
         if layers == 1 and not component:
@@ -125,13 +121,14 @@ class IptcImageFile(ImageFile.ImageFile):
         # compression
         try:
             compression = COMPRESSION[self.getint((3, 120))]
-        except KeyError:
-            raise IOError("Unknown IPTC image compression")
+        except KeyError as e:
+            raise OSError("Unknown IPTC image compression") from e
 
         # tile
         if tag == (8, 10):
-            self.tile = [("iptc", (compression, offset),
-                         (0, 0, self.size[0], self.size[1]))]
+            self.tile = [
+                ("iptc", (compression, offset), (0, 0, self.size[0], self.size[1]))
+            ]
 
     def load(self):
 
@@ -164,9 +161,9 @@ class IptcImageFile(ImageFile.ImageFile):
         o.close()
 
         try:
-            _im = Image.open(outfile)
-            _im.load()
-            self.im = _im.im
+            with Image.open(outfile) as _im:
+                _im.load()
+                self.im = _im.im
         finally:
             try:
                 os.unlink(outfile)
@@ -187,8 +184,9 @@ def getiptcinfo(im):
     :returns: A dictionary containing IPTC information, or None if
         no IPTC information block was found.
     """
-    from . import TiffImagePlugin, JpegImagePlugin
     import io
+
+    from . import JpegImagePlugin, TiffImagePlugin
 
     data = None
 
@@ -198,35 +196,9 @@ def getiptcinfo(im):
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
         # extract the IPTC/NAA resource
-        try:
-            app = im.app["APP13"]
-            if app[:14] == b"Photoshop 3.0\x00":
-                app = app[14:]
-                # parse the image resource block
-                offset = 0
-                while app[offset:offset+4] == b"8BIM":
-                    offset += 4
-                    # resource code
-                    code = i16(app, offset)
-                    offset += 2
-                    # resource name (usually empty)
-                    name_len = i8(app[offset])
-                    # name = app[offset+1:offset+1+name_len]
-                    offset = 1 + offset + name_len
-                    if offset & 1:
-                        offset += 1
-                    # resource data block
-                    size = i32(app, offset)
-                    offset += 4
-                    if code == 0x0404:
-                        # 0x0404 contains IPTC/NAA data
-                        data = app[offset:offset+size]
-                        break
-                    offset = offset + size
-                    if offset & 1:
-                        offset += 1
-        except (AttributeError, KeyError):
-            pass
+        photoshop = im.info.get("photoshop")
+        if photoshop:
+            data = photoshop.get(0x0404)
 
     elif isinstance(im, TiffImagePlugin.TiffImageFile):
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data
@@ -240,8 +212,9 @@ def getiptcinfo(im):
         return None  # no properties
 
     # create an IptcImagePlugin object without initializing it
-    class FakeImage(object):
+    class FakeImage:
         pass
+
     im = FakeImage()
     im.__class__ = IptcImageFile
 

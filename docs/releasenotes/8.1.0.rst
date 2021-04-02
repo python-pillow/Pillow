@@ -1,0 +1,93 @@
+8.1.0
+-----
+
+Deprecations
+============
+
+FreeType 2.7
+^^^^^^^^^^^^
+
+Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
+when FreeType 2.8 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
+Makefile
+^^^^^^^^
+
+The ``install-venv`` target has been deprecated.
+
+API Additions
+=============
+
+Append images to ICO
+^^^^^^^^^^^^^^^^^^^^
+
+When saving an ICO image, the file may contain versions of the image at different
+sizes. By default, Pillow will scale down the main image to create these copies.
+
+With this release, a list of images can be provided to the ``append_images`` parameter
+when saving, to replace the scaled down versions. This is the same functionality that
+already exists for the ICNS format.
+
+Security
+========
+
+This release includes security fixes.
+
+* An out-of-bounds read when saving TIFFs with custom metadata through LibTIFF
+* An out-of-bounds read when saving a GIF of 1px width
+* :cve:`CVE-2020-35653` Buffer read overrun in PCX decoding
+
+The PCX image decoder used the reported image stride to calculate the row buffer,
+rather than calculating it from the image size. This issue dates back to the PIL fork.
+Thanks to Google's `OSS-Fuzz`_ project for finding this.
+
+* :cve:`CVE-2020-35654` Fix TIFF out-of-bounds write error
+
+Out-of-bounds write in ``TiffDecode.c`` when reading corrupt YCbCr files in some
+LibTIFF versions (4.1.0/Ubuntu 20.04, but not 4.0.9/Ubuntu 18.04). In some cases
+LibTIFF's interpretation of the file is different when reading in RGBA mode, leading to
+an out-of-bounds write in ``TiffDecode.c``. This potentially affects Pillow versions
+from 6.0.0 to 8.0.1, depending on the version of LibTIFF. This was reported through
+`Tidelift`_.
+
+* :cve:`CVE-2020-35655` Fix for SGI Decode buffer overrun
+
+4 byte read overflow in ``SgiRleDecode.c``, where the code was not correctly checking the
+offsets and length tables. Independently reported through `Tidelift`_ and Google's
+`OSS-Fuzz`_. This vulnerability covers Pillow versions 4.3.0->8.0.1.
+
+.. _Tidelift: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pillow&utm_medium=referral&utm_campaign=docs
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
+
+Dependencies
+^^^^^^^^^^^^
+
+OpenJPEG in the macOS and Linux wheels has been updated from 2.3.1 to 2.4.0, including
+security fixes.
+
+LibTIFF in the macOS and Linux wheels has been updated from 4.1.0 to 4.2.0, including
+security fixes discovered by fuzzers.
+
+Other Changes
+=============
+
+Makefile
+^^^^^^^^
+
+The ``co`` target has been removed.
+
+PyPy wheels
+^^^^^^^^^^^
+
+Wheels have been added for PyPy 3.7.
+
+PySide6
+^^^^^^^
+
+Support has been added for PySide6. If it is installed, it will be used instead of
+PyQt5 or PySide2, since it is based on a newer Qt.

@@ -1,0 +1,86 @@
+name: Test Docker
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        docker: [
+          # Run slower jobs first to give them a headstart and reduce waiting time
+          ubuntu-20.04-focal-arm64v8,
+          ubuntu-20.04-focal-ppc64le,
+          ubuntu-20.04-focal-s390x,
+          # Then run the remainder
+          alpine,
+          amazon-2-amd64,
+          arch,
+          centos-7-amd64,
+          centos-8-amd64,
+          debian-10-buster-x86,
+          fedora-32-amd64,
+          fedora-33-amd64,
+          ubuntu-18.04-bionic-amd64,
+          ubuntu-20.04-focal-amd64,
+        ]
+        dockerTag: [master]
+        include:
+          - docker: "ubuntu-20.04-focal-arm64v8"
+            qemu-arch: "aarch64"
+          - docker: "ubuntu-20.04-focal-ppc64le"
+            qemu-arch: "ppc64le"
+          - docker: "ubuntu-20.04-focal-s390x"
+            qemu-arch: "s390x"
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Set up QEMU
+      if: "matrix.qemu-arch"
+      run: |
+        docker run --rm --privileged aptman/qus -s -- -p ${{ matrix.qemu-arch }}
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Docker build
+      run: |
+        # The Pillow user in the docker container is UID 1000
+        sudo chown -R 1000 $GITHUB_WORKSPACE
+        docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        sudo chown -R runner $GITHUB_WORKSPACE
+
+    - name: After success
+      run: |
+        PATH="$PATH:~/.local/bin"
+        docker start pillow_container
+        pil_path=`docker exec pillow_container /vpy3/bin/python -c 'import os, PIL;print(os.path.realpath(os.path.dirname(PIL.__file__)))'`
+        docker stop pillow_container
+        sudo mkdir -p $pil_path
+        sudo cp src/PIL/*.py $pil_path
+        .ci/after_success.sh
+      env:
+        MATRIX_DOCKER: ${{ matrix.docker }}
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1
+      with:
+        flags: GHA_Docker
+        name: ${{ matrix.docker }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Docker Test Successful
+    steps:
+      - name: Success
+        run: echo Docker Test Successful

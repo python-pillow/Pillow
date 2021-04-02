@@ -1,0 +1,48 @@
+name: Lint
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    name: Lint
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: lint-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          lint-pip-
+
+    - name: pre-commit cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pre-commit
+        key: lint-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
+        restore-keys: |
+          lint-pre-commit-
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install -U pip
+        python3 -m pip install -U tox
+
+    - name: Lint
+      run: tox -e lint
+      env:
+        PRE_COMMIT_COLOR: always
+

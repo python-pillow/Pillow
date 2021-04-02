@@ -1,21 +1,22 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`ImageFont` Module
-==========================
+:py:mod:`~PIL.ImageFont` Module
+===============================
 
-The :py:mod:`ImageFont` module defines a class with the same name. Instances of
+The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.Draw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
-PIL uses its own font file format to store bitmap fonts. You can use the
-:command:`pilfont` utility to convert BDF and PCF font descriptors (X window
-font formats) to this format.
+PIL uses its own font file format to store bitmap fonts, limited to 256 characters. You can use
+`pilfont.py <https://github.com/python-pillow/pillow-scripts/blob/master/Scripts/pilfont.py>`_
+from `pillow-scripts <https://pypi.org/project/pillow-scripts/>`_ to convert BDF and
+PCF font descriptors (X window font formats) to this format.
 
 Starting with version 1.1.4, PIL can be configured to support TrueType and
 OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
-the imToolkit package
+the imToolkit package.
 
 Example
 -------
@@ -47,43 +48,27 @@ Functions
 Methods
 -------
 
-.. py:method:: PIL.ImageFont.ImageFont.getsize(text)
+.. autoclass:: PIL.ImageFont.ImageFont
+    :members:
 
-    :return: (width, height)
+.. autoclass:: PIL.ImageFont.FreeTypeFont
+    :members:
 
-.. py:method:: PIL.ImageFont.ImageFont.getmask(text, mode='', direction=None, features=[])
+.. autoclass:: PIL.ImageFont.TransposedFont
+    :members:
 
-    Create a bitmap for the text.
+Constants
+---------
 
-    If the font uses antialiasing, the bitmap should have mode “L” and use a
-    maximum value of 255. Otherwise, it should have mode “1”.
+.. data:: PIL.ImageFont.LAYOUT_BASIC
 
-    :param text: Text to render.
-    :param mode: Used by some graphics drivers to indicate what mode the
-                 driver prefers; if empty, the renderer may return either
-                 mode. Note that the mode is always a string, to simplify
-                 C-level implementations.
+    Use basic text layout for TrueType font.
+    Advanced features such as text direction are not supported.
 
-                 .. versionadded:: 1.1.5
+.. data:: PIL.ImageFont.LAYOUT_RAQM
 
-    :param direction: Direction of the text. It can be 'rtl' (right to
-                      left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                      Requires libraqm.
+    Use Raqm text layout for TrueType font.
+    Advanced features are supported.
 
-                      .. versionadded:: 4.2.0
-
-    :param features: A list of OpenType font features to be used during text
-                     layout. This is usually used to turn on optional
-                     font features that are not enabled by default,
-                     for example 'dlig' or 'ss01', but can be also
-                     used to turn off default font features for
-                     example '-liga' to disable ligatures or '-kern'
-                     to disable kerning.  To get all supported
-                     features, see
-                     https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
-                     Requires libraqm.
-
-                     .. versionadded:: 4.2.0
-
-    :return: An internal PIL storage memory instance as defined by the
-             :py:mod:`PIL.Image.core` interface module.
+    Requires Raqm, you can check support using
+    :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

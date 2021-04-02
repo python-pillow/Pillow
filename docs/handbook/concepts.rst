@@ -24,8 +24,10 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The ``mode`` of an image defines the type and depth of a pixel in the
-image. The current release supports the following standard modes:
+The ``mode`` of an image is a string which defines the type and depth of a pixel in the image.
+Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
+of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
+supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
     * ``L`` (8-bit pixels, black and white)
@@ -42,11 +44,24 @@ image. The current release supports the following standard modes:
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
-PIL also provides limited support for a few special modes, including ``LA`` (L
-with alpha), ``RGBX`` (true color with padding) and ``RGBa`` (true color with
-premultiplied alpha). However, PIL doesn’t support user-defined modes; if you
-need to handle band combinations that are not listed above, use a sequence of
-Image objects.
+Pillow also provides limited support for a few special modes, including:
+
+    * ``LA`` (L with alpha)
+    * ``PA`` (P with alpha)
+    * ``RGBX`` (true color with padding)
+    * ``RGBa`` (true color with premultiplied alpha)
+    * ``La`` (L with premultiplied alpha)
+    * ``I;16`` (16-bit unsigned integer pixels)
+    * ``I;16L`` (16-bit little endian unsigned integer pixels)
+    * ``I;16B`` (16-bit big endian unsigned integer pixels)
+    * ``I;16N`` (16-bit native endian unsigned integer pixels)
+    * ``BGR;15`` (15-bit reversed true colour)
+    * ``BGR;16`` (16-bit reversed true colour)
+    * ``BGR;24`` (24-bit reversed true colour)
+    * ``BGR;32`` (32-bit reversed true colour)
+
+However, Pillow doesn’t support user-defined modes; if you need to handle band
+combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
@@ -89,6 +104,15 @@ the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
 
+Orientation
+-----------
+
+A common element of the :py:attr:`~PIL.Image.Image.info` attribute for JPG and
+TIFF images is the EXIF orientation tag. This is an instruction for how the
+image data should be oriented. For example, it may instruct an image to be
+rotated by 90 degrees, or to be mirrored. To apply this information to an
+image, :py:meth:`~PIL.ImageOps.exif_transpose` can be used.
+
 .. _concept-filters:
 
 Filters
@@ -97,39 +121,47 @@ Filters
 For geometry operations that may map multiple input pixels to a single output
 pixel, the Python Imaging Library provides different resampling *filters*.
 
-``NEAREST``
+.. py:currentmodule:: PIL.Image
+
+.. data:: NEAREST
+
     Pick one nearest pixel from the input image. Ignore all other input pixels.
 
-``BOX``
+.. data:: BOX
+
     Each pixel of source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of ``NEAREST``.
+    For upscaling is equivalent of :data:`NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-``BILINEAR``
+.. data:: BILINEAR
+
     For resize calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
 
-``HAMMING``
-    Produces a sharper image than ``BILINEAR``, doesn't have dislocations
-    on local level like with ``BOX``.
+.. data:: HAMMING
+
+    Produces a sharper image than :data:`BILINEAR`, doesn't have dislocations
+    on local level like with :data:`BOX`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-``BICUBIC``
+.. data:: BICUBIC
+
     For resize calculate the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
 
-``LANCZOS``
+.. data:: LANCZOS
+
     Calculate the output pixel value using a high-quality Lanczos filter (a
     truncated sinc) on all pixels that may contribute to the output value.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
@@ -141,19 +173,19 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+------------+-------------+-----------+-------------+
-| Filter     | Downscaling | Upscaling | Performance |
-|            | quality     | quality   |             |
-+============+=============+===========+=============+
-|``NEAREST`` |             |           | ⭐⭐⭐⭐⭐       |
-+------------+-------------+-----------+-------------+
-|``BOX``     | ⭐           |           | ⭐⭐⭐⭐        |
-+------------+-------------+-----------+-------------+
-|``BILINEAR``| ⭐           | ⭐         | ⭐⭐⭐         |
-+------------+-------------+-----------+-------------+
-|``HAMMING`` | ⭐⭐          |           | ⭐⭐⭐         |
-+------------+-------------+-----------+-------------+
-|``BICUBIC`` | ⭐⭐⭐         | ⭐⭐⭐       | ⭐⭐          |
-+------------+-------------+-----------+-------------+
-|``LANCZOS`` | ⭐⭐⭐⭐        | ⭐⭐⭐⭐      | ⭐           |
-+------------+-------------+-----------+-------------+
++----------------+-------------+-----------+-------------+
+| Filter         | Downscaling | Upscaling | Performance |
+|                | quality     | quality   |             |
++================+=============+===========+=============+
+|:data:`NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
++----------------+-------------+-----------+-------------+
+|:data:`BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
++----------------+-------------+-----------+-------------+
+|:data:`BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
++----------------+-------------+-----------+-------------+
+|:data:`HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
++----------------+-------------+-----------+-------------+
+|:data:`BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
++----------------+-------------+-----------+-------------+
+|:data:`LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++----------------+-------------+-----------+-------------+

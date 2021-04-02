@@ -20,12 +20,13 @@
 from . import Image
 
 
-class HDC(object):
+class HDC:
     """
     Wraps an HDC integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods.
     """
+
     def __init__(self, dc):
         self.dc = dc
 
@@ -33,12 +34,13 @@ class HDC(object):
         return self.dc
 
 
-class HWND(object):
+class HWND:
     """
     Wraps an HWND integer. The resulting object can be passed to the
     :py:meth:`~PIL.ImageWin.Dib.draw` and :py:meth:`~PIL.ImageWin.Dib.expose`
     methods, instead of a DC.
     """
+
     def __init__(self, wnd):
         self.wnd = wnd
 
@@ -46,7 +48,7 @@ class HWND(object):
         return self.wnd
 
 
-class Dib(object):
+class Dib:
     """
     A Windows bitmap with the given mode and size.  The mode can be one of "1",
     "L", "P", or "RGB".
@@ -57,7 +59,7 @@ class Dib(object):
     with 20 greylevels.
 
     To make sure that palettes work properly under Windows, you must call the
-    **palette** method upon certain events from Windows.
+    ``palette`` method upon certain events from Windows.
 
     :param image: Either a PIL image, or a mode string. If a mode string is
                   used, a size must also be given.  The mode can be one of "1",
@@ -86,8 +88,8 @@ class Dib(object):
         Copy the bitmap contents to a device context.
 
         :param handle: Device context (HDC), cast to a Python integer, or an
-                       HDC or HWND instance.  In PythonWin, you can use the
-                       :py:meth:`CDC.GetHandleAttrib` to get a suitable handle.
+                       HDC or HWND instance.  In PythonWin, you can use
+                       ``CDC.GetHandleAttrib()`` to get a suitable handle.
         """
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
@@ -171,7 +173,7 @@ class Dib(object):
         Load display memory contents from byte data.
 
         :param buffer: A buffer containing display data (usually
-                       data returned from <b>tobytes</b>)
+                       data returned from :py:func:`~PIL.ImageWin.Dib.tobytes`)
         """
         return self.image.frombytes(buffer)
 
@@ -184,13 +186,13 @@ class Dib(object):
         return self.image.tobytes()
 
 
-class Window(object):
+class Window:
     """Create a Window with the given title size."""
 
     def __init__(self, title="PIL", width=None, height=None):
         self.hwnd = Image.core.createwindow(
             title, self.__dispatcher, width or 0, height or 0
-            )
+        )
 
     def __dispatcher(self, action, *args):
         return getattr(self, "ui_handle_" + action)(*args)
@@ -222,7 +224,7 @@ class ImageWindow(Window):
             image = Dib(image)
         self.image = image
         width, height = image.size
-        Window.__init__(self, title, width=width, height=height)
+        super().__init__(title, width=width, height=height)
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
         self.image.draw(dc, (x0, y0, x1, y1))

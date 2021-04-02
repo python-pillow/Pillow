@@ -12,15 +12,13 @@
 
 #include <setjmp.h>
 
-
 typedef struct {
-    struct jpeg_error_mgr pub;	/* "public" fields */
-    jmp_buf setjmp_buffer;	/* for return to caller */
+    struct jpeg_error_mgr pub; /* "public" fields */
+    jmp_buf setjmp_buffer;     /* for return to caller */
 } JPEGERROR;
 
-
 /* -------------------------------------------------------------------- */
-/* Decoder								*/
+/* Decoder                                                              */
 
 typedef struct {
     struct jpeg_source_mgr pub;
@@ -28,15 +26,14 @@ typedef struct {
 } JPEGSOURCE;
 
 typedef struct {
-
     /* CONFIGURATION */
 
     /* Jpeg file mode (empty if not known) */
-    char jpegmode[8+1];
+    char jpegmode[8 + 1];
 
     /* Converter output mode (input to the shuffler).  If empty,
        convert conversions are disabled */
-    char rawmode[8+1];
+    char rawmode[8 + 1];
 
     /* If set, trade quality for speed */
     int draft;
@@ -54,9 +51,8 @@ typedef struct {
 
 } JPEGSTATE;
 
-
 /* -------------------------------------------------------------------- */
-/* Encoder								*/
+/* Encoder                                                              */
 
 typedef struct {
     struct jpeg_destination_mgr pub;
@@ -64,10 +60,9 @@ typedef struct {
 } JPEGDESTINATION;
 
 typedef struct {
-
     /* CONFIGURATION */
 
-    /* Quality (1-100, 0 means default) */
+    /* Quality (0-100, -1 means default) */
     int quality;
 
     /* Progressive mode */
@@ -89,7 +84,7 @@ typedef struct {
     int subsampling;
 
     /* Converter input mode (input to the shuffler) */
-    char rawmode[8+1];
+    char rawmode[8 + 1];
 
     /* Custom quantization tables () */
     unsigned int *qtables;
@@ -98,7 +93,8 @@ typedef struct {
     int qtablesLen;
 
     /* Extra data (to be injected after header) */
-    char* extra; int extra_size;
+    char *extra;
+    int extra_size;
 
     /* PRIVATE CONTEXT (set by encoder) */
 
@@ -110,7 +106,7 @@ typedef struct {
 
     int extra_offset;
 
-    int rawExifLen;   /* EXIF data length */
-    char* rawExif;  /* EXIF buffer pointer */
+    size_t rawExifLen; /* EXIF data length */
+    char *rawExif;     /* EXIF buffer pointer */
 
 } JPEGENCODERSTATE;

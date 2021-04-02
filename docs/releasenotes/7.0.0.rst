@@ -1,0 +1,161 @@
+7.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+Python 2.7
+^^^^^^^^^^
+
+Pillow has dropped support for Python 2.7, which reached end-of-life on 2020-01-01.
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+PIL.*ImagePlugin.__version__ attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The version constants of individual plugins have been removed. Use ``PIL.__version__``
+instead.
+
+===============================  =================================  ==================================
+Removed                          Removed                            Removed
+===============================  =================================  ==================================
+``BmpImagePlugin.__version__``   ``Jpeg2KImagePlugin.__version__``  ``PngImagePlugin.__version__``
+``CurImagePlugin.__version__``   ``JpegImagePlugin.__version__``    ``PpmImagePlugin.__version__``
+``DcxImagePlugin.__version__``   ``McIdasImagePlugin.__version__``  ``PsdImagePlugin.__version__``
+``EpsImagePlugin.__version__``   ``MicImagePlugin.__version__``     ``SgiImagePlugin.__version__``
+``FliImagePlugin.__version__``   ``MpegImagePlugin.__version__``    ``SunImagePlugin.__version__``
+``FpxImagePlugin.__version__``   ``MpoImagePlugin.__version__``     ``TgaImagePlugin.__version__``
+``GdImageFile.__version__``      ``MspImagePlugin.__version__``     ``TiffImagePlugin.__version__``
+``GifImagePlugin.__version__``   ``PalmImagePlugin.__version__``    ``WmfImagePlugin.__version__``
+``IcoImagePlugin.__version__``   ``PcdImagePlugin.__version__``     ``XbmImagePlugin.__version__``
+``ImImagePlugin.__version__``    ``PcxImagePlugin.__version__``     ``XpmImagePlugin.__version__``
+``ImtImagePlugin.__version__``   ``PdfImagePlugin.__version__``     ``XVThumbImagePlugin.__version__``
+``IptcImagePlugin.__version__``  ``PixarImagePlugin.__version__``
+===============================  =================================  ==================================
+
+PyQt4 and PySide
+^^^^^^^^^^^^^^^^
+
+Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
+2018-08-31 and PySide since 2015-10-14.
+
+Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt5
+or PySide2.
+
+Setting the size of TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
+an error. Use ``Image.resize`` instead.
+
+Default resampling filter
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default resampling filter has been changed to the high-quality convolution
+``Image.BICUBIC`` instead of ``Image.NEAREST``, for the :py:meth:`~PIL.Image.Image.resize`
+method and the :py:meth:`~PIL.ImageOps.pad`, :py:meth:`~PIL.ImageOps.scale`
+and :py:meth:`~PIL.ImageOps.fit` functions.
+``Image.NEAREST`` is still always used for images in "P" and "1" modes.
+See :ref:`concept-filters` to learn the difference. In short,
+``Image.NEAREST`` is a very fast filter, but simple and low-quality.
+
+Image.draft() return value
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the :py:meth:`~PIL.Image.Image.draft` method has no effect, it returns :data:`None`.
+If it does have an effect, then it previously returned the image itself.
+However, unlike other `chain methods`_, :py:meth:`~PIL.Image.Image.draft` does not
+return a modified version of the image, but modifies it in-place. So instead, if
+:py:meth:`~PIL.Image.Image.draft` has an effect, Pillow will now return a tuple
+of the image mode and a co-ordinate box. The box is the original coordinates in the
+bounds of resulting image. This may be useful in a subsequent
+:py:meth:`~PIL.Image.Image.resize` call.
+
+.. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
+
+
+API Additions
+=============
+
+Custom unidentified image error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
+identified. For backwards compatibility, this will inherit from ``OSError``.
+
+New argument ``reducing_gap`` for Image.resize() and Image.thumbnail() methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Speeds up resizing by resizing the image in two steps. The bigger ``reducing_gap``,
+the closer the result to the fair resampling. The smaller ``reducing_gap``,
+the faster resizing. With ``reducing_gap`` greater or equal to 3.0,
+the result is indistinguishable from fair resampling.
+
+The default value for :py:meth:`~PIL.Image.Image.resize` is :data:`None`,
+which means that the optimization is turned off by default.
+
+The default value for :py:meth:`~PIL.Image.Image.thumbnail` is 2.0,
+which is very close to fair resampling while still being faster in many cases.
+In addition, the same gap is applied when :py:meth:`~PIL.Image.Image.thumbnail`
+calls :py:meth:`~PIL.Image.Image.draft`, which may greatly improve the quality
+of JPEG thumbnails. As a result, :py:meth:`~PIL.Image.Image.thumbnail`
+in the new version provides equally high speed and high quality from any
+source (JPEG or arbitrary images).
+
+New Image.reduce() method
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.reduce` is a highly efficient operation
+to reduce an image by integer times. Normally, it shouldn't be used directly.
+Used internally by :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+methods to speed up resize when a new argument ``reducing_gap`` is set.
+
+Loading WMF images at a given DPI
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On Windows, Pillow can read WMF files, with a default DPI of 72. An image can
+now also be loaded at another resolution:
+
+.. code-block:: python
+
+    from PIL import Image
+    with Image.open("drawing.wmf") as im:
+        im.load(dpi=144)
+
+Other Changes
+=============
+
+Image.__del__
+^^^^^^^^^^^^^
+
+Implicitly closing the image's underlying file in ``Image.__del__`` has been removed.
+Use a context manager or call :py:meth:`~PIL.Image.Image.close` instead to close
+the file in a deterministic way.
+
+Previous method:
+
+.. code-block:: python
+
+    im = Image.open("hopper.png")
+    im.save("out.jpg")
+
+Use instead:
+
+.. code-block:: python
+
+    with Image.open("hopper.png") as im:
+        im.save("out.jpg")
+
+Better thumbnail geometry
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calculating the new dimensions in :py:meth:`~PIL.Image.Image.thumbnail`,
+round to the nearest integer, instead of always rounding down.
+This better preserves the original aspect ratio.
+
+When the image width or height is not divisible by 8 the last row and column
+in the image get the correct weight after JPEG DCT scaling.

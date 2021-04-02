@@ -1,0 +1,102 @@
+7.1.0
+-----
+
+API Changes
+===========
+
+Allow saving of zero quality JPEG images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If no quality was specified when saving a JPEG, Pillow internally used a value
+of zero to indicate that the default quality should be used. However, this
+removed the ability to actually save a JPEG with zero quality. This has now
+been resolved.
+
+.. code-block:: python
+
+    from PIL import Image
+    im = Image.open("hopper.jpg")
+    im.save("out.jpg", quality=0)
+
+API Additions
+=============
+
+New channel operations
+^^^^^^^^^^^^^^^^^^^^^^
+
+Three new channel operations have been added: :py:meth:`~PIL.ImageChops.soft_light`,
+:py:meth:`~PIL.ImageChops.hard_light` and :py:meth:`~PIL.ImageChops.overlay`.
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been re-added but is deprecated and will be removed in a future
+release. Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
+more time to upgrade.
+
+Reading JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When opening a JPEG image, the comment may now be read into
+:py:attr:`~PIL.Image.Image.info`.
+
+Support for different charset encodings in PcfFontFile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously ``PcfFontFile`` output only bitmap PIL fonts with ISO 8859-1 encoding, even
+though the PCF format supports Unicode, making it hard to work with Pillow with bitmap
+fonts in languages which use different character sets.
+
+Now it's possible to set a different charset encoding in ``PcfFontFile``'s class
+constructor. By default, it generates a PIL font file with ISO 8859-1 as before. The
+generated PIL font file still contains up to 256 characters, but the character set is
+different depending on the selected encoding.
+
+To use such a font with ``ImageDraw.text``, call it with a bytes object with the same
+encoding as the font file.
+
+X11 ImageGrab.grab()
+^^^^^^^^^^^^^^^^^^^^
+Support has been added for ``ImageGrab.grab()`` on Linux using the X server
+with the XCB library.
+
+An optional ``xdisplay`` parameter has been added to select the X server,
+with the default value of :data:`None` using the default X server.
+
+Passing a different value on Windows or macOS will force taking a snapshot
+using the selected X server; pass an empty string to use the default X server.
+XCB support is not included in pre-compiled wheels for Windows and macOS.
+
+Security
+========
+
+This release includes security fixes.
+
+* :cve:`CVE-2020-10177` Fix multiple out-of-bounds reads in FLI decoding
+* :cve:`CVE-2020-10378` Fix bounds overflow in PCX decoding
+* :cve:`CVE-2020-10379` Fix two buffer overflows in TIFF decoding
+* :cve:`CVE-2020-10994` Fix bounds overflow in JPEG 2000 decoding
+* :cve:`CVE-2020-11538` Fix buffer overflow in SGI-RLE decoding
+
+Other Changes
+=============
+
+If present, only use alpha channel for bounding box
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the :py:meth:`~PIL.Image.Image.getbbox` method calculates the bounding
+box, for an RGB image it trims black pixels. Similarly, for an RGBA image it
+would trim black transparent pixels. This is now changed so that if an image
+has an alpha channel (RGBA, RGBa, PA, LA, La), any transparent pixels are
+trimmed.
+
+Improved APNG support
+^^^^^^^^^^^^^^^^^^^^^
+
+Added support for reading and writing Animated Portable Network Graphics (APNG) images.
+The PNG plugin now supports using the :py:meth:`~PIL.Image.Image.seek` method and the
+:py:class:`~PIL.ImageSequence.Iterator` class to read APNG frame sequences.
+The PNG plugin also now supports using the ``append_images`` argument to write APNG frame
+sequences. See :ref:`apng-sequences` for further details.

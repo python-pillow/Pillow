@@ -1,46 +1,81 @@
-from .helper import PillowTestCase, hopper
+import pytest
 
-from PIL import Image
-from PIL import ImageShow
+from PIL import Image, ImageShow
+
+from .helper import hopper, is_win32, on_ci
 
 
-class TestImageShow(PillowTestCase):
+def test_sanity():
+    dir(Image)
+    dir(ImageShow)
 
-    def test_sanity(self):
-        dir(Image)
-        dir(ImageShow)
 
-    def test_register(self):
-        # Test registering a viewer that is not a class
-        ImageShow.register("not a class")
+def test_register():
+    # Test registering a viewer that is not a class
+    ImageShow.register("not a class")
 
-        # Restore original state
-        ImageShow._viewers.pop()
+    # Restore original state
+    ImageShow._viewers.pop()
 
-    def test_show(self):
-        class TestViewer:
-            methodCalled = False
 
-            def show(self, image, title=None, **options):
-                self.methodCalled = True
-                return True
-        viewer = TestViewer()
-        ImageShow.register(viewer, -1)
+@pytest.mark.parametrize(
+    "order",
+    [-1, 0],
+)
+def test_viewer_show(order):
+    class TestViewer(ImageShow.Viewer):
+        def show_image(self, image, **options):
+            self.methodCalled = True
+            return True
 
-        im = hopper()
-        self.assertTrue(ImageShow.show(im))
-        self.assertTrue(viewer.methodCalled)
+    viewer = TestViewer()
+    ImageShow.register(viewer, order)
 
-        # Restore original state
-        ImageShow._viewers.pop(0)
+    for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
+        viewer.methodCalled = False
+        with hopper(mode) as im:
+            assert ImageShow.show(im)
+        assert viewer.methodCalled
 
-    def test_viewer(self):
-        viewer = ImageShow.Viewer()
+    # Restore original state
+    ImageShow._viewers.pop(0)
 
-        self.assertIsNone(viewer.get_format(None))
 
-        self.assertRaises(NotImplementedError, viewer.get_command, None)
+@pytest.mark.skipif(
+    not on_ci() or is_win32(),
+    reason="Only run on CIs; hangs on Windows CIs",
+)
+def test_show():
+    for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
+        im = hopper(mode)
+        assert ImageShow.show(im)
 
-    def test_viewers(self):
-        for viewer in ImageShow._viewers:
-            viewer.get_command('test.jpg')
+
+def test_viewer():
+    viewer = ImageShow.Viewer()
+
+    assert viewer.get_format(None) is None
+
+    with pytest.raises(NotImplementedError):
+        viewer.get_command(None)
+
+
+def test_viewers():
+    for viewer in ImageShow._viewers:
+        try:
+            viewer.get_command("test.jpg")
+        except NotImplementedError:
+            pass
+
+
+def test_ipythonviewer():
+    pytest.importorskip("IPython", reason="IPython not installed")
+    for viewer in ImageShow._viewers:
+        if isinstance(viewer, ImageShow.IPythonViewer):
+            test_viewer = viewer
+            break
+    else:
+        assert False
+
+    im = hopper()
+    assert test_viewer.show(im) == 1

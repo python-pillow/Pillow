@@ -1,88 +1,72 @@
-from .helper import unittest, PillowTestCase
+import pytest
 
 from PIL import _util
 
 
-class TestUtil(PillowTestCase):
+def test_is_path():
+    # Arrange
+    fp = "filename.ext"
 
-    def test_is_string_type(self):
-        # Arrange
-        color = "red"
+    # Act
+    it_is = _util.isPath(fp)
 
-        # Act
-        it_is = _util.isStringType(color)
+    # Assert
+    assert it_is
 
-        # Assert
-        self.assertTrue(it_is)
 
-    def test_is_not_string_type(self):
-        # Arrange
-        color = (255, 0, 0)
+def test_path_obj_is_path():
+    # Arrange
+    from pathlib import Path
 
-        # Act
-        it_is_not = _util.isStringType(color)
+    test_path = Path("filename.ext")
 
-        # Assert
-        self.assertFalse(it_is_not)
+    # Act
+    it_is = _util.isPath(test_path)
 
-    def test_is_path(self):
-        # Arrange
-        fp = "filename.ext"
+    # Assert
+    assert it_is
 
-        # Act
-        it_is = _util.isPath(fp)
 
-        # Assert
-        self.assertTrue(it_is)
+def test_is_not_path(tmp_path):
+    # Arrange
+    with (tmp_path / "temp.ext").open("w") as fp:
+        pass
 
-    @unittest.skipIf(not _util.py36, 'os.path support for Paths added in 3.6')
-    def test_path_obj_is_path(self):
-        # Arrange
-        from pathlib import Path
-        test_path = Path('filename.ext')
+    # Act
+    it_is_not = _util.isPath(fp)
 
-        # Act
-        it_is = _util.isPath(test_path)
+    # Assert
+    assert not it_is_not
 
-        # Assert
-        self.assertTrue(it_is)
 
-    def test_is_not_path(self):
-        # Arrange
-        filename = self.tempfile("temp.ext")
-        fp = open(filename, 'w').close()
+def test_is_directory():
+    # Arrange
+    directory = "Tests"
 
-        # Act
-        it_is_not = _util.isPath(fp)
+    # Act
+    it_is = _util.isDirectory(directory)
 
-        # Assert
-        self.assertFalse(it_is_not)
+    # Assert
+    assert it_is
 
-    def test_is_directory(self):
-        # Arrange
-        directory = "Tests"
 
-        # Act
-        it_is = _util.isDirectory(directory)
+def test_is_not_directory():
+    # Arrange
+    text = "abc"
 
-        # Assert
-        self.assertTrue(it_is)
+    # Act
+    it_is_not = _util.isDirectory(text)
 
-    def test_is_not_directory(self):
-        # Arrange
-        text = "abc"
+    # Assert
+    assert not it_is_not
 
-        # Act
-        it_is_not = _util.isDirectory(text)
 
-        # Assert
-        self.assertFalse(it_is_not)
+def test_deferred_error():
+    # Arrange
 
-    def test_deferred_error(self):
-        # Arrange
+    # Act
+    thing = _util.deferred_error(ValueError("Some error text"))
 
-        # Act
-        thing = _util.deferred_error(ValueError("Some error text"))
-
-        # Assert
-        self.assertRaises(ValueError, lambda: thing.some_attr)
+    # Assert
+    with pytest.raises(ValueError):
+        thing.some_attr

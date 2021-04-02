@@ -67,6 +67,9 @@ docs/_build/
 \#*#
 .#*
 
+#VS Code
+.vscode
+
 #Komodo
 *.komodoproject
 
@@ -78,6 +81,13 @@ docs/_build/
 
 # Extra test images installed from pillow-depends/test_images
 Tests/images/README.md
+Tests/images/crash_1.tif
+Tests/images/crash_2.tif
+Tests/images/string_dimension.tiff
+Tests/images/jpeg2000
 Tests/images/msp
 Tests/images/picins
 Tests/images/sunraster
+
+# pyinstaller
+*.spec

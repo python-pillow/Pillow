@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 #
-# See https://github.com/GNOME/gimp/blob/master/devel-docs/gbr.txt for
+# See https://github.com/GNOME/gimp/blob/mainline/devel-docs/gbr.txt for
 # format documentation.
 #
 # This code Interprets version 1 and 2 .gbr files.
@@ -29,12 +29,12 @@ from ._binary import i32be as i32
 
 
 def _accept(prefix):
-    return len(prefix) >= 8 and \
-           i32(prefix[:4]) >= 20 and i32(prefix[4:8]) in (1, 2)
+    return len(prefix) >= 8 and i32(prefix, 0) >= 20 and i32(prefix, 4) in (1, 2)
 
 
 ##
 # Image plugin for the GIMP brush format.
+
 
 class GbrImageFile(ImageFile.ImageFile):
 
@@ -47,7 +47,7 @@ class GbrImageFile(ImageFile.ImageFile):
         if header_size < 20:
             raise SyntaxError("not a GIMP brush")
         if version not in (1, 2):
-            raise SyntaxError("Unsupported GIMP brush version: %s" % version)
+            raise SyntaxError(f"Unsupported GIMP brush version: {version}")
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
@@ -55,24 +55,23 @@ class GbrImageFile(ImageFile.ImageFile):
         if width <= 0 or height <= 0:
             raise SyntaxError("not a GIMP brush")
         if color_depth not in (1, 4):
-            raise SyntaxError(
-                "Unsupported GIMP brush color depth: %s" % color_depth)
+            raise SyntaxError(f"Unsupported GIMP brush color depth: {color_depth}")
 
         if version == 1:
-            comment_length = header_size-20
+            comment_length = header_size - 20
         else:
-            comment_length = header_size-28
+            comment_length = header_size - 28
             magic_number = self.fp.read(4)
-            if magic_number != b'GIMP':
+            if magic_number != b"GIMP":
                 raise SyntaxError("not a GIMP brush, bad magic number")
-            self.info['spacing'] = i32(self.fp.read(4))
+            self.info["spacing"] = i32(self.fp.read(4))
 
         comment = self.fp.read(comment_length)[:-1]
 
         if color_depth == 1:
             self.mode = "L"
         else:
-            self.mode = 'RGBA'
+            self.mode = "RGBA"
 
         self._size = width, height
 
@@ -85,8 +84,13 @@ class GbrImageFile(ImageFile.ImageFile):
         self._data_size = width * height * color_depth
 
     def load(self):
+        if self.im:
+            # Already loaded
+            return
+
         self.im = Image.core.new(self.mode, self.size)
         self.frombytes(self.fp.read(self._data_size))
+
 
 #
 # registry

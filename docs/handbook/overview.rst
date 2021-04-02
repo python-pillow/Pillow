@@ -33,7 +33,7 @@ DIB interface <PIL.ImageWin>` that can be used with PythonWin and other
 Windows-based toolkits. Many other GUI toolkits come with some kind of PIL
 support.
 
-For debugging, there’s also a :py:meth:`show` method which saves an image to
+For debugging, there’s also a :py:meth:`~PIL.Image.Image.show` method which saves an image to
 disk, and calls an external display utility.
 
 Image Processing

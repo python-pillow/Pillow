@@ -1,5 +1,5 @@
 #!/bin/sh
 
-pkg -y install python python-dev ndk-sysroot clang make \
-    libjpeg-turbo-dev 
+pkg install -y python ndk-sysroot clang make \
+    libjpeg-turbo
 

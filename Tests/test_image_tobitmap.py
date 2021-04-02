@@ -1,15 +1,16 @@
-from .helper import PillowTestCase, hopper, fromstring
+import pytest
+
+from .helper import assert_image_equal, fromstring, hopper
 
 
-class TestImageToBitmap(PillowTestCase):
+def test_sanity():
 
-    def test_sanity(self):
+    with pytest.raises(ValueError):
+        hopper().tobitmap()
 
-        self.assertRaises(ValueError, lambda: hopper().tobitmap())
+    im1 = hopper().convert("1")
 
-        im1 = hopper().convert("1")
+    bitmap = im1.tobitmap()
 
-        bitmap = im1.tobitmap()
-
-        self.assertIsInstance(bitmap, bytes)
-        self.assert_image_equal(im1, fromstring(bitmap))
+    assert isinstance(bitmap, bytes)
+    assert_image_equal(im1, fromstring(bitmap))

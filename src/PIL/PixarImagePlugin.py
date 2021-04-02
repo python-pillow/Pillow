@@ -22,13 +22,9 @@
 from . import Image, ImageFile
 from ._binary import i16le as i16
 
-# __version__ is deprecated and will be removed in a future version. Use
-# PIL.__version__ instead.
-__version__ = "0.1"
-
-
 #
 # helpers
+
 
 def _accept(prefix):
     return prefix[:4] == b"\200\350\000\000"
@@ -36,6 +32,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for PIXAR raster images.
+
 
 class PixarImageFile(ImageFile.ImageFile):
 
@@ -46,23 +43,23 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # assuming a 4-byte magic label
         s = self.fp.read(4)
-        if s != b"\200\350\000\000":
+        if not _accept(s):
             raise SyntaxError("not a PIXAR file")
 
         # read rest of header
         s = s + self.fp.read(508)
 
-        self._size = i16(s[418:420]), i16(s[416:418])
+        self._size = i16(s, 418), i16(s, 416)
 
         # get channel/depth descriptions
-        mode = i16(s[424:426]), i16(s[426:428])
+        mode = i16(s, 424), i16(s, 426)
 
         if mode == (14, 2):
             self.mode = "RGB"
         # FIXME: to be continued...
 
         # create tile descriptor (assuming "dumped")
-        self.tile = [("raw", (0, 0)+self.size, 1024, (self.mode, 0, 1))]
+        self.tile = [("raw", (0, 0) + self.size, 1024, (self.mode, 0, 1))]
 
 
 #

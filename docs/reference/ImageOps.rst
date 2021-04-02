@@ -1,20 +1,20 @@
 .. py:module:: PIL.ImageOps
 .. py:currentmodule:: PIL.ImageOps
 
-:py:mod:`ImageOps` Module
-==========================
+:py:mod:`~PIL.ImageOps` Module
+==============================
 
-The :py:mod:`ImageOps` module contains a number of ‘ready-made’ image
+The :py:mod:`~PIL.ImageOps` module contains a number of ‘ready-made’ image
 processing operations. This module is somewhat experimental, and most operators
 only work on L and RGB images.
-
-Only bug fixes have been added since the Pillow fork.
 
 .. versionadded:: 1.1.3
 
 .. autofunction:: autocontrast
 .. autofunction:: colorize
+.. autofunction:: pad
 .. autofunction:: crop
+.. autofunction:: scale
 .. autofunction:: deform
 .. autofunction:: equalize
 .. autofunction:: expand
@@ -25,3 +25,4 @@ Only bug fixes have been added since the Pillow fork.
 .. autofunction:: mirror
 .. autofunction:: posterize
 .. autofunction:: solarize
+.. autofunction:: exif_transpose

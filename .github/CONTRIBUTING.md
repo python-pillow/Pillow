@@ -9,15 +9,16 @@ Please send a pull request to the master branch. Please include [documentation](
 - Fork the Pillow repository.
 - Create a branch from master.
 - Develop bug fixes, features, tests, etc.
-- Run the test suite on Python 2.7 and 3.x. You can enable [Travis CI](https://travis-ci.org/profile/) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Coveralls](https://coveralls.io/repos/new) to see if the changed code is covered by tests.
+- Run the test suite. You can enable GitHub Actions (https://github.com/MY-USERNAME/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/projects/new) on your repo to catch test failures prior to the pull request, and [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
 - Create a pull request to pull the changes from your branch to the Pillow master.
 
 ### Guidelines
 
 - Separate code commits from reformatting commits.
 - Provide tests for any newly added code.
-- Follow PEP8.
-- When committing only documentation changes please include [ci skip] in the commit message to avoid running tests on Travis-CI and AppVeyor.
+- Follow PEP 8.
+- When committing only documentation changes please include `[ci skip]` in the commit message to avoid running tests on AppVeyor.
+- Include [release notes](https://github.com/python-pillow/Pillow/tree/master/docs/releasenotes) as needed or appropriate with your bug fixes, feature additions and tests.
 
 ## Reporting Issues
 
@@ -34,6 +35,4 @@ The best reproductions are self-contained scripts with minimal dependencies. If 
 
 ## Security vulnerabilities
 
-To report sensitive vulnerability information, email security@python-pillow.org.
-
-If your organisation/employer is a distributor of Pillow and would like advance notification of security-related bugs, please let us know your preferred contact method.
+Please see our [security policy](https://github.com/python-pillow/Pillow/blob/master/.github/SECURITY.md).

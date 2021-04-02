@@ -1,16 +1,14 @@
-from .helper import PillowTestCase
 from PIL import Image
 
+from .helper import assert_image_equal_tofile, assert_image_similar
 
-class TestFileFtex(PillowTestCase):
 
-    def test_load_raw(self):
-        im = Image.open('Tests/images/ftex_uncompressed.ftu')
-        target = Image.open('Tests/images/ftex_uncompressed.png')
+def test_load_raw():
+    with Image.open("Tests/images/ftex_uncompressed.ftu") as im:
+        assert_image_equal_tofile(im, "Tests/images/ftex_uncompressed.png")
 
-        self.assert_image_equal(im, target)
 
-    def test_load_dxt1(self):
-        im = Image.open('Tests/images/ftex_dxt1.ftc')
-        target = Image.open('Tests/images/ftex_dxt1.png')
-        self.assert_image_similar(im, target.convert('RGBA'), 15)
+def test_load_dxt1():
+    with Image.open("Tests/images/ftex_dxt1.ftc") as im:
+        with Image.open("Tests/images/ftex_dxt1.png") as target:
+            assert_image_similar(im, target.convert("RGBA"), 15)

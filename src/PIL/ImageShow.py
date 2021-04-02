@@ -11,24 +11,27 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
-from __future__ import print_function
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from shlex import quote
 
 from PIL import Image
-import os
-import sys
-import subprocess
-import tempfile
-
-if sys.version_info.major >= 3:
-    from shlex import quote
-else:
-    from pipes import quote
 
 _viewers = []
 
 
 def register(viewer, order=1):
+    """
+    The :py:func:`register` function is used to register additional viewers.
+
+    :param viewer: The viewer to be registered.
+    :param order:
+        Zero or a negative integer to prepend this viewer to the list,
+        a positive integer to append it.
+    """
     try:
         if issubclass(viewer, Viewer):
             viewer = viewer()
@@ -36,7 +39,7 @@ def register(viewer, order=1):
         pass  # raised if viewer wasn't a class
     if order > 0:
         _viewers.append(viewer)
-    elif order < 0:
+    else:
         _viewers.insert(0, viewer)
 
 
@@ -45,9 +48,9 @@ def show(image, title=None, **options):
     Display a given image.
 
     :param image: An image object.
-    :param title: Optional title.  Not all viewers can display the title.
+    :param title: Optional title. Not all viewers can display the title.
     :param \**options: Additional viewer options.
-    :returns: True if a suitable viewer was found, false otherwise.
+    :returns: ``True`` if a suitable viewer was found, ``False`` otherwise.
     """
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
@@ -55,164 +58,200 @@ def show(image, title=None, **options):
     return 0
 
 
-class Viewer(object):
+class Viewer:
     """Base class for viewers."""
 
     # main api
 
     def show(self, image, **options):
+        """
+        The main function for displaying an image.
+        Converts the given image to the target format and displays it.
+        """
 
-        # save temporary image to disk
-        if image.mode[:4] == "I;16":
-            # @PIL88 @PIL101
-            # "I;16" isn't an 'official' mode, but we still want to
-            # provide a simple way to show 16-bit images.
-            base = "L"
-            # FIXME: auto-contrast if max() > 255?
-        else:
+        if not (
+            image.mode in ("1", "RGBA")
+            or (self.format == "PNG" and image.mode in ("I;16", "LA"))
+        ):
             base = Image.getmodebase(image.mode)
-        if base != image.mode and image.mode != "1" and image.mode != "RGBA":
-            image = image.convert(base)
+            if image.mode != base:
+                image = image.convert(base)
 
         return self.show_image(image, **options)
 
     # hook methods
 
     format = None
+    """The format to convert the image into."""
     options = {}
+    """Additional options used to convert the image."""
 
     def get_format(self, image):
-        """Return format name, or None to save as PGM/PPM"""
+        """Return format name, or ``None`` to save as PGM/PPM."""
         return self.format
 
     def get_command(self, file, **options):
+        """
+        Returns the command used to display the file.
+        Not implemented in the base class.
+        """
         raise NotImplementedError
 
     def save_image(self, image):
-        """Save to temporary file, and return filename"""
+        """Save to temporary file and return filename."""
         return image._dump(format=self.get_format(image), **self.options)
 
     def show_image(self, image, **options):
-        """Display given image"""
+        """Display the given image."""
         return self.show_file(self.save_image(image), **options)
 
     def show_file(self, file, **options):
-        """Display given file"""
+        """Display the given file."""
         os.system(self.get_command(file, **options))
         return 1
+
 
 # --------------------------------------------------------------------
 
 
+class WindowsViewer(Viewer):
+    """The default viewer on Windows is the default system application for PNG files."""
+
+    format = "PNG"
+    options = {"compress_level": 1}
+
+    def get_command(self, file, **options):
+        return (
+            f'start "Pillow" /WAIT "{file}" '
+            "&& ping -n 2 127.0.0.1 >NUL "
+            f'&& del /f "{file}"'
+        )
+
+
 if sys.platform == "win32":
-
-    class WindowsViewer(Viewer):
-        format = "BMP"
-
-        def get_command(self, file, **options):
-            return ('start "Pillow" /WAIT "%s" '
-                    '&& ping -n 2 127.0.0.1 >NUL '
-                    '&& del /f "%s"' % (file, file))
-
     register(WindowsViewer)
 
-elif sys.platform == "darwin":
 
-    class MacViewer(Viewer):
-        format = "PNG"
-        options = {'compress_level': 1}
+class MacViewer(Viewer):
+    """The default viewer on MacOS using ``Preview.app``."""
 
-        def get_command(self, file, **options):
-            # on darwin open returns immediately resulting in the temp
-            # file removal while app is opening
-            command = "open -a /Applications/Preview.app"
-            command = "(%s %s; sleep 20; rm -f %s)&" % (command, quote(file),
-                                                        quote(file))
-            return command
+    format = "PNG"
+    options = {"compress_level": 1}
 
-        def show_file(self, file, **options):
-            """Display given file"""
-            fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, 'w') as f:
-                f.write(file)
-            with open(path, "r") as f:
-                subprocess.Popen([
-                    'im=$(cat);'
-                    'open -a /Applications/Preview.app $im;'
-                    'sleep 20;'
-                    'rm -f $im'
-                ], shell=True, stdin=f)
-            os.remove(path)
-            return 1
+    def get_command(self, file, **options):
+        # on darwin open returns immediately resulting in the temp
+        # file removal while app is opening
+        command = "open -a Preview.app"
+        command = f"({command} {quote(file)}; sleep 20; rm -f {quote(file)})&"
+        return command
 
+    def show_file(self, file, **options):
+        """Display given file"""
+        fd, path = tempfile.mkstemp()
+        with os.fdopen(fd, "w") as f:
+            f.write(file)
+        with open(path) as f:
+            subprocess.Popen(
+                ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
+                shell=True,
+                stdin=f,
+            )
+        os.remove(path)
+        return 1
+
+
+if sys.platform == "darwin":
     register(MacViewer)
 
-else:
 
-    # unixoids
+class UnixViewer(Viewer):
+    format = "PNG"
+    options = {"compress_level": 1}
 
-    def which(executable):
-        path = os.environ.get("PATH")
-        if not path:
-            return None
-        for dirname in path.split(os.pathsep):
-            filename = os.path.join(dirname, executable)
-            if os.path.isfile(filename) and os.access(filename, os.X_OK):
-                return filename
-        return None
+    def get_command(self, file, **options):
+        command = self.get_command_ex(file, **options)[0]
+        return f"({command} {quote(file)}; rm -f {quote(file)})&"
 
-    class UnixViewer(Viewer):
-        format = "PNG"
-        options = {'compress_level': 1}
-
-        def get_command(self, file, **options):
+    def show_file(self, file, **options):
+        """Display given file"""
+        fd, path = tempfile.mkstemp()
+        with os.fdopen(fd, "w") as f:
+            f.write(file)
+        with open(path) as f:
             command = self.get_command_ex(file, **options)[0]
-            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+            subprocess.Popen(
+                ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
+            )
+        os.remove(path)
+        return 1
 
-        def show_file(self, file, **options):
-            """Display given file"""
-            fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, 'w') as f:
-                f.write(file)
-            with open(path, "r") as f:
-                command = self.get_command_ex(file, **options)[0]
-                subprocess.Popen([
-                    'im=$(cat);' +
-                    command+' $im;'
-                    'rm -f $im'
-                ], shell=True, stdin=f)
-            os.remove(path)
-            return 1
 
-    # implementations
+class DisplayViewer(UnixViewer):
+    """The ImageMagick ``display`` command."""
 
-    class DisplayViewer(UnixViewer):
-        def get_command_ex(self, file, **options):
-            command = executable = "display"
-            return command, executable
+    def get_command_ex(self, file, **options):
+        command = executable = "display"
+        return command, executable
 
-    if which("display"):
+
+class GmDisplayViewer(UnixViewer):
+    """The GraphicsMagick ``gm display`` command."""
+
+    def get_command_ex(self, file, **options):
+        executable = "gm"
+        command = "gm display"
+        return command, executable
+
+
+class EogViewer(UnixViewer):
+    """The GNOME Image Viewer ``eog`` command."""
+
+    def get_command_ex(self, file, **options):
+        command = executable = "eog"
+        return command, executable
+
+
+class XVViewer(UnixViewer):
+    """
+    The X Viewer ``xv`` command.
+    This viewer supports the ``title`` parameter.
+    """
+
+    def get_command_ex(self, file, title=None, **options):
+        # note: xv is pretty outdated.  most modern systems have
+        # imagemagick's display command instead.
+        command = executable = "xv"
+        if title:
+            command += f" -name {quote(title)}"
+        return command, executable
+
+
+if sys.platform not in ("win32", "darwin"):  # unixoids
+    if shutil.which("display"):
         register(DisplayViewer)
-
-    class EogViewer(UnixViewer):
-        def get_command_ex(self, file, **options):
-            command = executable = "eog"
-            return command, executable
-
-    if which("eog"):
+    if shutil.which("gm"):
+        register(GmDisplayViewer)
+    if shutil.which("eog"):
         register(EogViewer)
-
-    class XVViewer(UnixViewer):
-        def get_command_ex(self, file, title=None, **options):
-            # note: xv is pretty outdated.  most modern systems have
-            # imagemagick's display command instead.
-            command = executable = "xv"
-            if title:
-                command += " -name %s" % quote(title)
-            return command, executable
-
-    if which("xv"):
+    if shutil.which("xv"):
         register(XVViewer)
+
+
+class IPythonViewer(Viewer):
+    """The viewer for IPython frontends."""
+
+    def show_image(self, image, **options):
+        ipython_display(image)
+        return 1
+
+
+try:
+    from IPython.display import display as ipython_display
+except ImportError:
+    pass
+else:
+    register(IPythonViewer)
+
 
 if __name__ == "__main__":
 
@@ -220,4 +259,5 @@ if __name__ == "__main__":
         print("Syntax: python ImageShow.py imagefile [title]")
         sys.exit()
 
-    print(show(Image.open(sys.argv[1]), *sys.argv[2:]))
+    with Image.open(sys.argv[1]) as im:
+        print(show(im, *sys.argv[2:]))

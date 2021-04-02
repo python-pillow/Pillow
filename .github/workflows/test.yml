@@ -1,0 +1,124 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          "ubuntu-latest",
+          "macOS-latest",
+        ]
+        python-version: [
+          "pypy-3.7",
+          "pypy-3.6",
+          "3.10-dev",
+          "3.9",
+          "3.8",
+          "3.7",
+          "3.6",
+        ]
+        include:
+        - python-version: "3.6"
+          PYTHONOPTIMIZE: 1
+        - python-version: "3.7"
+          PYTHONOPTIMIZE: 2
+        # Include new variables for Codecov
+        - os: ubuntu-latest
+          codecov-flag: GHA_Ubuntu
+        - os: macOS-latest
+          codecov-flag: GHA_macOS
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(python3 -m pip cache dir)"
+
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key:
+          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{ matrix.python-version }}-
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Install Linux dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Install macOS dependencies
+      if: startsWith(matrix.os, 'macOS')
+      run: |
+        .github/workflows/macos-install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Build
+      run: |
+        .ci/build.sh
+
+    - name: Test
+      run: |
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+        else
+          .ci/test.sh
+        fi
+      env:
+        PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
+
+    - name: Prepare to upload errors
+      if: failure()
+      run: |
+        mkdir -p Tests/errors
+
+    - name: Upload errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
+    - name: Docs
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
+      run: |
+        python3 -m pip install sphinx-issues sphinx-removed-in sphinx-rtd-theme
+        make doccheck
+
+    - name: After success
+      run: |
+        .ci/after_success.sh
+
+    - name: Upload coverage
+      run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}
+      env:
+        CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Test Successful
+    steps:
+      - name: Success
+        run: echo Test Successful

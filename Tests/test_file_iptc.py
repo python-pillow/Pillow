@@ -1,71 +1,71 @@
-from .helper import PillowTestCase, hopper
+import sys
+from io import StringIO
 
 from PIL import Image, IptcImagePlugin
+
+from .helper import hopper
 
 TEST_FILE = "Tests/images/iptc.jpg"
 
 
-class TestFileIptc(PillowTestCase):
-
-    def test_getiptcinfo_jpg_none(self):
-        # Arrange
-        im = hopper()
+def test_getiptcinfo_jpg_none():
+    # Arrange
+    with hopper() as im:
 
         # Act
         iptc = IptcImagePlugin.getiptcinfo(im)
 
-        # Assert
-        self.assertIsNone(iptc)
+    # Assert
+    assert iptc is None
 
-    def test_getiptcinfo_jpg_found(self):
-        # Arrange
-        im = Image.open(TEST_FILE)
 
-        # Act
-        iptc = IptcImagePlugin.getiptcinfo(im)
-
-        # Assert
-        self.assertIsInstance(iptc, dict)
-        self.assertEqual(iptc[(2, 90)], b"Budapest")
-        self.assertEqual(iptc[(2, 101)], b"Hungary")
-
-    def test_getiptcinfo_tiff_none(self):
-        # Arrange
-        im = Image.open("Tests/images/hopper.tif")
+def test_getiptcinfo_jpg_found():
+    # Arrange
+    with Image.open(TEST_FILE) as im:
 
         # Act
         iptc = IptcImagePlugin.getiptcinfo(im)
 
-        # Assert
-        self.assertIsNone(iptc)
+    # Assert
+    assert isinstance(iptc, dict)
+    assert iptc[(2, 90)] == b"Budapest"
+    assert iptc[(2, 101)] == b"Hungary"
 
-    def test_i(self):
-        # Arrange
-        c = b"a"
 
-        # Act
-        ret = IptcImagePlugin.i(c)
-
-        # Assert
-        self.assertEqual(ret, 97)
-
-    def test_dump(self):
-        # Arrange
-        c = b"abc"
-        # Temporarily redirect stdout
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from io import StringIO
-        import sys
-        old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
+def test_getiptcinfo_tiff_none():
+    # Arrange
+    with Image.open("Tests/images/hopper.tif") as im:
 
         # Act
-        IptcImagePlugin.dump(c)
+        iptc = IptcImagePlugin.getiptcinfo(im)
 
-        # Reset stdout
-        sys.stdout = old_stdout
+    # Assert
+    assert iptc is None
 
-        # Assert
-        self.assertEqual(mystdout.getvalue(), "61 62 63 \n")
+
+def test_i():
+    # Arrange
+    c = b"a"
+
+    # Act
+    ret = IptcImagePlugin.i(c)
+
+    # Assert
+    assert ret == 97
+
+
+def test_dump():
+    # Arrange
+    c = b"abc"
+    # Temporarily redirect stdout
+    old_stdout = sys.stdout
+    sys.stdout = mystdout = StringIO()
+
+    # Act
+    IptcImagePlugin.dump(c)
+
+    # Reset stdout
+    sys.stdout = old_stdout
+
+    # Assert
+    assert mystdout.getvalue() == "61 62 63 \n"

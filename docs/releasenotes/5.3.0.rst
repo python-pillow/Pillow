@@ -34,7 +34,7 @@ Curved joints for line sequences
 ``ImageDraw.Draw.line`` draws a line, or lines, between points. Previously,
 when multiple points are given, for a larger ``width``, the joints between
 these lines looked unsightly. There is now an additional optional argument,
-``joint``, defaulting to ``None``. When it is set to ``curved``, the joints
+``joint``, defaulting to :data:`None`. When it is set to ``curved``, the joints
 between the lines will become rounded.
 
 ImageOps.colorize

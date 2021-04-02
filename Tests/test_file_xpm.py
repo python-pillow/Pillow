@@ -1,35 +1,37 @@
-from .helper import PillowTestCase, hopper
+import pytest
 
 from PIL import Image, XpmImagePlugin
+
+from .helper import assert_image_similar, hopper
 
 TEST_FILE = "Tests/images/hopper.xpm"
 
 
-class TestFileXpm(PillowTestCase):
-
-    def test_sanity(self):
-        im = Image.open(TEST_FILE)
+def test_sanity():
+    with Image.open(TEST_FILE) as im:
         im.load()
-        self.assertEqual(im.mode, "P")
-        self.assertEqual(im.size, (128, 128))
-        self.assertEqual(im.format, "XPM")
+        assert im.mode == "P"
+        assert im.size == (128, 128)
+        assert im.format == "XPM"
 
         # large error due to quantization->44 colors.
-        self.assert_image_similar(im.convert('RGB'), hopper('RGB'), 60)
+        assert_image_similar(im.convert("RGB"), hopper("RGB"), 60)
 
-    def test_invalid_file(self):
-        invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError,
-                          XpmImagePlugin.XpmImageFile, invalid_file)
+def test_invalid_file():
+    invalid_file = "Tests/images/flower.jpg"
 
-    def test_load_read(self):
-        # Arrange
-        im = Image.open(TEST_FILE)
+    with pytest.raises(SyntaxError):
+        XpmImagePlugin.XpmImageFile(invalid_file)
+
+
+def test_load_read():
+    # Arrange
+    with Image.open(TEST_FILE) as im:
         dummy_bytes = 1
 
         # Act
         data = im.load_read(dummy_bytes)
 
-        # Assert
-        self.assertEqual(len(data), 16384)
+    # Assert
+    assert len(data) == 16384

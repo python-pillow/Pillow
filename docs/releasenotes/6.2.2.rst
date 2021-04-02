@@ -1,0 +1,18 @@
+6.2.2
+-----
+
+Security
+========
+
+This release addresses several security problems.
+
+:cve:`CVE-2019-19911` is regarding FPX images. If an image reports that it has a large
+number of bands, a large amount of resources will be used when trying to process the
+image. This is fixed by limiting the number of bands to those usable by Pillow.
+
+Buffer overruns were found when processing an SGI (:cve:`CVE-2020-5311`),
+PCX (:cve:`CVE-2020-5312`) or FLI image (:cve:`CVE-2020-5313`). Checks have been added
+to prevent this.
+
+:cve:`CVE-2020-5310`: Overflow checks have been added when calculating the size of a
+memory block to be reallocated in the processing of a TIFF image.

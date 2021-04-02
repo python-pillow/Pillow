@@ -1,0 +1,287 @@
+name: Test Windows
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-2019
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["pypy-3.6", "pypy-3.7", "3.6", "3.7", "3.8", "3.9", "3.10-dev"]
+        architecture: ["x86", "x64"]
+        include:
+          - architecture: "x86"
+            platform-vcvars: "x86"
+            platform-msbuild: "Win32"
+          - architecture: "x64"
+            platform-vcvars: "x86_amd64"
+            platform-msbuild: "x64"
+        exclude:
+          # PyPy does not support 64-bit on Windows
+          - python-version: "pypy-3.6"
+            architecture: "x64"
+          - python-version: "pypy-3.7"
+            architecture: "x64"
+    timeout-minutes: 30
+
+    name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+
+    steps:
+    - name: Checkout Pillow
+      uses: actions/checkout@v2
+
+    - name: Checkout cached dependencies
+      uses: actions/checkout@v2
+      with:
+        repository: python-pillow/pillow-depends
+        path: winbuild\depends
+
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key:
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-${{ hashFiles('**/.github/workflows/test-windows.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-
+          ${{ runner.os }}-${{ matrix.python-version }}-
+
+    # sets env: pythonLocation
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ matrix.architecture }}
+
+    - name: Print build system information
+      run: python .github/workflows/system-info.py
+
+    - name: python -m pip install wheel pytest pytest-cov pytest-timeout
+      run: python -m pip install wheel pytest pytest-cov pytest-timeout
+
+    # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
+    - name: Upgrade setuptools
+      if: "contains(matrix.python-version, '3.8') || contains(matrix.python-version, '3.9')"
+      run: python -m pip install -U "setuptools>=49.3.2"
+
+    - name: Install dependencies
+      id: install
+      run: |
+        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
+
+        winbuild\depends\gs9540w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs9.54.0\bin" >> $env:GITHUB_PATH
+
+        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+
+        # make cache key depend on VS version
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
+      shell: pwsh
+
+    - name: Cache build
+      id: build-cache
+      uses: actions/cache@v2
+      with:
+        path: winbuild\build
+        key:
+          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
+
+    - name: Prepare build
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: |
+        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation --srcdir
+      shell: pwsh
+
+    - name: Build dependencies / libjpeg-turbo
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libjpeg.cmd"
+
+    - name: Build dependencies / zlib
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_zlib.cmd"
+
+    - name: Build dependencies / LibTiff
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+
+    - name: Build dependencies / WebP
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libwebp.cmd"
+
+    # for FreeType CBDT/SBIX font support
+    - name: Build dependencies / libpng
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    - name: Build dependencies / FreeType
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_freetype.cmd"
+
+    - name: Build dependencies / LCMS2
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_lcms2.cmd"
+
+    - name: Build dependencies / OpenJPEG
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_openjpeg.cmd"
+
+    # GPL licensed
+    - name: Build dependencies / libimagequant
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libimagequant.cmd"
+
+    # Raqm dependencies
+    - name: Build dependencies / HarfBuzz
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
+
+    # Raqm dependencies
+    - name: Build dependencies / FriBidi
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_fribidi.cmd"
+
+    # trim ~150MB x 9
+    - name: Optimize build cache
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: rmdir /S /Q winbuild\build\src
+      shell: cmd
+
+    - name: Build Pillow
+      run: |
+        $FLAGS=""
+        if ('${{ github.event_name }}' -eq 'push') { $FLAGS="--disable-imagequant" }
+        & winbuild\build\build_pillow.cmd $FLAGS install
+        & $env:pythonLocation\python.exe selftest.py --installed
+      shell: pwsh
+
+    # failing with PyPy3
+    - name: Enable heap verification
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: "& 'C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x86\\gflags.exe' /p /enable $env:pythonLocation\\python.exe"
+
+    - name: Test Pillow
+      run: |
+        path %GITHUB_WORKSPACE%\\winbuild\\build\\bin;%PATH%
+        python.exe -m pytest -vx -W always --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+      shell: cmd
+
+    - name: Prepare to upload errors
+      if: failure()
+      run: |
+        mkdir -p Tests/errors
+      shell: bash
+
+    - name: Upload errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: errors
+        path: Tests/errors
+
+    - name: After success
+      run: |
+        .ci/after_success.sh
+      shell: pwsh
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        flags: GHA_Windows
+        name: ${{ runner.os }} Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+
+    - name: Build wheel
+      id: wheel
+      if: "github.event_name == 'push'"
+      run: |
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
+        winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
+      shell: cmd
+
+    - uses: actions/upload-artifact@v2
+      if: "github.event_name == 'push'"
+      with:
+        name: ${{ steps.wheel.outputs.dist }}
+        path: dist\*.whl
+
+  msys:
+    runs-on: windows-2019
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mingw: ["MINGW32", "MINGW64"]
+        include:
+          - mingw: "MINGW32"
+            name: "MSYS2 MinGW 32-bit"
+            package: "mingw-w64-i686"
+          - mingw: "MINGW64"
+            name: "MSYS2 MinGW 64-bit"
+            package: "mingw-w64-x86_64"
+
+    defaults:
+      run:
+        shell: bash.exe --login -eo pipefail "{0}"
+    env:
+      MSYSTEM: ${{ matrix.mingw }}
+      CHERE_INVOKING: 1
+
+    timeout-minutes: 30
+    name: ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up shell
+        run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Install Dependencies
+        run: |
+          pacman -S --noconfirm \
+              ${{ matrix.package }}-python3-cffi \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-python3-pip \
+              ${{ matrix.package }}-python3-pyqt5 \
+              ${{ matrix.package }}-python3-setuptools \
+              ${{ matrix.package }}-freetype \
+              ${{ matrix.package }}-ghostscript \
+              ${{ matrix.package }}-lcms2 \
+              ${{ matrix.package }}-libimagequant \
+              ${{ matrix.package }}-libjpeg-turbo \
+              ${{ matrix.package }}-libraqm \
+              ${{ matrix.package }}-libtiff \
+              ${{ matrix.package }}-libwebp \
+              ${{ matrix.package }}-openjpeg2 \
+              subversion
+
+          python3 -m pip install pyroma pytest pytest-cov
+
+          pushd depends && ./install_extra_test_images.sh && popd
+
+      - name: Build Pillow
+        run: CFLAGS="-coverage" python3 setup.py build_ext install
+
+      - name: Test Pillow
+        run: |
+          python3 selftest.py --installed
+          python3 -c "from PIL import Image"
+          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+
+      - name: Upload coverage
+        run: |
+          python3 -m pip install codecov
+          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
+        env:
+          CODECOV_NAME: ${{ matrix.name }}
+
+  success:
+    needs: [build, msys]
+    runs-on: ubuntu-latest
+    name: Windows Test Successful
+    steps:
+      - name: Success
+        run: echo Windows Test Successful

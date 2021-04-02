@@ -1,42 +1,47 @@
-from .helper import PillowTestCase, hopper
+import pytest
 
 from PIL import BufrStubImagePlugin, Image
+
+from .helper import hopper
 
 TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 
 
-class TestFileBufrStub(PillowTestCase):
-
-    def test_open(self):
-        # Act
-        im = Image.open(TEST_FILE)
+def test_open():
+    # Act
+    with Image.open(TEST_FILE) as im:
 
         # Assert
-        self.assertEqual(im.format, "BUFR")
+        assert im.format == "BUFR"
 
         # Dummy data from the stub
-        self.assertEqual(im.mode, "F")
-        self.assertEqual(im.size, (1, 1))
+        assert im.mode == "F"
+        assert im.size == (1, 1)
 
-    def test_invalid_file(self):
-        # Arrange
-        invalid_file = "Tests/images/flower.jpg"
 
-        # Act / Assert
-        self.assertRaises(SyntaxError,
-                          BufrStubImagePlugin.BufrStubImageFile, invalid_file)
+def test_invalid_file():
+    # Arrange
+    invalid_file = "Tests/images/flower.jpg"
 
-    def test_load(self):
-        # Arrange
-        im = Image.open(TEST_FILE)
+    # Act / Assert
+    with pytest.raises(SyntaxError):
+        BufrStubImagePlugin.BufrStubImageFile(invalid_file)
+
+
+def test_load():
+    # Arrange
+    with Image.open(TEST_FILE) as im:
 
         # Act / Assert: stub cannot load without an implemented handler
-        self.assertRaises(IOError, im.load)
+        with pytest.raises(OSError):
+            im.load()
 
-    def test_save(self):
-        # Arrange
-        im = hopper()
-        tmpfile = self.tempfile("temp.bufr")
 
-        # Act / Assert: stub cannot save without an implemented handler
-        self.assertRaises(IOError, im.save, tmpfile)
+def test_save(tmp_path):
+    # Arrange
+    im = hopper()
+    tmpfile = str(tmp_path / "temp.bufr")
+
+    # Act / Assert: stub cannot save without an implemented handler
+    with pytest.raises(OSError):
+        im.save(tmpfile)

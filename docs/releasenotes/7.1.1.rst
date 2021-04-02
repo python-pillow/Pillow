@@ -1,0 +1,25 @@
+7.1.1
+-----
+
+Fix regression seeking PNG files
+================================
+
+This fixes a regression introduced in 7.1.0 when adding support for APNG files when calling
+``seek`` and ``tell``:
+
+.. code-block:: pycon
+
+    >>> from PIL import Image
+    >>> with Image.open("Tests/images/hopper.png") as im:
+    ...     im.seek(0)
+    ...
+    Traceback (most recent call last):
+      File "<stdin>", line 2, in <module>
+      File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/PIL/PngImagePlugin.py", line 739, in seek
+        if not self._seek_check(frame):
+      File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/PIL/ImageFile.py", line 306, in _seek_check
+        return self.tell() != frame
+      File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/PIL/PngImagePlugin.py", line 827, in tell
+        return self.__frame
+    AttributeError: 'PngImageFile' object has no attribute '_PngImageFile__frame'
+    >>>

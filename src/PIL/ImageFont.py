@@ -25,16 +25,20 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
-from ._util import isDirectory, isPath, py3
+import base64
 import os
 import sys
+import warnings
+from io import BytesIO
+
+from . import Image, features
+from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
 LAYOUT_RAQM = 1
 
 
-class _imagingft_not_installed(object):
+class _imagingft_not_installed:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -62,13 +66,16 @@ except ImportError:
 # --------------------------------------------------------------------
 
 
-class ImageFont(object):
+class ImageFont:
     "PIL font wrapper"
 
     def _load_pilfont(self, filename):
 
         with open(filename, "rb") as fp:
+            image = None
             for ext in (".png", ".gif", ".pbm"):
+                if image:
+                    image.close()
                 try:
                     fullname = os.path.splitext(filename)[0] + ext
                     image = Image.open(fullname)
@@ -78,11 +85,14 @@ class ImageFont(object):
                     if image and image.mode in ("1", "L"):
                         break
             else:
-                raise IOError("cannot find glyph data file")
+                if image:
+                    image.close()
+                raise OSError("cannot find glyph data file")
 
             self.file = fullname
 
-            return self._load_pilfont_data(fp, image)
+            self._load_pilfont_data(fp, image)
+            image.close()
 
     def _load_pilfont_data(self, file, image):
 
@@ -98,7 +108,7 @@ class ImageFont(object):
             self.info.append(s)
 
         # read PILfont metrics
-        data = file.read(256*20)
+        data = file.read(256 * 20)
 
         # check image
         if image.mode not in ("1", "L"):
@@ -109,9 +119,33 @@ class ImageFont(object):
         self.font = Image.core.font(image.im, data)
 
     def getsize(self, text, *args, **kwargs):
+        """
+        Returns width and height (in pixels) of given text.
+
+        :param text: Text to measure.
+
+        :return: (width, height)
+        """
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
+        """
+        Create a bitmap for the text.
+
+        If the font uses antialiasing, the bitmap should have mode ``L`` and use a
+        maximum value of 255. Otherwise, it should have mode ``1``.
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+                     .. versionadded:: 1.1.5
+
+        :return: An internal PIL storage memory instance as defined by the
+                 :py:mod:`PIL.Image.core` interface module.
+        """
         return self.font.getmask(text, mode)
 
 
@@ -119,11 +153,11 @@ class ImageFont(object):
 # Wrapper for FreeType fonts.  Application code should use the
 # <b>truetype</b> factory function to create font objects.
 
-class FreeTypeFont(object):
+
+class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, font=None, size=10, index=0, encoding="",
-                 layout_engine=None):
+    def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
         # FIXME: use service provider instead
 
         self.path = font
@@ -131,64 +165,520 @@ class FreeTypeFont(object):
         self.index = index
         self.encoding = encoding
 
+        try:
+            from packaging.version import parse as parse_version
+        except ImportError:
+            pass
+        else:
+            freetype_version = parse_version(features.version_module("freetype2"))
+            if freetype_version < parse_version("2.8"):
+                warnings.warn(
+                    "Support for FreeType 2.7 is deprecated and will be removed"
+                    " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
+                    "or newer, preferably FreeType 2.10.4 which fixes "
+                    "CVE-2020-15999.",
+                    DeprecationWarning,
+                )
+
         if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
             layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
                 layout_engine = LAYOUT_RAQM
-        if layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
+        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
             layout_engine = LAYOUT_BASIC
 
         self.layout_engine = layout_engine
 
-        if isPath(font):
-            self.font = core.getfont(font, size, index, encoding,
-                                     layout_engine=layout_engine)
-        else:
-            self.font_bytes = font.read()
+        def load_from_bytes(f):
+            self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine)
+                "", size, index, encoding, self.font_bytes, layout_engine
+            )
+
+        if isPath(font):
+            if sys.platform == "win32":
+                font_bytes_path = font if isinstance(font, bytes) else font.encode()
+                try:
+                    font_bytes_path.decode("ascii")
+                except UnicodeDecodeError:
+                    # FreeType cannot load fonts with non-ASCII characters on Windows
+                    # So load it into memory first
+                    with open(font, "rb") as f:
+                        load_from_bytes(f)
+                    return
+            self.font = core.getfont(
+                font, size, index, encoding, layout_engine=layout_engine
+            )
+        else:
+            load_from_bytes(font)
 
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
         return text.split(split_character)
 
     def getname(self):
+        """
+        :return: A tuple of the font family (e.g. Helvetica) and the font style
+            (e.g. Bold)
+        """
         return self.font.family, self.font.style
 
     def getmetrics(self):
+        """
+        :return: A tuple of the font ascent (the distance from the baseline to
+            the highest outline point) and descent (the distance from the
+            baseline to the lowest outline point, a negative value)
+        """
         return self.font.ascent, self.font.descent
 
-    def getsize(self, text, direction=None, features=None):
-        size, offset = self.font.getsize(text, direction, features)
-        return (size[0] + offset[0], size[1] + offset[1])
+    def getlength(self, text, mode="", direction=None, features=None, language=None):
+        """
+        Returns length (in pixels with 1/64 precision) of given text when rendered
+        in font with provided direction, features, and language.
 
-    def getsize_multiline(self, text, direction=None,
-                          spacing=4, features=None):
+        This is the amount by which following text should be offset.
+        Text bounding box may extend past the length in some fonts,
+        e.g. when using italics or accents.
+
+        The result is returned as a float; it is a whole number if using basic layout.
+
+        Note that the sum of two lengths may not equal the length of a concatenated
+        string due to kerning. If you need to adjust for kerning, include the following
+        character and subtract its length.
+
+        For example, instead of
+
+        .. code-block:: python
+
+          hello = font.getlength("Hello")
+          world = font.getlength("World")
+          hello_world = hello + world  # not adjusted for kerning
+          assert hello_world == font.getlength("HelloWorld")  # may fail
+
+        use
+
+        .. code-block:: python
+
+          hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
+          world = font.getlength("World")
+          hello_world = hello + world  # adjusted for kerning
+          assert hello_world == font.getlength("HelloWorld")  # True
+
+        or disable kerning with (requires libraqm)
+
+        .. code-block:: python
+
+          hello = draw.textlength("Hello", font, features=["-kern"])
+          world = draw.textlength("World", font, features=["-kern"])
+          hello_world = hello + world  # kerning is disabled, no need to adjust
+          assert hello_world == draw.textlength("HelloWorld", font, features=["-kern"])
+
+        .. versionadded:: 8.0.0
+
+        :param text: Text to measure.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+        :return: Width for horizontal, height for vertical text.
+        """
+        return self.font.getlength(text, mode, direction, features, language) / 64
+
+    def getbbox(
+        self,
+        text,
+        mode="",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        anchor=None,
+    ):
+        """
+        Returns bounding box (in pixels) of given text relative to given anchor
+        when rendered in font with provided direction, features, and language.
+
+        Use :py:meth:`getlength()` to get the offset of following text with
+        1/64 pixel precision. The bounding box includes extra margins for
+        some fonts, e.g. italics or accents.
+
+        .. versionadded:: 8.0.0
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+        :param stroke_width: The width of the text stroke.
+
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+        """
+        size, offset = self.font.getsize(
+            text, mode, direction, features, language, anchor
+        )
+        left, top = offset[0] - stroke_width, offset[1] - stroke_width
+        width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
+        return left, top, left + width, top + height
+
+    def getsize(
+        self, text, direction=None, features=None, language=None, stroke_width=0
+    ):
+        """
+        Returns width and height (in pixels) of given text if rendered in font with
+        provided direction, features, and language.
+
+        Use :py:meth:`getlength()` to measure the offset of following text with
+        1/64 pixel precision.
+        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        .. note:: For historical reasons this function measures text height from
+            the ascender line instead of the top, see :ref:`text-anchors`.
+            If you wish to measure text height from the top, it is recommended
+            to use the bottom value of :meth:`getbbox` with ``anchor='lt'`` instead.
+
+        :param text: Text to measure.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
+        :return: (width, height)
+        """
+        # vertical offset is added for historical reasons
+        # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
+        size, offset = self.font.getsize(text, "L", direction, features, language)
+        return (
+            size[0] + stroke_width * 2,
+            size[1] + stroke_width * 2 + offset[1],
+        )
+
+    def getsize_multiline(
+        self,
+        text,
+        direction=None,
+        spacing=4,
+        features=None,
+        language=None,
+        stroke_width=0,
+    ):
+        """
+        Returns width and height (in pixels) of given text if rendered in font
+        with provided direction, features, and language, while respecting
+        newline characters.
+
+        :param text: Text to measure.
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+        :param spacing: The vertical gap between lines, defaulting to 4 pixels.
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
+        :return: (width, height)
+        """
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize('A')[1] + spacing
+        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
         for line in lines:
-            line_width, line_height = self.getsize(line, direction, features)
+            line_width, line_height = self.getsize(
+                line, direction, features, language, stroke_width
+            )
             max_width = max(max_width, line_width)
 
-        return max_width, len(lines)*line_spacing - spacing
+        return max_width, len(lines) * line_spacing - spacing
 
     def getoffset(self, text):
+        """
+        Returns the offset of given text. This is the gap between the
+        starting coordinate and the first marking. Note that this gap is
+        included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
+
+        :param text: Text to measure.
+
+        :return: A tuple of the x and y offset
+        """
         return self.font.getsize(text)[1]
 
-    def getmask(self, text, mode="", direction=None, features=None):
-        return self.getmask2(text, mode, direction=direction,
-                             features=features)[0]
+    def getmask(
+        self,
+        text,
+        mode="",
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        anchor=None,
+        ink=0,
+    ):
+        """
+        Create a bitmap for the text.
 
-    def getmask2(self, text, mode="", fill=Image.core.fill, direction=None,
-                 features=None, *args, **kwargs):
-        size, offset = self.font.getsize(text, direction, features)
-        im = fill("L", size, 0)
-        self.font.render(text, im.id, mode == "1", direction, features)
+        If the font uses antialiasing, the bitmap should have mode ``L`` and use a
+        maximum value of 255. If the font has embedded color data, the bitmap
+        should have mode ``RGBA``. Otherwise, it should have mode ``1``.
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+                     .. versionadded:: 1.1.5
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+                         .. versionadded:: 8.0.0
+
+        :param ink: Foreground ink for rendering in RGBA mode.
+
+                         .. versionadded:: 8.0.0
+
+        :return: An internal PIL storage memory instance as defined by the
+                 :py:mod:`PIL.Image.core` interface module.
+        """
+        return self.getmask2(
+            text,
+            mode,
+            direction=direction,
+            features=features,
+            language=language,
+            stroke_width=stroke_width,
+            anchor=anchor,
+            ink=ink,
+        )[0]
+
+    def getmask2(
+        self,
+        text,
+        mode="",
+        fill=Image.core.fill,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        anchor=None,
+        ink=0,
+        *args,
+        **kwargs,
+    ):
+        """
+        Create a bitmap for the text.
+
+        If the font uses antialiasing, the bitmap should have mode ``L`` and use a
+        maximum value of 255. If the font has embedded color data, the bitmap
+        should have mode ``RGBA``. Otherwise, it should have mode ``1``.
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+                     .. versionadded:: 1.1.5
+
+        :param direction: Direction of the text. It can be 'rtl' (right to
+                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
+                          Requires libraqm.
+
+                          .. versionadded:: 4.2.0
+
+        :param features: A list of OpenType font features to be used during text
+                         layout. This is usually used to turn on optional
+                         font features that are not enabled by default,
+                         for example 'dlig' or 'ss01', but can be also
+                         used to turn off default font features for
+                         example '-liga' to disable ligatures or '-kern'
+                         to disable kerning.  To get all supported
+                         features, see
+                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         Requires libraqm.
+
+                         .. versionadded:: 4.2.0
+
+        :param language: Language of the text. Different languages may use
+                         different glyph shapes or ligatures. This parameter tells
+                         the font which language the text is in, and to apply the
+                         correct substitutions as appropriate, if available.
+                         It should be a `BCP 47 language code
+                         <https://www.w3.org/International/articles/language-tags/>`_
+                         Requires libraqm.
+
+                         .. versionadded:: 6.0.0
+
+        :param stroke_width: The width of the text stroke.
+
+                         .. versionadded:: 6.2.0
+
+        :param anchor:  The text anchor alignment. Determines the relative location of
+                        the anchor to the text. The default alignment is top left.
+                        See :ref:`text-anchors` for valid values.
+
+                         .. versionadded:: 8.0.0
+
+        :param ink: Foreground ink for rendering in RGBA mode.
+
+                         .. versionadded:: 8.0.0
+
+        :return: A tuple of an internal PIL storage memory instance as defined by the
+                 :py:mod:`PIL.Image.core` interface module, and the text offset, the
+                 gap between the starting coordinate and the first marking
+        """
+        size, offset = self.font.getsize(
+            text, mode, direction, features, language, anchor
+        )
+        size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
+        offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
+        im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
+        self.font.render(
+            text, im.id, mode, direction, features, language, stroke_width, ink
+        )
         return im, offset
 
-    def font_variant(self, font=None, size=None, index=None, encoding=None,
-                     layout_engine=None):
+    def font_variant(
+        self, font=None, size=None, index=None, encoding=None, layout_engine=None
+    ):
         """
         Create a copy of this FreeTypeFont object,
         using any specified arguments to override the settings.
@@ -203,11 +693,64 @@ class FreeTypeFont(object):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine
+            layout_engine=layout_engine or self.layout_engine,
         )
 
+    def get_variation_names(self):
+        """
+        :returns: A list of the named styles in a variation font.
+        :exception OSError: If the font is not a variation font.
+        """
+        try:
+            names = self.font.getvarnames()
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+        return [name.replace(b"\x00", b"") for name in names]
 
-class TransposedFont(object):
+    def set_variation_by_name(self, name):
+        """
+        :param name: The name of the style.
+        :exception OSError: If the font is not a variation font.
+        """
+        names = self.get_variation_names()
+        if not isinstance(name, bytes):
+            name = name.encode()
+        index = names.index(name)
+
+        if index == getattr(self, "_last_variation_index", None):
+            # When the same name is set twice in a row,
+            # there is an 'unknown freetype error'
+            # https://savannah.nongnu.org/bugs/?56186
+            return
+        self._last_variation_index = index
+
+        self.font.setvarname(index)
+
+    def get_variation_axes(self):
+        """
+        :returns: A list of the axes in a variation font.
+        :exception OSError: If the font is not a variation font.
+        """
+        try:
+            axes = self.font.getvaraxes()
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+        for axis in axes:
+            axis["name"] = axis["name"].replace(b"\x00", b"")
+        return axes
+
+    def set_variation_by_axes(self, axes):
+        """
+        :param axes: A list of values for each axis.
+        :exception OSError: If the font is not a variation font.
+        """
+        try:
+            self.font.setvaraxes(axes)
+        except AttributeError as e:
+            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+
+
+class TransposedFont:
     "Wrapper for writing rotated or mirrored text"
 
     def __init__(self, font, orientation=None):
@@ -243,42 +786,74 @@ def load(filename):
 
     :param filename: Name of font file.
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
     f = ImageFont()
     f._load_pilfont(filename)
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="",
-             layout_engine=None):
+def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     """
     Load a TrueType or OpenType font from a file or file-like object,
     and create a font object.
     This function loads a font object from the given file or file-like
     object, and creates a font object for a font of the given size.
 
+    Pillow uses FreeType to open font files. If you are opening many fonts
+    simultaneously on Windows, be aware that Windows limits the number of files
+    that can be open in C at once to 512. If you approach that limit, an
+    ``OSError`` may be thrown, reporting that FreeType "cannot open resource".
+
     This function requires the _imagingft service.
 
     :param font: A filename or file-like object containing a TrueType font.
-                     Under Windows, if the file is not found in this filename,
-                     the loader also looks in Windows :file:`fonts/` directory.
+                 If the file is not found in this filename, the loader may also
+                 search in other directories, such as the :file:`fonts/`
+                 directory on Windows or :file:`/Library/Fonts/`,
+                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
+                 macOS.
+
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
-    :param encoding: Which font encoding to use (default is Unicode). Common
-                     encodings are "unic" (Unicode), "symb" (Microsoft
-                     Symbol), "ADOB" (Adobe Standard), "ADBE" (Adobe Expert),
-                     and "armn" (Apple Roman). See the FreeType documentation
-                     for more information.
+    :param encoding: Which font encoding to use (default is Unicode). Possible
+                     encodings include (see the FreeType documentation for more
+                     information):
+
+                     * "unic" (Unicode)
+                     * "symb" (Microsoft Symbol)
+                     * "ADOB" (Adobe Standard)
+                     * "ADBE" (Adobe Expert)
+                     * "ADBC" (Adobe Custom)
+                     * "armn" (Apple Roman)
+                     * "sjis" (Shift JIS)
+                     * "gb  " (PRC)
+                     * "big5"
+                     * "wans" (Extended Wansung)
+                     * "joha" (Johab)
+                     * "lat1" (Latin-1)
+
+                     This specifies the character set to use. It does not alter the
+                     encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     `ImageFont.LAYOUT_BASIC` or `ImageFont.LAYOUT_RAQM`.
+                     :data:`.ImageFont.LAYOUT_BASIC` or :data:`.ImageFont.LAYOUT_RAQM`.
+
+                     You can check support for Raqm layout using
+                     :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
+
+                     .. versionadded:: 4.2.0
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
 
-    try:
+    def freetype(font):
         return FreeTypeFont(font, size, index, encoding, layout_engine)
-    except IOError:
+
+    try:
+        return freetype(font)
+    except OSError:
+        if not isPath(font):
+            raise
         ttf_filename = os.path.basename(font)
 
         dirs = []
@@ -289,17 +864,19 @@ def truetype(font=None, size=10, index=0, encoding="",
             windir = os.environ.get("WINDIR")
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
-        elif sys.platform in ('linux', 'linux2'):
+        elif sys.platform in ("linux", "linux2"):
             lindirs = os.environ.get("XDG_DATA_DIRS", "")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
-                lindirs = '/usr/share'
-            dirs += [os.path.join(lindir, "fonts")
-                     for lindir in lindirs.split(":")]
-        elif sys.platform == 'darwin':
-            dirs += ['/Library/Fonts', '/System/Library/Fonts',
-                     os.path.expanduser('~/Library/Fonts')]
+                lindirs = "/usr/share"
+            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+        elif sys.platform == "darwin":
+            dirs += [
+                "/Library/Fonts",
+                "/System/Library/Fonts",
+                os.path.expanduser("~/Library/Fonts"),
+            ]
 
         ext = os.path.splitext(ttf_filename)[1]
         first_font_with_a_different_extension = None
@@ -307,21 +884,15 @@ def truetype(font=None, size=10, index=0, encoding="",
             for walkroot, walkdir, walkfilenames in os.walk(directory):
                 for walkfilename in walkfilenames:
                     if ext and walkfilename == ttf_filename:
+                        return freetype(os.path.join(walkroot, walkfilename))
+                    elif not ext and os.path.splitext(walkfilename)[0] == ttf_filename:
                         fontpath = os.path.join(walkroot, walkfilename)
-                        return FreeTypeFont(fontpath, size, index,
-                                            encoding, layout_engine)
-                    elif (not ext and
-                          os.path.splitext(walkfilename)[0] == ttf_filename):
-                        fontpath = os.path.join(walkroot, walkfilename)
-                        if os.path.splitext(fontpath)[1] == '.ttf':
-                            return FreeTypeFont(fontpath, size, index,
-                                                encoding, layout_engine)
-                        if not ext \
-                           and first_font_with_a_different_extension is None:
+                        if os.path.splitext(fontpath)[1] == ".ttf":
+                            return freetype(fontpath)
+                        if not ext and first_font_with_a_different_extension is None:
                             first_font_with_a_different_extension = fontpath
         if first_font_with_a_different_extension:
-            return FreeTypeFont(first_font_with_a_different_extension, size,
-                                index, encoding, layout_engine)
+            return freetype(first_font_with_a_different_extension)
         raise
 
 
@@ -332,20 +903,17 @@ def load_path(filename):
 
     :param filename: Name of font file.
     :return: A font object.
-    :exception IOError: If the file could not be read.
+    :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
         if isDirectory(directory):
             if not isinstance(filename, str):
-                if py3:
-                    filename = filename.decode("utf-8")
-                else:
-                    filename = filename.encode("utf-8")
+                filename = filename.decode("utf-8")
             try:
                 return load(os.path.join(directory, filename))
-            except IOError:
+            except OSError:
                 pass
-    raise IOError("cannot find font file")
+    raise OSError("cannot find font file")
 
 
 def load_default():
@@ -355,12 +923,12 @@ def load_default():
 
     :return: A font object.
     """
-    from io import BytesIO
-    import base64
     f = ImageFont()
     f._load_pilfont_data(
         # courB08
-        BytesIO(base64.b64decode(b'''
+        BytesIO(
+            base64.b64decode(
+                b"""
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -452,7 +1020,13 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-''')), Image.open(BytesIO(base64.b64decode(b'''
+"""
+            )
+        ),
+        Image.open(
+            BytesIO(
+                base64.b64decode(
+                    b"""
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -476,5 +1050,9 @@ evta/58PTEWzr21hufPjA8N+qlnBwAAAAAD//2JiWLci5v1+HmFXDqcnULE/MxgYGBj+f6CaJQAA
 AAD//2Ji2FrkY3iYpYC5qDeGgeEMAwPDvwQBBoYvcTwOVLMEAAAA//9isDBgkP///0EOg9z35v//
 Gc/eeW7BwPj5+QGZhANUswMAAAD//2JgqGBgYGBgqEMXlvhMPUsAAAAA//8iYDd1AAAAAP//AwDR
 w7IkEbzhVQAAAABJRU5ErkJggg==
-'''))))
+"""
+                )
+            )
+        ),
+    )
     return f

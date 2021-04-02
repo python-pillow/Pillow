@@ -25,13 +25,6 @@ Internal Limits
   is smaller than 2GB, as calculated by ``y*stride`` (so 2Gpx for 'L'
   images, and .5Gpx for 'RGB'
 
-* Any call to internal python size functions for buffers or strings
-  are currently returned as int32, not py_ssize_t. This limits the
-  maximum buffer to 2GB for operations like frombytes and frombuffer.
-
-* This also limits the size of buffers converted using a
-  decoder. (decode.c:127)
-
 Format Size Limits
 ==================
 

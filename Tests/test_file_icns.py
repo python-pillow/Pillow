@@ -1,123 +1,150 @@
-from .helper import unittest, PillowTestCase
-
-from PIL import Image, IcnsImagePlugin
-
 import io
 import sys
+
+import pytest
+
+from PIL import IcnsImagePlugin, Image, features
+
+from .helper import assert_image_equal, assert_image_similar_tofile
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
 
-enable_jpeg2k = hasattr(Image.core, 'jp2klib_version')
+ENABLE_JPEG2K = features.check_codec("jpg_2000")
 
 
-class TestFileIcns(PillowTestCase):
-
-    def test_sanity(self):
-        # Loading this icon by default should result in the largest size
-        # (512x512@2x) being loaded
-        im = Image.open(TEST_FILE)
+def test_sanity():
+    # Loading this icon by default should result in the largest size
+    # (512x512@2x) being loaded
+    with Image.open(TEST_FILE) as im:
 
         # Assert that there is no unclosed file warning
-        self.assert_warning(None, im.load)
+        with pytest.warns(None) as record:
+            im.load()
+        assert not record
 
-        self.assertEqual(im.mode, "RGBA")
-        self.assertEqual(im.size, (1024, 1024))
-        self.assertEqual(im.format, "ICNS")
+        assert im.mode == "RGBA"
+        assert im.size == (1024, 1024)
+        assert im.format == "ICNS"
 
-    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
-    def test_save(self):
-        im = Image.open(TEST_FILE)
 
-        temp_file = self.tempfile("temp.icns")
+@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
+def test_save(tmp_path):
+    temp_file = str(tmp_path / "temp.icns")
+
+    with Image.open(TEST_FILE) as im:
         im.save(temp_file)
 
-        reread = Image.open(temp_file)
+    with Image.open(temp_file) as reread:
+        assert reread.mode == "RGBA"
+        assert reread.size == (1024, 1024)
+        assert reread.format == "ICNS"
 
-        self.assertEqual(reread.mode, "RGBA")
-        self.assertEqual(reread.size, (1024, 1024))
-        self.assertEqual(reread.format, "ICNS")
 
-    @unittest.skipIf(sys.platform != 'darwin', "requires macOS")
-    def test_save_append_images(self):
-        im = Image.open(TEST_FILE)
+@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
+def test_save_append_images(tmp_path):
+    temp_file = str(tmp_path / "temp.icns")
+    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 
-        temp_file = self.tempfile("temp.icns")
-        provided_im = Image.new('RGBA', (32, 32), (255, 0, 0, 128))
+    with Image.open(TEST_FILE) as im:
         im.save(temp_file, append_images=[provided_im])
 
-        reread = Image.open(temp_file)
-        self.assert_image_similar(reread, im, 1)
+        assert_image_similar_tofile(im, temp_file, 1)
 
-        reread = Image.open(temp_file)
-        reread.size = (16, 16, 2)
-        reread.load()
-        self.assert_image_equal(reread, provided_im)
+        with Image.open(temp_file) as reread:
+            reread.size = (16, 16, 2)
+            reread.load()
+            assert_image_equal(reread, provided_im)
 
-    def test_sizes(self):
-        # Check that we can load all of the sizes, and that the final pixel
-        # dimensions are as expected
-        im = Image.open(TEST_FILE)
-        for w, h, r in im.info['sizes']:
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
+def test_save_fp():
+    fp = io.BytesIO()
+
+    with Image.open(TEST_FILE) as im:
+        im.save(fp, format="ICNS")
+
+    with Image.open(fp) as reread:
+        assert reread.mode == "RGBA"
+        assert reread.size == (1024, 1024)
+        assert reread.format == "ICNS"
+
+
+def test_sizes():
+    # Check that we can load all of the sizes, and that the final pixel
+    # dimensions are as expected
+    with Image.open(TEST_FILE) as im:
+        for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im2 = Image.open(TEST_FILE)
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, 'RGBA')
-            self.assertEqual(im2.size, (wr, hr))
+            im.size = (w, h, r)
+            im.load()
+            assert im.mode == "RGBA"
+            assert im.size == (wr, hr)
 
         # Check that we cannot load an incorrect size
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im.size = (1, 1)
 
-    def test_older_icon(self):
-        # This icon was made with Icon Composer rather than iconutil; it still
-        # uses PNG rather than JP2, however (since it was made on 10.9).
-        im = Image.open('Tests/images/pillow2.icns')
-        for w, h, r in im.info['sizes']:
+
+def test_older_icon():
+    # This icon was made with Icon Composer rather than iconutil; it still
+    # uses PNG rather than JP2, however (since it was made on 10.9).
+    with Image.open("Tests/images/pillow2.icns") as im:
+        for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im2 = Image.open('Tests/images/pillow2.icns')
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, 'RGBA')
-            self.assertEqual(im2.size, (wr, hr))
+            with Image.open("Tests/images/pillow2.icns") as im2:
+                im2.size = (w, h, r)
+                im2.load()
+                assert im2.mode == "RGBA"
+                assert im2.size == (wr, hr)
 
-    def test_jp2_icon(self):
-        # This icon was made by using Uli Kusterer's oldiconutil to replace
-        # the PNG images with JPEG 2000 ones.  The advantage of doing this is
-        # that OS X 10.5 supports JPEG 2000 but not PNG; some commercial
-        # software therefore does just this.
 
-        # (oldiconutil is here: https://github.com/uliwitness/oldiconutil)
+def test_jp2_icon():
+    # This icon was made by using Uli Kusterer's oldiconutil to replace
+    # the PNG images with JPEG 2000 ones.  The advantage of doing this is
+    # that OS X 10.5 supports JPEG 2000 but not PNG; some commercial
+    # software therefore does just this.
 
-        if not enable_jpeg2k:
-            return
+    # (oldiconutil is here: https://github.com/uliwitness/oldiconutil)
 
-        im = Image.open('Tests/images/pillow3.icns')
-        for w, h, r in im.info['sizes']:
+    if not ENABLE_JPEG2K:
+        return
+
+    with Image.open("Tests/images/pillow3.icns") as im:
+        for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im2 = Image.open('Tests/images/pillow3.icns')
-            im2.size = (w, h, r)
-            im2.load()
-            self.assertEqual(im2.mode, 'RGBA')
-            self.assertEqual(im2.size, (wr, hr))
+            with Image.open("Tests/images/pillow3.icns") as im2:
+                im2.size = (w, h, r)
+                im2.load()
+                assert im2.mode == "RGBA"
+                assert im2.size == (wr, hr)
 
-    def test_getimage(self):
-        with open(TEST_FILE, 'rb') as fp:
-            icns_file = IcnsImagePlugin.IcnsFile(fp)
 
-            im = icns_file.getimage()
-            self.assertEqual(im.mode, "RGBA")
-            self.assertEqual(im.size, (1024, 1024))
+def test_getimage():
+    with open(TEST_FILE, "rb") as fp:
+        icns_file = IcnsImagePlugin.IcnsFile(fp)
 
-            im = icns_file.getimage((512, 512))
-            self.assertEqual(im.mode, "RGBA")
-            self.assertEqual(im.size, (512, 512))
+        im = icns_file.getimage()
+        assert im.mode == "RGBA"
+        assert im.size == (1024, 1024)
 
-    def test_not_an_icns_file(self):
-        with io.BytesIO(b'invalid\n') as fp:
-            self.assertRaises(SyntaxError,
-                              IcnsImagePlugin.IcnsFile, fp)
+        im = icns_file.getimage((512, 512))
+        assert im.mode == "RGBA"
+        assert im.size == (512, 512)
+
+
+def test_not_an_icns_file():
+    with io.BytesIO(b"invalid\n") as fp:
+        with pytest.raises(SyntaxError):
+            IcnsImagePlugin.IcnsFile(fp)
+
+
+def test_icns_decompression_bomb():
+    with Image.open(
+        "Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns"
+    ) as im:
+        with pytest.raises(Image.DecompressionBombError):
+            im.load()

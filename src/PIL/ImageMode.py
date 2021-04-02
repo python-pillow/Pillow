@@ -17,7 +17,7 @@
 _modes = None
 
 
-class ModeDescriptor(object):
+class ModeDescriptor:
     """Wrapper for mode strings."""
 
     def __init__(self, mode, bands, basemode, basetype):
@@ -35,22 +35,40 @@ def getmode(mode):
     global _modes
     if not _modes:
         # initialize mode cache
-
-        from . import Image
         modes = {}
-        # core modes
-        for m, (basemode, basetype, bands) in Image._MODEINFO.items():
+        for m, (basemode, basetype, bands) in {
+            # core modes
+            "1": ("L", "L", ("1",)),
+            "L": ("L", "L", ("L",)),
+            "I": ("L", "I", ("I",)),
+            "F": ("L", "F", ("F",)),
+            "P": ("P", "L", ("P",)),
+            "RGB": ("RGB", "L", ("R", "G", "B")),
+            "RGBX": ("RGB", "L", ("R", "G", "B", "X")),
+            "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
+            "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
+            "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
+            "LAB": ("RGB", "L", ("L", "A", "B")),
+            "HSV": ("RGB", "L", ("H", "S", "V")),
+            # extra experimental modes
+            "RGBa": ("RGB", "L", ("R", "G", "B", "a")),
+            "LA": ("L", "L", ("L", "A")),
+            "La": ("L", "L", ("L", "a")),
+            "PA": ("RGB", "L", ("P", "A")),
+        }.items():
             modes[m] = ModeDescriptor(m, bands, basemode, basetype)
-        # extra experimental modes
-        modes["RGBa"] = ModeDescriptor("RGBa",
-                                       ("R", "G", "B", "a"), "RGB", "L")
-        modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
-        modes["La"] = ModeDescriptor("La", ("L", "a"), "L", "L")
-        modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
         # mapping modes
-        modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
-        modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
-        modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
+        for i16mode in (
+            "I;16",
+            "I;16S",
+            "I;16L",
+            "I;16LS",
+            "I;16B",
+            "I;16BS",
+            "I;16N",
+            "I;16NS",
+        ):
+            modes[i16mode] = ModeDescriptor(i16mode, ("I",), "L", "L")
         # set global mode cache atomically
         _modes = modes
     return _modes[mode]

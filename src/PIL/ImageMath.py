@@ -15,14 +15,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, _imagingmath
-from ._util import py3
+import builtins
 
-try:
-    import builtins
-except ImportError:
-    import __builtin__
-    builtins = __builtin__
+from . import Image, _imagingmath
 
 VERBOSE = 0
 
@@ -31,7 +26,7 @@ def _isconstant(v):
     return isinstance(v, (int, float))
 
 
-class _Operand(object):
+class _Operand:
     """Wraps an image operand, providing standard operators"""
 
     def __init__(self, im):
@@ -46,7 +41,7 @@ class _Operand(object):
             elif im1.im.mode in ("I", "F"):
                 return im1.im
             else:
-                raise ValueError("unsupported mode: %s" % im1.im.mode)
+                raise ValueError(f"unsupported mode: {im1.im.mode}")
         else:
             # argument was a constant
             if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
@@ -61,9 +56,9 @@ class _Operand(object):
             out = Image.new(mode or im1.mode, im1.size, None)
             im1.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
-            except AttributeError:
-                raise TypeError("bad operand type for '%s'" % op)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
+            except AttributeError as e:
+                raise TypeError(f"bad operand type for '{op}'") from e
             _imagingmath.unop(op, out.im.id, im1.im.id)
         else:
             # binary operation
@@ -78,8 +73,7 @@ class _Operand(object):
                     raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
-                size = (min(im1.size[0], im2.size[0]),
-                        min(im1.size[1], im2.size[1]))
+                size = (min(im1.size[0], im2.size[0]), min(im1.size[1], im2.size[1]))
                 if im1.size != size:
                     im1 = im1.crop((0, 0) + size)
                 if im2.size != size:
@@ -90,9 +84,9 @@ class _Operand(object):
             im1.load()
             im2.load()
             try:
-                op = getattr(_imagingmath, op+"_"+im1.mode)
-            except AttributeError:
-                raise TypeError("bad operand type for '%s'" % op)
+                op = getattr(_imagingmath, op + "_" + im1.mode)
+            except AttributeError as e:
+                raise TypeError(f"bad operand type for '{op}'") from e
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
         return _Operand(out)
 
@@ -100,11 +94,6 @@ class _Operand(object):
     def __bool__(self):
         # an image is "true" if it contains at least one non-zero pixel
         return self.im.getbbox() is not None
-
-    if not py3:
-        # Provide __nonzero__ for pre-Py3k
-        __nonzero__ = __bool__
-        del __bool__
 
     def __abs__(self):
         return self.apply("abs", self)
@@ -151,13 +140,6 @@ class _Operand(object):
 
     def __rpow__(self, other):
         return self.apply("pow", other, self)
-
-    if not py3:
-        # Provide __div__ and __rdiv__ for pre-Py3k
-        __div__ = __truediv__
-        __rdiv__ = __rtruediv__
-        del __truediv__
-        del __rtruediv__
 
     # bitwise
     def __invert__(self):
