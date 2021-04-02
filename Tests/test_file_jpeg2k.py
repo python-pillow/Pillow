@@ -269,4 +269,7 @@ def test_crashes(test_file):
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             # Valgrind should not complain here
-            im.load()
+            try:
+                im.load()
+            except OSError:
+                pass
