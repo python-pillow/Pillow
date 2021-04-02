@@ -759,7 +759,7 @@ typedef struct {
 } DistanceWithIndex;
 
 static int
-_sort_ulong_ptr_keys(const void *a, const void *b) {
+_distance_index_cmp(const void *a, const void *b) {
     DistanceWithIndex *A = (DistanceWithIndex *)a;
     DistanceWithIndex *B = (DistanceWithIndex *)b;
     if (*A->distance == *B->distance) {
@@ -829,7 +829,7 @@ build_distance_tables(
             dwi,
             nEntries,
             sizeof(DistanceWithIndex),
-            _sort_ulong_ptr_keys);
+            _distance_index_cmp);
         for (j = 0; j < nEntries; j++) {
             avgDistSortKey[i * nEntries + j] = dwi[j].distance;
         }
