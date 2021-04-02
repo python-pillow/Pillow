@@ -803,37 +803,35 @@ build_distance_tables(
     uint32_t i, j;
     DistanceWithIndex *dwi;
 
-    dwi = calloc(nEntries * nEntries, sizeof(DistanceWithIndex));
+    for (i = 0; i < nEntries; i++) {
+        avgDist[i * nEntries + i] = 0;
+        avgDistSortKey[i * nEntries + i] = &(avgDist[i * nEntries + i]);
+        for (j = 0; j < i; j++) {
+            avgDist[j * nEntries + i] = avgDist[i * nEntries + j] =
+                _DISTSQR(p + i, p + j);
+            avgDistSortKey[j * nEntries + i] = &(avgDist[j * nEntries + i]);
+            avgDistSortKey[i * nEntries + j] = &(avgDist[i * nEntries + j]);
+        }
+    }
+
+    dwi = calloc(nEntries, sizeof(DistanceWithIndex));
     if (!dwi) {
         return 0;
     }
     for (i = 0; i < nEntries; i++) {
-        avgDist[i * nEntries + i] = 0;
-        dwi[i * nEntries + i] = (DistanceWithIndex){
-            &(avgDist[i * nEntries + i]),
-            i * nEntries + i
-        };
-        for (j = 0; j < i; j++) {
-            avgDist[j * nEntries + i] = avgDist[i * nEntries + j] =
-                _DISTSQR(p + i, p + j);
-            dwi[j * nEntries + i] = (DistanceWithIndex){
-                &(avgDist[j * nEntries + i]),
-                j * nEntries + i
-            };
-            dwi[i * nEntries + j] = (DistanceWithIndex){
+        for (j = 0; j < nEntries; j++) {
+            dwi[j] = (DistanceWithIndex){
                 &(avgDist[i * nEntries + j]),
-                i * nEntries + j
+                j
             };
         }
-    }
-    for (i = 0; i < nEntries; i++) {
         qsort(
-            dwi + i * nEntries,
+            dwi,
             nEntries,
             sizeof(DistanceWithIndex),
             _sort_ulong_ptr_keys);
         for (j = 0; j < nEntries; j++) {
-            avgDistSortKey[i * nEntries + j] = dwi[i * nEntries + j].distance;
+            avgDistSortKey[i * nEntries + j] = dwi[j].distance;
         }
     }
     free(dwi);
