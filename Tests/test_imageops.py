@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageOps, ImageStat, features
 from .helper import (
     assert_image_equal,
     assert_image_similar,
+    assert_image_similar_tofile,
     assert_tuple_approx_equal,
     hopper,
 )
@@ -28,6 +29,7 @@ def test_sanity():
     ImageOps.autocontrast(hopper("L"), cutoff=(2, 10))
     ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
     ImageOps.autocontrast(hopper("L"), mask=hopper("L"))
+    ImageOps.autocontrast(hopper("L"), preserve_tone=True)
 
     ImageOps.colorize(hopper("L"), (0, 0, 0), (255, 255, 255))
     ImageOps.colorize(hopper("L"), "black", "white")
@@ -112,10 +114,9 @@ def test_pad():
             new_im = ImageOps.pad(im, new_size, color=color, centering=centering)
             assert new_im.size == new_size
 
-            with Image.open(
-                "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg"
-            ) as target:
-                assert_image_similar(new_im, target, 6)
+            assert_image_similar_tofile(
+                new_im, "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg", 6
+            )
 
 
 def test_pil163():
@@ -336,7 +337,7 @@ def test_autocontrast_mask_toy_input():
         assert ImageStat.Stat(result_nomask).median == [128]
 
 
-def test_auto_contrast_mask_real_input():
+def test_autocontrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
 
@@ -362,3 +363,52 @@ def test_auto_contrast_mask_real_input():
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )
+
+
+def test_autocontrast_preserve_tone():
+    def autocontrast(mode, preserve_tone):
+        im = hopper(mode)
+        return ImageOps.autocontrast(im, preserve_tone=preserve_tone).histogram()
+
+    assert autocontrast("RGB", True) != autocontrast("RGB", False)
+    assert autocontrast("L", True) == autocontrast("L", False)
+
+
+def test_autocontrast_preserve_gradient():
+    gradient = Image.linear_gradient("L")
+
+    # test with a grayscale gradient that extends to 0,255.
+    # Should be a noop.
+    out = ImageOps.autocontrast(gradient, cutoff=0, preserve_tone=True)
+
+    assert_image_equal(gradient, out)
+
+    # cutoff the top and bottom
+    # autocontrast should make the first and last histogram entries equal
+    # and, with rounding, should be 10% of the image pixels
+    out = ImageOps.autocontrast(gradient, cutoff=10, preserve_tone=True)
+    hist = out.histogram()
+    assert hist[0] == hist[-1]
+    assert hist[-1] == 256 * round(256 * 0.10)
+
+    # in rgb
+    img = gradient.convert("RGB")
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "color", ((255, 255, 255), (127, 255, 0), (127, 127, 127), (0, 0, 0))
+)
+def test_autocontrast_preserve_one_color(color):
+    img = Image.new("RGB", (10, 10), color)
+
+    # single color images shouldn't change
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)  # single color, no cutoff
+
+    # even if there is a cutoff
+    out = ImageOps.autocontrast(
+        img, cutoff=10, preserve_tone=True
+    )  # single color 10 cutoff
+    assert_image_equal(img, out)

@@ -1250,6 +1250,10 @@ class TiffImageFile(ImageFile.ImageFile):
         if bps_count > len(bps_tuple) and len(bps_tuple) == 1:
             bps_tuple = bps_tuple * bps_count
 
+        samplesPerPixel = self.tag_v2.get(SAMPLESPERPIXEL, 1)
+        if len(bps_tuple) != samplesPerPixel:
+            raise SyntaxError("unknown data organization")
+
         # mode: check photometric interpretation and bits per pixel
         key = (
             self.tag_v2.prefix,
@@ -1323,6 +1327,15 @@ class TiffImageFile(ImageFile.ImageFile):
                 rawmode = rawmode.replace(";16B", ";16N")
             if ";16L" in rawmode:
                 rawmode = rawmode.replace(";16L", ";16N")
+
+            # YCbCr images with new jpeg compression with pixels in one plane
+            # unpacked straight into RGB values
+            if (
+                photo == 6
+                and self._compression == "jpeg"
+                and self._planar_configuration == 1
+            ):
+                rawmode = "RGB"
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
@@ -1442,6 +1455,8 @@ def _save(im, fp, filename):
     elif compression == "tiff_jpeg":
         # OJPEG is obsolete, so use new-style JPEG compression instead
         compression = "jpeg"
+    elif compression == "tiff_deflate":
+        compression = "tiff_adobe_deflate"
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
@@ -1481,8 +1496,9 @@ def _save(im, fp, filename):
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-    if "icc_profile" in im.info:
-        ifd[ICCPROFILE] = im.info["icc_profile"]
+    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    if icc:
+        ifd[ICCPROFILE] = icc
 
     for key, name in [
         (IMAGEDESCRIPTION, "description"),

@@ -16,8 +16,11 @@ Color Names
 
 The ImageColor module supports the following string formats:
 
-* Hexadecimal color specifiers, given as ``#rgb`` or ``#rrggbb``. For example,
-  ``#ff0000`` specifies pure red.
+* Hexadecimal color specifiers, given as ``#rgb``, ``#rgba``, ``#rrggbb`` or
+  ``#rrggbbaa``, where ``r`` is red, ``g`` is green, ``b`` is blue and ``a`` is
+  alpha (also called 'opacity'). For example, ``#ff0000`` specifies pure red,
+  and ``#ff0000cc`` specifies red with 80% opacity (``cc`` is 204 in decimal
+  form, and 204 / 255 = 0.8).
 
 * RGB functions, given as ``rgb(red, green, blue)`` where the color values are
   integers in the range 0 to 255. Alternatively, the color values can be given

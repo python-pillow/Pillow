@@ -59,6 +59,16 @@ if sys.version_info >= (3, 7):
         if name == "PILLOW_VERSION":
             _raise_version_warning()
             return __version__
+        else:
+            categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+            if name in categories:
+                warnings.warn(
+                    "Image categories are deprecated and will be removed in Pillow 10 "
+                    "(2023-01-02). Use is_animated instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return categories[name]
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -68,6 +78,11 @@ else:
 
     # Silence warning
     assert PILLOW_VERSION
+
+    # categories
+    NORMAL = 0
+    SEQUENCE = 1
+    CONTAINER = 2
 
 
 logger = logging.getLogger(__name__)
@@ -187,11 +202,6 @@ MAXCOVERAGE = 1
 FASTOCTREE = 2
 LIBIMAGEQUANT = 3
 
-# categories
-NORMAL = 0
-SEQUENCE = 1
-CONTAINER = 2
-
 if hasattr(core, "DEFAULT_STRATEGY"):
     DEFAULT_STRATEGY = core.DEFAULT_STRATEGY
     FILTERED = core.FILTERED
@@ -213,28 +223,7 @@ DECODERS = {}
 ENCODERS = {}
 
 # --------------------------------------------------------------------
-# Modes supported by this version
-
-_MODEINFO = {
-    # NOTE: this table will be removed in future versions.  use
-    # getmode* functions or ImageMode descriptors instead.
-    # official modes
-    "1": ("L", "L", ("1",)),
-    "L": ("L", "L", ("L",)),
-    "I": ("L", "I", ("I",)),
-    "F": ("L", "F", ("F",)),
-    "P": ("P", "L", ("P",)),
-    "RGB": ("RGB", "L", ("R", "G", "B")),
-    "RGBX": ("RGB", "L", ("R", "G", "B", "X")),
-    "RGBA": ("RGB", "L", ("R", "G", "B", "A")),
-    "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
-    "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
-    "LAB": ("RGB", "L", ("L", "A", "B")),
-    "HSV": ("RGB", "L", ("H", "S", "V")),
-    # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
-    # BGR;24.  Use these modes only if you know exactly what you're
-    # doing...
-}
+# Modes
 
 if sys.byteorder == "little":
     _ENDIAN = "<"
@@ -280,7 +269,7 @@ def _conv_type_shape(im):
         return (im.size[1], im.size[0], extra), typ
 
 
-MODES = sorted(_MODEINFO)
+MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
@@ -535,10 +524,21 @@ class Image:
         self._size = (0, 0)
         self.palette = None
         self.info = {}
-        self.category = NORMAL
+        self._category = 0
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+
+    def __getattr__(self, name):
+        if name == "category":
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-01-02). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self._category
+        raise AttributeError(name)
 
     @property
     def width(self):
@@ -586,10 +586,10 @@ class Image:
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
-        This function is only required to close images that have not
-        had their file read and closed by the
-        :py:meth:`~PIL.Image.Image.load` method. See
-        :ref:`file-handling` for more information.
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
         """
         try:
             if hasattr(self, "_close__fp"):
@@ -648,7 +648,7 @@ class Image:
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.category == other.category
+            and self._category == other._category
             and self.readonly == other.readonly
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
@@ -878,7 +878,7 @@ class Image:
         The default method of converting a greyscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is :data:`NONE`, all values larger than 128 are set to 255 (white),
+        dither is :data:`NONE`, all values larger than 127 are set to 255 (white),
         all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
@@ -1059,6 +1059,12 @@ class Image:
                        :data:`LIBIMAGEQUANT` (libimagequant; check support using
                        :py:func:`PIL.features.check_feature`
                        with ``feature="libimagequant"``).
+
+                       By default, :data:`MEDIANCUT` will be used.
+
+                       The exception to this is RGBA images. :data:`MEDIANCUT` and
+                       :data:`MAXCOVERAGE` do not support RGBA images, so
+                       :data:`FASTOCTREE` is used by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
@@ -1074,11 +1080,11 @@ class Image:
 
         if method is None:
             # defaults:
-            method = 0
+            method = MEDIANCUT
             if self.mode == "RGBA":
-                method = 2
+                method = FASTOCTREE
 
-        if self.mode == "RGBA" and method not in (2, 3):
+        if self.mode == "RGBA" and method not in (FASTOCTREE, LIBIMAGEQUANT):
             # Caller specified an invalid mode.
             raise ValueError(
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
@@ -1242,6 +1248,10 @@ class Image:
     def getcolors(self, maxcolors=256):
         """
         Returns a list of colors used in this image.
+
+        The colors will be in the image's mode. For example, an RGB image will
+        return a tuple of (red, green, blue) color values, and a P image will
+        return the index of the color in the palette.
 
         :param maxcolors: Maximum number of colors.  If this number is
            exceeded, this method returns None.  The default limit is
@@ -1540,8 +1550,6 @@ class Image:
             raise ValueError("Destination must be a 2-tuple")
         if min(source) < 0:
             raise ValueError("Source must be non-negative")
-        if min(dest) < 0:
-            raise ValueError("Destination must be non-negative")
 
         if len(source) == 2:
             source = source + im.size
@@ -1908,7 +1916,7 @@ class Image:
         if self.mode in ("1", "P"):
             resample = NEAREST
 
-        if self.mode in ["LA", "RGBA"]:
+        if self.mode in ["LA", "RGBA"] and resample != NEAREST:
             im = self.convert(self.mode[:-1] + "a")
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
@@ -2392,14 +2400,14 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode == "LA":
+        if self.mode == "LA" and resample != NEAREST:
             return (
                 self.convert("La")
                 .transform(size, method, data, resample, fill, fillcolor)
                 .convert("LA")
             )
 
-        if self.mode == "RGBA":
+        if self.mode == "RGBA" and resample != NEAREST:
             return (
                 self.convert("RGBa")
                 .transform(size, method, data, resample, fill, fillcolor)
@@ -2918,6 +2926,7 @@ def open(fp, mode="r", formats=None):
 
     def _open_core(fp, filename, prefix, formats):
         for i in formats:
+            i = i.upper()
             if i not in OPEN:
                 init()
             try:
@@ -3304,11 +3313,11 @@ class Exif(MutableMapping):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, tag):
+    def _get_ifd_dict(self, offset):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
-            self.fp.seek(self[tag])
+            self.fp.seek(offset)
         except (KeyError, TypeError):
             pass
         else:
@@ -3346,11 +3355,20 @@ class Exif(MutableMapping):
         self.fp.seek(self._info.next)
         self._info.load(self.fp)
 
+    def _get_merged_dict(self):
+        merged_dict = dict(self)
+
         # get EXIF extension
-        ifd = self._get_ifd_dict(0x8769)
-        if ifd:
-            self._data.update(ifd)
-            self._ifds[0x8769] = ifd
+        if 0x8769 in self:
+            ifd = self._get_ifd_dict(self[0x8769])
+            if ifd:
+                merged_dict.update(ifd)
+
+        # GPS
+        if 0x8825 in self:
+            merged_dict[0x8825] = self._get_ifd_dict(self[0x8825])
+
+        return merged_dict
 
     def tobytes(self, offset=8):
         from . import TiffImagePlugin
@@ -3361,91 +3379,108 @@ class Exif(MutableMapping):
             head = b"MM\x00\x2A\x00\x00\x00\x08"
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
+            if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):
+                value = self.get_ifd(tag)
+                if (
+                    tag == 0x8769
+                    and 0xA005 in value
+                    and not isinstance(value[0xA005], dict)
+                ):
+                    value = value.copy()
+                    value[0xA005] = self.get_ifd(0xA005)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
     def get_ifd(self, tag):
-        if tag not in self._ifds and tag in self:
-            if tag in [0x8825, 0xA005]:
-                # gpsinfo, interop
-                self._ifds[tag] = self._get_ifd_dict(tag)
-            elif tag == 0x927C:  # makernote
-                from .TiffImagePlugin import ImageFileDirectory_v2
+        if tag not in self._ifds:
+            if tag in [0x8769, 0x8825]:
+                # exif, gpsinfo
+                if tag in self:
+                    self._ifds[tag] = self._get_ifd_dict(self[tag])
+            elif tag in [0xA005, 0x927C]:
+                # interop, makernote
+                if 0x8769 not in self._ifds:
+                    self.get_ifd(0x8769)
+                tag_data = self._ifds[0x8769][tag]
+                if tag == 0x927C:
+                    # makernote
+                    from .TiffImagePlugin import ImageFileDirectory_v2
 
-                if self[0x927C][:8] == b"FUJIFILM":
-                    exif_data = self[0x927C]
-                    ifd_offset = i32le(exif_data, 8)
-                    ifd_data = exif_data[ifd_offset:]
+                    if tag_data[:8] == b"FUJIFILM":
+                        ifd_offset = i32le(tag_data, 8)
+                        ifd_data = tag_data[ifd_offset:]
 
-                    makernote = {}
-                    for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
-                        ifd_tag, typ, count, data = struct.unpack(
-                            "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                        )
-                        try:
-                            unit_size, handler = ImageFileDirectory_v2._load_dispatch[
-                                typ
-                            ]
-                        except KeyError:
-                            continue
-                        size = count * unit_size
-                        if size > 4:
-                            (offset,) = struct.unpack("<L", data)
-                            data = ifd_data[offset - 12 : offset + size - 12]
-                        else:
-                            data = data[:size]
-
-                        if len(data) != size:
-                            warnings.warn(
-                                "Possibly corrupt EXIF MakerNote data.  "
-                                f"Expecting to read {size} bytes but only got "
-                                f"{len(data)}. Skipping tag {ifd_tag}"
+                        makernote = {}
+                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                            ifd_tag, typ, count, data = struct.unpack(
+                                "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
-                            continue
+                            try:
+                                (
+                                    unit_size,
+                                    handler,
+                                ) = ImageFileDirectory_v2._load_dispatch[typ]
+                            except KeyError:
+                                continue
+                            size = count * unit_size
+                            if size > 4:
+                                (offset,) = struct.unpack("<L", data)
+                                data = ifd_data[offset - 12 : offset + size - 12]
+                            else:
+                                data = data[:size]
 
-                        if not data:
-                            continue
+                            if len(data) != size:
+                                warnings.warn(
+                                    "Possibly corrupt EXIF MakerNote data.  "
+                                    f"Expecting to read {size} bytes but only got "
+                                    f"{len(data)}. Skipping tag {ifd_tag}"
+                                )
+                                continue
 
-                        makernote[ifd_tag] = handler(
-                            ImageFileDirectory_v2(), data, False
-                        )
-                    self._ifds[0x927C] = dict(self._fixup_dict(makernote))
-                elif self.get(0x010F) == "Nintendo":
-                    ifd_data = self[0x927C]
+                            if not data:
+                                continue
 
-                    makernote = {}
-                    for i in range(0, struct.unpack(">H", ifd_data[:2])[0]):
-                        ifd_tag, typ, count, data = struct.unpack(
-                            ">HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                        )
-                        if ifd_tag == 0x1101:
-                            # CameraInfo
-                            (offset,) = struct.unpack(">L", data)
-                            self.fp.seek(offset)
-
-                            camerainfo = {"ModelID": self.fp.read(4)}
-
-                            self.fp.read(4)
-                            # Seconds since 2000
-                            camerainfo["TimeStamp"] = i32le(self.fp.read(12))
-
-                            self.fp.read(4)
-                            camerainfo["InternalSerialNumber"] = self.fp.read(4)
-
-                            self.fp.read(12)
-                            parallax = self.fp.read(4)
-                            handler = ImageFileDirectory_v2._load_dispatch[
-                                TiffTags.FLOAT
-                            ][1]
-                            camerainfo["Parallax"] = handler(
-                                ImageFileDirectory_v2(), parallax, False
+                            makernote[ifd_tag] = handler(
+                                ImageFileDirectory_v2(), data, False
                             )
+                        self._ifds[tag] = dict(self._fixup_dict(makernote))
+                    elif self.get(0x010F) == "Nintendo":
+                        makernote = {}
+                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                            ifd_tag, typ, count, data = struct.unpack(
+                                ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
+                            )
+                            if ifd_tag == 0x1101:
+                                # CameraInfo
+                                (offset,) = struct.unpack(">L", data)
+                                self.fp.seek(offset)
 
-                            self.fp.read(4)
-                            camerainfo["Category"] = self.fp.read(2)
+                                camerainfo = {"ModelID": self.fp.read(4)}
 
-                            makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
-                    self._ifds[0x927C] = makernote
+                                self.fp.read(4)
+                                # Seconds since 2000
+                                camerainfo["TimeStamp"] = i32le(self.fp.read(12))
+
+                                self.fp.read(4)
+                                camerainfo["InternalSerialNumber"] = self.fp.read(4)
+
+                                self.fp.read(12)
+                                parallax = self.fp.read(4)
+                                handler = ImageFileDirectory_v2._load_dispatch[
+                                    TiffTags.FLOAT
+                                ][1]
+                                camerainfo["Parallax"] = handler(
+                                    ImageFileDirectory_v2(), parallax, False
+                                )
+
+                                self.fp.read(4)
+                                camerainfo["Category"] = self.fp.read(2)
+
+                                makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
+                        self._ifds[tag] = makernote
+                else:
+                    # interop
+                    self._ifds[tag] = self._get_ifd_dict(tag_data)
         return self._ifds.get(tag, {})
 
     def __str__(self):
@@ -3465,8 +3500,6 @@ class Exif(MutableMapping):
     def __getitem__(self, tag):
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
-            if tag == 0x8825:
-                self._data[tag] = self.get_ifd(tag)
             del self._info[tag]
         return self._data[tag]
 

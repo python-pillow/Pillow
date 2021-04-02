@@ -96,7 +96,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _getexif(self):
         if "exif" not in self.info:
             return None
-        return dict(self.getexif())
+        return self.getexif()._get_merged_dict()
 
     def seek(self, frame):
         if not self._seek_check(frame):
@@ -192,7 +192,7 @@ def _save_all(im, fp, filename):
                 r, g, b = palette[background * 3 : (background + 1) * 3]
                 background = (r, g, b, 0)
 
-    duration = im.encoderinfo.get("duration", 0)
+    duration = im.encoderinfo.get("duration", im.info.get("duration"))
     loop = im.encoderinfo.get("loop", 0)
     minimize_size = im.encoderinfo.get("minimize_size", False)
     kmin = im.encoderinfo.get("kmin", None)

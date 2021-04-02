@@ -85,6 +85,7 @@ def test_unsupported_mode(tmp_path):
         im.save(outfile)
 
 
+@pytest.mark.valgrind_known_error(reason="Known Failing")
 def test_save_all(tmp_path):
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)

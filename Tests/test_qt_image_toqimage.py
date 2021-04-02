@@ -1,8 +1,8 @@
 import pytest
 
-from PIL import Image, ImageQt
+from PIL import ImageQt
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
@@ -40,5 +40,4 @@ def test_sanity(tmp_path):
         data.save(tempfile)
 
         # Check that it actually worked.
-        with Image.open(tempfile) as reloaded:
-            assert_image_equal(reloaded, src)
+        assert_image_equal_tofile(src, tempfile)

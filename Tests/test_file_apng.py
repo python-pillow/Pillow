@@ -312,7 +312,7 @@ def test_apng_syntax_errors():
             exception = e
         assert exception is None
 
-    with pytest.raises(SyntaxError):
+    with pytest.raises(OSError):
         with Image.open("Tests/images/apng/syntax_num_frames_high.png") as im:
             im.seek(im.n_frames - 1)
             im.load()

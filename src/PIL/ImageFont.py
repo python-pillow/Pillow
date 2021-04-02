@@ -669,6 +669,7 @@ class FreeTypeFont:
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
             text, im.id, mode, direction, features, language, stroke_width, ink

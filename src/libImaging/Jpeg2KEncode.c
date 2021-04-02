@@ -385,7 +385,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         float *pq;
 
         if (len > 0) {
-            if ((unsigned)len >
+            if ((size_t)len >
                 sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
                 len = sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0]);
             }

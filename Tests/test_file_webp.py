@@ -145,7 +145,9 @@ class TestFileWebp:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             temp_file = str(tmp_path / "temp.webp")
-            pytest.warns(None, image.save, temp_file)
+            with pytest.warns(None) as record:
+                image.save(temp_file)
+            assert not record
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"
@@ -165,7 +167,8 @@ class TestFileWebp:
 
         # Save as GIF
         out_gif = str(tmp_path / "temp.gif")
-        Image.open(out_webp).save(out_gif)
+        with Image.open(out_webp) as im:
+            im.save(out_gif)
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
@@ -173,3 +176,16 @@ class TestFileWebp:
             [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
         )
         assert difference < 5
+
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_duration(self, tmp_path):
+        with Image.open("Tests/images/dispose_bgnd.gif") as im:
+            assert im.info["duration"] == 1000
+
+            out_webp = str(tmp_path / "temp.webp")
+            im.save(out_webp, save_all=True)
+
+        with Image.open(out_webp) as reloaded:
+            reloaded.load()
+            assert reloaded.info["duration"] == 1000

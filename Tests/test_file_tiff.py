@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 
 from PIL import Image, TiffImagePlugin
-from PIL.TiffImagePlugin import RESOLUTION_UNIT, SUBIFD, X_RESOLUTION, Y_RESOLUTION
+from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
     assert_image_equal,
@@ -59,19 +59,19 @@ class TestFileTiff:
         pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
-        def open():
+        with pytest.warns(None) as record:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_context_manager(self):
-        def open():
+        with pytest.warns(None) as record:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-        pytest.warns(None, open)
+        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -161,19 +161,10 @@ class TestFileTiff:
                     reloaded.load()
                     assert (round(dpi), round(dpi)) == reloaded.info["dpi"]
 
-    def test_subifd(self, tmp_path):
-        outfile = str(tmp_path / "temp.tif")
-        with Image.open("Tests/images/g4_orientation_6.tif") as im:
-            im.tag_v2[SUBIFD] = 10000
-
-            # Should not segfault
-            im.save(outfile)
-
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
-        Image.open("Tests/images/10ct_32bit_128.tiff").save(
-            b, format="tiff", resolution=123.45
-        )
+        with Image.open("Tests/images/10ct_32bit_128.tiff") as im:
+            im.save(b, format="tiff", resolution=123.45)
         with Image.open(b) as im:
             assert float(im.tag_v2[X_RESOLUTION]) == 123.45
             assert float(im.tag_v2[Y_RESOLUTION]) == 123.45
@@ -256,7 +247,8 @@ class TestFileTiff:
 
     def test_unknown_pixel_mode(self):
         with pytest.raises(OSError):
-            Image.open("Tests/images/hopper_unknown_pixel_mode.tif")
+            with Image.open("Tests/images/hopper_unknown_pixel_mode.tif"):
+                pass
 
     def test_n_frames(self):
         for path, n_frames in [
@@ -491,8 +483,7 @@ class TestFileTiff:
             tmpfile = str(tmp_path / "temp.tif")
             im.save(tmpfile)
 
-            with Image.open(tmpfile) as reloaded:
-                assert_image_equal(im, reloaded)
+            assert_image_equal_tofile(im, tmpfile)
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
@@ -577,6 +568,28 @@ class TestFileTiff:
         with Image.open(tmpfile) as reloaded:
             assert b"Dummy value" == reloaded.info["icc_profile"]
 
+    def test_save_icc_profile(self, tmp_path):
+        im = hopper()
+        assert "icc_profile" not in im.info
+
+        outfile = str(tmp_path / "temp.tif")
+        icc_profile = b"Dummy value"
+        im.save(outfile, icc_profile=icc_profile)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.info["icc_profile"] == icc_profile
+
+    def test_discard_icc_profile(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+
+        with Image.open("Tests/images/icc_profile.png") as im:
+            assert "icc_profile" in im.info
+
+            im.save(outfile, icc_profile=None)
+
+        with Image.open(outfile) as reloaded:
+            assert "icc_profile" not in reloaded.info
+
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
@@ -612,8 +625,9 @@ class TestFileTiff:
     )
     def test_string_dimension(self):
         # Assert that an error is raised if one of the dimensions is a string
-        with pytest.raises(ValueError):
-            Image.open("Tests/images/string_dimension.tiff")
+        with Image.open("Tests/images/string_dimension.tiff") as im:
+            with pytest.raises(OSError):
+                im.load()
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
