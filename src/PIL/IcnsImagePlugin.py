@@ -359,7 +359,11 @@ def _save(im, fp, filename):
                 fp.write(f.read())
 
 
-Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
+def _accept(prefix):
+    return prefix[:4] == b"icns"
+
+
+Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)
 Image.register_extension(IcnsImageFile.format, ".icns")
 
 if sys.platform == "darwin":

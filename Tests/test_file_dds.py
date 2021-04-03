@@ -136,25 +136,25 @@ def test_uncompressed_rgb():
         )
 
 
-def test__validate_true():
+def test__accept_true():
     """Check valid prefix"""
     # Arrange
     prefix = b"DDS etc"
 
     # Act
-    output = DdsImagePlugin._validate(prefix)
+    output = DdsImagePlugin._accept(prefix)
 
     # Assert
     assert output
 
 
-def test__validate_false():
+def test__accept_false():
     """Check invalid prefix"""
     # Arrange
     prefix = b"something invalid"
 
     # Act
-    output = DdsImagePlugin._validate(prefix)
+    output = DdsImagePlugin._accept(prefix)
 
     # Assert
     assert not output
