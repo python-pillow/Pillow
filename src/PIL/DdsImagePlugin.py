@@ -133,6 +133,8 @@ class DdsImageFile(ImageFile.ImageFile):
             rawmode = ""
             if bitcount == 32:
                 rawmode += masks[0xFF000000]
+            else:
+                self.mode = "RGB"
             rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
