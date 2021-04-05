@@ -135,7 +135,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 rawmode += masks[0xFF000000]
             rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
 
-            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode, 0, 1))]
+            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
         else:
             data_start = header_size + 4
             n = 0
