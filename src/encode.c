@@ -790,7 +790,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for for Colormap");
+                        PyExc_ValueError, "Requiring 768 items for Colormap");
                     return NULL;
                 }
                 UINT16 *av;
