@@ -25,6 +25,7 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
+    mark_if_feature_version,
 )
 
 TEST_FILE = "Tests/images/hopper.jpg"
@@ -116,7 +117,7 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_icc(self, tmp_path):
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
@@ -156,7 +157,7 @@ class TestFileJpeg:
         test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_large_icc_meta(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
@@ -423,7 +424,7 @@ class TestFileJpeg:
         with Image.open(filename):
             pass
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_truncated_jpeg_should_read_all_the_data(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -442,7 +443,7 @@ class TestFileJpeg:
             with pytest.raises(OSError):
                 im.load()
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_qtables(self, tmp_path):
         def _n_qtables_helper(n, test_file):
             with Image.open(test_file) as im:
@@ -726,7 +727,7 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_exif_x_resolution(self, tmp_path):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
@@ -757,7 +758,7 @@ class TestFileJpeg:
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 
-    @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_photoshop(self):
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
             assert im.info["photoshop"][0x03ED] == {

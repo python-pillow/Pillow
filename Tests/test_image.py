@@ -17,6 +17,7 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
+    mark_if_feature_version,
 )
 
 
@@ -662,7 +663,7 @@ class TestImage:
 
             assert not fp.closed
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
     def test_exif_jpeg(self, tmp_path):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()

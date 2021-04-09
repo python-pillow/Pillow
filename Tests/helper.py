@@ -173,6 +173,16 @@ def skip_unless_feature_version(feature, version_required, reason=None):
     return pytest.mark.skipif(version_available < version_required, reason=reason)
 
 
+def mark_if_feature_version(mark, feature, version_blacklist, reason=None):
+    if not features.check(feature):
+        return
+    if reason is None:
+        reason = f"{feature} is {version_blacklist}"
+    version_required = parse_version(version_blacklist)
+    version_available = parse_version(features.version(feature))
+    return mark(version_available == version_blacklist, reason=reason)
+
+
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
 class PillowLeakTestCase:
     # requires unix/macOS
