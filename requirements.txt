@@ -9,6 +9,7 @@ pyroma
 pytest
 pytest-cov
 pytest-timeout
+pytest-valgrind
 sphinx>=2.4
 sphinx-issues
 sphinx-removed-in
