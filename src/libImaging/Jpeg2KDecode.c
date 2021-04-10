@@ -738,7 +738,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
 
        If colorspace is unspecified, we assume:
 
-           Number of components   Subsampling   Colorspace      
+           Number of components   Subsampling   Colorspace
          -------------------------------------------------------
            1                      Any           gray
            2                      Any           gray (+ alpha)
@@ -756,27 +756,30 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
         switch (image->numcomps) {
             case 1:
             case 2:
-                color_space = OPJ_CLRSPC_GRAY; break;
+                color_space = OPJ_CLRSPC_GRAY;
+                break;
             case 3:
             case 4:
                 switch (subsampling) {
                     case -1:
                     case 0:
                     case 3:
-                        color_space = OPJ_CLRSPC_SRGB; break;
+                        color_space = OPJ_CLRSPC_SRGB;
+                        break;
                     case 1:
                     case 2:
-                        color_space = OPJ_CLRSPC_SYCC;  break;
+                        color_space = OPJ_CLRSPC_SYCC;
+                        break;
                 }
             break;
         }
     }
 
-    for (n = 0; n < sizeof(j2k_unpackers) / sizeof (j2k_unpackers[0]); ++n) {
+    for (n = 0; n < sizeof(j2k_unpackers) / sizeof(j2k_unpackers[0]); ++n) {
         if (color_space == j2k_unpackers[n].color_space &&
             image->numcomps == j2k_unpackers[n].components &&
             (j2k_unpackers[n].subsampling || (subsampling == -1)) &&
-            strcmp (im->mode, j2k_unpackers[n].mode) == 0) {
+            strcmp(im->mode, j2k_unpackers[n].mode) == 0) {
             unpack = j2k_unpackers[n].unpacker;
             break;
         }
