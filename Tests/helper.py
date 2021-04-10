@@ -175,12 +175,15 @@ def skip_unless_feature_version(feature, version_required, reason=None):
 
 def mark_if_feature_version(mark, feature, version_blacklist, reason=None):
     if not features.check(feature):
-        return
+        return pytest.mark.pil_noop_mark()
     if reason is None:
         reason = f"{feature} is {version_blacklist}"
     version_required = parse_version(version_blacklist)
     version_available = parse_version(features.version(feature))
-    return mark(version_available == version_blacklist, reason=reason)
+    if (version_available.major == version_required.major and
+        version_available.minor == version_required.minor):
+        return mark(reason=reason)
+    return pytest.mark.pil_noop_mark()
 
 
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
