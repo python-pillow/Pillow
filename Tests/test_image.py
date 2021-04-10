@@ -16,6 +16,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -662,7 +663,9 @@ class TestImage:
 
             assert not fp.closed
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_jpeg(self, tmp_path):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
