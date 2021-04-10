@@ -104,6 +104,7 @@ test:
 
 .PHONY: valgrind
 valgrind:
+	python3 -c "import pytest_valgrind" || pip3 install pytest-valgrind
 	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
             --log-file=/tmp/valgrind-output \
             python3 -m pytest --no-memcheck -vv --valgrind --valgrind-log=/tmp/valgrind-output
