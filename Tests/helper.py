@@ -180,8 +180,10 @@ def mark_if_feature_version(mark, feature, version_blacklist, reason=None):
         reason = f"{feature} is {version_blacklist}"
     version_required = parse_version(version_blacklist)
     version_available = parse_version(features.version(feature))
-    if (version_available.major == version_required.major and
-        version_available.minor == version_required.minor):
+    if (
+        version_available.major == version_required.major
+        and version_available.minor == version_required.minor
+    ):
         return mark(reason=reason)
     return pytest.mark.pil_noop_mark()
 

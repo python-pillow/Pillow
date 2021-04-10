@@ -4,8 +4,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import skip_unless_feature, mark_if_feature_version
-
+from .helper import mark_if_feature_version, skip_unless_feature
 
 pytestmark = [
     skip_unless_feature("webp"),
@@ -42,7 +41,9 @@ def test_read_exif_metadata_without_prefix():
         assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
 
 
-@mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 def test_write_exif_metadata():
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()
@@ -75,7 +76,9 @@ def test_read_icc_profile():
             assert icc == expected_icc
 
 
-@mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 def test_write_icc_metadata():
     file_path = "Tests/images/flower2.jpg"
     test_buffer = BytesIO()
@@ -93,7 +96,9 @@ def test_write_icc_metadata():
         assert webp_icc_profile == expected_icc_profile, "Webp ICC didn't match"
 
 
-@mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 def test_read_no_exif():
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()

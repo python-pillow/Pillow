@@ -11,7 +11,6 @@ from PIL import Image, PdfParser
 from .helper import hopper, mark_if_feature_version
 
 
-
 def helper_save_as_pdf(tmp_path, mode, **kwargs):
     # Arrange
     im = hopper(mode)
@@ -86,7 +85,9 @@ def test_unsupported_mode(tmp_path):
         im.save(outfile)
 
 
-@mark_if_feature_version(pytest.mark.valgrind_known_error, 'libjpeg_turbo', '2.0', reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 def test_save_all(tmp_path):
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
