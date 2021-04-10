@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
@@ -63,6 +63,11 @@ def test_sanity(tmp_path):
                         assert_image_equal(original_im, reference_im)
 
                         roundtrip(original_im)
+
+
+def test_palette_depth_16():
+    with Image.open("Tests/images/p_16.tga") as im:
+        assert_image_equal_tofile(im.convert("RGB"), "Tests/images/p_16.png")
 
 
 def test_id_field():
