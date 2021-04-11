@@ -282,6 +282,7 @@ class ImageDraw:
             # If the corners have no curve, that is a rectangle
             return self.rectangle(xy, fill, outline, width)
 
+        r = d // 2
         ink, fill = self._getink(outline, fill)
 
         def draw_corners(pieslice):
@@ -315,36 +316,28 @@ class ImageDraw:
             draw_corners(True)
 
             if full_x:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill, 1)
             else:
-                self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y1), fill, 1
-                )
+                self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill, 1)
             if not full_x and not full_y:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + d / 2, y1 - d / 2 - 1), fill, 1
-                )
-                self.draw.draw_rectangle(
-                    (x1 - d / 2, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x0 + r, y1 - r - 1), fill, 1)
+                self.draw.draw_rectangle((x1 - r, y0 + r + 1, x1, y1 - r - 1), fill, 1)
         if ink is not None and ink != fill and width != 0:
             draw_corners(False)
 
             if not full_x:
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y0 + width - 1), ink, 1
+                    (x0 + r + 1, y0, x1 - r - 1, y0 + width - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y1 - width + 1, x1 - d / 2 - 1, y1), ink, 1
+                    (x0 + r + 1, y1 - width + 1, x1 - r - 1, y1), ink, 1
                 )
             if not full_y:
                 self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + width - 1, y1 - d / 2 - 1), ink, 1
+                    (x0, y0 + r + 1, x0 + width - 1, y1 - r - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x1 - width + 1, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), ink, 1
+                    (x1 - width + 1, y0 + r + 1, x1, y1 - r - 1), ink, 1
                 )
 
     def _multiline_check(self, text):
