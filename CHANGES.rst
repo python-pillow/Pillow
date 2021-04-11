@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+8.3.0 (unreleased)
+------------------
+
+- Fixed reading uncompressed RGB data from DDS #5383
+  [radarhere]
+
 8.2.0 (2021-04-01)
 ------------------
 

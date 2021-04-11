@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Reproductions/tests for OOB read errors in FliDecode.c
 
