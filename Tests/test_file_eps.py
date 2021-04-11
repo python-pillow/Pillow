@@ -8,6 +8,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -64,7 +65,9 @@ def test_invalid_file():
         EpsImagePlugin.EpsImageFile(invalid_file)
 
 
-@pytest.mark.valgrind_known_error(reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk():
     with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:

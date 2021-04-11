@@ -264,7 +264,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
         }
         state->bytes = (state->bits * state->xsize + 7) / 8;
         /* malloc check ok, overflow checked above */
-        state->buffer = (UINT8 *)malloc(state->bytes);
+        state->buffer = (UINT8 *)calloc(1, state->bytes);
         if (!state->buffer) {
             return ImagingError_MemoryError();
         }
