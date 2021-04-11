@@ -1242,8 +1242,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 3.0.0
 
 **append_images**
-    A list of images to append as additional pages. Each of the
-    images in the list can be single or multiframe images.
+    A list of :py:class:`PIL.Image.Image` objects to append as additional pages. Each
+    of the images in the list can be single or multiframe images. The ``save_all``
+    parameter must be present and set to ``True`` in conjunction with
+    ``append_images``.
 
     .. versionadded:: 4.2.0
 
