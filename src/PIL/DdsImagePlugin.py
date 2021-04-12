@@ -130,8 +130,8 @@ class DdsImageFile(ImageFile.ImageFile):
         fourcc = header.read(4)
         (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
-        if pfflags & 0x40:
-            # DDPF_RGB - Texture contains uncompressed RGB data
+        if pfflags & DDPF_RGB:
+            # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             rawmode = ""
             if bitcount == 32:
