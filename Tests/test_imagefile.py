@@ -82,6 +82,19 @@ class TestImageFile:
             p.feed(data)
             assert (48, 48) == p.image.size
 
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_incremental_webp(self):
+        with ImageFile.Parser() as p:
+            with open("Tests/images/hopper.webp", "rb") as f:
+                p.feed(f.read(1024))
+
+                # Check that insufficient data was given in the first feed
+                assert not p.image
+
+                p.feed(f.read())
+            assert (128, 128) == p.image.size
+
     @skip_unless_feature("zlib")
     def test_safeblock(self):
         im1 = hopper()

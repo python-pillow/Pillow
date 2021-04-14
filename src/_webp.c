@@ -395,7 +395,7 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
         }
         PyObject_Del(decp);
     }
-    PyErr_SetString(PyExc_RuntimeError, "could not create decoder object");
+    PyErr_SetString(PyExc_OSError, "could not create decoder object");
     return NULL;
 }
 
