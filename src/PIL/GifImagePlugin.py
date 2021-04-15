@@ -148,7 +148,7 @@ class GifImageFile(ImageFile.ImageFile):
             self.disposal_method = 0
         else:
             # ensure that the previous frame was loaded
-            if not self.im:
+            if self.tile:
                 self.load()
 
         if frame != self.__frame + 1:

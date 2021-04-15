@@ -341,6 +341,17 @@ def test_dispose_previous():
             pass
 
 
+def test_previous_frame_loaded():
+    with Image.open("Tests/images/dispose_none.gif") as img:
+        img.load()
+        img.seek(1)
+        img.load()
+        img.seek(2)
+        with Image.open("Tests/images/dispose_none.gif") as img_skipped:
+            img_skipped.seek(2)
+            assert_image_equal(img_skipped, img)
+
+
 def test_save_dispose(tmp_path):
     out = str(tmp_path / "temp.gif")
     im_list = [
