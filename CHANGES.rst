@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Use zero if GIF background color index is missing #5390
+  [radarhere]
+
 - Fixed ensuring that GIF previous frame was loaded #5386
   [radarhere]
 
