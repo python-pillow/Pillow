@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Stop decoding BC1 punchthrough alpha in BC2&3 #4144
+  [jansol]
+
 - Use zero if GIF background color index is missing #5390
   [radarhere]
 
