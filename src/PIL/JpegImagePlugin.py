@@ -138,7 +138,7 @@ def APP(self, marker):
     elif marker == 0xFFEE and s[:5] == b"Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
-        # https://sno.phy.queensu.ca/~phil/exiftool/TagNames/JPEG.html#Adobe
+        # https://exiftool.org/TagNames/JPEG.html#Adobe
         # https://docs.oracle.com/javase/8/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html
         try:
             index2_offset = 5
