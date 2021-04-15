@@ -644,10 +644,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
     TIFFDataType type = TIFF_NOTYPE;
     // This list also exists in TiffTags.py
-    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,  269,   274,
-                             277,   278, 280,   281, 340, 341, 282,  283,   284,
-                             286,   287, 296,   297, 320, 321, 338,  32995, 32998,
-                             32996, 339, 32997, 330, 531, 530, 65537};
+    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,   269,   274,
+                             277,   278, 280,   281, 340, 341, 282,   283,   284,
+                             286,   287, 296,   297, 320, 321, 338,   32995, 32998,
+                             32996, 339, 32997, 330, 531, 530, 65537, 301,   532};
 
     Py_ssize_t tags_size;
     PyObject *item;
@@ -790,7 +790,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for for Colormap");
+                        PyExc_ValueError, "Requiring 768 items for Colormap");
                     return NULL;
                 }
                 UINT16 *av;
