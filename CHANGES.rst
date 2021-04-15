@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Fixed ensuring that GIF previous frame was loaded #5386
+  [radarhere]
+
+- Valgrind fixes #5397
+  [wiredfool]
+
+- Round down the radius in rounded_rectangle #5382
+  [radarhere]
+
 - Fixed reading uncompressed RGB data from DDS #5383
   [radarhere]
 
