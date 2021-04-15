@@ -195,6 +195,21 @@ def test_short_file():
         short_file()
 
 
+def test_dxt5_colorblock_alpha_issue_4142():
+    """ Check that colorblocks are decoded correctly in DXT5"""
+
+    with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
+        px = im.getpixel((0, 0))
+        assert px[0] != 0
+        assert px[1] != 0
+        assert px[2] != 0
+
+        px = im.getpixel((1, 0))
+        assert px[0] != 0
+        assert px[1] != 0
+        assert px[2] != 0
+
+
 def test_unimplemented_pixel_format():
     with pytest.raises(NotImplementedError):
         with Image.open("Tests/images/unimplemented_pixel_format.dds"):
