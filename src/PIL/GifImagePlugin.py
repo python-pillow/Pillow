@@ -270,14 +270,14 @@ class GifImageFile(ImageFile.ImageFile):
 
                 Image._decompression_bomb_check(dispose_size)
                 self.dispose = Image.core.fill(
-                    "P", dispose_size, self.info["background"]
+                    "P", dispose_size, self.info.get("background", 0)
                 )
             else:
                 # replace with previous contents
                 if self.im:
                     # only dispose the extent in this frame
                     self.dispose = self._crop(self.im, self.dispose_extent)
-        except (AttributeError, KeyError):
+        except AttributeError:
             pass
 
         if interlace is not None:
