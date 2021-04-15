@@ -795,6 +795,13 @@ class TestFileJpeg:
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
 
+    def test_adobe_transform(self):
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert im.info["adobe_transform"] == 1
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            assert im.info["adobe_transform"] == 2
+
     def test_icc_after_SOF(self):
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
