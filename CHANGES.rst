@@ -2,6 +2,27 @@
 Changelog (Pillow)
 ==================
 
+8.3.0 (unreleased)
+------------------
+
+- Stop decoding BC1 punchthrough alpha in BC2&3 #4144
+  [jansol]
+
+- Use zero if GIF background color index is missing #5390
+  [radarhere]
+
+- Fixed ensuring that GIF previous frame was loaded #5386
+  [radarhere]
+
+- Valgrind fixes #5397
+  [wiredfool]
+
+- Round down the radius in rounded_rectangle #5382
+  [radarhere]
+
+- Fixed reading uncompressed RGB data from DDS #5383
+  [radarhere]
+
 8.2.0 (2021-04-01)
 ------------------
 

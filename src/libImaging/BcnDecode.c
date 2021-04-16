@@ -69,7 +69,7 @@ decode_565(UINT16 x) {
 }
 
 static void
-decode_bc1_color(rgba *dst, const UINT8 *src) {
+decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     bc1_color col;
     rgba p[4];
     int n, cw;
@@ -84,7 +84,10 @@ decode_bc1_color(rgba *dst, const UINT8 *src) {
     r1 = p[1].r;
     g1 = p[1].g;
     b1 = p[1].b;
-    if (col.c0 > col.c1) {
+
+
+    /* NOTE: BC2 and BC3 reuse BC1 color blocks but always act like c0 > c1 */
+    if (col.c0 > col.c1 || separate_alpha) {
         p[2].r = (2 * r0 + 1 * r1) / 3;
         p[2].g = (2 * g0 + 1 * g1) / 3;
         p[2].b = (2 * b0 + 1 * b1) / 3;
@@ -150,13 +153,13 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o) {
 
 static void
 decode_bc1_block(rgba *col, const UINT8 *src) {
-    decode_bc1_color(col, src);
+    decode_bc1_color(col, src, 0);
 }
 
 static void
 decode_bc2_block(rgba *col, const UINT8 *src) {
     int n, bitI, byI, av;
-    decode_bc1_color(col, src + 8);
+    decode_bc1_color(col, src + 8, 1);
     for (n = 0; n < 16; n++) {
         bitI = n * 4;
         byI = bitI >> 3;
@@ -168,7 +171,7 @@ decode_bc2_block(rgba *col, const UINT8 *src) {
 
 static void
 decode_bc3_block(rgba *col, const UINT8 *src) {
-    decode_bc1_color(col, src + 8);
+    decode_bc1_color(col, src + 8, 1);
     decode_bc3_alpha((char *)col, src, sizeof(col[0]), 3);
 }
 

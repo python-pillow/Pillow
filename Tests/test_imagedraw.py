@@ -722,6 +722,29 @@ def test_rounded_rectangle(xy):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
 
 
+@pytest.mark.parametrize(
+    "xy, radius, type",
+    [
+        ((10, 20, 190, 180), 30.5, "given"),
+        ((10, 10, 181, 190), 90, "width"),
+        ((10, 20, 190, 181), 85, "height"),
+    ],
+)
+def test_rounded_rectangle_non_integer_radius(xy, radius, type):
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(xy, radius, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(
+        im,
+        "Tests/images/imagedraw_rounded_rectangle_non_integer_radius_" + type + ".png",
+    )
+
+
 def test_rounded_rectangle_zero_radius():
     # Arrange
     im = Image.new("RGB", (W, H))

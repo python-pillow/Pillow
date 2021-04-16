@@ -13,6 +13,7 @@ from .helper import (
     hopper,
     is_big_endian,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -679,7 +680,9 @@ class TestFilePng:
             exif = reloaded._getexif()
         assert exif[274] == 1
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")

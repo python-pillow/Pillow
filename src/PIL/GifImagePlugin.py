@@ -274,14 +274,14 @@ class GifImageFile(ImageFile.ImageFile):
                 if frame_transparency is not None:
                     bg = frame_transparency
                 else:
-                    bg = self.info["background"]
+                    bg = self.info.get("background", 0)
                 self.dispose = Image.core.fill("P", dispose_size, bg)
             else:
                 # replace with previous contents
                 if self.im:
                     # only dispose the extent in this frame
                     self.dispose = self._crop(self.im, self.dispose_extent)
-        except (AttributeError, KeyError):
+        except AttributeError:
             pass
 
         if interlace is not None:

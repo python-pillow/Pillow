@@ -14,7 +14,8 @@ TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
 TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SRGB.dds"
-TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/uncompressed_rgb.dds"
+TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
+TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
 
 def test_sanity_dxt1():
@@ -124,37 +125,44 @@ def test_unimplemented_dxgi_format():
 def test_uncompressed_rgb():
     """Check uncompressed RGB images can be opened"""
 
+    # convert -format dds -define dds:compression=none hopper.jpg hopper.dds
     with Image.open(TEST_FILE_UNCOMPRESSED_RGB) as im:
-        im.load()
+        assert im.format == "DDS"
+        assert im.mode == "RGB"
+        assert im.size == (128, 128)
 
+        assert_image_equal_tofile(im, "Tests/images/hopper.png")
+
+    # Test image with alpha
+    with Image.open(TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA) as im:
         assert im.format == "DDS"
         assert im.mode == "RGBA"
         assert im.size == (800, 600)
 
         assert_image_equal_tofile(
-            im, TEST_FILE_UNCOMPRESSED_RGB.replace(".dds", ".png")
+            im, TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA.replace(".dds", ".png")
         )
 
 
-def test__validate_true():
+def test__accept_true():
     """Check valid prefix"""
     # Arrange
     prefix = b"DDS etc"
 
     # Act
-    output = DdsImagePlugin._validate(prefix)
+    output = DdsImagePlugin._accept(prefix)
 
     # Assert
     assert output
 
 
-def test__validate_false():
+def test__accept_false():
     """Check invalid prefix"""
     # Arrange
     prefix = b"something invalid"
 
     # Act
-    output = DdsImagePlugin._validate(prefix)
+    output = DdsImagePlugin._accept(prefix)
 
     # Assert
     assert not output
@@ -185,6 +193,21 @@ def test_short_file():
 
     with pytest.raises(OSError):
         short_file()
+
+
+def test_dxt5_colorblock_alpha_issue_4142():
+    """ Check that colorblocks are decoded correctly in DXT5"""
+
+    with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
+        px = im.getpixel((0, 0))
+        assert px[0] != 0
+        assert px[1] != 0
+        assert px[2] != 0
+
+        px = im.getpixel((1, 0))
+        assert px[0] != 0
+        assert px[1] != 0
+        assert px[2] != 0
 
 
 def test_unimplemented_pixel_format():

@@ -352,6 +352,17 @@ def test_dispose_previous():
             pass
 
 
+def test_previous_frame_loaded():
+    with Image.open("Tests/images/dispose_none.gif") as img:
+        img.load()
+        img.seek(1)
+        img.load()
+        img.seek(2)
+        with Image.open("Tests/images/dispose_none.gif") as img_skipped:
+            img_skipped.seek(2)
+            assert_image_equal(img_skipped, img)
+
+
 def test_save_dispose(tmp_path):
     out = str(tmp_path / "temp.gif")
     im_list = [
@@ -864,3 +875,11 @@ def test_extents():
         assert im.size == (100, 100)
         im.seek(1)
         assert im.size == (150, 150)
+
+
+def test_missing_background():
+    # The Global Color Table Flag isn't set, so there is no background color index,
+    # but the disposal method is "Restore to background color"
+    with Image.open("Tests/images/missing_background.gif") as im:
+        im.seek(1)
+        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.gif")

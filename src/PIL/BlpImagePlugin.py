@@ -417,9 +417,11 @@ class BLP2Decoder(_BLPBaseDecoder):
         self.set_as_raw(bytes(data))
 
 
-Image.register_open(
-    BlpImageFile.format, BlpImageFile, lambda p: p[:4] in (b"BLP1", b"BLP2")
-)
+def _accept(prefix):
+    return prefix[:4] in (b"BLP1", b"BLP2")
+
+
+Image.register_open(BlpImageFile.format, BlpImageFile, _accept)
 Image.register_extension(BlpImageFile.format, ".blp")
 
 Image.register_decoder("BLP1", BLP1Decoder)
