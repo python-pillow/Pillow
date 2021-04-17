@@ -28,6 +28,8 @@ def test_sanity():
     _test_equal(1, 2, Fraction(1, 2))
     _test_equal(1, 2, IFDRational(1, 2))
 
+    _test_equal(7, 5, 1.4)
+
 
 def test_ranges():
     for num in range(1, 10):
