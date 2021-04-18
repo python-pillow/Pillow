@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- JPEG2000: Support decoding subsampled RGB and YCbCr images #4996
+  [nulano, radarhere]
+
 - Stop decoding BC1 punchthrough alpha in BC2&3 #4144
   [jansol]
 
