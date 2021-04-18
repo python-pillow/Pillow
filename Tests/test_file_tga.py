@@ -65,6 +65,11 @@ def test_sanity(tmp_path):
                         roundtrip(original_im)
 
 
+def test_palette_depth_16():
+    with Image.open("Tests/images/p_16.tga") as im:
+        assert_image_equal_tofile(im.convert("RGB"), "Tests/images/p_16.png")
+
+
 def test_id_field():
     # tga file with id field
     test_file = "Tests/images/tga_id_field.tga"

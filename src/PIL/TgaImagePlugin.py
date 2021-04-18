@@ -113,7 +113,7 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size)
+                    "BGR;15", b"\0" * 2 * start + self.fp.read(2 * size)
                 )
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
