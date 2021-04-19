@@ -37,6 +37,9 @@ def test_sanity():
     ImageOps.pad(hopper("L"), (128, 128))
     ImageOps.pad(hopper("RGB"), (128, 128))
 
+    ImageOps.contain(hopper("L"), (128, 128))
+    ImageOps.contain(hopper("RGB"), (128, 128))
+
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
 
@@ -97,6 +100,21 @@ def test_fit_same_ratio():
     with Image.new("RGB", (1000, 755)) as im:
         new_im = ImageOps.fit(im, (1000, 755))
         assert new_im.size == (1000, 755)
+
+
+def test_contain():
+    # Same ratio
+    im = hopper()
+    new_size = (im.width * 2, im.height * 2)
+    new_im = ImageOps.contain(im, new_size)
+    assert new_im.size == new_size
+
+    for new_size in [
+        (im.width * 4, im.height * 2),
+        (im.width * 2, im.height * 4),
+    ]:
+        new_im = ImageOps.contain(im, new_size)
+        assert new_im.size == (im.width * 2, im.height * 2)
 
 
 def test_pad():
