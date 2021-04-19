@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- For special image modes, revert default resize resampling to NEAREST #5411
+  [radarhere]
+
 - JPEG2000: Support decoding subsampled RGB and YCbCr images #4996
   [nulano, radarhere]
 
