@@ -250,3 +250,7 @@ class TestImageResize:
         for mode in "1", "P":
             im = hopper(mode)
             assert im.resize((20, 20), Image.NEAREST) == im.resize((20, 20))
+
+        for mode in "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16":
+            im = hopper(mode)
+            assert im.resize((20, 20), Image.NEAREST) == im.resize((20, 20))

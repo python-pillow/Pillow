@@ -1849,7 +1849,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=BICUBIC, box=None, reducing_gap=None):
+    def resize(self, size, resample=None, box=None, reducing_gap=None):
         """
         Returns a resized copy of this image.
 
@@ -1859,9 +1859,11 @@ class Image:
            one of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BOX`,
            :py:data:`PIL.Image.BILINEAR`, :py:data:`PIL.Image.HAMMING`,
            :py:data:`PIL.Image.BICUBIC` or :py:data:`PIL.Image.LANCZOS`.
-           Default filter is :py:data:`PIL.Image.BICUBIC`.
-           If the image has mode "1" or "P", it is
-           always set to :py:data:`PIL.Image.NEAREST`.
+           If the image has mode "1" or "P", it is always set to
+           :py:data:`PIL.Image.NEAREST`.
+           If the image mode specifies a number of bits, such as "I;16", then the
+           default filter is :py:data:`PIL.Image.NEAREST`.
+           Otherwise, the default filter is :py:data:`PIL.Image.BICUBIC`.
            See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
            the source image region to be scaled.
@@ -1882,7 +1884,10 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
+        if resample is None:
+            type_special = ";" in self.mode
+            resample = NEAREST if type_special else BICUBIC
+        elif resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
             message = f"Unknown resampling filter ({resample})."
 
             filters = [
