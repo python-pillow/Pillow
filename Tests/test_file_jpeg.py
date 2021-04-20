@@ -802,6 +802,13 @@ class TestFileJpeg:
         with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
             assert im.info["adobe_transform"] == 2
 
+        # This image has been manually hexedited
+        # so that the APP14 reports its length to be 11,
+        # leaving no room for "adobe_transform"
+        with Image.open("Tests/images/truncated_app14.jpg") as im:
+            assert "adobe" in im.info
+            assert "adobe_transform" not in im.info
+
     def test_icc_after_SOF(self):
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
