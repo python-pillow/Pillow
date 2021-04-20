@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Treat previous contents of first GIF frame as transparent #5391
+  [radarhere]
+
 - For special image modes, revert default resize resampling to NEAREST #5411
   [radarhere]
 
