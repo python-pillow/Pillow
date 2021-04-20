@@ -341,6 +341,14 @@ def test_dispose_previous():
             pass
 
 
+def test_dispose_previous_first_frame():
+    with Image.open("Tests/images/dispose_prev_first_frame.gif") as im:
+        im.seek(1)
+        assert_image_equal_tofile(
+            im, "Tests/images/dispose_prev_first_frame_seeked.gif"
+        )
+
+
 def test_previous_frame_loaded():
     with Image.open("Tests/images/dispose_none.gif") as img:
         img.load()
