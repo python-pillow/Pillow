@@ -119,5 +119,4 @@ def test_draw_reloaded(tmp_path):
         im.save(outfile)
 
     with Image.open(outfile) as im:
-        im.save("Tests/images/hopper_draw.ico")
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
