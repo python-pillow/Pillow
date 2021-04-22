@@ -18,6 +18,12 @@ def test_sanity():
     assert im.get_format_mimetype() == "image/x-icon"
 
 
+def test_black_and_white():
+    with Image.open("Tests/images/black_and_white.ico") as im:
+        assert im.mode == "RGBA"
+        assert im.size == (16, 16)
+
+
 def test_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
