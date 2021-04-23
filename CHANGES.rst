@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Changed ImageMorph incorrect mode errors to ValueError #5414
+  [radarhere]
+
+- Add EXIF tags specified in EXIF 2.32 #5419
+  [gladiusglad]
+
 - Treat previous contents of first GIF frame as transparent #5391
   [radarhere]
 
