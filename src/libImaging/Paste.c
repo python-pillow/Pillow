@@ -436,7 +436,7 @@ fill_mask_L(
                          strcmp(imOut->mode, "La") == 0 ||
                          strcmp(imOut->mode, "LA") == 0 ||
                          strcmp(imOut->mode, "PA") == 0) &&
-                        i != 3) {
+                        i != 3 && channel_mask != 0) {
                         channel_mask =
                             255 - (255 - channel_mask) * (1 - (255 - out[3]) / 255);
                     }
