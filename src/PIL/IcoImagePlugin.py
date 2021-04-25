@@ -190,13 +190,7 @@ class IcoFile:
             im.tile[0] = d, (0, 0) + im.size, o, a
 
             # figure out where AND mask image starts
-            mode = a[0]
-            bpp = 8
-            for k, v in BmpImagePlugin.BIT2MODE.items():
-                if mode == v[1]:
-                    bpp = k
-                    break
-
+            bpp = header["bpp"]
             if 32 == bpp:
                 # 32-bit color depth icon image allows semitransparent areas
                 # PIL's DIB format ignores transparency bits, recover them.
