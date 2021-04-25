@@ -179,6 +179,12 @@ def test_no_duplicate_50741_tag():
     assert TAG_IDS["BestQualityScale"] == 50780
 
 
+def test_iptc(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        im.save(out)
+
+
 def test_empty_metadata():
     f = io.BytesIO(b"II*\x00\x08\x00\x00\x00")
     head = f.read(8)

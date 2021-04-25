@@ -178,7 +178,7 @@ TAGS_V2 = {
     532: ("ReferenceBlackWhite", RATIONAL, 6),
     700: ("XMP", BYTE, 0),
     33432: ("Copyright", ASCII, 1),
-    33723: ("IptcNaaInfo", UNDEFINED, 0),
+    33723: ("IptcNaaInfo", UNDEFINED, 1),
     34377: ("PhotoshopInfo", BYTE, 0),
     # FIXME add more tags here
     34665: ("ExifIFD", LONG, 1),
