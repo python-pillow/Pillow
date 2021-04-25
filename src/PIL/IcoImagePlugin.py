@@ -267,7 +267,8 @@ class IcoImageFile(ImageFile.ImageFile):
     Handles classic, XP and Vista icon formats.
 
     When saving, PNG compression is used. Support for this was only added in
-    Windows Vista.
+    Windows Vista. If you are unable to view the icon in Windows, convert the
+    image to "RGBA" mode before saving.
 
     This plugin is a refactored version of Win32IconImagePlugin by Bryan Davis
     <casadebender@gmail.com>.
