@@ -140,8 +140,8 @@ def APP(self, marker):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
-            adobe_transform = s[1]
-        except Exception:
+            adobe_transform = s[11]
+        except IndexError:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
