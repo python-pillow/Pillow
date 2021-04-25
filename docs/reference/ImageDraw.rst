@@ -18,6 +18,7 @@ Example: Draw a gray cross over an image
 
 .. code-block:: python
 
+    import sys
     from PIL import Image, ImageDraw
 
     with Image.open("hopper.jpg") as im:
