@@ -2135,6 +2135,8 @@ class Image:
         elif isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
+        elif fp == sys.stdout:
+            fp = sys.stdout.buffer
         if not filename and hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
