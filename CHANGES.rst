@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Use bpp from ICO header #5429
+  [radarhere]
+
+- Corrected JPEG APP14 transform value #5408
+  [radarhere]
+
+- Changed TIFF tag 33723 length to 1 #5425
+  [radarhere]
+
 - Changed ImageMorph incorrect mode errors to ValueError #5414
   [radarhere]
 
