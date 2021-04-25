@@ -1,6 +1,6 @@
 import os
 import sys
-from io import StringIO
+from io import BytesIO
 
 from PIL import Image, PSDraw
 
@@ -46,8 +46,12 @@ def test_draw_postscript(tmp_path):
 
 def test_stdout():
     # Temporarily redirect stdout
-    old_stdout = sys.stdout
-    sys.stdout = mystdout = StringIO()
+    old_stdout = sys.stdout.buffer
+
+    class MyStdOut:
+        buffer = BytesIO()
+
+    sys.stdout = mystdout = MyStdOut()
 
     ps = PSDraw.PSDraw()
     _create_document(ps)
@@ -55,4 +59,4 @@ def test_stdout():
     # Reset stdout
     sys.stdout = old_stdout
 
-    assert mystdout.getvalue() != ""
+    assert mystdout.buffer.getvalue() != b""
