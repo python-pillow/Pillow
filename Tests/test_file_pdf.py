@@ -42,7 +42,8 @@ def test_monochrome(tmp_path):
     mode = "1"
 
     # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
+    outfile = helper_save_as_pdf(tmp_path, mode)
+    assert os.path.getsize(outfile) < 15000
 
 
 def test_greyscale(tmp_path):

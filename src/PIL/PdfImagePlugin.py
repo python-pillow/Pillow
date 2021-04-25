@@ -124,7 +124,7 @@ def _save(im, fp, filename, save_all=False):
             decode = None
 
             if im.mode == "1":
-                filter = "ASCIIHexDecode"
+                filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
                 bits = 1
@@ -161,12 +161,6 @@ def _save(im, fp, filename, save_all=False):
             op = io.BytesIO()
 
             if filter == "ASCIIHexDecode":
-                if bits == 1:
-                    # FIXME: the hex encoder doesn't support packed 1-bit
-                    # images; do things the hard way...
-                    data = im.tobytes("raw", "1")
-                    im = Image.new("L", im.size)
-                    im.putdata(data)
                 ImageFile._save(im, op, [("hex", (0, 0) + im.size, 0, im.mode)])
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
