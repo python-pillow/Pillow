@@ -1052,6 +1052,11 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame):
         self.fp = self.__fp
+
+        # reset buffered io handle in case fp
+        # was passed to libtiff, invalidating the buffer
+        self.fp.tell()
+
         while len(self._frame_pos) <= frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
@@ -1059,9 +1064,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 f"Seeking to frame {frame}, on frame {self.__frame}, "
                 f"__next {self.__next}, location: {self.fp.tell()}"
             )
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            self.fp.tell()
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s" % self.fp.tell())
