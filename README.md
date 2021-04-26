@@ -97,6 +97,6 @@ The core image library is designed for fast access to data stored in a few basic
 - [Changelog](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork)
 
-## Report Vulnerabilitys
+## Report Vulnerabilities
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
