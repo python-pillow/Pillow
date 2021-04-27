@@ -146,7 +146,8 @@ class TestFileTiff:
             "Tests/images/hopper_float_dpi_" + str(resolutionUnit) + ".tif"
         ) as im:
             assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
-            assert im.info["dpi"] == (dpi, dpi)
+            for reloaded_dpi in im.info["dpi"]:
+                assert float(reloaded_dpi) == dpi
 
     def test_save_float_dpi(self, tmp_path):
         outfile = str(tmp_path / "temp.tif")
@@ -154,7 +155,8 @@ class TestFileTiff:
             im.save(outfile, dpi=(72.2, 72.2))
 
             with Image.open(outfile) as reloaded:
-                assert reloaded.info["dpi"] == (72.2, 72.2)
+                for dpi in reloaded.info["dpi"]:
+                    assert float(dpi) == 72.2
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()

@@ -358,6 +358,16 @@ class IFDRational(Rational):
             other = other._val
         return self._val == other
 
+    def __getstate__(self):
+        return [self._val, self._numerator, self._denominator]
+
+    def __setstate__(self, state):
+        IFDRational.__init__(self, 0)
+        _val, _numerator, _denominator = state
+        self._val = _val
+        self._numerator = _numerator
+        self._denominator = _denominator
+
     def _delegate(op):
         def delegate(self, *args):
             return getattr(self._val, op)(*args)
