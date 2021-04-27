@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Switched to saving 1-bit PDFs with DCTDecode #5430
+  [radarhere]
+
 - Use bpp from ICO header #5429
   [radarhere]
 
