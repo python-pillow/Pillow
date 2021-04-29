@@ -940,7 +940,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     files compared to the slowest, but best, 100.
 
 **method**
-    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
+    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
 
 **icc_profile**
     The ICC Profile to include in the saved file. Only supported if
