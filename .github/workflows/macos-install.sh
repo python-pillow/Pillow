@@ -15,7 +15,7 @@ python3 -m pip install test-image-results
 
 echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
 # TODO Remove condition when numpy supports 3.10
-if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy ; fi
+if ! [ "$GHA_PYTHON_VERSION" == "3.10.0-alpha.7" ]; then python3 -m pip install numpy ; fi
 
 # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
 if [ "$GHA_PYTHON_VERSION" == "3.8" ]; then python3 -m pip install -U "setuptools>=49.3.2" ; fi
