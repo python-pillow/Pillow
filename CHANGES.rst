@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Changed WebP default "method" value to 4 #5450
+  [radarhere]
+
 - Switched to saving 1-bit PDFs with DCTDecode #5430
   [radarhere]
 
