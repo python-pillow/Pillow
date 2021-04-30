@@ -298,7 +298,7 @@ get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmod
     unpack = ImagingFindUnpacker(mode, rawmode, &bits);
     if (!unpack) {
         Py_DECREF(decoder);
-        PyErr_SetString(PyExc_ValueError, "unknown raw mode");
+        PyErr_SetString(PyExc_ValueError, "unknown raw mode for given image mode");
         return -1;
     }
 
