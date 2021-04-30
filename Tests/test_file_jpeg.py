@@ -828,7 +828,16 @@ class TestFileJpeg:
             xmp = im.getxmp()
 
             assert isinstance(xmp, dict)
-            assert xmp["Description"]["Version"] == "10.4"
+
+            description = xmp["xmpmeta"]["RDF"]["Description"]
+            assert description["DerivedFrom"] is None
+            assert (
+                description["Look"]["Description"]["Group"]["Alt"]["li"] == "Profiles"
+            )
+            assert description["ToneCurve"]["Seq"]["li"] == ["0, 0", "255, 255"]
+
+            # Attribute
+            assert description["Version"] == "10.4"
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
