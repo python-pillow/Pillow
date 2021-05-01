@@ -238,8 +238,8 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
 
 def contain(image, size, method=Image.BICUBIC):
     """
-    Returns a sized version of the image, expanded to fill the requested aspect ratio
-    and size.
+    Returns a resized version of the image, set to the maximum width and height
+    within the requested size, while maintaining the original aspect ratio.
 
     :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
@@ -266,13 +266,13 @@ def contain(image, size, method=Image.BICUBIC):
 
 def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     """
-    Returns a sized and padded version of the image, expanded to fill the
+    Returns a resized and padded version of the image, expanded to fill the
     requested aspect ratio and size.
 
-    :param image: The image to size and crop.
+    :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
-    :param method: What resampling method to use. Default is
+    :param method: Resampling method to use. Default is
                    :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
@@ -322,7 +322,7 @@ def scale(image, factor, resample=Image.BICUBIC):
 
     :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
-    :param resample: What resampling method to use. Default is
+    :param resample: Resampling method to use. Default is
                      :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
@@ -399,15 +399,15 @@ def expand(image, border=0, fill=0):
 
 def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
     """
-    Returns a sized and cropped version of the image, cropped to the
+    Returns a resized and cropped version of the image, cropped to the
     requested aspect ratio and size.
 
     This function was contributed by Kevin Cazabon.
 
-    :param image: The image to size and crop.
+    :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
-    :param method: What resampling method to use. Default is
+    :param method: Resampling method to use. Default is
                    :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
