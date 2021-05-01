@@ -12,10 +12,11 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Changed WebP default "method" value when saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Previously, it was 0, for the best speed. The default has now been changed to 4, to
+match WebP's default, for higher quality with still some speed optimisation.
 
 API Additions
 =============
