@@ -330,6 +330,8 @@ def pdf_repr(x):
         return bytes(x)
     elif isinstance(x, int):
         return str(x).encode("us-ascii")
+    elif isinstance(x, float):
+        return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
     elif isinstance(x, dict):
