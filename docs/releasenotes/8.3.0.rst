@@ -1,0 +1,49 @@
+8.3.0
+-----
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+ImageOps.contain
+^^^^^^^^^^^^^^^^
+
+Returns a resized version of the image, set to the maximum width and height within
+``size``, while maintaining the original aspect ratio.
+
+To compare it to other ImageOps methods:
+- :py:meth:`~PIL.ImageOps.fit` expands an image until is fills ``size``, cropping the
+parts of the image that do not fit.
+- :py:meth:`~PIL.ImageOps.pad` expands an image to fill ``size``, without cropping, but
+instead filling the extra space with ``color``.
+- :py:meth:`~PIL.ImageOps.contain` is similar to :py:meth:`~PIL.ImageOps.pad`, but
+it does not fill the extra space. Instead, the original aspect ratio is maintained. So
+unlike the other two methods, it is not guaranteed to return an image of ``size``.
+
+Security
+========
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO
