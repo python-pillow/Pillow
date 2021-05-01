@@ -102,19 +102,11 @@ def test_fit_same_ratio():
         assert new_im.size == (1000, 755)
 
 
-def test_contain():
-    # Same ratio
+@pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
+def test_contain(new_size):
     im = hopper()
-    new_size = (im.width * 2, im.height * 2)
     new_im = ImageOps.contain(im, new_size)
-    assert new_im.size == new_size
-
-    for new_size in [
-        (im.width * 4, im.height * 2),
-        (im.width * 2, im.height * 4),
-    ]:
-        new_im = ImageOps.contain(im, new_size)
-        assert new_im.size == (im.width * 2, im.height * 2)
+    assert new_im.size == (256, 256)
 
 
 def test_pad():
