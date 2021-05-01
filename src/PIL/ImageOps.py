@@ -241,10 +241,10 @@ def contain(image, size, method=Image.BICUBIC):
     Returns a sized version of the image, expanded to fill the requested aspect ratio
     and size.
 
-    :param image: The image to size and crop.
+    :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
-    :param method: What resampling method to use. Default is
+    :param method: Resampling method to use. Default is
                    :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :return: An image.
     """
