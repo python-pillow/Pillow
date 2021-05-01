@@ -18,6 +18,13 @@ Changed WebP default "method" value when saving
 Previously, it was 0, for the best speed. The default has now been changed to 4, to
 match WebP's default, for higher quality with still some speed optimisation.
 
+Default resampling filter for special image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 7.0 changed the default resampling filter to ``Image.BICUBIC``. However, as this
+is not supported yet for images with a custom number of bits, the default filter for
+those modes has been reverted to ``Image.NEAREST``.
+
 API Additions
 =============
 
