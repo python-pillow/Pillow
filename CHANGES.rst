@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Added ImageOps contain() #5417
+  [radarhere, hugovk]
+
 - Changed WebP default "method" value to 4 #5450
   [radarhere]
 
