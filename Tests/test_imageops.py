@@ -37,6 +37,9 @@ def test_sanity():
     ImageOps.pad(hopper("L"), (128, 128))
     ImageOps.pad(hopper("RGB"), (128, 128))
 
+    ImageOps.contain(hopper("L"), (128, 128))
+    ImageOps.contain(hopper("RGB"), (128, 128))
+
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
 
@@ -97,6 +100,13 @@ def test_fit_same_ratio():
     with Image.new("RGB", (1000, 755)) as im:
         new_im = ImageOps.fit(im, (1000, 755))
         assert new_im.size == (1000, 755)
+
+
+@pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
+def test_contain(new_size):
+    im = hopper()
+    new_im = ImageOps.contain(im, new_size)
+    assert new_im.size == (256, 256)
 
 
 def test_pad():
