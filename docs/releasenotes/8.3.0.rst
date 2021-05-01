@@ -25,6 +25,12 @@ Pillow 7.0 changed the default resampling filter to ``Image.BICUBIC``. However, 
 is not supported yet for images with a custom number of bits, the default filter for
 those modes has been reverted to ``Image.NEAREST``.
 
+ImageMorph incorrect mode errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For ``apply()``, ``match()`` and ``get_on_pixels()``, if the image mode is not L, an
+:py:exc:`Exception` was thrown. This has now been changed to a :py:exc:`ValueError`.
+
 API Additions
 =============
 
@@ -35,13 +41,14 @@ Returns a resized version of the image, set to the maximum width and height with
 ``size``, while maintaining the original aspect ratio.
 
 To compare it to other ImageOps methods:
+
 - :py:meth:`~PIL.ImageOps.fit` expands an image until is fills ``size``, cropping the
-parts of the image that do not fit.
+  parts of the image that do not fit.
 - :py:meth:`~PIL.ImageOps.pad` expands an image to fill ``size``, without cropping, but
-instead filling the extra space with ``color``.
-- :py:meth:`~PIL.ImageOps.contain` is similar to :py:meth:`~PIL.ImageOps.pad`, but
-it does not fill the extra space. Instead, the original aspect ratio is maintained. So
-unlike the other two methods, it is not guaranteed to return an image of ``size``.
+  instead filling the extra space with ``color``.
+- :py:meth:`~PIL.ImageOps.contain` is similar to :py:meth:`~PIL.ImageOps.pad`, but it
+  does not fill the extra space. Instead, the original aspect ratio is maintained. So
+  unlike the other two methods, it is not guaranteed to return an image of ``size``.
 
 Security
 ========
