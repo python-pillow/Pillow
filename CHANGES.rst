@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Do not round dimensions when saving PDF #5459
+  [radarhere]
+
 - Added ImageOps contain() #5417
   [radarhere, hugovk]
 
