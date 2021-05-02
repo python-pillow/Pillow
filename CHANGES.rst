@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Fixed bug when checking FreeType2 version if it is not installed #5445
+  [radarhere]
+
 - Do not round dimensions when saving PDF #5459
   [radarhere]
 
