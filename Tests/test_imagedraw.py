@@ -538,6 +538,36 @@ def test_pieslice_wide():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_wide.png")
 
 
+def test_pieslice_no_spikes():
+    im = Image.new("RGB", (161, 161), "white")
+    draw = ImageDraw.Draw(im)
+    cxs = (
+        [140] * 3
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 141, 20))
+        + [140] * 2
+    )
+    cys = (
+        list(range(80, 141, 20))
+        + [140] * 5
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 80, 20))
+    )
+
+    for cx, cy, angle in zip(cxs, cys, range(0, 360, 15)):
+        draw.pieslice(
+            [cx - 100, cy - 100, cx + 100, cy + 100], angle, angle + 1, fill="black"
+        )
+        draw.point([cx, cy], fill="red")
+
+    im_pre_erase = im.copy()
+    draw.rectangle([21, 21, 139, 139], fill="white")
+
+    assert_image_equal(im, im_pre_erase)
+
+
 def helper_point(points):
     # Arrange
     im = Image.new("RGB", (W, H))
