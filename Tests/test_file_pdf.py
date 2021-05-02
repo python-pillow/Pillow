@@ -30,7 +30,7 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
     with open(outfile, "rb") as fp:
         contents = fp.read()
     size = tuple(
-        int(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert im.size == size
 
@@ -84,6 +84,27 @@ def test_unsupported_mode(tmp_path):
 
     with pytest.raises(ValueError):
         im.save(outfile)
+
+
+def test_resolution(tmp_path):
+    im = hopper()
+
+    outfile = str(tmp_path / "temp.pdf")
+    im.save(outfile, resolution=150)
+
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+
+    size = tuple(
+        float(d)
+        for d in contents.split(b"stream\nq ")[1].split(b" 0 0 cm")[0].split(b" 0 0 ")
+    )
+    assert size == (61.44, 61.44)
+
+    size = tuple(
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+    )
+    assert size == (61.44, 61.44)
 
 
 @mark_if_feature_version(

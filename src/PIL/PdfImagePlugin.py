@@ -202,8 +202,8 @@ def _save(im, fp, filename, save_all=False):
                 MediaBox=[
                     0,
                     0,
-                    int(width * 72.0 / resolution),
-                    int(height * 72.0 / resolution),
+                    width * 72.0 / resolution,
+                    height * 72.0 / resolution,
                 ],
                 Contents=contents_refs[pageNumber],
             )
@@ -211,9 +211,9 @@ def _save(im, fp, filename, save_all=False):
             #
             # page contents
 
-            page_contents = b"q %d 0 0 %d 0 0 cm /image Do Q\n" % (
-                int(width * 72.0 / resolution),
-                int(height * 72.0 / resolution),
+            page_contents = b"q %f 0 0 %f 0 0 cm /image Do Q\n" % (
+                width * 72.0 / resolution,
+                height * 72.0 / resolution,
             )
 
             existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)
