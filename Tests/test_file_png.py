@@ -713,13 +713,20 @@ class TestFilePng:
             with pytest.raises(EOFError):
                 im.seek(1)
 
-    def test_save_stdout(self):
+    @pytest.mark.parametrize("buffer", (True, False))
+    def test_save_stdout(self, buffer):
         old_stdout = sys.stdout.buffer
 
-        class MyStdOut:
-            buffer = BytesIO()
+        if buffer:
 
-        sys.stdout = mystdout = MyStdOut()
+            class MyStdOut:
+                buffer = BytesIO()
+
+            mystdout = MyStdOut()
+        else:
+            mystdout = BytesIO()
+
+        sys.stdout = mystdout
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")
@@ -727,7 +734,9 @@ class TestFilePng:
         # Reset stdout
         sys.stdout = old_stdout
 
-        reloaded = Image.open(mystdout.buffer)
+        if buffer:
+            mystdout = mystdout.buffer
+        reloaded = Image.open(mystdout)
         assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
 

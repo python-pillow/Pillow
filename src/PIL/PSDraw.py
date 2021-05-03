@@ -26,12 +26,15 @@ from . import EpsImagePlugin
 class PSDraw:
     """
     Sets up printing to the given file. If ``fp`` is omitted,
-    ``sys.stdout.buffer`` is assumed.
+    ``sys.stdout.buffer`` or ``sys.stdout`` is assumed.
     """
 
     def __init__(self, fp=None):
         if not fp:
-            fp = sys.stdout.buffer
+            try:
+                fp = sys.stdout.buffer
+            except AttributeError:
+                fp = sys.stdout
         self.fp = fp
 
     def begin_document(self, id=None):

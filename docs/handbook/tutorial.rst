@@ -424,7 +424,7 @@ Drawing PostScript
         title = "hopper"
         box = (1*72, 2*72, 7*72, 10*72) # in points
 
-        ps = PSDraw.PSDraw() # default is sys.stdout.buffer
+        ps = PSDraw.PSDraw() # default is sys.stdout or sys.stdout.buffer
         ps.begin_document(title)
 
         # draw the image (75 dpi)
