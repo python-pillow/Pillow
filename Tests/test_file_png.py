@@ -1,4 +1,5 @@
 import re
+import sys
 import zlib
 from io import BytesIO
 
@@ -10,6 +11,7 @@ from .helper import (
     PillowLeakTestCase,
     assert_image,
     assert_image_equal,
+    assert_image_equal_tofile,
     hopper,
     is_big_endian,
     is_win32,
@@ -710,6 +712,32 @@ class TestFilePng:
 
             with pytest.raises(EOFError):
                 im.seek(1)
+
+    @pytest.mark.parametrize("buffer", (True, False))
+    def test_save_stdout(self, buffer):
+        old_stdout = sys.stdout.buffer
+
+        if buffer:
+
+            class MyStdOut:
+                buffer = BytesIO()
+
+            mystdout = MyStdOut()
+        else:
+            mystdout = BytesIO()
+
+        sys.stdout = mystdout
+
+        with Image.open(TEST_PNG_FILE) as im:
+            im.save(sys.stdout, "PNG")
+
+        # Reset stdout
+        sys.stdout = old_stdout
+
+        if buffer:
+            mystdout = mystdout.buffer
+        reloaded = Image.open(mystdout)
+        assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
