@@ -565,7 +565,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
         if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
-                value.encode("ascii", "replace") if isinstance(value, str) else value
+                v.encode("ascii", "replace") if isinstance(v, str) else v
+                for v in values
             ]
         elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v for v in values]

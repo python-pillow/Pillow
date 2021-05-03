@@ -185,6 +185,21 @@ def test_iptc(tmp_path):
         im.save(out)
 
 
+def test_undefined_zero(tmp_path):
+    # Check that the tag has not been changed since this test was created
+    tag = TiffTags.TAGS_V2[45059]
+    assert tag.type == TiffTags.UNDEFINED
+    assert tag.length == 0
+
+    info = TiffImagePlugin.ImageFileDirectory(b"II*\x00\x08\x00\x00\x00")
+    info[45059] = b"test"
+
+    # Assert that the tag value does not change by setting it to itself
+    original = info[45059]
+    info[45059] = info[45059]
+    assert info[45059] == original
+
+
 def test_empty_metadata():
     f = io.BytesIO(b"II*\x00\x08\x00\x00\x00")
     head = f.read(8)
