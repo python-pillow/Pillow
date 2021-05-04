@@ -27,7 +27,7 @@ jobs:
           - os: "macos-latest"
             os-name: "osx"
           - os: "ubuntu-20.04"
-            os-name: "xenial"
+            os-name: "focal"
 # Disable whilst not available
 #          - os: "macos-11.0"
 #            os-name: "osx"
@@ -76,7 +76,7 @@ jobs:
           - os: "macos-latest"
             os-name: "osx"
           - os: "ubuntu-20.04"
-            os-name: "xenial"
+            os-name: "focal"
           - os: "macos-11.0"
             os-name: "osx"
             platform: "arm64"
