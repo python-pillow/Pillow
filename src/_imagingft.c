@@ -277,7 +277,8 @@ text_layout_raqm(
             direction = RAQM_DIRECTION_LTR;
         } else if (strcmp(dir, "ttb") == 0) {
             direction = RAQM_DIRECTION_TTB;
-#if !defined(RAQM_VERSION_ATLEAST) || !RAQM_VERSION_ATLEAST(0, 7, 0)
+#if !defined(RAQM_VERSION_ATLEAST)
+            /* RAQM_VERSION_ATLEAST was added in Raqm 0.7.0 */
             PyErr_SetString(
                 PyExc_ValueError,
                 "libraqm 0.7 or greater required for 'ttb' direction");
