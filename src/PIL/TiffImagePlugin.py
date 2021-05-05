@@ -446,12 +446,12 @@ class ImageFileDirectory_v2(MutableMapping):
     Tags will be found in the private attributes self._tagdata, and in
     self._tags_v2 once decoded.
 
-    Self.legacy_api is a value for internal use, and shouldn't be
+    self.legacy_api is a value for internal use, and shouldn't be
     changed from outside code. In cooperation with the
     ImageFileDirectory_v1 class, if legacy_api is true, then decoded
-    tags will be populated into both _tags_v1 and _tags_v2. _Tags_v2
+    tags will be populated into both _tags_v1 and _tags_v2. _tags_v2
     will be used if this IFD is used in the TIFF save routine. Tags
-    should be read from tags_v1 if legacy_api == true.
+    should be read from _tags_v1 if legacy_api == true.
 
     """
 
