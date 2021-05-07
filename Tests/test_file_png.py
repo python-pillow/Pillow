@@ -386,25 +386,12 @@ class TestFilePng:
         # Check dpi roundtripping
 
         with Image.open(TEST_PNG_FILE) as im:
-            im = roundtrip(im, dpi=(100, 100))
-        assert im.info["dpi"] == (100, 100)
+            im = roundtrip(im, dpi=(100.33, 100.33))
+        assert im.info["dpi"] == (100.33, 100.33)
 
-    def test_load_dpi_rounding(self):
-        # Round up
+    def test_load_float_dpi(self):
         with Image.open(TEST_PNG_FILE) as im:
-            assert im.info["dpi"] == (96, 96)
-
-        # Round down
-        with Image.open("Tests/images/icc_profile_none.png") as im:
-            assert im.info["dpi"] == (72, 72)
-
-    def test_save_dpi_rounding(self):
-        with Image.open(TEST_PNG_FILE) as im:
-            im = roundtrip(im, dpi=(72.2, 72.2))
-        assert im.info["dpi"] == (72, 72)
-
-        im = roundtrip(im, dpi=(72.8, 72.8))
-        assert im.info["dpi"] == (73, 73)
+            assert im.info["dpi"] == (95.9866, 95.9866)
 
     def test_roundtrip_text(self):
         # Check text roundtripping
