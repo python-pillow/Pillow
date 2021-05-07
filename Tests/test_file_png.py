@@ -715,7 +715,7 @@ class TestFilePng:
 
     @pytest.mark.parametrize("buffer", (True, False))
     def test_save_stdout(self, buffer):
-        old_stdout = sys.stdout.buffer
+        old_stdout = sys.stdout
 
         if buffer:
 
