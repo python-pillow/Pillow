@@ -656,15 +656,6 @@ class TestFileJpeg:
                 reloaded.load()
                 assert im.info["dpi"] == reloaded.info["dpi"]
 
-    def test_load_dpi_rounding(self):
-        # Round up
-        with Image.open("Tests/images/iptc_roundUp.jpg") as im:
-            assert im.info["dpi"] == (44, 44)
-
-        # Round down
-        with Image.open("Tests/images/iptc_roundDown.jpg") as im:
-            assert im.info["dpi"] == (2, 2)
-
     def test_save_dpi_rounding(self, tmp_path):
         outfile = str(tmp_path / "temp.jpg")
         with Image.open("Tests/images/hopper.jpg") as im:
