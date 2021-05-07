@@ -1519,8 +1519,8 @@ def _save(im, fp, filename):
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         ifd[RESOLUTION_UNIT] = 2
-        ifd[X_RESOLUTION] = int(dpi[0] + 0.5)
-        ifd[Y_RESOLUTION] = int(dpi[1] + 0.5)
+        ifd[X_RESOLUTION] = dpi[0]
+        ifd[Y_RESOLUTION] = dpi[1]
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits
