@@ -375,7 +375,7 @@ if sys.platform == "darwin":
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Syntax: python IcnsImagePlugin.py [file]")
+        print("Syntax: python3 IcnsImagePlugin.py [file]")
         sys.exit()
 
     with open(sys.argv[1], "rb") as fp:

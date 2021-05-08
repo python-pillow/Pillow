@@ -256,7 +256,7 @@ else:
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Syntax: python ImageShow.py imagefile [title]")
+        print("Syntax: python3 ImageShow.py imagefile [title]")
         sys.exit()
 
     with Image.open(sys.argv[1]) as im:
