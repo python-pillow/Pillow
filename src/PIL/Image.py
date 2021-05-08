@@ -2887,7 +2887,7 @@ def open(fp, mode="r", formats=None):
     :param formats: A list or tuple of formats to attempt to load the file in.
        This can be used to restrict the set of formats checked.
        Pass ``None`` to try all supported formats. You can print the set of
-       available formats by running ``python -m PIL`` or using
+       available formats by running ``python3 -m PIL`` or using
        the :py:func:`PIL.features.pilinfo` function.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception FileNotFoundError: If the file cannot be found.
