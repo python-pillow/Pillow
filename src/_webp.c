@@ -663,7 +663,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     WebPPictureFree(&pic);
     if (!ok) {
-        PyErr_SetString(PyExc_ValueError, "encoding error");
+        PyErr_Format(PyExc_ValueError, "encoding error %d", (&pic)->error_code);
         return NULL;
     }
     output = writer.mem;
