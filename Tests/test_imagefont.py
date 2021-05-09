@@ -131,6 +131,9 @@ class TestImageFont:
         target = "Tests/images/transparent_background_text.png"
         assert_image_similar_tofile(im, target, 4.09)
 
+        target = "Tests/images/transparent_background_text_L.png"
+        assert_image_similar_tofile(im.convert("L"), target, 0.01)
+
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)
