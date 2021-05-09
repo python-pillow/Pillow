@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Removed TIFF DPI rounding #5446
+  [radarhere, hugovk]
+
 - Include code in WebP error #5471
   [radarhere]
 
