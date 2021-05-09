@@ -578,6 +578,17 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_multipage_seek_backwards(self):
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/multipage.tiff") as im:
+            im.seek(1)
+            im.load()
+
+            im.seek(0)
+            assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/hopper.tif") as im:
