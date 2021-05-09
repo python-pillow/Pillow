@@ -5,6 +5,21 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Include code in WebP error #5471
+  [radarhere]
+
+- Do not alter pixels outside mask when drawing text on an image with transparency #5434
+  [radarhere]
+
+- Reset handle when seeking backwards in TIFF #5443
+  [radarhere]
+
+- Replace sys.stdout with sys.stdout.buffer when saving #5437
+  [radarhere]
+
+- Fixed UNDEFINED TIFF tag of length 0 being changed in roundtrip #5426
+  [radarhere]
+
 - Fixed bug when checking FreeType2 version if it is not installed #5445
   [radarhere]
 
