@@ -1291,11 +1291,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
             if resunit == 2:  # dots per inch
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = (xres, yres)
             elif resunit == 3:  # dots per centimeter. convert to dpi
-                self.info["dpi"] = xres * 2.54, yres * 2.54
+                self.info["dpi"] = (xres * 2.54, yres * 2.54)
             elif resunit is None:  # used to default to 1, but now 2)
-                self.info["dpi"] = xres, yres
+                self.info["dpi"] = (xres, yres)
                 # For backward compatibility,
                 # we also preserve the old behavior
                 self.info["resolution"] = xres, yres
