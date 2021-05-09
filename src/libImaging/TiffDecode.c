@@ -181,7 +181,7 @@ _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 }
 
 int
-ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
+ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
@@ -213,10 +213,10 @@ ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
 }
 
 int
-_pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16 planarconfig, ImagingShuffler *unpackers) {
+_pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16_t planarconfig, ImagingShuffler *unpackers) {
     // if number of bands is 1, there is no difference with contig case
     if (planarconfig == PLANARCONFIG_SEPARATE && im->bands > 1) {
-        uint16 bits_per_sample = 8;
+        uint16_t bits_per_sample = 8;
 
         TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
         if (bits_per_sample != 8 && bits_per_sample != 16) {
@@ -545,10 +545,10 @@ ImagingLibTiffDecode(
     char *filename = "tempfile.tif";
     char *mode = "r";
     TIFF *tiff;
-    uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
-    uint16 compression;
+    uint16_t photometric = 0;  // init to not PHOTOMETRIC_YCBCR
+    uint16_t compression;
     int readAsRGBA = 0;
-    uint16 planarconfig = 0;
+    uint16_t planarconfig = 0;
     int planes = 1;
     ImagingShuffler unpackers[4];
     UINT32 img_width, img_height;
@@ -639,7 +639,7 @@ ImagingLibTiffDecode(
 
     if (clientstate->ifd) {
         int rv;
-        uint32 ifdoffset = clientstate->ifd;
+        uint32_t ifdoffset = clientstate->ifd;
         TRACE(("reading tiff ifd %u\n", ifdoffset));
         rv = TIFFSetSubDirectory(tiff, ifdoffset);
         if (!rv) {
@@ -697,8 +697,8 @@ ImagingLibTiffDecode(
             // Check if raw mode was RGBa and it was stored on separate planes
             // so we have to convert it to RGBA
             if (planes > 3 && strcmp(im->mode, "RGBA") == 0) {
-                uint16 extrasamples;
-                uint16* sampleinfo;
+                uint16_t extrasamples;
+                uint16_t* sampleinfo;
                 ImagingShuffler shuffle;
                 INT32 y;
 
@@ -810,7 +810,7 @@ ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length) {
     // Refer to libtiff docs (http://www.simplesystems.org/libtiff/addingtags.html)
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
-    uint32 n;
+    uint32_t n;
     int status = 0;
 
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
@@ -933,7 +933,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 state->xsize);
 
             if (TIFFWriteScanline(
-                    tiff, (tdata_t)(state->buffer), (uint32)state->y, 0) == -1) {
+                    tiff, (tdata_t)(state->buffer), (uint32_t)state->y, 0) == -1) {
                 TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
                 TIFFClose(tiff);
