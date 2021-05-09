@@ -137,29 +137,26 @@ class TestFileTiff:
             im._setup()
             assert im.info["dpi"] == (71.0, 71.0)
 
-    def test_load_dpi_rounding(self):
-        for resolutionUnit, dpi in ((None, (72, 73)), (2, (72, 73)), (3, (183, 185))):
-            with Image.open(
-                "Tests/images/hopper_roundDown_" + str(resolutionUnit) + ".tif"
-            ) as im:
-                assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
-                assert im.info["dpi"] == (dpi[0], dpi[0])
+    @pytest.mark.parametrize(
+        "resolutionUnit, dpi",
+        [(None, 72.8), (2, 72.8), (3, 184.912)],
+    )
+    def test_load_float_dpi(self, resolutionUnit, dpi):
+        with Image.open(
+            "Tests/images/hopper_float_dpi_" + str(resolutionUnit) + ".tif"
+        ) as im:
+            assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
+            for reloaded_dpi in im.info["dpi"]:
+                assert float(reloaded_dpi) == dpi
 
-            with Image.open(
-                "Tests/images/hopper_roundUp_" + str(resolutionUnit) + ".tif"
-            ) as im:
-                assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
-                assert im.info["dpi"] == (dpi[1], dpi[1])
-
-    def test_save_dpi_rounding(self, tmp_path):
+    def test_save_float_dpi(self, tmp_path):
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
-            for dpi in (72.2, 72.8):
-                im.save(outfile, dpi=(dpi, dpi))
+            im.save(outfile, dpi=(72.2, 72.2))
 
-                with Image.open(outfile) as reloaded:
-                    reloaded.load()
-                    assert (round(dpi), round(dpi)) == reloaded.info["dpi"]
+            with Image.open(outfile) as reloaded:
+                for dpi in reloaded.info["dpi"]:
+                    assert float(dpi) == 72.2
 
     def test_save_setting_missing_resolution(self):
         b = BytesIO()
