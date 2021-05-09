@@ -71,6 +71,9 @@ function pre_build {
     build_jpeg
     CFLAGS=$ORIGINAL_CFLAGS
 
+    if [[ -n "$IS_MACOS" && $MACOSX_DEPLOYMENT_TARGET == "11.0" ]]; then
+        TIFF_VERSION=4.2.0
+    fi
     build_tiff
     if [ -n "$IS_MACOS" ]; then
         # Remove existing libpng
