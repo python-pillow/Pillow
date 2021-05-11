@@ -290,13 +290,13 @@ def _accept(prefix):
 
 
 def _save(im, fp, filename):
+    # Get the keyword arguments
+    info = im.encoderinfo
+
     if filename.endswith(".j2k"):
         kind = "j2k"
     else:
-        kind = "jp2"
-
-    # Get the keyword arguments
-    info = im.encoderinfo
+        kind = "jp2" if info.get("use_jp2", True) else "j2k"
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)
@@ -321,9 +321,6 @@ def _save(im, fp, filename):
     progression = info.get("progression", "LRCP")
     cinema_mode = info.get("cinema_mode", "no")
     mct = info.get("mct", 0)
-
-    kind = "jp2" if info.get("use_jp2", True) else "j2k"
-
     fd = -1
 
     if hasattr(fp, "fileno"):

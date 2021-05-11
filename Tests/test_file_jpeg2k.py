@@ -215,6 +215,18 @@ def test_use_jp2():
     out.seek(0)
     assert out.read(2) == b"\xff\x4f"
 
+    out = BytesIO()
+    out.name = "foo.j2k"
+    test_card.save(out, "JPEG2000", use_jp2=False)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    out = BytesIO()
+    out.name = "foo.jp2"
+    test_card.save(out, "JPEG2000", use_jp2=False)
+    out.seek(4)
+    assert out.read(2) != b"jP"
+
 
 def test_mct():
     # Three component
