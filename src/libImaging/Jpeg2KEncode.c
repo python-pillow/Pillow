@@ -435,6 +435,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     }
 
     params.irreversible = context->irreversible;
+    if (components == 3) {
+        params.tcp_mct = context->mct;
+    }
 
     params.prog_order = context->progression;
 

@@ -209,6 +209,37 @@ def test_layers():
         assert_image_similar(im, test_card, 0.4)
 
 
+def test_use_jp2():
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", use_jp2=False)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+
+def test_mct():
+    # Three component
+    for val in (0, 1):
+        out = BytesIO()
+        test_card.save(out, "JPEG2000", mct=val, use_jp2=False)
+        out.seek(0)
+        with Image.open(out) as im:
+            im.load()
+            assert_image_similar(im, test_card, 1.0e-3)
+            assert out.getvalue()[59] == val
+
+    # Single component
+    for val in (0, 1):
+        out = BytesIO()
+        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
+            jp2.save(out, "JPEG2000", mct=val, use_jp2=False)
+
+        out.seek(0)
+        with Image.open(out) as im:
+            im.load()
+            assert_image_similar(im, jp2, 1.0e-3)
+            assert out.getvalue()[53] == 0
+
+
 def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
