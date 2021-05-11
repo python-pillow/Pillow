@@ -1086,7 +1086,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getpalettemode(ImagingObject *self, PyObject *args) {
+_getpalettemode(ImagingObject *self) {
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
@@ -2095,12 +2095,12 @@ _box_blur(ImagingObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_isblock(ImagingObject *self, PyObject *args) {
+_isblock(ImagingObject *self) {
     return PyBool_FromLong(self->image->block != NULL);
 }
 
 static PyObject *
-_getbbox(ImagingObject *self, PyObject *args) {
+_getbbox(ImagingObject *self) {
     int bbox[4];
     if (!ImagingGetBBox(self->image, bbox)) {
         Py_INCREF(Py_None);
@@ -2145,7 +2145,7 @@ _getcolors(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getextrema(ImagingObject *self, PyObject *args) {
+_getextrema(ImagingObject *self) {
     union {
         UINT8 u[2];
         INT32 i[2];
@@ -2179,7 +2179,7 @@ _getextrema(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getprojection(ImagingObject *self, PyObject *args) {
+_getprojection(ImagingObject *self) {
     unsigned char *xprofile;
     unsigned char *yprofile;
     PyObject *result;
@@ -2297,7 +2297,7 @@ _merge(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_split(ImagingObject *self, PyObject *args) {
+_split(ImagingObject *self) {
     int fails = 0;
     Py_ssize_t i;
     PyObject *list;
@@ -2328,7 +2328,7 @@ _split(ImagingObject *self, PyObject *args) {
 #ifdef WITH_IMAGECHOPS
 
 static PyObject *
-_chop_invert(ImagingObject *self, PyObject *args) {
+_chop_invert(ImagingObject *self) {
     return PyImagingNew(ImagingNegative(self->image));
 }
 
@@ -3457,29 +3457,29 @@ static struct PyMethodDef methods[] = {
     {"transpose", (PyCFunction)_transpose, METH_VARARGS},
     {"transform2", (PyCFunction)_transform2, METH_VARARGS},
 
-    {"isblock", (PyCFunction)_isblock, METH_VARARGS},
+    {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 
-    {"getbbox", (PyCFunction)_getbbox, METH_VARARGS},
+    {"getbbox", (PyCFunction)_getbbox, METH_NOARGS},
     {"getcolors", (PyCFunction)_getcolors, METH_VARARGS},
-    {"getextrema", (PyCFunction)_getextrema, METH_VARARGS},
-    {"getprojection", (PyCFunction)_getprojection, METH_VARARGS},
+    {"getextrema", (PyCFunction)_getextrema, METH_NOARGS},
+    {"getprojection", (PyCFunction)_getprojection, METH_NOARGS},
 
     {"getband", (PyCFunction)_getband, METH_VARARGS},
     {"putband", (PyCFunction)_putband, METH_VARARGS},
-    {"split", (PyCFunction)_split, METH_VARARGS},
+    {"split", (PyCFunction)_split, METH_NOARGS},
     {"fillband", (PyCFunction)_fillband, METH_VARARGS},
 
     {"setmode", (PyCFunction)im_setmode, METH_VARARGS},
 
     {"getpalette", (PyCFunction)_getpalette, METH_VARARGS},
-    {"getpalettemode", (PyCFunction)_getpalettemode, METH_VARARGS},
+    {"getpalettemode", (PyCFunction)_getpalettemode, METH_NOARGS},
     {"putpalette", (PyCFunction)_putpalette, METH_VARARGS},
     {"putpalettealpha", (PyCFunction)_putpalettealpha, METH_VARARGS},
     {"putpalettealphas", (PyCFunction)_putpalettealphas, METH_VARARGS},
 
 #ifdef WITH_IMAGECHOPS
     /* Channel operations (ImageChops) */
-    {"chop_invert", (PyCFunction)_chop_invert, METH_VARARGS},
+    {"chop_invert", (PyCFunction)_chop_invert, METH_NOARGS},
     {"chop_lighter", (PyCFunction)_chop_lighter, METH_VARARGS},
     {"chop_darker", (PyCFunction)_chop_darker, METH_VARARGS},
     {"chop_difference", (PyCFunction)_chop_difference, METH_VARARGS},
