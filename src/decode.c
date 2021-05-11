@@ -239,10 +239,10 @@ _get_pulls_fd(ImagingDecoderObject *decoder) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"decode", (PyCFunction)_decode, 1},
-    {"cleanup", (PyCFunction)_decode_cleanup, 1},
-    {"setimage", (PyCFunction)_setimage, 1},
-    {"setfd", (PyCFunction)_setfd, 1},
+    {"decode", (PyCFunction)_decode, METH_VARARGS},
+    {"cleanup", (PyCFunction)_decode_cleanup, METH_VARARGS},
+    {"setimage", (PyCFunction)_setimage, METH_VARARGS},
+    {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 
