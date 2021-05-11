@@ -39,9 +39,12 @@ As of 2019, Pillow development is
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
                 alt="AppVeyor CI build status (Windows)"
                 src="https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build"></a>
+            <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
+                alt="GitHub Actions wheels build status (Wheels)"
+                src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
             <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
-                alt="Travis CI build status (macOS)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=macOS%20build"></a>
+                alt="Travis CI wheels build status (aarch64)"
+                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=aarch64%20wheels"></a>
             <a href="https://codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg"></a>
