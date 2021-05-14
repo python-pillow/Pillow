@@ -318,3 +318,9 @@ def setup(app):
 
 # GitHub repo for sphinx-issues
 issues_github_path = "python-pillow/Pillow"
+
+# sphinxext.opengraph
+ogp_image = (
+    "https://raw.githubusercontent.com/python-pillow/pillow-logo/master/"
+    "pillow-logo-dark-text-1280x640.png"
+)
