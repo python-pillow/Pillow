@@ -912,8 +912,13 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
     def test_old_style_jpeg(self):
-        infile = "Tests/images/old-style-jpeg-compression.tif"
-        with Image.open(infile) as im:
+        with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
+            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
+    def test_open_missing_samplesperpixel(self):
+        with Image.open(
+            "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif"
+        ) as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_no_rows_per_strip(self):
