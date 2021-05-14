@@ -240,8 +240,9 @@ class ImageFile(Image.Image):
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError(None, "image file is truncated",
-                                                  self.filename) from e
+                                    raise OSError(
+                                        None, "image file is truncated", self.filename
+                                    ) from e
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
