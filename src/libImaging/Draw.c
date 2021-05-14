@@ -1004,9 +1004,7 @@ clip_tree_do_clip(
         end->type = -1;
         end->next = NULL;
         *ret = start;
-        return 0;
-    }
-    if (root->type == CT_CLIP) {
+    } else if (root->type == CT_CLIP) {
         double eps = 1e-9;
         double A = root->a;
         double B = root->b;
@@ -1048,9 +1046,7 @@ clip_tree_do_clip(
         } else {
             *ret = NULL;
         }
-        return 0;
-    }
-    if (root->type == CT_OR || root->type == CT_AND) {
+    } else if (root->type == CT_OR || root->type == CT_AND) {
         event_list *l1;
         event_list *l2;
         if (clip_tree_do_clip(root->l, x0, y, x1, &l1) < 0) {
@@ -1102,9 +1098,9 @@ clip_tree_do_clip(
                 free(t);
             }
         }
-        return 0;
+    } else {
+        *ret = NULL;
     }
-    *ret = NULL;
     return 0;
 }
 
@@ -1127,8 +1123,7 @@ void
 debug_clip_tree(clip_node *root, int space) {
     if (root == NULL) {
         return;
-    }
-    if (root->type == CT_CLIP) {
+    } else if (root->type == CT_CLIP) {
         int t = space;
         while (t--) {
             fputc(' ', stderr);
