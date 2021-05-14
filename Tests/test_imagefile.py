@@ -120,12 +120,14 @@ class TestImageFile:
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
         with Image.open("Tests/images/truncated_image.png") as im:
-            with pytest.raises(OSError):
+            with pytest.raises(OSError) as oseinfo:
                 im.load()
+            assert "Tests/images/truncated_image.png" in str(oseinfo.value)
 
             # Test that the error is raised if loaded a second time
-            with pytest.raises(OSError):
+            with pytest.raises(OSError) as oseinfo:
                 im.load()
+            assert "Tests/images/truncated_image.png" in str(oseinfo.value)
 
     @skip_unless_feature("zlib")
     def test_truncated_without_errors(self):
