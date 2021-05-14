@@ -1347,6 +1347,22 @@ pie_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
     s->root->l = lc;
     s->root->r = rc;
     s->root->type = ar - al < 180 ? CT_AND : CT_OR;
+
+    // add one more semiplane to avoid spikes
+    if (ar - al < 90) {
+        clip_node *old_root = s->root;
+        clip_node *spike_clipper = s->nodes + s->node_count++;
+        s->root = s->nodes + s->node_count++;
+        s->root->l = old_root;
+        s->root->r = spike_clipper;
+        s->root->type = CT_AND;
+
+        spike_clipper->l = spike_clipper->r = NULL;
+        spike_clipper->type = CT_CLIP;
+        spike_clipper->a = (xl + xr) / 2.0;
+        spike_clipper->b = (yl + yr) / 2.0;
+        spike_clipper->c = 0;
+    }
 }
 
 void
