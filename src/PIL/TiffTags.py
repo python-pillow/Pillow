@@ -184,7 +184,9 @@ TAGS_V2 = {
     34665: ("ExifIFD", LONG, 1),
     34675: ("ICCProfile", UNDEFINED, 1),
     34853: ("GPSInfoIFD", LONG, 1),
+    36864: ("ExifVersion", UNDEFINED, 1),
     40965: ("InteroperabilityIFD", LONG, 1),
+    41730: ("CFAPattern", UNDEFINED, 1),
     # MPInfo
     45056: ("MPFVersion", UNDEFINED, 1),
     45057: ("NumberOfImages", LONG, 1),
@@ -205,6 +207,7 @@ TAGS_V2 = {
     45579: ("YawAngle", SIGNED_RATIONAL, 1),
     45580: ("PitchAngle", SIGNED_RATIONAL, 1),
     45581: ("RollAngle", SIGNED_RATIONAL, 1),
+    40960: ("FlashPixVersion", UNDEFINED, 1),
     50741: ("MakerNoteSafety", SHORT, 1, {"Unsafe": 0, "Safe": 1}),
     50780: ("BestQualityScale", RATIONAL, 1),
     50838: ("ImageJMetaDataByteCounts", LONG, 0),  # Can be more than one
