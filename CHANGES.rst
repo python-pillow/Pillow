@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Remove spikes when drawing thin pieslices #5460
+  [xtsm]
+
+- Updated default value for SAMPLESPERPIXEL TIFF tag #5452
+  [radarhere]
+
 - Removed TIFF DPI rounding #5446
   [radarhere, hugovk]
 
