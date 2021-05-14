@@ -324,3 +324,4 @@ ogp_image = (
     "https://raw.githubusercontent.com/python-pillow/pillow-logo/master/"
     "pillow-logo-dark-text-1280x640.png"
 )
+ogp_image_alt = "Pillow"
