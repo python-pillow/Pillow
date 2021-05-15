@@ -49,16 +49,16 @@ function pre_build {
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-	build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
-	if [ -n "$IS_MACOS" ]; then
-		build_simple xorgproto 2021.4 https://www.x.org/pub/individual/proto
-		cp venv/share/pkgconfig/xproto.pc venv/lib/pkgconfig/xproto.pc
-		build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
-		build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
-	else
-		sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
-	fi
-	build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+    build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
+    if [ -n "$IS_MACOS" ]; then
+        build_simple xorgproto 2021.4 https://www.x.org/pub/individual/proto
+        cp venv/share/pkgconfig/xproto.pc venv/lib/pkgconfig/xproto.pc
+        build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
+        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+    else
+        sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+    fi
+    build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
