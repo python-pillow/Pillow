@@ -49,17 +49,16 @@ function pre_build {
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-    if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
-		build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
-		if [ -n "$IS_MACOS" ]; then
-			build_simple xproto 7.0.31 https://www.x.org/pub/individual/proto
-			build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
-			build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
-		else
-			sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
-		fi
-		build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
-    fi
+	build_simple xcb-proto 1.14.1 https://xcb.freedesktop.org/dist
+	if [ -n "$IS_MACOS" ]; then
+		build_simple xorgproto 2021.4 https://www.x.org/pub/individual/proto
+		cp venv/share/pkgconfig/xproto.pc venv/lib/pkgconfig/xproto.pc
+		build_simple libXau 1.0.9 https://www.x.org/pub/individual/lib
+		build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+	else
+		sed -i s/\${pc_sysrootdir\}// /usr/local/lib/pkgconfig/xcb-proto.pc
+	fi
+	build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
     if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
@@ -132,13 +131,10 @@ EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]] && [[ "$MACHTYPE" != aarch64* ]]; then
-  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux"
+  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux xcb"
 else
   # can't find FriBiDi
-  EXP_FEATURES="transp_webp webp_anim webp_mux"
-fi
-if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
-    EXP_FEATURES="$EXP_FEATURES xcb"
+  EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
 fi
 
 function run_tests {
