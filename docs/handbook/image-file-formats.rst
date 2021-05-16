@@ -508,9 +508,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **mct**
     If ``1`` then enable multiple component transformation when encoding,
     otherwise use ``0`` for no component transformation (default). If MCT is
-    enabled and ``irreversible`` is ``True`` then the Reversible Color
+    enabled and ``irreversible`` is ``True`` then the Irreversible Color
     Transformation will be applied, otherwise encoding will use the
-    Irreversible Color Transformation. MCT works best with a ``mode`` of
+    Reversible Color Transformation. MCT works best with a ``mode`` of
     ``RGB`` and is only applicable when the image data has 3 components.
 
 **progression**
