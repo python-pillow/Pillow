@@ -63,7 +63,7 @@ function pre_build {
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
     fi
-    
+
     # Custom flags to include both multibuild and jpeg defaults
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -g -O2"
