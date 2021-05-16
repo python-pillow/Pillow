@@ -1187,7 +1187,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
-    char *mct = 0;
+    char mct;
     Py_ssize_t fd = -1;
 
     if (!PyArg_ParseTuple(
