@@ -209,41 +209,82 @@ def test_layers():
         assert_image_similar(im, test_card, 0.4)
 
 
-def test_use_jp2():
-    out = BytesIO()
-    test_card.save(out, "JPEG2000", use_jp2=False)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
+def test_no_jp2():
     out = BytesIO()
     out.name = "foo.j2k"
-    test_card.save(out, "JPEG2000", use_jp2=False)
+    test_card.save(out, "JPEG2000")
     out.seek(0)
     assert out.read(2) == b"\xff\x4f"
 
     out = BytesIO()
     out.name = "foo.jp2"
-    test_card.save(out, "JPEG2000", use_jp2=False)
+    test_card.save(out, "JPEG2000")
     out.seek(4)
-    assert out.read(2) != b"jP"
+    assert out.read(2) == b"jP"
+
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=True)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=True)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    out = BytesIO()
+    out.name = "foo.j2k"
+    test_card.save(out, "JPEG2000", no_jp2=True)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    out = BytesIO()
+    out.name = "foo.jp2"
+    test_card.save(out, "JPEG2000", no_jp2=True)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    # Use the filename extension to determine format
+    out = BytesIO()
+    out.name = "foo.j2k"
+    test_card.save(out, "JPEG2000", no_jp2=False)
+    out.seek(0)
+    assert out.read(2) == b"\xff\x4f"
+
+    out = BytesIO()
+    out.name = "foo.jp2"
+    test_card.save(out, "JPEG2000", no_jp2=False)
+    out.seek(4)
+    assert out.read(2) == b"jP"
+
+    # Default to JP2 if no filename
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=False)
+    out.seek(4)
+    assert out.read(2) == b"jP"
+
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=False)
+    out.seek(4)
+    assert out.read(2) == b"jP"
 
 
 def test_mct():
     # Three component
     for val in (0, 1):
         out = BytesIO()
-        test_card.save(out, "JPEG2000", mct=val, use_jp2=False)
+        test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
         out.seek(0)
         with Image.open(out) as im:
             im.load()
             assert_image_similar(im, test_card, 1.0e-3)
             assert out.getvalue()[59] == val
 
-    # Single component
+    # Single component should have MCT disabled
     for val in (0, 1):
         out = BytesIO()
         with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
-            jp2.save(out, "JPEG2000", mct=val, use_jp2=False)
+            jp2.save(out, "JPEG2000", mct=val, no_jp2=True)
 
         out.seek(0)
         with Image.open(out) as im:

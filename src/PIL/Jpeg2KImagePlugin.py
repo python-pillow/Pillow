@@ -293,10 +293,10 @@ def _save(im, fp, filename):
     # Get the keyword arguments
     info = im.encoderinfo
 
-    if filename.endswith(".j2k"):
+    if filename.endswith(".j2k") or info.get("no_jp2", False):
         kind = "j2k"
     else:
-        kind = "jp2" if info.get("use_jp2", True) else "j2k"
+        kind = "jp2"
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)

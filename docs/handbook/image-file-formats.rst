@@ -506,10 +506,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     Defaults to ``False``, which uses the lossless DWT 5-3.
 
 **mct**
-    If ``0`` then don't use multiple component transformation when encoding,
-    otherwise use ``1`` to apply to components 0, 1 and 2. MCT works best
-    with a ``mode`` of ``RGB`` and is only available for 3 component image
-    data.
+    If ``1`` then apply multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). MCT works
+    best with a ``mode`` of ``RGB`` and is only applied when the image data has
+    3 components.
 
 **progression**
     Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
@@ -529,9 +529,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     for compliant 4K files, *at least one* of the dimensions must match
     4096 x 2160.
 
-**use_jp2**
-    If ``False`` then don't wrap the codestream in the JP2 file format when
-    saving. Defaults to ``True``.
+**no_jp2**
+    If ``True`` then don't wrap the raw codestream in the JP2 file format when
+    saving, otherwise the extension of the filename will be used to determine
+    the format (default).
 
 .. note::
 
