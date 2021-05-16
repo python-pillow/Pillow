@@ -271,7 +271,6 @@ def test_mct():
         test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
         out.seek(0)
         with Image.open(out) as im:
-            im.load()
             assert_image_similar(im, test_card, 1.0e-3)
             assert out.getvalue()[59] == val
 
@@ -283,7 +282,6 @@ def test_mct():
 
         out.seek(0)
         with Image.open(out) as im:
-            im.load()
             assert_image_similar(im, jp2, 1.0e-3)
             assert out.getvalue()[53] == 0
 
