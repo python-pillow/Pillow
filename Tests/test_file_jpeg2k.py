@@ -263,11 +263,6 @@ def test_no_jp2():
     out.seek(4)
     assert out.read(2) == b"jP"
 
-    out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=False)
-    out.seek(4)
-    assert out.read(2) == b"jP"
-
 
 def test_mct():
     # Three component
