@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Removed DPI rounding from BMP, JPEG, PNG and WMF loading #5476, #5470
+  [radarhere]
+
 - Remove spikes when drawing thin pieslices #5460
   [xtsm]
 
