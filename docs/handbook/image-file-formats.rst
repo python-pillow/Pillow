@@ -506,10 +506,12 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     Defaults to ``False``, which uses the lossless DWT 5-3.
 
 **mct**
-    If ``1`` then apply multiple component transformation when encoding,
-    otherwise use ``0`` for no component transformation (default). MCT works
-    best with a ``mode`` of ``RGB`` and is only applied when the image data has
-    3 components.
+    If ``1`` then enable multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). If MCT is
+    enabled and ``irreversible`` is ``True`` then the Reversible Color
+    Transformation will be applied, otherwise encoding will use the
+    Irreversible Color Transformation. MCT works best with a ``mode`` of
+    ``RGB`` and is only applicable when the image data has 3 components.
 
 **progression**
     Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
