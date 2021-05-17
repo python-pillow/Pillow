@@ -10,6 +10,7 @@ from .helper import assert_image_equal, assert_image_equal_tofile
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
+TEST_FILE_DX10_BC5 = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
@@ -56,6 +57,19 @@ def test_sanity_dxt3():
         assert im.size == (256, 256)
 
         assert_image_equal_tofile(im, TEST_FILE_DXT3.replace(".dds", ".png"))
+
+
+def test_dx10_bc5():
+    """Check DX10 images can be opened"""
+
+    with Image.open(TEST_FILE_DX10_BC5) as im:
+        im.load()
+
+        assert im.format == "DDS"
+        assert im.mode == "RGB"
+        assert im.size == (256, 256)
+
+        assert_image_equal_tofile(im, TEST_FILE_DX10_BC5.replace(".dds", ".png"))
 
 
 def test_dx10_bc7():

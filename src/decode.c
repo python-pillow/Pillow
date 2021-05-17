@@ -368,12 +368,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         case 1: /* BC1: 565 color, 1-bit alpha */
         case 2: /* BC2: 565 color, 4-bit alpha */
         case 3: /* BC3: 565 color, 2-endpoint 8-bit interpolated alpha */
-        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
         case 7: /* BC7: 4-channel 8-bit via everything */
             actual = "RGBA";
             break;
         case 4: /* BC4: 1-channel 8-bit via 1 BC3 alpha block */
             actual = "L";
+            break;
+        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
+            actual = "RGB";
             break;
         case 6: /* BC6: 3-channel 16-bit float */
             /* TODO: support 4-channel floating point images */
