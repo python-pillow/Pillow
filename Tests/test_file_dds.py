@@ -5,7 +5,7 @@ import pytest
 
 from PIL import DdsImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
@@ -242,3 +242,19 @@ def test_unimplemented_pixel_format():
     with pytest.raises(NotImplementedError):
         with Image.open("Tests/images/unimplemented_pixel_format.dds"):
             pass
+
+
+def test_save_unsupported_mode(tmp_path):
+    out = str(tmp_path / "temp.dds")
+    im = hopper("HSV")
+    with pytest.raises(OSError):
+        im.save(out)
+
+
+def test_save(tmp_path):
+    out = str(tmp_path / "temp.dds")
+    im = hopper()
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert_image_equal(im, reloaded)
