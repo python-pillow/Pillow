@@ -39,6 +39,13 @@ The :py:meth:`~PIL.Image.open` method sets the following
 **compression**
     Set to ``bmp_rle`` if the file is run-length encoded.
 
+DDS
+^^^
+
+DDS is a popular container texture format used in video games and natively supported
+by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
+DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+
 DIB
 ^^^
 
@@ -1041,17 +1048,6 @@ is commonly used in fax applications. The DCX decoder can read files containing
 
 When the file is opened, only the first image is read. You can use
 :py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
-
-
-DDS
-^^^
-
-DDS is a popular container texture format used in video games and natively
-supported by DirectX.
-Currently, uncompressed RGB data and DXT1, DXT3, and DXT5 pixel formats are
-supported, and only in ``RGBA`` mode.
-
-.. versionadded:: 3.4.0 DXT3
 
 FLI, FLC
 ^^^^^^^^
