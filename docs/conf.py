@@ -29,11 +29,13 @@ needs_sphinx = "2.4"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_copybutton",
+    "sphinx_issues",
+    "sphinx_removed_in",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
-    "sphinx_issues",
-    "sphinx_removed_in",
+    "sphinxext.opengraph",
 ]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
@@ -316,3 +318,10 @@ def setup(app):
 
 # GitHub repo for sphinx-issues
 issues_github_path = "python-pillow/Pillow"
+
+# sphinxext.opengraph
+ogp_image = (
+    "https://raw.githubusercontent.com/python-pillow/pillow-logo/master/"
+    "pillow-logo-dark-text-1280x640.png"
+)
+ogp_image_alt = "Pillow"
