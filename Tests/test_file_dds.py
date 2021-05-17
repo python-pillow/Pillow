@@ -251,10 +251,18 @@ def test_save_unsupported_mode(tmp_path):
         im.save(out)
 
 
-def test_save(tmp_path):
+@pytest.mark.parametrize(
+    ("mode", "test_file"),
+    [
+        ("RGB", "Tests/images/hopper.png"),
+        ("RGBA", "Tests/images/pil123rgba.png"),
+    ],
+)
+def test_save(mode, test_file, tmp_path):
     out = str(tmp_path / "temp.dds")
-    im = hopper()
-    im.save(out)
+    with Image.open(test_file) as im:
+        assert im.mode == mode
+        im.save(out)
 
-    with Image.open(out) as reloaded:
-        assert_image_equal(im, reloaded)
+        with Image.open(out) as reloaded:
+            assert_image_equal(im, reloaded)
