@@ -34,9 +34,10 @@
 
 #include "libImaging/Imaging.h"
 
+#include "libImaging/Bit.h"
+#include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
 #include "libImaging/Raw.h"
-#include "libImaging/Bit.h"
 #include "libImaging/Sgi.h"
 
 /* -------------------------------------------------------------------- */
@@ -359,8 +360,8 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
     char *mode;
     char *actual;
     int n = 0;
-    int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|ii", &mode, &n, &ystep)) {
+    char *pixel_format = "";
+    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
         return NULL;
     }
 
@@ -391,14 +392,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    decoder = PyImaging_DecoderNew(0);
+    decoder = PyImaging_DecoderNew(sizeof(char *));
     if (decoder == NULL) {
         return NULL;
     }
 
     decoder->decode = ImagingBcnDecode;
     decoder->state.state = n;
-    decoder->state.ystep = ystep;
+    ((BCNSTATE *)decoder->state.context)->pixel_format = pixel_format;
 
     return (PyObject *)decoder;
 }

@@ -151,6 +151,10 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == b"DXT5":
                 self.pixel_format = "DXT5"
                 n = 3
+            elif fourcc == b"BC5S":
+                self.pixel_format = "BC5S"
+                n = 5
+                self.mode = "RGB"
             elif fourcc == b"DX10":
                 data_start += 20
                 # ignoring flags which pertain to volume textures and cubemaps
@@ -183,7 +187,9 @@ class DdsImageFile(ImageFile.ImageFile):
             else:
                 raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
 
-            self.tile = [("bcn", (0, 0) + self.size, data_start, (n))]
+            self.tile = [
+                ("bcn", (0, 0) + self.size, data_start, (n, self.pixel_format))
+            ]
 
     def load_seek(self, pos):
         pass
