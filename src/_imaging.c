@@ -498,7 +498,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
-    if (PyTuple_Check(color) && PyTuple_Size(color) == 1) {
+    if (PyTuple_Check(color) && PyTuple_GET_SIZE(color) == 1) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
