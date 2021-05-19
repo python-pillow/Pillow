@@ -355,6 +355,24 @@ class TestImagePutPixelError(AccessTest):
             with pytest.raises(TypeError, match="color must be int or tuple"):
                 im.putpixel((0, 0), v)
 
+    @pytest.mark.parametrize(
+        ("mode", "band_numbers", "match"),
+        (
+            ("L", (0, 2), "color must be int or single-element tuple"),
+            ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
+            (
+                "RGB",
+                (0, 2, 5),
+                "color must be int, or tuple of one, three or four elements",
+            ),
+        ),
+    )
+    def test_putpixel_invalid_number_of_bands(self, mode, band_numbers, match):
+        im = hopper(mode)
+        for band_number in band_numbers:
+            with pytest.raises(TypeError, match=match):
+                im.putpixel((0, 0), (0,) * band_number)
+
     @pytest.mark.parametrize("mode", IMAGE_MODES2)
     def test_putpixel_type_error2(self, mode):
         im = hopper(mode)
