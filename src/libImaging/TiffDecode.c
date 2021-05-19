@@ -672,7 +672,7 @@ ImagingLibTiffDecode(
     readAsRGBA = photometric == PHOTOMETRIC_YCBCR;
 
     if (readAsRGBA && compression == COMPRESSION_JPEG && planarconfig == PLANARCONFIG_CONTIG) {
-        // If using new JPEG compression, let libjpeg do RGB convertion for performance reasons
+        // If using new JPEG compression, let libjpeg do RGB conversion for performance reasons
         TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
         readAsRGBA = 0;
     }
