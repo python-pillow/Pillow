@@ -159,8 +159,8 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == b"DX10":
                 data_start += 20
                 # ignoring flags which pertain to volume textures and cubemaps
-                dxt10 = BytesIO(self.fp.read(20))
-                dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
+                (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
+                self.fp.read(16)
                 if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
                     self.pixel_format = "BC5"
                     n = 5
