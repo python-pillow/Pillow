@@ -99,6 +99,7 @@ DXGI_FORMAT_R8G8B8A8_UNORM = 28
 DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29
 DXGI_FORMAT_BC5_TYPELESS = 82
 DXGI_FORMAT_BC5_UNORM = 83
+DXGI_FORMAT_BC5_SNORM = 84
 DXGI_FORMAT_BC7_TYPELESS = 97
 DXGI_FORMAT_BC7_UNORM = 98
 DXGI_FORMAT_BC7_UNORM_SRGB = 99
@@ -163,6 +164,10 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.fp.read(16)
                 if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
                     self.pixel_format = "BC5"
+                    n = 5
+                    self.mode = "RGB"
+                elif dxgi_format == DXGI_FORMAT_BC5_SNORM:
+                    self.pixel_format = "BC5S"
                     n = 5
                     self.mode = "RGB"
                 elif dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):

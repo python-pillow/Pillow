@@ -13,6 +13,7 @@ TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
 TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
+TEST_FILE_BC5S = "Tests/images/bc5s.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
@@ -62,10 +63,17 @@ def test_sanity_dxt5():
 
 
 @pytest.mark.parametrize(
-    "image_path",
-    (TEST_FILE_DX10_BC5_TYPELESS, TEST_FILE_DX10_BC5_UNORM, TEST_FILE_DX10_BC5_SNORM),
+    ("image_path", "expected_path"),
+    (
+        # hexeditted to be typeless
+        (TEST_FILE_DX10_BC5_TYPELESS, TEST_FILE_DX10_BC5_UNORM),
+        (TEST_FILE_DX10_BC5_UNORM, TEST_FILE_DX10_BC5_UNORM),
+        # hexeditted to use DX10 FourCC
+        (TEST_FILE_DX10_BC5_SNORM, TEST_FILE_BC5S),
+        (TEST_FILE_BC5S, TEST_FILE_BC5S),
+    ),
 )
-def test_dx10_bc5(image_path):
+def test_dx10_bc5(image_path, expected_path):
     """Check DX10 BC5 images can be opened"""
 
     with Image.open(image_path) as im:
@@ -75,9 +83,7 @@ def test_dx10_bc5(image_path):
         assert im.mode == "RGB"
         assert im.size == (256, 256)
 
-        assert_image_equal_tofile(
-            im, image_path.replace("typeless", "unorm").replace(".dds", ".png")
-        )
+        assert_image_equal_tofile(im, expected_path.replace(".dds", ".png"))
 
 
 def test_dx10_bc7():
