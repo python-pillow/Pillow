@@ -34,19 +34,6 @@ def test_sanity_dxt1():
         assert_image_equal(im, target)
 
 
-def test_sanity_dxt5():
-    """Check DXT5 images can be opened"""
-
-    with Image.open(TEST_FILE_DXT5) as im:
-        im.load()
-
-    assert im.format == "DDS"
-    assert im.mode == "RGBA"
-    assert im.size == (256, 256)
-
-    assert_image_equal_tofile(im, TEST_FILE_DXT5.replace(".dds", ".png"))
-
-
 def test_sanity_dxt3():
     """Check DXT3 images can be opened"""
 
@@ -58,6 +45,19 @@ def test_sanity_dxt3():
         assert im.size == (256, 256)
 
         assert_image_equal_tofile(im, TEST_FILE_DXT3.replace(".dds", ".png"))
+
+
+def test_sanity_dxt5():
+    """Check DXT5 images can be opened"""
+
+    with Image.open(TEST_FILE_DXT5) as im:
+        im.load()
+
+    assert im.format == "DDS"
+    assert im.mode == "RGBA"
+    assert im.size == (256, 256)
+
+    assert_image_equal_tofile(im, TEST_FILE_DXT5.replace(".dds", ".png"))
 
 
 def test_dx10_bc5_unorm():
