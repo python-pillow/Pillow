@@ -10,7 +10,7 @@ env:
 language: python
 # Default Python version is usually 3.6
 python: 3.9
-dist: xenial
+dist: focal
 services: docker
 
 jobs:
