@@ -676,9 +676,10 @@ class Image:
             raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
-    @property
-    def __array_interface__(self):
+    def __array__(self):
         # numpy array interface support
+        import numpy as np
+
         new = {}
         shape, typestr = _conv_type_shape(self)
         new["shape"] = shape
@@ -690,7 +691,11 @@ class Image:
             new["data"] = self.tobytes("raw", "L")
         else:
             new["data"] = self.tobytes()
-        return new
+
+        class ArrayData:
+            __array_interface__ = new
+
+        return np.array(ArrayData())
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
