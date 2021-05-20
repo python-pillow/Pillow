@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Allow converting an image to a numpy array to raise errors #5379
+  [radarhere]
+
 - Removed DPI rounding from BMP, JPEG, PNG and WMF loading #5476, #5470
   [radarhere]
 
