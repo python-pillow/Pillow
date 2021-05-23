@@ -498,7 +498,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
-    if (PyTuple_Check(color) && PyTuple_Size(color) == 1) {
+    if (PyTuple_Check(color) && PyTuple_GET_SIZE(color) == 1) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
@@ -527,7 +527,10 @@ getink(PyObject *color, Imaging im, char *ink) {
             if (im->bands == 1) {
                 /* unsigned integer, single layer */
                 if (rIsInt != 1) {
-                    if (!PyArg_ParseTuple(color, "L", &r)) {
+                    if (PyTuple_GET_SIZE(color) != 1) {
+                        PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
+                        return NULL;
+                    } else if (!PyArg_ParseTuple(color, "L", &r)) {
                         return NULL;
                     }
                 }
@@ -542,13 +545,20 @@ getink(PyObject *color, Imaging im, char *ink) {
                     g = (UINT8)(r >> 8);
                     r = (UINT8)r;
                 } else {
+                    int tupleSize = PyTuple_GET_SIZE(color);
                     if (im->bands == 2) {
-                        if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
+                        if (tupleSize != 1 && tupleSize != 2) {
+                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or two elements");
+                            return NULL;
+                        } else if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
                             return NULL;
                         }
                         g = b = r;
                     } else {
-                        if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
+                        if (tupleSize != 3 && tupleSize != 4) {
+                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one, three or four elements");
+                            return NULL;
+                        } else if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
                             return NULL;
                         }
                     }
