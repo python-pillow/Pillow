@@ -207,7 +207,8 @@ class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
     def get_command_ex(self, file, **options):
-        command = executable = "eog"
+        executable = "eog"
+        command = "eog -n"
         return command, executable
 
 
