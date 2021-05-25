@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Avoid race condition when displaying images with eog #5507
+  [mconst]
+
+- Added specific error messages when ink has incorrect number of bands #5504
+  [radarhere]
+
 - Allow converting an image to a numpy array to raise errors #5379
   [radarhere]
 
