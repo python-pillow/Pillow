@@ -247,6 +247,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 8.1.0
 
+**bitmap_format**
+    By default, the image data will be saved in PNG format. With a bitmap format of
+    "bmp", image data will be saved in BMP format instead.
+
+    .. versionadded:: 8.3.0
+
 IM
 ^^
 
