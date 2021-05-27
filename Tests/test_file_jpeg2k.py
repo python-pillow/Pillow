@@ -209,59 +209,26 @@ def test_layers():
         assert_image_similar(im, test_card, 0.4)
 
 
-def test_no_jp2():
+@pytest.mark.parametrize(
+    "name, args, offset, data",
+    (
+        ("foo.j2k", {}, 0, b"\xff\x4f"),
+        ("foo.jp2", {}, 4, b"jP"),
+        (None, {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.j2k", {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.jp2", {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.j2k", {"no_jp2": False}, 0, b"\xff\x4f"),
+        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+    ),
+)
+def test_no_jp2(name, args, offset, data):
     out = BytesIO()
-    out.name = "foo.j2k"
-    test_card.save(out, "JPEG2000")
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    out = BytesIO()
-    out.name = "foo.jp2"
-    test_card.save(out, "JPEG2000")
-    out.seek(4)
-    assert out.read(2) == b"jP"
-
-    out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=True)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=True)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    out = BytesIO()
-    out.name = "foo.j2k"
-    test_card.save(out, "JPEG2000", no_jp2=True)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    out = BytesIO()
-    out.name = "foo.jp2"
-    test_card.save(out, "JPEG2000", no_jp2=True)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    # Use the filename extension to determine format
-    out = BytesIO()
-    out.name = "foo.j2k"
-    test_card.save(out, "JPEG2000", no_jp2=False)
-    out.seek(0)
-    assert out.read(2) == b"\xff\x4f"
-
-    out = BytesIO()
-    out.name = "foo.jp2"
-    test_card.save(out, "JPEG2000", no_jp2=False)
-    out.seek(4)
-    assert out.read(2) == b"jP"
-
-    # Default to JP2 if no filename
-    out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=False)
-    out.seek(4)
-    assert out.read(2) == b"jP"
+    if name:
+        out.name = name
+    test_card.save(out, "JPEG2000", **args)
+    out.seek(offset)
+    assert out.read(2) == data
 
 
 def test_mct():
