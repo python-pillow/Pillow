@@ -269,10 +269,10 @@ def test_mct():
     for val in (0, 1):
         out = BytesIO()
         test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
-        out.seek(0)
+
+        assert out.getvalue()[59] == val
         with Image.open(out) as im:
             assert_image_similar(im, test_card, 1.0e-3)
-            assert out.getvalue()[59] == val
 
     # Single component should have MCT disabled
     for val in (0, 1):
@@ -280,10 +280,9 @@ def test_mct():
         with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
             jp2.save(out, "JPEG2000", mct=val, no_jp2=True)
 
-        out.seek(0)
+        assert out.getvalue()[53] == 0
         with Image.open(out) as im:
             assert_image_similar(im, jp2, 1.0e-3)
-            assert out.getvalue()[53] == 0
 
 
 def test_rgba():
