@@ -34,6 +34,11 @@ jobs:
 #            platform: "arm64"
 #            python: "3.9"
 #            macos-target: "11.0"
+#          - os: "macos-11.0"
+#            os-name: "osx"
+#            platform: "arm64"
+#            python: "3.8"
+#            macos-target: "11.0"
     env:
       BUILD_COMMIT: HEAD
       PLAT: ${{ matrix.platform }}
@@ -77,11 +82,17 @@ jobs:
             os-name: "osx"
           - os: "ubuntu-20.04"
             os-name: "focal"
-          - os: "macos-11.0"
-            os-name: "osx"
-            platform: "arm64"
-            python: "3.9"
-            macos-target: "11.0"
+# Disable whilst not available
+#          - os: "macos-11.0"
+#            os-name: "osx"
+#            platform: "arm64"
+#            python: "3.9"
+#            macos-target: "11.0"
+#          - os: "macos-11.0"
+#            os-name: "osx"
+#            platform: "arm64"
+#            python: "3.8"
+#            macos-target: "11.0"
     env:
       BUILD_COMMIT: master
       PLAT: ${{ matrix.platform }}

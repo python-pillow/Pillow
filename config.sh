@@ -28,7 +28,14 @@ function untar {
         gz|tgz) tar -zxf $in_fname ;;
         bz2) tar -jxf $in_fname ;;
         zip) unzip -qq $in_fname ;;
-        xz) unxz -c $in_fname | tar -xf - ;;
+        xz) if [ -n "$IS_MACOS" ]; then
+              tar -xf $in_fname
+            else
+              if [[ ! $(type -P "unxz") ]]; then
+                echo xz must be installed to uncompress file; exit 1
+              fi
+              unxz -c $in_fname | tar -xf -
+            fi ;;
         *) echo Did not recognize extension $extension; exit 1 ;;
     esac
 }
