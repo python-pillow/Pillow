@@ -1568,8 +1568,12 @@ def _save(im, fp, filename):
     ifd[ROWSPERSTRIP] = rows_per_strip
     if strip_byte_counts >= 2 ** 16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
-    ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),)
-    ifd[STRIPOFFSETS] = tuple(range(0, strip_byte_counts * strips_per_image, strip_byte_counts))  # this is adjusted by IFD writer
+    ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
+        stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),
+    )
+    ifd[STRIPOFFSETS] = tuple(
+        range(0, strip_byte_counts * strips_per_image, strip_byte_counts)
+    )  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 
