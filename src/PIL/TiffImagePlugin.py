@@ -1558,12 +1558,12 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    rows_per_strip = im.size[1]
-    strip_byte_counts = stride * im.size[1]
     # aim for 64 KB strips when using libtiff writer
-    while libtiff and strip_byte_counts > 2 ** 16 and rows_per_strip > 1:
-        rows_per_strip = (rows_per_strip + 1) // 2
-        strip_byte_counts = stride * rows_per_strip
+    if libtiff:
+        rows_per_strip = (2 ** 16 + stride - 1) // stride
+    else:
+        rows_per_strip = im.size[1]
+    strip_byte_counts = stride * rows_per_strip
     strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
     ifd[ROWSPERSTRIP] = rows_per_strip
     if strip_byte_counts >= 2 ** 16:
