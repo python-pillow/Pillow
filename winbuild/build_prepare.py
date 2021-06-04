@@ -236,7 +236,9 @@ deps = {
             cmd_rmdir("Lib"),
             cmd_rmdir(r"Projects\VC2017\Release"),
             cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static"),
+            cmd_msbuild(
+                r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static:Rebuild"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
