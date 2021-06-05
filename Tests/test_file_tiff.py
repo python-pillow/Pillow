@@ -298,6 +298,19 @@ class TestFileTiff:
             assert im.size == (20, 20)
             assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 255)
 
+    def test_frame_order(self):
+        # A frame can't progress to itself after reading
+        with Image.open("Tests/images/multipage_single_frame_loop.tiff") as im:
+            assert im.n_frames == 1
+
+        # A frame can't progress to a frame that has already been read
+        with Image.open("Tests/images/multipage_multiple_frame_loop.tiff") as im:
+            assert im.n_frames == 2
+
+        # Frames don't have to be in sequence
+        with Image.open("Tests/images/multipage_out_of_order.tiff") as im:
+            assert im.n_frames == 3
+
     def test___str__(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
