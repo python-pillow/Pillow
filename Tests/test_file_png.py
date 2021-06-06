@@ -615,6 +615,23 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
+    def test_padded_idat(self):
+        # This image has been manually hexedited
+        # so that the IDAT chunk has padding at the end
+        # Set MAXBLOCK to the length of the actual data
+        # so that the decoder finishes reading before the chunk ends
+        MAXBLOCK = ImageFile.MAXBLOCK
+        ImageFile.MAXBLOCK = 45
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+        with Image.open("Tests/images/padded_idat.png") as im:
+            im.load()
+
+            ImageFile.MAXBLOCK = MAXBLOCK
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+            assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
+
     def test_specify_bits(self, tmp_path):
         im = hopper("P")
 
