@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Added ICO saving in BMP format #5513
+  [radarhere]
+
 - Ensure PNG seeks to end of previous chunk at start of load_end #5493
   [radarhere]
 
