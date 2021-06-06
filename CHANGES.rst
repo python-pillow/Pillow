@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Ensure PNG seeks to end of previous chunk at start of load_end #5493
+  [radarhere]
+
+- Do not allow TIFF to seek to a past frame #5473
+  [radarhere]
+
 - Avoid race condition when displaying images with eog #5507
   [mconst]
 
