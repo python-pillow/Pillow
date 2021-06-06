@@ -50,6 +50,14 @@ To compare it to other ImageOps methods:
   does not fill the extra space. Instead, the original aspect ratio is maintained. So
   unlike the other two methods, it is not guaranteed to return an image of ``size``.
 
+ICO saving: bitmap_format argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, Pillow saves ICO files in the PNG format. They can now also be saved in BMP
+format, through the new ``bitmap_format`` argument::
+
+    im.save("out.ico", bitmap_format="bmp")
+
 Security
 ========
 
