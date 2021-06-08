@@ -58,7 +58,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added DDS BC5 reading
+^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Support has been added to read the BC5 format of DDS images, whether UNORM, SNORM or
+TYPELESS.
