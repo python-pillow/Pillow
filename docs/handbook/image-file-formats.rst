@@ -13,6 +13,14 @@ contents, not their names, but the :py:meth:`~PIL.Image.Image.save` method
 looks at the name to determine which format to use, unless the format is given
 explicitly.
 
+When an image is opened from a file, only that instance of the image is considered to
+have the format. Copies of the image will contain data loaded from the file, but not
+the file itself, meaning that it can no longer be considered to be in the original
+format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
+internally creates a copy of the image, the ``fp`` (file pointer), along with any
+methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
+attribute will be `None`.
+
 Fully supported formats
 -----------------------
 
