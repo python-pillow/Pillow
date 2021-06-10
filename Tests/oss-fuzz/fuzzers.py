@@ -10,6 +10,11 @@ def enable_decompressionbomb_error():
     warnings.simplefilter("error", Image.DecompressionBombWarning)
 
 
+def disable_decompressionbomb_error():
+    ImageFile.LOAD_TRUNCATED_IMAGES = False
+    warnings.resetwarnings()
+
+
 def fuzz_image(data):
     # This will fail on some images in the corpus, as we have many
     # invalid images in the test suite.
