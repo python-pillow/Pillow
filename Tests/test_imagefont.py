@@ -719,6 +719,13 @@ class TestImageFont:
         font.set_variation_by_axes([100])
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
+    def test_textbbox_non_freetypefont(self):
+        im = Image.new("RGB", (200, 200))
+        d = ImageDraw.Draw(im)
+        default_font = ImageFont.load_default()
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "test", font=default_font)
+
     @pytest.mark.parametrize(
         "anchor, left, left_old, top",
         (
