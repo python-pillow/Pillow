@@ -370,7 +370,7 @@ ImagingTransform(
     int y0,
     int x1,
     int y1,
-    double *a,
+    double a[8],
     int filter,
     int fill);
 extern Imaging
