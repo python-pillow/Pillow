@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Raise an error if ImageDraw.textbbox is used without a TrueType font #5510
+  [radarhere]
+
 - Added ICO saving in BMP format #5513
   [radarhere]
 
