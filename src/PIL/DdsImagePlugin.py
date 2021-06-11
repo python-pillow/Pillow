@@ -97,6 +97,9 @@ DXT5_FOURCC = 0x35545844
 DXGI_FORMAT_R8G8B8A8_TYPELESS = 27
 DXGI_FORMAT_R8G8B8A8_UNORM = 28
 DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29
+DXGI_FORMAT_BC5_TYPELESS = 82
+DXGI_FORMAT_BC5_UNORM = 83
+DXGI_FORMAT_BC5_SNORM = 84
 DXGI_FORMAT_BC7_TYPELESS = 97
 DXGI_FORMAT_BC7_UNORM = 98
 DXGI_FORMAT_BC7_UNORM_SRGB = 99
@@ -150,12 +153,24 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == b"DXT5":
                 self.pixel_format = "DXT5"
                 n = 3
+            elif fourcc == b"BC5S":
+                self.pixel_format = "BC5S"
+                n = 5
+                self.mode = "RGB"
             elif fourcc == b"DX10":
                 data_start += 20
                 # ignoring flags which pertain to volume textures and cubemaps
-                dxt10 = BytesIO(self.fp.read(20))
-                dxgi_format, dimension = struct.unpack("<II", dxt10.read(8))
-                if dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
+                (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
+                self.fp.read(16)
+                if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
+                    self.pixel_format = "BC5"
+                    n = 5
+                    self.mode = "RGB"
+                elif dxgi_format == DXGI_FORMAT_BC5_SNORM:
+                    self.pixel_format = "BC5S"
+                    n = 5
+                    self.mode = "RGB"
+                elif dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
                     self.pixel_format = "BC7"
                     n = 7
                 elif dxgi_format == DXGI_FORMAT_BC7_UNORM_SRGB:
@@ -178,7 +193,9 @@ class DdsImageFile(ImageFile.ImageFile):
             else:
                 raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
 
-            self.tile = [("bcn", (0, 0) + self.size, data_start, (n))]
+            self.tile = [
+                ("bcn", (0, 0) + self.size, data_start, (n, self.pixel_format))
+            ]
 
     def load_seek(self, pos):
         pass

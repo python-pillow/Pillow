@@ -34,9 +34,10 @@
 
 #include "libImaging/Imaging.h"
 
+#include "libImaging/Bit.h"
+#include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
 #include "libImaging/Raw.h"
-#include "libImaging/Bit.h"
 #include "libImaging/Sgi.h"
 
 /* -------------------------------------------------------------------- */
@@ -359,8 +360,8 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
     char *mode;
     char *actual;
     int n = 0;
-    int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|ii", &mode, &n, &ystep)) {
+    char *pixel_format = "";
+    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
         return NULL;
     }
 
@@ -368,12 +369,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         case 1: /* BC1: 565 color, 1-bit alpha */
         case 2: /* BC2: 565 color, 4-bit alpha */
         case 3: /* BC3: 565 color, 2-endpoint 8-bit interpolated alpha */
-        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
         case 7: /* BC7: 4-channel 8-bit via everything */
             actual = "RGBA";
             break;
         case 4: /* BC4: 1-channel 8-bit via 1 BC3 alpha block */
             actual = "L";
+            break;
+        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
+            actual = "RGB";
             break;
         case 6: /* BC6: 3-channel 16-bit float */
             /* TODO: support 4-channel floating point images */
@@ -389,14 +392,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    decoder = PyImaging_DecoderNew(0);
+    decoder = PyImaging_DecoderNew(sizeof(char *));
     if (decoder == NULL) {
         return NULL;
     }
 
     decoder->decode = ImagingBcnDecode;
     decoder->state.state = n;
-    decoder->state.ystep = ystep;
+    ((BCNSTATE *)decoder->state.context)->pixel_format = pixel_format;
 
     return (PyObject *)decoder;
 }
