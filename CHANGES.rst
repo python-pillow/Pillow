@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Added DDS BC5 reading #5501
+  [radarhere]
+
 - Raise an error if ImageDraw.textbbox is used without a TrueType font #5510
   [radarhere]
 
