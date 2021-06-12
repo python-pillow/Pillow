@@ -1275,7 +1275,7 @@
 
     .wy-body-for-nav {
         background-image: initial;
-        background-color: rgb(26, 28, 29);
+        background-color: rgb(24, 26, 27);
     }
 
     .wy-nav-side {
@@ -1331,11 +1331,6 @@
 
     #search-results .context {
         color: rgb(152, 143, 129);
-    }
-
-    .wy-body-for-nav {
-        background-image: initial;
-        background-color: rgb(26, 28, 29);
     }
 
     @media screen and (min-width: 1100px) {
