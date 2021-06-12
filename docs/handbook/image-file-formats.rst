@@ -19,7 +19,7 @@ the file itself, meaning that it can no longer be considered to be in the origin
 format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
 internally creates a copy of the image, the ``fp`` (file pointer), along with any
 methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
-attribute will be `None`.
+attribute will be ``None``.
 
 Fully supported formats
 -----------------------
