@@ -40,7 +40,6 @@ import subprocess
 import sys
 import tempfile
 import warnings
-import xml.etree.ElementTree
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
@@ -492,29 +491,7 @@ class JpegImageFile(ImageFile.ImageFile):
             if segment == "APP1":
                 marker, xmp_tags = content.rsplit(b"\x00", 1)
                 if marker == b"http://ns.adobe.com/xap/1.0/":
-
-                    def get_name(tag):
-                        return tag.split("}")[1]
-
-                    def get_value(element):
-                        children = list(element)
-                        if children:
-                            value = {get_name(k): v for k, v in element.attrib.items()}
-                            for child in children:
-                                name = get_name(child.tag)
-                                child_value = get_value(child)
-                                if name in value:
-                                    if not isinstance(value[name], list):
-                                        value[name] = [value[name]]
-                                    value[name].append(child_value)
-                                else:
-                                    value[name] = child_value
-                            return value
-                        else:
-                            return element.text
-
-                    root = xml.etree.ElementTree.fromstring(xmp_tags)
-                    self._xmp[get_name(root.tag)] = get_value(root)
+                    self._getxmp(xmp_tags)
         return self._xmp
 
 

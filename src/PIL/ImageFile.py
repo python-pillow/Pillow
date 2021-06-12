@@ -31,6 +31,7 @@ import io
 import struct
 import sys
 import warnings
+import xml.etree.ElementTree
 
 from . import Image
 from ._util import isPath
@@ -308,6 +309,30 @@ class ImageFile(Image.Image):
             raise EOFError("attempt to seek outside sequence")
 
         return self.tell() != frame
+
+    def _getxmp(self, xmp_tags):
+        def get_name(tag):
+            return tag.split("}")[1]
+
+        def get_value(element):
+            children = list(element)
+            if children:
+                value = {get_name(k): v for k, v in element.attrib.items()}
+                for child in children:
+                    name = get_name(child.tag)
+                    child_value = get_value(child)
+                    if name in value:
+                        if not isinstance(value[name], list):
+                            value[name] = [value[name]]
+                        value[name].append(child_value)
+                    else:
+                        value[name] = child_value
+                return value
+            else:
+                return element.text
+
+        root = xml.etree.ElementTree.fromstring(xmp_tags)
+        self._xmp[get_name(root.tag)] = get_value(root)
 
 
 class StubImageFile(ImageFile):
