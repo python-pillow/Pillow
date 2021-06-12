@@ -149,9 +149,10 @@ class ModeFilter(Filter):
 
 
 class GaussianBlur(MultibandFilter):
-    """Gaussian blur filter.
+    """Blurs the image with an extended box filter, which approximates a
+    Gaussian kernel.
 
-    :param radius: Blur radius.
+    :param radius: Standard deviation of the Gaussian kernel.
     """
 
     name = "GaussianBlur"
