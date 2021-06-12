@@ -361,7 +361,6 @@ class JpegImageFile(ImageFile.ImageFile):
         self.app = {}  # compatibility
         self.applist = []
         self.icclist = []
-        self._xmp = None
 
         while True:
 
@@ -484,15 +483,12 @@ class JpegImageFile(ImageFile.ImageFile):
         :returns: XMP tags in a dictionary.
         """
 
-        if self._xmp is None:
-            self._xmp = {}
-
         for segment, content in self.applist:
             if segment == "APP1":
                 marker, xmp_tags = content.rsplit(b"\x00", 1)
                 if marker == b"http://ns.adobe.com/xap/1.0/":
-                    self._getxmp(xmp_tags)
-        return self._xmp
+                    return self._getxmp(xmp_tags)
+        return {}
 
 
 def _getexif(self):

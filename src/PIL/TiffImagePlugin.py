@@ -1032,7 +1032,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__fp = self.fp
         self._frame_pos = []
         self._n_frames = None
-        self._xmp = None
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug(f"- __first: {self.__first}")
@@ -1107,13 +1106,7 @@ class TiffImageFile(ImageFile.ImageFile):
         Returns a dictionary containing the XMP tags.
         :returns: XMP tags in a dictionary.
         """
-
-        if self._xmp is None:
-            self._xmp = {}
-
-        if 700 in self.tag_v2:
-            self._getxmp(self.tag_v2[700])
-        return self._xmp
+        return self._getxmp(self.tag_v2[700]) if 700 in self.tag_v2 else {}
 
     def load(self):
         if self.tile and self.use_load_libtiff:

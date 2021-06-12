@@ -651,6 +651,16 @@ class TestFilePng:
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 3
 
+    def test_xmp(self):
+        with Image.open("Tests/images/color_snakes.png") as im:
+            xmp = im.getxmp()
+
+            assert isinstance(xmp, dict)
+
+            description = xmp["xmpmeta"]["RDF"]["Description"]
+            assert description["PixelXDimension"] == "10"
+            assert description["subject"]["Seq"] is None
+
     def test_exif(self):
         # With an EXIF chunk
         with Image.open("Tests/images/exif.png") as im:
