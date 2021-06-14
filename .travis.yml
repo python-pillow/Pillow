@@ -6,12 +6,11 @@ env:
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
       - TEST_DEPENDS="pytest pytest-cov"
-      - MACOSX_DEPLOYMENT_TARGET=10.10
 
 language: python
 # Default Python version is usually 3.6
 python: 3.9
-dist: xenial
+dist: focal
 services: docker
 
 jobs:
