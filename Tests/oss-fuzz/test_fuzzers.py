@@ -44,6 +44,8 @@ def test_fuzz_images(path):
     ):
         # Known Image.* exceptions
         assert True
+    finally:
+        fuzzers.disable_decompressionbomb_error()
 
 
 @pytest.mark.parametrize(
