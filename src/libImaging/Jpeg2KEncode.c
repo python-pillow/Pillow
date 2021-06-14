@@ -458,6 +458,12 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
             break;
     }
 
+    if (!context->num_resolutions) {
+        while (tile_width < (1 << (params.numresolution - 1U)) || tile_height < (1 << (params.numresolution - 1U))) {
+            params.numresolution -= 1;
+        }
+    }
+
     if (context->cinema_mode != OPJ_OFF) {
         j2k_set_cinema_params(im, components, &params);
     }

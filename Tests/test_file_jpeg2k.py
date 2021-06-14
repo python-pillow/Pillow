@@ -127,6 +127,16 @@ def test_prog_res_rt():
     assert_image_equal(im, test_card)
 
 
+def test_default_num_resolutions():
+    for num_resolutions in range(2, 6):
+        d = 1 << (num_resolutions - 1)
+        im = test_card.resize((d - 1, d - 1))
+        with pytest.raises(OSError):
+            roundtrip(im, num_resolutions=num_resolutions)
+        reloaded = roundtrip(im)
+        assert_image_equal(im, reloaded)
+
+
 def test_reduce():
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert callable(im.reduce)
