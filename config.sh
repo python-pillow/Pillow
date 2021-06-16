@@ -45,10 +45,8 @@ function pre_build {
     # Runs in the root directory of this repository.
     curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
     untar pillow-depends-master.zip
-    if [ -n "$IS_MACOS" ]; then
-        # Update to latest zlib for macOS build
-        build_new_zlib
-    fi
+
+    build_new_zlib
 
     if [ -n "$IS_MACOS" ]; then
         ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
