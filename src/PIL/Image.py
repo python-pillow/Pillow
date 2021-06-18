@@ -841,6 +841,7 @@ class Image:
                 self.palette.mode = "RGBA"
             else:
                 self.palette.mode = "RGB"
+                self.palette.palette = self.im.getpalette()
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
