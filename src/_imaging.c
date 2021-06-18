@@ -1663,8 +1663,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     unpack(self->image->palette->palette, palette, palettesize * 8 / bits);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return PyLong_FromLong(palettesize * 8 / bits);
 }
 
 static PyObject *

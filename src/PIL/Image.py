@@ -830,7 +830,7 @@ class Image:
                 arr = bytes(
                     value for (index, value) in enumerate(arr) if index % 4 != 3
                 )
-            self.im.putpalette(mode, arr)
+            palette_length = self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
             if "transparency" in self.info:
@@ -841,7 +841,7 @@ class Image:
                 self.palette.mode = "RGBA"
             else:
                 self.palette.mode = "RGB"
-                self.palette.palette = self.im.getpalette()
+                self.palette.palette = self.im.getpalette()[: palette_length * 3]
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
