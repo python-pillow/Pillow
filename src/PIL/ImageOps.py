@@ -578,7 +578,8 @@ def exif_transpose(image):
     }.get(orientation)
     if method is not None:
         transposed_image = image.transpose(method)
-        del exif[0x0112]
-        transposed_image.info["exif"] = exif.tobytes()
+        transposed_exif = transposed_image.getexif()
+        del transposed_exif[0x0112]
+        transposed_image.info["exif"] = transposed_exif.tobytes()
         return transposed_image
     return image.copy()
