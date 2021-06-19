@@ -156,6 +156,12 @@ def test_scale():
     assert newimg.size == (25, 25)
 
 
+def test_expand_palette():
+    im = Image.open("Tests/images/hopper.gif")
+    im_expanded = ImageOps.expand(im)
+    assert_image_equal(im_expanded.convert("RGB"), im.convert("RGB"))
+
+
 def test_colorize_2color():
     # Test the colorizing function with 2-color functionality
 
