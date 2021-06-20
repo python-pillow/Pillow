@@ -7,7 +7,12 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 
 class TestImagingCoreResize:
@@ -134,6 +139,17 @@ class TestImagingCoreResize:
     def test_unknown_filter(self):
         with pytest.raises(ValueError):
             self.resize(hopper(), (10, 10), 9)
+
+    def test_cross_platform(self, tmp_path):
+        # This test is intended for only check for consistent behaviour across
+        # platforms. So if a future Pillow change requires that the test file
+        # be updated, that is okay.
+        im = hopper().resize((64, 64))
+        temp_file = str(tmp_path / "temp.gif")
+        im.save(temp_file)
+
+        with Image.open(temp_file) as reloaded:
+            assert_image_equal_tofile(reloaded, "Tests/images/hopper_resized.gif")
 
 
 @pytest.fixture
