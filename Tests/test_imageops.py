@@ -302,6 +302,7 @@ def test_exif_transpose():
                     else:
                         assert transposed_im.info["exif"] != original_exif
 
+                        assert 0x0112 in im.getexif()
                         assert 0x0112 not in transposed_im.getexif()
 
                     # Repeat the operation to test that it does not keep transposing
