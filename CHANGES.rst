@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Copy palette to new images in ImageOps expand #5551
+  [radarhere]
+
 - Ensure palette string matches RGB mode #5549
   [radarhere]
 
