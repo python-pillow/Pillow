@@ -248,4 +248,4 @@ class TestPyDecoder:
     def test_oserror(self):
         im = Image.new("RGB", (1, 1))
         with pytest.raises(OSError):
-            im.save(BytesIO(), "JPEG2000")
+            im.save(BytesIO(), "JPEG2000", num_resolutions=2)
