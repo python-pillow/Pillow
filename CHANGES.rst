@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Do not modify EXIF of original image instance in exif_transpose() #5547
+  [radarhere]
+
+- Fixed default numresolution for small JPEG2000 images #5540
+  [radarhere]
+
 - Added DDS BC5 reading #5501
   [radarhere]
 
