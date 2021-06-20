@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Avoid unstable nature of qsort in Quant.c #5367
+  [radarhere]
+
 - Copy palette to new images in ImageOps expand #5551
   [radarhere]
 
