@@ -393,6 +393,8 @@ def expand(image, border=0, fill=0):
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
     out = Image.new(image.mode, (width, height), _color(fill, image.mode))
+    if image.mode == "P" and image.palette:
+        out.putpalette(image.palette)
     out.paste(image, (left, top))
     return out
 
