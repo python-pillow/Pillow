@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Ensure palette string matches RGB mode #5549
+  [radarhere]
+
 - Do not modify EXIF of original image instance in exif_transpose() #5547
   [radarhere]
 
