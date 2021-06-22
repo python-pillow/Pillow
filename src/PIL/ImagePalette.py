@@ -90,9 +90,7 @@ class ImagePalette:
         if isinstance(self.palette, bytes):
             return self.palette
         arr = array.array("B", self.palette)
-        if hasattr(arr, "tobytes"):
-            return arr.tobytes()
-        return arr.tostring()
+        return arr.tobytes()
 
     # Declare tostring as an alias for tobytes
     tostring = tobytes
