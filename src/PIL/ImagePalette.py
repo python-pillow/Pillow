@@ -115,7 +115,7 @@ class ImagePalette:
                 return self.colors[color]
             except KeyError as e:
                 # allocate new color slot
-                if isinstance(self.palette, bytes):
+                if not isinstance(self.palette, bytearray):
                     self._palette = bytearray(self.palette)
                 index = len(self.palette) // 3
                 if index >= 256:
@@ -129,9 +129,11 @@ class ImagePalette:
                         raise ValueError("cannot allocate more than 256 colors") from e
                 self.colors[color] = index
                 if index * 3 < len(self.palette):
-                    self._palette[index * 3] = color[0]
-                    self._palette[index * 3 + 1] = color[1]
-                    self._palette[index * 3 + 2] = color[2]
+                    self._palette = (
+                        self.palette[: index * 3]
+                        + bytes(color)
+                        + self.palette[index * 3 + 3 :]
+                    )
                 else:
                     self._palette += bytes(color)
                 self.dirty = 1
