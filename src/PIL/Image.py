@@ -1730,7 +1730,6 @@ class Image:
 
         if self.mode not in ("L", "LA", "P", "PA"):
             raise ValueError("illegal image mode")
-        self.load()
         if isinstance(data, ImagePalette.ImagePalette):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
