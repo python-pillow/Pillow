@@ -7,7 +7,9 @@ from .helper import assert_image_equal_tofile
 
 def test_sanity():
 
-    ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+    palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+    assert len(palette.colors) == 256
+
     with pytest.raises(ValueError):
         ImagePalette.ImagePalette("RGB", list(range(256)) * 2)
 
