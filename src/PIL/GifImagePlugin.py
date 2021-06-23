@@ -760,7 +760,7 @@ def _get_background(im, infoBackground):
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
             # info["background"] - a global color table index
-            background = im.palette.getcolor(background)
+            background = im.palette.getcolor(background, im)
     return background
 
 

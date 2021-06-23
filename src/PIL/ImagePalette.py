@@ -97,7 +97,7 @@ class ImagePalette:
     # Declare tostring as an alias for tobytes
     tostring = tobytes
 
-    def getcolor(self, color):
+    def getcolor(self, color, image=None):
         """Given an rgb tuple, allocate palette entry.
 
         .. warning:: This method is experimental.
@@ -119,7 +119,14 @@ class ImagePalette:
                     self._palette = bytearray(self.palette)
                 index = len(self.palette) // 3
                 if index >= 256:
-                    raise ValueError("cannot allocate more than 256 colors") from e
+                    if image:
+                        # Search for an unused index
+                        for i, count in reversed(list(enumerate(image.histogram()))):
+                            if count == 0:
+                                index = i
+                                break
+                    if index >= 256:
+                        raise ValueError("cannot allocate more than 256 colors") from e
                 self.colors[color] = index
                 if index * 3 < len(self.palette):
                     self._palette[index * 3] = color[0]

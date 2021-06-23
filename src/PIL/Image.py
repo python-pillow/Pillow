@@ -978,7 +978,7 @@ class Image:
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
                             try:
-                                t = trns_im.palette.getcolor(t)
+                                t = trns_im.palette.getcolor(t, self)
                             except Exception as e:
                                 raise ValueError(
                                     "Couldn't allocate a palette color for transparency"
@@ -1016,7 +1016,7 @@ class Image:
                 del new.info["transparency"]
             if trns is not None:
                 try:
-                    new.info["transparency"] = new.palette.getcolor(trns)
+                    new.info["transparency"] = new.palette.getcolor(trns, new)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
@@ -1049,7 +1049,7 @@ class Image:
         if trns is not None:
             if new_im.mode == "P":
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns)
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
                 except Exception:
                     del new_im.info["transparency"]
                     warnings.warn("Couldn't allocate palette entry for transparency")
@@ -1764,7 +1764,7 @@ class Image:
             and len(value) in [3, 4]
         ):
             # RGB or RGBA value for a P image
-            value = self.palette.getcolor(value)
+            value = self.palette.getcolor(value, self)
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
