@@ -977,6 +977,7 @@ class Image:
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
+                            err = "Couldn't allocate a palette color for transparency"
                             try:
                                 t = trns_im.palette.getcolor(t, self)
                             except ValueError as e:
@@ -985,9 +986,7 @@ class Image:
                                     # then there is no need for transparency
                                     t = None
                                 else:
-                                    raise ValueError(
-                                        "Couldn't allocate a palette color for transparency"
-                                    ) from e
+                                    raise ValueError(err) from e
                     if t is None:
                         trns = None
                     else:
