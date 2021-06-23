@@ -606,7 +606,7 @@ class TestImage:
             else:
                 assert new_im.palette is None
 
-        _make_new(im, im_p, im_p.palette)
+        _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())

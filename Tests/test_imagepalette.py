@@ -11,12 +11,14 @@ def test_sanity():
     assert len(palette.colors) == 256
 
     with pytest.raises(ValueError):
-        ImagePalette.ImagePalette("RGB", list(range(256)) * 2)
+        ImagePalette.ImagePalette("RGB", list(range(256)) * 3, 10)
 
 
 def test_getcolor():
 
     palette = ImagePalette.ImagePalette()
+    assert len(palette.palette) == 0
+    assert len(palette.colors) == 0
 
     test_map = {}
     for i in range(256):

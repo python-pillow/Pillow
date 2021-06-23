@@ -1039,6 +1039,10 @@ class Image:
                 raise ValueError("illegal conversion") from e
 
         new_im = self._new(im)
+        if mode == "P" and palette != ADAPTIVE:
+            from . import ImagePalette
+
+            new_im.palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
@@ -1700,7 +1704,7 @@ class Image:
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
 
-        The palette sequence must contain either 768 integer values, or 1024
+        The palette sequence must contain at most 768 integer values, or 1024
         integer values if alpha is included. Each group of values represents
         the red, green, blue (and alpha if included) values for the
         corresponding pixel index. Instead of an integer sequence, you can use

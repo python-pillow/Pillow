@@ -39,11 +39,9 @@ class ImagePalette:
     def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
-        self.palette = palette or bytearray(range(256)) * len(self.mode)
+        self.palette = palette or bytearray()
         self.dirty = None
-        if (size == 0 and len(self.mode) * 256 != len(self.palette)) or (
-            size != 0 and size != len(self.palette)
-        ):
+        if size != 0 and size != len(self.palette):
             raise ValueError("wrong palette size")
 
     @property
@@ -113,13 +111,16 @@ class ImagePalette:
                 # allocate new color slot
                 if isinstance(self.palette, bytes):
                     self._palette = bytearray(self.palette)
-                index = len(self.colors)
+                index = len(self.palette) // 3
                 if index >= 256:
                     raise ValueError("cannot allocate more than 256 colors") from e
                 self.colors[color] = index
-                self._palette[index] = color[0]
-                self._palette[index + 256] = color[1]
-                self._palette[index + 512] = color[2]
+                if index * 3 < len(self.palette):
+                    self._palette[index * 3] = color[0]
+                    self._palette[index * 3 + 1] = color[1]
+                    self._palette[index * 3 + 2] = color[2]
+                else:
+                    self._palette += bytes(color)
                 self.dirty = 1
                 return index
         else:
