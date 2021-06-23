@@ -105,6 +105,8 @@ class ImagePalette:
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
         if isinstance(color, tuple):
+            if self.mode == "RGBA" and len(color) == 3:
+                color += (255,)
             try:
                 return self.colors[color]
             except KeyError as e:

@@ -23,8 +23,12 @@ def test_getcolor():
     test_map = {}
     for i in range(256):
         test_map[palette.getcolor((i, i, i))] = i
-
     assert len(test_map) == 256
+
+    # Colors can be converted between RGB and RGBA
+    rgba_palette = ImagePalette.ImagePalette("RGBA")
+    assert rgba_palette.getcolor((0, 0, 0)) == rgba_palette.getcolor((0, 0, 0, 255))
+
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
 
