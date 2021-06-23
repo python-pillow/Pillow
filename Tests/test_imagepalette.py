@@ -29,6 +29,8 @@ def test_getcolor():
     rgba_palette = ImagePalette.ImagePalette("RGBA")
     assert rgba_palette.getcolor((0, 0, 0)) == rgba_palette.getcolor((0, 0, 0, 255))
 
+    assert palette.getcolor((0, 0, 0)) == palette.getcolor((0, 0, 0, 255))
+
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
 
