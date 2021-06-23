@@ -979,19 +979,27 @@ class Image:
                         if isinstance(t, tuple):
                             try:
                                 t = trns_im.palette.getcolor(t, self)
-                            except Exception as e:
-                                raise ValueError(
-                                    "Couldn't allocate a palette color for transparency"
-                                ) from e
-                    trns_im.putpixel((0, 0), t)
-
-                    if mode in ("L", "RGB"):
-                        trns_im = trns_im.convert(mode)
+                            except ValueError as e:
+                                if str(e) == "cannot allocate more than 256 colors":
+                                    # If all 256 colors are in use,
+                                    # then there is no need for transparency
+                                    t = None
+                                else:
+                                    raise ValueError(
+                                        "Couldn't allocate a palette color for transparency"
+                                    ) from e
+                    if t is None:
+                        trns = None
                     else:
-                        # can't just retrieve the palette number, got to do it
-                        # after quantization.
-                        trns_im = trns_im.convert("RGB")
-                    trns = trns_im.getpixel((0, 0))
+                        trns_im.putpixel((0, 0), t)
+
+                        if mode in ("L", "RGB"):
+                            trns_im = trns_im.convert(mode)
+                        else:
+                            # can't just retrieve the palette number, got to do it
+                            # after quantization.
+                            trns_im = trns_im.convert("RGB")
+                        trns = trns_im.getpixel((0, 0))
 
             elif self.mode == "P" and mode == "RGBA":
                 t = self.info["transparency"]
@@ -1050,9 +1058,14 @@ class Image:
             if new_im.mode == "P":
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
-                except Exception:
+                except ValueError as e:
                     del new_im.info["transparency"]
-                    warnings.warn("Couldn't allocate palette entry for transparency")
+                    if str(e) != "cannot allocate more than 256 colors":
+                        # If all 256 colors are in use,
+                        # then there is no need for transparency
+                        warnings.warn(
+                            "Couldn't allocate palette entry for transparency"
+                        )
             else:
                 new_im.info["transparency"] = trns
         return new_im

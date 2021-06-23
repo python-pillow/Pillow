@@ -31,8 +31,11 @@ def test_getcolor():
 
     assert palette.getcolor((0, 0, 0)) == palette.getcolor((0, 0, 0, 255))
 
+    # An error is raised when the palette is full
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
+    # But not if the image is not using one of the palette entries
+    palette.getcolor((1, 2, 3), image=Image.new("P", (1, 1)))
 
     # Test unknown color specifier
     with pytest.raises(ValueError):
