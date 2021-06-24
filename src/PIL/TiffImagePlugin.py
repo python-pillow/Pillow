@@ -465,7 +465,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     """
 
-    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
+    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None, group=None):
         """Initialize an ImageFileDirectory.
 
         To construct an ImageFileDirectory from a real file, pass the 8-byte
@@ -485,6 +485,7 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self.group = group
         self.tagtype = {}
         """ Dictionary of tag types """
         self.reset()
@@ -516,7 +517,10 @@ class ImageFileDirectory_v2(MutableMapping):
 
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return {TiffTags.lookup(code).name: value for code, value in self.items()}
+        return {
+            TiffTags.lookup(code, self.group).name: value
+            for code, value in self.items()
+        }
 
     def __len__(self):
         return len(set(self._tagdata) | set(self._tags_v2))
@@ -541,7 +545,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
 
-        info = TiffTags.lookup(tag)
+        info = TiffTags.lookup(tag, self.group)
         values = [value] if isinstance(value, basetypes) else value
 
         if tag not in self.tagtype:
@@ -758,7 +762,7 @@ class ImageFileDirectory_v2(MutableMapping):
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
 
-                tagname = TiffTags.lookup(tag).name
+                tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
                 msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
@@ -825,7 +829,7 @@ class ImageFileDirectory_v2(MutableMapping):
                     ifh = b"II\x2A\x00\x08\x00\x00\x00"
                 else:
                     ifh = b"MM\x00\x2A\x00\x00\x00\x08"
-                ifd = ImageFileDirectory_v2(ifh)
+                ifd = ImageFileDirectory_v2(ifh, group=tag)
                 for ifd_tag, ifd_value in self._tags_v2[tag].items():
                     ifd[ifd_tag] = ifd_value
                 data = ifd.tobytes(offset)
@@ -833,7 +837,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 values = value if isinstance(value, tuple) else (value,)
                 data = self._write_dispatch[typ](self, *values)
 
-            tagname = TiffTags.lookup(tag).name
+            tagname = TiffTags.lookup(tag, self.group).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
             msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
             msg += " - value: " + (

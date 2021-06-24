@@ -33,7 +33,7 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
         return self.enum.get(value, value) if self.enum else value
 
 
-def lookup(tag):
+def lookup(tag, group=None):
     """
     :param tag: Integer tag number
     :returns: Taginfo namedtuple, From the TAGS_V2 info if possible,
@@ -42,7 +42,11 @@ def lookup(tag):
 
     """
 
-    return TAGS_V2.get(tag, TagInfo(tag, TAGS.get(tag, "unknown")))
+    if group is not None:
+        info = TAGS_V2_GROUPS[group].get(tag) if group in TAGS_V2_GROUPS else None
+    else:
+        info = TAGS_V2.get(tag)
+    return info or TagInfo(tag, TAGS.get(tag, "unknown"))
 
 
 ##
@@ -213,6 +217,19 @@ TAGS_V2 = {
     50838: ("ImageJMetaDataByteCounts", LONG, 0),  # Can be more than one
     50839: ("ImageJMetaData", UNDEFINED, 1),  # see Issue #2006
 }
+TAGS_V2_GROUPS = {
+    # ExifIFD
+    34665: {
+        36864: ("ExifVersion", UNDEFINED, 1),
+        40960: ("FlashPixVersion", UNDEFINED, 1),
+        40965: ("InteroperabilityIFD", LONG, 1),
+        41730: ("CFAPattern", UNDEFINED, 1),
+    },
+    # GPSInfoIFD
+    34853: {},
+    # InteroperabilityIFD
+    40965: {1: ("InteropIndex", ASCII, 1), 2: ("InteropVersion", UNDEFINED, 1)},
+}
 
 # Legacy Tags structure
 # these tags aren't included above, but were in the previous versions
@@ -370,6 +387,10 @@ def _populate():
                 TAGS[(k, sv)] = sk
 
         TAGS_V2[k] = TagInfo(k, *v)
+
+    for group, tags in TAGS_V2_GROUPS.items():
+        for k, v in tags.items():
+            tags[k] = TagInfo(k, *v)
 
 
 _populate()
