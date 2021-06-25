@@ -298,6 +298,12 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
+def test_first_frame_transparency():
+    with Image.open("Tests/images/first_frame_transparency.gif") as im:
+        px = im.load()
+        assert px[0, 0] == im.info["transparency"]
+
+
 def test_dispose_none():
     with Image.open("Tests/images/dispose_none.gif") as img:
         try:
