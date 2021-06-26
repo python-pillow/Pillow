@@ -376,3 +376,16 @@ def test_too_many_entries():
 
     # Should not raise ValueError.
     pytest.warns(UserWarning, lambda: ifd[277])
+
+
+def test_empty_subifd(tmp_path):
+    out = str(tmp_path / "temp.jpg")
+
+    im = hopper()
+    exif = im.getexif()
+    exif[TiffImagePlugin.EXIFIFD] = {}
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        exif = reloaded.getexif()
+        assert exif.get_ifd(TiffImagePlugin.EXIFIFD) == {}
