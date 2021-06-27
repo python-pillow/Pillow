@@ -155,6 +155,12 @@ def test_trns_RGB(tmp_path):
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im = Image.new("RGB", (1, 1))
+    im.info["transparency"] = im.getpixel((0, 0))
+    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    assert im_p.info["transparency"] == im_p.getpixel((0, 0))
+    im_p.save(f)
+
 
 def test_gif_with_rgba_palette_to_p():
     # See https://github.com/python-pillow/Pillow/issues/2433

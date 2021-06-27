@@ -53,10 +53,12 @@ class ImagePalette:
         self._palette = palette
 
         mode_len = len(self.mode)
-        self.colors = {
-            tuple(self.palette[i : i + mode_len]): i // mode_len
-            for i in range(0, len(self.palette), mode_len)
-        }
+        self.colors = {}
+        for i in range(0, len(self.palette), mode_len):
+            color = tuple(self.palette[i : i + mode_len])
+            if color in self.colors:
+                continue
+            self.colors[color] = i // mode_len
 
     def copy(self):
         new = ImagePalette()
