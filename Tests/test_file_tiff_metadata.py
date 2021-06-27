@@ -390,3 +390,16 @@ def test_tag_group_data():
 
     assert interop_ifd.tagtype[2] == 7
     assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
+
+
+def test_empty_subifd(tmp_path):
+    out = str(tmp_path / "temp.jpg")
+
+    im = hopper()
+    exif = im.getexif()
+    exif[TiffImagePlugin.EXIFIFD] = {}
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        exif = reloaded.getexif()
+        assert exif.get_ifd(TiffImagePlugin.EXIFIFD) == {}

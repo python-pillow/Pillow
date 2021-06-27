@@ -830,7 +830,8 @@ class ImageFileDirectory_v2(MutableMapping):
                 else:
                     ifh = b"MM\x00\x2A\x00\x00\x00\x08"
                 ifd = ImageFileDirectory_v2(ifh, group=tag)
-                for ifd_tag, ifd_value in self._tags_v2[tag].items():
+                values = self._tags_v2[tag]
+                for ifd_tag, ifd_value in values.items():
                     ifd[ifd_tag] = ifd_value
                 data = ifd.tobytes(offset)
             else:
