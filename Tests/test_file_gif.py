@@ -298,6 +298,12 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
+def test_first_frame_transparency():
+    with Image.open("Tests/images/first_frame_transparency.gif") as im:
+        px = im.load()
+        assert px[0, 0] == im.info["transparency"]
+
+
 def test_dispose_none():
     with Image.open("Tests/images/dispose_none.gif") as img:
         try:
@@ -329,6 +335,16 @@ def test_dispose_background():
                 assert img.disposal_method == 2
         except EOFError:
             pass
+
+
+def test_transparent_dispose():
+    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
+    with Image.open("Tests/images/transparent_dispose.gif") as img:
+        for frame in range(3):
+            img.seek(frame)
+            for x in range(3):
+                color = img.getpixel((x, 0))
+                assert color == expected_colors[frame][x]
 
 
 def test_dispose_previous():
