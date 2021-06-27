@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Use transparency behind first GIF frame and when disposing to background #5557
+  [radarhere, zewt]
+
 - Avoid unstable nature of qsort in Quant.c #5367
   [radarhere]
 
