@@ -128,8 +128,8 @@ def test_trns_l(tmp_path):
     assert "transparency" in im_p.info
     im_p.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
-    assert "transparency" not in im_p.info
+    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    assert "transparency" in im_p.info
     im_p.save(f)
 
 

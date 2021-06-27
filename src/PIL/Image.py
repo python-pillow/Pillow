@@ -1016,7 +1016,7 @@ class Image:
             new = self._new(im)
             from . import ImagePalette
 
-            new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
+            new.palette = ImagePalette.ImagePalette("RGB", new.im.getpalette("RGB"))
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.

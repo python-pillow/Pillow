@@ -749,10 +749,10 @@ def test_rgb_transparency(tmp_path):
     # Single frame
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = (255, 0, 0)
-    pytest.warns(UserWarning, im.save, out)
+    im.save(out)
 
     with Image.open(out) as reloaded:
-        assert "transparency" not in reloaded.info
+        assert "transparency" in reloaded.info
 
     # Multiple frames
     im = Image.new("RGB", (1, 1))
