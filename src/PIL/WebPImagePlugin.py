@@ -320,7 +320,7 @@ def _save(im, fp, filename):
         alpha = (
             "A" in im.mode
             or "a" in im.mode
-            or (im.mode == "P" and "A" in im.im.getpalettemode())
+            or (im.mode == "P" and "transparency" in im.info)
         )
         im = im.convert("RGBA" if alpha else "RGB")
 

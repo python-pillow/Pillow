@@ -833,7 +833,7 @@ class Image:
             palette_length = self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
-            if "transparency" in self.info:
+            if "transparency" in self.info and mode in ("RGBA", "LA", "PA"):
                 if isinstance(self.info["transparency"], int):
                     self.im.putpalettealpha(self.info["transparency"], 0)
                 else:
