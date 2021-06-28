@@ -54,6 +54,7 @@ class PyAccess:
         self.image32 = ffi.cast("int **", vals["image32"])
         self.image = ffi.cast("unsigned char **", vals["image"])
         self.xsize, self.ysize = img.im.size
+        self._img = img
 
         # Keep pointer to im object to prevent dereferencing.
         self._im = img.im
@@ -93,7 +94,7 @@ class PyAccess:
             and len(color) in [3, 4]
         ):
             # RGB or RGBA value for a P image
-            color = self._palette.getcolor(color)
+            color = self._palette.getcolor(color, self._img)
 
         return self.set_pixel(x, y, color)
 

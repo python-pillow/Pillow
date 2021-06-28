@@ -833,7 +833,7 @@ class Image:
             palette_length = self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
-            if "transparency" in self.info:
+            if "transparency" in self.info and mode in ("RGBA", "LA", "PA"):
                 if isinstance(self.info["transparency"], int):
                     self.im.putpalettealpha(self.info["transparency"], 0)
                 else:
@@ -977,21 +977,28 @@ class Image:
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
+                            err = "Couldn't allocate a palette color for transparency"
                             try:
-                                t = trns_im.palette.getcolor(t)
-                            except Exception as e:
-                                raise ValueError(
-                                    "Couldn't allocate a palette color for transparency"
-                                ) from e
-                    trns_im.putpixel((0, 0), t)
-
-                    if mode in ("L", "RGB"):
-                        trns_im = trns_im.convert(mode)
+                                t = trns_im.palette.getcolor(t, self)
+                            except ValueError as e:
+                                if str(e) == "cannot allocate more than 256 colors":
+                                    # If all 256 colors are in use,
+                                    # then there is no need for transparency
+                                    t = None
+                                else:
+                                    raise ValueError(err) from e
+                    if t is None:
+                        trns = None
                     else:
-                        # can't just retrieve the palette number, got to do it
-                        # after quantization.
-                        trns_im = trns_im.convert("RGB")
-                    trns = trns_im.getpixel((0, 0))
+                        trns_im.putpixel((0, 0), t)
+
+                        if mode in ("L", "RGB"):
+                            trns_im = trns_im.convert(mode)
+                        else:
+                            # can't just retrieve the palette number, got to do it
+                            # after quantization.
+                            trns_im = trns_im.convert("RGB")
+                        trns = trns_im.getpixel((0, 0))
 
             elif self.mode == "P" and mode == "RGBA":
                 t = self.info["transparency"]
@@ -1009,14 +1016,14 @@ class Image:
             new = self._new(im)
             from . import ImagePalette
 
-            new.palette = ImagePalette.raw("RGB", new.im.getpalette("RGB"))
+            new.palette = ImagePalette.ImagePalette("RGB", new.im.getpalette("RGB"))
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
                 del new.info["transparency"]
             if trns is not None:
                 try:
-                    new.info["transparency"] = new.palette.getcolor(trns)
+                    new.info["transparency"] = new.palette.getcolor(trns, new)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
@@ -1039,16 +1046,25 @@ class Image:
                 raise ValueError("illegal conversion") from e
 
         new_im = self._new(im)
+        if mode == "P" and palette != ADAPTIVE:
+            from . import ImagePalette
+
+            new_im.palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
         if trns is not None:
             if new_im.mode == "P":
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns)
-                except Exception:
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
+                except ValueError as e:
                     del new_im.info["transparency"]
-                    warnings.warn("Couldn't allocate palette entry for transparency")
+                    if str(e) != "cannot allocate more than 256 colors":
+                        # If all 256 colors are in use,
+                        # then there is no need for transparency
+                        warnings.warn(
+                            "Couldn't allocate palette entry for transparency"
+                        )
             else:
                 new_im.info["transparency"] = trns
         return new_im
@@ -1732,7 +1748,7 @@ class Image:
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
 
-        The palette sequence must contain either 768 integer values, or 1024
+        The palette sequence must contain at most 768 integer values, or 1024
         integer values if alpha is included. Each group of values represents
         the red, green, blue (and alpha if included) values for the
         corresponding pixel index. Instead of an integer sequence, you can use
@@ -1745,7 +1761,6 @@ class Image:
 
         if self.mode not in ("L", "LA", "P", "PA"):
             raise ValueError("illegal image mode")
-        self.load()
         if isinstance(data, ImagePalette.ImagePalette):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
@@ -1792,7 +1807,7 @@ class Image:
             and len(value) in [3, 4]
         ):
             # RGB or RGBA value for a P image
-            value = self.palette.getcolor(value)
+            value = self.palette.getcolor(value, self)
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
@@ -1813,6 +1828,7 @@ class Image:
 
         if source_palette is None:
             if self.mode == "P":
+                self.load()
                 real_source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
                 real_source_palette = bytearray(i // 3 for i in range(768))
@@ -1850,23 +1866,19 @@ class Image:
         m_im = self.copy()
         m_im.mode = "P"
 
-        m_im.palette = ImagePalette.ImagePalette(
-            "RGB", palette=mapping_palette * 3, size=768
-        )
+        m_im.palette = ImagePalette.ImagePalette("RGB", palette=mapping_palette * 3)
         # possibly set palette dirty, then
         # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
-        m_im.im.putpalette(*m_im.palette.getdata())
+        m_im.im.putpalette("RGB;L", m_im.palette.tobytes())
 
         m_im = m_im.convert("L")
 
         # Internally, we require 768 bytes for a palette.
         new_palette_bytes = palette_bytes + (768 - len(palette_bytes)) * b"\x00"
         m_im.putpalette(new_palette_bytes)
-        m_im.palette = ImagePalette.ImagePalette(
-            "RGB", palette=palette_bytes, size=len(palette_bytes)
-        )
+        m_im.palette = ImagePalette.ImagePalette("RGB", palette=palette_bytes)
 
         return m_im
 

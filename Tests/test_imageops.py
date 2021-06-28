@@ -157,9 +157,16 @@ def test_scale():
 
 
 def test_expand_palette():
-    im = Image.open("Tests/images/hopper.gif")
-    im_expanded = ImageOps.expand(im)
-    assert_image_equal(im_expanded.convert("RGB"), im.convert("RGB"))
+    im = Image.open("Tests/images/p_16.tga")
+    im_expanded = ImageOps.expand(im, 10, (255, 0, 0))
+
+    px = im_expanded.convert("RGB").load()
+    assert px[0, 0] == (255, 0, 0)
+
+    im_cropped = im_expanded.crop(
+        (10, 10, im_expanded.width - 10, im_expanded.height - 10)
+    )
+    assert_image_equal(im_cropped, im)
 
 
 def test_colorize_2color():

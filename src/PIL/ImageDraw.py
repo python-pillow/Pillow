@@ -70,6 +70,7 @@ class ImageDraw:
             self.palette = im.palette
         else:
             self.palette = None
+        self._image = im
         self.im = im.im
         self.draw = Image.core.draw(self.im, blend)
         self.mode = mode
@@ -108,13 +109,13 @@ class ImageDraw:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
-                    ink = self.palette.getcolor(ink)
+                    ink = self.palette.getcolor(ink, self._image)
                 ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
-                    fill = self.palette.getcolor(fill)
+                    fill = self.palette.getcolor(fill, self._image)
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
