@@ -1379,3 +1379,22 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     with pytest.raises(expected_error) as e:
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
     assert str(e.value) == error_message
+
+
+def test_continuous_horizontal_edges_polygon():
+    xy = [
+        (2, 6),
+        (6, 6),
+        (12, 6),
+        (12, 12),
+        (8, 12),
+        (8, 8),
+        (4, 8),
+        (2, 8),
+    ]
+    img, draw = create_base_image_draw((16, 16))
+    draw.polygon(xy, BLACK)
+    expected = os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
+    assert_image_equal_tofile(
+        img, expected, "continuous horizontal edges polygon failed"
+    )
