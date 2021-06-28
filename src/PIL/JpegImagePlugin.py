@@ -40,7 +40,6 @@ import subprocess
 import sys
 import tempfile
 import warnings
-import xml.etree.ElementTree
 
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
@@ -362,7 +361,6 @@ class JpegImageFile(ImageFile.ImageFile):
         self.app = {}  # compatibility
         self.applist = []
         self.icclist = []
-        self._xmp = None
 
         while True:
 
@@ -485,20 +483,12 @@ class JpegImageFile(ImageFile.ImageFile):
         :returns: XMP tags in a dictionary.
         """
 
-        if self._xmp is None:
-            self._xmp = {}
-
         for segment, content in self.applist:
             if segment == "APP1":
                 marker, xmp_tags = content.rsplit(b"\x00", 1)
                 if marker == b"http://ns.adobe.com/xap/1.0/":
-                    root = xml.etree.ElementTree.fromstring(xmp_tags)
-                    for element in root.findall(".//"):
-                        self._xmp[element.tag.split("}")[1]] = {
-                            child.split("}")[1]: value
-                            for child, value in element.attrib.items()
-                        }
-        return self._xmp
+                    return self._getxmp(xmp_tags)
+        return {}
 
 
 def _getexif(self):

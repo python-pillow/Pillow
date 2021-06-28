@@ -978,6 +978,17 @@ class PngImageFile(ImageFile.ImageFile):
 
         return super().getexif()
 
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        :returns: XMP tags in a dictionary.
+        """
+        return (
+            self._getxmp(self.info["XML:com.adobe.xmp"])
+            if "XML:com.adobe.xmp" in self.info
+            else {}
+        )
+
     def _close__fp(self):
         try:
             if self.__fp != self.fp:

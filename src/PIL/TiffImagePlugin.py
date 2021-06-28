@@ -1105,6 +1105,13 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        :returns: XMP tags in a dictionary.
+        """
+        return self._getxmp(self.tag_v2[700]) if 700 in self.tag_v2 else {}
+
     def load(self):
         if self.tile and self.use_load_libtiff:
             return self._load_libtiff()

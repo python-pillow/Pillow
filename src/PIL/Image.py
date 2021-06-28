@@ -1318,6 +1318,33 @@ class Image:
             return tuple(extrema)
         return self.im.getextrema()
 
+    def _getxmp(self, xmp_tags):
+        def get_name(tag):
+            return tag.split("}")[1]
+
+        def get_value(element):
+            value = {get_name(k): v for k, v in element.attrib.items()}
+            children = list(element)
+            if children:
+                for child in children:
+                    name = get_name(child.tag)
+                    child_value = get_value(child)
+                    if name in value:
+                        if not isinstance(value[name], list):
+                            value[name] = [value[name]]
+                        value[name].append(child_value)
+                    else:
+                        value[name] = child_value
+            elif value:
+                if element.text:
+                    value["text"] = element.text
+            else:
+                return element.text
+            return value
+
+        root = xml.etree.ElementTree.fromstring(xmp_tags)
+        return {get_name(root.tag): get_value(root)}
+
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
@@ -1338,15 +1365,15 @@ class Image:
         if 0x0112 not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
-                root = xml.etree.ElementTree.fromstring(xmp_tags)
-                for elem in root.iter():
-                    if elem.tag.endswith("}Description"):
-                        orientation = elem.attrib.get(
-                            "{http://ns.adobe.com/tiff/1.0/}Orientation"
-                        )
-                        if orientation:
-                            self._exif[0x0112] = int(orientation)
-                        break
+                xmp = self._getxmp(xmp_tags)
+                if (
+                    "xmpmeta" in xmp
+                    and "RDF" in xmp["xmpmeta"]
+                    and "Description" in xmp["xmpmeta"]["RDF"]
+                ):
+                    description = xmp["xmpmeta"]["RDF"]["Description"]
+                    if "Orientation" in description:
+                        self._exif[0x0112] = int(description["Orientation"])
 
         return self._exif
 
