@@ -80,7 +80,7 @@ class ImagePalette:
         """
         if self.rawmode:
             return self.rawmode, self.palette
-        return self.mode + ";L", self.tobytes()
+        return self.mode, self.tobytes()
 
     def tobytes(self):
         """Convert palette to bytes.

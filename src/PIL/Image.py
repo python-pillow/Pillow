@@ -1834,23 +1834,19 @@ class Image:
         m_im = self.copy()
         m_im.mode = "P"
 
-        m_im.palette = ImagePalette.ImagePalette(
-            "RGB", palette=mapping_palette * 3, size=768
-        )
+        m_im.palette = ImagePalette.ImagePalette("RGB", palette=mapping_palette * 3)
         # possibly set palette dirty, then
         # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
-        m_im.im.putpalette(*m_im.palette.getdata())
+        m_im.im.putpalette("RGB;L", m_im.palette.tobytes())
 
         m_im = m_im.convert("L")
 
         # Internally, we require 768 bytes for a palette.
         new_palette_bytes = palette_bytes + (768 - len(palette_bytes)) * b"\x00"
         m_im.putpalette(new_palette_bytes)
-        m_im.palette = ImagePalette.ImagePalette(
-            "RGB", palette=palette_bytes, size=len(palette_bytes)
-        )
+        m_im.palette = ImagePalette.ImagePalette("RGB", palette=palette_bytes)
 
         return m_im
 

@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image, ImagePalette
 
-from .helper import assert_image_equal_tofile
+from .helper import assert_image_equal, assert_image_equal_tofile
 
 
 def test_sanity():
@@ -12,6 +12,13 @@ def test_sanity():
 
     with pytest.raises(ValueError):
         ImagePalette.ImagePalette("RGB", list(range(256)) * 3, 10)
+
+
+def test_reload():
+    im = Image.open("Tests/images/hopper.gif")
+    original = im.copy()
+    im.palette.dirty = 1
+    assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
 
 def test_getcolor():
@@ -129,7 +136,7 @@ def test_getdata():
     mode, data_out = palette.getdata()
 
     # Assert
-    assert mode == "RGB;L"
+    assert mode == "RGB"
 
 
 def test_rawmode_getdata():

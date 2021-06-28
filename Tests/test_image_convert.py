@@ -93,7 +93,7 @@ def test_trns_p(tmp_path):
     im_l.save(f)
 
     im_rgb = im.convert("RGB")
-    assert im_rgb.info["transparency"] == (0, 0, 0)  # undone
+    assert im_rgb.info["transparency"] == (0, 1, 2)  # undone
     im_rgb.save(f)
 
 
