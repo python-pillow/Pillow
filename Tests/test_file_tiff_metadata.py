@@ -378,6 +378,20 @@ def test_too_many_entries():
     pytest.warns(UserWarning, lambda: ifd[277])
 
 
+def test_tag_group_data():
+    base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
+    for ifd in (base_ifd, interop_ifd):
+        ifd[2] = "test"
+        ifd[256] = 10
+
+    assert base_ifd.tagtype[256] == 4
+    assert interop_ifd.tagtype[256] != base_ifd.tagtype[256]
+
+    assert interop_ifd.tagtype[2] == 7
+    assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
+
+
 def test_empty_subifd(tmp_path):
     out = str(tmp_path / "temp.jpg")
 
