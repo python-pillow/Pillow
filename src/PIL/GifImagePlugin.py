@@ -461,10 +461,10 @@ def _write_multiple_frames(im, fp, palette):
                 previous = im_frames[-1]
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
-                        background = _get_background(
-                            im,
-                            im.encoderinfo.get("background", im.info.get("background")),
+                        color = im.encoderinfo.get(
+                            "transparency", im.info.get("transparency", (0, 0, 0))
                         )
+                        background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
                     base_im = background_im
