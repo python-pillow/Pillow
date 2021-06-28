@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Merge parallel horizontal edges in ImagingDrawPolygon #5347
+  [radarhere, hrdrq]
+
 - Use transparency behind first GIF frame and when disposing to background #5557
   [radarhere, zewt]
 
