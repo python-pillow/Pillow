@@ -408,14 +408,15 @@ def test_save_dispose(tmp_path):
 def test_dispose2_palette(tmp_path):
     out = str(tmp_path / "temp.gif")
 
-    # 4 backgrounds: White, Grey, Black, Red
+    # Four colors: white, grey, black, red
     circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
 
     im_list = []
     for circle in circles:
+        # Red background
         img = Image.new("RGB", (100, 100), (255, 0, 0))
 
-        # Red circle in center of each frame
+        # Circle in center of each frame
         d = ImageDraw.Draw(img)
         d.ellipse([(40, 40), (60, 60)], fill=circle)
 
