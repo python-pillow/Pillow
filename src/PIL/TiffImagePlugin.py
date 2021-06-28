@@ -354,9 +354,12 @@ class IFDRational(Rational):
         return self._val.__hash__()
 
     def __eq__(self, other):
+        val = self._val
         if isinstance(other, IFDRational):
             other = other._val
-        return self._val == other
+        if isinstance(other, float):
+            val = float(val)
+        return val == other
 
     def __getstate__(self):
         return [self._val, self._numerator, self._denominator]
