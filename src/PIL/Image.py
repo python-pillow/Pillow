@@ -1796,6 +1796,7 @@ class Image:
 
         if source_palette is None:
             if self.mode == "P":
+                self.load()
                 real_source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
                 real_source_palette = bytearray(i // 3 for i in range(768))

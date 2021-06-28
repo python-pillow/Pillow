@@ -582,6 +582,10 @@ class TestImage:
         assert ext_individual == ext_multiple
 
     def test_remap_palette(self):
+        # Test identity transform
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert_image_equal(im, im.remap_palette(list(range(256))))
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
