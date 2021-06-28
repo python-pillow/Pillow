@@ -208,7 +208,7 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
 
 .. note::
 
-    Prior to version 7.2.0, Pillow could only write ICNS files on macOS.
+    Prior to version 8.3.0, Pillow could only write ICNS files on macOS.
 
 **sizes**
     A list of supported sizes found in this icon file; these are a
