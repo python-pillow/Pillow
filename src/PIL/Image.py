@@ -1323,11 +1323,16 @@ class Image:
             self._exif = Exif()
 
         exif_info = self.info.get("exif")
-        if exif_info is None and "Raw profile type exif" in self.info:
-            exif_info = bytes.fromhex(
-                "".join(self.info["Raw profile type exif"].split("\n")[3:])
-            )
-        self._exif.load(exif_info)
+        if exif_info is None:
+            if "Raw profile type exif" in self.info:
+                exif_info = bytes.fromhex(
+                    "".join(self.info["Raw profile type exif"].split("\n")[3:])
+                )
+            elif hasattr(self, "tag_v2"):
+                self._exif.endian = self.tag_v2._endian
+                self._exif.load_from_fp(self.fp, self.tag_v2._offset)
+        if exif_info is not None:
+            self._exif.load(exif_info)
 
         # XMP tags
         if 0x0112 not in self._exif:
@@ -3308,7 +3313,7 @@ atexit.register(core.clear_cache)
 
 
 class Exif(MutableMapping):
-    endian = "<"
+    endian = None
 
     def __init__(self):
         self._data = {}
@@ -3343,6 +3348,12 @@ class Exif(MutableMapping):
             info.load(self.fp)
             return self._fixup_dict(info)
 
+    def _get_head(self):
+        if self.endian == "<":
+            return b"II\x2A\x00\x08\x00\x00\x00"
+        else:
+            return b"MM\x00\x2A\x00\x00\x00\x08"
+
     def load(self, data):
         # Extract EXIF information.  This is highly experimental,
         # and is likely to be replaced with something better in a future
@@ -3355,8 +3366,8 @@ class Exif(MutableMapping):
         self._loaded_exif = data
         self._data.clear()
         self._ifds.clear()
-        self._info = None
         if not data:
+            self._info = None
             return
 
         if data.startswith(b"Exif\x00\x00"):
@@ -3369,6 +3380,27 @@ class Exif(MutableMapping):
         self._info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
         self.endian = self._info._endian
         self.fp.seek(self._info.next)
+        self._info.load(self.fp)
+
+    def load_from_fp(self, fp, offset=None):
+        self._loaded_exif = None
+        self._data.clear()
+        self._ifds.clear()
+
+        # process dictionary
+        from . import TiffImagePlugin
+
+        self.fp = fp
+        if offset is not None:
+            self.head = self._get_head()
+        else:
+            self.head = self.fp.read(8)
+        self._info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
+        if self.endian is None:
+            self.endian = self._info._endian
+        if offset is None:
+            offset = self._info.next
+        self.fp.seek(offset)
         self._info.load(self.fp)
 
     def _get_merged_dict(self):
@@ -3389,10 +3421,7 @@ class Exif(MutableMapping):
     def tobytes(self, offset=8):
         from . import TiffImagePlugin
 
-        if self.endian == "<":
-            head = b"II\x2A\x00\x08\x00\x00\x00"
-        else:
-            head = b"MM\x00\x2A\x00\x00\x00\x08"
+        head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
             if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):

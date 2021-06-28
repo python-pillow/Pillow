@@ -773,6 +773,27 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
 
+    def test_exif_load_from_fp(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            data = im.info["exif"]
+            if data.startswith(b"Exif\x00\x00"):
+                data = data[6:]
+            fp = io.BytesIO(data)
+
+            exif = Image.Exif()
+            exif.load_from_fp(fp)
+            assert exif == {
+                271: "Canon",
+                272: "Canon PowerShot S40",
+                274: 1,
+                282: 180.0,
+                283: 180.0,
+                296: 2,
+                306: "2003:12:14 12:01:44",
+                531: 1,
+                34665: 196,
+            }
+
     @pytest.mark.skipif(
         sys.version_info < (3, 7), reason="Python 3.7 or greater required"
     )

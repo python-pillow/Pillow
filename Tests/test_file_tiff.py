@@ -399,6 +399,50 @@ class TestFileTiff:
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             assert 0x8825 in im.tag_v2
 
+    def test_exif(self):
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            exif = im.getexif()
+
+            assert sorted(exif.keys()) == [
+                256,
+                257,
+                258,
+                259,
+                262,
+                271,
+                272,
+                273,
+                277,
+                278,
+                279,
+                282,
+                283,
+                284,
+                296,
+                297,
+                305,
+                339,
+                700,
+                34665,
+                34853,
+                50735,
+            ]
+            assert exif[256] == 640
+            assert exif[271] == "FLIR"
+
+            gps = exif.get_ifd(0x8825)
+            assert list(gps.keys()) == [0, 1, 2, 3, 4, 5, 6, 18]
+            assert gps[0] == b"\x03\x02\x00\x00"
+            assert gps[18] == "WGS-84"
+
+    def test_exif_frames(self):
+        # Test that EXIF data can change across frames
+        with Image.open("Tests/images/g4-multi.tiff") as im:
+            assert im.getexif()[273] == (328, 815)
+
+            im.seek(1)
+            assert im.getexif()[273] == (1408, 1907)
+
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
