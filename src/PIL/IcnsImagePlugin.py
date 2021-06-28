@@ -352,7 +352,8 @@ def _save(im, fp, filename):
         fp.write(struct.pack("<i", HEADERSIZE + e["size"])[::-1])
         fp.write(e["stream"].getvalue())
 
-    fp.flush()
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
