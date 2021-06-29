@@ -49,6 +49,25 @@ def test_getcolor():
         palette.getcolor("unknown")
 
 
+def test_getcolor_not_special():
+    im = Image.new("P", (1, 1))
+    for index, palette in {
+        # Test when the palette is not full
+        0: ImagePalette.ImagePalette(),
+        # Test when the palette is full
+        255: ImagePalette.ImagePalette("RGB", list(range(256)) * 3),
+    }.items():
+        # Do not use transparency index as a new color
+        im.info["transparency"] = index
+        index1 = palette.getcolor((0, 0, 0), im)
+        assert index1 != index
+
+        # Do not use background index as a new color
+        im.info["background"] = index1
+        index2 = palette.getcolor((0, 0, 1), im)
+        assert index2 not in (index, index1)
+
+
 def test_file(tmp_path):
 
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
