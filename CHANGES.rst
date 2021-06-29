@@ -5,6 +5,27 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Added tag data for IFD groups #5554
+  [radarhere]
+
+- Improved ImagePalette #5552
+  [radarhere]
+
+- Add DDS saving #5402
+  [radarhere]
+
+- Improved getxmp() #5455
+  [radarhere]
+
+- Convert to float for comparison with float in IFDRational __eq__ #5412
+  [radarhere]
+
+- Allow getexif() to access TIFF tag_v2 data #5416
+  [radarhere]
+
+- Read FITS image mode and size #5405
+  [radarhere]
+
 - Merge parallel horizontal edges in ImagingDrawPolygon #5347
   [radarhere, hrdrq]
 
