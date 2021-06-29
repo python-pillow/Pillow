@@ -459,7 +459,7 @@ class TestFileJpeg:
             # valid bounds for baseline qtable
             bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
             im2 = self.roundtrip(im, qtables=[bounds_qtable])
-            assert im2.quantization[0] == bounds_qtable
+            assert im2.quantization == {0: bounds_qtable}
 
             # values from wizard.txt in jpeg9-a src package.
             standard_l_qtable = [
