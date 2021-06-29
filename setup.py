@@ -992,6 +992,7 @@ try:
             "index.html",
             "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
             "CHANGES.rst",
+            "Twitter": "https://twitter.com/PythonPillow",
         },
         classifiers=[
             "Development Status :: 6 - Mature",
