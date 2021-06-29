@@ -28,6 +28,7 @@ enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
+MAGIC = b"icns"
 HEADERSIZE = 8
 
 
@@ -165,7 +166,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != b"icns":
+        if sig != MAGIC:
             raise SyntaxError("not an icns file")
         i = HEADERSIZE
         while i < filesize:
@@ -301,14 +302,6 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
-def _to_int(b):
-    return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
-
-
-MAGIC = b"icns"
-TOC = b"TOC "
-
-
 def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
@@ -333,24 +326,22 @@ def _save(im, fp, filename):
     entries = []
     for index, size in enumerate(sizes):
         stream = size_streams[size]
-        entries.append(
-            {"type": _to_int(size_str[index]), "size": len(stream), "stream": stream}
-        )
+        entries.append({"type": size_str[index], "size": len(stream), "stream": stream})
 
     # Header
-    fp.write(struct.pack(">i", _to_int(MAGIC)))
+    fp.write(MAGIC)
     fp.write(struct.pack(">i", sum(entry["size"] for entry in entries)))
 
     # TOC
-    fp.write(struct.pack(">i", _to_int(TOC)))
+    fp.write(b"TOC ")
     fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
     for entry in entries:
-        fp.write(struct.pack(">i", entry["type"]))
+        fp.write(entry["type"])
         fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
 
     # Data
     for entry in entries:
-        fp.write(struct.pack(">i", entry["type"]))
+        fp.write(entry["type"])
         fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
         fp.write(entry["stream"])
 
