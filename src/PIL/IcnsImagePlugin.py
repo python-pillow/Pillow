@@ -319,15 +319,19 @@ def _save(im, fp, filename):
     # Size
     sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
     size_str = [b"ic07", b"ic08", b"ic09", b"ic11", b"ic12", b"ic13", b"ic14", b"ic10"]
-    entries = []
+
     provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
-    temp_sizes = {s: io.BytesIO() for s in set(sizes)}
-    for s, temp in temp_sizes.items():
-        nb = provided_images[s] if s in provided_images else im.resize((s, s))
-        nb.save(temp, "png")
-    for index, s in enumerate(sizes):
-        temp = temp_sizes[s]
-        stream = temp.getvalue()
+    size_streams = {}
+    for s in set(sizes):
+        image = provided_images[s] if s in provided_images else im.resize((s, s))
+
+        temp = io.BytesIO()
+        image.save(temp, "png")
+        size_streams[s] = temp.getvalue()
+
+    entries = []
+    for index, size in enumerate(sizes):
+        stream = size_streams[size]
         entries.append(
             {"type": _to_int(size_str[index]), "size": len(stream), "stream": stream}
         )
