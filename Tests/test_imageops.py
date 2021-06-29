@@ -161,7 +161,13 @@ def test_expand_palette():
     im_expanded = ImageOps.expand(im, 10, (255, 0, 0))
 
     px = im_expanded.convert("RGB").load()
-    assert px[0, 0] == (255, 0, 0)
+    for b in range(10):
+        for x in range(im_expanded.width):
+            assert px[x, b] == (255, 0, 0)
+            assert px[x, im_expanded.height - 1 - b] == (255, 0, 0)
+        for y in range(im_expanded.height):
+            assert px[b, x] == (255, 0, 0)
+            assert px[b, im_expanded.width - 1 - b] == (255, 0, 0)
 
     im_cropped = im_expanded.crop(
         (10, 10, im_expanded.width - 10, im_expanded.height - 10)

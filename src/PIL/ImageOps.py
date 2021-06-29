@@ -399,7 +399,7 @@ def expand(image, border=0, fill=0):
         out.paste(image, (left, top))
 
         draw = ImageDraw.Draw(out)
-        draw.rectangle((0, 0, width, height), outline=color, width=border)
+        draw.rectangle((0, 0, width - 1, height - 1), outline=color, width=border)
     else:
         out = Image.new(image.mode, (width, height), color)
         out.paste(image, (left, top))
