@@ -16,11 +16,6 @@
 #
 import functools
 
-try:
-    import numpy
-except ImportError:  # pragma: no cover
-    numpy = None
-
 
 class Filter:
     pass
@@ -154,9 +149,11 @@ class ModeFilter(Filter):
 
 
 class GaussianBlur(MultibandFilter):
-    """Gaussian blur filter.
+    """Blurs the image with a sequence of extended box filters, which
+    approximates a Gaussian kernel. For details on accuracy see
+    <https://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf>
 
-    :param radius: Blur radius.
+    :param radius: Standard deviation of the Gaussian kernel.
     """
 
     name = "GaussianBlur"
@@ -368,6 +365,13 @@ class Color3DLUT(MultibandFilter):
         copy_table = kwargs.get("_copy_table", True)
         items = size[0] * size[1] * size[2]
         wrong_size = False
+
+        numpy = None
+        if hasattr(table, "shape"):
+            try:
+                import numpy
+            except ImportError:  # pragma: no cover
+                pass
 
         if numpy and isinstance(table, numpy.ndarray):
             if copy_table:

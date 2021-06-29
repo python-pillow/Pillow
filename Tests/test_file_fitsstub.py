@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from PIL import FitsStubImagePlugin, Image
@@ -11,10 +13,8 @@ def test_open():
 
         # Assert
         assert im.format == "FITS"
-
-        # Dummy data from the stub
-        assert im.mode == "F"
-        assert im.size == (1, 1)
+        assert im.size == (128, 128)
+        assert im.mode == "L"
 
 
 def test_invalid_file():
@@ -33,6 +33,21 @@ def test_load():
         # Act / Assert: stub cannot load without an implemented handler
         with pytest.raises(OSError):
             im.load()
+
+
+def test_truncated_fits():
+    # No END to headers
+    image_data = b"SIMPLE  =                    T" + b" " * 50 + b"TRUNCATE"
+    with pytest.raises(OSError):
+        FitsStubImagePlugin.FITSStubImageFile(BytesIO(image_data))
+
+
+def test_naxis_zero():
+    # This test image has been manually hexedited
+    # to set the number of data axes to zero
+    with pytest.raises(ValueError):
+        with Image.open("Tests/images/hopper_naxis_zero.fits"):
+            pass
 
 
 def test_save():

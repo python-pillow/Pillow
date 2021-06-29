@@ -269,7 +269,7 @@ decoder that can be used to read various packed formats into a floating point
 image memory.
 
 To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
-the following syntax::
+the following syntax:
 
 .. code-block:: python
 

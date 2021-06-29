@@ -8,7 +8,10 @@ packaging
 pyroma
 pytest
 pytest-cov
+pytest-timeout
 sphinx>=2.4
+sphinx-copybutton
 sphinx-issues
 sphinx-removed-in
 sphinx-rtd-theme
+sphinxext-opengraph

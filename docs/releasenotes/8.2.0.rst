@@ -1,0 +1,230 @@
+8.2.0
+-----
+
+Deprecations
+============
+
+Categories
+^^^^^^^^^^
+
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
+
+Tk/Tcl 8.4
+^^^^^^^^^^
+
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+when Tk/Tcl 8.5 will be the minimum supported.
+
+API Changes
+===========
+
+Image.alpha_composite: dest
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling :py:meth:`~PIL.Image.Image.alpha_composite`, the ``dest`` argument now
+accepts negative co-ordinates, like the upper left corner of the ``box`` argument of
+:py:meth:`~PIL.Image.Image.paste` can be negative. Naturally, this has effect of
+cropping the overlaid image.
+
+Image.getexif: EXIF and GPS IFD
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, :py:meth:`~PIL.Image.Image.getexif` flattened the EXIF IFD into the rest of
+the data, losing information. This information is now kept separate, moved under
+``im.getexif().get_ifd(0x8769)``.
+
+Direct access to the GPS IFD dictionary was possible through ``im.getexif()[0x8825]``.
+This is now consistent with other IFDs, and must be accessed through
+``im.getexif().get_ifd(0x8825)``.
+
+These changes only affect :py:meth:`~PIL.Image.Image.getexif`, introduced in Pillow
+6.0. The older ``_getexif()`` methods are unaffected.
+
+Image._MODEINFO
+^^^^^^^^^^^^^^^
+
+This internal dictionary had been deprecated by a comment since PIL, and is now
+removed. Instead, ``Image.getmodebase()``, ``Image.getmodetype()``,
+``Image.getmodebandnames()``, ``Image.getmodebands()`` or ``ImageMode.getmode()``
+can be used.
+
+API Additions
+=============
+
+getxmp() for JPEG images
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new method has been added to return
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ for JPEG
+images. It reads the XML data into a dictionary of names and values.
+
+For example::
+
+    >>> from PIL import Image
+    >>> with Image.open("Tests/images/xmp_test.jpg") as im:
+    >>>     print(im.getxmp())
+    {'RDF': {}, 'Description': {'Version': '10.4', 'ProcessVersion': '10.0', ...}, ...}
+
+ImageDraw.rounded_rectangle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added :py:meth:`~PIL.ImageDraw.ImageDraw.rounded_rectangle`. It works the same as
+:py:meth:`~PIL.ImageDraw.ImageDraw.rectangle`, except with an additional ``radius``
+argument. ``radius`` is limited to half of the width or the height, so that users can
+create a circle, but not any other ellipse.
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(xy=(10, 20, 190, 180), radius=30, fill="red")
+
+ImageOps.autocontrast: preserve_tone
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default behaviour of :py:meth:`~PIL.ImageOps.autocontrast` is to normalize
+separate histograms for each color channel, changing the tone of the image. The new
+``preserve_tone`` argument keeps the tone unchanged by using one luminance histogram
+for all channels.
+
+ImageShow.GmDisplayViewer
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If GraphicsMagick is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will
+be registered. It uses GraphicsMagick_, an ImageMagick_ fork, to display images.
+
+The GraphicsMagick based viewer has a lower priority than its ImageMagick
+counterpart.  Thus, if both ImageMagick and GraphicsMagick are installed,
+``im.show()`` and :py:func:`.ImageShow.show()` prefer the viewer based on
+ImageMagick, i.e the behaviour stays the same for Pillow users having
+ImageMagick installed.
+
+ImageShow.IPythonViewer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If IPython is present, this new :py:class:`PIL.ImageShow.Viewer` subclass will be
+registered. It displays images on all IPython frontends. This will be helpful
+to users of Google Colab, allowing ``im.show()`` to display images.
+
+It is lower in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will only be used by ``im.show()`` or :py:func:`.ImageShow.show()`
+if none of the other viewers are available. This means that the behaviour of
+:py:class:`PIL.ImageShow` will stay the same for most Pillow users.
+
+Saving TIFF with ICC profile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As is already possible for JPEG, PNG and WebP, the ICC profile for TIFF files can now
+be specified through a keyword argument::
+
+    im.save("out.tif", icc_profile=...)
+
+
+Security
+========
+
+These were all found with `OSS-Fuzz`_.
+
+:cve:`CVE-2021-25287`, :cve:`CVE-2021-25288`: Fix OOB read in Jpeg2KDecode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* For J2k images with multiple bands, it's legal to have different widths for each band,
+  e.g. 1 byte for ``L``, 4 bytes for ``A``.
+* This dates to Pillow 2.4.0.
+
+:cve:`CVE-2021-28675`: Fix DOS in PsdImagePlugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* :py:class:`.PsdImagePlugin.PsdImageFile` did not sanity check the number of input
+  layers with regard to the size of the data block, this could lead to a
+  denial-of-service on :py:meth:`~PIL.Image.open` prior to
+  :py:meth:`~PIL.Image.Image.load`.
+* This dates to the PIL fork.
+
+:cve:`CVE-2021-28676`: Fix FLI DOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``FliDecode.c`` did not properly check that the block advance was non-zero,
+  potentially leading to an infinite loop on load.
+* This dates to the PIL fork.
+
+:cve:`CVE-2021-28677`: Fix EPS DOS on _open
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* The readline used in EPS has to deal with any combination of ``\r`` and ``\n`` as line
+  endings. It accidentally used a quadratic method of accumulating lines while looking
+  for a line ending.
+* A malicious EPS file could use this to perform a denial-of-service of Pillow in the
+  open phase, before an image was accepted for opening.
+* This dates to the PIL fork.
+
+:cve:`CVE-2021-28678`: Fix BLP DOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``BlpImagePlugin`` did not properly check that reads after jumping to file offsets
+  returned data. This could lead to a denial-of-service where the decoder could be run a
+  large number of times on empty data.
+* This dates to Pillow 5.1.0.
+
+Fix memory DOS in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* A corrupt or specially crafted TTF font could have font metrics that lead to
+  unreasonably large sizes when rendering text in font. ``ImageFont.py`` did not check
+  the image size before allocating memory for it.
+* This dates to the PIL fork.
+
+Other Changes
+=============
+
+GIF writer uses LZW encoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+GIF files are now written using LZW encoding, which will generate smaller files,
+typically about 70% of the size generated by the older encoder.
+
+The pixel data is encoded using the format specified in the `CompuServe GIF standard
+<https://www.w3.org/Graphics/GIF/spec-gif89a.txt>`_.
+
+The older encoder used a variant of run-length encoding that was compatible but less
+efficient.
+
+GraphicsMagick
+^^^^^^^^^^^^^^
+
+The test suite can now be run on systems which have GraphicsMagick_ but not
+ImageMagick_ installed.  If both are installed, the tests prefer ImageMagick.
+
+Libraqm and FriBiDi linking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The way the libraqm dependency for complex text scripts is linked has been changed:
+
+Source builds will now link against the system version of libraqm at build time
+rather than at runtime by default.
+
+Binary wheels now include a statically linked modified version of libraqm that
+links against FriBiDi at runtime instead. This change is intended to address
+issues with the previous implementation on some platforms. These are created
+by building Pillow with the new build flags ``--vendor-raqm --vendor-fribidi``.
+
+Windows users will now need to install ``fribidi.dll`` (or ``fribidi-0.dll``) only,
+``libraqm.dll`` is no longer used.
+
+See :doc:`installation documentation<../installation>` for more information.
+
+PyQt6
+^^^^^
+
+Support has been added for PyQt6. If it is installed, it will be used instead of
+PySide6, PyQt5 or PySide2.
+
+.. _GraphicsMagick: http://www.graphicsmagick.org/
+.. _ImageMagick: https://imagemagick.org/
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz

@@ -18,6 +18,7 @@ Please send a pull request to the master branch. Please include [documentation](
 - Provide tests for any newly added code.
 - Follow PEP 8.
 - When committing only documentation changes please include `[ci skip]` in the commit message to avoid running tests on AppVeyor.
+- Include [release notes](https://github.com/python-pillow/Pillow/tree/master/docs/releasenotes) as needed or appropriate with your bug fixes, feature additions and tests.
 
 ## Reporting Issues
 

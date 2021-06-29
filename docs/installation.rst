@@ -6,9 +6,9 @@ Warnings
 
 .. warning:: Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
 
-.. warning:: Pillow >= 1.0 no longer supports "import Image". Please use "from PIL import Image" instead.
+.. warning:: Pillow >= 1.0 no longer supports ``import Image``. Please use ``from PIL import Image`` instead.
 
-.. warning:: Pillow >= 2.1.0 no longer supports "import _imaging". Please use "from PIL.Image import core as _imaging" instead.
+.. warning:: Pillow >= 2.1.0 no longer supports ``import _imaging``. Please use ``from PIL.Image import core as _imaging`` instead.
 
 Python Support
 --------------
@@ -57,8 +57,9 @@ Windows Installation
 
 We provide Pillow binaries for Windows compiled for the matrix of
 supported Pythons in both 32 and 64-bit versions in the wheel format.
-These binaries have all of the optional libraries included except
-for raqm, libimagequant, and libxcb::
+These binaries include support for all optional libraries except
+libimagequant and libxcb. Raqm support requires
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -71,8 +72,8 @@ macOS Installation
 
 We provide binaries for macOS for each of the supported Python
 versions in the wheel format. These include support for all optional
-libraries except libimagequant and libxcb. Raqm support requires
-libraqm, fribidi, and harfbuzz to be installed separately::
+libraries except libimagequant. Raqm support requires
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
@@ -83,14 +84,15 @@ Linux Installation
 We provide binaries for Linux for each of the supported Python
 versions in the manylinux wheel format. These include support for all
 optional libraries except libimagequant. Raqm support requires
-libraqm, fribidi, and harfbuzz to be installed separately::
+FriBiDi to be installed separately::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
-Most major Linux distributions, including Fedora, Debian/Ubuntu and
-ArchLinux also include Pillow in packages that previously contained
-PIL e.g. ``python-imaging``.
+Most major Linux distributions, including Fedora, Ubuntu and ArchLinux
+also include Pillow in packages that previously contained PIL e.g.
+``python-imaging``. Debian splits it into two packages, ``python3-pil``
+and ``python3-pil.imagetk``.
 
 FreeBSD Installation
 ^^^^^^^^^^^^^^^^^^^^
@@ -152,14 +154,14 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.1**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.3**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.11**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
 
 * **libwebp** provides the WebP format.
 
@@ -177,7 +179,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.13.1**
+  * Pillow has been tested with libimagequant **2.6-2.15.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -190,11 +192,15 @@ Many of Pillow's features require external libraries:
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
     FriBiDi, make sure that you install them before installing libraqm
     if not available as package in your system.
-  * setting text direction or font features is not supported without
-    libraqm.
-  * libraqm is dynamically loaded in Pillow 5.0.0 and above, so support
-    is available if all the libraries are installed.
-  * Windows support: Raqm is not included in prebuilt wheels
+  * Setting text direction or font features is not supported without libraqm.
+  * Pillow wheels since version 8.2.0 include a modified version of libraqm that
+    loads libfribidi at runtime if it is installed.
+    On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
+    into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
+    <https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
+    See `Build Options`_ to see how to build this version.
+  * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
 
 * **libxcb** provides X11 screengrab support.
 
@@ -242,6 +248,12 @@ Build Options
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
+
+* Build flags: ``--vendor-raqm --vendor-fribidi``
+  These flags are used to compile a modified version of libraqm and
+  a shim that dynamically loads libfribidi at runtime. These are
+  used to compile the standard Pillow wheels. Compiling libraqm requires
+  a C99-compliant compiler.
 
 * Build flag: ``--disable-platform-guessing``. Skips all of the
   platform dependent guessing of include and library directories for
@@ -366,6 +378,10 @@ In Fedora, the command is::
 
     sudo dnf install python3-devel redhat-rpm-config
 
+In Alpine, the command is::
+
+    sudo apk add python3-dev py3-setuptools
+
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
 Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
@@ -384,6 +400,12 @@ Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with
 
 Note that the package manager may be yum or DNF, depending on the
 exact distribution.
+
+Prerequisites are installed for **Alpine** with::
+
+    sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
+        libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+        libxcb-dev libpng-dev
 
 See also the ``Dockerfile``\s in the Test Infrastructure repo
 (https://github.com/python-pillow/docker-images) for a known working
@@ -430,9 +452,9 @@ These platforms are built and tested for every change.
 +----------------------------------+--------------------------+-----------------------+
 | Debian 10 Buster                 | 3.7                      |x86                    |
 +----------------------------------+--------------------------+-----------------------+
-| Fedora 32                        | 3.8                      |x86-64                 |
-+----------------------------------+--------------------------+-----------------------+
 | Fedora 33                        | 3.9                      |x86-64                 |
++----------------------------------+--------------------------+-----------------------+
+| Fedora 34                        | 3.9                      |x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9, PyPy3|x86-64                 |
 +----------------------------------+--------------------------+-----------------------+
@@ -465,18 +487,18 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 |**Operating system**              |**Tested Python versions**    |**Latest tested Pillow version**|**Tested processors**  |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
-| macOS 11.0 Big Sur               | 3.8, 3.9                     | 8.0.1                          |arm                    |
+| macOS 11.0 Big Sur               | 3.7, 3.8, 3.9                | 8.2.0                          |arm                    |
 |                                  +------------------------------+--------------------------------+-----------------------+
-|                                  | 3.6, 3.7, 3.8, 3.9           | 8.0.1                          |x86-64                 |
+|                                  | 3.6, 3.7, 3.8, 3.9           | 8.2.0                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9           | 8.0.1                          |x86-64                 |
-|                                  +------------------------------+--------------------------------+                       +
+|                                  +------------------------------+--------------------------------+                       |
 |                                  | 3.5                          | 7.2.0                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.14 Mojave               | 3.5, 3.6, 3.7, 3.8           | 7.2.0                          |x86-64                 |
-|                                  +------------------------------+--------------------------------+                       +
+|                                  +------------------------------+--------------------------------+                       |
 |                                  | 2.7                          | 6.0.0                          |                       |
-|                                  +------------------------------+--------------------------------+                       +
+|                                  +------------------------------+--------------------------------+                       |
 |                                  | 3.4                          | 5.4.1                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6           | 4.2.1                          |x86-64                 |
@@ -484,7 +506,7 @@ These platforms have been reported to work at the versions mentioned.
 | macOS 10.12 Sierra               | 2.7, 3.4, 3.5, 3.6           | 4.1.1                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.11 El Capitan        | 2.7, 3.4, 3.5, 3.6, 3.7      | 5.4.1                          |x86-64                 |
-|                                  +------------------------------+--------------------------------+                       +
+|                                  +------------------------------+--------------------------------+                       |
 |                                  | 3.3                          | 4.1.0                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Mac OS X 10.9 Mavericks          | 2.7, 3.2, 3.3, 3.4           | 3.0.0                          |x86-64                 |
@@ -511,6 +533,10 @@ These platforms have been reported to work at the versions mentioned.
 | Raspbian Jessie                  | 2.7, 3.4                     | 3.1.0                          |arm                    |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Raspbian Stretch                 | 2.7, 3.5                     | 4.0.0                          |arm                    |
++----------------------------------+------------------------------+--------------------------------+-----------------------+
+| Raspberry Pi OS                  | 3.6, 3.7, 3.8, 3.9           | 8.2.0                          |arm                    |
+|                                  +------------------------------+--------------------------------+                       |
+|                                  | 2.7                          | 6.2.2                          |                       |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+
 | Gentoo Linux                     | 2.7, 3.2                     | 2.1.0                          |x86-64                 |
 +----------------------------------+------------------------------+--------------------------------+-----------------------+

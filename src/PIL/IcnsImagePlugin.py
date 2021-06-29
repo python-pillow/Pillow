@@ -23,7 +23,6 @@ import struct
 import sys
 
 from PIL import Image, ImageFile, PngImagePlugin, features
-from PIL._binary import i8
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -69,7 +68,7 @@ def read_32(fobj, start_length, size):
                 byte = fobj.read(1)
                 if not byte:
                     break
-                byte = i8(byte)
+                byte = byte[0]
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
@@ -105,6 +104,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
     if sig[:8] == b"\x89PNG\x0d\x0a\x1a\x0a":
         fobj.seek(start)
         im = PngImagePlugin.PngImageFile(fobj)
+        Image._decompression_bomb_check(im.size)
         return {"RGBA": im}
     elif (
         sig[:4] == b"\xff\x4f\xff\x51"
@@ -121,6 +121,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         jp2kstream = fobj.read(length)
         f = io.BytesIO(jp2kstream)
         im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
+        Image._decompression_bomb_check(im.size)
         if im.mode != "RGBA":
             im = im.convert("RGBA")
         return {"RGBA": im}
@@ -357,7 +358,11 @@ def _save(im, fp, filename):
         fp.flush()
 
 
-Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == MAGIC)
+def _accept(prefix):
+    return prefix[:4] == MAGIC
+
+
+Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)
 Image.register_extension(IcnsImageFile.format, ".icns")
 
 Image.register_save(IcnsImageFile.format, _save)
@@ -365,7 +370,7 @@ Image.register_mime(IcnsImageFile.format, "image/icns")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Syntax: python IcnsImagePlugin.py [file]")
+        print("Syntax: python3 IcnsImagePlugin.py [file]")
         sys.exit()
 
     with open(sys.argv[1], "rb") as fp:

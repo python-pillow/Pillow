@@ -2,8 +2,314 @@
 Changelog (Pillow)
 ==================
 
-8.1.0 (unreleased)
+8.3.0 (unreleased)
 ------------------
+
+- Added tag data for IFD groups #5554
+  [radarhere]
+
+- Improved ImagePalette #5552
+  [radarhere]
+
+- Add DDS saving #5402
+  [radarhere]
+
+- Improved getxmp() #5455
+  [radarhere]
+
+- Convert to float for comparison with float in IFDRational __eq__ #5412
+  [radarhere]
+
+- Allow getexif() to access TIFF tag_v2 data #5416
+  [radarhere]
+
+- Read FITS image mode and size #5405
+  [radarhere]
+
+- Merge parallel horizontal edges in ImagingDrawPolygon #5347
+  [radarhere, hrdrq]
+
+- Use transparency behind first GIF frame and when disposing to background #5557
+  [radarhere, zewt]
+
+- Avoid unstable nature of qsort in Quant.c #5367
+  [radarhere]
+
+- Copy palette to new images in ImageOps expand #5551
+  [radarhere]
+
+- Ensure palette string matches RGB mode #5549
+  [radarhere]
+
+- Do not modify EXIF of original image instance in exif_transpose() #5547
+  [radarhere]
+
+- Fixed default numresolution for small JPEG2000 images #5540
+  [radarhere]
+
+- Added DDS BC5 reading #5501
+  [radarhere]
+
+- Raise an error if ImageDraw.textbbox is used without a TrueType font #5510
+  [radarhere]
+
+- Added ICO saving in BMP format #5513
+  [radarhere]
+
+- Ensure PNG seeks to end of previous chunk at start of load_end #5493
+  [radarhere]
+
+- Do not allow TIFF to seek to a past frame #5473
+  [radarhere]
+
+- Avoid race condition when displaying images with eog #5507
+  [mconst]
+
+- Added specific error messages when ink has incorrect number of bands #5504
+  [radarhere]
+
+- Allow converting an image to a numpy array to raise errors #5379
+  [radarhere]
+
+- Removed DPI rounding from BMP, JPEG, PNG and WMF loading #5476, #5470
+  [radarhere]
+
+- Remove spikes when drawing thin pieslices #5460
+  [xtsm]
+
+- Updated default value for SAMPLESPERPIXEL TIFF tag #5452
+  [radarhere]
+
+- Removed TIFF DPI rounding #5446
+  [radarhere, hugovk]
+
+- Include code in WebP error #5471
+  [radarhere]
+
+- Do not alter pixels outside mask when drawing text on an image with transparency #5434
+  [radarhere]
+
+- Reset handle when seeking backwards in TIFF #5443
+  [radarhere]
+
+- Replace sys.stdout with sys.stdout.buffer when saving #5437
+  [radarhere]
+
+- Fixed UNDEFINED TIFF tag of length 0 being changed in roundtrip #5426
+  [radarhere]
+
+- Fixed bug when checking FreeType2 version if it is not installed #5445
+  [radarhere]
+
+- Do not round dimensions when saving PDF #5459
+  [radarhere]
+
+- Added ImageOps contain() #5417
+  [radarhere, hugovk]
+
+- Changed WebP default "method" value to 4 #5450
+  [radarhere]
+
+- Switched to saving 1-bit PDFs with DCTDecode #5430
+  [radarhere]
+
+- Use bpp from ICO header #5429
+  [radarhere]
+
+- Corrected JPEG APP14 transform value #5408
+  [radarhere]
+
+- Changed TIFF tag 33723 length to 1 #5425
+  [radarhere]
+
+- Changed ImageMorph incorrect mode errors to ValueError #5414
+  [radarhere]
+
+- Add EXIF tags specified in EXIF 2.32 #5419
+  [gladiusglad]
+
+- Treat previous contents of first GIF frame as transparent #5391
+  [radarhere]
+
+- For special image modes, revert default resize resampling to NEAREST #5411
+  [radarhere]
+
+- JPEG2000: Support decoding subsampled RGB and YCbCr images #4996
+  [nulano, radarhere]
+
+- Stop decoding BC1 punchthrough alpha in BC2&3 #4144
+  [jansol]
+
+- Use zero if GIF background color index is missing #5390
+  [radarhere]
+
+- Fixed ensuring that GIF previous frame was loaded #5386
+  [radarhere]
+
+- Valgrind fixes #5397
+  [wiredfool]
+
+- Round down the radius in rounded_rectangle #5382
+  [radarhere]
+
+- Fixed reading uncompressed RGB data from DDS #5383
+  [radarhere]
+
+8.2.0 (2021-04-01)
+------------------
+
+- Added getxmp() method #5144
+  [UrielMaD, radarhere]
+
+- Add ImageShow support for GraphicsMagick #5349
+  [latosha-maltba, radarhere]
+
+- Do not load transparent pixels from subsequent GIF frames #5333
+  [zewt, radarhere]
+
+- Use LZW encoding when saving GIF images #5291
+  [raygard]
+
+- Set all transparent colors to be equal in quantize() #5282
+  [radarhere]
+
+- Allow PixelAccess to use Python __int__ when parsing x and y #5206
+  [radarhere]
+
+- Removed Image._MODEINFO #5316
+  [radarhere]
+
+- Add preserve_tone option to autocontrast #5350
+  [elejke, radarhere]
+
+- Fixed linear_gradient and radial_gradient I and F modes #5274
+  [radarhere]
+
+- Add support for reading TIFFs with PlanarConfiguration=2 #5364
+  [kkopachev, wiredfool, nulano]
+
+- Deprecated categories #5351
+  [radarhere]
+
+- Do not premultiply alpha when resizing with Image.NEAREST resampling #5304
+  [nulano]
+
+- Dynamically link FriBiDi instead of Raqm #5062
+  [nulano]
+
+- Allow fewer PNG palette entries than the bit depth maximum when saving #5330
+  [radarhere]
+
+- Use duration from info dictionary when saving WebP #5338
+  [radarhere]
+
+- Stop flattening EXIF IFD into getexif() #4947
+  [radarhere, kkopachev]
+
+- Replaced tiff_deflate with tiff_adobe_deflate compression when saving TIFF images #5343
+  [radarhere]
+
+- Save ICC profile from TIFF encoderinfo #5321
+  [radarhere]
+
+- Moved RGB fix inside ImageQt class #5268
+  [radarhere]
+
+- Allow alpha_composite destination to be negative #5313
+  [radarhere]
+
+- Ensure file is closed if it is opened by ImageQt.ImageQt #5260
+  [radarhere]
+
+- Added ImageDraw rounded_rectangle method #5208
+  [radarhere]
+
+- Added IPythonViewer #5289
+  [radarhere, Kipkurui-mutai]
+
+- Only draw each rectangle outline pixel once #5183
+  [radarhere]
+
+- Use mmap instead of built-in Win32 mapper #5224
+  [radarhere, cgohlke]
+
+- Handle PCX images with an odd stride #5214
+  [radarhere]
+
+- Only read different sizes for "Large Thumbnail" MPO frames #5168
+  [radarhere]
+
+- Added PyQt6 support #5258
+  [radarhere]
+
+- Changed Image.open formats parameter to be case-insensitive #5250
+  [Piolie, radarhere]
+
+- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
+  [radarhere]
+
+- Added tk version to pilinfo #5226
+  [radarhere, nulano]
+
+- Support for ignoring tests when running valgrind #5150
+  [wiredfool, radarhere, hugovk]
+
+- OSS-Fuzz support #5189
+  [wiredfool, radarhere]
+
+8.1.2 (2021-03-06)
+------------------
+
+- Fix Memory DOS in BLP (CVE-2021-27921), ICNS (CVE-2021-27922) and ICO (CVE-2021-27923) Image Plugins
+  [wiredfool]
+
+8.1.1 (2021-03-01)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [hugovk]
+
+- Fix OOB Read in TiffDecode.c, and check the tile validity before reading. CVE-2021-25291
+  [wiredfool]
+
+- Fix negative size read in TiffDecode.c. CVE-2021-25290
+  [wiredfool]
+
+- Fix OOB read in SgiRleDecode.c. CVE-2021-25293
+  [wiredfool]
+
+- Incorrect error code checking in TiffDecode.c. CVE-2021-25289
+  [wiredfool]
+
+- PyModule_AddObject fix for Python 3.10 #5194
+  [radarhere]
+
+8.1.0 (2021-01-02)
+------------------
+
+- Fix TIFF OOB Write error. CVE-2020-35654 #5175
+  [wiredfool]
+
+- Fix for Read Overflow in PCX Decoding. CVE-2020-35653 #5174
+  [wiredfool, radarhere]
+
+- Fix for SGI Decode buffer overrun. CVE-2020-35655 #5173
+  [wiredfool, radarhere]
+
+- Fix OOB Read when saving GIF of xsize=1 #5149
+  [wiredfool]
+
+- Makefile updates #5159
+  [wiredfool, radarhere]
+
+- Add support for PySide6 #5161
+  [hugovk]
+
+- Use disposal settings from previous frame in APNG #5126
+  [radarhere]
+
+- Added exception explaining that _repr_png_ saves to PNG #5139
+  [radarhere]
 
 - Use previous disposal method in GIF load_end #5125
   [radarhere]

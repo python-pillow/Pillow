@@ -170,8 +170,10 @@ class FreeTypeFont:
         except ImportError:
             pass
         else:
-            freetype_version = parse_version(features.version_module("freetype2"))
-            if freetype_version < parse_version("2.8"):
+            freetype_version = features.version_module("freetype2")
+            if freetype_version is not None and parse_version(
+                freetype_version
+            ) < parse_version("2.8"):
                 warnings.warn(
                     "Support for FreeType 2.7 is deprecated and will be removed"
                     " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
@@ -669,6 +671,7 @@ class FreeTypeFont:
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
             text, im.id, mode, direction, features, language, stroke_width, ink

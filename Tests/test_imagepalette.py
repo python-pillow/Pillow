@@ -2,27 +2,47 @@ import pytest
 
 from PIL import Image, ImagePalette
 
-from .helper import assert_image_equal
+from .helper import assert_image_equal, assert_image_equal_tofile
 
 
 def test_sanity():
 
-    ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+    palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+    assert len(palette.colors) == 256
+
     with pytest.raises(ValueError):
-        ImagePalette.ImagePalette("RGB", list(range(256)) * 2)
+        ImagePalette.ImagePalette("RGB", list(range(256)) * 3, 10)
+
+
+def test_reload():
+    im = Image.open("Tests/images/hopper.gif")
+    original = im.copy()
+    im.palette.dirty = 1
+    assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
 
 def test_getcolor():
 
     palette = ImagePalette.ImagePalette()
+    assert len(palette.palette) == 0
+    assert len(palette.colors) == 0
 
     test_map = {}
     for i in range(256):
         test_map[palette.getcolor((i, i, i))] = i
-
     assert len(test_map) == 256
+
+    # Colors can be converted between RGB and RGBA
+    rgba_palette = ImagePalette.ImagePalette("RGBA")
+    assert rgba_palette.getcolor((0, 0, 0)) == rgba_palette.getcolor((0, 0, 0, 255))
+
+    assert palette.getcolor((0, 0, 0)) == palette.getcolor((0, 0, 0, 255))
+
+    # An error is raised when the palette is full
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
+    # But not if the image is not using one of the palette entries
+    palette.getcolor((1, 2, 3), image=Image.new("P", (1, 1)))
 
     # Test unknown color specifier
     with pytest.raises(ValueError):
@@ -116,7 +136,7 @@ def test_getdata():
     mode, data_out = palette.getdata()
 
     # Assert
-    assert mode == "RGB;L"
+    assert mode == "RGB"
 
 
 def test_rawmode_getdata():
@@ -141,8 +161,7 @@ def test_2bit_palette(tmp_path):
     img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
     img.save(outfile, format="PNG")
 
-    with Image.open(outfile) as reloaded:
-        assert_image_equal(img, reloaded)
+    assert_image_equal_tofile(img, outfile)
 
 
 def test_invalid_palette():

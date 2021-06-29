@@ -4,7 +4,7 @@ import pytest
 
 from PIL import IcnsImagePlugin, Image, features
 
-from .helper import assert_image_equal, assert_image_similar
+from .helper import assert_image_equal, assert_image_similar_tofile
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -18,7 +18,9 @@ def test_sanity():
     with Image.open(TEST_FILE) as im:
 
         # Assert that there is no unclosed file warning
-        pytest.warns(None, im.load)
+        with pytest.warns(None) as record:
+            im.load()
+        assert not record
 
         assert im.mode == "RGBA"
         assert im.size == (1024, 1024)
@@ -44,8 +46,7 @@ def test_save_append_images(tmp_path):
     with Image.open(TEST_FILE) as im:
         im.save(temp_file, append_images=[provided_im])
 
-        with Image.open(temp_file) as reread:
-            assert_image_similar(reread, im, 1)
+        assert_image_similar_tofile(im, temp_file, 1)
 
         with Image.open(temp_file) as reread:
             reread.size = (16, 16, 2)
@@ -135,3 +136,11 @@ def test_not_an_icns_file():
     with io.BytesIO(b"invalid\n") as fp:
         with pytest.raises(SyntaxError):
             IcnsImagePlugin.IcnsFile(fp)
+
+
+def test_icns_decompression_bomb():
+    with Image.open(
+        "Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns"
+    ) as im:
+        with pytest.raises(Image.DecompressionBombError):
+            im.load()

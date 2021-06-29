@@ -8,19 +8,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.6", "pypy-3.7", "3.6", "3.7", "3.8", "3.9", "3.10-dev"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10-dev"]
         architecture: ["x86", "x64"]
         include:
-          - architecture: "x86"
-            platform-vcvars: "x86"
-            platform-msbuild: "Win32"
-          - architecture: "x64"
-            platform-vcvars: "x86_amd64"
-            platform-msbuild: "x64"
-        exclude:
-          # PyPy does not support 64-bit on Windows
+          # PyPy3.6 only ships 32-bit binaries for Windows
           - python-version: "pypy-3.6"
-            architecture: "x64"
+            architecture: "x86"
+          # PyPy 7.3.4+ only ships 64-bit binaries for Windows
           - python-version: "pypy-3.7"
             architecture: "x64"
     timeout-minutes: 30
@@ -57,22 +51,17 @@ jobs:
     - name: Print build system information
       run: python .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov
-      run: python -m pip install wheel pytest pytest-cov
-
-    # TODO Remove when 3.8 / 3.9 includes setuptools 49.3.2+:
-    - name: Upgrade setuptools
-      if: "contains(matrix.python-version, '3.8') || contains(matrix.python-version, '3.9')"
-      run: python -m pip install -U "setuptools>=49.3.2"
+    - name: python -m pip install wheel pytest pytest-cov pytest-timeout
+      run: python -m pip install wheel pytest pytest-cov pytest-timeout
 
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.14.02-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.14.02" >> $env:GITHUB_PATH
+        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9533w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.53.3\bin" >> $env:GITHUB_PATH
+        winbuild\depends\gs9540w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs9.54.0\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
@@ -110,7 +99,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
-    # for FreeType CBDT font support
+    # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
@@ -137,13 +126,10 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
+    # Raqm dependencies
     - name: Build dependencies / FriBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
-
-    - name: Build dependencies / Raqm
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libraqm.cmd"
 
     # trim ~150MB x 9
     - name: Optimize build cache
@@ -174,7 +160,7 @@ jobs:
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
+      shell: bash
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
@@ -197,16 +183,14 @@ jobs:
 
     - name: Build wheel
       id: wheel
-      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
-      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
+      if: "github.event_name == 'push'"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
     - uses: actions/upload-artifact@v2
-      # Skip wheels on 3.10 due to https://github.com/pypa/wheel/issues/354
-      if: "github.event_name == 'push' && !contains(matrix.python-version, '3.10')"
+      if: "github.event_name == 'push'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
@@ -251,8 +235,6 @@ jobs:
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
               ${{ matrix.package }}-python3-pyqt5 \
-              ${{ matrix.package }}-python3-pytest \
-              ${{ matrix.package }}-python3-pytest-cov \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-ghostscript \
@@ -265,7 +247,7 @@ jobs:
               ${{ matrix.package }}-openjpeg2 \
               subversion
 
-          python3 -m pip install pyroma
+          python3 -m pip install pyroma pytest pytest-cov
 
           pushd depends && ./install_extra_test_images.sh && popd
 
@@ -275,6 +257,7 @@ jobs:
       - name: Test Pillow
         run: |
           python3 selftest.py --installed
+          python3 -c "from PIL import Image"
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage

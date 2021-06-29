@@ -1,12 +1,11 @@
 from PIL import Image
 
-from .helper import assert_image_equal, assert_image_similar
+from .helper import assert_image_equal_tofile, assert_image_similar
 
 
 def test_load_raw():
     with Image.open("Tests/images/ftex_uncompressed.ftu") as im:
-        with Image.open("Tests/images/ftex_uncompressed.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/ftex_uncompressed.png")
 
 
 def test_load_dxt1():

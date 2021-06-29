@@ -1,0 +1,73 @@
+8.3.0
+-----
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+Changed WebP default "method" value when saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, it was 0, for the best speed. The default has now been changed to 4, to
+match WebP's default, for higher quality with still some speed optimisation.
+
+Default resampling filter for special image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 7.0 changed the default resampling filter to ``Image.BICUBIC``. However, as this
+is not supported yet for images with a custom number of bits, the default filter for
+those modes has been reverted to ``Image.NEAREST``.
+
+ImageMorph incorrect mode errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For ``apply()``, ``match()`` and ``get_on_pixels()``, if the image mode is not L, an
+:py:exc:`Exception` was thrown. This has now been changed to a :py:exc:`ValueError`.
+
+API Additions
+=============
+
+ImageOps.contain
+^^^^^^^^^^^^^^^^
+
+Returns a resized version of the image, set to the maximum width and height within
+``size``, while maintaining the original aspect ratio.
+
+To compare it to other ImageOps methods:
+
+- :py:meth:`~PIL.ImageOps.fit` expands an image until is fills ``size``, cropping the
+  parts of the image that do not fit.
+- :py:meth:`~PIL.ImageOps.pad` expands an image to fill ``size``, without cropping, but
+  instead filling the extra space with ``color``.
+- :py:meth:`~PIL.ImageOps.contain` is similar to :py:meth:`~PIL.ImageOps.pad`, but it
+  does not fill the extra space. Instead, the original aspect ratio is maintained. So
+  unlike the other two methods, it is not guaranteed to return an image of ``size``.
+
+ICO saving: bitmap_format argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, Pillow saves ICO files in the PNG format. They can now also be saved in BMP
+format, through the new ``bitmap_format`` argument::
+
+    im.save("out.ico", bitmap_format="bmp")
+
+Security
+========
+
+TODO
+
+Other Changes
+=============
+
+Added DDS BC5 reading
+^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read the BC5 format of DDS images, whether UNORM, SNORM or
+TYPELESS.

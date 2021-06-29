@@ -17,11 +17,14 @@ from PIL import (
 from .helper import (
     assert_image,
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
+    assert_image_similar_tofile,
     cjpeg_available,
     djpeg_available,
     hopper,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -114,6 +117,9 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_icc(self, tmp_path):
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
@@ -153,6 +159,9 @@ class TestFileJpeg:
         test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_large_icc_meta(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
@@ -260,11 +269,11 @@ class TestFileJpeg:
             assert exif[0x0112] == Image.TRANSVERSE
 
             # Assert that the GPS IFD is present and empty
-            assert exif[0x8825] == {}
+            assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
         exif = transposed.getexif()
-        assert exif[0x8825] == {}
+        assert exif.get_ifd(0x8825) == {}
 
         # Assert that it was transposed
         assert 0x0112 not in exif
@@ -419,6 +428,9 @@ class TestFileJpeg:
         with Image.open(filename):
             pass
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_truncated_jpeg_should_read_all_the_data(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -437,6 +449,9 @@ class TestFileJpeg:
             with pytest.raises(OSError):
                 im.load()
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_qtables(self, tmp_path):
         def _n_qtables_helper(n, test_file):
             with Image.open(test_file) as im:
@@ -573,7 +588,7 @@ class TestFileJpeg:
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
             img.load_djpeg()
-            assert_image_similar(img, Image.open(TEST_FILE), 5)
+            assert_image_similar_tofile(img, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path):
@@ -581,7 +596,7 @@ class TestFileJpeg:
             tempfile = str(tmp_path / "temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar(img, Image.open(tempfile), 17)
+            assert_image_similar_tofile(img, tempfile, 17)
 
     def test_no_duplicate_0x1001_tag(self):
         # Arrange
@@ -640,15 +655,6 @@ class TestFileJpeg:
             with Image.open(outfile) as reloaded:
                 reloaded.load()
                 assert im.info["dpi"] == reloaded.info["dpi"]
-
-    def test_load_dpi_rounding(self):
-        # Round up
-        with Image.open("Tests/images/iptc_roundUp.jpg") as im:
-            assert im.info["dpi"] == (44, 44)
-
-        # Round down
-        with Image.open("Tests/images/iptc_roundDown.jpg") as im:
-            assert im.info["dpi"] == (2, 2)
 
     def test_save_dpi_rounding(self, tmp_path):
         outfile = str(tmp_path / "temp.jpg")
@@ -720,6 +726,9 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_x_resolution(self, tmp_path):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
@@ -728,7 +737,7 @@ class TestFileJpeg:
             out = str(tmp_path / "out.jpg")
             with pytest.warns(None) as record:
                 im.save(out, exif=exif)
-            assert len(record) == 0
+            assert not record
 
         with Image.open(out) as reloaded:
             assert reloaded.getexif()[282] == 180
@@ -750,6 +759,9 @@ class TestFileJpeg:
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_photoshop(self):
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
             assert im.info["photoshop"][0x03ED] == {
@@ -761,8 +773,7 @@ class TestFileJpeg:
 
             # Test that the image can still load, even with broken Photoshop data
             # This image had the APP13 length hexedited to be smaller
-            with Image.open("Tests/images/photoshop-200dpi-broken.jpg") as im_broken:
-                assert_image_equal(im_broken, im)
+            assert_image_equal_tofile(im, "Tests/images/photoshop-200dpi-broken.jpg")
 
         # This image does not contain a Photoshop header string
         with Image.open("Tests/images/app13.jpg") as im:
@@ -774,6 +785,20 @@ class TestFileJpeg:
             assert 24 == len(im.info["photoshop"])
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
+
+    def test_adobe_transform(self):
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert im.info["adobe_transform"] == 1
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            assert im.info["adobe_transform"] == 2
+
+        # This image has been manually hexedited
+        # so that the APP14 reports its length to be 11,
+        # leaving no room for "adobe_transform"
+        with Image.open("Tests/images/truncated_app14.jpg") as im:
+            assert "adobe" in im.info
+            assert "adobe_transform" not in im.info
 
     def test_icc_after_SOF(self):
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
@@ -792,10 +817,34 @@ class TestFileJpeg:
 
         buffer.read = read
         with pytest.raises(UnidentifiedImageError):
-            Image.open(buffer)
+            with Image.open(buffer):
+                pass
 
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size
+
+    def test_getxmp(self):
+        with Image.open("Tests/images/xmp_test.jpg") as im:
+            xmp = im.getxmp()
+
+            assert isinstance(xmp, dict)
+
+            description = xmp["xmpmeta"]["RDF"]["Description"]
+            assert description["DerivedFrom"] == {
+                "documentID": "8367D410E636EA95B7DE7EBA1C43A412",
+                "originalDocumentID": "8367D410E636EA95B7DE7EBA1C43A412",
+            }
+            assert description["Look"]["Description"]["Group"]["Alt"]["li"] == {
+                "lang": "x-default",
+                "text": "Profiles",
+            }
+            assert description["ToneCurve"]["Seq"]["li"] == ["0, 0", "255, 255"]
+
+            # Attribute
+            assert description["Version"] == "10.4"
+
+        with Image.open("Tests/images/hopper.jpg") as im:
+            assert im.getxmp() == {}
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

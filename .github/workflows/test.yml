@@ -24,6 +24,7 @@ jobs:
         include:
         - python-version: "3.6"
           PYTHONOPTIMIZE: 1
+          REVERSE: "--reverse"
         - python-version: "3.7"
           PYTHONOPTIMIZE: 2
         # Include new variables for Codecov
@@ -58,7 +59,7 @@ jobs:
           ${{ matrix.os }}-${{ matrix.python-version }}-
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -80,6 +81,9 @@ jobs:
 
     - name: Test
       run: |
+        if [ $REVERSE ]; then
+          python3 -m pip install pytest-reverse
+        fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
           xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
         else
@@ -87,12 +91,12 @@ jobs:
         fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
+        REVERSE: ${{ matrix.REVERSE }}
 
     - name: Prepare to upload errors
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
@@ -104,7 +108,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
-        python3 -m pip install sphinx-issues sphinx-removed-in sphinx-rtd-theme
+        python3 -m pip install sphinx-copybutton sphinx-issues sphinx-removed-in sphinx-rtd-theme sphinxext-opengraph
         make doccheck
 
     - name: After success
