@@ -300,13 +300,12 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
-def _to_int(s):
-    b = s.encode("ascii")
+def _to_int(b):
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
 
 
-MAGIC = _to_int("icns")
-TOC = "TOC "
+MAGIC = b"icns"
+TOC = b"TOC "
 
 
 def _save(im, fp, filename):
@@ -319,7 +318,7 @@ def _save(im, fp, filename):
 
     # Size
     sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
-    size_str = ["ic07", "ic08", "ic09", "ic11", "ic12", "ic13", "ic14", "ic10"]
+    size_str = [b"ic07", b"ic08", b"ic09", b"ic11", b"ic12", b"ic13", b"ic14", b"ic10"]
     file_size = 0
     entries = []
     provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
@@ -331,11 +330,15 @@ def _save(im, fp, filename):
         temp = temp_sizes[s]
         file_size += len(temp.getvalue())
         entries.append(
-            {"type": size_str[index], "size": len(temp.getvalue()), "stream": temp}
+            {
+                "type": _to_int(size_str[index]),
+                "size": len(temp.getvalue()),
+                "stream": temp,
+            }
         )
 
     # Header
-    fp.write(struct.pack("<i", MAGIC)[::-1])
+    fp.write(struct.pack("<i", _to_int(MAGIC))[::-1])
     fp.write(struct.pack("<i", file_size)[::-1])
 
     # TOC
@@ -343,12 +346,12 @@ def _save(im, fp, filename):
     fp.write(struct.pack("<i", _to_int(TOC))[::-1])
     fp.write(struct.pack("<i", toc_size)[::-1])
     for e in entries:
-        fp.write(struct.pack("<i", _to_int(e["type"]))[::-1])
+        fp.write(struct.pack("<i", e["type"])[::-1])
         fp.write(struct.pack("<i", HEADERSIZE + e["size"])[::-1])
 
     # Data
     for index, e in enumerate(entries):
-        fp.write(struct.pack("<i", _to_int(e["type"]))[::-1])
+        fp.write(struct.pack("<i", e["type"])[::-1])
         fp.write(struct.pack("<i", HEADERSIZE + e["size"])[::-1])
         fp.write(e["stream"].getvalue())
 
@@ -356,7 +359,7 @@ def _save(im, fp, filename):
         fp.flush()
 
 
-Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
+Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == MAGIC)
 Image.register_extension(IcnsImageFile.format, ".icns")
 
 Image.register_save(IcnsImageFile.format, _save)
