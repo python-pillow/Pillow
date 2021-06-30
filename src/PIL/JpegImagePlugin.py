@@ -586,8 +586,8 @@ samplings = {
 
 def convert_dict_qtables(qtables):
     warnings.warn(
-        "convert_dict_qtables is deprecated and will be removed in a future"
-        " release. Conversion is no longer needed.",
+        "convert_dict_qtables is deprecated and will be removed in Pillow 10"
+        "(2023-01-02). Conversion is no longer needed.",
         DeprecationWarning,
     )
     return qtables
