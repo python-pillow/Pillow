@@ -31,6 +31,24 @@ ImageMorph incorrect mode errors
 For ``apply()``, ``match()`` and ``get_on_pixels()``, if the image mode is not L, an
 :py:exc:`Exception` was thrown. This has now been changed to a :py:exc:`ValueError`.
 
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+returned for PNG and TIFF images, through ``getxmp()`` for each format.
+
+The returned dictionary will start from the base of the XML, meaning that the top level
+should contain an "xmpmeta" key. JPEG's ``getxmp()`` method has also been updated to
+this structure.
+
+TIFF getexif()
+^^^^^^^^^^^^^^
+
+TIFF :py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag_v2` data can now be accessed
+through :py:meth:`~PIL.Image.Image.getexif`. This also provides access to the GPS and
+EXIF IFDs, through ``im.getexif().get_ifd(0x8825)`` and
+``im.getexif().get_ifd(0x8769)`` respectively.
+
 API Additions
 =============
 
@@ -76,8 +94,10 @@ is not secure.
 Other Changes
 =============
 
-Added DDS BC5 reading
-^^^^^^^^^^^^^^^^^^^^^
+Added DDS BC5 reading and uncompressed saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added to read the BC5 format of DDS images, whether UNORM, SNORM or
 TYPELESS.
+
+Support has also been added to write the uncompressed format of DDS images.
