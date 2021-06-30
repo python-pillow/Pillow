@@ -28,6 +28,11 @@ from .helper import (
     skip_unless_feature,
 )
 
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
+
 TEST_FILE = "Tests/images/hopper.jpg"
 
 
@@ -825,26 +830,28 @@ class TestFileJpeg:
 
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
-            xmp = im.getxmp()
+            if ElementTree is None:
+                assert xmp == {}
+            else:
+                xmp = im.getxmp()
 
-            assert isinstance(xmp, dict)
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description["DerivedFrom"] == {
+                    "documentID": "8367D410E636EA95B7DE7EBA1C43A412",
+                    "originalDocumentID": "8367D410E636EA95B7DE7EBA1C43A412",
+                }
+                assert description["Look"]["Description"]["Group"]["Alt"]["li"] == {
+                    "lang": "x-default",
+                    "text": "Profiles",
+                }
+                assert description["ToneCurve"]["Seq"]["li"] == ["0, 0", "255, 255"]
 
-            description = xmp["xmpmeta"]["RDF"]["Description"]
-            assert description["DerivedFrom"] == {
-                "documentID": "8367D410E636EA95B7DE7EBA1C43A412",
-                "originalDocumentID": "8367D410E636EA95B7DE7EBA1C43A412",
-            }
-            assert description["Look"]["Description"]["Group"]["Alt"]["li"] == {
-                "lang": "x-default",
-                "text": "Profiles",
-            }
-            assert description["ToneCurve"]["Seq"]["li"] == ["0, 0", "255, 255"]
+                # Attribute
+                assert description["Version"] == "10.4"
 
-            # Attribute
-            assert description["Version"] == "10.4"
-
-        with Image.open("Tests/images/hopper.jpg") as im:
-            assert im.getxmp() == {}
+        if ElementTree is not None:
+            with Image.open("Tests/images/hopper.jpg") as im:
+                assert im.getxmp() == {}
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

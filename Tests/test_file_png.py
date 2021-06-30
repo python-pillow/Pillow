@@ -19,6 +19,11 @@ from .helper import (
     skip_unless_feature,
 )
 
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
+
 # sample png stream
 
 TEST_PNG_FILE = "Tests/images/hopper.png"
@@ -651,15 +656,16 @@ class TestFilePng:
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 3
 
-    def test_xmp(self):
+    def test_getxmp(self):
         with Image.open("Tests/images/color_snakes.png") as im:
-            xmp = im.getxmp()
+            if ElementTree is None:
+                assert im.getxmp() == {}
+            else:
+                xmp = im.getxmp()
 
-            assert isinstance(xmp, dict)
-
-            description = xmp["xmpmeta"]["RDF"]["Description"]
-            assert description["PixelXDimension"] == "10"
-            assert description["subject"]["Seq"] is None
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description["PixelXDimension"] == "10"
+                assert description["subject"]["Seq"] is None
 
     def test_exif(self):
         # With an EXIF chunk

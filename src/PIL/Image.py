@@ -36,9 +36,13 @@ import struct
 import sys
 import tempfile
 import warnings
-import xml.etree.ElementTree
 from collections.abc import Callable, MutableMapping
 from pathlib import Path
+
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION is deprecated and will be removed in a future release.
@@ -1359,8 +1363,11 @@ class Image:
                 return element.text
             return value
 
-        root = xml.etree.ElementTree.fromstring(xmp_tags)
-        return {get_name(root.tag): get_value(root)}
+        if ElementTree is None:
+            return {}
+        else:
+            root = ElementTree.fromstring(xmp_tags)
+            return {get_name(root.tag): get_value(root)}
 
     def getexif(self):
         if self._exif is None:
