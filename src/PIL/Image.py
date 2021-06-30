@@ -1975,7 +1975,7 @@ class Image:
             resample = NEAREST
 
         if self.mode in ["LA", "RGBA"] and resample != NEAREST:
-            im = self.convert(self.mode[:-1] + "a")
+            im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
 
@@ -2025,7 +2025,7 @@ class Image:
             return self.copy()
 
         if self.mode in ["LA", "RGBA"]:
-            im = self.convert(self.mode[:-1] + "a")
+            im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.reduce(factor, box)
             return im.convert(self.mode)
 
@@ -2463,18 +2463,11 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode == "LA" and resample != NEAREST:
+        if self.mode in ("LA", "RGBA") and resample != NEAREST:
             return (
-                self.convert("La")
+                self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
                 .transform(size, method, data, resample, fill, fillcolor)
-                .convert("LA")
-            )
-
-        if self.mode == "RGBA" and resample != NEAREST:
-            return (
-                self.convert("RGBa")
-                .transform(size, method, data, resample, fill, fillcolor)
-                .convert("RGBA")
+                .convert(self.mode)
             )
 
         if isinstance(method, ImageTransformHandler):
