@@ -62,4 +62,20 @@ def test_viewer():
 
 def test_viewers():
     for viewer in ImageShow._viewers:
-        viewer.get_command("test.jpg")
+        try:
+            viewer.get_command("test.jpg")
+        except NotImplementedError:
+            pass
+
+
+def test_ipythonviewer():
+    pytest.importorskip("IPython", reason="IPython not installed")
+    for viewer in ImageShow._viewers:
+        if isinstance(viewer, ImageShow.IPythonViewer):
+            test_viewer = viewer
+            break
+    else:
+        assert False
+
+    im = hopper()
+    assert test_viewer.show(im) == 1

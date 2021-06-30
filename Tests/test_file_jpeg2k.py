@@ -1,3 +1,4 @@
+import os
 import re
 from io import BytesIO
 
@@ -8,9 +9,12 @@ from PIL import Image, ImageFile, Jpeg2KImagePlugin, features
 from .helper import (
     assert_image_equal,
     assert_image_similar,
+    assert_image_similar_tofile,
     is_big_endian,
     skip_unless_feature,
 )
+
+EXTRA_DIR = "Tests/images/jpeg2000"
 
 pytestmark = skip_unless_feature("jpg_2000")
 
@@ -62,9 +66,7 @@ def test_invalid_file():
 def test_bytesio():
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
-    with Image.open(data) as im:
-        im.load()
-        assert_image_similar(im, test_card, 1.0e-3)
+    assert_image_similar_tofile(test_card, data, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
@@ -80,9 +82,9 @@ def test_lossless(tmp_path):
 
 
 def test_lossy_tiled():
-    with Image.open("Tests/images/test-card-lossy-tiled.jp2") as im:
-        im.load()
-        assert_image_similar(im, test_card, 2.0)
+    assert_image_similar_tofile(
+        test_card, "Tests/images/test-card-lossy-tiled.jp2", 2.0
+    )
 
 
 def test_lossless_rt():
@@ -123,6 +125,16 @@ def test_prog_qual_rt():
 def test_prog_res_rt():
     im = roundtrip(test_card, num_resolutions=8, progression="RLCP")
     assert_image_equal(im, test_card)
+
+
+def test_default_num_resolutions():
+    for num_resolutions in range(2, 6):
+        d = 1 << (num_resolutions - 1)
+        im = test_card.resize((d - 1, d - 1))
+        with pytest.raises(OSError):
+            roundtrip(im, num_resolutions=num_resolutions)
+        reloaded = roundtrip(im)
+        assert_image_equal(im, reloaded)
 
 
 def test_reduce():
@@ -193,15 +205,13 @@ def test_16bit_monochrome_has_correct_mode():
 @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_jp2_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
-            assert_image_similar(jp2, tiff_16bit, 1e-3)
+        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.jp2", 1e-3)
 
 
 @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_16bit_monochrome_j2k_like_tiff():
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
-            assert_image_similar(j2k, tiff_16bit, 1e-3)
+        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.j2k", 1e-3)
 
 
 def test_16bit_j2k_roundtrips():
@@ -219,7 +229,8 @@ def test_16bit_jp2_roundtrips():
 def test_unbound_local():
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
     with pytest.raises(OSError):
-        Image.open("Tests/images/unbound_variable.jp2")
+        with Image.open("Tests/images/unbound_variable.jp2"):
+            pass
 
 
 def test_parser_feed():
@@ -233,3 +244,42 @@ def test_parser_feed():
 
     # Assert
     assert p.image.size == (640, 480)
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@pytest.mark.parametrize("name", ("subsampling_1", "subsampling_2", "zoo1", "zoo2"))
+def test_subsampling_decode(name):
+    test = f"{EXTRA_DIR}/{name}.jp2"
+    reference = f"{EXTRA_DIR}/{name}.ppm"
+
+    with Image.open(test) as im:
+        epsilon = 3  # for YCbCr images
+        with Image.open(reference) as im2:
+            width, height = im2.size
+            if name[-1] == "2":
+                # RGB reference images are downscaled
+                epsilon = 3e-3
+                width, height = width * 2, height * 2
+            expected = im2.resize((width, height), Image.NEAREST)
+        assert_image_similar(im, expected, epsilon)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/crash-4fb027452e6988530aa5dabee76eecacb3b79f8a.j2k",
+        "Tests/images/crash-7d4c83eb92150fb8f1653a697703ae06ae7c4998.j2k",
+        "Tests/images/crash-ccca68ff40171fdae983d924e127a721cab2bd50.j2k",
+        "Tests/images/crash-d2c93af851d3ab9a19e34503626368b2ecde9c03.j2k",
+    ],
+)
+def test_crashes(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            # Valgrind should not complain here
+            try:
+                im.load()
+            except OSError:
+                pass

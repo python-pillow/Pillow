@@ -1,0 +1,27 @@
+8.1.1
+-----
+
+Security
+========
+
+:cve:`CVE-2021-25289`: The previous fix for :cve:`CVE-2020-35654` was insufficient
+due to incorrect error checking in ``TiffDecode.c``.
+
+:cve:`CVE-2021-25290`: In ``TiffDecode.c``, there is a negative-offset ``memcpy``
+with an invalid size.
+
+:cve:`CVE-2021-25291`: In ``TiffDecode.c``, invalid tile boundaries could lead to
+an out-of-bounds read in ``TIFFReadRGBATile``.
+
+:cve:`CVE-2021-25292`: The PDF parser has a catastrophic backtracking regex
+that could be used as a DOS attack.
+
+:cve:`CVE-2021-25293`: There is an out-of-bounds read in ``SgiRleDecode.c``,
+since Pillow 4.3.0.
+
+
+Other Changes
+=============
+
+A crash with the feature flags for libimagequant, libjpeg-turbo, WebP and XCB on
+unreleased Python 3.10 has been fixed (:issue:`5193`).

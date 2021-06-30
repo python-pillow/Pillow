@@ -173,6 +173,21 @@ def skip_unless_feature_version(feature, version_required, reason=None):
     return pytest.mark.skipif(version_available < version_required, reason=reason)
 
 
+def mark_if_feature_version(mark, feature, version_blacklist, reason=None):
+    if not features.check(feature):
+        return pytest.mark.pil_noop_mark()
+    if reason is None:
+        reason = f"{feature} is {version_blacklist}"
+    version_required = parse_version(version_blacklist)
+    version_available = parse_version(features.version(feature))
+    if (
+        version_available.major == version_required.major
+        and version_available.minor == version_required.minor
+    ):
+        return mark(reason=reason)
+    return pytest.mark.pil_noop_mark()
+
+
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
 class PillowLeakTestCase:
     # requires unix/macOS
@@ -257,8 +272,23 @@ def netpbm_available():
     return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
 
 
-def imagemagick_available():
-    return bool(IMCONVERT and shutil.which(IMCONVERT))
+def magick_command():
+    if sys.platform == "win32":
+        magickhome = os.environ.get("MAGICK_HOME", "")
+        if magickhome:
+            imagemagick = [os.path.join(magickhome, "convert.exe")]
+            graphicsmagick = [os.path.join(magickhome, "gm.exe"), "convert"]
+        else:
+            imagemagick = None
+            graphicsmagick = None
+    else:
+        imagemagick = ["convert"]
+        graphicsmagick = ["gm", "convert"]
+
+    if imagemagick and shutil.which(imagemagick[0]):
+        return imagemagick
+    elif graphicsmagick and shutil.which(graphicsmagick[0]):
+        return graphicsmagick
 
 
 def on_appveyor():
@@ -270,12 +300,18 @@ def on_github_actions():
 
 
 def on_ci():
-    # GitHub Actions, Travis and AppVeyor have "CI"
+    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
 def is_big_endian():
     return sys.byteorder == "big"
+
+
+def is_ppc64le():
+    import platform
+
+    return platform.machine() == "ppc64le"
 
 
 def is_win32():
@@ -288,14 +324,6 @@ def is_pypy():
 
 def is_mingw():
     return sysconfig.get_platform() == "mingw"
-
-
-if sys.platform == "win32":
-    IMCONVERT = os.environ.get("MAGICK_HOME", "")
-    if IMCONVERT:
-        IMCONVERT = os.path.join(IMCONVERT, "convert.exe")
-else:
-    IMCONVERT = "convert"
 
 
 class cached_property:

@@ -18,6 +18,7 @@ graft docs
 
 # build/src control detritus
 exclude .appveyor.yml
+exclude .clang-format
 exclude .coveragerc
 exclude .editorconfig
 exclude .readthedocs.yml

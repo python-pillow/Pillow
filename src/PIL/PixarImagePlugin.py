@@ -49,10 +49,10 @@ class PixarImageFile(ImageFile.ImageFile):
         # read rest of header
         s = s + self.fp.read(508)
 
-        self._size = i16(s[418:420]), i16(s[416:418])
+        self._size = i16(s, 418), i16(s, 416)
 
         # get channel/depth descriptions
-        mode = i16(s[424:426]), i16(s[426:428])
+        mode = i16(s, 424), i16(s, 426)
 
         if mode == (14, 2):
             self.mode = "RGB"

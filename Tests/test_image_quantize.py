@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image, assert_image_similar, hopper
+from .helper import assert_image, assert_image_similar, hopper, is_ppc64le
 
 
 def test_sanity():
@@ -17,11 +17,12 @@ def test_sanity():
     assert_image_similar(converted.convert("RGB"), image, 60)
 
 
+@pytest.mark.xfail(is_ppc64le(), reason="failing on ppc64le on GHA")
 def test_libimagequant_quantize():
     image = hopper()
     try:
         converted = image.quantize(100, Image.LIBIMAGEQUANT)
-    except ValueError as ex:
+    except ValueError as ex:  # pragma: no cover
         if "dependency" in str(ex).lower():
             pytest.skip("libimagequant support not available")
         else:
@@ -73,3 +74,13 @@ def test_quantize_dither_diff():
     nodither = image.quantize(dither=0, palette=palette)
 
     assert dither.tobytes() != nodither.tobytes()
+
+
+def test_transparent_colors_equal():
+    im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
+    px = im.load()
+    px[0, 1] = (255, 255, 255, 0)
+
+    converted = im.quantize()
+    converted_px = converted.load()
+    assert converted_px[0, 0] == converted_px[0, 1]

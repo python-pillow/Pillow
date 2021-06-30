@@ -1,5 +1,4 @@
 version: '{build}'
-image: Visual Studio 2017
 clone_folder: c:\pillow
 init:
 - ECHO %PYTHON%
@@ -8,30 +7,32 @@ init:
 
 environment:
   EXECUTABLE: python.exe
-  PIP_DIR: Scripts
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python38
+  - PYTHON: C:/Python39
     ARCHITECTURE: x86
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   - PYTHON: C:/Python36-x64
     ARCHITECTURE: x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 install:
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
 - 7z x pillow-depends.zip -oc:\
 - mv c:\pillow-depends-master c:\pillow-depends
-- xcopy /s c:\pillow-depends\test_images\* c:\pillow\tests\images
-- 7z x ..\pillow-depends\nasm-2.14.02-win64.zip -oc:\
-- ..\pillow-depends\gs9533w32.exe /S
-- path c:\nasm-2.14.02;C:\Program Files (x86)\gs\gs9.53.3\bin;%PATH%
+- xcopy /S /Y c:\pillow-depends\test_images\* c:\pillow\tests\images
+- 7z x ..\pillow-depends\nasm-2.15.05-win64.zip -oc:\
+- ..\pillow-depends\gs9540w32.exe /S
+- path c:\nasm-2.15.05;C:\Program Files (x86)\gs\gs9.54.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
         c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
+- '%PYTHON%\%EXECUTABLE% -m pip install -U setuptools'
 
 build_script:
 - ps: |
@@ -42,13 +43,14 @@ build_script:
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%PIP_DIR%\pip.exe install pytest pytest-cov'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
+- '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
-- pip install codecov
+- python -m pip install codecov
 - codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
@@ -65,7 +67,7 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%PIP_DIR%\pip.exe install wheel'
+  - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
   - cd c:\pillow\winbuild\
   - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
   - cd c:\pillow

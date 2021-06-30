@@ -69,7 +69,6 @@ class Viewer:
         Converts the given image to the target format and displays it.
         """
 
-        # save temporary image to disk
         if not (
             image.mode in ("1", "RGBA")
             or (self.format == "PNG" and image.mode in ("I;16", "LA"))
@@ -195,11 +194,21 @@ class DisplayViewer(UnixViewer):
         return command, executable
 
 
+class GmDisplayViewer(UnixViewer):
+    """The GraphicsMagick ``gm display`` command."""
+
+    def get_command_ex(self, file, **options):
+        executable = "gm"
+        command = "gm display"
+        return command, executable
+
+
 class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
     def get_command_ex(self, file, **options):
-        command = executable = "eog"
+        executable = "eog"
+        command = "eog -n"
         return command, executable
 
 
@@ -221,15 +230,34 @@ class XVViewer(UnixViewer):
 if sys.platform not in ("win32", "darwin"):  # unixoids
     if shutil.which("display"):
         register(DisplayViewer)
+    if shutil.which("gm"):
+        register(GmDisplayViewer)
     if shutil.which("eog"):
         register(EogViewer)
     if shutil.which("xv"):
         register(XVViewer)
 
+
+class IPythonViewer(Viewer):
+    """The viewer for IPython frontends."""
+
+    def show_image(self, image, **options):
+        ipython_display(image)
+        return 1
+
+
+try:
+    from IPython.display import display as ipython_display
+except ImportError:
+    pass
+else:
+    register(IPythonViewer)
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Syntax: python ImageShow.py imagefile [title]")
+        print("Syntax: python3 ImageShow.py imagefile [title]")
         sys.exit()
 
     with Image.open(sys.argv[1]) as im:

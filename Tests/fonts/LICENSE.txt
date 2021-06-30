@@ -11,10 +11,15 @@ BungeeColor-Regular_colr_Windows.ttf, from https://github.com/djrrb/bungee
 
 All of the above fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
 
+FreeMono.ttf is licensed under GPLv3, with the GPL font exception.
+
 OpenSansCondensed-LightItalic.tt, from https://fonts.google.com/specimen/Open+Sans, under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
-DejaVuSans-24-{1,2,4,8}-stripped.ttf are based on DejaVuSans.ttf converted using FontForge to add bitmap strikes and keep only the ASCII range.
+chromacheck-sbix.woff, from https://github.com/RoelN/ChromaCheck, under The MIT License (MIT), Copyright (c) 2018 Roel Nieskens, https://pixelambacht.nl Copyright (c) 2018 Google LLC
 
+KhmerOSBattambang-Regular.ttf is licensed under LGPL-2.1 or later.
+
+FreeMono.ttf is licensed under GPLv3.
 
 10x20-ISO8859-1.pcf, from https://packages.ubuntu.com/xenial/xfonts-base
 

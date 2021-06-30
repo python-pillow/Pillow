@@ -17,28 +17,24 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-
 int
-ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
-{
-    enum { HEXBYTE=1, NEWLINE };
+ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    enum { HEXBYTE = 1, NEWLINE };
     const char *hex = "0123456789abcdef";
 
-    UINT8* ptr = buf;
-    UINT8* in, i;
+    UINT8 *ptr = buf;
+    UINT8 *in, i;
 
     if (!state->state) {
         state->state = HEXBYTE;
         state->xsize *= im->pixelsize; /* Hack! */
     }
 
-    in = (UINT8*) im->image[state->y];
+    in = (UINT8 *)im->image[state->y];
 
     for (;;) {
-
         if (state->state == NEWLINE) {
             if (bytes < 1) {
                 break;
@@ -53,8 +49,8 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         }
 
         i = in[state->x++];
-        *ptr++ = hex[(i>>4)&15];
-        *ptr++ = hex[i&15];
+        *ptr++ = hex[(i >> 4) & 15];
+        *ptr++ = hex[i & 15];
         bytes -= 2;
 
         /* Skip junk bytes */
@@ -62,7 +58,7 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             state->x++;
         }
 
-        if (++state->count >= 79/2) {
+        if (++state->count >= 79 / 2) {
             state->state = NEWLINE;
             state->count = 0;
         }
@@ -73,11 +69,9 @@ ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 state->errcode = IMAGING_CODEC_END;
                 break;
             }
-            in = (UINT8*) im->image[state->y];
+            in = (UINT8 *)im->image[state->y];
         }
-
     }
 
     return ptr - buf;
-
 }

@@ -143,6 +143,41 @@ class TestImageTransform:
 
         self._test_alpha_premult(op)
 
+    def _test_nearest(self, op, mode):
+        # create white image with half transparent,
+        # do op,
+        # the image should remain white with half transparent
+        transparent, opaque = {
+            "RGBA": ((255, 255, 255, 0), (255, 255, 255, 255)),
+            "LA": ((255, 0), (255, 255)),
+        }[mode]
+        im = Image.new(mode, (10, 10), transparent)
+        im2 = Image.new(mode, (5, 10), opaque)
+        im.paste(im2, (0, 0))
+
+        im = op(im, (40, 10))
+
+        colors = im.getcolors()
+        assert colors == [
+            (20 * 10, opaque),
+            (20 * 10, transparent),
+        ]
+
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    def test_nearest_resize(self, mode):
+        def op(im, sz):
+            return im.resize(sz, Image.NEAREST)
+
+        self._test_nearest(op, mode)
+
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    def test_nearest_transform(self, mode):
+        def op(im, sz):
+            (w, h) = im.size
+            return im.transform(sz, Image.EXTENT, (0, 0, w, h), Image.NEAREST)
+
+        self._test_nearest(op, mode)
+
     def test_blank_fill(self):
         # attempting to hit
         # https://github.com/python-pillow/Pillow/issues/254 reported

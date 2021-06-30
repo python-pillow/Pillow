@@ -98,9 +98,9 @@ class FtexImageFile(ImageFile.ImageFile):
         pass
 
 
-def _validate(prefix):
+def _accept(prefix):
     return prefix[:4] == MAGIC
 
 
-Image.register_open(FtexImageFile.format, FtexImageFile, _validate)
+Image.register_open(FtexImageFile.format, FtexImageFile, _accept)
 Image.register_extensions(FtexImageFile.format, [".ftc", ".ftu"])

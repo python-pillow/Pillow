@@ -2,7 +2,7 @@ import pytest
 
 from PIL import FliImagePlugin, Image
 
-from .helper import assert_image_equal, is_pypy
+from .helper import assert_image_equal_tofile, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -38,20 +38,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(static_test_file)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(static_test_file) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_tell():
@@ -122,5 +122,19 @@ def test_seek():
     with Image.open(animated_test_file) as im:
         im.seek(50)
 
-        with Image.open("Tests/images/a_fli.png") as expected:
-            assert_image_equal(im, expected)
+        assert_image_equal_tofile(im, "Tests/images/a_fli.png")
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-9139147ce93e20eb14088fe238e541443ffd64b3.fli",
+        "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
+    ],
+)
+@pytest.mark.timeout(timeout=3)
+def test_timeouts(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()

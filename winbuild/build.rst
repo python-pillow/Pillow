@@ -82,12 +82,12 @@ Pillow for the selected version of Python.
 instead of installing Pillow.
 
 You can also use ``winbuild\build\build_pillow.cmd --inplace develop`` to build
-and install Pillow in develop mode (instead of ``pip install --editable``).
+and install Pillow in develop mode (instead of ``python3 -m pip install --editable``).
 
 Testing Pillow
 --------------
 
-Some binary dependencies (e.g. ``libraqm.dll``) will be stored in the
+Some binary dependencies (e.g. ``fribidi.dll``) will be stored in the
 ``winbuild\build\bin`` directory; this directory should be added to ``PATH``
 before running tests.
 

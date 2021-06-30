@@ -24,8 +24,8 @@ from . import Image
 
 def getrgb(color):
     """
-     Convert a color string to an RGB tuple. If the string cannot be parsed,
-     this function raises a :py:exc:`ValueError` exception.
+     Convert a color string to an RGB or RGBA tuple. If the string cannot be
+     parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 

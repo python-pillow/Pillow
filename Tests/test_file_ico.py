@@ -4,7 +4,7 @@ import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
@@ -16,6 +16,12 @@ def test_sanity():
     assert im.size == (16, 16)
     assert im.format == "ICO"
     assert im.get_format_mimetype() == "image/x-icon"
+
+
+def test_black_and_white():
+    with Image.open("Tests/images/black_and_white.ico") as im:
+        assert im.mode == "RGBA"
+        assert im.size == (16, 16)
 
 
 def test_invalid_file():
@@ -48,6 +54,35 @@ def test_save_to_bytes():
         assert (32, 32) == reloaded.size
         assert reloaded.format == "ICO"
         assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
+
+
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
+def test_save_to_bytes_bmp(mode):
+    output = io.BytesIO()
+    im = hopper(mode)
+    im.save(output, "ico", bitmap_format="bmp", sizes=[(32, 32), (64, 64)])
+
+    # The default image
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.info["sizes"] == {(32, 32), (64, 64)}
+
+        assert "RGBA" == reloaded.mode
+        assert (64, 64) == reloaded.size
+        assert reloaded.format == "ICO"
+        im = hopper(mode).resize((64, 64), Image.LANCZOS).convert("RGBA")
+        assert_image_equal(reloaded, im)
+
+    # The other one
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        reloaded.size = (32, 32)
+
+        assert "RGBA" == reloaded.mode
+        assert (32, 32) == reloaded.size
+        assert reloaded.format == "ICO"
+        im = hopper(mode).resize((32, 32), Image.LANCZOS).convert("RGBA")
+        assert_image_equal(reloaded, im)
 
 
 def test_incorrect_size():
@@ -86,6 +121,20 @@ def test_only_save_relevant_sizes(tmp_path):
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
+def test_save_append_images(tmp_path):
+    # append_images should be used for scaled down versions of the image
+    im = hopper("RGBA")
+    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
+    outfile = str(tmp_path / "temp_saved_multi_icon.ico")
+    im.save(outfile, sizes=[(32, 32), (128, 128)], append_images=[provided_im])
+
+    with Image.open(outfile) as reread:
+        assert_image_equal(reread, hopper("RGBA"))
+
+        reread.size = (32, 32)
+        assert_image_equal(reread, provided_im)
+
+
 def test_unexpected_size():
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
@@ -105,6 +154,4 @@ def test_draw_reloaded(tmp_path):
         im.save(outfile)
 
     with Image.open(outfile) as im:
-        im.save("Tests/images/hopper_draw.ico")
-        with Image.open("Tests/images/hopper_draw.ico") as reloaded:
-            assert_image_equal(im, reloaded)
+        assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
