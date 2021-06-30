@@ -41,6 +41,14 @@ The returned dictionary will start from the base of the XML, meaning that the to
 should contain an "xmpmeta" key. JPEG's ``getxmp()`` method has also been updated to
 this structure.
 
+TIFF getexif()
+^^^^^^^^^^^^^^
+
+TIFF :py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag_v2` data can now be accessed
+through :py:meth:`~PIL.Image.Image.getexif`. This also provides access to the GPS and
+EXIF IFDs, through ``im.getexif().get_ifd(0x8825)`` and
+``im.getexif().get_ifd(0x8769)`` respectively.
+
 API Additions
 =============
 
