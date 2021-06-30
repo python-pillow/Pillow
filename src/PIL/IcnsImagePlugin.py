@@ -6,7 +6,7 @@
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
-# 2020-04-04 Allow saving on all operating systems.
+# 2020-04-04      Allow saving on all operating systems.
 #
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
@@ -131,6 +131,7 @@ def read_png_or_jpeg2000(fobj, start_length, size):
 
 
 class IcnsFile:
+
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],
         (512, 512, 1): [(b"ic09", read_png_or_jpeg2000)],
@@ -305,28 +306,38 @@ class IcnsImageFile(ImageFile.ImageFile):
 def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
-    that are then converted to a .icns file
+    that are then combined into a .icns file.
     """
     if hasattr(fp, "flush"):
         fp.flush()
 
-    # Size
-    sizes = [128, 256, 512, 32, 64, 256, 512, 1024]
-    size_str = [b"ic07", b"ic08", b"ic09", b"ic11", b"ic12", b"ic13", b"ic14", b"ic10"]
-
+    sizes = {
+        b"ic07": 128,
+        b"ic08": 256,
+        b"ic09": 512,
+        b"ic10": 1024,
+        b"ic11": 32,
+        b"ic12": 64,
+        b"ic13": 256,
+        b"ic14": 512,
+    }
     provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
     size_streams = {}
-    for s in set(sizes):
-        image = provided_images[s] if s in provided_images else im.resize((s, s))
+    for size in set(sizes.values()):
+        image = (
+            provided_images[size]
+            if size in provided_images
+            else im.resize((size, size))
+        )
 
         temp = io.BytesIO()
         image.save(temp, "png")
-        size_streams[s] = temp.getvalue()
+        size_streams[size] = temp.getvalue()
 
     entries = []
-    for index, size in enumerate(sizes):
+    for type, size in sizes.items():
         stream = size_streams[size]
-        entries.append({"type": size_str[index], "size": len(stream), "stream": stream})
+        entries.append({"type": type, "size": len(stream), "stream": stream})
 
     # Header
     fp.write(MAGIC)
