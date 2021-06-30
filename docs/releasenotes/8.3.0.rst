@@ -76,8 +76,10 @@ is not secure.
 Other Changes
 =============
 
-Added DDS BC5 reading
-^^^^^^^^^^^^^^^^^^^^^
+Added DDS BC5 reading and uncompressed saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added to read the BC5 format of DDS images, whether UNORM, SNORM or
 TYPELESS.
+
+Support has also been added to write the uncompressed format of DDS images.
