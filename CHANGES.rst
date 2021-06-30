@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Limit TIFF strip size when saving with LibTIFF #5514
+  [kmilos]
+
 - Allow ICNS save on all operating systems #4526
   [baletu, radarhere, newpanjing, hugovk]
 
