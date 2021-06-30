@@ -6,6 +6,7 @@
 #
 # History:
 # 2014-03-12 ajh  Created
+# 2021-06-30 rogermb  Extract dpi information from the 'resc' header box
 #
 # Copyright (c) 2014 Coriolis Systems Limited
 # Copyright (c) 2014 Alastair Houghton
@@ -126,9 +127,21 @@ def _parse_codestream(fp):
     return (size, mode)
 
 
+def _res_to_dpi(num, denom, exp):
+    """Convert JPEG2000's (numerator, denominator, exponent-base-10) resolution,
+    calculated as (num / denom) * 10^exp and stored in dots per meter,
+    to floating-point dots per inch."""
+    if num == 0 or denom == 0:
+        raise SyntaxError(
+            f"Invalid JP2 resolution information: ({num} / {denom}) * 10^{exp}"
+        )
+    return (254 * num * (10 ** exp)) / (10000 * denom)
+
+
 def _parse_jp2_header(fp):
-    """Parse the JP2 header box to extract size, component count and
-    color space information, returning a (size, mode, mimetype) tuple."""
+    """Parse the JP2 header box to extract size, component count,
+    color space information, and optionally DPI information,
+    returning a (size, mode, mimetype, dpi) tuple."""
 
     # Find the JP2 header box
     reader = BoxReader(fp)
@@ -151,6 +164,8 @@ def _parse_jp2_header(fp):
     mode = None
     bpc = None
     nc = None
+    dpi = None  # 2-tuple of DPI info, or None
+    unkc = 0  # Colorspace information unknown
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -169,10 +184,9 @@ def _parse_jp2_header(fp):
                     mode = "RGB"
                 elif nc == 4:
                     mode = "RGBA"
-                break
         elif tbox == b"colr":
             meth, prec, approx = header.read_fields(">BBB")
-            if meth == 1:
+            if meth == 1 and unkc == 0:
                 cs = header.read_fields(">I")[0]
                 if cs == 16:  # sRGB
                     if nc == 1 and (bpc & 0x7F) > 8:
@@ -183,7 +197,6 @@ def _parse_jp2_header(fp):
                         mode = "RGB"
                     elif nc == 4:
                         mode = "RGBA"
-                    break
                 elif cs == 17:  # grayscale
                     if nc == 1 and (bpc & 0x7F) > 8:
                         mode = "I;16"
@@ -191,18 +204,25 @@ def _parse_jp2_header(fp):
                         mode = "L"
                     elif nc == 2:
                         mode = "LA"
-                    break
                 elif cs == 18:  # sYCC
                     if nc == 3:
                         mode = "RGB"
                     elif nc == 4:
                         mode = "RGBA"
-                    break
+        elif tbox == b"res ":
+            res = header.read_boxes()
+            while res.has_next_box():
+                tres = res.next_box_type()
+                if tres == b"resc":
+                    vrcn, vrcd, hrcn, hrcd, vrce, hrce = res.read_fields(">HHHHBB")
+                    hres = _res_to_dpi(hrcn, hrcd, hrce)
+                    vres = _res_to_dpi(vrcn, vrcd, vrce)
+                    dpi = (hres, vres)
 
     if size is None or mode is None:
         raise SyntaxError("Malformed JP2 header")
 
-    return (size, mode, mimetype)
+    return (size, mode, mimetype, dpi)
 
 
 ##
@@ -224,7 +244,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self.mode, self.custom_mimetype = header
+                self._size, self.mode, self.custom_mimetype, dpi = header
+                if dpi is not None:
+                    self.info["dpi"] = dpi
             else:
                 raise SyntaxError("not a JPEG 2000 file")
 
