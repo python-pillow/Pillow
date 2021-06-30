@@ -31,6 +31,7 @@ import logging
 import math
 import numbers
 import os
+import re
 import struct
 import sys
 import tempfile
@@ -1381,15 +1382,9 @@ class Image:
         if 0x0112 not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
-                xmp = self._getxmp(xmp_tags)
-                if (
-                    "xmpmeta" in xmp
-                    and "RDF" in xmp["xmpmeta"]
-                    and "Description" in xmp["xmpmeta"]["RDF"]
-                ):
-                    description = xmp["xmpmeta"]["RDF"]["Description"]
-                    if "Orientation" in description:
-                        self._exif[0x0112] = int(description["Orientation"])
+                match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
+                if match:
+                    self._exif[0x0112] = int(match[1])
 
         return self._exif
 
