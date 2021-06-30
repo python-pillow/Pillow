@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Allow ICNS save on all operating systems #4526
+  [baletu, radarhere, newpanjing, hugovk]
+
 - De-zigzag JPEG's DQT when loading; deprecate convert_dict_qtables #4989
   [gofr, radarhere]
 
