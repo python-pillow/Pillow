@@ -82,6 +82,16 @@ along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
 To determine if an image has multiple frames or not,
 ``getattr(im, "is_animated", False)`` can be used instead.
 
+JpegImagePlugin.convert_dict_qtables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.3.0
+
+JPEG ``quantization`` is now automatically converted, but still returned as a
+dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+performs any operations on the data given to it, has been deprecated and will be
+removed in Pillow 10.0.0 (2023-01-02).
+
 Removed features
 ----------------
 
