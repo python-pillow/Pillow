@@ -651,7 +651,8 @@ class TestFileTiff:
     def test_getxmp(self):
         with Image.open("Tests/images/lab.tif") as im:
             if ElementTree is None:
-                assert im.getxmp() == {}
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
 

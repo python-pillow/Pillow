@@ -659,7 +659,8 @@ class TestFilePng:
     def test_getxmp(self):
         with Image.open("Tests/images/color_snakes.png") as im:
             if ElementTree is None:
-                assert im.getxmp() == {}
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
 

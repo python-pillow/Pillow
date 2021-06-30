@@ -1364,6 +1364,7 @@ class Image:
             return value
 
         if ElementTree is None:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
             return {}
         else:
             root = ElementTree.fromstring(xmp_tags)

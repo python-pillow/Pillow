@@ -831,7 +831,8 @@ class TestFileJpeg:
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
             if ElementTree is None:
-                assert xmp == {}
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
 
