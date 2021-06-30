@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- Replaced xml.etree.ElementTree #5565
+  [radarhere]
+
+- Moved CVE image to pillow-depends #5561
+  [radarhere]
+
 - Added tag data for IFD groups #5554
   [radarhere]
 
