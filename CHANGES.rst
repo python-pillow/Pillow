@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.3.0 (unreleased)
 ------------------
 
+- De-zigzag JPEG's DQT when loading; deprecate convert_dict_qtables #4989
+  [gofr, radarhere]
+
 - Replaced xml.etree.ElementTree #5565
   [radarhere]
 
