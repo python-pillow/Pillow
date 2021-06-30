@@ -6,6 +6,7 @@ brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype op
 
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
+python3 -m pip install defusedxml
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov

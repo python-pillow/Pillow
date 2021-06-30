@@ -16,6 +16,11 @@ from .helper import (
     is_win32,
 )
 
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
+
 
 class TestFileTiff:
     def test_sanity(self, tmp_path):
@@ -643,15 +648,17 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert "icc_profile" not in reloaded.info
 
-    def test_xmp(self):
+    def test_getxmp(self):
         with Image.open("Tests/images/lab.tif") as im:
-            xmp = im.getxmp()
+            if ElementTree is None:
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
+            else:
+                xmp = im.getxmp()
 
-            assert isinstance(xmp, dict)
-
-            description = xmp["xmpmeta"]["RDF"]["Description"]
-            assert description[0]["format"] == "image/tiff"
-            assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description[0]["format"] == "image/tiff"
+                assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
 
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os

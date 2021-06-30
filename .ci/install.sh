@@ -24,6 +24,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
 python3 -m pip install --upgrade pip
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
+python3 -m pip install defusedxml
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov

@@ -2,6 +2,7 @@
 black
 check-manifest
 coverage
+defusedxml
 markdown2
 olefile
 packaging

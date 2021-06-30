@@ -31,13 +31,18 @@ import logging
 import math
 import numbers
 import os
+import re
 import struct
 import sys
 import tempfile
 import warnings
-import xml.etree.ElementTree
 from collections.abc import Callable, MutableMapping
 from pathlib import Path
+
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION is deprecated and will be removed in a future release.
@@ -1358,8 +1363,12 @@ class Image:
                 return element.text
             return value
 
-        root = xml.etree.ElementTree.fromstring(xmp_tags)
-        return {get_name(root.tag): get_value(root)}
+        if ElementTree is None:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
+            return {}
+        else:
+            root = ElementTree.fromstring(xmp_tags)
+            return {get_name(root.tag): get_value(root)}
 
     def getexif(self):
         if self._exif is None:
@@ -1381,15 +1390,9 @@ class Image:
         if 0x0112 not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
-                xmp = self._getxmp(xmp_tags)
-                if (
-                    "xmpmeta" in xmp
-                    and "RDF" in xmp["xmpmeta"]
-                    and "Description" in xmp["xmpmeta"]["RDF"]
-                ):
-                    description = xmp["xmpmeta"]["RDF"]["Description"]
-                    if "Orientation" in description:
-                        self._exif[0x0112] = int(description["Orientation"])
+                match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
+                if match:
+                    self._exif[0x0112] = int(match[1])
 
         return self._exif
 

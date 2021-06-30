@@ -480,6 +480,7 @@ class JpegImageFile(ImageFile.ImageFile):
     def getxmp(self):
         """
         Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
         :returns: XMP tags in a dictionary.
         """
 
