@@ -31,6 +31,16 @@ ImageMorph incorrect mode errors
 For ``apply()``, ``match()`` and ``get_on_pixels()``, if the image mode is not L, an
 :py:exc:`Exception` was thrown. This has now been changed to a :py:exc:`ValueError`.
 
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+returned for PNG and TIFF images, through ``getxmp()`` for each format.
+
+The returned dictionary will start from the base of the XML, meaning that the top level
+should contain an "xmpmeta" key. JPEG's ``getxmp()`` method has also been updated to
+this structure.
+
 API Additions
 =============
 
