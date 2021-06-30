@@ -1574,12 +1574,22 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    ifd[ROWSPERSTRIP] = im.size[1]
-    strip_byte_counts = stride * im.size[1]
+    # aim for 64 KB strips when using libtiff writer
+    if libtiff:
+        rows_per_strip = min((2 ** 16 + stride - 1) // stride, im.size[1])
+    else:
+        rows_per_strip = im.size[1]
+    strip_byte_counts = stride * rows_per_strip
+    strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
+    ifd[ROWSPERSTRIP] = rows_per_strip
     if strip_byte_counts >= 2 ** 16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
-    ifd[STRIPBYTECOUNTS] = strip_byte_counts
-    ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
+    ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
+        stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),
+    )
+    ifd[STRIPOFFSETS] = tuple(
+        range(0, strip_byte_counts * strips_per_image, strip_byte_counts)
+    )  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 

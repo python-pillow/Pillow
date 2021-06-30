@@ -9,7 +9,7 @@ from ctypes import c_float
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SUBIFD
+from PIL.TiffImagePlugin import STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -967,3 +967,12 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that the error code is IMAGING_CODEC_MEMORY
             assert str(e.value) == "-9"
         TiffImagePlugin.READ_LIBTIFF = False
+
+    def test_save_multistrip(self, tmp_path):
+        im = hopper("RGB").resize((256, 256))
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_adobe_deflate")
+
+        with Image.open(out) as im:
+            # Assert that there are multiple strips
+            assert len(im.tag_v2[STRIPOFFSETS]) > 1
