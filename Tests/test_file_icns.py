@@ -1,5 +1,4 @@
 import io
-import sys
 
 import pytest
 
@@ -28,7 +27,6 @@ def test_sanity():
         assert im.format == "ICNS"
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save(tmp_path):
     temp_file = str(tmp_path / "temp.icns")
 
@@ -41,7 +39,6 @@ def test_save(tmp_path):
         assert reread.format == "ICNS"
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save_append_images(tmp_path):
     temp_file = str(tmp_path / "temp.icns")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
@@ -57,7 +54,6 @@ def test_save_append_images(tmp_path):
             assert_image_equal(reread, provided_im)
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save_fp():
     fp = io.BytesIO()
 
