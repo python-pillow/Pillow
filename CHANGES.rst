@@ -2,8 +2,11 @@
 Changelog (Pillow)
 ==================
 
-8.3.0 (unreleased)
+8.3.0 (2021-07-01)
 ------------------
+
+- Use snprintf instead of sprintf. CVE-2021-34552 #5567
+  [radarhere]
 
 - Limit TIFF strip size when saving with LibTIFF #5514
   [kmilos]
