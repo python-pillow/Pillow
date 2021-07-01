@@ -82,6 +82,13 @@ format, through the new ``bitmap_format`` argument::
 Security
 ========
 
+Buffer overflow
+^^^^^^^^^^^^^^^
+
+This release addresses :cve:`CVE-2021-34552`. PIL since 1.1.4 and Pillow since 1.0
+allowed parameters passed into a convert function to trigger buffer overflow in
+Convert.c.
+
 Parsing XML
 ^^^^^^^^^^^
 
