@@ -700,10 +700,7 @@ class Image:
         class ArrayData:
             __array_interface__ = new
 
-        arr = np.array(ArrayData())
-        if dtype is not None:
-            arr = arr.astype(dtype)
-        return arr
+        return np.array(ArrayData(), dtype)
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
