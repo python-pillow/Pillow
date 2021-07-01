@@ -195,12 +195,15 @@ table describes some commonly used **raw modes**:
 | mode      | description                                                     |
 +===========+=================================================================+
 | ``1``     | 1-bit bilevel, stored with the leftmost pixel in the most       |
+|           |                                                                 |
 |           | significant bit. 0 means black, 1 means white.                  |
 +-----------+-----------------------------------------------------------------+
 | ``1;I``   | 1-bit inverted bilevel, stored with the leftmost pixel in the   |
+|           |                                                                 |
 |           | most significant bit. 0 means white, 1 means black.             |
 +-----------+-----------------------------------------------------------------+
 | ``1;R``   | 1-bit reversed bilevel, stored with the leftmost pixel in the   |
+|           |                                                                 |
 |           | least significant bit. 0 means black, 1 means white.            |
 +-----------+-----------------------------------------------------------------+
 | ``L``     | 8-bit greyscale. 0 means black, 255 means white.                |
@@ -214,9 +217,11 @@ table describes some commonly used **raw modes**:
 | ``BGR``   | 24-bit true colour, stored as (blue, green, red).               |
 +-----------+-----------------------------------------------------------------+
 | ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
+|           |                                                                 |
 |           | pixels may vary.                                                |
 +-----------+-----------------------------------------------------------------+
 | ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
+|           |                                                                 |
 |           | all green pixels, finally all blue pixels).                     |
 +-----------+-----------------------------------------------------------------+
 
