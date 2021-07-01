@@ -1594,9 +1594,8 @@ convert(
 #ifdef notdef
         return (Imaging)ImagingError_ValueError("conversion not supported");
 #else
-        static char buf[256];
-        /* FIXME: may overflow if mode is too large */
-        sprintf(buf, "conversion from %s to %s not supported", imIn->mode, mode);
+        static char buf[100];
+        snprintf(buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
         return (Imaging)ImagingError_ValueError(buf);
 #endif
     }
@@ -1645,11 +1644,11 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     }
 #else
     {
-        static char buf[256];
-        /* FIXME: may overflow if mode is too large */
-        sprintf(
+        static char buf[100];
+        snprintf(
             buf,
-            "conversion from %s to %s not supported in convert_transparent",
+            100,
+            "conversion from %.10s to %.10s not supported in convert_transparent",
             imIn->mode,
             mode);
         return (Imaging)ImagingError_ValueError(buf);
