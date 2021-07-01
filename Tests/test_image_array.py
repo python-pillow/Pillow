@@ -31,7 +31,7 @@ def test_toarray():
     assert test("RGBA") == ((100, 128, 4), "|u1", 51200)
     assert test("RGBX") == ((100, 128, 4), "|u1", 51200)
 
-    test_with_dtype(numpy.float)
+    test_with_dtype(numpy.float64)
     test_with_dtype(numpy.uint8)
 
     with Image.open("Tests/images/truncated_jpeg.jpg") as im_truncated:
