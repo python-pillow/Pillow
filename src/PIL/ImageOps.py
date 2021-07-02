@@ -568,14 +568,14 @@ def solarize(image, threshold=128):
 
 def exif_transpose(image):
     """
-    Transpose an image accordingly if it has an EXIF Orientation tag
+    Transpose a PIL image accordingly if it has an EXIF Orientation tag.
 
     :param image: The image to transpose.
     :return: An image.
     """
     exif = image.getexif()
-    orientation = exif.get(0x0112)
-    if orientation is not None:
+    orientation = exif.get(0x0112, 1)  # default 1
+    if orientation > 1:
         method = {2: Image.FLIP_LEFT_RIGHT,
                   3: Image.ROTATE_180,
                   4: Image.FLIP_TOP_BOTTOM,
