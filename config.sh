@@ -18,15 +18,6 @@ LIBWEBP_VERSION=1.2.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
 
-function pyinst_fname_for_version {
-    local inst_ext=$(pyinst_ext_for_version $1)
-    if [ "${PLAT:-}" == "arm64" ]; then
-        echo "python-$1-macos11.${inst_ext}"
-    else
-        echo "python-$1-macosx$2.${inst_ext}"
-    fi
-}
-
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
