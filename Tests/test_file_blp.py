@@ -20,6 +20,12 @@ def test_load_blp2_dxt1a():
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
 
 
+def test_load_blp1():
+    with Image.open("Tests/images/blp/war3mapMap.blp") as im:
+        im.convert("RGB")
+        assert_image_equal_tofile(im, "Tests/images/blp/war3mapMap.png")
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
