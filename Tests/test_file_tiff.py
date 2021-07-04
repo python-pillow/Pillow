@@ -444,7 +444,14 @@ class TestFileTiff:
 
             im.save(outfile, exif=exif)
 
+        outfile2 = str(tmp_path / "temp2.tif")
         with Image.open(outfile) as im:
+            exif = im.getexif()
+            check_exif(exif)
+
+            im.save(outfile2, exif=exif.tobytes())
+
+        with Image.open(outfile2) as im:
             exif = im.getexif()
             check_exif(exif)
 
