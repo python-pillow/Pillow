@@ -191,34 +191,34 @@ match PIL’s internal pixel layout. PIL supports a large set of raw modes; for 
 complete list, see the table in the :file:`Unpack.c` module. The following
 table describes some commonly used **raw modes**:
 
-+-----------+-----------------------------------------------------------------+
-| mode      | description                                                     |
-+===========+=================================================================+
-| ``1``     | 1-bit bilevel, stored with the leftmost pixel in the most       |
-|           | significant bit. 0 means black, 1 means white.                  |
-+-----------+-----------------------------------------------------------------+
-| ``1;I``   | 1-bit inverted bilevel, stored with the leftmost pixel in the   |
-|           | most significant bit. 0 means white, 1 means black.             |
-+-----------+-----------------------------------------------------------------+
-| ``1;R``   | 1-bit reversed bilevel, stored with the leftmost pixel in the   |
-|           | least significant bit. 0 means black, 1 means white.            |
-+-----------+-----------------------------------------------------------------+
-| ``L``     | 8-bit greyscale. 0 means black, 255 means white.                |
-+-----------+-----------------------------------------------------------------+
-| ``L;I``   | 8-bit inverted greyscale. 0 means white, 255 means black.       |
-+-----------+-----------------------------------------------------------------+
-| ``P``     | 8-bit palette-mapped image.                                     |
-+-----------+-----------------------------------------------------------------+
-| ``RGB``   | 24-bit true colour, stored as (red, green, blue).               |
-+-----------+-----------------------------------------------------------------+
-| ``BGR``   | 24-bit true colour, stored as (blue, green, red).               |
-+-----------+-----------------------------------------------------------------+
-| ``RGBX``  | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
-|           | pixels may vary.                                                |
-+-----------+-----------------------------------------------------------------+
-| ``RGB;L`` | 24-bit true colour, line interleaved (first all red pixels, then|
-|           | all green pixels, finally all blue pixels).                     |
-+-----------+-----------------------------------------------------------------+
++-----------+-------------------------------------------------------------------+
+| mode      | description                                                       |
++===========+===================================================================+
+| ``1``     | | 1-bit bilevel, stored with the leftmost pixel in the most       |
+|           | | significant bit. 0 means black, 1 means white.                  |
++-----------+-------------------------------------------------------------------+
+| ``1;I``   | | 1-bit inverted bilevel, stored with the leftmost pixel in the   |
+|           | | most significant bit. 0 means white, 1 means black.             |
++-----------+-------------------------------------------------------------------+
+| ``1;R``   | | 1-bit reversed bilevel, stored with the leftmost pixel in the   |
+|           | | least significant bit. 0 means black, 1 means white.            |
++-----------+-------------------------------------------------------------------+
+| ``L``     | 8-bit greyscale. 0 means black, 255 means white.                  |
++-----------+-------------------------------------------------------------------+
+| ``L;I``   | 8-bit inverted greyscale. 0 means white, 255 means black.         |
++-----------+-------------------------------------------------------------------+
+| ``P``     | 8-bit palette-mapped image.                                       |
++-----------+-------------------------------------------------------------------+
+| ``RGB``   | 24-bit true colour, stored as (red, green, blue).                 |
++-----------+-------------------------------------------------------------------+
+| ``BGR``   | 24-bit true colour, stored as (blue, green, red).                 |
++-----------+-------------------------------------------------------------------+
+| ``RGBX``  | | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
+|           | | pixels may vary.                                                |
++-----------+-------------------------------------------------------------------+
+| ``RGB;L`` | | 24-bit true colour, line interleaved (first all red pixels, then|
+|           | | all green pixels, finally all blue pixels).                     |
++-----------+-------------------------------------------------------------------+
 
 Note that for the most common cases, the raw mode is simply the same as the mode.
 

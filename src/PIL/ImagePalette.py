@@ -39,13 +39,26 @@ class ImagePalette:
     def __init__(self, mode="RGB", palette=None, size=0):
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
-        self.palette = palette or bytearray(range(256)) * len(self.mode)
-        self.colors = {}
+        self.palette = palette or bytearray()
         self.dirty = None
-        if (size == 0 and len(self.mode) * 256 != len(self.palette)) or (
-            size != 0 and size != len(self.palette)
-        ):
+        if size != 0 and size != len(self.palette):
             raise ValueError("wrong palette size")
+
+    @property
+    def palette(self):
+        return self._palette
+
+    @palette.setter
+    def palette(self, palette):
+        self._palette = palette
+
+        mode_len = len(self.mode)
+        self.colors = {}
+        for i in range(0, len(self.palette), mode_len):
+            color = tuple(self.palette[i : i + mode_len])
+            if color in self.colors:
+                continue
+            self.colors[color] = i // mode_len
 
     def copy(self):
         new = ImagePalette()
@@ -54,7 +67,6 @@ class ImagePalette:
         new.rawmode = self.rawmode
         if self.palette is not None:
             new.palette = self.palette[:]
-        new.colors = self.colors.copy()
         new.dirty = self.dirty
 
         return new
@@ -68,7 +80,7 @@ class ImagePalette:
         """
         if self.rawmode:
             return self.rawmode, self.palette
-        return self.mode + ";L", self.tobytes()
+        return self.mode, self.tobytes()
 
     def tobytes(self):
         """Convert palette to bytes.
@@ -80,14 +92,12 @@ class ImagePalette:
         if isinstance(self.palette, bytes):
             return self.palette
         arr = array.array("B", self.palette)
-        if hasattr(arr, "tobytes"):
-            return arr.tobytes()
-        return arr.tostring()
+        return arr.tobytes()
 
     # Declare tostring as an alias for tobytes
     tostring = tobytes
 
-    def getcolor(self, color):
+    def getcolor(self, color, image=None):
         """Given an rgb tuple, allocate palette entry.
 
         .. warning:: This method is experimental.
@@ -95,19 +105,45 @@ class ImagePalette:
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
         if isinstance(color, tuple):
+            if self.mode == "RGB":
+                if len(color) == 4 and color[3] == 255:
+                    color = color[:3]
+            elif self.mode == "RGBA":
+                if len(color) == 3:
+                    color += (255,)
             try:
                 return self.colors[color]
             except KeyError as e:
                 # allocate new color slot
-                if isinstance(self.palette, bytes):
-                    self.palette = bytearray(self.palette)
-                index = len(self.colors)
+                if not isinstance(self.palette, bytearray):
+                    self._palette = bytearray(self.palette)
+                index = len(self.palette) // 3
+                special_colors = ()
+                if image:
+                    special_colors = (
+                        image.info.get("background"),
+                        image.info.get("transparency"),
+                    )
+                while index in special_colors:
+                    index += 1
                 if index >= 256:
-                    raise ValueError("cannot allocate more than 256 colors") from e
+                    if image:
+                        # Search for an unused index
+                        for i, count in reversed(list(enumerate(image.histogram()))):
+                            if count == 0 and i not in special_colors:
+                                index = i
+                                break
+                    if index >= 256:
+                        raise ValueError("cannot allocate more than 256 colors") from e
                 self.colors[color] = index
-                self.palette[index] = color[0]
-                self.palette[index + 256] = color[1]
-                self.palette[index + 512] = color[2]
+                if index * 3 < len(self.palette):
+                    self._palette = (
+                        self.palette[: index * 3]
+                        + bytes(color)
+                        + self.palette[index * 3 + 3 :]
+                    )
+                else:
+                    self._palette += bytes(color)
                 self.dirty = 1
                 return index
         else:

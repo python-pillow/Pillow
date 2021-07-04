@@ -33,7 +33,7 @@
 import math
 import numbers
 
-from . import Image, ImageColor
+from . import Image, ImageColor, ImageFont
 
 """
 A simple 2D drawing interface for PIL images.
@@ -70,6 +70,7 @@ class ImageDraw:
             self.palette = im.palette
         else:
             self.palette = None
+        self._image = im
         self.im = im.im
         self.draw = Image.core.draw(self.im, blend)
         self.mode = mode
@@ -108,13 +109,13 @@ class ImageDraw:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
-                    ink = self.palette.getcolor(ink)
+                    ink = self.palette.getcolor(ink, self._image)
                 ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
-                    fill = self.palette.getcolor(fill)
+                    fill = self.palette.getcolor(fill, self._image)
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
@@ -282,6 +283,7 @@ class ImageDraw:
             # If the corners have no curve, that is a rectangle
             return self.rectangle(xy, fill, outline, width)
 
+        r = d // 2
         ink, fill = self._getink(outline, fill)
 
         def draw_corners(pieslice):
@@ -315,36 +317,28 @@ class ImageDraw:
             draw_corners(True)
 
             if full_x:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill, 1)
             else:
-                self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y1), fill, 1
-                )
+                self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill, 1)
             if not full_x and not full_y:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + d / 2, y1 - d / 2 - 1), fill, 1
-                )
-                self.draw.draw_rectangle(
-                    (x1 - d / 2, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x0 + r, y1 - r - 1), fill, 1)
+                self.draw.draw_rectangle((x1 - r, y0 + r + 1, x1, y1 - r - 1), fill, 1)
         if ink is not None and ink != fill and width != 0:
             draw_corners(False)
 
             if not full_x:
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y0 + width - 1), ink, 1
+                    (x0 + r + 1, y0, x1 - r - 1, y0 + width - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y1 - width + 1, x1 - d / 2 - 1, y1), ink, 1
+                    (x0 + r + 1, y1 - width + 1, x1 - r - 1, y1), ink, 1
                 )
             if not full_y:
                 self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + width - 1, y1 - d / 2 - 1), ink, 1
+                    (x0, y0 + r + 1, x0 + width - 1, y1 - r - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x1 - width + 1, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), ink, 1
+                    (x1 - width + 1, y0 + r + 1, x1, y1 - r - 1), ink, 1
                 )
 
     def _multiline_check(self, text):
@@ -653,6 +647,8 @@ class ImageDraw:
 
         if font is None:
             font = self.getfont()
+        if not isinstance(font, ImageFont.FreeTypeFont):
+            raise ValueError("Only supported for TrueType fonts")
         mode = "RGBA" if embedded_color else self.fontmode
         bbox = font.getbbox(
             text, mode, direction, features, language, stroke_width, anchor

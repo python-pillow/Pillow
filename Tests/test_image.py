@@ -16,6 +16,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -581,6 +582,10 @@ class TestImage:
         assert ext_individual == ext_multiple
 
     def test_remap_palette(self):
+        # Test identity transform
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert_image_equal(im, im.remap_palette(list(range(256))))
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
@@ -605,7 +610,7 @@ class TestImage:
             else:
                 assert new_im.palette is None
 
-        _make_new(im, im_p, im_p.palette)
+        _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
@@ -662,7 +667,9 @@ class TestImage:
 
             assert not fp.closed
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_jpeg(self, tmp_path):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -769,6 +776,27 @@ class TestImage:
         reloaded_exif = Image.Exif()
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
+
+    def test_exif_load_from_fp(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            data = im.info["exif"]
+            if data.startswith(b"Exif\x00\x00"):
+                data = data[6:]
+            fp = io.BytesIO(data)
+
+            exif = Image.Exif()
+            exif.load_from_fp(fp)
+            assert exif == {
+                271: "Canon",
+                272: "Canon PowerShot S40",
+                274: 1,
+                282: 180.0,
+                283: 180.0,
+                296: 2,
+                306: "2003:12:14 12:01:44",
+                531: 1,
+                34665: 196,
+            }
 
     @pytest.mark.skipif(
         sys.version_info < (3, 7), reason="Python 3.7 or greater required"

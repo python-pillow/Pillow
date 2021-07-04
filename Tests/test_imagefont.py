@@ -131,6 +131,9 @@ class TestImageFont:
         target = "Tests/images/transparent_background_text.png"
         assert_image_similar_tofile(im, target, 4.09)
 
+        target = "Tests/images/transparent_background_text_L.png"
+        assert_image_similar_tofile(im.convert("L"), target, 0.01)
+
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)
@@ -716,6 +719,13 @@ class TestImageFont:
         font.set_variation_by_axes([100])
         self._check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
+    def test_textbbox_non_freetypefont(self):
+        im = Image.new("RGB", (200, 200))
+        d = ImageDraw.Draw(im)
+        default_font = ImageFont.load_default()
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "test", font=default_font)
+
     @pytest.mark.parametrize(
         "anchor, left, left_old, top",
         (
@@ -997,3 +1007,16 @@ def test_freetype_deprecation(monkeypatch):
     # Act / Assert
     with pytest.warns(DeprecationWarning):
         ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",
+    ],
+)
+def test_oom(test_file):
+    with open(test_file, "rb") as f:
+        font = ImageFont.truetype(BytesIO(f.read()))
+        with pytest.raises(Image.DecompressionBombError):
+            font.getmask("Test Text")

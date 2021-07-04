@@ -221,7 +221,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 
                 if (context->next < GIFTABLE) {
                     /* We'll only add this symbol if we have room
-                       for it (take advise, Netscape!) */
+                       for it (take the advice, Netscape!) */
                     context->data[context->next] = c;
                     context->link[context->next] = context->lastcode;
 
@@ -248,29 +248,33 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
         /* To squeeze some extra pixels out of this loop, we test for
            some common cases and handle them separately. */
 
-        /* FIXME: should we handle the transparency index in here??? */
-
-        if (i == 1) {
-            if (state->x < state->xsize - 1) {
-                /* Single pixel, not at the end of the line. */
-                *out++ = p[0];
-                state->x++;
+        /* If we have transparency, we need to use the regular loop. */
+        if (context->transparency == -1) {
+            if (i == 1) {
+                if (state->x < state->xsize - 1) {
+                    /* Single pixel, not at the end of the line. */
+                    *out++ = p[0];
+                    state->x++;
+                    continue;
+                }
+            } else if (state->x + i <= state->xsize) {
+                /* This string fits into current line. */
+                memcpy(out, p, i);
+                out += i;
+                state->x += i;
+                if (state->x == state->xsize) {
+                    NEWLINE(state, context);
+                }
                 continue;
             }
-        } else if (state->x + i <= state->xsize) {
-            /* This string fits into current line. */
-            memcpy(out, p, i);
-            out += i;
-            state->x += i;
-            if (state->x == state->xsize) {
-                NEWLINE(state, context);
-            }
-            continue;
         }
 
         /* No shortcut, copy pixel by pixel */
         for (c = 0; c < i; c++) {
-            *out++ = p[c];
+            if (p[c] != context->transparency) {
+                *out = p[c];
+            }
+            out++;
             if (++state->x >= state->xsize) {
                 NEWLINE(state, context);
             }

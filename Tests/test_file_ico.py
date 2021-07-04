@@ -18,6 +18,12 @@ def test_sanity():
     assert im.get_format_mimetype() == "image/x-icon"
 
 
+def test_black_and_white():
+    with Image.open("Tests/images/black_and_white.ico") as im:
+        assert im.mode == "RGBA"
+        assert im.size == (16, 16)
+
+
 def test_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
@@ -48,6 +54,35 @@ def test_save_to_bytes():
         assert (32, 32) == reloaded.size
         assert reloaded.format == "ICO"
         assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
+
+
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
+def test_save_to_bytes_bmp(mode):
+    output = io.BytesIO()
+    im = hopper(mode)
+    im.save(output, "ico", bitmap_format="bmp", sizes=[(32, 32), (64, 64)])
+
+    # The default image
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.info["sizes"] == {(32, 32), (64, 64)}
+
+        assert "RGBA" == reloaded.mode
+        assert (64, 64) == reloaded.size
+        assert reloaded.format == "ICO"
+        im = hopper(mode).resize((64, 64), Image.LANCZOS).convert("RGBA")
+        assert_image_equal(reloaded, im)
+
+    # The other one
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        reloaded.size = (32, 32)
+
+        assert "RGBA" == reloaded.mode
+        assert (32, 32) == reloaded.size
+        assert reloaded.format == "ICO"
+        im = hopper(mode).resize((32, 32), Image.LANCZOS).convert("RGBA")
+        assert_image_equal(reloaded, im)
 
 
 def test_incorrect_size():
@@ -119,5 +154,4 @@ def test_draw_reloaded(tmp_path):
         im.save(outfile)
 
     with Image.open(outfile) as im:
-        im.save("Tests/images/hopper_draw.ico")
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")

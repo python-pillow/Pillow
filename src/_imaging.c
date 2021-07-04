@@ -498,7 +498,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
-    if (PyTuple_Check(color) && PyTuple_Size(color) == 1) {
+    if (PyTuple_Check(color) && PyTuple_GET_SIZE(color) == 1) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
@@ -527,7 +527,10 @@ getink(PyObject *color, Imaging im, char *ink) {
             if (im->bands == 1) {
                 /* unsigned integer, single layer */
                 if (rIsInt != 1) {
-                    if (!PyArg_ParseTuple(color, "L", &r)) {
+                    if (PyTuple_GET_SIZE(color) != 1) {
+                        PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
+                        return NULL;
+                    } else if (!PyArg_ParseTuple(color, "L", &r)) {
                         return NULL;
                     }
                 }
@@ -542,13 +545,20 @@ getink(PyObject *color, Imaging im, char *ink) {
                     g = (UINT8)(r >> 8);
                     r = (UINT8)r;
                 } else {
+                    int tupleSize = PyTuple_GET_SIZE(color);
                     if (im->bands == 2) {
-                        if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
+                        if (tupleSize != 1 && tupleSize != 2) {
+                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or two elements");
+                            return NULL;
+                        } else if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
                             return NULL;
                         }
                         g = b = r;
                     } else {
-                        if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
+                        if (tupleSize != 3 && tupleSize != 4) {
+                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one, three or four elements");
+                            return NULL;
+                        } else if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
                             return NULL;
                         }
                     }
@@ -1086,7 +1096,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getpalettemode(ImagingObject *self, PyObject *args) {
+_getpalettemode(ImagingObject *self) {
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
@@ -1109,7 +1119,12 @@ _getxy(PyObject *xy, int *x, int *y) {
     } else if (PyFloat_Check(value)) {
         *x = (int)PyFloat_AS_DOUBLE(value);
     } else {
-        goto badval;
+        PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
+        if (int_value != NULL && PyLong_Check(int_value)) {
+            *x = PyLong_AS_LONG(int_value);
+        } else {
+            goto badval;
+        }
     }
 
     value = PyTuple_GET_ITEM(xy, 1);
@@ -1118,7 +1133,12 @@ _getxy(PyObject *xy, int *x, int *y) {
     } else if (PyFloat_Check(value)) {
         *y = (int)PyFloat_AS_DOUBLE(value);
     } else {
-        goto badval;
+        PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
+        if (int_value != NULL && PyLong_Check(int_value)) {
+            *y = PyLong_AS_LONG(int_value);
+        } else {
+            goto badval;
+        }
     }
 
     return 0;
@@ -1643,8 +1663,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     unpack(self->image->palette->palette, palette, palettesize * 8 / bits);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return PyLong_FromLong(palettesize * 8 / bits);
 }
 
 static PyObject *
@@ -2085,12 +2104,12 @@ _box_blur(ImagingObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_isblock(ImagingObject *self, PyObject *args) {
+_isblock(ImagingObject *self) {
     return PyBool_FromLong(self->image->block != NULL);
 }
 
 static PyObject *
-_getbbox(ImagingObject *self, PyObject *args) {
+_getbbox(ImagingObject *self) {
     int bbox[4];
     if (!ImagingGetBBox(self->image, bbox)) {
         Py_INCREF(Py_None);
@@ -2135,7 +2154,7 @@ _getcolors(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getextrema(ImagingObject *self, PyObject *args) {
+_getextrema(ImagingObject *self) {
     union {
         UINT8 u[2];
         INT32 i[2];
@@ -2169,7 +2188,7 @@ _getextrema(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getprojection(ImagingObject *self, PyObject *args) {
+_getprojection(ImagingObject *self) {
     unsigned char *xprofile;
     unsigned char *yprofile;
     PyObject *result;
@@ -2287,7 +2306,7 @@ _merge(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_split(ImagingObject *self, PyObject *args) {
+_split(ImagingObject *self) {
     int fails = 0;
     Py_ssize_t i;
     PyObject *list;
@@ -2318,7 +2337,7 @@ _split(ImagingObject *self, PyObject *args) {
 #ifdef WITH_IMAGECHOPS
 
 static PyObject *
-_chop_invert(ImagingObject *self, PyObject *args) {
+_chop_invert(ImagingObject *self) {
     return PyImagingNew(ImagingNegative(self->image));
 }
 
@@ -2697,8 +2716,8 @@ _font_getsize(ImagingFontObject *self, PyObject *args) {
 }
 
 static struct PyMethodDef _font_methods[] = {
-    {"getmask", (PyCFunction)_font_getmask, 1},
-    {"getsize", (PyCFunction)_font_getsize, 1},
+    {"getmask", (PyCFunction)_font_getmask, METH_VARARGS},
+    {"getsize", (PyCFunction)_font_getsize, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 
@@ -3192,19 +3211,19 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
 static struct PyMethodDef _draw_methods[] = {
 #ifdef WITH_IMAGEDRAW
     /* Graphics (ImageDraw) */
-    {"draw_lines", (PyCFunction)_draw_lines, 1},
+    {"draw_lines", (PyCFunction)_draw_lines, METH_VARARGS},
 #ifdef WITH_ARROW
-    {"draw_outline", (PyCFunction)_draw_outline, 1},
+    {"draw_outline", (PyCFunction)_draw_outline, METH_VARARGS},
 #endif
-    {"draw_polygon", (PyCFunction)_draw_polygon, 1},
-    {"draw_rectangle", (PyCFunction)_draw_rectangle, 1},
-    {"draw_points", (PyCFunction)_draw_points, 1},
-    {"draw_arc", (PyCFunction)_draw_arc, 1},
-    {"draw_bitmap", (PyCFunction)_draw_bitmap, 1},
-    {"draw_chord", (PyCFunction)_draw_chord, 1},
-    {"draw_ellipse", (PyCFunction)_draw_ellipse, 1},
-    {"draw_pieslice", (PyCFunction)_draw_pieslice, 1},
-    {"draw_ink", (PyCFunction)_draw_ink, 1},
+    {"draw_polygon", (PyCFunction)_draw_polygon, METH_VARARGS},
+    {"draw_rectangle", (PyCFunction)_draw_rectangle, METH_VARARGS},
+    {"draw_points", (PyCFunction)_draw_points, METH_VARARGS},
+    {"draw_arc", (PyCFunction)_draw_arc, METH_VARARGS},
+    {"draw_bitmap", (PyCFunction)_draw_bitmap, METH_VARARGS},
+    {"draw_chord", (PyCFunction)_draw_chord, METH_VARARGS},
+    {"draw_ellipse", (PyCFunction)_draw_ellipse, METH_VARARGS},
+    {"draw_pieslice", (PyCFunction)_draw_pieslice, METH_VARARGS},
+    {"draw_ink", (PyCFunction)_draw_ink, METH_VARARGS},
 #endif
     {NULL, NULL} /* sentinel */
 };
@@ -3411,100 +3430,100 @@ _save_ppm(ImagingObject *self, PyObject *args) {
 static struct PyMethodDef methods[] = {
 
     /* Put commonly used methods first */
-    {"getpixel", (PyCFunction)_getpixel, 1},
-    {"putpixel", (PyCFunction)_putpixel, 1},
+    {"getpixel", (PyCFunction)_getpixel, METH_VARARGS},
+    {"putpixel", (PyCFunction)_putpixel, METH_VARARGS},
 
-    {"pixel_access", (PyCFunction)pixel_access_new, 1},
+    {"pixel_access", (PyCFunction)pixel_access_new, METH_VARARGS},
 
     /* Standard processing methods (Image) */
-    {"color_lut_3d", (PyCFunction)_color_lut_3d, 1},
-    {"convert", (PyCFunction)_convert, 1},
-    {"convert2", (PyCFunction)_convert2, 1},
-    {"convert_matrix", (PyCFunction)_convert_matrix, 1},
-    {"convert_transparent", (PyCFunction)_convert_transparent, 1},
-    {"copy", (PyCFunction)_copy, 1},
-    {"crop", (PyCFunction)_crop, 1},
-    {"expand", (PyCFunction)_expand_image, 1},
-    {"filter", (PyCFunction)_filter, 1},
-    {"histogram", (PyCFunction)_histogram, 1},
-    {"entropy", (PyCFunction)_entropy, 1},
+    {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
+    {"convert", (PyCFunction)_convert, METH_VARARGS},
+    {"convert2", (PyCFunction)_convert2, METH_VARARGS},
+    {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
+    {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
+    {"copy", (PyCFunction)_copy, METH_VARARGS},
+    {"crop", (PyCFunction)_crop, METH_VARARGS},
+    {"expand", (PyCFunction)_expand_image, METH_VARARGS},
+    {"filter", (PyCFunction)_filter, METH_VARARGS},
+    {"histogram", (PyCFunction)_histogram, METH_VARARGS},
+    {"entropy", (PyCFunction)_entropy, METH_VARARGS},
 #ifdef WITH_MODEFILTER
-    {"modefilter", (PyCFunction)_modefilter, 1},
+    {"modefilter", (PyCFunction)_modefilter, METH_VARARGS},
 #endif
-    {"offset", (PyCFunction)_offset, 1},
-    {"paste", (PyCFunction)_paste, 1},
-    {"point", (PyCFunction)_point, 1},
-    {"point_transform", (PyCFunction)_point_transform, 1},
-    {"putdata", (PyCFunction)_putdata, 1},
+    {"offset", (PyCFunction)_offset, METH_VARARGS},
+    {"paste", (PyCFunction)_paste, METH_VARARGS},
+    {"point", (PyCFunction)_point, METH_VARARGS},
+    {"point_transform", (PyCFunction)_point_transform, METH_VARARGS},
+    {"putdata", (PyCFunction)_putdata, METH_VARARGS},
 #ifdef WITH_QUANTIZE
-    {"quantize", (PyCFunction)_quantize, 1},
+    {"quantize", (PyCFunction)_quantize, METH_VARARGS},
 #endif
 #ifdef WITH_RANKFILTER
-    {"rankfilter", (PyCFunction)_rankfilter, 1},
+    {"rankfilter", (PyCFunction)_rankfilter, METH_VARARGS},
 #endif
-    {"resize", (PyCFunction)_resize, 1},
-    {"reduce", (PyCFunction)_reduce, 1},
-    {"transpose", (PyCFunction)_transpose, 1},
-    {"transform2", (PyCFunction)_transform2, 1},
+    {"resize", (PyCFunction)_resize, METH_VARARGS},
+    {"reduce", (PyCFunction)_reduce, METH_VARARGS},
+    {"transpose", (PyCFunction)_transpose, METH_VARARGS},
+    {"transform2", (PyCFunction)_transform2, METH_VARARGS},
 
-    {"isblock", (PyCFunction)_isblock, 1},
+    {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 
-    {"getbbox", (PyCFunction)_getbbox, 1},
-    {"getcolors", (PyCFunction)_getcolors, 1},
-    {"getextrema", (PyCFunction)_getextrema, 1},
-    {"getprojection", (PyCFunction)_getprojection, 1},
+    {"getbbox", (PyCFunction)_getbbox, METH_NOARGS},
+    {"getcolors", (PyCFunction)_getcolors, METH_VARARGS},
+    {"getextrema", (PyCFunction)_getextrema, METH_NOARGS},
+    {"getprojection", (PyCFunction)_getprojection, METH_NOARGS},
 
-    {"getband", (PyCFunction)_getband, 1},
-    {"putband", (PyCFunction)_putband, 1},
-    {"split", (PyCFunction)_split, 1},
-    {"fillband", (PyCFunction)_fillband, 1},
+    {"getband", (PyCFunction)_getband, METH_VARARGS},
+    {"putband", (PyCFunction)_putband, METH_VARARGS},
+    {"split", (PyCFunction)_split, METH_NOARGS},
+    {"fillband", (PyCFunction)_fillband, METH_VARARGS},
 
-    {"setmode", (PyCFunction)im_setmode, 1},
+    {"setmode", (PyCFunction)im_setmode, METH_VARARGS},
 
-    {"getpalette", (PyCFunction)_getpalette, 1},
-    {"getpalettemode", (PyCFunction)_getpalettemode, 1},
-    {"putpalette", (PyCFunction)_putpalette, 1},
-    {"putpalettealpha", (PyCFunction)_putpalettealpha, 1},
-    {"putpalettealphas", (PyCFunction)_putpalettealphas, 1},
+    {"getpalette", (PyCFunction)_getpalette, METH_VARARGS},
+    {"getpalettemode", (PyCFunction)_getpalettemode, METH_NOARGS},
+    {"putpalette", (PyCFunction)_putpalette, METH_VARARGS},
+    {"putpalettealpha", (PyCFunction)_putpalettealpha, METH_VARARGS},
+    {"putpalettealphas", (PyCFunction)_putpalettealphas, METH_VARARGS},
 
 #ifdef WITH_IMAGECHOPS
     /* Channel operations (ImageChops) */
-    {"chop_invert", (PyCFunction)_chop_invert, 1},
-    {"chop_lighter", (PyCFunction)_chop_lighter, 1},
-    {"chop_darker", (PyCFunction)_chop_darker, 1},
-    {"chop_difference", (PyCFunction)_chop_difference, 1},
-    {"chop_multiply", (PyCFunction)_chop_multiply, 1},
-    {"chop_screen", (PyCFunction)_chop_screen, 1},
-    {"chop_add", (PyCFunction)_chop_add, 1},
-    {"chop_subtract", (PyCFunction)_chop_subtract, 1},
-    {"chop_add_modulo", (PyCFunction)_chop_add_modulo, 1},
-    {"chop_subtract_modulo", (PyCFunction)_chop_subtract_modulo, 1},
-    {"chop_and", (PyCFunction)_chop_and, 1},
-    {"chop_or", (PyCFunction)_chop_or, 1},
-    {"chop_xor", (PyCFunction)_chop_xor, 1},
-    {"chop_soft_light", (PyCFunction)_chop_soft_light, 1},
-    {"chop_hard_light", (PyCFunction)_chop_hard_light, 1},
-    {"chop_overlay", (PyCFunction)_chop_overlay, 1},
+    {"chop_invert", (PyCFunction)_chop_invert, METH_NOARGS},
+    {"chop_lighter", (PyCFunction)_chop_lighter, METH_VARARGS},
+    {"chop_darker", (PyCFunction)_chop_darker, METH_VARARGS},
+    {"chop_difference", (PyCFunction)_chop_difference, METH_VARARGS},
+    {"chop_multiply", (PyCFunction)_chop_multiply, METH_VARARGS},
+    {"chop_screen", (PyCFunction)_chop_screen, METH_VARARGS},
+    {"chop_add", (PyCFunction)_chop_add, METH_VARARGS},
+    {"chop_subtract", (PyCFunction)_chop_subtract, METH_VARARGS},
+    {"chop_add_modulo", (PyCFunction)_chop_add_modulo, METH_VARARGS},
+    {"chop_subtract_modulo", (PyCFunction)_chop_subtract_modulo, METH_VARARGS},
+    {"chop_and", (PyCFunction)_chop_and, METH_VARARGS},
+    {"chop_or", (PyCFunction)_chop_or, METH_VARARGS},
+    {"chop_xor", (PyCFunction)_chop_xor, METH_VARARGS},
+    {"chop_soft_light", (PyCFunction)_chop_soft_light, METH_VARARGS},
+    {"chop_hard_light", (PyCFunction)_chop_hard_light, METH_VARARGS},
+    {"chop_overlay", (PyCFunction)_chop_overlay, METH_VARARGS},
 
 #endif
 
 #ifdef WITH_UNSHARPMASK
     /* Kevin Cazabon's unsharpmask extension */
-    {"gaussian_blur", (PyCFunction)_gaussian_blur, 1},
-    {"unsharp_mask", (PyCFunction)_unsharp_mask, 1},
+    {"gaussian_blur", (PyCFunction)_gaussian_blur, METH_VARARGS},
+    {"unsharp_mask", (PyCFunction)_unsharp_mask, METH_VARARGS},
 #endif
 
-    {"box_blur", (PyCFunction)_box_blur, 1},
+    {"box_blur", (PyCFunction)_box_blur, METH_VARARGS},
 
 #ifdef WITH_EFFECTS
     /* Special effects */
-    {"effect_spread", (PyCFunction)_effect_spread, 1},
+    {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
 #endif
 
     /* Misc. */
-    {"new_block", (PyCFunction)_new_block, 1},
+    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
 
-    {"save_ppm", (PyCFunction)_save_ppm, 1},
+    {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
 };
@@ -3979,111 +3998,111 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args);
 static PyMethodDef functions[] = {
 
     /* Object factories */
-    {"alpha_composite", (PyCFunction)_alpha_composite, 1},
-    {"blend", (PyCFunction)_blend, 1},
-    {"fill", (PyCFunction)_fill, 1},
-    {"new", (PyCFunction)_new, 1},
-    {"merge", (PyCFunction)_merge, 1},
+    {"alpha_composite", (PyCFunction)_alpha_composite, METH_VARARGS},
+    {"blend", (PyCFunction)_blend, METH_VARARGS},
+    {"fill", (PyCFunction)_fill, METH_VARARGS},
+    {"new", (PyCFunction)_new, METH_VARARGS},
+    {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */
-    {"convert", (PyCFunction)_convert2, 1},
+    {"convert", (PyCFunction)_convert2, METH_VARARGS},
 
     /* Codecs */
-    {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, 1},
-    {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, 1},
-    {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, 1},
-    {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, 1},
-    {"gif_decoder", (PyCFunction)PyImaging_GifDecoderNew, 1},
-    {"gif_encoder", (PyCFunction)PyImaging_GifEncoderNew, 1},
-    {"hex_decoder", (PyCFunction)PyImaging_HexDecoderNew, 1},
-    {"hex_encoder", (PyCFunction)PyImaging_EpsEncoderNew, 1}, /* EPS=HEX! */
+    {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},
+    {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, METH_VARARGS},
+    {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, METH_VARARGS},
+    {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, METH_VARARGS},
+    {"gif_decoder", (PyCFunction)PyImaging_GifDecoderNew, METH_VARARGS},
+    {"gif_encoder", (PyCFunction)PyImaging_GifEncoderNew, METH_VARARGS},
+    {"hex_decoder", (PyCFunction)PyImaging_HexDecoderNew, METH_VARARGS},
+    {"hex_encoder", (PyCFunction)PyImaging_EpsEncoderNew, METH_VARARGS}, /* EPS=HEX! */
 #ifdef HAVE_LIBJPEG
-    {"jpeg_decoder", (PyCFunction)PyImaging_JpegDecoderNew, 1},
-    {"jpeg_encoder", (PyCFunction)PyImaging_JpegEncoderNew, 1},
+    {"jpeg_decoder", (PyCFunction)PyImaging_JpegDecoderNew, METH_VARARGS},
+    {"jpeg_encoder", (PyCFunction)PyImaging_JpegEncoderNew, METH_VARARGS},
 #endif
 #ifdef HAVE_OPENJPEG
-    {"jpeg2k_decoder", (PyCFunction)PyImaging_Jpeg2KDecoderNew, 1},
-    {"jpeg2k_encoder", (PyCFunction)PyImaging_Jpeg2KEncoderNew, 1},
+    {"jpeg2k_decoder", (PyCFunction)PyImaging_Jpeg2KDecoderNew, METH_VARARGS},
+    {"jpeg2k_encoder", (PyCFunction)PyImaging_Jpeg2KEncoderNew, METH_VARARGS},
 #endif
 #ifdef HAVE_LIBTIFF
-    {"libtiff_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, 1},
-    {"libtiff_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, 1},
+    {"libtiff_decoder", (PyCFunction)PyImaging_LibTiffDecoderNew, METH_VARARGS},
+    {"libtiff_encoder", (PyCFunction)PyImaging_LibTiffEncoderNew, METH_VARARGS},
 #endif
-    {"packbits_decoder", (PyCFunction)PyImaging_PackbitsDecoderNew, 1},
-    {"pcd_decoder", (PyCFunction)PyImaging_PcdDecoderNew, 1},
-    {"pcx_decoder", (PyCFunction)PyImaging_PcxDecoderNew, 1},
-    {"pcx_encoder", (PyCFunction)PyImaging_PcxEncoderNew, 1},
-    {"raw_decoder", (PyCFunction)PyImaging_RawDecoderNew, 1},
-    {"raw_encoder", (PyCFunction)PyImaging_RawEncoderNew, 1},
-    {"sgi_rle_decoder", (PyCFunction)PyImaging_SgiRleDecoderNew, 1},
-    {"sun_rle_decoder", (PyCFunction)PyImaging_SunRleDecoderNew, 1},
-    {"tga_rle_decoder", (PyCFunction)PyImaging_TgaRleDecoderNew, 1},
-    {"tga_rle_encoder", (PyCFunction)PyImaging_TgaRleEncoderNew, 1},
-    {"xbm_decoder", (PyCFunction)PyImaging_XbmDecoderNew, 1},
-    {"xbm_encoder", (PyCFunction)PyImaging_XbmEncoderNew, 1},
+    {"packbits_decoder", (PyCFunction)PyImaging_PackbitsDecoderNew, METH_VARARGS},
+    {"pcd_decoder", (PyCFunction)PyImaging_PcdDecoderNew, METH_VARARGS},
+    {"pcx_decoder", (PyCFunction)PyImaging_PcxDecoderNew, METH_VARARGS},
+    {"pcx_encoder", (PyCFunction)PyImaging_PcxEncoderNew, METH_VARARGS},
+    {"raw_decoder", (PyCFunction)PyImaging_RawDecoderNew, METH_VARARGS},
+    {"raw_encoder", (PyCFunction)PyImaging_RawEncoderNew, METH_VARARGS},
+    {"sgi_rle_decoder", (PyCFunction)PyImaging_SgiRleDecoderNew, METH_VARARGS},
+    {"sun_rle_decoder", (PyCFunction)PyImaging_SunRleDecoderNew, METH_VARARGS},
+    {"tga_rle_decoder", (PyCFunction)PyImaging_TgaRleDecoderNew, METH_VARARGS},
+    {"tga_rle_encoder", (PyCFunction)PyImaging_TgaRleEncoderNew, METH_VARARGS},
+    {"xbm_decoder", (PyCFunction)PyImaging_XbmDecoderNew, METH_VARARGS},
+    {"xbm_encoder", (PyCFunction)PyImaging_XbmEncoderNew, METH_VARARGS},
 #ifdef HAVE_LIBZ
-    {"zip_decoder", (PyCFunction)PyImaging_ZipDecoderNew, 1},
-    {"zip_encoder", (PyCFunction)PyImaging_ZipEncoderNew, 1},
+    {"zip_decoder", (PyCFunction)PyImaging_ZipDecoderNew, METH_VARARGS},
+    {"zip_encoder", (PyCFunction)PyImaging_ZipEncoderNew, METH_VARARGS},
 #endif
 
 /* Memory mapping */
 #ifdef WITH_MAPPING
-    {"map_buffer", (PyCFunction)PyImaging_MapBuffer, 1},
+    {"map_buffer", (PyCFunction)PyImaging_MapBuffer, METH_VARARGS},
 #endif
 
 /* Display support */
 #ifdef _WIN32
-    {"display", (PyCFunction)PyImaging_DisplayWin32, 1},
-    {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, 1},
-    {"grabscreen_win32", (PyCFunction)PyImaging_GrabScreenWin32, 1},
-    {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, 1},
-    {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, 1},
-    {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, 1},
-    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, 1},
-    {"drawwmf", (PyCFunction)PyImaging_DrawWmf, 1},
+    {"display", (PyCFunction)PyImaging_DisplayWin32, METH_VARARGS},
+    {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, METH_VARARGS},
+    {"grabscreen_win32", (PyCFunction)PyImaging_GrabScreenWin32, METH_VARARGS},
+    {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, METH_VARARGS},
+    {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, METH_VARARGS},
+    {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, METH_VARARGS},
+    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, METH_VARARGS},
+    {"drawwmf", (PyCFunction)PyImaging_DrawWmf, METH_VARARGS},
 #endif
 #ifdef HAVE_XCB
-    {"grabscreen_x11", (PyCFunction)PyImaging_GrabScreenX11, 1},
+    {"grabscreen_x11", (PyCFunction)PyImaging_GrabScreenX11, METH_VARARGS},
 #endif
 
     /* Utilities */
-    {"getcodecstatus", (PyCFunction)_getcodecstatus, 1},
+    {"getcodecstatus", (PyCFunction)_getcodecstatus, METH_VARARGS},
 
 /* Special effects (experimental) */
 #ifdef WITH_EFFECTS
-    {"effect_mandelbrot", (PyCFunction)_effect_mandelbrot, 1},
-    {"effect_noise", (PyCFunction)_effect_noise, 1},
-    {"linear_gradient", (PyCFunction)_linear_gradient, 1},
-    {"radial_gradient", (PyCFunction)_radial_gradient, 1},
-    {"wedge", (PyCFunction)_linear_gradient, 1}, /* Compatibility */
+    {"effect_mandelbrot", (PyCFunction)_effect_mandelbrot, METH_VARARGS},
+    {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
+    {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
+    {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
+    {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
 #endif
 
 /* Drawing support stuff */
 #ifdef WITH_IMAGEDRAW
-    {"font", (PyCFunction)_font_new, 1},
-    {"draw", (PyCFunction)_draw_new, 1},
+    {"font", (PyCFunction)_font_new, METH_VARARGS},
+    {"draw", (PyCFunction)_draw_new, METH_VARARGS},
 #endif
 
 /* Experimental path stuff */
 #ifdef WITH_IMAGEPATH
-    {"path", (PyCFunction)PyPath_Create, 1},
+    {"path", (PyCFunction)PyPath_Create, METH_VARARGS},
 #endif
 
 /* Experimental arrow graphics stuff */
 #ifdef WITH_ARROW
-    {"outline", (PyCFunction)PyOutline_Create, 1},
+    {"outline", (PyCFunction)PyOutline_Create, METH_VARARGS},
 #endif
 
     /* Resource management */
-    {"get_stats", (PyCFunction)_get_stats, 1},
-    {"reset_stats", (PyCFunction)_reset_stats, 1},
-    {"get_alignment", (PyCFunction)_get_alignment, 1},
-    {"get_block_size", (PyCFunction)_get_block_size, 1},
-    {"get_blocks_max", (PyCFunction)_get_blocks_max, 1},
-    {"set_alignment", (PyCFunction)_set_alignment, 1},
-    {"set_block_size", (PyCFunction)_set_block_size, 1},
-    {"set_blocks_max", (PyCFunction)_set_blocks_max, 1},
-    {"clear_cache", (PyCFunction)_clear_cache, 1},
+    {"get_stats", (PyCFunction)_get_stats, METH_VARARGS},
+    {"reset_stats", (PyCFunction)_reset_stats, METH_VARARGS},
+    {"get_alignment", (PyCFunction)_get_alignment, METH_VARARGS},
+    {"get_block_size", (PyCFunction)_get_block_size, METH_VARARGS},
+    {"get_blocks_max", (PyCFunction)_get_blocks_max, METH_VARARGS},
+    {"set_alignment", (PyCFunction)_set_alignment, METH_VARARGS},
+    {"set_block_size", (PyCFunction)_set_block_size, METH_VARARGS},
+    {"set_blocks_max", (PyCFunction)_set_blocks_max, METH_VARARGS},
+    {"clear_cache", (PyCFunction)_clear_cache, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
 };

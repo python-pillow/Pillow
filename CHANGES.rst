@@ -2,8 +2,203 @@
 Changelog (Pillow)
 ==================
 
-8.2.0 (unreleased)
+8.3.0 (2021-07-01)
 ------------------
+
+- Use snprintf instead of sprintf. CVE-2021-34552 #5567
+  [radarhere]
+
+- Limit TIFF strip size when saving with LibTIFF #5514
+  [kmilos]
+
+- Allow ICNS save on all operating systems #4526
+  [baletu, radarhere, newpanjing, hugovk]
+
+- De-zigzag JPEG's DQT when loading; deprecate convert_dict_qtables #4989
+  [gofr, radarhere]
+
+- Replaced xml.etree.ElementTree #5565
+  [radarhere]
+
+- Moved CVE image to pillow-depends #5561
+  [radarhere]
+
+- Added tag data for IFD groups #5554
+  [radarhere]
+
+- Improved ImagePalette #5552
+  [radarhere]
+
+- Add DDS saving #5402
+  [radarhere]
+
+- Improved getxmp() #5455
+  [radarhere]
+
+- Convert to float for comparison with float in IFDRational __eq__ #5412
+  [radarhere]
+
+- Allow getexif() to access TIFF tag_v2 data #5416
+  [radarhere]
+
+- Read FITS image mode and size #5405
+  [radarhere]
+
+- Merge parallel horizontal edges in ImagingDrawPolygon #5347
+  [radarhere, hrdrq]
+
+- Use transparency behind first GIF frame and when disposing to background #5557
+  [radarhere, zewt]
+
+- Avoid unstable nature of qsort in Quant.c #5367
+  [radarhere]
+
+- Copy palette to new images in ImageOps expand #5551
+  [radarhere]
+
+- Ensure palette string matches RGB mode #5549
+  [radarhere]
+
+- Do not modify EXIF of original image instance in exif_transpose() #5547
+  [radarhere]
+
+- Fixed default numresolution for small JPEG2000 images #5540
+  [radarhere]
+
+- Added DDS BC5 reading #5501
+  [radarhere]
+
+- Raise an error if ImageDraw.textbbox is used without a TrueType font #5510
+  [radarhere]
+
+- Added ICO saving in BMP format #5513
+  [radarhere]
+
+- Ensure PNG seeks to end of previous chunk at start of load_end #5493
+  [radarhere]
+
+- Do not allow TIFF to seek to a past frame #5473
+  [radarhere]
+
+- Avoid race condition when displaying images with eog #5507
+  [mconst]
+
+- Added specific error messages when ink has incorrect number of bands #5504
+  [radarhere]
+
+- Allow converting an image to a numpy array to raise errors #5379
+  [radarhere]
+
+- Removed DPI rounding from BMP, JPEG, PNG and WMF loading #5476, #5470
+  [radarhere]
+
+- Remove spikes when drawing thin pieslices #5460
+  [xtsm]
+
+- Updated default value for SAMPLESPERPIXEL TIFF tag #5452
+  [radarhere]
+
+- Removed TIFF DPI rounding #5446
+  [radarhere, hugovk]
+
+- Include code in WebP error #5471
+  [radarhere]
+
+- Do not alter pixels outside mask when drawing text on an image with transparency #5434
+  [radarhere]
+
+- Reset handle when seeking backwards in TIFF #5443
+  [radarhere]
+
+- Replace sys.stdout with sys.stdout.buffer when saving #5437
+  [radarhere]
+
+- Fixed UNDEFINED TIFF tag of length 0 being changed in roundtrip #5426
+  [radarhere]
+
+- Fixed bug when checking FreeType2 version if it is not installed #5445
+  [radarhere]
+
+- Do not round dimensions when saving PDF #5459
+  [radarhere]
+
+- Added ImageOps contain() #5417
+  [radarhere, hugovk]
+
+- Changed WebP default "method" value to 4 #5450
+  [radarhere]
+
+- Switched to saving 1-bit PDFs with DCTDecode #5430
+  [radarhere]
+
+- Use bpp from ICO header #5429
+  [radarhere]
+
+- Corrected JPEG APP14 transform value #5408
+  [radarhere]
+
+- Changed TIFF tag 33723 length to 1 #5425
+  [radarhere]
+
+- Changed ImageMorph incorrect mode errors to ValueError #5414
+  [radarhere]
+
+- Add EXIF tags specified in EXIF 2.32 #5419
+  [gladiusglad]
+
+- Treat previous contents of first GIF frame as transparent #5391
+  [radarhere]
+
+- For special image modes, revert default resize resampling to NEAREST #5411
+  [radarhere]
+
+- JPEG2000: Support decoding subsampled RGB and YCbCr images #4996
+  [nulano, radarhere]
+
+- Stop decoding BC1 punchthrough alpha in BC2&3 #4144
+  [jansol]
+
+- Use zero if GIF background color index is missing #5390
+  [radarhere]
+
+- Fixed ensuring that GIF previous frame was loaded #5386
+  [radarhere]
+
+- Valgrind fixes #5397
+  [wiredfool]
+
+- Round down the radius in rounded_rectangle #5382
+  [radarhere]
+
+- Fixed reading uncompressed RGB data from DDS #5383
+  [radarhere]
+
+8.2.0 (2021-04-01)
+------------------
+
+- Added getxmp() method #5144
+  [UrielMaD, radarhere]
+
+- Add ImageShow support for GraphicsMagick #5349
+  [latosha-maltba, radarhere]
+
+- Do not load transparent pixels from subsequent GIF frames #5333
+  [zewt, radarhere]
+
+- Use LZW encoding when saving GIF images #5291
+  [raygard]
+
+- Set all transparent colors to be equal in quantize() #5282
+  [radarhere]
+
+- Allow PixelAccess to use Python __int__ when parsing x and y #5206
+  [radarhere]
+
+- Removed Image._MODEINFO #5316
+  [radarhere]
+
+- Add preserve_tone option to autocontrast #5350
+  [elejke, radarhere]
 
 - Fixed linear_gradient and radial_gradient I and F modes #5274
   [radarhere]

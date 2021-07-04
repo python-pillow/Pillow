@@ -9,7 +9,7 @@ from ctypes import c_float
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SUBIFD
+from PIL.TiffImagePlugin import STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -17,6 +17,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -577,6 +578,17 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_multipage_seek_backwards(self):
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/multipage.tiff") as im:
+            im.seek(1)
+            im.load()
+
+            im.seek(0)
+            assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/hopper.tif") as im:
@@ -822,13 +834,17 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -839,13 +855,17 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
@@ -892,8 +912,13 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
     def test_old_style_jpeg(self):
-        infile = "Tests/images/old-style-jpeg-compression.tif"
-        with Image.open(infile) as im:
+        with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
+            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
+    def test_open_missing_samplesperpixel(self):
+        with Image.open(
+            "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif"
+        ) as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_no_rows_per_strip(self):
@@ -942,3 +967,12 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that the error code is IMAGING_CODEC_MEMORY
             assert str(e.value) == "-9"
         TiffImagePlugin.READ_LIBTIFF = False
+
+    def test_save_multistrip(self, tmp_path):
+        im = hopper("RGB").resize((256, 256))
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression="tiff_adobe_deflate")
+
+        with Image.open(out) as im:
+            # Assert that there are multiple strips
+            assert len(im.tag_v2[STRIPOFFSETS]) > 1

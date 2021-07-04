@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.6/libjpeg-turbo-2.0.6.tar.gz",
-        "filename": "libjpeg-turbo-2.0.6.tar.gz",
-        "dir": "libjpeg-turbo-2.0.6",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.0/libjpeg-turbo-2.1.0.tar.gz",
+        "filename": "libjpeg-turbo-2.1.0.tar.gz",
+        "dir": "libjpeg-turbo-2.1.0",
         "build": [
             cmd_cmake(
                 [
@@ -141,13 +141,13 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.2.0.tar.gz",
-        "filename": "tiff-4.2.0.tar.gz",
-        "dir": "tiff-4.2.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
+        "filename": "tiff-4.3.0.tar.gz",
+        "dir": "tiff-4.3.0",
         "build": [
-            cmd_copy(r"{winbuild_dir}\tiff.opt", "nmake.opt"),
-            cmd_nmake("makefile.vc", "clean"),
-            cmd_nmake("makefile.vc", "lib"),
+            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="tiff"),
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
@@ -236,7 +236,9 @@ deps = {
             cmd_rmdir("Lib"),
             cmd_rmdir(r"Projects\VC2017\Release"),
             cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static"),
+            cmd_msbuild(
+                r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static:Rebuild"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
@@ -275,9 +277,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.8.0.zip",
-        "filename": "harfbuzz-2.8.0.zip",
-        "dir": "harfbuzz-2.8.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.8.1.zip",
+        "filename": "harfbuzz-2.8.1.zip",
+        "dir": "harfbuzz-2.8.1",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

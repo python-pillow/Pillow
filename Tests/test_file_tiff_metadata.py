@@ -179,6 +179,27 @@ def test_no_duplicate_50741_tag():
     assert TAG_IDS["BestQualityScale"] == 50780
 
 
+def test_iptc(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        im.save(out)
+
+
+def test_undefined_zero(tmp_path):
+    # Check that the tag has not been changed since this test was created
+    tag = TiffTags.TAGS_V2[45059]
+    assert tag.type == TiffTags.UNDEFINED
+    assert tag.length == 0
+
+    info = TiffImagePlugin.ImageFileDirectory(b"II*\x00\x08\x00\x00\x00")
+    info[45059] = b"test"
+
+    # Assert that the tag value does not change by setting it to itself
+    original = info[45059]
+    info[45059] = info[45059]
+    assert info[45059] == original
+
+
 def test_empty_metadata():
     f = io.BytesIO(b"II*\x00\x08\x00\x00\x00")
     head = f.read(8)
@@ -355,3 +376,30 @@ def test_too_many_entries():
 
     # Should not raise ValueError.
     pytest.warns(UserWarning, lambda: ifd[277])
+
+
+def test_tag_group_data():
+    base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
+    for ifd in (base_ifd, interop_ifd):
+        ifd[2] = "test"
+        ifd[256] = 10
+
+    assert base_ifd.tagtype[256] == 4
+    assert interop_ifd.tagtype[256] != base_ifd.tagtype[256]
+
+    assert interop_ifd.tagtype[2] == 7
+    assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
+
+
+def test_empty_subifd(tmp_path):
+    out = str(tmp_path / "temp.jpg")
+
+    im = hopper()
+    exif = im.getexif()
+    exif[TiffImagePlugin.EXIFIFD] = {}
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        exif = reloaded.getexif()
+        assert exif.get_ifd(TiffImagePlugin.EXIFIFD) == {}

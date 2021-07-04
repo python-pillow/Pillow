@@ -33,6 +33,7 @@
 #
 import array
 import io
+import math
 import os
 import struct
 import subprocess
@@ -139,8 +140,8 @@ def APP(self, marker):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
-            adobe_transform = s[1]
-        except Exception:
+            adobe_transform = s[11]
+        except IndexError:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
@@ -161,15 +162,17 @@ def APP(self, marker):
                 dpi = float(x_resolution[0]) / x_resolution[1]
             except TypeError:
                 dpi = x_resolution
+            if math.isnan(dpi):
+                raise ValueError
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
+            self.info["dpi"] = dpi, dpi
         except (KeyError, SyntaxError, ValueError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
-            # ValueError for x_resolution[0] being an invalid float
+            # ValueError for dpi being an invalid float
             self.info["dpi"] = 72, 72
 
 
@@ -251,7 +254,7 @@ def DQT(self, marker):
         data = array.array("B" if precision == 1 else "H", s[1:qt_length])
         if sys.byteorder == "little" and precision > 1:
             data.byteswap()  # the values are always big-endian
-        self.quantization[v & 15] = data
+        self.quantization[v & 15] = [data[i] for i in zigzag_index]
         s = s[qt_length:]
 
 
@@ -474,6 +477,20 @@ class JpegImageFile(ImageFile.ImageFile):
     def _getmp(self):
         return _getmp(self)
 
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+        :returns: XMP tags in a dictionary.
+        """
+
+        for segment, content in self.applist:
+            if segment == "APP1":
+                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                if marker == b"http://ns.adobe.com/xap/1.0/":
+                    return self._getxmp(xmp_tags)
+        return {}
+
 
 def _getexif(self):
     if "exif" not in self.info:
@@ -584,9 +601,11 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    qtables = [qtables[key] for key in range(len(qtables)) if key in qtables]
-    for idx, table in enumerate(qtables):
-        qtables[idx] = [table[i] for i in zigzag_index]
+    warnings.warn(
+        "convert_dict_qtables is deprecated and will be removed in Pillow 10"
+        "(2023-01-02). Conversion is no longer needed.",
+        DeprecationWarning,
+    )
     return qtables
 
 
@@ -667,7 +686,9 @@ def _save(im, fp, filename):
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
-                qtables = convert_dict_qtables(qtables)
+                qtables = [
+                    qtables[key] for key in range(len(qtables)) if key in qtables
+                ]
             elif isinstance(qtables, tuple):
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):

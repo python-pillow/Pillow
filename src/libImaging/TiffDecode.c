@@ -56,7 +56,7 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     dump_state(state);
 
     if (state->loc > state->eof) {
-        TIFFError("_tiffReadProc", "Invalid Read at loc %llu, eof: %llu", state->loc, state->eof);
+        TIFFError("_tiffReadProc", "Invalid Read at loc %" PRIu64 ", eof: %" PRIu64, state->loc, state->eof);
         return 0;
     }
     to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
@@ -181,7 +181,7 @@ _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 }
 
 int
-ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
+ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
 
     TRACE(("initing libtiff\n"));
@@ -213,10 +213,10 @@ ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset) {
 }
 
 int
-_pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16 planarconfig, ImagingShuffler *unpackers) {
+_pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16_t planarconfig, ImagingShuffler *unpackers) {
     // if number of bands is 1, there is no difference with contig case
     if (planarconfig == PLANARCONFIG_SEPARATE && im->bands > 1) {
-        uint16 bits_per_sample = 8;
+        uint16_t bits_per_sample = 8;
 
         TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
         if (bits_per_sample != 8 && bits_per_sample != 16) {
@@ -265,7 +265,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_block);
     }
 
-    if (ret != 1) {
+    if (ret != 1 || rows_per_block==(UINT32)(-1)) {
         rows_per_block = state->ysize;
     }
 
@@ -280,17 +280,6 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     img.req_orientation = ORIENTATION_TOPLEFT;
     img.col_offset = 0;
-
-    if (state->xsize != img.width || state->ysize != img.height) {
-        TRACE(
-            ("Inconsistent Image Error: %d =? %d, %d =? %d",
-             state->xsize,
-             img.width,
-             state->ysize,
-             img.height));
-        state->errcode = IMAGING_CODEC_BROKEN;
-        goto decodergba_err;
-    }
 
     /* overflow check for row byte size */
     if (INT_MAX / 4 < img.width) {
@@ -427,15 +416,6 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
         for (plane = 0; plane < planes; plane++) {
             ImagingShuffler shuffler = unpackers[plane];
             for (x = state->xoff; x < state->xsize; x += tile_width) {
-                /* Sanity Check. Apparently in some cases, the TiffReadRGBA* functions
-                   have a different view of the size of the tiff than we're getting from
-                   other functions. So, we need to check here. 
-                */
-                if (!TIFFCheckTile(tiff, x, y, 0, plane)) {
-                    TRACE(("Check Tile Error, Tile at %dx%d\n", x, y));
-                    state->errcode = IMAGING_CODEC_BROKEN;
-                    return -1;
-                }
                 if (TIFFReadTile(tiff, (tdata_t)state->buffer, x, y, 0, plane) == -1) {
                     TRACE(("Decode Error, Tile at %dx%d\n", x, y));
                     state->errcode = IMAGING_CODEC_BROKEN;
@@ -471,7 +451,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     UINT8 *new_data;
     UINT32 rows_per_strip;
     int ret;
-    tsize_t strip_size, row_byte_size;
+    tsize_t strip_size, row_byte_size, unpacker_row_byte_size;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
     if (ret != 1 || rows_per_strip==(UINT32)(-1)) {
@@ -491,7 +471,8 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         return -1;
     }
 
-    if (strip_size > ((state->xsize * state->bits / planes + 7) / 8) * rows_per_strip) {
+    unpacker_row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
+    if (strip_size > (unpacker_row_byte_size * rows_per_strip)) {
         // If the strip size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
         //        call to TIFFReadEncodedStrip ...
@@ -505,7 +486,9 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
 
     row_byte_size = TIFFScanlineSize(tiff);
 
-    if (row_byte_size == 0 || row_byte_size > strip_size) {
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the strip will have a read buffer overflow.
+    if (row_byte_size == 0 || unpacker_row_byte_size > row_byte_size) {
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -562,12 +545,13 @@ ImagingLibTiffDecode(
     char *filename = "tempfile.tif";
     char *mode = "r";
     TIFF *tiff;
-    uint16 photometric = 0;  // init to not PHOTOMETRIC_YCBCR
-    uint16 compression;
+    uint16_t photometric = 0;  // init to not PHOTOMETRIC_YCBCR
+    uint16_t compression;
     int readAsRGBA = 0;
-    uint16 planarconfig = 0;
+    uint16_t planarconfig = 0;
     int planes = 1;
     ImagingShuffler unpackers[4];
+    UINT32 img_width, img_height;
 
     memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
 
@@ -655,13 +639,27 @@ ImagingLibTiffDecode(
 
     if (clientstate->ifd) {
         int rv;
-        uint32 ifdoffset = clientstate->ifd;
+        uint32_t ifdoffset = clientstate->ifd;
         TRACE(("reading tiff ifd %u\n", ifdoffset));
         rv = TIFFSetSubDirectory(tiff, ifdoffset);
         if (!rv) {
             TRACE(("error in TIFFSetSubDirectory"));
             goto decode_err;
         }
+    }
+
+    TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &img_width);
+    TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
+
+    if (state->xsize != img_width || state->ysize != img_height) {
+        TRACE(
+            ("Inconsistent Image Error: %d =? %d, %d =? %d",
+             state->xsize,
+             img_width,
+             state->ysize,
+             img_height));
+        state->errcode = IMAGING_CODEC_BROKEN;
+        goto decode_err;
     }
 
 
@@ -674,7 +672,7 @@ ImagingLibTiffDecode(
     readAsRGBA = photometric == PHOTOMETRIC_YCBCR;
 
     if (readAsRGBA && compression == COMPRESSION_JPEG && planarconfig == PLANARCONFIG_CONTIG) {
-        // If using new JPEG compression, let libjpeg do RGB convertion for performance reasons
+        // If using new JPEG compression, let libjpeg do RGB conversion for performance reasons
         TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
         readAsRGBA = 0;
     }
@@ -699,8 +697,8 @@ ImagingLibTiffDecode(
             // Check if raw mode was RGBa and it was stored on separate planes
             // so we have to convert it to RGBA
             if (planes > 3 && strcmp(im->mode, "RGBA") == 0) {
-                uint16 extrasamples;
-                uint16* sampleinfo;
+                uint16_t extrasamples;
+                uint16_t* sampleinfo;
                 ImagingShuffler shuffle;
                 INT32 y;
 
@@ -812,7 +810,7 @@ ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length) {
     // Refer to libtiff docs (http://www.simplesystems.org/libtiff/addingtags.html)
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
-    uint32 n;
+    uint32_t n;
     int status = 0;
 
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
@@ -935,7 +933,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 state->xsize);
 
             if (TIFFWriteScanline(
-                    tiff, (tdata_t)(state->buffer), (uint32)state->y, 0) == -1) {
+                    tiff, (tdata_t)(state->buffer), (uint32_t)state->y, 0) == -1) {
                 TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
                 TIFFClose(tiff);

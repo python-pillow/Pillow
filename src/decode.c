@@ -34,9 +34,10 @@
 
 #include "libImaging/Imaging.h"
 
+#include "libImaging/Bit.h"
+#include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
 #include "libImaging/Raw.h"
-#include "libImaging/Bit.h"
 #include "libImaging/Sgi.h"
 
 /* -------------------------------------------------------------------- */
@@ -199,7 +200,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
             state->bytes = (state->bits * state->xsize + 7) / 8;
         }
         /* malloc check ok, overflow checked above */
-        state->buffer = (UINT8 *)malloc(state->bytes);
+        state->buffer = (UINT8 *)calloc(1, state->bytes);
         if (!state->buffer) {
             return ImagingError_MemoryError();
         }
@@ -239,10 +240,10 @@ _get_pulls_fd(ImagingDecoderObject *decoder) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"decode", (PyCFunction)_decode, 1},
-    {"cleanup", (PyCFunction)_decode_cleanup, 1},
-    {"setimage", (PyCFunction)_setimage, 1},
-    {"setfd", (PyCFunction)_setfd, 1},
+    {"decode", (PyCFunction)_decode, METH_VARARGS},
+    {"cleanup", (PyCFunction)_decode_cleanup, METH_VARARGS},
+    {"setimage", (PyCFunction)_setimage, METH_VARARGS},
+    {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 
@@ -298,7 +299,7 @@ get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmod
     unpack = ImagingFindUnpacker(mode, rawmode, &bits);
     if (!unpack) {
         Py_DECREF(decoder);
-        PyErr_SetString(PyExc_ValueError, "unknown raw mode");
+        PyErr_SetString(PyExc_ValueError, "unknown raw mode for given image mode");
         return -1;
     }
 
@@ -359,8 +360,8 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
     char *mode;
     char *actual;
     int n = 0;
-    int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|ii", &mode, &n, &ystep)) {
+    char *pixel_format = "";
+    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
         return NULL;
     }
 
@@ -368,12 +369,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         case 1: /* BC1: 565 color, 1-bit alpha */
         case 2: /* BC2: 565 color, 4-bit alpha */
         case 3: /* BC3: 565 color, 2-endpoint 8-bit interpolated alpha */
-        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
         case 7: /* BC7: 4-channel 8-bit via everything */
             actual = "RGBA";
             break;
         case 4: /* BC4: 1-channel 8-bit via 1 BC3 alpha block */
             actual = "L";
+            break;
+        case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
+            actual = "RGB";
             break;
         case 6: /* BC6: 3-channel 16-bit float */
             /* TODO: support 4-channel floating point images */
@@ -389,14 +392,14 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    decoder = PyImaging_DecoderNew(0);
+    decoder = PyImaging_DecoderNew(sizeof(char *));
     if (decoder == NULL) {
         return NULL;
     }
 
     decoder->decode = ImagingBcnDecode;
     decoder->state.state = n;
-    decoder->state.ystep = ystep;
+    ((BCNSTATE *)decoder->state.context)->pixel_format = pixel_format;
 
     return (PyObject *)decoder;
 }
@@ -430,7 +433,8 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
     char *mode;
     int bits = 8;
     int interlace = 0;
-    if (!PyArg_ParseTuple(args, "s|ii", &mode, &bits, &interlace)) {
+    int transparency = -1;
+    if (!PyArg_ParseTuple(args, "s|iii", &mode, &bits, &interlace, &transparency)) {
         return NULL;
     }
 
@@ -448,6 +452,7 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
 
     ((GIFDECODERSTATE *)decoder->state.context)->bits = bits;
     ((GIFDECODERSTATE *)decoder->state.context)->interlace = interlace;
+    ((GIFDECODERSTATE *)decoder->state.context)->transparency = transparency;
 
     return (PyObject *)decoder;
 }
@@ -497,7 +502,7 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     char *rawmode;
     char *compname;
     int fp;
-    uint32 ifdoffset;
+    uint32_t ifdoffset;
 
     if (!PyArg_ParseTuple(args, "sssiI", &mode, &rawmode, &compname, &fp, &ifdoffset)) {
         return NULL;

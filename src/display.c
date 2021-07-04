@@ -224,14 +224,14 @@ _tobytes(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"draw", (PyCFunction)_draw, 1},
-    {"expose", (PyCFunction)_expose, 1},
-    {"paste", (PyCFunction)_paste, 1},
-    {"query_palette", (PyCFunction)_query_palette, 1},
-    {"getdc", (PyCFunction)_getdc, 1},
-    {"releasedc", (PyCFunction)_releasedc, 1},
-    {"frombytes", (PyCFunction)_frombytes, 1},
-    {"tobytes", (PyCFunction)_tobytes, 1},
+    {"draw", (PyCFunction)_draw, METH_VARARGS},
+    {"expose", (PyCFunction)_expose, METH_VARARGS},
+    {"paste", (PyCFunction)_paste, METH_VARARGS},
+    {"query_palette", (PyCFunction)_query_palette, METH_VARARGS},
+    {"getdc", (PyCFunction)_getdc, METH_VARARGS},
+    {"releasedc", (PyCFunction)_releasedc, METH_VARARGS},
+    {"frombytes", (PyCFunction)_frombytes, METH_VARARGS},
+    {"tobytes", (PyCFunction)_tobytes, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 

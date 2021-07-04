@@ -734,7 +734,7 @@ ImagingDrawRectangle(
 
 int
 ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int op) {
-    int i, n;
+    int i, n, x0, y0, x1, y1;
     DRAW *draw;
     INT32 ink;
 
@@ -753,10 +753,28 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
             return -1;
         }
         for (i = n = 0; i < count - 1; i++) {
-            add_edge(&e[n++], xy[i + i], xy[i + i + 1], xy[i + i + 2], xy[i + i + 3]);
+            x0 = xy[i * 2];
+            y0 = xy[i * 2 + 1];
+            x1 = xy[i * 2 + 2];
+            y1 = xy[i * 2 + 3];
+            if (y0 == y1 && i != 0 && y0 == xy[i * 2 - 1]) {
+                // This is a horizontal line,
+                // that immediately follows another horizontal line
+                Edge *last_e = &e[n-1];
+                if (x1 > x0 && x0 > xy[i * 2 - 2]) {
+                    // They are both increasing in x
+                    last_e->xmax = x1;
+                    continue;
+                } else if (x1 < x0 && x0 < xy[i * 2 - 2]) {
+                    // They are both decreasing in x
+                    last_e->xmin = x1;
+                    continue;
+                }
+            }
+            add_edge(&e[n++], x0, y0, x1, y1);
         }
-        if (xy[i + i] != xy[0] || xy[i + i + 1] != xy[1]) {
-            add_edge(&e[n++], xy[i + i], xy[i + i + 1], xy[0], xy[1]);
+        if (xy[i * 2] != xy[0] || xy[i * 2 + 1] != xy[1]) {
+            add_edge(&e[n++], xy[i * 2], xy[i * 2 + 1], xy[0], xy[1]);
         }
         draw->polygon(im, n, e, ink, 0);
         free(e);
@@ -764,9 +782,9 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
     } else {
         /* Outline */
         for (i = 0; i < count - 1; i++) {
-            draw->line(im, xy[i + i], xy[i + i + 1], xy[i + i + 2], xy[i + i + 3], ink);
+            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
         }
-        draw->line(im, xy[i + i], xy[i + i + 1], xy[0], xy[1], ink);
+        draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
     }
 
     return 0;
@@ -1347,6 +1365,22 @@ pie_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
     s->root->l = lc;
     s->root->r = rc;
     s->root->type = ar - al < 180 ? CT_AND : CT_OR;
+
+    // add one more semiplane to avoid spikes
+    if (ar - al < 90) {
+        clip_node *old_root = s->root;
+        clip_node *spike_clipper = s->nodes + s->node_count++;
+        s->root = s->nodes + s->node_count++;
+        s->root->l = old_root;
+        s->root->r = spike_clipper;
+        s->root->type = CT_AND;
+
+        spike_clipper->l = spike_clipper->r = NULL;
+        spike_clipper->type = CT_CLIP;
+        spike_clipper->a = (xl + xr) / 2.0;
+        spike_clipper->b = (yl + yr) / 2.0;
+        spike_clipper->c = 0;
+    }
 }
 
 void

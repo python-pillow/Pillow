@@ -119,7 +119,8 @@ class PsdImageFile(ImageFile.ImageFile):
             end = self.fp.tell() + size
             size = i32(read(4))
             if size:
-                self.layers = _layerinfo(self.fp)
+                _layer_data = io.BytesIO(ImageFile._safe_read(self.fp, size))
+                self.layers = _layerinfo(_layer_data, size)
             self.fp.seek(end)
         self.n_frames = len(self.layers)
         self.is_animated = self.n_frames > 1
@@ -171,11 +172,20 @@ class PsdImageFile(ImageFile.ImageFile):
             self.__fp = None
 
 
-def _layerinfo(file):
+def _layerinfo(fp, ct_bytes):
     # read layerinfo block
     layers = []
-    read = file.read
-    for i in range(abs(i16(read(2)))):
+
+    def read(size):
+        return ImageFile._safe_read(fp, size)
+
+    ct = i16(read(2))
+
+    # sanity check
+    if ct_bytes < (abs(ct) * 20):
+        raise SyntaxError("Layer block too short for number of layers requested")
+
+    for i in range(abs(ct)):
 
         # bounding box
         y0 = i32(read(4))
@@ -186,7 +196,8 @@ def _layerinfo(file):
         # image info
         info = []
         mode = []
-        types = list(range(i16(read(2))))
+        ct_types = i16(read(2))
+        types = list(range(ct_types))
         if len(types) > 4:
             continue
 
@@ -219,16 +230,16 @@ def _layerinfo(file):
         size = i32(read(4))  # length of the extra data field
         combined = 0
         if size:
-            data_end = file.tell() + size
+            data_end = fp.tell() + size
 
             length = i32(read(4))
             if length:
-                file.seek(length - 16, io.SEEK_CUR)
+                fp.seek(length - 16, io.SEEK_CUR)
             combined += length + 4
 
             length = i32(read(4))
             if length:
-                file.seek(length, io.SEEK_CUR)
+                fp.seek(length, io.SEEK_CUR)
             combined += length + 4
 
             length = i8(read(1))
@@ -238,7 +249,7 @@ def _layerinfo(file):
                 name = read(length).decode("latin-1", "replace")
             combined += length + 1
 
-            file.seek(data_end)
+            fp.seek(data_end)
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles
@@ -246,7 +257,7 @@ def _layerinfo(file):
     for name, mode, bbox in layers:
         tile = []
         for m in mode:
-            t = _maketile(file, m, bbox, 1)
+            t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
         layers[i] = name, mode, bbox, tile

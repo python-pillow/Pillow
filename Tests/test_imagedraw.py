@@ -538,6 +538,36 @@ def test_pieslice_wide():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_wide.png")
 
 
+def test_pieslice_no_spikes():
+    im = Image.new("RGB", (161, 161), "white")
+    draw = ImageDraw.Draw(im)
+    cxs = (
+        [140] * 3
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 141, 20))
+        + [140] * 2
+    )
+    cys = (
+        list(range(80, 141, 20))
+        + [140] * 5
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 80, 20))
+    )
+
+    for cx, cy, angle in zip(cxs, cys, range(0, 360, 15)):
+        draw.pieslice(
+            [cx - 100, cy - 100, cx + 100, cy + 100], angle, angle + 1, fill="black"
+        )
+        draw.point([cx, cy], fill="red")
+
+    im_pre_erase = im.copy()
+    draw.rectangle([21, 21, 139, 139], fill="white")
+
+    assert_image_equal(im, im_pre_erase)
+
+
 def helper_point(points):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -720,6 +750,29 @@ def test_rounded_rectangle(xy):
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
+
+
+@pytest.mark.parametrize(
+    "xy, radius, type",
+    [
+        ((10, 20, 190, 180), 30.5, "given"),
+        ((10, 10, 181, 190), 90, "width"),
+        ((10, 20, 190, 181), 85, "height"),
+    ],
+)
+def test_rounded_rectangle_non_integer_radius(xy, radius, type):
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(xy, radius, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(
+        im,
+        "Tests/images/imagedraw_rounded_rectangle_non_integer_radius_" + type + ".png",
+    )
 
 
 def test_rounded_rectangle_zero_radius():
@@ -1326,3 +1379,22 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     with pytest.raises(expected_error) as e:
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
     assert str(e.value) == error_message
+
+
+def test_continuous_horizontal_edges_polygon():
+    xy = [
+        (2, 6),
+        (6, 6),
+        (12, 6),
+        (12, 12),
+        (8, 12),
+        (8, 8),
+        (4, 8),
+        (2, 8),
+    ]
+    img, draw = create_base_image_draw((16, 16))
+    draw.polygon(xy, BLACK)
+    expected = os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
+    assert_image_equal_tofile(
+        img, expected, "continuous horizontal edges polygon failed"
+    )

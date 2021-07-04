@@ -63,7 +63,7 @@ def test_dpi():
 
     output.seek(0)
     with Image.open(output) as reloaded:
-        assert reloaded.info["dpi"] == dpi
+        assert reloaded.info["dpi"] == (72.008961115161, 72.008961115161)
 
 
 def test_save_bmp_with_dpi(tmp_path):
@@ -71,6 +71,7 @@ def test_save_bmp_with_dpi(tmp_path):
     # Arrange
     outfile = str(tmp_path / "temp.jpg")
     with Image.open("Tests/images/hopper.bmp") as im:
+        assert im.info["dpi"] == (95.98654816726399, 95.98654816726399)
 
         # Act
         im.save(outfile, "JPEG", dpi=im.info["dpi"])
@@ -78,31 +79,17 @@ def test_save_bmp_with_dpi(tmp_path):
         # Assert
         with Image.open(outfile) as reloaded:
             reloaded.load()
-            assert im.info["dpi"] == reloaded.info["dpi"]
-            assert im.size == reloaded.size
+            assert reloaded.info["dpi"] == (96, 96)
+            assert reloaded.size == im.size
             assert reloaded.format == "JPEG"
 
 
-def test_load_dpi_rounding():
-    # Round up
-    with Image.open("Tests/images/hopper.bmp") as im:
-        assert im.info["dpi"] == (96, 96)
-
-    # Round down
-    with Image.open("Tests/images/hopper_roundDown.bmp") as im:
-        assert im.info["dpi"] == (72, 72)
-
-
-def test_save_dpi_rounding(tmp_path):
+def test_save_float_dpi(tmp_path):
     outfile = str(tmp_path / "temp.bmp")
     with Image.open("Tests/images/hopper.bmp") as im:
-        im.save(outfile, dpi=(72.2, 72.2))
+        im.save(outfile, dpi=(72.21216100543306, 72.21216100543306))
         with Image.open(outfile) as reloaded:
-            assert reloaded.info["dpi"] == (72, 72)
-
-        im.save(outfile, dpi=(72.8, 72.8))
-    with Image.open(outfile) as reloaded:
-        assert reloaded.info["dpi"] == (73, 73)
+            assert reloaded.info["dpi"] == (72.21216100543306, 72.21216100543306)
 
 
 def test_load_dib():

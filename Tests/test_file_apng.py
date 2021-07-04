@@ -249,8 +249,8 @@ def test_apng_mode():
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
         im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+        assert im.getpixel((0, 0)) == (255, 0, 0, 0)
+        assert im.getpixel((64, 32)) == (255, 0, 0, 0)
 
     with Image.open("Tests/images/apng/mode_palette_1bit_alpha.png") as im:
         assert im.mode == "P"
@@ -312,7 +312,7 @@ def test_apng_syntax_errors():
             exception = e
         assert exception is None
 
-    with pytest.raises(SyntaxError):
+    with pytest.raises(OSError):
         with Image.open("Tests/images/apng/syntax_num_frames_high.png") as im:
             im.seek(im.n_frames - 1)
             im.load()

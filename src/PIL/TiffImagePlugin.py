@@ -354,9 +354,22 @@ class IFDRational(Rational):
         return self._val.__hash__()
 
     def __eq__(self, other):
+        val = self._val
         if isinstance(other, IFDRational):
             other = other._val
-        return self._val == other
+        if isinstance(other, float):
+            val = float(val)
+        return val == other
+
+    def __getstate__(self):
+        return [self._val, self._numerator, self._denominator]
+
+    def __setstate__(self, state):
+        IFDRational.__init__(self, 0)
+        _val, _numerator, _denominator = state
+        self._val = _val
+        self._numerator = _numerator
+        self._denominator = _denominator
 
     def _delegate(op):
         def delegate(self, *args):
@@ -446,16 +459,16 @@ class ImageFileDirectory_v2(MutableMapping):
     Tags will be found in the private attributes self._tagdata, and in
     self._tags_v2 once decoded.
 
-    Self.legacy_api is a value for internal use, and shouldn't be
+    self.legacy_api is a value for internal use, and shouldn't be
     changed from outside code. In cooperation with the
     ImageFileDirectory_v1 class, if legacy_api is true, then decoded
-    tags will be populated into both _tags_v1 and _tags_v2. _Tags_v2
+    tags will be populated into both _tags_v1 and _tags_v2. _tags_v2
     will be used if this IFD is used in the TIFF save routine. Tags
-    should be read from tags_v1 if legacy_api == true.
+    should be read from _tags_v1 if legacy_api == true.
 
     """
 
-    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None):
+    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None, group=None):
         """Initialize an ImageFileDirectory.
 
         To construct an ImageFileDirectory from a real file, pass the 8-byte
@@ -475,6 +488,7 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self.group = group
         self.tagtype = {}
         """ Dictionary of tag types """
         self.reset()
@@ -506,7 +520,10 @@ class ImageFileDirectory_v2(MutableMapping):
 
         Returns the complete tag dictionary, with named tags where possible.
         """
-        return {TiffTags.lookup(code).name: value for code, value in self.items()}
+        return {
+            TiffTags.lookup(code, self.group).name: value
+            for code, value in self.items()
+        }
 
     def __len__(self):
         return len(set(self._tagdata) | set(self._tags_v2))
@@ -531,7 +548,7 @@ class ImageFileDirectory_v2(MutableMapping):
     def _setitem(self, tag, value, legacy_api):
         basetypes = (Number, bytes, str)
 
-        info = TiffTags.lookup(tag)
+        info = TiffTags.lookup(tag, self.group)
         values = [value] if isinstance(value, basetypes) else value
 
         if tag not in self.tagtype:
@@ -565,7 +582,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
         if self.tagtype[tag] == TiffTags.UNDEFINED:
             values = [
-                value.encode("ascii", "replace") if isinstance(value, str) else value
+                v.encode("ascii", "replace") if isinstance(v, str) else v
+                for v in values
             ]
         elif self.tagtype[tag] == TiffTags.RATIONAL:
             values = [float(v) if isinstance(v, int) else v for v in values]
@@ -747,7 +765,7 @@ class ImageFileDirectory_v2(MutableMapping):
             for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
 
-                tagname = TiffTags.lookup(tag).name
+                tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
                 msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
@@ -814,15 +832,16 @@ class ImageFileDirectory_v2(MutableMapping):
                     ifh = b"II\x2A\x00\x08\x00\x00\x00"
                 else:
                     ifh = b"MM\x00\x2A\x00\x00\x00\x08"
-                ifd = ImageFileDirectory_v2(ifh)
-                for ifd_tag, ifd_value in self._tags_v2[tag].items():
+                ifd = ImageFileDirectory_v2(ifh, group=tag)
+                values = self._tags_v2[tag]
+                for ifd_tag, ifd_value in values.items():
                     ifd[ifd_tag] = ifd_value
                 data = ifd.tobytes(offset)
             else:
                 values = value if isinstance(value, tuple) else (value,)
                 data = self._write_dispatch[typ](self, *values)
 
-            tagname = TiffTags.lookup(tag).name
+            tagname = TiffTags.lookup(tag, self.group).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
             msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
             msg += " - value: " + (
@@ -1052,6 +1071,11 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame):
         self.fp = self.__fp
+
+        # reset buffered io handle in case fp
+        # was passed to libtiff, invalidating the buffer
+        self.fp.tell()
+
         while len(self._frame_pos) <= frame:
             if not self.__next:
                 raise EOFError("no more images in TIFF file")
@@ -1059,14 +1083,16 @@ class TiffImageFile(ImageFile.ImageFile):
                 f"Seeking to frame {frame}, on frame {self.__frame}, "
                 f"__next {self.__next}, location: {self.fp.tell()}"
             )
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            self.fp.tell()
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s" % self.fp.tell())
             self.tag_v2.load(self.fp)
-            self.__next = self.tag_v2.next
+            if self.tag_v2.next in self._frame_pos:
+                # This IFD has already been processed
+                # Declare this to be the end of the image
+                self.__next = 0
+            else:
+                self.__next = self.tag_v2.next
             if self.__next == 0:
                 self._n_frames = frame + 1
             if len(self._frame_pos) == 1:
@@ -1082,6 +1108,14 @@ class TiffImageFile(ImageFile.ImageFile):
     def tell(self):
         """Return the current frame number"""
         return self.__frame
+
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+        :returns: XMP tags in a dictionary.
+        """
+        return self._getxmp(self.tag_v2[700]) if 700 in self.tag_v2 else {}
 
     def load(self):
         if self.tile and self.use_load_libtiff:
@@ -1250,6 +1284,13 @@ class TiffImageFile(ImageFile.ImageFile):
         if bps_count > len(bps_tuple) and len(bps_tuple) == 1:
             bps_tuple = bps_tuple * bps_count
 
+        samplesPerPixel = self.tag_v2.get(
+            SAMPLESPERPIXEL,
+            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
+        )
+        if len(bps_tuple) != samplesPerPixel:
+            raise SyntaxError("unknown data organization")
+
         # mode: check photometric interpretation and bits per pixel
         key = (
             self.tag_v2.prefix,
@@ -1277,11 +1318,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
             if resunit == 2:  # dots per inch
-                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
+                self.info["dpi"] = (xres, yres)
             elif resunit == 3:  # dots per centimeter. convert to dpi
-                self.info["dpi"] = int(xres * 2.54 + 0.5), int(yres * 2.54 + 0.5)
+                self.info["dpi"] = (xres * 2.54, yres * 2.54)
             elif resunit is None:  # used to default to 1, but now 2)
-                self.info["dpi"] = int(xres + 0.5), int(yres + 0.5)
+                self.info["dpi"] = (xres, yres)
                 # For backward compatibility,
                 # we also preserve the old behavior
                 self.info["resolution"] = xres, yres
@@ -1514,8 +1555,8 @@ def _save(im, fp, filename):
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         ifd[RESOLUTION_UNIT] = 2
-        ifd[X_RESOLUTION] = int(dpi[0] + 0.5)
-        ifd[Y_RESOLUTION] = int(dpi[1] + 0.5)
+        ifd[X_RESOLUTION] = dpi[0]
+        ifd[Y_RESOLUTION] = dpi[1]
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits
@@ -1533,12 +1574,22 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    ifd[ROWSPERSTRIP] = im.size[1]
-    strip_byte_counts = stride * im.size[1]
+    # aim for 64 KB strips when using libtiff writer
+    if libtiff:
+        rows_per_strip = min((2 ** 16 + stride - 1) // stride, im.size[1])
+    else:
+        rows_per_strip = im.size[1]
+    strip_byte_counts = stride * rows_per_strip
+    strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
+    ifd[ROWSPERSTRIP] = rows_per_strip
     if strip_byte_counts >= 2 ** 16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
-    ifd[STRIPBYTECOUNTS] = strip_byte_counts
-    ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
+    ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
+        stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),
+    )
+    ifd[STRIPOFFSETS] = tuple(
+        range(0, strip_byte_counts * strips_per_image, strip_byte_counts)
+    )  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 

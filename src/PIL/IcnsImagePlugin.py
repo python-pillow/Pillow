@@ -6,22 +6,21 @@
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
+# 2020-04-04      Allow saving on all operating systems.
 #
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
 # Copyright (c) 2004 by Fredrik Lundh.
 # Copyright (c) 2014 by Alastair Houghton.
+# Copyright (c) 2020 by Pan Jing.
 #
 # See the README file for information on usage and redistribution.
 #
 
 import io
 import os
-import shutil
 import struct
-import subprocess
 import sys
-import tempfile
 
 from PIL import Image, ImageFile, PngImagePlugin, features
 
@@ -29,6 +28,7 @@ enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
+MAGIC = b"icns"
 HEADERSIZE = 8
 
 
@@ -167,7 +167,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != b"icns":
+        if sig != MAGIC:
             raise SyntaxError("not an icns file")
         i = HEADERSIZE
         while i < filesize:
@@ -306,72 +306,73 @@ class IcnsImageFile(ImageFile.ImageFile):
 def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
-    that are then converted to a .icns file
-    using the macOS command line utility 'iconutil'.
-
-    macOS only.
+    that are then combined into a .icns file.
     """
     if hasattr(fp, "flush"):
         fp.flush()
 
-    # create the temporary set of pngs
-    with tempfile.TemporaryDirectory(".iconset") as iconset:
-        provided_images = {
-            im.width: im for im in im.encoderinfo.get("append_images", [])
-        }
-        last_w = None
-        second_path = None
-        for w in [16, 32, 128, 256, 512]:
-            prefix = f"icon_{w}x{w}"
-
-            first_path = os.path.join(iconset, prefix + ".png")
-            if last_w == w:
-                shutil.copyfile(second_path, first_path)
-            else:
-                im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
-                im_w.save(first_path)
-
-            second_path = os.path.join(iconset, prefix + "@2x.png")
-            im_w2 = provided_images.get(w * 2, im.resize((w * 2, w * 2), Image.LANCZOS))
-            im_w2.save(second_path)
-            last_w = w * 2
-
-        # iconutil -c icns -o {} {}
-
-        fp_only = not filename
-        if fp_only:
-            f, filename = tempfile.mkstemp(".icns")
-            os.close(f)
-        convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-        convert_proc = subprocess.Popen(
-            convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+    sizes = {
+        b"ic07": 128,
+        b"ic08": 256,
+        b"ic09": 512,
+        b"ic10": 1024,
+        b"ic11": 32,
+        b"ic12": 64,
+        b"ic13": 256,
+        b"ic14": 512,
+    }
+    provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
+    size_streams = {}
+    for size in set(sizes.values()):
+        image = (
+            provided_images[size]
+            if size in provided_images
+            else im.resize((size, size))
         )
 
-        convert_proc.stdout.close()
+        temp = io.BytesIO()
+        image.save(temp, "png")
+        size_streams[size] = temp.getvalue()
 
-        retcode = convert_proc.wait()
+    entries = []
+    for type, size in sizes.items():
+        stream = size_streams[size]
+        entries.append({"type": type, "size": len(stream), "stream": stream})
 
-        if retcode:
-            raise subprocess.CalledProcessError(retcode, convert_cmd)
+    # Header
+    fp.write(MAGIC)
+    fp.write(struct.pack(">i", sum(entry["size"] for entry in entries)))
 
-        if fp_only:
-            with open(filename, "rb") as f:
-                fp.write(f.read())
+    # TOC
+    fp.write(b"TOC ")
+    fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
+    for entry in entries:
+        fp.write(entry["type"])
+        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+
+    # Data
+    for entry in entries:
+        fp.write(entry["type"])
+        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+        fp.write(entry["stream"])
+
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 
-Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
+def _accept(prefix):
+    return prefix[:4] == MAGIC
+
+
+Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)
 Image.register_extension(IcnsImageFile.format, ".icns")
 
-if sys.platform == "darwin":
-    Image.register_save(IcnsImageFile.format, _save)
-
-    Image.register_mime(IcnsImageFile.format, "image/icns")
-
+Image.register_save(IcnsImageFile.format, _save)
+Image.register_mime(IcnsImageFile.format, "image/icns")
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
-        print("Syntax: python IcnsImagePlugin.py [file]")
+        print("Syntax: python3 IcnsImagePlugin.py [file]")
         sys.exit()
 
     with open(sys.argv[1], "rb") as fp:

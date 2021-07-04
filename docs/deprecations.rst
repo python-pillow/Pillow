@@ -25,26 +25,6 @@ vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
-Tk/Tcl 8.4
-~~~~~~~~~~
-
-.. deprecated:: 8.2.0
-
-Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
-when Tk/Tcl 8.5 will be the minimum supported.
-
-Categories
-~~~~~~~~~~
-
-.. deprecated:: 8.2.0
-
-``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
-along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
-``Image.CONTAINER`` attributes.
-
-To determine if an image has multiple frames or not,
-``getattr(im, "is_animated", False)`` can be used instead.
-
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -81,6 +61,36 @@ Use ``__version__`` instead.
 
 It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
 more time to upgrade.
+
+Tk/Tcl 8.4
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+when Tk/Tcl 8.5 will be the minimum supported.
+
+Categories
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
+
+JpegImagePlugin.convert_dict_qtables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.3.0
+
+JPEG ``quantization`` is now automatically converted, but still returned as a
+dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+performs any operations on the data given to it, has been deprecated and will be
+removed in Pillow 10.0.0 (2023-01-02).
 
 Removed features
 ----------------
@@ -125,7 +135,6 @@ Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6
 they issued a ``DeprecationWarning``:
 
 ========================  ===================================================
-
 Removed                   Use instead
 ========================  ===================================================
 ``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
@@ -251,7 +260,7 @@ PIL.OleFileIO
 .. deprecated:: 4.0.0
 .. versionremoved:: 6.0.0
 
-PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+PIL.OleFileIO was removed as a vendored file in Pillow 4.0.0 (2017-01) in favour of
 the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).

@@ -524,11 +524,11 @@ path_transform(PyPathObject *self, PyObject *args) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"getbbox", (PyCFunction)path_getbbox, 1},
-    {"tolist", (PyCFunction)path_tolist, 1},
-    {"compact", (PyCFunction)path_compact, 1},
-    {"map", (PyCFunction)path_map, 1},
-    {"transform", (PyCFunction)path_transform, 1},
+    {"getbbox", (PyCFunction)path_getbbox, METH_VARARGS},
+    {"tolist", (PyCFunction)path_tolist, METH_VARARGS},
+    {"compact", (PyCFunction)path_compact, METH_VARARGS},
+    {"map", (PyCFunction)path_map, METH_VARARGS},
+    {"transform", (PyCFunction)path_transform, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 

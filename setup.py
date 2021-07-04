@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -39,7 +39,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 10):
+if sys.platform == "win32" and sys.version_info >= (3, 11):
     import atexit
 
     atexit.register(
@@ -810,9 +810,11 @@ class pil_build_ext(build_ext):
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
-            # FIXME the following define should be detected automatically
-            #       based on system libtiff, see #4237
-            if PLATFORM_MINGW:
+            if sys.platform == "win32":
+                # This define needs to be defined if-and-only-if it was defined
+                # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
+                # so we have to guess; by default it is defined in all Windows builds.
+                # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
@@ -990,6 +992,7 @@ try:
             "index.html",
             "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
             "CHANGES.rst",
+            "Twitter": "https://twitter.com/PythonPillow",
         },
         classifiers=[
             "Development Status :: 6 - Mature",
@@ -999,6 +1002,7 @@ try:
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3 :: Only",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",

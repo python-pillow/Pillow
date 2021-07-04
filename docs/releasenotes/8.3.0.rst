@@ -1,0 +1,113 @@
+8.3.0
+-----
+
+Deprecations
+============
+
+JpegImagePlugin.convert_dict_qtables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JPEG ``quantization`` is now automatically converted, but still returned as a
+dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+performs any operations on the data given to it, has been deprecated and will be
+removed in Pillow 10.0.0 (2023-01-02).
+
+API Changes
+===========
+
+Changed WebP default "method" value when saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, it was 0, for the best speed. The default has now been changed to 4, to
+match WebP's default, for higher quality with still some speed optimisation.
+
+Default resampling filter for special image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 7.0 changed the default resampling filter to ``Image.BICUBIC``. However, as this
+is not supported yet for images with a custom number of bits, the default filter for
+those modes has been reverted to ``Image.NEAREST``.
+
+ImageMorph incorrect mode errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For ``apply()``, ``match()`` and ``get_on_pixels()``, if the image mode is not L, an
+:py:exc:`Exception` was thrown. This has now been changed to a :py:exc:`ValueError`.
+
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+returned for PNG and TIFF images, through ``getxmp()`` for each format.
+
+The returned dictionary will start from the base of the XML, meaning that the top level
+should contain an "xmpmeta" key. JPEG's ``getxmp()`` method has also been updated to
+this structure.
+
+TIFF getexif()
+^^^^^^^^^^^^^^
+
+TIFF :py:attr:`~PIL.TiffImagePlugin.TiffImageFile.tag_v2` data can now be accessed
+through :py:meth:`~PIL.Image.Image.getexif`. This also provides access to the GPS and
+EXIF IFDs, through ``im.getexif().get_ifd(0x8825)`` and
+``im.getexif().get_ifd(0x8769)`` respectively.
+
+API Additions
+=============
+
+ImageOps.contain
+^^^^^^^^^^^^^^^^
+
+Returns a resized version of the image, set to the maximum width and height within
+``size``, while maintaining the original aspect ratio.
+
+To compare it to other ImageOps methods:
+
+- :py:meth:`~PIL.ImageOps.fit` expands an image until is fills ``size``, cropping the
+  parts of the image that do not fit.
+- :py:meth:`~PIL.ImageOps.pad` expands an image to fill ``size``, without cropping, but
+  instead filling the extra space with ``color``.
+- :py:meth:`~PIL.ImageOps.contain` is similar to :py:meth:`~PIL.ImageOps.pad`, but it
+  does not fill the extra space. Instead, the original aspect ratio is maintained. So
+  unlike the other two methods, it is not guaranteed to return an image of ``size``.
+
+ICO saving: bitmap_format argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, Pillow saves ICO files in the PNG format. They can now also be saved in BMP
+format, through the new ``bitmap_format`` argument::
+
+    im.save("out.ico", bitmap_format="bmp")
+
+Security
+========
+
+Buffer overflow
+^^^^^^^^^^^^^^^
+
+This release addresses :cve:`CVE-2021-34552`. PIL since 1.1.4 and Pillow since 1.0
+allowed parameters passed into a convert function to trigger buffer overflow in
+Convert.c.
+
+Parsing XML
+^^^^^^^^^^^
+
+Pillow previously parsed XMP data using Python's ``xml`` module. However, this module
+is not secure.
+
+- :py:meth:`~PIL.Image.Image.getexif` has used ``xml`` to potentially retrieve
+  orientation data since Pillow 7.2.0. It has been refactored to use ``re`` instead.
+- :py:meth:`~PIL.JpegImagePlugin.JpegImageFile.getxmp` was added in Pillow 8.2.0. It
+  will now use ``defusedxml`` instead. If the dependency is not present, an empty
+  dictionary will be returned and a warning raised.
+
+Other Changes
+=============
+
+Added DDS BC5 reading and uncompressed saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read the BC5 format of DDS images, whether UNORM, SNORM or
+TYPELESS.
+
+Support has also been added to write the uncompressed format of DDS images.

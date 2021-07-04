@@ -93,7 +93,7 @@ def test_trns_p(tmp_path):
     im_l.save(f)
 
     im_rgb = im.convert("RGB")
-    assert im_rgb.info["transparency"] == (0, 0, 0)  # undone
+    assert im_rgb.info["transparency"] == (0, 1, 2)  # undone
     im_rgb.save(f)
 
 
@@ -128,8 +128,8 @@ def test_trns_l(tmp_path):
     assert "transparency" in im_p.info
     im_p.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
-    assert "transparency" not in im_p.info
+    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    assert "transparency" in im_p.info
     im_p.save(f)
 
 
@@ -155,13 +155,19 @@ def test_trns_RGB(tmp_path):
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im = Image.new("RGB", (1, 1))
+    im.info["transparency"] = im.getpixel((0, 0))
+    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    assert im_p.info["transparency"] == im_p.getpixel((0, 0))
+    im_p.save(f)
+
 
 def test_gif_with_rgba_palette_to_p():
     # See https://github.com/python-pillow/Pillow/issues/2433
     with Image.open("Tests/images/hopper.gif") as im:
         im.info["transparency"] = 255
         im.load()
-        assert im.palette.mode == "RGBA"
+        assert im.palette.mode == "RGB"
         im_p = im.convert("P")
 
     # Should not raise ValueError: unrecognized raw mode

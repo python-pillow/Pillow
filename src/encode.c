@@ -264,7 +264,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
         }
         state->bytes = (state->bits * state->xsize + 7) / 8;
         /* malloc check ok, overflow checked above */
-        state->buffer = (UINT8 *)malloc(state->bytes);
+        state->buffer = (UINT8 *)calloc(1, state->bytes);
         if (!state->buffer) {
             return ImagingError_MemoryError();
         }
@@ -304,12 +304,12 @@ _get_pushes_fd(ImagingEncoderObject *encoder) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"encode", (PyCFunction)_encode, 1},
-    {"cleanup", (PyCFunction)_encode_cleanup, 1},
-    {"encode_to_file", (PyCFunction)_encode_to_file, 1},
-    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, 1},
-    {"setimage", (PyCFunction)_setimage, 1},
-    {"setfd", (PyCFunction)_setfd, 1},
+    {"encode", (PyCFunction)_encode, METH_VARARGS},
+    {"cleanup", (PyCFunction)_encode_cleanup, METH_VARARGS},
+    {"encode_to_file", (PyCFunction)_encode_to_file, METH_VARARGS},
+    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_VARARGS},
+    {"setimage", (PyCFunction)_setimage, METH_VARARGS},
+    {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 
@@ -644,10 +644,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
     TIFFDataType type = TIFF_NOTYPE;
     // This list also exists in TiffTags.py
-    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,  269,   274,
-                             277,   278, 280,   281, 340, 341, 282,  283,   284,
-                             286,   287, 296,   297, 320, 321, 338,  32995, 32998,
-                             32996, 339, 32997, 330, 531, 530, 65537};
+    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,   269,   274,
+                             277,   278, 280,   281, 340, 341, 282,   283,   284,
+                             286,   287, 296,   297, 320, 321, 338,   32995, 32998,
+                             32996, 339, 32997, 330, 531, 530, 65537, 301,   532};
 
     Py_ssize_t tags_size;
     PyObject *item;
@@ -790,7 +790,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for for Colormap");
+                        PyExc_ValueError, "Requiring 768 items for Colormap");
                     return NULL;
                 }
                 UINT16 *av;

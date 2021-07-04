@@ -13,6 +13,8 @@
 
 #include "Imaging.h"
 
+#include "Bcn.h"
+
 typedef struct {
     UINT8 r, g, b, a;
 } rgba;
@@ -35,6 +37,11 @@ typedef struct {
     UINT8 lut[6];
 } bc3_alpha;
 
+typedef struct {
+    INT8 a0, a1;
+    UINT8 lut[6];
+} bc5s_alpha;
+
 #define LOAD16(p) (p)[0] | ((p)[1] << 8)
 
 #define LOAD32(p) (p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24)
@@ -44,11 +51,6 @@ bc1_color_load(bc1_color *dst, const UINT8 *src) {
     dst->c0 = LOAD16(src);
     dst->c1 = LOAD16(src + 2);
     dst->lut = LOAD32(src + 4);
-}
-
-static void
-bc3_alpha_load(bc3_alpha *dst, const UINT8 *src) {
-    memcpy(dst, src, sizeof(bc3_alpha));
 }
 
 static rgba
@@ -69,7 +71,7 @@ decode_565(UINT16 x) {
 }
 
 static void
-decode_bc1_color(rgba *dst, const UINT8 *src) {
+decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     bc1_color col;
     rgba p[4];
     int n, cw;
@@ -84,7 +86,10 @@ decode_bc1_color(rgba *dst, const UINT8 *src) {
     r1 = p[1].r;
     g1 = p[1].g;
     b1 = p[1].b;
-    if (col.c0 > col.c1) {
+
+
+    /* NOTE: BC2 and BC3 reuse BC1 color blocks but always act like c0 > c1 */
+    if (col.c0 > col.c1 || separate_alpha) {
         p[2].r = (2 * r0 + 1 * r1) / 3;
         p[2].g = (2 * g0 + 1 * g1) / 3;
         p[2].b = (2 * b0 + 1 * b1) / 3;
@@ -110,15 +115,26 @@ decode_bc1_color(rgba *dst, const UINT8 *src) {
 }
 
 static void
-decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o) {
-    bc3_alpha b;
+decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
     UINT16 a0, a1;
     UINT8 a[8];
-    int n, lut, aw;
-    bc3_alpha_load(&b, src);
+    int n, lut1, lut2, aw;
+    if (sign == 1) {
+        bc5s_alpha b;
+        memcpy(&b, src, sizeof(bc5s_alpha));
+        a0 = (b.a0 + 255) / 2;
+        a1 = (b.a1 + 255) / 2;
+        lut1 = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
+        lut2 = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
+    } else {
+        bc3_alpha b;
+        memcpy(&b, src, sizeof(bc3_alpha));
+        a0 = b.a0;
+        a1 = b.a1;
+        lut1 = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
+        lut2 = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
+    }
 
-    a0 = b.a0;
-    a1 = b.a1;
     a[0] = (UINT8)a0;
     a[1] = (UINT8)a1;
     if (a0 > a1) {
@@ -136,27 +152,25 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o) {
         a[6] = 0;
         a[7] = 0xff;
     }
-    lut = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
     for (n = 0; n < 8; n++) {
-        aw = 7 & (lut >> (3 * n));
+        aw = 7 & (lut1 >> (3 * n));
         dst[stride * n + o] = a[aw];
     }
-    lut = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
     for (n = 0; n < 8; n++) {
-        aw = 7 & (lut >> (3 * n));
+        aw = 7 & (lut2 >> (3 * n));
         dst[stride * (8 + n) + o] = a[aw];
     }
 }
 
 static void
 decode_bc1_block(rgba *col, const UINT8 *src) {
-    decode_bc1_color(col, src);
+    decode_bc1_color(col, src, 0);
 }
 
 static void
 decode_bc2_block(rgba *col, const UINT8 *src) {
     int n, bitI, byI, av;
-    decode_bc1_color(col, src + 8);
+    decode_bc1_color(col, src + 8, 1);
     for (n = 0; n < 16; n++) {
         bitI = n * 4;
         byI = bitI >> 3;
@@ -168,19 +182,19 @@ decode_bc2_block(rgba *col, const UINT8 *src) {
 
 static void
 decode_bc3_block(rgba *col, const UINT8 *src) {
-    decode_bc1_color(col, src + 8);
-    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 3);
+    decode_bc1_color(col, src + 8, 1);
+    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 3, 0);
 }
 
 static void
 decode_bc4_block(lum *col, const UINT8 *src) {
-    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0);
+    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0, 0);
 }
 
 static void
-decode_bc5_block(rgba *col, const UINT8 *src) {
-    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0);
-    decode_bc3_alpha((char *)col, src + 8, sizeof(col[0]), 1);
+decode_bc5_block(rgba *col, const UINT8 *src, int sign) {
+    decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0, sign);
+    decode_bc3_alpha((char *)col, src + 8, sizeof(col[0]), 1, sign);
 }
 
 /* BC6 and BC7 are described here:
@@ -810,7 +824,7 @@ put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C) {
 
 static int
 decode_bcn(
-    Imaging im, ImagingCodecState state, const UINT8 *src, int bytes, int N, int C) {
+    Imaging im, ImagingCodecState state, const UINT8 *src, int bytes, int N, int C, char *pixel_format) {
     int ymax = state->ysize + state->yoff;
     const UINT8 *ptr = src;
     switch (N) {
@@ -833,7 +847,19 @@ decode_bcn(
         DECODE_LOOP(2, 16, rgba);
         DECODE_LOOP(3, 16, rgba);
         DECODE_LOOP(4, 8, lum);
-        DECODE_LOOP(5, 16, rgba);
+        case 5:
+            while (bytes >= 16) {
+                rgba col[16];
+                memset(col, 0, 16 * sizeof(col[0]));
+                decode_bc5_block(col, ptr, strcmp(pixel_format, "BC5S") == 0 ? 1 : 0);
+                put_block(im, state, (const char *)col, sizeof(col[0]), C);
+                ptr += 16;
+                bytes -= 16;
+                if (state->y >= ymax) {
+                    return -1;
+                }
+            }
+            break;
         case 6:
             while (bytes >= 16) {
                 rgb32f col[16];
@@ -846,7 +872,7 @@ decode_bcn(
                 }
             }
             break;
-            DECODE_LOOP(7, 16, rgba);
+        DECODE_LOOP(7, 16, rgba);
 #undef DECODE_LOOP
     }
     return (int)(ptr - src);
@@ -857,9 +883,7 @@ ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     int N = state->state & 0xf;
     int width = state->xsize;
     int height = state->ysize;
-    if ((width & 3) | (height & 3)) {
-        return decode_bcn(im, state, buf, bytes, N, 1);
-    } else {
-        return decode_bcn(im, state, buf, bytes, N, 0);
-    }
+    int C = (width & 3) | (height & 3) ? 1 : 0;
+    char *pixel_format = ((BCNSTATE *)state->context)->pixel_format;
+    return decode_bcn(im, state, buf, bytes, N, C, pixel_format);
 }

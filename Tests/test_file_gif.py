@@ -298,6 +298,12 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
+def test_first_frame_transparency():
+    with Image.open("Tests/images/first_frame_transparency.gif") as im:
+        px = im.load()
+        assert px[0, 0] == im.info["transparency"]
+
+
 def test_dispose_none():
     with Image.open("Tests/images/dispose_none.gif") as img:
         try:
@@ -331,6 +337,16 @@ def test_dispose_background():
             pass
 
 
+def test_transparent_dispose():
+    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
+    with Image.open("Tests/images/transparent_dispose.gif") as img:
+        for frame in range(3):
+            img.seek(frame)
+            for x in range(3):
+                color = img.getpixel((x, 0))
+                assert color == expected_colors[frame][x]
+
+
 def test_dispose_previous():
     with Image.open("Tests/images/dispose_prev.gif") as img:
         try:
@@ -339,6 +355,25 @@ def test_dispose_previous():
                 assert img.disposal_method == 3
         except EOFError:
             pass
+
+
+def test_dispose_previous_first_frame():
+    with Image.open("Tests/images/dispose_prev_first_frame.gif") as im:
+        im.seek(1)
+        assert_image_equal_tofile(
+            im, "Tests/images/dispose_prev_first_frame_seeked.gif"
+        )
+
+
+def test_previous_frame_loaded():
+    with Image.open("Tests/images/dispose_none.gif") as img:
+        img.load()
+        img.seek(1)
+        img.load()
+        img.seek(2)
+        with Image.open("Tests/images/dispose_none.gif") as img_skipped:
+            img_skipped.seek(2)
+            assert_image_equal(img_skipped, img)
 
 
 def test_save_dispose(tmp_path):
@@ -373,14 +408,15 @@ def test_save_dispose(tmp_path):
 def test_dispose2_palette(tmp_path):
     out = str(tmp_path / "temp.gif")
 
-    # 4 backgrounds: White, Grey, Black, Red
+    # Four colors: white, grey, black, red
     circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
 
     im_list = []
     for circle in circles:
+        # Red background
         img = Image.new("RGB", (100, 100), (255, 0, 0))
 
-        # Red circle in center of each frame
+        # Circle in center of each frame
         d = ImageDraw.Draw(img)
         d.ellipse([(40, 40), (60, 60)], fill=circle)
 
@@ -468,12 +504,25 @@ def test_dispose2_background(tmp_path):
         assert im.getpixel((0, 0)) == 0
 
 
-def test_iss634():
+def test_transparency_in_second_frame():
+    with Image.open("Tests/images/different_transparency.gif") as im:
+        assert im.info["transparency"] == 0
+
+        # Seek to the second frame
+        im.seek(im.tell() + 1)
+        assert im.info["transparency"] == 0
+
+        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.gif")
+
+
+def test_no_transparency_in_second_frame():
     with Image.open("Tests/images/iss634.gif") as img:
         # Seek to the second frame
         img.seek(img.tell() + 1)
+        assert "transparency" not in img.info
+
         # All transparent pixels should be replaced with the color from the first frame
-        assert img.histogram()[img.info["transparency"]] == 0
+        assert img.histogram()[255] == 0
 
 
 def test_duration(tmp_path):
@@ -717,10 +766,10 @@ def test_rgb_transparency(tmp_path):
     # Single frame
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = (255, 0, 0)
-    pytest.warns(UserWarning, im.save, out)
+    im.save(out)
 
     with Image.open(out) as reloaded:
-        assert "transparency" not in reloaded.info
+        assert "transparency" in reloaded.info
 
     # Multiple frames
     im = Image.new("RGB", (1, 1))
@@ -840,3 +889,11 @@ def test_extents():
         assert im.size == (100, 100)
         im.seek(1)
         assert im.size == (150, 150)
+
+
+def test_missing_background():
+    # The Global Color Table Flag isn't set, so there is no background color index,
+    # but the disposal method is "Restore to background color"
+    with Image.open("Tests/images/missing_background.gif") as im:
+        im.seek(1)
+        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.gif")

@@ -500,7 +500,7 @@ class PngStream(ChunkStream):
         px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
         if unit == 1:  # meter
-            dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
+            dpi = px * 0.0254, py * 0.0254
             self.im_info["dpi"] = dpi
         elif unit == 0:
             self.im_info["aspect"] = px, py
@@ -920,6 +920,8 @@ class PngImageFile(ImageFile.ImageFile):
 
     def load_end(self):
         """internal: finished reading image data"""
+        if self.__idat != 0:
+            self.fp.read(self.__idat)
         while True:
             self.fp.read(4)  # CRC
 
@@ -975,6 +977,18 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
 
         return super().getexif()
+
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+        :returns: XMP tags in a dictionary.
+        """
+        return (
+            self._getxmp(self.info["XML:com.adobe.xmp"])
+            if "XML:com.adobe.xmp" in self.info
+            else {}
+        )
 
     def _close__fp(self):
         try:

@@ -123,3 +123,18 @@ def test_seek():
         im.seek(50)
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-9139147ce93e20eb14088fe238e541443ffd64b3.fli",
+        "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
+    ],
+)
+@pytest.mark.timeout(timeout=3)
+def test_timeouts(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()

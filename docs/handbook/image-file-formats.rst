@@ -13,6 +13,14 @@ contents, not their names, but the :py:meth:`~PIL.Image.Image.save` method
 looks at the name to determine which format to use, unless the format is given
 explicitly.
 
+When an image is opened from a file, only that instance of the image is considered to
+have the format. Copies of the image will contain data loaded from the file, but not
+the file itself, meaning that it can no longer be considered to be in the original
+format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
+internally creates a copy of the image, the ``fp`` (file pointer), along with any
+methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
+attribute will be ``None``.
+
 Fully supported formats
 -----------------------
 
@@ -30,6 +38,13 @@ The :py:meth:`~PIL.Image.open` method sets the following
 
 **compression**
     Set to ``bmp_rle`` if the file is run-length encoded.
+
+DDS
+^^^
+
+DDS is a popular container texture format used in video games and natively supported
+by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
+DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 
 DIB
 ^^^
@@ -200,11 +215,15 @@ attributes before loading the file::
 ICNS
 ^^^^
 
-Pillow reads and (macOS only) writes macOS ``.icns`` files.  By default, the
+Pillow reads and writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
 :py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.open` method
 sets the following :py:attr:`~PIL.Image.Image.info` property:
+
+.. note::
+
+    Prior to version 8.3.0, Pillow could only write ICNS files on macOS.
 
 **sizes**
     A list of supported sizes found in this icon file; these are a
@@ -246,6 +265,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     the size of each image.
 
     .. versionadded:: 8.1.0
+
+**bitmap_format**
+    By default, the image data will be saved in PNG format. With a bitmap format of
+    "bmp", image data will be saved in BMP format instead.
+
+    .. versionadded:: 8.3.0
 
 IM
 ^^
@@ -940,7 +965,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     files compared to the slowest, but best, 100.
 
 **method**
-    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
+    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
 
 **icc_profile**
     The ICC Profile to include in the saved file. Only supported if
@@ -1027,17 +1052,6 @@ is commonly used in fax applications. The DCX decoder can read files containing
 
 When the file is opened, only the first image is read. You can use
 :py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
-
-
-DDS
-^^^
-
-DDS is a popular container texture format used in video games and natively
-supported by DirectX.
-Currently, uncompressed RGB data and DXT1, DXT3, and DXT5 pixel formats are
-supported, and only in ``RGBA`` mode.
-
-.. versionadded:: 3.4.0 DXT3
 
 FLI, FLC
 ^^^^^^^^
@@ -1242,8 +1256,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 3.0.0
 
 **append_images**
-    A list of images to append as additional pages. Each of the
-    images in the list can be single or multiframe images.
+    A list of :py:class:`PIL.Image.Image` objects to append as additional pages. Each
+    of the images in the list can be single or multiframe images. The ``save_all``
+    parameter must be present and set to ``True`` in conjunction with
+    ``append_images``.
 
     .. versionadded:: 4.2.0
 

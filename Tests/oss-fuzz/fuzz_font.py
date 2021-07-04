@@ -34,6 +34,7 @@ def main():
     fuzzers.enable_decompressionbomb_error()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
+    fuzzers.disable_decompressionbomb_error()
 
 
 if __name__ == "__main__":
