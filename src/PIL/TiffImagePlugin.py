@@ -1142,6 +1142,17 @@ class TiffImageFile(ImageFile.ImageFile):
         if not self.is_animated:
             self._close_exclusive_fp_after_loading = True
 
+            # reset buffered io handle in case fp
+            # was passed to libtiff, invalidating the buffer
+            self.fp.tell()
+
+            # load IFD data from fp before it is closed
+            exif = self.getexif()
+            for key in TiffTags.TAGS_V2_GROUPS.keys():
+                if key not in exif:
+                    continue
+                exif.get_ifd(key)
+
     def _load_libtiff(self):
         """Overload method triggered when we detect a compressed tiff
         Calls out to libtiff"""
@@ -1504,12 +1515,15 @@ def _save(im, fp, filename):
     ifd[IMAGELENGTH] = im.size[1]
 
     # write any arbitrary tags passed in as an ImageFileDirectory
-    info = im.encoderinfo.get("tiffinfo", {})
+    info = im.encoderinfo.get("tiffinfo", im.encoderinfo.get("exif", {}))
     logger.debug("Tiffinfo Keys: %s" % list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
-        ifd[key] = info.get(key)
+        if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS.keys():
+            ifd[key] = info.get_ifd(key)
+        else:
+            ifd[key] = info.get(key)
         try:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
