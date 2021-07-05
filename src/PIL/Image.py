@@ -681,7 +681,7 @@ class Image:
             raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
-    def __array__(self):
+    def __array__(self, dtype=None):
         # numpy array interface support
         import numpy as np
 
@@ -700,7 +700,7 @@ class Image:
         class ArrayData:
             __array_interface__ = new
 
-        return np.array(ArrayData())
+        return np.array(ArrayData(), dtype)
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
