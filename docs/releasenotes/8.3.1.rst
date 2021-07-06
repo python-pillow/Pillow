@@ -1,0 +1,40 @@
+8.3.1
+-----
+
+Fixed regression converting to NumPy arrays
+===========================================
+
+This fixes a regression introduced in 8.3.0 when converting an image to a NumPy array
+with a ``dtype`` argument.
+
+.. code-block:: pycon
+
+    >>> from PIL import Image
+    >>> import numpy
+    >>> im = Image.new("RGB", (100, 100))
+    >>> numpy.array(im, dtype=numpy.float64)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: __array__() takes 1 positional argument but 2 were given
+    >>>
+
+Catch OSError when checking if destination is sys.stdout
+========================================================
+
+In 8.3.0, a check to see if the destination was ``sys.stdout`` when saving an image was
+updated. This lead to an OSError being raised if the environment restricted access.
+
+The OSError is now silently caught.
+
+Fixed removing orientation in ImageOps.exif_transpose
+=====================================================
+
+In 8.3.0, :py:meth:`~PIL.ImageOps.exif_transpose` was changed to ensure that the
+original image EXIF data was not modified, and the orientation was only removed from
+the modified copy.
+
+However, for certain images the orientation was already missing from the modified
+image, leading to a KeyError.
+
+This error has been resolved, and the copying of metadata to the modified image
+improved.
