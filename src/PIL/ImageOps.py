@@ -19,6 +19,7 @@
 
 import functools
 import operator
+import re
 
 from . import Image, ImageDraw
 
@@ -588,7 +589,19 @@ def exif_transpose(image):
     if method is not None:
         transposed_image = image.transpose(method)
         transposed_exif = transposed_image.getexif()
-        del transposed_exif[0x0112]
-        transposed_image.info["exif"] = transposed_exif.tobytes()
+        if 0x0112 in transposed_exif:
+            del transposed_exif[0x0112]
+            if "exif" in transposed_image.info:
+                transposed_image.info["exif"] = transposed_exif.tobytes()
+            elif "Raw profile type exif" in transposed_image.info:
+                transposed_image.info[
+                    "Raw profile type exif"
+                ] = transposed_exif.tobytes().hex()
+            elif "XML:com.adobe.xmp" in transposed_image.info:
+                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                    r'tiff:Orientation="([0-9])"',
+                    "",
+                    transposed_image.info["XML:com.adobe.xmp"],
+                )
         return transposed_image
     return image.copy()
