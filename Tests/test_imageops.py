@@ -335,6 +335,28 @@ def test_exif_transpose():
                 ) as orientation_im:
                     check(orientation_im)
 
+    # Orientation from "XML:com.adobe.xmp" info key
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
+
+    # Orientation from "Raw profile type exif" info key
+    # This test image has been manually hexedited from exif_imagemagick.png
+    # to have a different orientation
+    with Image.open("Tests/images/exif_imagemagick_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
+
+    # Orientation set directly on Image.Exif
+    im = hopper()
+    im.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im)
+    assert 0x0112 not in transposed_im.getexif()
+
 
 def test_autocontrast_cutoff():
     # Test the cutoff argument of autocontrast
