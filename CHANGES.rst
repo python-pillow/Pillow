@@ -2,6 +2,18 @@
 Changelog (Pillow)
 ==================
 
+8.3.1 (2021-07-06)
+------------------
+
+- Catch OSError when checking if fp is sys.stdout #5585
+  [radarhere]
+
+- Handle removing orientation from alternate types of EXIF data #5584
+  [radarhere]
+
+- Make Image.__array__ take optional dtype argument #5572
+  [t-vi, radarhere]
+
 8.3.0 (2021-07-01)
 ------------------
 
