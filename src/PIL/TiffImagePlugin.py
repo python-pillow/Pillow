@@ -1577,6 +1577,9 @@ def _save(im, fp, filename):
     # aim for 64 KB strips when using libtiff writer
     if libtiff:
         rows_per_strip = min((2 ** 16 + stride - 1) // stride, im.size[1])
+        # JPEG encoder expects multiple of 8 rows
+        if compression == "jpeg":
+            rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])
     else:
         rows_per_strip = im.size[1]
     strip_byte_counts = stride * rows_per_strip
