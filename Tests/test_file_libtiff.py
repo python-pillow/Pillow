@@ -968,10 +968,11 @@ class TestFileLibTiff(LibTiffTestCase):
             assert str(e.value) == "-9"
         TiffImagePlugin.READ_LIBTIFF = False
 
-    def test_save_multistrip(self, tmp_path):
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
+    def test_save_multistrip(self, compression, tmp_path):
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
-        im.save(out, compression="tiff_adobe_deflate")
+        im.save(out, compression=compression)
 
         with Image.open(out) as im:
             # Assert that there are multiple strips
