@@ -833,7 +833,7 @@ def test_palette_save_ImagePalette(tmp_path):
 
     with Image.open(out) as reloaded:
         im.putpalette(palette)
-        assert_image_equal(reloaded, im)
+        assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
 
 def test_save_I(tmp_path):
