@@ -25,12 +25,12 @@ class ImagePalette:
     """
     Color palette for palette mapped images
 
-    :param mode: The mode to use for the Palette. See:
+    :param mode: The mode to use for the palette. See:
         :ref:`concept-modes`. Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
-        an array or a list of ints between 0-255. The list must be aligned
-        by channel (All R values must be contiguous in the list before G
-        and B values.) Defaults to 0 through 255 per channel.
+        an array or a list of ints between 0-255. The list must consist of
+        all channels for one color followed by the next color (e.g. RGBRGBRGB).
+        Defaults to an empty palette.
     :param size: An optional palette size. If given, an error is raised
         if ``palette`` is not of equal length.
     """
