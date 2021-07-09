@@ -417,9 +417,16 @@ fill_mask_L(
     if (imOut->image8) {
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                out += dx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, ink[0], tmp1);
+                if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                    out++;
+                    *out = BLEND(*mask, *out, ink[0], tmp1);
+                }
                 out++, mask++;
             }
         }
