@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image, ImagePalette
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
 def test_putpalette():
@@ -36,9 +36,15 @@ def test_putpalette():
 def test_imagepalette():
     im = hopper("P")
     im.putpalette(ImagePalette.negative())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_negative.png")
+
     im.putpalette(ImagePalette.random())
+
     im.putpalette(ImagePalette.sepia())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_sepia.png")
+
     im.putpalette(ImagePalette.wedge())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
 
 
 def test_putpalette_with_alpha_values():

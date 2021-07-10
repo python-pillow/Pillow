@@ -204,9 +204,9 @@ def make_gamma_lut(exp):
 
 
 def negative(mode="RGB"):
-    palette = list(range(256))
+    palette = list(range(256 * len(mode)))
     palette.reverse()
-    return ImagePalette(mode, palette * len(mode))
+    return ImagePalette(mode, [i // len(mode) for i in palette])
 
 
 def random(mode="RGB"):
@@ -219,15 +219,13 @@ def random(mode="RGB"):
 
 
 def sepia(white="#fff0c0"):
-    r, g, b = ImageColor.getrgb(white)
-    r = make_linear_lut(0, r)
-    g = make_linear_lut(0, g)
-    b = make_linear_lut(0, b)
-    return ImagePalette("RGB", r + g + b)
+    bands = [make_linear_lut(0, band) for band in ImageColor.getrgb(white)]
+    return ImagePalette("RGB", [bands[i % 3][i // 3] for i in range(256 * 3)])
 
 
 def wedge(mode="RGB"):
-    return ImagePalette(mode, list(range(256)) * len(mode))
+    palette = list(range(256 * len(mode)))
+    return ImagePalette(mode, [i // len(mode) for i in palette])
 
 
 def load(filename):
