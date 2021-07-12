@@ -787,7 +787,7 @@ def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
-    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+    # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
     for extensionKey in ["transparency", "duration", "loop", "comment"]:
