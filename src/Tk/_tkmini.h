@@ -1,7 +1,7 @@
 /* Small excerpts from the Tcl / Tk 8.6 headers
  *
  * License terms copied from:
- * http://www.tcl.tk/software/tcltk/license.html
+ * https://www.tcl.tk/software/tcltk/license.html
  * as of 20 May 2016.
  *
  * Copyright (c) 1987-1994 The Regents of the University of California.

@@ -491,7 +491,7 @@ raqm_set_text_utf8 (raqm_t         *rq,
  *
  * The default is #RAQM_DIRECTION_DEFAULT, which determines the paragraph
  * direction based on the first character with strong bidi type (see [rule
- * P2](http://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
+ * P2](https://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
  * which can be good enough for many cases but has problems when a mainly
  * right-to-left paragraph starts with a left-to-right character and vice versa
  * as the detected paragraph direction will be the wrong one, or when text does
