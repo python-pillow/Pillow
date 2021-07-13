@@ -1119,12 +1119,8 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                     and prev_disposal == encoderinfo.get("disposal")
                     and prev_blend == encoderinfo.get("blend")
                 ):
-                    frame_duration = encoderinfo.get("duration", 0)
-                    if frame_duration:
-                        if "duration" in previous["encoderinfo"]:
-                            previous["encoderinfo"]["duration"] += frame_duration
-                        else:
-                            previous["encoderinfo"]["duration"] = frame_duration
+                    if isinstance(duration, (list, tuple)):
+                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     continue
             else:
                 bbox = None
