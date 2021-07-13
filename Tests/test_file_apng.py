@@ -433,7 +433,9 @@ def test_apng_save_duration_loop(tmp_path):
 
     # test removal of duplicated frames
     frame = Image.new("RGBA", (128, 64), (255, 0, 0, 255))
-    frame.save(test_file, save_all=True, append_images=[frame], duration=[500, 250])
+    frame.save(
+        test_file, save_all=True, append_images=[frame, frame], duration=[500, 100, 150]
+    )
     with Image.open(test_file) as im:
         im.load()
         assert im.n_frames == 1
