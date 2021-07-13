@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+8.4.0 (unreleased)
+------------------
+
+- Fixed error saving APNG with duplicate frames and different duration times #5609
+  [thak1411, radarhere]
+
 8.3.1 (2021-07-06)
 ------------------
 
