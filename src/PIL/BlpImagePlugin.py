@@ -245,7 +245,7 @@ class BlpImageFile(ImageFile.ImageFile):
 
         if self.magic == b"BLP1":
             decoder = "BLP1"
-            self.mode = "BGRA"
+            self.mode = "RGBA"
         elif self.magic == b"BLP2":
             decoder = "BLP2"
             self.mode = "RGBA" if self._blp_alpha_depth else "RGB"

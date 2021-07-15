@@ -22,7 +22,8 @@ def test_load_blp2_dxt1a():
 
 def test_load_blp1():
     with Image.open("Tests/images/blp/war3mapMap.blp") as im:
-        im.convert("RGB")
+        png = im.copy()
+        png.save(fp="Tests/images/blp/war3mapMap.png")
         assert_image_equal_tofile(im, "Tests/images/blp/war3mapMap.png")
 
 
