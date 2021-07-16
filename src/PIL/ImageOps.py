@@ -21,7 +21,7 @@ import functools
 import operator
 import re
 
-from . import Image, ImageDraw
+from . import Image
 
 #
 # helpers
@@ -395,15 +395,16 @@ def expand(image, border=0, fill=0):
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
     if image.mode == "P" and image.palette:
-        out = Image.new(image.mode, (width, height))
-        out.putpalette(image.palette)
-        out.paste(image, (left, top))
-
-        draw = ImageDraw.Draw(out)
-        draw.rectangle((0, 0, width - 1, height - 1), outline=color, width=border)
+        image.load()
+        palette = image.palette.copy()
+        if isinstance(color, tuple):
+            color = palette.getcolor(color)
     else:
-        out = Image.new(image.mode, (width, height), color)
-        out.paste(image, (left, top))
+        palette = None
+    out = Image.new(image.mode, (width, height), color)
+    if palette:
+        out.putpalette(palette.palette)
+    out.paste(image, (left, top))
     return out
 
 
