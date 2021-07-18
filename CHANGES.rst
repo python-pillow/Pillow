@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Ensure TIFF RowsPerStrip is multiple of 8 for JPEG compression #5588
+  [kmilos, radarhere]
+
 - Fixed error saving APNG with duplicate frames and different duration times #5609
   [thak1411, radarhere]
 
