@@ -61,7 +61,7 @@ def has_ghostscript():
     return False
 
 
-def Ghostscript(tile, size, fp, scale=1):
+def Ghostscript(tile, size, fp, scale=1, transparency=False):
     """Render an image using Ghostscript"""
 
     # Unpack decoder tile
@@ -108,6 +108,8 @@ def Ghostscript(tile, size, fp, scale=1):
                 lengthfile -= len(s)
                 f.write(s)
 
+    device = "pngalpha" if transparency else "ppmraw"
+
     # Build Ghostscript command
     command = [
         "gs",
@@ -117,7 +119,7 @@ def Ghostscript(tile, size, fp, scale=1):
         "-dBATCH",  # exit after processing
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
-        "-sDEVICE=ppmraw",  # ppm driver
+        f"-sDEVICE={device}",
         f"-sOutputFile={outfile}",  # output file
         # adjust for image origin
         "-c",
@@ -325,11 +327,11 @@ class EpsImageFile(ImageFile.ImageFile):
 
         return (length, offset)
 
-    def load(self, scale=1):
+    def load(self, scale=1, transparency=False):
         # Load EPS via Ghostscript
         if not self.tile:
             return
-        self.im = Ghostscript(self.tile, self.size, self.fp, scale)
+        self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)
         self.mode = self.im.mode
         self._size = self.im.size
         self.tile = []

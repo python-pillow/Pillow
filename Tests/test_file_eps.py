@@ -97,6 +97,17 @@ def test_showpage():
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_transparency():
+    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
+        plot_image.load(transparency=True)
+        assert plot_image.mode == "RGBA"
+
+        with Image.open("Tests/images/reqd_showpage_transparency.png") as target:
+            #  fonts could be slightly different
+            assert_image_similar(plot_image, target, 6)
+
+
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_file_object(tmp_path):
     # issue 479
     with Image.open(FILE1) as image1:

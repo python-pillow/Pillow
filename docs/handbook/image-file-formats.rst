@@ -66,7 +66,7 @@ than leaving them in the original color space. The EPS driver can write images
 in ``L``, ``RGB`` and ``CMYK`` modes.
 
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameter to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
@@ -78,6 +78,11 @@ method with the following parameter to affect how Ghostscript renders the EPS
         im.size #(100,100)
         im.load(scale=2)
         im.size #(200,200)
+
+**transparency**
+    If true, generates an RGBA image with a transparent background, instead of
+    the default behaviour of an RGB image with a white background.
+
 
 GIF
 ^^^
