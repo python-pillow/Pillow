@@ -1,5 +1,6 @@
 import io
 import os
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -19,6 +20,22 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+
+class MyStrPathLike:
+    def __init__(self, path_str):
+        self.path_str = path_str
+
+    def __fspath__(self):
+        return self.path_str
+
+
+class MyBytesPathLike:
+    def __init__(self, path_str):
+        self.path_bytes = os.fsencode(path_str)
+
+    def __fspath__(self):
+        return self.path_bytes
 
 
 class TestImage:
@@ -138,22 +155,30 @@ class TestImage:
             with Image.open(io.StringIO()):
                 pass
 
-    def test_pathlib(self, tmp_path):
-        from PIL.Image import Path
-
-        with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
+    @pytest.mark.parametrize(
+        "PathCls",
+        (
+            pathlib.Path,
+            MyStrPathLike,  # Returns `str` on `os.fspath`
+            MyBytesPathLike,  # Returns `bytes` on `os.fspath`
+            str,
+            os.fsencode,  # Converts path to `bytes`
+        ),
+    )
+    def test_path_like(self, tmp_path, PathCls):
+        with Image.open(PathCls("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
             assert im.size == (10, 10)
 
-        with Image.open(Path("Tests/images/hopper.jpg")) as im:
+        with Image.open(PathCls("Tests/images/hopper.jpg")) as im:
             assert im.mode == "RGB"
             assert im.size == (128, 128)
 
             for ext in (".jpg", ".jp2"):
-                temp_file = str(tmp_path / ("temp." + ext))
+                temp_file = str((tmp_path / "temp").with_suffix(ext))
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
-                im.save(Path(temp_file))
+                im.save(PathCls(temp_file))
 
     def test_fp_name(self, tmp_path):
         temp_file = str(tmp_path / "temp.jpg")

@@ -1,9 +1,10 @@
 import os
-from pathlib import Path
 
 
+# Checks whether the given object is a string or path-like object that
+# isn't also a file-like object
 def isPath(f):
-    return isinstance(f, (bytes, str, Path))
+    return isinstance(f, (bytes, str, os.PathLike)) and not hasattr(f, "read")
 
 
 # Checks if an object is a string, and that it points to a directory.

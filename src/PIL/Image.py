@@ -2155,9 +2155,9 @@ class Image:
 
     def save(self, fp, format=None, **params):
         """
-        Saves this image under the given filename.  If no format is
-        specified, the format to use is determined from the filename
-        extension, if possible.
+        Saves this image under the given filepath.  If no format is
+        specified, the format to use is determined from the filepath's
+        file extension, if possible.
 
         Keyword options can be used to provide additional instructions
         to the writer. If a writer doesn't recognise an option, it is
@@ -2165,12 +2165,12 @@ class Image:
         :doc:`image format documentation
         <../handbook/image-file-formats>` for each writer.
 
-        You can use a file object instead of a filename. In this case,
+        You can use a file object instead of a filepath. In this case,
         you must always specify the format. The file object must
         implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param fp: A filename (string), pathlib.Path object or file object.
+        :param fp: A filepath (str or bytes), path-like object or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
@@ -2209,7 +2209,7 @@ class Image:
 
         preinit()
 
-        ext = os.path.splitext(filename)[1].lower()
+        ext = os.fsdecode(os.path.splitext(filename)[1].lower())
 
         if not format:
             if ext not in EXTENSION:
@@ -2930,7 +2930,7 @@ def open(fp, mode="r", formats=None):
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
-    :param fp: A filename (string), pathlib.Path object or a file object.
+    :param fp: A filepath (str or bytes), path-like object or a file object.
        The file object must implement ``file.read``,
        ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode.

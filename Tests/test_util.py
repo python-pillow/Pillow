@@ -27,6 +27,21 @@ def test_path_obj_is_path():
     assert it_is
 
 
+def test_path_like_is_path():
+    # Arrange
+    class PathThingy:
+        def __fspath__(self):
+            return "UNIMPORTANT"  # pragma: no cover
+
+    test_path = PathThingy()
+
+    # Act
+    it_is = _util.isPath(test_path)
+
+    # Assert
+    assert it_is
+
+
 def test_is_not_path(tmp_path):
     # Arrange
     with (tmp_path / "temp.ext").open("w") as fp:
@@ -37,6 +52,22 @@ def test_is_not_path(tmp_path):
 
     # Assert
     assert not it_is_not
+
+
+def test_path_like_file_is_not_path(tmp_path):
+    # Arrange
+    import io
+
+    class PathAndFileThingy(io.TextIOWrapper):
+        def __fspath__(self):
+            return "UNIMPORTANT"  # pragma: no cover
+
+    with PathAndFileThingy(open(tmp_path / "temp.ext", "wb")) as test_obj:
+        # Act
+        it_is_not = _util.isPath(test_obj)
+
+        # Assert
+        assert not it_is_not
 
 
 def test_is_directory():

@@ -199,6 +199,7 @@ class FreeTypeFont:
 
         if isPath(font):
             if sys.platform == "win32":
+                font = os.fspath(font)
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
                     font_bytes_path.decode("ascii")
@@ -796,10 +797,10 @@ def load(filename):
 
 
 def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
-    """
-    Load a TrueType or OpenType font from a file or file-like object,
+    r"""
+    Load a TrueType or OpenType font from a filepath or file-like object,
     and create a font object.
-    This function loads a font object from the given file or file-like
+    This function loads a font object from the given filepath or file-like
     object, and creates a font object for a font of the given size.
 
     Pillow uses FreeType to open font files. If you are opening many fonts
@@ -809,12 +810,12 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     This function requires the _imagingft service.
 
-    :param font: A filename or file-like object containing a TrueType font.
-                 If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
+    :param font: A filepath or file-like object containing a TrueType font.
+                 If the file is not found at this filepath, the loader may also
+                 search in other directories, such as the :file:`%WINDIR%\fonts\`
                  directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/`
+                 on macOS.
 
     :param size: The requested size, in points.
     :param index: Which font face to load (default is first available face).
@@ -856,7 +857,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     except OSError:
         if not isPath(font):
             raise
-        ttf_filename = os.path.basename(font)
+        ttf_filename = os.fsdecode(os.path.basename(font))
 
         dirs = []
         if sys.platform == "win32":
