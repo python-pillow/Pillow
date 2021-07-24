@@ -2180,11 +2180,11 @@ class Image:
 
         filename = ""
         open_fp = False
-        if isPath(fp):
-            filename = fp
-            open_fp = True
-        elif isinstance(fp, Path):
+        if isinstance(fp, Path):
             filename = str(fp)
+            open_fp = True
+        elif isPath(fp):
+            filename = fp
             open_fp = True
         elif fp == sys.stdout:
             try:
