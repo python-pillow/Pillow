@@ -1297,13 +1297,8 @@ class Image:
         elif quality != 1.0:
             self.thumbnail((quality * self.width, quality * self.height))
 
-        if self.mode in ("F", "L", "I", "P"):
-            channels = 1
-        elif self.mode in ("RGB", "YCbCr", "LAB", "HSV"):
-            channels = 3
-        elif self.mode in ("RGBA", "CMYK"):
-            channels = 4
-        else:
+        channels = self.im.bands
+        if channels not in (1, 3, 4):
             raise ValueError("Unsupported image mode")
 
         def euclidean(p1, p2):
