@@ -33,12 +33,12 @@ class BoxReader:
         self.remaining_in_box = -1
 
     def _can_read(self, num_bytes):
+        if self.has_length and self.fp.tell() + num_bytes > self.length:
+            # Outside box: ensure we don't read past the known file length
+            return False
         if self.remaining_in_box >= 0:
             # Inside box contents: ensure read does not go past box boundaries
             return num_bytes <= self.remaining_in_box
-        elif self.has_length:
-            # Outside box: ensure we don't read past the known file length
-            return self.fp.tell() + num_bytes <= self.length
         else:
             return True  # No length known, just read
 
