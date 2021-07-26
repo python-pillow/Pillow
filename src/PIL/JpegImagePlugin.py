@@ -168,7 +168,7 @@ def APP(self, marker):
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
-        except (KeyError, SyntaxError, ValueError, ZeroDivisionError):
+        except (TypeError, KeyError, SyntaxError, ValueError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
