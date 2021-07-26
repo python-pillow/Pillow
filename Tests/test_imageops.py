@@ -156,23 +156,31 @@ def test_scale():
     assert newimg.size == (25, 25)
 
 
-def test_expand_palette():
-    im = Image.open("Tests/images/p_16.tga")
-    im_expanded = ImageOps.expand(im, 10, (255, 0, 0))
+@pytest.mark.parametrize("border", (10, (1, 2, 3, 4)))
+def test_expand_palette(border):
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_expanded = ImageOps.expand(im, border, (255, 0, 0))
 
-    px = im_expanded.convert("RGB").load()
-    for b in range(10):
+        if isinstance(border, int):
+            left = top = right = bottom = border
+        else:
+            left, top, right, bottom = border
+        px = im_expanded.convert("RGB").load()
         for x in range(im_expanded.width):
-            assert px[x, b] == (255, 0, 0)
-            assert px[x, im_expanded.height - 1 - b] == (255, 0, 0)
+            for b in range(top):
+                assert px[x, b] == (255, 0, 0)
+            for b in range(bottom):
+                assert px[x, im_expanded.height - 1 - b] == (255, 0, 0)
         for y in range(im_expanded.height):
-            assert px[b, x] == (255, 0, 0)
-            assert px[b, im_expanded.width - 1 - b] == (255, 0, 0)
+            for b in range(left):
+                assert px[b, y] == (255, 0, 0)
+            for b in range(right):
+                assert px[im_expanded.width - 1 - b, y] == (255, 0, 0)
 
-    im_cropped = im_expanded.crop(
-        (10, 10, im_expanded.width - 10, im_expanded.height - 10)
-    )
-    assert_image_equal(im_cropped, im)
+        im_cropped = im_expanded.crop(
+            (left, top, im_expanded.width - right, im_expanded.height - bottom)
+        )
+        assert_image_equal(im_cropped, im)
 
 
 def test_colorize_2color():
