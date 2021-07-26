@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Fixed ImageOps expand with tuple border on P image #5615
+  [radarhere]
+
 - Ensure TIFF RowsPerStrip is multiple of 8 for JPEG compression #5588
   [kmilos, radarhere]
 
