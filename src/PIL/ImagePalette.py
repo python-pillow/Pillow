@@ -28,12 +28,11 @@ class ImagePalette:
     :param mode: The mode to use for the Palette. See:
         :ref:`concept-modes`. Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
-        an array or a list of ints between 0-255 and of length ``size``
-        times the number of colors in ``mode``. The list must be aligned
+        an array or a list of ints between 0-255. The list must be aligned
         by channel (All R values must be contiguous in the list before G
         and B values.) Defaults to 0 through 255 per channel.
-    :param size: An optional palette size. If given, it cannot be equal to
-        or greater than 256. Defaults to 0.
+    :param size: An optional palette size. If given, an error is raised
+        if ``palette`` is not of equal length.
     """
 
     def __init__(self, mode="RGB", palette=None, size=0):
