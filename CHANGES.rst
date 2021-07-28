@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Added tags when saving YCbCr TIFF #5597
+  [radarhere]
+
+- PSD layer count may be negative #5613
+  [radarhere]
+
 - Fixed ImageOps expand with tuple border on P image #5615
   [radarhere]
 
