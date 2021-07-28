@@ -808,6 +808,12 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                         av + stride * 2);
                     free(av);
                 }
+            } else if (key_int == TIFFTAG_YCBCRSUBSAMPLING) {
+                status = ImagingLibTiffSetField(
+                    &encoder->state,
+                    (ttag_t)key_int,
+                    (UINT16)PyLong_AsLong(PyTuple_GetItem(value, 0)),
+                    (UINT16)PyLong_AsLong(PyTuple_GetItem(value, 1)));
             } else if (type == TIFF_SHORT) {
                 UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
