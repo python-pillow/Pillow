@@ -99,7 +99,7 @@ ImagePalette size parameter
 
 The ``size`` parameter will be removed in Pillow 10.0.0 (2023-01-02).
 
-Before Pillow 8.3.0, ImagePalette required palette data of particular lengths by
+Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
 default, and the size parameter could be used to override that. Pillow 8.3.0 removed
 the default required length, also removing the need for the size parameter.
 
