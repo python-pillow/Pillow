@@ -92,6 +92,17 @@ dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no l
 performs any operations on the data given to it, has been deprecated and will be
 removed in Pillow 10.0.0 (2023-01-02).
 
+ImagePalette size parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.4.0
+
+The ``size`` parameter will be removed in Pillow 10.0.0 (2023-01-02).
+
+Before Pillow 8.3.0, ImagePalette required palette data of particular lengths by
+default, and the size parameter could be used to override that. Pillow 8.3.0 removed
+the default required length, also removing the need for the size parameter.
+
 Removed features
 ----------------
 
