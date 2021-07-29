@@ -22,6 +22,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
 python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade wheel
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
 python3 -m pip install defusedxml
