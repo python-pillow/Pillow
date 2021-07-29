@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Prefer command line tools SDK on macOS #5624
+  [radarhere]
+
 - Added tags when saving YCbCr TIFF #5597
   [radarhere]
 
