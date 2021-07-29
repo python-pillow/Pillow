@@ -533,14 +533,16 @@ class pil_build_ext(build_ext):
                 _add_directory(include_dirs, "/usr/X11/include")
 
             # SDK install path
-            try:
-                sdk_path = (
-                    subprocess.check_output(["xcrun", "--show-sdk-path"])
-                    .strip()
-                    .decode("latin1")
-                )
-            except Exception:
-                sdk_path = None
+            sdk_path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+            if not os.path.exists(sdk_path):
+                try:
+                    sdk_path = (
+                        subprocess.check_output(["xcrun", "--show-sdk-path"])
+                        .strip()
+                        .decode("latin1")
+                    )
+                except Exception:
+                    sdk_path = None
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
