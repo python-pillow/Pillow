@@ -17,6 +17,7 @@
 #
 
 import array
+import warnings
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
@@ -40,8 +41,14 @@ class ImagePalette:
         self.rawmode = None  # if set, palette contains raw data
         self.palette = palette or bytearray()
         self.dirty = None
-        if size != 0 and size != len(self.palette):
-            raise ValueError("wrong palette size")
+        if size != 0:
+            warnings.warn(
+                "The size parameter is deprecated and will be removed in Pillow 10 "
+                "(2023-01-02).",
+                DeprecationWarning,
+            )
+            if size != len(self.palette):
+                raise ValueError("wrong palette size")
 
     @property
     def palette(self):
