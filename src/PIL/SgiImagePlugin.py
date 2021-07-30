@@ -193,6 +193,9 @@ def _save(im, fp, filename):
     for channel in im.split():
         fp.write(channel.tobytes("raw", rawmode, 0, orientation))
 
+    if hasattr(fp, "flush"):
+        fp.flush()
+
 
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
