@@ -1,10 +1,10 @@
 import copy
-from pathlib import Path
 import os
 import re
 import shutil
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from packaging.version import parse as parse_version
