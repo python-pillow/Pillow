@@ -131,11 +131,8 @@ def _res_to_dpi(num, denom, exp):
     """Convert JPEG2000's (numerator, denominator, exponent-base-10) resolution,
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
-    if num == 0 or denom == 0:
-        raise SyntaxError(
-            f"Invalid JP2 resolution information: ({num} / {denom}) * 10^{exp}"
-        )
-    return (254 * num * (10 ** exp)) / (10000 * denom)
+    if denom != 0:
+        return num / denom * (10 ** exp) * 0.0254
 
 
 def _parse_jp2_header(fp):
@@ -217,7 +214,8 @@ def _parse_jp2_header(fp):
                     vrcn, vrcd, hrcn, hrcd, vrce, hrce = res.read_fields(">HHHHBB")
                     hres = _res_to_dpi(hrcn, hrcd, hrce)
                     vres = _res_to_dpi(vrcn, vrcd, vrce)
-                    dpi = (hres, vres)
+                    if hres is not None and vres is not None:
+                        dpi = (hres, vres)
 
     if size is None or mode is None:
         raise SyntaxError("Malformed JP2 header")

@@ -155,6 +155,9 @@ def test_load_dpi():
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.info["dpi"] == (71.9836, 71.9836)
 
+    with Image.open("Tests/images/zero_dpi.jp2") as im:
+        assert "dpi" not in im.info
+
 
 def test_layers_type(tmp_path):
     outfile = str(tmp_path / "temp_layers.jp2")
