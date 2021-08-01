@@ -154,9 +154,6 @@ def _parse_jp2_header(fp):
             if reader.read_fields(">4s")[0] == b"jpx ":
                 mimetype = "image/jpx"
 
-    if header is None:
-        raise SyntaxError("Could not find JP2 header")
-
     size = None
     mode = None
     bpc = None
