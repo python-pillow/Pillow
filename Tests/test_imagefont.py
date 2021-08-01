@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 import os
 import re
 import shutil
@@ -87,6 +88,7 @@ class TestImageFont:
             pytest.skip("Non-ASCII path could not be created")
 
         ImageFont.truetype(tempfile, FONT_SIZE)
+        ImageFont.truetype(Path(tempfile), FONT_SIZE)
 
     def test_unavailable_layout_engine(self):
         have_raqm = ImageFont.core.HAVE_RAQM
