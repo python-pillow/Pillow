@@ -132,7 +132,7 @@ def _res_to_dpi(num, denom, exp):
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
     if denom != 0:
-        return num / denom * (10 ** exp) * 0.0254
+        return (254 * num * (10 ** exp)) / (10000 * denom)
 
 
 def _parse_jp2_header(fp):
