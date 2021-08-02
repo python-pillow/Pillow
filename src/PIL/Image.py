@@ -2074,10 +2074,8 @@ class Image:
                 return self.copy()
             if angle == 180:
                 return self.transpose(ROTATE_180)
-            if angle == 90 and expand:
-                return self.transpose(ROTATE_90)
-            if angle == 270 and expand:
-                return self.transpose(ROTATE_270)
+            if angle in (90, 270) and (expand or self.width == self.height):
+                return self.transpose(ROTATE_90 if angle == 90 else ROTATE_270)
 
         # Calculate the affine matrix.  Note that this is the reverse
         # transformation (from destination image to source) because we
