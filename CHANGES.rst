@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Add support for reading DPI information from JPEG2000 images
+  [rogermb, radarhere]
+
 - Catch TypeError from corrupted DPI value in EXIF #5639
   [homm, radarhere]
 
