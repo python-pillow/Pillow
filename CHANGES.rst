@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Speed up rotating square images by 90 or 270 degrees #5646
+  [radarhere]
+
 - Add support for reading DPI information from JPEG2000 images
   [rogermb, radarhere]
 
