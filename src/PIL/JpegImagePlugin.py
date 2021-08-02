@@ -172,7 +172,7 @@ def APP(self, marker):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
-            # ValueError for dpi being an invalid float
+            # ValueError or TypeError for dpi being an invalid float
             self.info["dpi"] = 72, 72
 
 
