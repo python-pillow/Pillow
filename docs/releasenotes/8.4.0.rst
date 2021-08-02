@@ -35,7 +35,13 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Speed improvement when rotating square images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Starting with Pillow 3.3.0, the speed of rotating images by 90 or 270 degrees was
+improved by quickly returning :py:meth:`~PIL.Image.Image.transpose` instead, if the
+rotate operation allowed for expansion and did not specify a center or post-rotate
+translation.
+
+Since the ``expand`` flag makes no difference for square images though, Pillow now
+uses this faster method for square images without the ``expand`` flag as well.
