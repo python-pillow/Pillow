@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Catch TypeError from corrupted DPI value in EXIF #5639
+  [homm, radarhere]
+
+- Do not close file pointer when saving SGI images #5645
+  [farizrahman4u, radarhere]
+
 - Deprecate ImagePalette size parameter #5641
   [radarhere, hugovk]
 
