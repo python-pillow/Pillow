@@ -159,6 +159,16 @@ def test_load_dpi():
         assert "dpi" not in im.info
 
 
+def test_restricted_icc_profile():
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        # JPEG2000 image with a restricted ICC profile and a known colorspace
+        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+            assert im.mode == "RGB"
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+
 def test_header_errors():
     for path in (
         "Tests/images/invalid_header_length.jp2",
