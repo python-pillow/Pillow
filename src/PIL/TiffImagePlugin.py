@@ -1487,7 +1487,9 @@ def _save(im, fp, filename):
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
-    compression = im.encoderinfo.get("compression", im.info.get("compression"))
+    encoderinfo = im.encoderinfo
+    encoderconfig = im.encoderconfig
+    compression = encoderinfo.get("compression", im.info.get("compression"))
     if compression is None:
         compression = "raw"
     elif compression == "tiff_jpeg":
@@ -1505,7 +1507,7 @@ def _save(im, fp, filename):
     ifd[IMAGELENGTH] = im.size[1]
 
     # write any arbitrary tags passed in as an ImageFileDirectory
-    info = im.encoderinfo.get("tiffinfo", {})
+    info = encoderinfo.get("tiffinfo", {})
     logger.debug("Tiffinfo Keys: %s" % list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
@@ -1534,7 +1536,7 @@ def _save(im, fp, filename):
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
-    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
+    icc = encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:
         ifd[ICCPROFILE] = icc
 
@@ -1550,10 +1552,10 @@ def _save(im, fp, filename):
         (ARTIST, "artist"),
         (COPYRIGHT, "copyright"),
     ]:
-        if name in im.encoderinfo:
-            ifd[key] = im.encoderinfo[name]
+        if name in encoderinfo:
+            ifd[key] = encoderinfo[name]
 
-    dpi = im.encoderinfo.get("dpi")
+    dpi = encoderinfo.get("dpi")
     if dpi:
         ifd[RESOLUTION_UNIT] = 2
         ifd[X_RESOLUTION] = dpi[0]
@@ -1568,7 +1570,15 @@ def _save(im, fp, filename):
     if format != 1:
         ifd[SAMPLEFORMAT] = format
 
-    ifd[PHOTOMETRIC_INTERPRETATION] = photo
+    if PHOTOMETRIC_INTERPRETATION not in ifd:
+        ifd[PHOTOMETRIC_INTERPRETATION] = photo
+    elif im.mode == "1" and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
+        inverted_im = im.copy()
+        px = inverted_im.load()
+        for y in range(inverted_im.height):
+            for x in range(inverted_im.width):
+                px[x, y] = 0 if px[x, y] == 255 else 255
+        im = inverted_im
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
@@ -1605,8 +1615,8 @@ def _save(im, fp, filename):
             ifd.setdefault(tag, value)
 
     if libtiff:
-        if "quality" in im.encoderinfo:
-            quality = im.encoderinfo["quality"]
+        if "quality" in encoderinfo:
+            quality = encoderinfo["quality"]
             if not isinstance(quality, int) or quality < 0 or quality > 100:
                 raise ValueError("Invalid quality setting")
             if compression != "jpeg":
@@ -1695,7 +1705,7 @@ def _save(im, fp, filename):
         tags = list(atts.items())
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
-        e = Image._getencoder(im.mode, "libtiff", a, im.encoderconfig)
+        e = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
@@ -1715,7 +1725,7 @@ def _save(im, fp, filename):
         )
 
     # -- helper for multi-page save --
-    if "_debug_multipage" in im.encoderinfo:
+    if "_debug_multipage" in encoderinfo:
         # just to access o32 and o16 (using correct byte order)
         im._debug_multipage = ifd
 
