@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Consider I;16 pixel size when drawing text #5598
+  [radarhere]
+
+- If default conversion from P is RGB with transparency, convert to RGBA #5594
+  [radarhere]
+
 - Speed up rotating square images by 90 or 270 degrees #5646
   [radarhere]
 
