@@ -149,10 +149,11 @@ class TestImage:
             assert im.mode == "RGB"
             assert im.size == (128, 128)
 
-            temp_file = str(tmp_path / "temp.jpg")
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-            im.save(Path(temp_file))
+            for ext in (".jpg", ".jp2"):
+                temp_file = str(tmp_path / ("temp." + ext))
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path):
         temp_file = str(tmp_path / "temp.jpg")
