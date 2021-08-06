@@ -19,8 +19,17 @@ the default required length, also removing the need for the size parameter.
 API Additions
 =============
 
-TODO
-^^^^
+Added "transparency" argument for loading EPS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This new argument switches the Ghostscript device from "ppmraw" to "pngalpha",
+generating an RGBA image with a transparent background instead of an RGB image with a
+white background.
+
+.. code-block:: python
+
+    with Image.open("sample.eps") as im:
+        im.load(transparency=True)
 
 TODO
 
