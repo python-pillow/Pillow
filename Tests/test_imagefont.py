@@ -134,6 +134,17 @@ class TestImageFont:
         target = "Tests/images/transparent_background_text_L.png"
         assert_image_similar_tofile(im.convert("L"), target, 0.01)
 
+    def test_I16(self):
+        im = Image.new(mode="I;16", size=(300, 100))
+        draw = ImageDraw.Draw(im)
+        ttf = self.get_font()
+
+        txt = "Hello World!"
+        draw.text((10, 10), txt, font=ttf)
+
+        target = "Tests/images/transparent_background_text_L.png"
+        assert_image_similar_tofile(im.convert("L"), target, 0.01)
+
     def test_textsize_equal(self):
         im = Image.new(mode="RGB", size=(300, 100))
         draw = ImageDraw.Draw(im)

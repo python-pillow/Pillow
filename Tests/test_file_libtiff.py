@@ -670,6 +670,15 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_save_ycbcr(self, tmp_path):
+        im = hopper("YCbCr")
+        outfile = str(tmp_path / "temp.tif")
+        im.save(outfile, compression="jpeg")
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2[530] == (1, 1)
+            assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
+
     def test_crashing_metadata(self, tmp_path):
         # issue 1597
         with Image.open("Tests/images/rdf.tif") as im:
@@ -968,10 +977,11 @@ class TestFileLibTiff(LibTiffTestCase):
             assert str(e.value) == "-9"
         TiffImagePlugin.READ_LIBTIFF = False
 
-    def test_save_multistrip(self, tmp_path):
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
+    def test_save_multistrip(self, compression, tmp_path):
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
-        im.save(out, compression="tiff_adobe_deflate")
+        im.save(out, compression=compression)
 
         with Image.open(out) as im:
             # Assert that there are multiple strips

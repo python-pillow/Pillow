@@ -718,6 +718,15 @@ class TestFileJpeg:
             # This should return the default, and not raise a ZeroDivisionError
             assert im.info.get("dpi") == (72, 72)
 
+    def test_dpi_exif_string(self):
+        # Arrange
+        # 0x011A tag in this exif contains string '300300\x02'
+        with Image.open("Tests/images/broken_exif_dpi.jpg") as im:
+
+            # Act / Assert
+            # This should return the default
+            assert im.info.get("dpi") == (72, 72)
+
     def test_no_dpi_in_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
