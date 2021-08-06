@@ -19,10 +19,12 @@ the default required length, also removing the need for the size parameter.
 API Additions
 =============
 
-TODO
-^^^^
+Added WalImageFile class
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:func:`PIL.WalImageFile.open()` previously returned a generic
+:py:class:`PIL.Image.Image` instance. It now returns a dedicated
+:py:class:`PIL.WalImageFile.WalImageFile` class.
 
 Security
 ========
