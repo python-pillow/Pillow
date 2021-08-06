@@ -447,9 +447,10 @@ class TestFileTiff:
             im.seek(1)
             assert im.getexif()[273] == (1408, 1907)
 
-    def test_photometric(self, tmp_path):
+    @pytest.mark.parametrize("mode", ("1", "L"))
+    def test_photometric(self, mode, tmp_path):
         filename = str(tmp_path / "temp.tif")
-        im = hopper("1")
+        im = hopper(mode)
         im.save(filename, tiffinfo={262: 0})
         with Image.open(filename) as reloaded:
             assert reloaded.tag_v2[262] == 0

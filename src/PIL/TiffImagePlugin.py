@@ -48,7 +48,7 @@ from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
 
-from . import Image, ImageFile, ImagePalette, TiffTags
+from . import Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import o8
 from .TiffTags import TYPES
 
@@ -1572,13 +1572,16 @@ def _save(im, fp, filename):
 
     if PHOTOMETRIC_INTERPRETATION not in ifd:
         ifd[PHOTOMETRIC_INTERPRETATION] = photo
-    elif im.mode == "1" and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
-        inverted_im = im.copy()
-        px = inverted_im.load()
-        for y in range(inverted_im.height):
-            for x in range(inverted_im.width):
-                px[x, y] = 0 if px[x, y] == 255 else 255
-        im = inverted_im
+    elif im.mode in ("1", "L") and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
+        if im.mode == "1":
+            inverted_im = im.copy()
+            px = inverted_im.load()
+            for y in range(inverted_im.height):
+                for x in range(inverted_im.width):
+                    px[x, y] = 0 if px[x, y] == 255 else 255
+            im = inverted_im
+        else:
+            im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
