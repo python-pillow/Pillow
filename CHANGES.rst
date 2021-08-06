@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Added "transparency" argument to EpsImagePlugin load() #5620
+  [radarhere]
+
+- Corrected pathlib.Path detection when saving #5633
+  [radarhere]
+
 - Added WalImageFile class #5618
   [radarhere]
 
