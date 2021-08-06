@@ -10,8 +10,9 @@ def test_sanity():
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
     assert len(palette.colors) == 256
 
-    with pytest.raises(ValueError):
-        ImagePalette.ImagePalette("RGB", list(range(256)) * 3, 10)
+    with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
+            ImagePalette.ImagePalette("RGB", list(range(256)) * 3, 10)
 
 
 def test_reload():

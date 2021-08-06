@@ -93,6 +93,7 @@ SUBIFD = 330
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
 JPEGTABLES = 347
+YCBCRSUBSAMPLING = 530
 REFERENCEBLACKWHITE = 532
 COPYRIGHT = 33432
 IPTC_NAA_CHUNK = 33723  # newsphoto properties
@@ -1595,6 +1596,13 @@ def _save(im, fp, filename):
     )  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
+
+    if im.mode == "YCbCr":
+        for tag, value in {
+            YCBCRSUBSAMPLING: (1, 1),
+            REFERENCEBLACKWHITE: (0, 255, 128, 255, 128, 255),
+        }.items():
+            ifd.setdefault(tag, value)
 
     if libtiff:
         if "quality" in im.encoderinfo:

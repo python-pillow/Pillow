@@ -57,9 +57,10 @@ def test_n_frames():
         assert im.n_frames == 1
         assert not im.is_animated
 
-    with Image.open(test_file) as im:
-        assert im.n_frames == 2
-        assert im.is_animated
+    for path in [test_file, "Tests/images/negative_layer_count.psd"]:
+        with Image.open(path) as im:
+            assert im.n_frames == 2
+            assert im.is_animated
 
 
 def test_eoferror():

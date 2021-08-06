@@ -22,6 +22,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
+from ._binary import si16be as si16
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -179,7 +180,7 @@ def _layerinfo(fp, ct_bytes):
     def read(size):
         return ImageFile._safe_read(fp, size)
 
-    ct = i16(read(2))
+    ct = si16(read(2))
 
     # sanity check
     if ct_bytes < (abs(ct) * 20):

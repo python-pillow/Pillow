@@ -42,10 +42,14 @@ def test_default():
 
     im = hopper("P")
     assert_image(im, "P", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+
+    im.info["transparency"] = 0
+    converted_im = im.convert()
+    assert_image(converted_im, "RGBA", im.size)
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274

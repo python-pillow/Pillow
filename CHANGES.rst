@@ -5,6 +5,39 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Consider I;16 pixel size when drawing text #5598
+  [radarhere]
+
+- If default conversion from P is RGB with transparency, convert to RGBA #5594
+  [radarhere]
+
+- Speed up rotating square images by 90 or 270 degrees #5646
+  [radarhere]
+
+- Add support for reading DPI information from JPEG2000 images
+  [rogermb, radarhere]
+
+- Catch TypeError from corrupted DPI value in EXIF #5639
+  [homm, radarhere]
+
+- Do not close file pointer when saving SGI images #5645
+  [farizrahman4u, radarhere]
+
+- Deprecate ImagePalette size parameter #5641
+  [radarhere, hugovk]
+
+- Prefer command line tools SDK on macOS #5624
+  [radarhere]
+
+- Added tags when saving YCbCr TIFF #5597
+  [radarhere]
+
+- PSD layer count may be negative #5613
+  [radarhere]
+
+- Fixed ImageOps expand with tuple border on P image #5615
+  [radarhere]
+
 - Ensure TIFF RowsPerStrip is multiple of 8 for JPEG compression #5588
   [kmilos, radarhere]
 
