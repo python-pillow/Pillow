@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Added WalImageFile class #5618
+  [radarhere]
+
 - Consider I;16 pixel size when drawing text #5598
   [radarhere]
 

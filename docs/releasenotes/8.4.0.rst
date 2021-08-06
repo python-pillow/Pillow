@@ -31,7 +31,12 @@ white background.
     with Image.open("sample.eps") as im:
         im.load(transparency=True)
 
-TODO
+Added WalImageFile class
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`PIL.WalImageFile.open()` previously returned a generic
+:py:class:`PIL.Image.Image` instance. It now returns a dedicated
+:py:class:`PIL.WalImageFile.WalImageFile` class.
 
 Security
 ========
