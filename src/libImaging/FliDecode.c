@@ -46,7 +46,8 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     ptr = buf;
 
     framesize = I32(ptr);
-    if (framesize < I32(ptr)) {
+    // there can be one pad byte in the framesize
+    if (bytes + (bytes % 2) < framesize) {
         return 0;
     }
 
