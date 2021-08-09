@@ -35,8 +35,7 @@ python3 -m pip install test-image-results
 if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy ; fi
 
 # PyQt5 doesn't support PyPy3
-# Wheel doesn't yet support 3.10
-if [[ $GHA_PYTHON_VERSION == 3.* && $GHA_PYTHON_VERSION != "3.10-dev" ]]; then
+if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"
     sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools
