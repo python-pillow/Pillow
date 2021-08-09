@@ -235,8 +235,8 @@ class IcoFile:
                 # the total mask data is
                 # padded row size * height / bits per char
 
-                and_mask_offset = o + int(im.size[0] * im.size[1] * (bpp / 8.0))
                 total_bytes = int((w * im.size[1]) / 8)
+                and_mask_offset = header["offset"] + header["size"] - total_bytes
 
                 self.buf.seek(and_mask_offset)
                 mask_data = self.buf.read(total_bytes)
