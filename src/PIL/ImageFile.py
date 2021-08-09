@@ -494,13 +494,6 @@ def _save(im, fp, tile, bufsize=0):
     # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
     try:
-        stdout = fp == sys.stdout or fp == sys.stdout.buffer
-    except (OSError, AttributeError):
-        stdout = False
-    if stdout:
-        fp.flush()
-        return
-    try:
         fh = fp.fileno()
         fp.flush()
     except (AttributeError, io.UnsupportedOperation) as exc:
