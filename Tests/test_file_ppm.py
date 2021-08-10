@@ -1,3 +1,6 @@
+import sys
+from io import BytesIO
+
 import pytest
 
 from PIL import Image
@@ -80,3 +83,30 @@ def test_mimetypes(tmp_path):
         f.write("PyCMYK\n128 128\n255")
     with Image.open(path) as im:
         assert im.get_format_mimetype() == "image/x-portable-anymap"
+
+
+@pytest.mark.parametrize("buffer", (True, False))
+def test_save_stdout(buffer):
+    old_stdout = sys.stdout
+
+    if buffer:
+
+        class MyStdOut:
+            buffer = BytesIO()
+
+        mystdout = MyStdOut()
+    else:
+        mystdout = BytesIO()
+
+    sys.stdout = mystdout
+
+    with Image.open(TEST_FILE) as im:
+        im.save(sys.stdout, "PPM")
+
+    # Reset stdout
+    sys.stdout = old_stdout
+
+    if buffer:
+        mystdout = mystdout.buffer
+    reloaded = Image.open(mystdout)
+    assert_image_equal_tofile(reloaded, TEST_FILE)

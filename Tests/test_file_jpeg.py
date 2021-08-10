@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from io import BytesIO
 
 import pytest
@@ -869,6 +870,33 @@ class TestFileJpeg:
         if ElementTree is not None:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
+
+    @pytest.mark.parametrize("buffer", (True, False))
+    def test_save_stdout(self, buffer):
+        old_stdout = sys.stdout
+
+        if buffer:
+
+            class MyStdOut:
+                buffer = BytesIO()
+
+            mystdout = MyStdOut()
+        else:
+            mystdout = BytesIO()
+
+        sys.stdout = mystdout
+
+        with Image.open(TEST_FILE) as im:
+            im.save(sys.stdout, "JPEG")
+            im_roundtrip = self.roundtrip(im)
+
+        # Reset stdout
+        sys.stdout = old_stdout
+
+        if buffer:
+            mystdout = mystdout.buffer
+        reloaded = Image.open(mystdout)
+        assert_image_equal(reloaded, im_roundtrip)
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
