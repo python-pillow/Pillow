@@ -15,36 +15,36 @@ services: docker
 
 jobs:
   include:
-    - name: "3.6 Xenial aarch64"
+    - name: "3.6 Focal aarch64"
       arch: arm64
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.6
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-    - name: "3.7 Xenial aarch64"
+        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
+    - name: "3.7 Focal aarch64"
       arch: arm64
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.7
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-    - name: "3.8 Xenial aarch64"
+        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
+    - name: "3.8 Focal aarch64"
       os: linux
       arch: arm64
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.8
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
-    - name: "3.9 Xenial aarch64"
+        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
+    - name: "3.9 Focal aarch64"
       os: linux
       arch: arm64
       env:
         - PLAT=aarch64
         - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.9
-        - DOCKER_TEST_IMAGE=multibuild/xenial_{PLAT}
+        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
 
 before_install:
     - source multibuild/common_utils.sh
