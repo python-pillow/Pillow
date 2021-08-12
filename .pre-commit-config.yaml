@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: 38b88246ccc552bffaaf54259d064beeee434539  # frozen: v4.0.1
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
