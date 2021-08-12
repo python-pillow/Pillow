@@ -24,6 +24,7 @@ function pre_build {
     curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
     untar pillow-depends-master.zip
 
+    build_xz
     build_new_zlib
 
     if [ -n "$IS_MACOS" ]; then
