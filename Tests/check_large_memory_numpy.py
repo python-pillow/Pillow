@@ -31,7 +31,7 @@ def _write_png(tmp_path, xdim, ydim):
 
 
 def test_large(tmp_path):
-    """ succeeded prepatch"""
+    """succeeded prepatch"""
     _write_png(tmp_path, XDIM, YDIM)
 
 

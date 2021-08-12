@@ -41,7 +41,7 @@ def test_toarray():
 
 def test_fromarray():
     class Wrapper:
-        """ Class with API matching Image.fromarray """
+        """Class with API matching Image.fromarray"""
 
         def __init__(self, img, arr_params):
             self.img = img

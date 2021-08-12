@@ -197,7 +197,7 @@ def test__accept_false():
 
 
 def test_short_header():
-    """ Check a short header"""
+    """Check a short header"""
     with open(TEST_FILE_DXT5, "rb") as f:
         img_file = f.read()
 
@@ -210,7 +210,7 @@ def test_short_header():
 
 
 def test_short_file():
-    """ Check that the appropriate error is thrown for a short file"""
+    """Check that the appropriate error is thrown for a short file"""
 
     with open(TEST_FILE_DXT5, "rb") as f:
         img_file = f.read()
@@ -224,7 +224,7 @@ def test_short_file():
 
 
 def test_dxt5_colorblock_alpha_issue_4142():
-    """ Check that colorblocks are decoded correctly in DXT5"""
+    """Check that colorblocks are decoded correctly in DXT5"""
 
     with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
         px = im.getpixel((0, 0))

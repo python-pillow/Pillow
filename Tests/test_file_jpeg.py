@@ -630,7 +630,7 @@ class TestFileJpeg:
             reloaded.save(f, quality="keep", optimize=True)
 
     def test_bad_mpo_header(self):
-        """ Treat unknown MPO as JPEG """
+        """Treat unknown MPO as JPEG"""
         # Arrange
 
         # Act
