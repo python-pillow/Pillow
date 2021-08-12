@@ -4,3 +4,6 @@ repos:
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
+
+ci:
+  autoupdate_schedule: quarterly
