@@ -122,7 +122,7 @@ def test_read_metadata():
 
 
 def test_write_metadata(tmp_path):
-    """ Test metadata writing through the python code """
+    """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
         f = str(tmp_path / "temp.tiff")
         img.save(f, tiffinfo=img.tag)

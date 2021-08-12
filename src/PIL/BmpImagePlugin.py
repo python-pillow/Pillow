@@ -58,7 +58,7 @@ def _dib_accept(prefix):
 # Image plugin for the Windows BMP format.
 # =============================================================================
 class BmpImageFile(ImageFile.ImageFile):
-    """ Image plugin for the Windows Bitmap format (BMP) """
+    """Image plugin for the Windows Bitmap format (BMP)"""
 
     # ------------------------------------------------------------- Description
     format_description = "Windows Bitmap"
@@ -70,7 +70,7 @@ class BmpImageFile(ImageFile.ImageFile):
         vars()[k] = v
 
     def _bitmap(self, header=0, offset=0):
-        """ Read relevant info about the BMP """
+        """Read relevant info about the BMP"""
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
@@ -257,7 +257,7 @@ class BmpImageFile(ImageFile.ImageFile):
         ]
 
     def _open(self):
-        """ Open file, check magic number and read header """
+        """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
