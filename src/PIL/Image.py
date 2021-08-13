@@ -1753,14 +1753,19 @@ class Image:
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
 
-        The palette sequence must contain at most 768 integer values, or 1024
-        integer values if alpha is included. Each group of values represents
-        the red, green, blue (and alpha if included) values for the
-        corresponding pixel index. Instead of an integer sequence, you can use
-        an 8-bit string.
+        The palette sequence must contain at most 256 colors, made up of one
+        integer value for each channel in the raw mode.
+        For example, if the raw mode is "RGB", then it can contain at most 768
+        values, made up of red, green and blue values for the corresponding pixel
+        index in the 256 colors.
+        If the raw mode is "RGBA", then it can contain at most 1024 values,
+        containing red, green, blue and alpha values.
+
+        Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette.
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a
+           mode that can be transformed to "RGB" (e.g. "R", "BGR;15", "RGBA;L").
         """
         from . import ImagePalette
 
