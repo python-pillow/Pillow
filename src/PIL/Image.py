@@ -1007,7 +1007,7 @@ class Image:
                             trns_im = trns_im.convert("RGB")
                         trns = trns_im.getpixel((0, 0))
 
-            elif self.mode == "P" and mode == "RGBA":
+            elif self.mode == "P" and mode in ("LA", "PA", "RGBA"):
                 t = self.info["transparency"]
                 delete_trns = True
 
