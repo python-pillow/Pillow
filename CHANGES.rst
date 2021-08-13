@@ -5,6 +5,15 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- For GIF save_all with palette, do not include palette with each frame #5603
+  [radarhere]
+
+- Keep transparency when converting from P to LA or PA #5606
+  [radarhere]
+
+- Copy palette to new image in transform() #5647
+  [radarhere]
+
 - Added "transparency" argument to EpsImagePlugin load() #5620
   [radarhere]
 
