@@ -2479,6 +2479,8 @@ class Image:
             raise ValueError("missing method data")
 
         im = new(self.mode, size, fillcolor)
+        if self.mode == "P" and self.palette:
+            im.palette = self.palette.copy()
         im.info = self.info.copy()
         if method == MESH:
             # list of quads
