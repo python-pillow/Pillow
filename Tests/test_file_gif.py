@@ -821,6 +821,29 @@ def test_palette_save_P(tmp_path):
         assert_image_equal(reloaded, im)
 
 
+def test_palette_save_all_P(tmp_path):
+    frames = []
+    colors = ((255, 0, 0), (0, 255, 0))
+    for color in colors:
+        frame = Image.new("P", (100, 100))
+        frame.putpalette(color)
+        frames.append(frame)
+
+    out = str(tmp_path / "temp.gif")
+    frames[0].save(
+        out, save_all=True, palette=[255, 0, 0, 0, 255, 0], append_images=frames[1:]
+    )
+
+    with Image.open(out) as im:
+        # Assert that the frames are correct, and each frame has the same palette
+        assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
+        assert im.palette.palette == im.global_palette.palette
+
+        im.seek(1)
+        assert_image_equal(im.convert("RGB"), frames[1].convert("RGB"))
+        assert im.palette.palette == im.global_palette.palette
+
+
 def test_palette_save_ImagePalette(tmp_path):
     # Pass in a different palette, as an ImagePalette.ImagePalette
     # effectively the same as test_palette_save_P
