@@ -111,7 +111,7 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 
 **Packages**::
 
-  pkg install py36-pillow
+  pkg install py38-pillow
 
 .. note::
 
