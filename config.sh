@@ -132,7 +132,7 @@ function run_tests {
         else
             python3 -m pip install numpy==1.20.3
         fi
-    else
+    elif [[ "$MB_PYTHON_VERSION" != 3.10 ]] || [[ "$PLAT" != "x86_64" ]]; then
         python3 -m pip install numpy
     fi
 
