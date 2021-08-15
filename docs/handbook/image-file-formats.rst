@@ -844,7 +844,7 @@ Reading Multi-frame TIFF Images
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
 :py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame numbers
 within the image file. You can combine these methods to seek to the next frame
-(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.num_frames - 1``,
+(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.n_frames - 1``,
 and can be accessed in any order.
 
 ``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the
