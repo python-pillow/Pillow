@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Allow saving 1 and L mode TIFF with PhotometricInterpretation 0 #5655
+  [radarhere]
+
 - For GIF save_all with palette, do not include palette with each frame #5603
   [radarhere]
 
