@@ -798,9 +798,9 @@ def load(filename):
 
 def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     r"""
-    Load a TrueType or OpenType font from a filepath or file-like object,
+    Load a TrueType or OpenType font from a file path or file-like object,
     and create a font object.
-    This function loads a font object from the given filepath or file-like
+    This function loads a font object from the given file path or file-like
     object, and creates a font object for a font of the given size.
 
     Pillow uses FreeType to open font files. If you are opening many fonts
@@ -810,8 +810,8 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     This function requires the _imagingft service.
 
-    :param font: A filepath or file-like object containing a TrueType font.
-                 If the file is not found at this filepath, the loader may also
+    :param font: A file path or file-like object containing a TrueType font.
+                 If the file is not found at this path, the loader may also
                  search in other directories, such as the :file:`%WINDIR%\fonts\`
                  directory on Windows or :file:`/Library/Fonts/`,
                  :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/`
