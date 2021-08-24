@@ -698,6 +698,8 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    # Ignore this UserWarning:
+    @pytest.mark.filterwarnings("ignore:Truncated File Read")
     @pytest.mark.skipif(
         not os.path.exists("Tests/images/string_dimension.tiff"),
         reason="Extra image files not installed",
