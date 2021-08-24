@@ -396,15 +396,7 @@ def _normalize_palette(im, palette, info):
         if isinstance(palette, (bytes, bytearray, list)):
             source_palette = bytearray(palette[:768])
         if isinstance(palette, ImagePalette.ImagePalette):
-            source_palette = bytearray(
-                itertools.chain.from_iterable(
-                    zip(
-                        palette.palette[:256],
-                        palette.palette[256:512],
-                        palette.palette[512:768],
-                    )
-                )
-            )
+            source_palette = bytearray(palette.palette)
 
     if im.mode == "P":
         if not source_palette:

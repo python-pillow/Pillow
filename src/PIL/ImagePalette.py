@@ -26,12 +26,12 @@ class ImagePalette:
     """
     Color palette for palette mapped images
 
-    :param mode: The mode to use for the Palette. See:
+    :param mode: The mode to use for the palette. See:
         :ref:`concept-modes`. Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
-        an array or a list of ints between 0-255. The list must be aligned
-        by channel (All R values must be contiguous in the list before G
-        and B values.) Defaults to 0 through 255 per channel.
+        an array or a list of ints between 0-255. The list must consist of
+        all channels for one color followed by the next color (e.g. RGBRGBRGB).
+        Defaults to an empty palette.
     :param size: An optional palette size. If given, an error is raised
         if ``palette`` is not of equal length.
     """
@@ -211,9 +211,9 @@ def make_gamma_lut(exp):
 
 
 def negative(mode="RGB"):
-    palette = list(range(256))
+    palette = list(range(256 * len(mode)))
     palette.reverse()
-    return ImagePalette(mode, palette * len(mode))
+    return ImagePalette(mode, [i // len(mode) for i in palette])
 
 
 def random(mode="RGB"):
@@ -226,15 +226,13 @@ def random(mode="RGB"):
 
 
 def sepia(white="#fff0c0"):
-    r, g, b = ImageColor.getrgb(white)
-    r = make_linear_lut(0, r)
-    g = make_linear_lut(0, g)
-    b = make_linear_lut(0, b)
-    return ImagePalette("RGB", r + g + b)
+    bands = [make_linear_lut(0, band) for band in ImageColor.getrgb(white)]
+    return ImagePalette("RGB", [bands[i % 3][i // 3] for i in range(256 * 3)])
 
 
 def wedge(mode="RGB"):
-    return ImagePalette(mode, list(range(256)) * len(mode))
+    palette = list(range(256 * len(mode)))
+    return ImagePalette(mode, [i // len(mode) for i in palette])
 
 
 def load(filename):
