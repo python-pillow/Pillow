@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Updates for ImagePalette channel order #5599
+  [radarhere]
+
+- Fixed using info dictionary when writing multiple APNG frames #5611
+  [radarhere]
+
 - Allow saving 1 and L mode TIFF with PhotometricInterpretation 0 #5655
   [radarhere]
 
