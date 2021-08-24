@@ -108,5 +108,5 @@ def test_save_stdout(buffer):
 
     if buffer:
         mystdout = mystdout.buffer
-    reloaded = Image.open(mystdout)
-    assert_image_equal_tofile(reloaded, TEST_FILE)
+    with Image.open(mystdout) as reloaded:
+        assert_image_equal_tofile(reloaded, TEST_FILE)

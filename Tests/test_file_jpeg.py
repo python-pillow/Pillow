@@ -895,8 +895,8 @@ class TestFileJpeg:
 
         if buffer:
             mystdout = mystdout.buffer
-        reloaded = Image.open(mystdout)
-        assert_image_equal(reloaded, im_roundtrip)
+        with Image.open(mystdout) as reloaded:
+            assert_image_equal(reloaded, im_roundtrip)
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
