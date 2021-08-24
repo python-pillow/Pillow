@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Determine JPEG2000 mode purely from ihdr header box #5654
+  [radarhere]
+
 - Updates for ImagePalette channel order #5599
   [radarhere]
 
