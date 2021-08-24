@@ -195,7 +195,7 @@ def test_rounding_errors():
 
 def test_color_too_long():
     # Arrange
-    color_too_long = "hsl(" + "1" * 100 + ")"
+    color_too_long = "hsl(" + "1" * 40 + "," + "1" * 40 + "%," + "1" * 40 + "%)"
 
     # Act / Assert
     with pytest.raises(ValueError):
