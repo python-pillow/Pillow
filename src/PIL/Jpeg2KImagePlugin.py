@@ -159,50 +159,23 @@ def _parse_jp2_header(fp):
     bpc = None
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
-    unkc = 0  # Colorspace information unknown
 
     while header.has_next_box():
         tbox = header.next_box_type()
 
         if tbox == b"ihdr":
-            height, width, nc, bpc, c, unkc, ipr = header.read_fields(">IIHBBBB")
+            height, width, nc, bpc = header.read_fields(">IIHB")
             size = (width, height)
-            if unkc:
-                if nc == 1 and (bpc & 0x7F) > 8:
-                    mode = "I;16"
-                elif nc == 1:
-                    mode = "L"
-                elif nc == 2:
-                    mode = "LA"
-                elif nc == 3:
-                    mode = "RGB"
-                elif nc == 4:
-                    mode = "RGBA"
-        elif tbox == b"colr":
-            meth, prec, approx = header.read_fields(">BBB")
-            if meth == 1 and unkc == 0:
-                cs = header.read_fields(">I")[0]
-                if cs == 16:  # sRGB
-                    if nc == 1 and (bpc & 0x7F) > 8:
-                        mode = "I;16"
-                    elif nc == 1:
-                        mode = "L"
-                    elif nc == 3:
-                        mode = "RGB"
-                    elif nc == 4:
-                        mode = "RGBA"
-                elif cs == 17:  # grayscale
-                    if nc == 1 and (bpc & 0x7F) > 8:
-                        mode = "I;16"
-                    elif nc == 1:
-                        mode = "L"
-                    elif nc == 2:
-                        mode = "LA"
-                elif cs == 18:  # sYCC
-                    if nc == 3:
-                        mode = "RGB"
-                    elif nc == 4:
-                        mode = "RGBA"
+            if nc == 1 and (bpc & 0x7F) > 8:
+                mode = "I;16"
+            elif nc == 1:
+                mode = "L"
+            elif nc == 2:
+                mode = "LA"
+            elif nc == 3:
+                mode = "RGB"
+            elif nc == 4:
+                mode = "RGBA"
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
