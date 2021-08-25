@@ -16,8 +16,10 @@
 
 
 import atheris
+
 with atheris.instrument_imports():
     import sys
+
     import fuzzers
 
 
