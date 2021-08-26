@@ -19,14 +19,12 @@ jobs:
       arch: arm64
       env:
         - PLAT=aarch64
-        - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.6
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.7 Focal aarch64"
       arch: arm64
       env:
         - PLAT=aarch64
-        - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.7
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.8 Focal aarch64"
@@ -34,7 +32,6 @@ jobs:
       arch: arm64
       env:
         - PLAT=aarch64
-        - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.8
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.9 Focal aarch64"
@@ -42,7 +39,6 @@ jobs:
       arch: arm64
       env:
         - PLAT=aarch64
-        - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.9
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.10 Focal aarch64"
@@ -50,7 +46,6 @@ jobs:
       arch: arm64
       env:
         - PLAT=aarch64
-        - MB_ML_VER=2014
         - MB_PYTHON_VERSION=3.10
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
 

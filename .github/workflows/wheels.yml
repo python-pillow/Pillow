@@ -23,8 +23,6 @@ jobs:
         exclude:
           - os: "macos-latest"
             platform: "i686"
-          - os: "ubuntu-20.04"
-            python: "3.10"
         include:
           - os: "macos-latest"
             os-name: "osx"
@@ -83,8 +81,6 @@ jobs:
         exclude:
           - os: "macos-latest"
             platform: "i686"
-          - os: "ubuntu-20.04"
-            python: "3.10"
         include:
           - os: "macos-latest"
             os-name: "osx"
