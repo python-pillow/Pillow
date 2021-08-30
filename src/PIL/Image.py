@@ -1130,7 +1130,9 @@ class Image:
                     "only RGB or L mode images can be quantized to a palette"
                 )
             im = self.im.convert("P", dither, palette.im)
-            return self._new(im)
+            new_im = self._new(im)
+            new_im.palette = palette.palette.copy()
+            return new_im
 
         im = self._new(self.im.quantize(colors, method, kmeans))
 
