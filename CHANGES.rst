@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+8.3.2 (2021-09-02)
+------------------
+
+- Add support for Python 3.10 #5569, #5570
+  [hugovk, radarhere]
+
+- Ensure TIFF ``RowsPerStrip`` is multiple of 8 for JPEG compression #5588
+  [kmilos, radarhere]
+
+- Updates for ``ImagePalette`` channel order #5599
+  [radarhere]
+
+- Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library #5651
+  [nulano]
+
 8.3.1 (2021-07-06)
 ------------------
 
