@@ -2189,7 +2189,7 @@ class Image:
             filename = str(fp)
             open_fp = True
         elif isPath(fp):
-            filename = fp
+            filename = os.fsdecode(fp)
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2209,7 +2209,7 @@ class Image:
 
         preinit()
 
-        ext = os.fsdecode(os.path.splitext(filename)[1].lower())
+        ext = os.path.splitext(filename)[1].lower()
 
         if not format:
             if ext not in EXTENSION:

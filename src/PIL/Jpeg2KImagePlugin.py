@@ -317,7 +317,7 @@ def _accept(prefix):
 
 
 def _save(im, fp, filename):
-    if os.fsdecode(os.path.splitext(filename)[1]) == ".j2k":
+    if filename.endswith(".j2k"):
         kind = "j2k"
     else:
         kind = "jp2"
