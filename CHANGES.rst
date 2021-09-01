@@ -8,9 +8,6 @@ Changelog (Pillow)
 - Determine JPEG2000 mode purely from ihdr header box #5654
   [radarhere]
 
-- Updates for ImagePalette channel order #5599
-  [radarhere]
-
 - Fixed using info dictionary when writing multiple APNG frames #5611
   [radarhere]
 
@@ -68,11 +65,23 @@ Changelog (Pillow)
 - Fixed ImageOps expand with tuple border on P image #5615
   [radarhere]
 
-- Ensure TIFF RowsPerStrip is multiple of 8 for JPEG compression #5588
-  [kmilos, radarhere]
-
 - Fixed error saving APNG with duplicate frames and different duration times #5609
   [thak1411, radarhere]
+
+8.3.2 (2021-09-02)
+------------------
+
+- Add support for Python 3.10 #5569, #5570
+  [hugovk, radarhere]
+
+- Ensure TIFF ``RowsPerStrip`` is multiple of 8 for JPEG compression #5588
+  [kmilos, radarhere]
+
+- Updates for ``ImagePalette`` channel order #5599
+  [radarhere]
+
+- Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library #5651
+  [nulano]
 
 8.3.1 (2021-07-06)
 ------------------
