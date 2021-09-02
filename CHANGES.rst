@@ -71,6 +71,12 @@ Changelog (Pillow)
 8.3.2 (2021-09-02)
 ------------------
 
+- CVE-2021-23437 Raise ValueError if color specifier is too long
+  [hugovk, radarhere]
+
+- Fix 6-byte OOB read in FliDecode
+  [wiredfool]
+
 - Add support for Python 3.10 #5569, #5570
   [hugovk, radarhere]
 
