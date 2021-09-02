@@ -14,7 +14,7 @@ Png text chunk size limits
 To prevent potential denial of service attacks using compressed text
 chunks, there are now limits to the decompressed size of text chunks
 decoded from PNG images. If the limits are exceeded when opening a PNG
-image a ``ValueError`` will be raised.
+image a :py:exc:`ValueError` will be raised.
 
 Individual text chunks are limited to
 :py:attr:`PIL.PngImagePlugin.MAX_TEXT_CHUNK`, set to 1MB by

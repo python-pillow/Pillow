@@ -1,6 +1,18 @@
 8.3.2
 -----
 
+Security
+========
+
+* :cve:`CVE-2021-23437`: Avoid a potential ReDoS (regular expression denial of service)
+  in :py:class:`~PIL.ImageColor`'s :py:meth:`~PIL.ImageColor.getrgb` by raising
+  :py:exc:`ValueError` if the color specifier is too long. Present since Pillow 5.2.0.
+
+* Fix 6-byte out-of-bounds (OOB) read. The previous bounds check in ``FliDecode.c``
+  incorrectly calculated the required read buffer size when copying a chunk, potentially
+  reading six extra bytes off the end of the allocated buffer from the heap. Present
+  since Pillow 7.1.0. This bug was found by Google's `OSS-Fuzz`_ `CIFuzz`_ runs.
+
 Other Changes
 =============
 
@@ -24,4 +36,6 @@ Fixed regressions
 
 * Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library (:pr:`5651`).
 
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
+.. _CIFuzz: https://google.github.io/oss-fuzz/getting-started/continuous-integration/
 .. _no ABI changes: https://www.python.org/downloads/release/python-3100rc1/
