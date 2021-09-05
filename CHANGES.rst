@@ -5,6 +5,12 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Read ICO AND mask from end #5667
+  [radarhere]
+
+- Actually check the framesize in FliDecode.c #5659
+  [wiredfool]
+
 - Determine JPEG2000 mode purely from ihdr header box #5654
   [radarhere]
 
