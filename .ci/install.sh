@@ -32,8 +32,7 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 python3 -m pip install test-image-results
-# TODO Remove condition when numpy supports 3.10
-if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy ; fi
+python3 -m pip install numpy
 
 # PyQt5 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
