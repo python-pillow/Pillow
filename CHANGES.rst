@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Added "exif" keyword argument to TIFF saving #5575
+  [radarhere]
+
 - Copy Python palette to new image in quantize() #5696
   [radarhere]
 
