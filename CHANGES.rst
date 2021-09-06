@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Copy Python palette to new image in quantize() #5696
+  [radarhere]
+
 - Read ICO AND mask from end #5667
   [radarhere]
 
