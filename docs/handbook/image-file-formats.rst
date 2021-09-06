@@ -903,6 +903,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
 
+**exif**
+    Alternate keyword to "tiffinfo", for consistency with other formats.
+
+    .. versionadded:: 8.4.0
+
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression

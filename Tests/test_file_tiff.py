@@ -403,10 +403,8 @@ class TestFileTiff:
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             assert 0x8825 in im.tag_v2
 
-    def test_exif(self):
-        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
-            exif = im.getexif()
-
+    def test_exif(self, tmp_path):
+        def check_exif(exif):
             assert sorted(exif.keys()) == [
                 256,
                 257,
@@ -438,6 +436,24 @@ class TestFileTiff:
             assert list(gps.keys()) == [0, 1, 2, 3, 4, 5, 6, 18]
             assert gps[0] == b"\x03\x02\x00\x00"
             assert gps[18] == "WGS-84"
+
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            exif = im.getexif()
+            check_exif(exif)
+
+            im.save(outfile, exif=exif)
+
+        outfile2 = str(tmp_path / "temp2.tif")
+        with Image.open(outfile) as im:
+            exif = im.getexif()
+            check_exif(exif)
+
+            im.save(outfile2, exif=exif.tobytes())
+
+        with Image.open(outfile2) as im:
+            exif = im.getexif()
+            check_exif(exif)
 
     def test_exif_frames(self):
         # Test that EXIF data can change across frames
