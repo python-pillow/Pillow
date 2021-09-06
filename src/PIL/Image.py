@@ -681,7 +681,7 @@ class Image:
             raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
-    def __array__(self):
+    def __array__(self, dtype=None):
         # numpy array interface support
         import numpy as np
 
@@ -700,7 +700,7 @@ class Image:
         class ArrayData:
             __array_interface__ = new
 
-        return np.array(ArrayData())
+        return np.array(ArrayData(), dtype)
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
@@ -914,16 +914,18 @@ class Image:
 
         self.load()
 
+        has_transparency = self.info.get("transparency") is not None
         if not mode and self.mode == "P":
             # determine default mode
             if self.palette:
                 mode = self.palette.mode
             else:
                 mode = "RGB"
+            if mode == "RGB" and has_transparency:
+                mode = "RGBA"
         if not mode or (mode == self.mode and not matrix):
             return self.copy()
 
-        has_transparency = self.info.get("transparency") is not None
         if matrix:
             # matrix conversion
             if mode not in ("L", "RGB"):
@@ -1005,7 +1007,7 @@ class Image:
                             trns_im = trns_im.convert("RGB")
                         trns = trns_im.getpixel((0, 0))
 
-            elif self.mode == "P" and mode == "RGBA":
+            elif self.mode == "P" and mode in ("LA", "PA", "RGBA"):
                 t = self.info["transparency"]
                 delete_trns = True
 
@@ -1128,7 +1130,9 @@ class Image:
                     "only RGB or L mode images can be quantized to a palette"
                 )
             im = self.im.convert("P", dither, palette.im)
-            return self._new(im)
+            new_im = self._new(im)
+            new_im.palette = palette.palette.copy()
+            return new_im
 
         im = self._new(self.im.quantize(colors, method, kmeans))
 
@@ -1751,14 +1755,19 @@ class Image:
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
 
-        The palette sequence must contain at most 768 integer values, or 1024
-        integer values if alpha is included. Each group of values represents
-        the red, green, blue (and alpha if included) values for the
-        corresponding pixel index. Instead of an integer sequence, you can use
-        an 8-bit string.
+        The palette sequence must contain at most 256 colors, made up of one
+        integer value for each channel in the raw mode.
+        For example, if the raw mode is "RGB", then it can contain at most 768
+        values, made up of red, green and blue values for the corresponding pixel
+        index in the 256 colors.
+        If the raw mode is "RGBA", then it can contain at most 1024 values,
+        containing red, green, blue and alpha values.
+
+        Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette.
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a
+           mode that can be transformed to "RGB" (e.g. "R", "BGR;15", "RGBA;L").
         """
         from . import ImagePalette
 
@@ -1832,18 +1841,16 @@ class Image:
         if source_palette is None:
             if self.mode == "P":
                 self.load()
-                real_source_palette = self.im.getpalette("RGB")[:768]
+                source_palette = self.im.getpalette("RGB")[:768]
             else:  # L-mode
-                real_source_palette = bytearray(i // 3 for i in range(768))
-        else:
-            real_source_palette = source_palette
+                source_palette = bytearray(i // 3 for i in range(768))
 
         palette_bytes = b""
         new_positions = [0] * 256
 
         # pick only the used colors from the palette
         for i, oldPosition in enumerate(dest_map):
-            palette_bytes += real_source_palette[oldPosition * 3 : oldPosition * 3 + 3]
+            palette_bytes += source_palette[oldPosition * 3 : oldPosition * 3 + 3]
             new_positions[oldPosition] = i
 
         # replace the palette color id of all pixel with the new id
@@ -2076,10 +2083,8 @@ class Image:
                 return self.copy()
             if angle == 180:
                 return self.transpose(ROTATE_180)
-            if angle == 90 and expand:
-                return self.transpose(ROTATE_90)
-            if angle == 270 and expand:
-                return self.transpose(ROTATE_270)
+            if angle in (90, 270) and (expand or self.width == self.height):
+                return self.transpose(ROTATE_90 if angle == 90 else ROTATE_270)
 
         # Calculate the affine matrix.  Note that this is the reverse
         # transformation (from destination image to source) because we
@@ -2182,11 +2187,11 @@ class Image:
 
         filename = ""
         open_fp = False
-        if isPath(fp):
-            filename = fp
-            open_fp = True
-        elif isinstance(fp, Path):
+        if isinstance(fp, Path):
             filename = str(fp)
+            open_fp = True
+        elif isPath(fp):
+            filename = fp
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2481,6 +2486,8 @@ class Image:
             raise ValueError("missing method data")
 
         im = new(self.mode, size, fillcolor)
+        if self.mode == "P" and self.palette:
+            im.palette = self.palette.copy()
         im.info = self.info.copy()
         if method == MESH:
             # list of quads

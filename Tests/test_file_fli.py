@@ -138,3 +138,16 @@ def test_timeouts(test_file):
         with Image.open(f) as im:
             with pytest.raises(OSError):
                 im.load()
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/crash-5762152299364352.fli",
+    ],
+)
+def test_crash(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()

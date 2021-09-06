@@ -202,7 +202,7 @@ def _save_all(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     method = im.encoderinfo.get("method", 0)
-    icc_profile = im.encoderinfo.get("icc_profile", "")
+    icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
@@ -309,7 +309,7 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
-    icc_profile = im.encoderinfo.get("icc_profile", "")
+    icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()

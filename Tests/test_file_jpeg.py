@@ -630,7 +630,7 @@ class TestFileJpeg:
             reloaded.save(f, quality="keep", optimize=True)
 
     def test_bad_mpo_header(self):
-        """ Treat unknown MPO as JPEG """
+        """Treat unknown MPO as JPEG"""
         # Arrange
 
         # Act
@@ -716,6 +716,15 @@ class TestFileJpeg:
 
             # Act / Assert
             # This should return the default, and not raise a ZeroDivisionError
+            assert im.info.get("dpi") == (72, 72)
+
+    def test_dpi_exif_string(self):
+        # Arrange
+        # 0x011A tag in this exif contains string '300300\x02'
+        with Image.open("Tests/images/broken_exif_dpi.jpg") as im:
+
+            # Act / Assert
+            # This should return the default
             assert im.info.get("dpi") == (72, 72)
 
     def test_no_dpi_in_exif(self):

@@ -433,10 +433,18 @@ def test_apng_save_duration_loop(tmp_path):
 
     # test removal of duplicated frames
     frame = Image.new("RGBA", (128, 64), (255, 0, 0, 255))
-    frame.save(test_file, save_all=True, append_images=[frame], duration=[500, 250])
+    frame.save(
+        test_file, save_all=True, append_images=[frame, frame], duration=[500, 100, 150]
+    )
     with Image.open(test_file) as im:
         im.load()
         assert im.n_frames == 1
+        assert im.info.get("duration") == 750
+
+    # test info duration
+    frame.info["duration"] = 750
+    frame.save(test_file, save_all=True)
+    with Image.open(test_file) as im:
         assert im.info.get("duration") == 750
 
 
@@ -529,6 +537,17 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
+    # test info disposal
+    red.info["disposal"] = PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND
+    red.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new("RGBA", (10, 10), (0, 255, 0, 255))],
+    )
+    with Image.open(test_file) as im:
+        im.seek(1)
+        assert im.getpixel((64, 32)) == (0, 0, 0, 0)
+
 
 def test_apng_save_disposal_previous(tmp_path):
     test_file = str(tmp_path / "temp.png")
@@ -609,3 +628,10 @@ def test_apng_save_blend(tmp_path):
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+    # test info blend
+    red.info["blend"] = PngImagePlugin.APNG_BLEND_OP_OVER
+    red.save(test_file, save_all=True, append_images=[green, transparent])
+    with Image.open(test_file) as im:
+        im.seek(2)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)

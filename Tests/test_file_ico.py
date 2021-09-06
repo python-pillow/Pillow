@@ -18,6 +18,11 @@ def test_sanity():
     assert im.get_format_mimetype() == "image/x-icon"
 
 
+def test_mask():
+    with Image.open("Tests/images/hopper_mask.ico") as im:
+        assert_image_equal_tofile(im, "Tests/images/hopper_mask.png")
+
+
 def test_black_and_white():
     with Image.open("Tests/images/black_and_white.ico") as im:
         assert im.mode == "RGBA"

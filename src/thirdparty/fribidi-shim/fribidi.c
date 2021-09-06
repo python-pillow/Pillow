@@ -12,7 +12,7 @@
 
 
 /* FriBiDi>=1.0.0 adds bracket_types param, ignore and call legacy function */
-FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
+static FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
     const FriBidiCharType *bidi_types,
     const FriBidiBracketType *bracket_types,
     const FriBidiStrIndex len,
@@ -24,7 +24,7 @@ FriBidiLevel fribidi_get_par_embedding_levels_ex_compat(
 }
 
 /* FriBiDi>=1.0.0 gets bracket types here, ignore */
-void fribidi_get_bracket_types_compat(
+static void fribidi_get_bracket_types_compat(
     const FriBidiChar *str,
     const FriBidiStrIndex len,
     const FriBidiCharType *types,

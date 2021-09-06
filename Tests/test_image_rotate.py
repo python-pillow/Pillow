@@ -33,6 +33,9 @@ def test_angle():
         with Image.open("Tests/images/test-card.png") as im:
             rotate(im, im.mode, angle)
 
+        im = hopper()
+        assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
+
 
 def test_zero():
     for angle in (0, 45, 90, 180, 270):

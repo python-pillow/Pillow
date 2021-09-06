@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFile, Jpeg2KImagePlugin, features
+from PIL import Image, ImageFile, Jpeg2KImagePlugin, UnidentifiedImageError, features
 
 from .helper import (
     assert_image_equal,
@@ -149,6 +149,38 @@ def test_reduce():
 
         im.thumbnail((40, 40))
         assert im.size == (40, 30)
+
+
+def test_load_dpi():
+    with Image.open("Tests/images/test-card-lossless.jp2") as im:
+        assert im.info["dpi"] == (71.9836, 71.9836)
+
+    with Image.open("Tests/images/zero_dpi.jp2") as im:
+        assert "dpi" not in im.info
+
+
+def test_restricted_icc_profile():
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        # JPEG2000 image with a restricted ICC profile and a known colorspace
+        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+            assert im.mode == "RGB"
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+
+def test_header_errors():
+    for path in (
+        "Tests/images/invalid_header_length.jp2",
+        "Tests/images/not_enough_data.jp2",
+    ):
+        with pytest.raises(UnidentifiedImageError):
+            with Image.open(path):
+                pass
+
+    with pytest.raises(OSError):
+        with Image.open("Tests/images/expected_to_read.jp2"):
+            pass
 
 
 def test_layers_type(tmp_path):

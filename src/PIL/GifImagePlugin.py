@@ -396,15 +396,7 @@ def _normalize_palette(im, palette, info):
         if isinstance(palette, (bytes, bytearray, list)):
             source_palette = bytearray(palette[:768])
         if isinstance(palette, ImagePalette.ImagePalette):
-            source_palette = bytearray(
-                itertools.chain.from_iterable(
-                    zip(
-                        palette.palette[:256],
-                        palette.palette[256:512],
-                        palette.palette[512:768],
-                    )
-                )
-            )
+            source_palette = bytearray(palette.palette)
 
     if im.mode == "P":
         if not source_palette:
@@ -414,9 +406,26 @@ def _normalize_palette(im, palette, info):
             source_palette = bytearray(i // 3 for i in range(768))
         im.palette = ImagePalette.ImagePalette("RGB", palette=source_palette)
 
-    used_palette_colors = _get_optimize(im, info)
-    if used_palette_colors is not None:
-        return im.remap_palette(used_palette_colors, source_palette)
+    if palette:
+        used_palette_colors = []
+        for i in range(0, len(source_palette), 3):
+            source_color = tuple(source_palette[i : i + 3])
+            try:
+                index = im.palette.colors[source_color]
+            except KeyError:
+                index = None
+            used_palette_colors.append(index)
+        for i, index in enumerate(used_palette_colors):
+            if index is None:
+                for j in range(len(used_palette_colors)):
+                    if j not in used_palette_colors:
+                        used_palette_colors[i] = j
+                        break
+        im = im.remap_palette(used_palette_colors)
+    else:
+        used_palette_colors = _get_optimize(im, info)
+        if used_palette_colors is not None:
+            return im.remap_palette(used_palette_colors, source_palette)
 
     im.palette.palette = source_palette
     return im
@@ -507,7 +516,8 @@ def _write_multiple_frames(im, fp, palette):
                 offset = (0, 0)
             else:
                 # compress difference
-                frame_data["encoderinfo"]["include_color_table"] = True
+                if not palette:
+                    frame_data["encoderinfo"]["include_color_table"] = True
 
                 im_frame = im_frame.crop(frame_data["bbox"])
                 offset = frame_data["bbox"][:2]
@@ -787,7 +797,7 @@ def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
-    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+    # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
     for extensionKey in ["transparency", "duration", "loop", "comment"]:

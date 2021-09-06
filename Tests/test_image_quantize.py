@@ -63,6 +63,7 @@ def test_quantize_no_dither():
 
     converted = image.quantize(dither=0, palette=palette)
     assert_image(converted, "P", converted.size)
+    assert converted.palette.palette == palette.palette.palette
 
 
 def test_quantize_dither_diff():

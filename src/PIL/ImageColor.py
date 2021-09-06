@@ -32,6 +32,8 @@ def getrgb(color):
     :param color: A color string
     :return: ``(red, green, blue[, alpha])``
     """
+    if len(color) > 100:
+        raise ValueError("color specifier is too long")
     color = color.lower()
 
     rgb = colormap.get(color, None)

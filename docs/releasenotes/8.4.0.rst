@@ -1,0 +1,61 @@
+8.4.0
+-----
+
+API Changes
+===========
+
+Deprecations
+^^^^^^^^^^^^
+
+ImagePalette size parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``size`` parameter will be removed in Pillow 10.0.0 (2023-01-02).
+
+Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
+default, and the size parameter could be used to override that. Pillow 8.3.0 removed
+the default required length, also removing the need for the size parameter.
+
+API Additions
+=============
+
+Added "transparency" argument for loading EPS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This new argument switches the Ghostscript device from "ppmraw" to "pngalpha",
+generating an RGBA image with a transparent background instead of an RGB image with a
+white background.
+
+.. code-block:: python
+
+    with Image.open("sample.eps") as im:
+        im.load(transparency=True)
+
+Added WalImageFile class
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`PIL.WalImageFile.open()` previously returned a generic
+:py:class:`PIL.Image.Image` instance. It now returns a dedicated
+:py:class:`PIL.WalImageFile.WalImageFile` class.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+Speed improvement when rotating square images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Starting with Pillow 3.3.0, the speed of rotating images by 90 or 270 degrees was
+improved by quickly returning :py:meth:`~PIL.Image.Image.transpose` instead, if the
+rotate operation allowed for expansion and did not specify a center or post-rotate
+translation.
+
+Since the ``expand`` flag makes no difference for square images though, Pillow now
+uses this faster method for square images without the ``expand`` flag as well.

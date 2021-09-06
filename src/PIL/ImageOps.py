@@ -19,8 +19,9 @@
 
 import functools
 import operator
+import re
 
-from . import Image, ImageDraw
+from . import Image
 
 #
 # helpers
@@ -394,15 +395,16 @@ def expand(image, border=0, fill=0):
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
     if image.mode == "P" and image.palette:
-        out = Image.new(image.mode, (width, height))
-        out.putpalette(image.palette)
-        out.paste(image, (left, top))
-
-        draw = ImageDraw.Draw(out)
-        draw.rectangle((0, 0, width - 1, height - 1), outline=color, width=border)
+        image.load()
+        palette = image.palette.copy()
+        if isinstance(color, tuple):
+            color = palette.getcolor(color)
     else:
-        out = Image.new(image.mode, (width, height), color)
-        out.paste(image, (left, top))
+        palette = None
+    out = Image.new(image.mode, (width, height), color)
+    if palette:
+        out.putpalette(palette.palette)
+    out.paste(image, (left, top))
     return out
 
 
@@ -588,7 +590,19 @@ def exif_transpose(image):
     if method is not None:
         transposed_image = image.transpose(method)
         transposed_exif = transposed_image.getexif()
-        del transposed_exif[0x0112]
-        transposed_image.info["exif"] = transposed_exif.tobytes()
+        if 0x0112 in transposed_exif:
+            del transposed_exif[0x0112]
+            if "exif" in transposed_image.info:
+                transposed_image.info["exif"] = transposed_exif.tobytes()
+            elif "Raw profile type exif" in transposed_image.info:
+                transposed_image.info[
+                    "Raw profile type exif"
+                ] = transposed_exif.tobytes().hex()
+            elif "XML:com.adobe.xmp" in transposed_image.info:
+                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                    r'tiff:Orientation="([0-9])"',
+                    "",
+                    transposed_image.info["XML:com.adobe.xmp"],
+                )
         return transposed_image
     return image.copy()

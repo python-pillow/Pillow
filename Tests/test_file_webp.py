@@ -104,6 +104,13 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
+    def test_icc_profile(self, tmp_path):
+        self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
+        if _webp.HAVE_WEBPANIM:
+            self._roundtrip(
+                tmp_path, self.rgb_mode, 12.5, {"icc_profile": None, "save_all": True}
+            )
+
     def test_write_unsupported_mode_L(self, tmp_path):
         """
         Saving a black-and-white file to WebP format should work, and be

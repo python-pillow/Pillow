@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.0/libjpeg-turbo-2.1.0.tar.gz",
-        "filename": "libjpeg-turbo-2.1.0.tar.gz",
-        "dir": "libjpeg-turbo-2.1.0",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.1/libjpeg-turbo-2.1.1.tar.gz",
+        "filename": "libjpeg-turbo-2.1.1.tar.gz",
+        "dir": "libjpeg-turbo-2.1.1",
         "build": [
             cmd_cmake(
                 [
@@ -154,9 +154,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.0.tar.gz",
-        "filename": "libwebp-1.2.0.tar.gz",
-        "dir": "libwebp-1.2.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.1.tar.gz",
+        "filename": "libwebp-1.2.1.tar.gz",
+        "dir": "libwebp-1.2.1",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -277,9 +277,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.8.1.zip",
-        "filename": "harfbuzz-2.8.1.zip",
-        "dir": "harfbuzz-2.8.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.9.0.zip",
+        "filename": "harfbuzz-2.9.0.zip",
+        "dir": "harfbuzz-2.9.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

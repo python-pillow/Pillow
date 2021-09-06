@@ -2,6 +2,114 @@
 Changelog (Pillow)
 ==================
 
+8.4.0 (unreleased)
+------------------
+
+- Copy Python palette to new image in quantize() #5696
+  [radarhere]
+
+- Read ICO AND mask from end #5667
+  [radarhere]
+
+- Actually check the framesize in FliDecode.c #5659
+  [wiredfool]
+
+- Determine JPEG2000 mode purely from ihdr header box #5654
+  [radarhere]
+
+- Fixed using info dictionary when writing multiple APNG frames #5611
+  [radarhere]
+
+- Allow saving 1 and L mode TIFF with PhotometricInterpretation 0 #5655
+  [radarhere]
+
+- For GIF save_all with palette, do not include palette with each frame #5603
+  [radarhere]
+
+- Keep transparency when converting from P to LA or PA #5606
+  [radarhere]
+
+- Copy palette to new image in transform() #5647
+  [radarhere]
+
+- Added "transparency" argument to EpsImagePlugin load() #5620
+  [radarhere]
+
+- Corrected pathlib.Path detection when saving #5633
+  [radarhere]
+
+- Added WalImageFile class #5618
+  [radarhere]
+
+- Consider I;16 pixel size when drawing text #5598
+  [radarhere]
+
+- If default conversion from P is RGB with transparency, convert to RGBA #5594
+  [radarhere]
+
+- Speed up rotating square images by 90 or 270 degrees #5646
+  [radarhere]
+
+- Add support for reading DPI information from JPEG2000 images
+  [rogermb, radarhere]
+
+- Catch TypeError from corrupted DPI value in EXIF #5639
+  [homm, radarhere]
+
+- Do not close file pointer when saving SGI images #5645
+  [farizrahman4u, radarhere]
+
+- Deprecate ImagePalette size parameter #5641
+  [radarhere, hugovk]
+
+- Prefer command line tools SDK on macOS #5624
+  [radarhere]
+
+- Added tags when saving YCbCr TIFF #5597
+  [radarhere]
+
+- PSD layer count may be negative #5613
+  [radarhere]
+
+- Fixed ImageOps expand with tuple border on P image #5615
+  [radarhere]
+
+- Fixed error saving APNG with duplicate frames and different duration times #5609
+  [thak1411, radarhere]
+
+8.3.2 (2021-09-02)
+------------------
+
+- CVE-2021-23437 Raise ValueError if color specifier is too long
+  [hugovk, radarhere]
+
+- Fix 6-byte OOB read in FliDecode
+  [wiredfool]
+
+- Add support for Python 3.10 #5569, #5570
+  [hugovk, radarhere]
+
+- Ensure TIFF ``RowsPerStrip`` is multiple of 8 for JPEG compression #5588
+  [kmilos, radarhere]
+
+- Updates for ``ImagePalette`` channel order #5599
+  [radarhere]
+
+- Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library #5651
+  [nulano]
+
+8.3.1 (2021-07-06)
+------------------
+
+- Catch OSError when checking if fp is sys.stdout #5585
+  [radarhere]
+
+- Handle removing orientation from alternate types of EXIF data #5584
+  [radarhere]
+
+- Make Image.__array__ take optional dtype argument #5572
+  [t-vi, radarhere]
+
 8.3.0 (2021-07-01)
 ------------------
 

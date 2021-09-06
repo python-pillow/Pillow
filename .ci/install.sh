@@ -22,6 +22,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                          cmake imagemagick libharfbuzz-dev libfribidi-dev
 
 python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade wheel
 PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
 python3 -m pip install defusedxml
@@ -31,12 +32,10 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 python3 -m pip install test-image-results
-# TODO Remove condition when numpy supports 3.10
-if ! [ "$GHA_PYTHON_VERSION" == "3.10-dev" ]; then python3 -m pip install numpy ; fi
+python3 -m pip install numpy
 
 # PyQt5 doesn't support PyPy3
-# Wheel doesn't yet support 3.10
-if [[ $GHA_PYTHON_VERSION == 3.* && $GHA_PYTHON_VERSION != "3.10-dev" ]]; then
+if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
   # arm64, ppc64le, s390x CPUs:
   # "ERROR: Could not find a version that satisfies the requirement pyqt5"
     sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools

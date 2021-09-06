@@ -463,6 +463,15 @@ class TestFileTiff:
             im.seek(1)
             assert im.getexif()[273] == (1408, 1907)
 
+    @pytest.mark.parametrize("mode", ("1", "L"))
+    def test_photometric(self, mode, tmp_path):
+        filename = str(tmp_path / "temp.tif")
+        im = hopper(mode)
+        im.save(filename, tiffinfo={262: 0})
+        with Image.open(filename) as reloaded:
+            assert reloaded.tag_v2[262] == 0
+            assert_image_equal(im, reloaded)
+
     def test_seek(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
@@ -705,6 +714,8 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    # Ignore this UserWarning:
+    @pytest.mark.filterwarnings("ignore:Truncated File Read")
     @pytest.mark.skipif(
         not os.path.exists("Tests/images/string_dimension.tiff"),
         reason="Extra image files not installed",

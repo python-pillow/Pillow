@@ -14,6 +14,10 @@ def test_toarray():
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
+    def test_with_dtype(dtype):
+        ai = numpy.array(im, dtype=dtype)
+        assert ai.dtype == dtype
+
     # assert test("1") == ((100, 128), '|b1', 1600))
     assert test("L") == ((100, 128), "|u1", 12800)
 
@@ -27,6 +31,9 @@ def test_toarray():
     assert test("RGBA") == ((100, 128, 4), "|u1", 51200)
     assert test("RGBX") == ((100, 128, 4), "|u1", 51200)
 
+    test_with_dtype(numpy.float64)
+    test_with_dtype(numpy.uint8)
+
     with Image.open("Tests/images/truncated_jpeg.jpg") as im_truncated:
         with pytest.raises(OSError):
             numpy.array(im_truncated)
@@ -34,7 +41,7 @@ def test_toarray():
 
 def test_fromarray():
     class Wrapper:
-        """ Class with API matching Image.fromarray """
+        """Class with API matching Image.fromarray"""
 
         def __init__(self, img, arr_params):
             self.img = img

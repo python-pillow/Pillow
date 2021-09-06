@@ -42,10 +42,14 @@ def test_default():
 
     im = hopper("P")
     assert_image(im, "P", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+
+    im.info["transparency"] = 0
+    converted_im = im.convert()
+    assert_image(converted_im, "RGBA", im.size)
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274
@@ -100,18 +104,22 @@ def test_trns_p(tmp_path):
 # ref https://github.com/python-pillow/Pillow/issues/664
 
 
-def test_trns_p_rgba():
+@pytest.mark.parametrize("mode", ("LA", "PA", "RGBA"))
+def test_trns_p_transparency(mode):
     # Arrange
     im = hopper("P")
     im.info["transparency"] = 128
 
     # Act
-    im_rgba = im.convert("RGBA")
+    converted_im = im.convert(mode)
 
     # Assert
-    assert "transparency" not in im_rgba.info
-    # https://github.com/python-pillow/Pillow/issues/2702
-    assert im_rgba.palette is None
+    assert "transparency" not in converted_im.info
+    if mode == "PA":
+        assert converted_im.palette is not None
+    else:
+        # https://github.com/python-pillow/Pillow/issues/2702
+        assert converted_im.palette is None
 
 
 def test_trns_l(tmp_path):
