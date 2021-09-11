@@ -437,35 +437,41 @@ class ImageFileDirectory_v2(MutableMapping):
 
     Data Structures:
 
-        * self.tagtype = {}
+        * ``self.tagtype = {}``
 
-          * Key: numerical tiff tag number
+          * Key: numerical TIFF tag number
           * Value: integer corresponding to the data type from
-                   ~PIL.TiffTags.TYPES`
+            :py:data:`.TiffTags.TYPES`
 
-    .. versionadded:: 3.0.0
-    """
+          .. versionadded:: 3.0.0
 
-    """
-    Documentation:
+    'Internal' data structures:
 
-        'internal' data structures:
-        * self._tags_v2 = {} Key: numerical tiff tag number
-                             Value: decoded data, as tuple for multiple values
-        * self._tagdata = {} Key: numerical tiff tag number
-                             Value: undecoded byte string from file
-        * self._tags_v1 = {} Key: numerical tiff tag number
-                             Value: decoded data in the v1 format
+        * ``self._tags_v2 = {}``
 
-    Tags will be found in the private attributes self._tagdata, and in
-    self._tags_v2 once decoded.
+          * Key: numerical TIFF tag number
+          * Value: decoded data, as tuple for multiple values
 
-    self.legacy_api is a value for internal use, and shouldn't be
-    changed from outside code. In cooperation with the
-    ImageFileDirectory_v1 class, if legacy_api is true, then decoded
-    tags will be populated into both _tags_v1 and _tags_v2. _tags_v2
-    will be used if this IFD is used in the TIFF save routine. Tags
-    should be read from _tags_v1 if legacy_api == true.
+        * ``self._tagdata = {}``
+
+          * Key: numerical TIFF tag number
+          * Value: undecoded byte string from file
+
+        * ``self._tags_v1 = {}``
+
+          * Key: numerical TIFF tag number
+          * Value: decoded data in the v1 format
+
+    Tags will be found in the private attributes ``self._tagdata``, and in
+    ``self._tags_v2`` once decoded.
+
+    ``self.legacy_api`` is a value for internal use, and shouldn't be changed
+    from outside code. In cooperation with
+    :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`, if ``legacy_api``
+    is true, then decoded tags will be populated into both ``_tags_v1`` and
+    ``_tags_v2``. ``_tags_v2`` will be used if this IFD is used in the TIFF
+    save routine. Tags should be read from ``_tags_v1`` if
+    ``legacy_api == true``.
 
     """
 
