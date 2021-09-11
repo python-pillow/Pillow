@@ -439,27 +439,27 @@ class ImageFileDirectory_v2(MutableMapping):
 
         * ``self.tagtype = {}``
 
-          * Key: numerical tiff tag number
+          * Key: numerical TIFF tag number
           * Value: integer corresponding to the data type from
             :py:data:`.TiffTags.TYPES`
 
           .. versionadded:: 3.0.0
 
-    'internal' data structures:
+    'Internal' data structures:
 
         * ``self._tags_v2 = {}``
 
-          * Key: numerical tiff tag number
+          * Key: numerical TIFF tag number
           * Value: decoded data, as tuple for multiple values
 
         * ``self._tagdata = {}``
 
-          * Key: numerical tiff tag number
+          * Key: numerical TIFF tag number
           * Value: undecoded byte string from file
 
         * ``self._tags_v1 = {}``
 
-          * Key: numerical tiff tag number
+          * Key: numerical TIFF tag number
           * Value: decoded data in the v1 format
 
     Tags will be found in the private attributes ``self._tagdata``, and in
