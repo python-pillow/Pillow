@@ -17,6 +17,7 @@ jobs:
           # PyPy 7.3.4+ only ships 64-bit binaries for Windows
           - python-version: "pypy-3.7"
             architecture: "x64"
+
     timeout-minutes: 30
 
     name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
@@ -195,80 +196,8 @@ jobs:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
 
-  msys:
-    runs-on: windows-2019
-
-    strategy:
-      fail-fast: false
-      matrix:
-        mingw: ["MINGW32", "MINGW64"]
-        include:
-          - mingw: "MINGW32"
-            name: "MSYS2 MinGW 32-bit"
-            package: "mingw-w64-i686"
-          - mingw: "MINGW64"
-            name: "MSYS2 MinGW 64-bit"
-            package: "mingw-w64-x86_64"
-
-    defaults:
-      run:
-        shell: bash.exe --login -eo pipefail "{0}"
-    env:
-      MSYSTEM: ${{ matrix.mingw }}
-      CHERE_INVOKING: 1
-
-    timeout-minutes: 30
-    name: ${{ matrix.name }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up shell
-        run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
-        shell: pwsh
-
-      - name: Install Dependencies
-        run: |
-          pacman -S --noconfirm \
-              ${{ matrix.package }}-python3-cffi \
-              ${{ matrix.package }}-python3-numpy \
-              ${{ matrix.package }}-python3-olefile \
-              ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python3-pyqt5 \
-              ${{ matrix.package }}-python3-setuptools \
-              ${{ matrix.package }}-freetype \
-              ${{ matrix.package }}-ghostscript \
-              ${{ matrix.package }}-lcms2 \
-              ${{ matrix.package }}-libimagequant \
-              ${{ matrix.package }}-libjpeg-turbo \
-              ${{ matrix.package }}-libraqm \
-              ${{ matrix.package }}-libtiff \
-              ${{ matrix.package }}-libwebp \
-              ${{ matrix.package }}-openjpeg2 \
-              subversion
-
-          python3 -m pip install pyroma pytest pytest-cov
-
-          pushd depends && ./install_extra_test_images.sh && popd
-
-      - name: Build Pillow
-        run: CFLAGS="-coverage" python3 setup.py build_ext install
-
-      - name: Test Pillow
-        run: |
-          python3 selftest.py --installed
-          python3 -c "from PIL import Image"
-          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-
-      - name: Upload coverage
-        run: |
-          python3 -m pip install codecov
-          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
-        env:
-          CODECOV_NAME: ${{ matrix.name }}
-
   success:
-    needs: [build, msys]
+    needs: build
     runs-on: ubuntu-latest
     name: Windows Test Successful
     steps:
