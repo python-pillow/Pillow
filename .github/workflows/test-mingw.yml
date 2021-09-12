@@ -3,7 +3,7 @@ name: Test MinGW
 on: [push, pull_request]
 
 jobs:
-  msys:
+  build:
     runs-on: windows-2019
     strategy:
       fail-fast: false
@@ -76,7 +76,7 @@ jobs:
           CODECOV_NAME: ${{ matrix.name }}
 
   success:
-    needs: msys
+    needs: build
     runs-on: ubuntu-latest
     name: MinGW Test Successful
     steps:
