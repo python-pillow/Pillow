@@ -14,10 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 
-import atheris_no_libfuzzer as atheris
-import fuzzers
+import atheris
+
+with atheris.instrument_imports():
+    import sys
+
+    import fuzzers
 
 
 def TestOneInput(data):
@@ -26,13 +29,12 @@ def TestOneInput(data):
     except Exception:
         # We're catching all exceptions because Pillow's exceptions are
         # directly inheriting from Exception.
-        return
-    return
+        pass
 
 
 def main():
     fuzzers.enable_decompressionbomb_error()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
     fuzzers.disable_decompressionbomb_error()
 
