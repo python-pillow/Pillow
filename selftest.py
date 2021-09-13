@@ -14,17 +14,13 @@ except AttributeError:
     pass
 
 
-def _info(im):
-    im.load()
-    return im.format, im.mode, im.size
-
-
 def testimage():
     """
     PIL lets you create in-memory images with various pixel types:
 
     >>> from PIL import Image, ImageDraw, ImageFilter, ImageMath
     >>> im = Image.new("1", (128, 128)) # monochrome
+    >>> def _info(im): return (im.format, im.mode, im.size)
     >>> _info(im)
     (None, '1', (128, 128))
     >>> _info(Image.new("L", (128, 128))) # grayscale (luminance)
