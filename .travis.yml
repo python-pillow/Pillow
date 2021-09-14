@@ -68,7 +68,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: PTgVG7DrYa2FTSQOq0eDaHDZb1vy0vf6MulyuoXMg8rssPQgJ/mYxRpNDK4V0EKolpN7f8s/OGg+fpNNtp5pOCJGsx0Okcf+YB2ac+Xl7DQPBucbDKFXs1ndf/ny6umk0TXX8JTrDp/mJDJf401yx1+qsZ6X/PFvchXvXVrQ+SQ=
+    secure: $GITHUB_RELEASE_TOKEN
   file_glob: true
   file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
   on:
