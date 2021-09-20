@@ -269,9 +269,9 @@ Image.register_decoder("DXT1", DXT1Decoder)
 Image.register_decoder("DXT5", DXT5Decoder)
 
 
-def _validate(prefix):
+def _accept(prefix):
     return prefix[:4] == b"DDS "
 
 
-Image.register_open(DdsImageFile.format, DdsImageFile, _validate)
+Image.register_open(DdsImageFile.format, DdsImageFile, _accept)
 Image.register_extension(DdsImageFile.format, ".dds")
