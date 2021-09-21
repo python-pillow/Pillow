@@ -257,10 +257,10 @@ deps = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # Merge master into msvc (matches 2.14.1 except for version bump)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",  # noqa: E501
-        "filename": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",
-        "dir": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a",
+        # commit: Merge branch 'master' into msvc (matches 2.16.0 tag)
+        "url": "https://github.com/ImageOptim/libimagequant/archive/f41ee301ff3a407b16991af3dbe03910919bbdc3.zip",  # noqa: E501
+        "filename": "libimagequant-f41ee301ff3a407b16991af3dbe03910919bbdc3.zip",
+        "dir": "libimagequant-f41ee301ff3a407b16991af3dbe03910919bbdc3",
         "patch": {
             "CMakeLists.txt": {
                 "add_library": "add_compile_options(-openmp-)\r\nadd_library",
