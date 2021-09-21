@@ -263,18 +263,19 @@ deps = {
         "dir": "libimagequant-f41ee301ff3a407b16991af3dbe03910919bbdc3",
         "patch": {
             "CMakeLists.txt": {
-                "add_library": "add_compile_options(-openmp-)\r\nadd_library",
-                " SHARED": " STATIC",
+                "if(OPENMP_FOUND)": "if(false)",
+                "install": "#install",
             }
         },
         "build": [
             # lint: do not inline
             cmd_cmake(),
             cmd_nmake(target="clean"),
-            cmd_nmake(),
+            cmd_nmake(target="imagequant_a"),
+            cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
-        "libs": [r"*.lib"],
+        "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
         "url": "https://github.com/harfbuzz/harfbuzz/archive/3.0.0.zip",
@@ -437,6 +438,7 @@ def build_dep(name):
             assert patch_from in text
             text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
+            print(f"Patching {patch_file}")
             f.write(text)
 
     banner = f"Building {name} ({dir})"
