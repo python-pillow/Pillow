@@ -45,8 +45,8 @@ Wheels
 ------
 
 Wheels are uploaded to https://github.com/python-pillow/pillow-wheels/releases.
-Credentials are encrypted to this specific repo in the ``.travis.yml`` file,
-so the upload won't work from another repository.
+Credentials for this specific repo are stored in a Travis CI secret, so the upload
+won't work from another repository.
 
 PyPI
 ~~~~
