@@ -25,6 +25,9 @@ function pre_build {
     untar pillow-depends-master.zip
 
     build_xz
+    if [ -z "$IS_MACOS" ]; then
+        yum remove -y zlib-devel
+    fi
     build_new_zlib
 
     if [ -n "$IS_MACOS" ]; then
