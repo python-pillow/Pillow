@@ -98,6 +98,10 @@ function pre_build {
 }
 
 function pip_wheel_cmd {
+    if [ -z "$IS_MACOS" ]; then
+        pipx install --force "auditwheel<5"
+    fi
+
     local abs_wheelhouse=$1
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
