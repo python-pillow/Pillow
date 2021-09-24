@@ -290,9 +290,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.10.zip",
-        "filename": "fribidi-1.0.10.zip",
-        "dir": "fribidi-1.0.10",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.11.zip",
+        "filename": "fribidi-1.0.11.zip",
+        "dir": "fribidi-1.0.11",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
