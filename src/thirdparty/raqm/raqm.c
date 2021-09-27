@@ -39,6 +39,21 @@
 #include <hb.h>
 #include <hb-ft.h>
 
+#if FREETYPE_MAJOR > 2 || \
+    FREETYPE_MAJOR == 2 && FREETYPE_MINOR >= 11
+#define HAVE_FT_GET_TRANSFORM
+#endif
+
+#if HB_VERSION_ATLEAST(2, 0, 0)
+#define HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH
+#endif
+
+#if HB_VERSION_ATLEAST(1, 8, 0)
+#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 1
+#else
+#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 0
+#endif
+
 #include "raqm.h"
 
 #if FRIBIDI_MAJOR_VERSION >= 1
