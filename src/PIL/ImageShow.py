@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import warnings
 from shlex import quote
 
 from PIL import Image
@@ -56,6 +57,11 @@ def show(image, title=None, **options):
         if viewer.show(image, title=title, **options):
             return 1
     return 0
+
+
+def _warn_if_unused_title(options):
+    if options.get("title") is not None:
+        warnings.warn("title argument is not supported by this viewer")
 
 
 class Viewer:
@@ -121,6 +127,7 @@ class WindowsViewer(Viewer):
     options = {"compress_level": 1}
 
     def get_command(self, file, **options):
+        _warn_if_unused_title(options)
         return (
             f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 2 127.0.0.1 >NUL "
@@ -147,6 +154,7 @@ class MacViewer(Viewer):
 
     def show_file(self, file, **options):
         """Display given file"""
+        _warn_if_unused_title(options)
         fd, path = tempfile.mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write(file)
@@ -190,6 +198,7 @@ class DisplayViewer(UnixViewer):
     """The ImageMagick ``display`` command."""
 
     def get_command_ex(self, file, **options):
+        _warn_if_unused_title(options)
         command = executable = "display"
         return command, executable
 
@@ -198,6 +207,7 @@ class GmDisplayViewer(UnixViewer):
     """The GraphicsMagick ``gm display`` command."""
 
     def get_command_ex(self, file, **options):
+        _warn_if_unused_title(options)
         executable = "gm"
         command = "gm display"
         return command, executable
@@ -207,6 +217,7 @@ class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
     def get_command_ex(self, file, **options):
+        _warn_if_unused_title(options)
         executable = "eog"
         command = "eog -n"
         return command, executable

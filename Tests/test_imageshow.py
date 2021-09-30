@@ -68,6 +68,20 @@ def test_viewers():
             pass
 
 
+def test_title_warning():
+    viewer = ImageShow.WindowsViewer()
+    with pytest.warns(UserWarning):
+        viewer.get_command("test.jpg", title="test")
+
+    for viewer in [
+        ImageShow.DisplayViewer(),
+        ImageShow.GmDisplayViewer(),
+        ImageShow.EogViewer(),
+    ]:
+        with pytest.warns(UserWarning):
+            viewer.get_command_ex("test.jpg", title="test")
+
+
 def test_ipythonviewer():
     pytest.importorskip("IPython", reason="IPython not installed")
     for viewer in ImageShow._viewers:
