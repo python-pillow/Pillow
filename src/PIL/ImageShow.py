@@ -133,7 +133,7 @@ if sys.platform == "win32":
 
 
 class MacViewer(Viewer):
-    """The default viewer on MacOS using ``Preview.app``."""
+    """The default viewer on macOS using ``Preview.app``."""
 
     format = "PNG"
     options = {"compress_level": 1}
