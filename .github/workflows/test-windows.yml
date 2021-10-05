@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10-dev"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
         architecture: ["x86", "x64"]
         include:
           # PyPy3.6 only ships 32-bit binaries for Windows
