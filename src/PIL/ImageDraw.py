@@ -489,24 +489,23 @@ class ImageDraw:
             raise ValueError("anchor not supported for multiline text")
 
         widths = []
+        heighs = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
+
         for line in lines:
-            line_width = self.textlength(
+            line_width, line_height = self.textsize(
                 line, font, direction=direction, features=features, language=language
             )
             widths.append(line_width)
+            heighs.append(line_height + spacing)
             max_width = max(max_width, line_width)
 
         top = xy[1]
         if anchor[1] == "m":
-            top -= (len(lines) - 1) * line_spacing / 2.0
+            top -= sum(heighs) / 2.0
         elif anchor[1] == "d":
-            top -= (len(lines) - 1) * line_spacing
-
+            top -= sum(heighs)
         for idx, line in enumerate(lines):
             left = xy[0]
             width_difference = max_width - widths[idx]
@@ -540,7 +539,7 @@ class ImageDraw:
                 stroke_fill=stroke_fill,
                 embedded_color=embedded_color,
             )
-            top += line_spacing
+            top += heighs[idx]
 
     def textsize(
         self,
@@ -573,16 +572,16 @@ class ImageDraw:
         stroke_width=0,
     ):
         max_width = 0
+        all_height = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
         for line in lines:
             line_width, line_height = self.textsize(
                 line, font, spacing, direction, features, language, stroke_width
             )
             max_width = max(max_width, line_width)
-        return max_width, len(lines) * line_spacing - spacing
+            all_height += line_height + spacing
+
+        return max_width, all_height - spacing
 
     def textlength(
         self,
@@ -680,13 +679,11 @@ class ImageDraw:
             raise ValueError("anchor not supported for multiline text")
 
         widths = []
+        heighs = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
         for line in lines:
-            line_width = self.textlength(
+            line_width, line_height = self.textsize(
                 line,
                 font,
                 direction=direction,
@@ -695,13 +692,14 @@ class ImageDraw:
                 embedded_color=embedded_color,
             )
             widths.append(line_width)
+            heighs.append(line_height + spacing)
             max_width = max(max_width, line_width)
 
         top = xy[1]
         if anchor[1] == "m":
-            top -= (len(lines) - 1) * line_spacing / 2.0
+            top -= sum(heighs) / 2.0
         elif anchor[1] == "d":
-            top -= (len(lines) - 1) * line_spacing
+            top -= sum(heighs)
 
         bbox = None
 
@@ -746,7 +744,7 @@ class ImageDraw:
                     max(bbox[3], bbox_line[3]),
                 )
 
-            top += line_spacing
+            top += heighs[idx]
 
         if bbox is None:
             return xy[0], xy[1], xy[0], xy[1]

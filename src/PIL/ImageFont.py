@@ -485,15 +485,16 @@ class FreeTypeFont:
         :return: (width, height)
         """
         max_width = 0
+        all_height = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
         for line in lines:
             line_width, line_height = self.getsize(
                 line, direction, features, language, stroke_width
             )
             max_width = max(max_width, line_width)
+            all_height += line_height + spacing
 
-        return max_width, len(lines) * line_spacing - spacing
+        return max_width, all_height - spacing
 
     def getoffset(self, text):
         """
