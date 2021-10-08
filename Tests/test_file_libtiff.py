@@ -986,3 +986,10 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as im:
             # Assert that there are multiple strips
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
+
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
+    def test_save_zero(self, compression, tmp_path):
+        im = Image.new("RGB", (0, 0))
+        out = str(tmp_path / "temp.tif")
+        with pytest.raises(SystemError):
+            im.save(out, compression=compression)
