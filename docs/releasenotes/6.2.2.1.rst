@@ -1,0 +1,10 @@
+6.2.2.1
+-------
+
+Security
+========
+
+This release addresses CVE-2020-11538.
+
+CVE-2019-11538 is regarding SGI images. An out-of-bounds read can occur in the
+parsing of SGI image files.
