@@ -498,7 +498,7 @@ class ImageDraw:
                 line, font, direction=direction, features=features, language=language
             )
             widths.append(line_width)
-            heighs.append(line_height + spacing)
+            heighs.append(line_height + spacing if line_height != 0 else 0)
             max_width = max(max_width, line_width)
 
         top = xy[1]
@@ -689,7 +689,6 @@ class ImageDraw:
                 direction=direction,
                 features=features,
                 language=language,
-                embedded_color=embedded_color,
             )
             widths.append(line_width)
             heighs.append(line_height + spacing)

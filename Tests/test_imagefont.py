@@ -585,7 +585,7 @@ class TestImageFont:
         assert t.getsize_multiline("A") == (12, 16)
         assert t.getsize_multiline("AB") == (24, 16)
         assert t.getsize_multiline("a") == (12, 16)
-        assert t.getsize_multiline("ABC\n") == (36, 36)
+        assert t.getsize_multiline("ABC\n") == (36, 16)
         assert t.getsize_multiline("ABC\nA") == (36, 36)
         assert t.getsize_multiline("ABC\nAaaa") == (48, 36)
 

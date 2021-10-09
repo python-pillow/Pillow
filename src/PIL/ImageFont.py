@@ -492,7 +492,7 @@ class FreeTypeFont:
                 line, direction, features, language, stroke_width
             )
             max_width = max(max_width, line_width)
-            all_height += line_height + spacing
+            all_height += line_height + spacing if line_height != 0 else 0
 
         return max_width, all_height - spacing
 
