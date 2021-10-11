@@ -25,6 +25,9 @@ function pre_build {
     untar pillow-depends-master.zip
 
     build_xz
+    if [ -z "$IS_MACOS" ]; then
+        yum remove -y zlib-devel
+    fi
     build_new_zlib
 
     if [ -n "$IS_MACOS" ]; then
@@ -95,6 +98,10 @@ function pre_build {
 }
 
 function pip_wheel_cmd {
+    if [ -z "$IS_MACOS" ]; then
+        pipx install --force "auditwheel<5"
+    fi
+
     local abs_wheelhouse=$1
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
