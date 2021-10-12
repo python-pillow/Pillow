@@ -271,11 +271,9 @@ class GifImageFile(ImageFile.ImageFile):
                 Image._decompression_bomb_check(dispose_size)
 
                 # by convention, attempt to use transparency first
-                color = (
-                    frame_transparency
-                    if frame_transparency is not None
-                    else self.info.get("background", 0)
-                )
+                color = self.info.get("transparency", frame_transparency)
+                if color is None:
+                    color = self.info.get("background", 0)
                 self.dispose = Image.core.fill("P", dispose_size, color)
             else:
                 # replace with previous contents
