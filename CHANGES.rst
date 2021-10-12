@@ -5,6 +5,9 @@ Changelog (Pillow)
 8.4.0 (unreleased)
 ------------------
 
+- Prefer global transparency in GIF when replacing with background color #5756
+  [radarhere]
+
 - Added "exif" keyword argument to TIFF saving #5575
   [radarhere]
 
