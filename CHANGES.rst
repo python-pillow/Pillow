@@ -2,6 +2,14 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.1 (2021-10-08)
+------------------
+
+- This is the first Pillow release to support Python 2.7 from ActiveState
+
+- Catch SGI out-of-bounds reads. CVE 2020-11538
+  [ucodery]
+
 6.2.2 (2020-01-02)
 ------------------
 
