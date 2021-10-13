@@ -993,7 +993,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.STRIP_SIZE = 2 ** 18
         try:
-        
+
             im.save(out, compression="tiff_adobe_deflate")
 
             with Image.open(out) as im:
