@@ -1620,13 +1620,15 @@ def _save(im, fp, filename):
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
     if libtiff:
-        rows_per_strip = min(STRIP_SIZE // stride, im.size[1])
+        rows_per_strip = 1 if stride == 0 else min(STRIP_SIZE // stride, im.size[1])
         # JPEG encoder expects multiple of 8 rows
         if compression == "jpeg":
             rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])
     else:
         rows_per_strip = im.size[1]
-    strip_byte_counts = stride * rows_per_strip
+    if rows_per_strip == 0:
+        rows_per_strip = 1
+    strip_byte_counts = 1 if stride == 0 else stride * rows_per_strip
     strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
     ifd[ROWSPERSTRIP] = rows_per_strip
     if strip_byte_counts >= 2 ** 16:

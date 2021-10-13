@@ -337,6 +337,13 @@ def test_dispose_background():
             pass
 
 
+def test_dispose_background_transparency():
+    with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
+        img.seek(2)
+        px = img.convert("RGBA").load()
+        assert px[35, 30][3] == 0
+
+
 def test_transparent_dispose():
     expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
     with Image.open("Tests/images/transparent_dispose.gif") as img:

@@ -1,4 +1,18 @@
 Overview of changes leading to 0.7.1
+Monday, September 27, 2021
+====================================
+
+Fix test failure with newer HarfBuzz versions.
+
+Apply FT_Face transformation matrix when built against FreeType 2.11 or later.
+
+Add meson build system. Autotools build system will be dropped in next release.
+
+Improve MSVC support.
+
+Build and documentation fixes.
+
+Overview of changes leading to 0.7.1
 Sunday, November 22, 2020
 ====================================
 
