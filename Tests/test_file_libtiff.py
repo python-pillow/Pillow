@@ -992,9 +992,10 @@ class TestFileLibTiff(LibTiffTestCase):
         out = str(tmp_path / "temp.tif")
 
         TiffImagePlugin.STRIP_SIZE = 2 ** 18
-        im.save(out, compression="tiff_adobe_deflate")
-
         try:
+        
+            im.save(out, compression="tiff_adobe_deflate")
+
             with Image.open(out) as im:
                 assert len(im.tag_v2[STRIPOFFSETS]) == 1
         finally:
