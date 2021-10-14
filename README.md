@@ -48,7 +48,7 @@ As of 2019, Pillow development is
             <a href="https://codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"<img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"><img
                 alt="Tidelift Align"
                 src="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml/badge.svg"></a>
         </td>
