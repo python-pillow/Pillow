@@ -58,6 +58,7 @@ logger = logging.getLogger(__name__)
 READ_LIBTIFF = False
 WRITE_LIBTIFF = False
 IFD_LEGACY_API = True
+STRIP_SIZE = 65536
 
 II = b"II"  # little-endian (Intel style)
 MM = b"MM"  # big-endian (Motorola style)
@@ -1617,11 +1618,9 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple(v * 256 for v in lut)
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    # aim for 64 KB strips when using libtiff writer
+    # aim for given strip size (64 KB by default) when using libtiff writer
     if libtiff:
-        rows_per_strip = (
-            1 if stride == 0 else min((2 ** 16 + stride - 1) // stride, im.size[1])
-        )
+        rows_per_strip = 1 if stride == 0 else min(STRIP_SIZE // stride, im.size[1])
         # JPEG encoder expects multiple of 8 rows
         if compression == "jpeg":
             rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])
