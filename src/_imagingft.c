@@ -833,7 +833,7 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     im = (Imaging)id;
-    load_flags = FT_LOAD_DEFAULT;
+    load_flags = stroke_width ? FT_LOAD_NO_BITMAP : FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }

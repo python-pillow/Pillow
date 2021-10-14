@@ -867,6 +867,22 @@ class TestImageFont:
 
         assert_image_equal_tofile(im, target)
 
+    def test_bitmap_font_stroke(self):
+        text = "Bitmap Font"
+        layout_name = ["basic", "raqm"][self.LAYOUT_ENGINE]
+        target = f"Tests/images/bitmap_font_stroke_{layout_name}.png"
+        font = ImageFont.truetype(
+            "Tests/fonts/DejaVuSans/DejaVuSans-24-8-stripped.ttf",
+            24,
+            layout_engine=self.LAYOUT_ENGINE,
+        )
+
+        im = Image.new("RGB", (160, 35), "white")
+        draw = ImageDraw.Draw(im)
+        draw.text((2, 2), text, "black", font, stroke_width=2, stroke_fill="red")
+
+        assert_image_similar_tofile(im, target, 0.03)
+
     def test_standard_embedded_color(self):
         txt = "Hello World!"
         ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
