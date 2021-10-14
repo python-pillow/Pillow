@@ -3,6 +3,7 @@ on: [push]
 
 jobs:
   build:
+    if: github.repository_owner == 'python-pillow'
     name: Run Tidelift to ensure approved open source packages are in use
     runs-on: ubuntu-latest
     steps:
