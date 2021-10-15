@@ -992,7 +992,7 @@ try:
             "utm_source=pypi-pillow&utm_medium=pypi",
             "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
             "index.html",
-            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
+            "Changelog": "https://github.com/python-pillow/Pillow/blob/main/"
             "CHANGES.rst",
             "Twitter": "https://twitter.com/PythonPillow",
         },

@@ -19,9 +19,9 @@ environment:
 
 
 install:
-- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
+- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
 - 7z x pillow-depends.zip -oc:\
-- mv c:\pillow-depends-master c:\pillow-depends
+- mv c:\pillow-depends-main c:\pillow-depends
 - xcopy /S /Y c:\pillow-depends\test_images\* c:\pillow\tests\images
 - 7z x ..\pillow-depends\nasm-2.15.05-win64.zip -oc:\
 - ..\pillow-depends\gs9550w32.exe /S
@@ -84,7 +84,7 @@ deploy:
   artifact: /.*egg|wheel/
   on:
     APPVEYOR_REPO_NAME: python-pillow/Pillow
-    branch: master
+    branch: main
     deploy: YES
 
 

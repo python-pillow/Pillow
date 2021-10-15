@@ -322,7 +322,7 @@ issues_github_path = "python-pillow/Pillow"
 
 # sphinxext.opengraph
 ogp_image = (
-    "https://raw.githubusercontent.com/python-pillow/pillow-logo/master/"
+    "https://raw.githubusercontent.com/python-pillow/pillow-logo/main/"
     "pillow-logo-dark-text-1280x640.png"
 )
 ogp_image_alt = "Pillow"

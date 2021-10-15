@@ -26,7 +26,7 @@ jobs:
           ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
         ]
-        dockerTag: [master]
+        dockerTag: [main]
         include:
           - docker: "ubuntu-20.04-focal-arm64v8"
             qemu-arch: "aarch64"

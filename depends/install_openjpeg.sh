@@ -3,7 +3,7 @@
 
 archive=openjpeg-2.4.0
 
-./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/master/$archive.tar.gz
+./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
 
 pushd $archive
 
