@@ -15,12 +15,6 @@ services: docker
 
 jobs:
   include:
-    - name: "3.6 Focal aarch64"
-      arch: arm64
-      env:
-        - PLAT=aarch64
-        - MB_PYTHON_VERSION=3.6
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.7 Focal aarch64"
       arch: arm64
       env:
