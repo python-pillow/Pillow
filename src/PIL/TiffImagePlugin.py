@@ -674,7 +674,7 @@ class ImageFileDirectory_v2(MutableMapping):
         _load_dispatch[idx] = (  # noqa: F821
             size,
             lambda self, data, legacy_api=True: (
-                self._unpack("{}{}".format(len(data) // size, fmt), data)
+                self._unpack(f"{len(data) // size}{fmt}", data)
             ),
         )
         _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
@@ -718,7 +718,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
-        vals = self._unpack("{}L".format(len(data) // 4), data)
+        vals = self._unpack(f"{len(data) // 4}L", data)
 
         def combine(a, b):
             return (a, b) if legacy_api else IFDRational(a, b)
@@ -741,7 +741,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_loader(10, 8)
     def load_signed_rational(self, data, legacy_api=True):
-        vals = self._unpack("{}l".format(len(data) // 4), data)
+        vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a, b):
             return (a, b) if legacy_api else IFDRational(a, b)

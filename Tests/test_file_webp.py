@@ -188,9 +188,7 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum(
-            [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
-        )
+        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
         assert difference < 5
 
     @skip_unless_feature("webp")

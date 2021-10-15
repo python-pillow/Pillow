@@ -85,26 +85,26 @@ class TestFileJpeg:
         f = "Tests/images/pil_sample_cmyk.jpg"
         with Image.open(f) as im:
             # the source image has red pixels in the upper left corner.
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
 
     @pytest.mark.parametrize(

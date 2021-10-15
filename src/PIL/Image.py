@@ -918,12 +918,8 @@ class Image:
                     transparency = convert_transparency(matrix, transparency)
                 elif len(mode) == 3:
                     transparency = tuple(
-                        [
-                            convert_transparency(
-                                matrix[i * 4 : i * 4 + 4], transparency
-                            )
-                            for i in range(0, len(transparency))
-                        ]
+                        convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
+                        for i in range(0, len(transparency))
                     )
                 new.info["transparency"] = transparency
             return new
@@ -1926,7 +1922,7 @@ class Image:
             message = f"Unknown resampling filter ({resample})."
 
             filters = [
-                "{} ({})".format(filter[1], filter[0])
+                f"{filter[1]} ({filter[0]})"
                 for filter in (
                     (NEAREST, "Image.NEAREST"),
                     (LANCZOS, "Image.LANCZOS"),
@@ -2521,7 +2517,7 @@ class Image:
                 message = f"Unknown resampling filter ({resample})."
 
             filters = [
-                "{} ({})".format(filter[1], filter[0])
+                f"{filter[1]} ({filter[0]})"
                 for filter in (
                     (NEAREST, "Image.NEAREST"),
                     (BILINEAR, "Image.BILINEAR"),
