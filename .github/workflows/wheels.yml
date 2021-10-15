@@ -102,7 +102,7 @@ jobs:
             python: "3.8"
             macos-target: "11.0"
     env:
-      BUILD_COMMIT: master
+      BUILD_COMMIT: main
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
       TRAVIS_OS_NAME: ${{ matrix.os-name }}

@@ -7,7 +7,7 @@ if [ $# -eq 0 ]; then
     exit
 fi
 
-git checkout master
+git checkout main
 git submodule update --init Pillow
 cd Pillow
 git fetch --all

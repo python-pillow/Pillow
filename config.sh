@@ -1,7 +1,7 @@
 # Define custom utilities
 # Test for macOS with [ -n "$IS_MACOS" ]
 
-ARCHIVE_SDIR=pillow-depends-master
+ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.11.0
@@ -21,8 +21,8 @@ LIBXCB_VERSION=1.14
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.
-    curl -fsSL -o pillow-depends-master.zip https://github.com/python-pillow/pillow-depends/archive/master.zip
-    untar pillow-depends-master.zip
+    curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
+    untar pillow-depends-main.zip
 
     build_xz
     if [ -z "$IS_MACOS" ]; then
@@ -139,7 +139,7 @@ function run_tests {
         python3 -m pip install numpy
     fi
 
-    mv ../pillow-depends-master/test_images/* ../Pillow/Tests/images
+    mv ../pillow-depends-main/test_images/* ../Pillow/Tests/images
 
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
