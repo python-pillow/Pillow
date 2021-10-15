@@ -121,5 +121,5 @@ lint:
 
 .PHONY: lint-fix
 lint-fix:
-	black --target-version py36 .
+	black --target-version py37 .
 	isort .

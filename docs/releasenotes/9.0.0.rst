@@ -4,6 +4,11 @@
 Backwards Incompatible Changes
 ==============================
 
+Python 3.6
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.6, which reached end-of-life on 2021-12-23.
+
 PILLOW_VERSION constant
 ^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -1,7 +1,6 @@
 import io
 import os
 import shutil
-import sys
 import tempfile
 
 import pytest
@@ -782,9 +781,6 @@ class TestImage:
                 34665: 196,
             }
 
-    @pytest.mark.skipif(
-        sys.version_info < (3, 7), reason="Python 3.7 or greater required"
-    )
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0

@@ -13,7 +13,7 @@ environment:
   - PYTHON: C:/Python39
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-  - PYTHON: C:/Python36-x64
+  - PYTHON: C:/Python37-x64
     ARCHITECTURE: x64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 

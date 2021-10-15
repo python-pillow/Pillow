@@ -1000,7 +1000,6 @@ try:
             "Development Status :: 6 - Mature",
             "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
@@ -1014,7 +1013,7 @@ try:
             "Topic :: Multimedia :: Graphics :: Graphics Conversion",
             "Topic :: Multimedia :: Graphics :: Viewers",
         ],
-        python_requires=">=3.6",
+        python_requires=">=3.7",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         include_package_data=True,
