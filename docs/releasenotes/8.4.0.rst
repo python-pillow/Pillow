@@ -38,14 +38,6 @@ Added WalImageFile class
 :py:class:`PIL.Image.Image` instance. It now returns a dedicated
 :py:class:`PIL.WalImageFile.WalImageFile` class.
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
 Other Changes
 =============
 
