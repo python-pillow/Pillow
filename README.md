@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="248" height="250" src="https://raw.githubusercontent.com/python-pillow/pillow-logo/master/pillow-logo-248x250.png" alt="Pillow logo">
+    <img width="248" height="250" src="https://raw.githubusercontent.com/python-pillow/pillow-logo/main/pillow-logo-248x250.png" alt="Pillow logo">
 </p>
 
 # Pillow
@@ -38,16 +38,16 @@ As of 2019, Pillow development is
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
                 alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/master.svg?label=Windows%20build"></a>
+                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
             <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
                 alt="GitHub Actions wheels build status (Wheels)"
                 src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
             <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
                 alt="Travis CI wheels build status (aarch64)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/master.svg?label=aarch64%20wheels"></a>
+                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
             <a href="https://codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
-                src="https://codecov.io/gh/python-pillow/Pillow/branch/master/graph/badge.svg"></a>
+                src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
         </td>
     </tr>
     <tr>
@@ -93,12 +93,12 @@ The core image library is designed for fast access to data stored in a few basic
 - [Documentation](https://pillow.readthedocs.io/)
   - [Installation](https://pillow.readthedocs.io/en/latest/installation.html)
   - [Handbook](https://pillow.readthedocs.io/en/latest/handbook/index.html)
-- [Contribute](https://github.com/python-pillow/Pillow/blob/master/.github/CONTRIBUTING.md)
+- [Contribute](https://github.com/python-pillow/Pillow/blob/main/.github/CONTRIBUTING.md)
   - [Issues](https://github.com/python-pillow/Pillow/issues)
   - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
 - [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst)
-  - [Pre-fork](https://github.com/python-pillow/Pillow/blob/master/CHANGES.rst#pre-fork)
+- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
+  - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
 ## Report a Vulnerability
 

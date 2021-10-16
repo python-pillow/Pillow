@@ -4,7 +4,7 @@ from .helper import PillowLeakTestCase, skip_unless_feature
 
 
 class TestTTypeFontLeak(PillowLeakTestCase):
-    # fails at iteration 3 in master
+    # fails at iteration 3 in main
     iterations = 10
     mem_limit = 4096  # k
 
@@ -24,7 +24,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
 
 
 class TestDefaultFontLeak(TestTTypeFontLeak):
-    # fails at iteration 37 in master
+    # fails at iteration 37 in main
     iterations = 100
     mem_limit = 1024  # k
 
