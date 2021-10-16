@@ -59,10 +59,14 @@ Image Lifecycle
   ``Image.Image.seek()`` can load the appropriate frame.
 
 * ``Image.Image.close()`` Closes the file and destroys the core image object.
-  This is used in the Pillow context manager support. e.g.::
+
+  The Pillow context manager will also close the file, but will not destroy
+  the core image object. e.g.::
 
       with Image.open('test.jpg') as img:
-         ...  # image operations here.
+         img.load()
+      assert img.fp is None
+      img.save('test.png')
 
 
 The lifecycle of a single-frame image is relatively simple. The file must
