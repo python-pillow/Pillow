@@ -47,6 +47,10 @@ Image Lifecycle
   memory. The image can now be used independently of the underlying
   image file.
 
+  Any Pillow method that creates a new image instance based on another will
+  internally call ``load()`` on the original image and then read the data.
+  The new image instance will not be associated with the original image file.
+
   If a filename or a ``Path`` object was passed to ``Image.open()``, then the
   file object was opened by Pillow and is considered to be used exclusively by
   Pillow. So if the image is a single-frame image, the file will be closed in
