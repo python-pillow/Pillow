@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-8.4.0 (unreleased)
+8.4.0 (2021-10-15)
 ------------------
 
 - Prefer global transparency in GIF when replacing with background color #5756

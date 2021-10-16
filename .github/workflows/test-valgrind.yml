@@ -22,7 +22,7 @@ jobs:
         docker: [
           ubuntu-20.04-focal-amd64-valgrind,
         ]
-        dockerTag: [master]
+        dockerTag: [main]
 
     name: ${{ matrix.docker }}
 

@@ -8,8 +8,8 @@ information about how the version numbers line up with releases.
 Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
-* [ ] Develop and prepare release in `master` branch.
-* [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `master` branch.
+* [ ] Develop and prepare release in `main` branch.
+* [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI and GitHub Actions.
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
@@ -26,7 +26,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   make sdist
   twine check dist/*
   ```
-* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
   twine check dist/*
@@ -39,13 +39,13 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 Released as needed for security, installation or critical bug fixes.
 
-* [ ] Make necessary changes in `master` branch.
+* [ ] Make necessary changes in `main` branch.
 * [ ] Update `CHANGES.rst`.
 * [ ] Check out release branch e.g.:
   ```bash
   git checkout -t remotes/origin/5.2.x
   ```
-* [ ] Cherry pick individual commits from `master` branch to release branch e.g. `5.2.x`, then `git push`.
+* [ ] Cherry pick individual commits from `main` branch to release branch e.g. `5.2.x`, then `git push`.
 
 
 
@@ -63,7 +63,7 @@ Released as needed for security, installation or critical bug fixes.
   make sdist
   twine check dist/*
   ```
-* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
   twine check dist/*
@@ -76,7 +76,7 @@ Released as needed for security, installation or critical bug fixes.
 Released as needed privately to individual vendors for critical security-related bug fixes.
 
 * [ ] Prepare patch for all versions that will get a fix. Test against local installations.
-* [ ] Commit against master, cherry pick to affected release branches.
+* [ ] Commit against `main`, cherry pick to affected release branches.
 * [ ] Run local test matrix on each release & Python version.
 * [ ] Privately send to distros.
 * [ ] Run pre-release check via `make release-test`
@@ -93,7 +93,7 @@ Released as needed privately to individual vendors for critical security-related
   make sdist
   twine check dist/*
   ```
-* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/master/RELEASING.md#binary-distributions)
+* [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
 ## Binary Distributions
