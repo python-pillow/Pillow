@@ -33,15 +33,6 @@ Image.show command parameter
 The ``command`` parameter will be removed in Pillow 9.0.0 (2022-01-02).
 Use a subclass of :py:class:`.ImageShow.Viewer` instead.
 
-Image._showxv
-~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-``Image._showxv`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
-:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -88,6 +79,15 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~

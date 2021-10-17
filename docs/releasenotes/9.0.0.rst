@@ -14,3 +14,10 @@ ImageFile.raise_ioerror
 
 ``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
 has been removed. Use ``ImageFile.raise_oserror`` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+``Image._showxv`` has been removed. Use :py:meth:`~PIL.Image.Image.show`
+instead. If custom behaviour is required, use :py:meth:`~PIL.ImageShow.register` to add
+a custom :py:class:`~PIL.ImageShow.Viewer` class.

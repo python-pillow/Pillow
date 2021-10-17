@@ -626,22 +626,6 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_showxv_deprecation(self):
-        class TestViewer(ImageShow.Viewer):
-            def show_image(self, image, **options):
-                return True
-
-        viewer = TestViewer()
-        ImageShow.register(viewer, -1)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(DeprecationWarning):
-            Image._showxv(im)
-
-        # Restore original state
-        ImageShow._viewers.pop(0)
-
     def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
