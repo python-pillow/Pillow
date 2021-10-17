@@ -42,15 +42,6 @@ Image._showxv
 Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
 :py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
-ImageFile.raise_ioerror
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-``IOError`` was merged into ``OSError`` in Python 3.3.
-So, ``ImageFile.raise_ioerror`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use ``ImageFile.raise_oserror`` instead.
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -97,6 +88,16 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+``IOError`` was merged into ``OSError`` in Python 3.3.
+So, ``ImageFile.raise_ioerror`` has been removed.
+Use ``ImageFile.raise_oserror`` instead.
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~

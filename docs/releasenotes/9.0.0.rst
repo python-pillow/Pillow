@@ -8,3 +8,9 @@ PILLOW_VERSION constant
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 ``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+has been removed. Use ``ImageFile.raise_oserror`` instead.

@@ -94,12 +94,6 @@ class TestImageFile:
 
         assert_image_equal(im1, im2)
 
-    def test_raise_ioerror(self):
-        with pytest.raises(IOError):
-            with pytest.warns(DeprecationWarning) as record:
-                ImageFile.raise_ioerror(1)
-        assert len(record) == 1
-
     def test_raise_oserror(self):
         with pytest.raises(OSError):
             ImageFile.raise_oserror(1)
