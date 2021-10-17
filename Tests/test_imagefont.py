@@ -757,11 +757,7 @@ class TestImageFont:
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-        freetype = parse_version(features.version_module("freetype2"))
-        if freetype < parse_version("2.4"):
-            width, height = (129, 44)
-            left = left_old
-        elif self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
             width, height = (129, 44)
         else:
             width, height = (128, 44)
@@ -894,7 +890,6 @@ class TestImageFont:
 
         assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
 
-    @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt(self):
         try:
             font = ImageFont.truetype(
@@ -913,7 +908,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
-    @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt_mask(self):
         try:
             font = ImageFont.truetype(
@@ -934,7 +928,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
-    @skip_unless_feature_version("freetype2", "2.5.1")
     def test_sbix(self):
         try:
             font = ImageFont.truetype(
@@ -953,7 +946,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
 
-    @skip_unless_feature_version("freetype2", "2.5.1")
     def test_sbix_mask(self):
         try:
             font = ImageFont.truetype(
@@ -1008,7 +1000,6 @@ class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
 
 
-@skip_unless_feature_version("freetype2", "2.4", "Different metrics")
 def test_render_mono_size():
     # issue 4177
 
@@ -1022,18 +1013,6 @@ def test_render_mono_size():
 
     draw.text((10, 10), "r" * 10, "black", ttf)
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
-
-
-def test_freetype_deprecation(monkeypatch):
-    # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module):
-        return "2.7"
-
-    monkeypatch.setattr(features, "version_module", fake_version_module)
-
-    # Act / Assert
-    with pytest.warns(DeprecationWarning):
-        ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
 
 @pytest.mark.parametrize(

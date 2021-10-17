@@ -12,19 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-FreeType 2.7
-~~~~~~~~~~~~
-
-.. deprecated:: 8.1.0
-
-Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
-when FreeType 2.8 will be the minimum supported.
-
-We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
-
-.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -110,6 +97,19 @@ ImageFile.raise_ioerror
 ``IOError`` was merged into ``OSError`` in Python 3.3.
 So, ``ImageFile.raise_ioerror`` has been removed.
 Use ``ImageFile.raise_oserror`` instead.
+
+FreeType 2.7
+~~~~~~~~~~~~
+
+.. deprecated:: 8.1.0
+.. versionremoved:: 9.0.0
+
+Support for FreeType 2.7 has been removed.
+
+We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _FreeType: https://www.freetype.org
 
 im.offset
 ~~~~~~~~~
