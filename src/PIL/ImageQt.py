@@ -34,7 +34,7 @@ qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=Tr
 for qt_version, qt_module in qt_versions:
     try:
         if qt_module == "PyQt6":
-            from PyQt6.QtCore import QBuffer, QIODevice, QIODeviceBase
+            from PyQt6.QtCore import QBuffer, QIODevice
             from PyQt6.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PySide6":
             from PySide6.QtCore import QBuffer, QIODevice
@@ -68,7 +68,7 @@ def fromqimage(im):
     buffer = QBuffer()
     if qt_version == "6":
         try:
-            qt_openmode = QIODeviceBase.OpenModeFlag
+            qt_openmode = QIODevice.OpenModeFlag
         except AttributeError:
             qt_openmode = QIODevice.OpenMode
     else:
