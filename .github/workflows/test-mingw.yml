@@ -55,7 +55,7 @@ jobs:
               ${{ matrix.package }}-openjpeg2 \
               subversion
 
-          python3 -m pip install pyroma pytest pytest-cov
+          python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
 
