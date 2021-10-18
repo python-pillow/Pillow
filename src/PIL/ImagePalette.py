@@ -44,7 +44,7 @@ class ImagePalette:
         if size != 0:
             warnings.warn(
                 "The size parameter is deprecated and will be removed in Pillow 10 "
-                "(2023-01-02).",
+                "(2023-07-01).",
                 DeprecationWarning,
             )
             if size != len(self.palette):

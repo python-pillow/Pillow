@@ -30,7 +30,7 @@ Tk/Tcl 8.4
 
 .. deprecated:: 8.2.0
 
-Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
 when Tk/Tcl 8.5 will be the minimum supported.
 
 Categories
@@ -38,7 +38,7 @@ Categories
 
 .. deprecated:: 8.2.0
 
-``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-01-02),
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
 along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
 ``Image.CONTAINER`` attributes.
 
@@ -53,14 +53,14 @@ JpegImagePlugin.convert_dict_qtables
 JPEG ``quantization`` is now automatically converted, but still returned as a
 dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
 performs any operations on the data given to it, has been deprecated and will be
-removed in Pillow 10.0.0 (2023-01-02).
+removed in Pillow 10.0.0 (2023-07-01).
 
 ImagePalette size parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 8.4.0
 
-The ``size`` parameter will be removed in Pillow 10.0.0 (2023-01-02).
+The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
 
 Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
 default, and the size parameter could be used to override that. Pillow 8.3.0 removed
