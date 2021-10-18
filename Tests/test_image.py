@@ -6,8 +6,7 @@ import tempfile
 
 import pytest
 
-import PIL
-from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
 from .helper import (
     assert_image_equal,
@@ -831,18 +830,6 @@ class TestImage:
                 assert False
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
-
-    def test_show_deprecation(self, monkeypatch):
-        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(None) as raised:
-            im.show()
-        assert not raised
-
-        with pytest.warns(DeprecationWarning):
-            im.show(command="mock")
 
 
 class MockEncoder:

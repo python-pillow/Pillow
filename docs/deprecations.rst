@@ -25,14 +25,6 @@ vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
-Image.show command parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-The ``command`` parameter will be removed in Pillow 9.0.0 (2022-01-02).
-Use a subclass of :py:class:`.ImageShow.Viewer` instead.
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -79,6 +71,15 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+The ``command`` parameter has been removed. Use a subclass of
+:py:class:`.ImageShow.Viewer` instead.
 
 Image._showxv
 ~~~~~~~~~~~~~

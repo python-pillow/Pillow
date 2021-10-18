@@ -30,7 +30,6 @@
 import io
 import struct
 import sys
-import warnings
 
 from . import Image
 from ._util import isPath

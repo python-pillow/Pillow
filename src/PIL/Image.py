@@ -2247,7 +2247,7 @@ class Image:
         if frame != 0:
             raise EOFError
 
-    def show(self, title=None, command=None):
+    def show(self, title=None):
         """
         Displays this image. This method is mainly intended for debugging purposes.
 
@@ -2267,14 +2267,7 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        if command is not None:
-            warnings.warn(
-                "The command parameter is deprecated and will be removed in Pillow 9 "
-                "(2022-01-02). Use a subclass of ImageShow.Viewer instead.",
-                DeprecationWarning,
-            )
-
-        _show(self, title=title, command=command)
+        _show(self, title=title)
 
     def split(self):
         """

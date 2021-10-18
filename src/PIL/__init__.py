@@ -13,9 +13,6 @@ Use PIL.__version__ for this Pillow version.
 ;-)
 """
 
-import sys
-import warnings
-
 from . import _version
 
 # VERSION was removed in Pillow 6.0.0.
