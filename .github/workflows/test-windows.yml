@@ -14,6 +14,8 @@ jobs:
           # PyPy 7.3.4+ only ships 64-bit binaries for Windows
           - python-version: "pypy-3.7"
             architecture: "x64"
+          - python-version: "pypy-3.8"
+            architecture: "x64"
 
     timeout-minutes: 30
 

@@ -13,6 +13,7 @@ jobs:
           "macOS-latest",
         ]
         python-version: [
+          "pypy-3.8",
           "pypy-3.7",
           "3.10",
           "3.9",
