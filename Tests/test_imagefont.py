@@ -738,22 +738,22 @@ class TestImageFont:
             d.textbbox((0, 0), "test", font=default_font)
 
     @pytest.mark.parametrize(
-        "anchor, left, left_old, top",
+        "anchor, left, top",
         (
             # test horizontal anchors
-            ("ls", 0, 0, -36),
-            ("ms", -64, -65, -36),
-            ("rs", -128, -129, -36),
+            ("ls", 0, -36),
+            ("ms", -64, -36),
+            ("rs", -128, -36),
             # test vertical anchors
-            ("ma", -64, -65, 16),
-            ("mt", -64, -65, 0),
-            ("mm", -64, -65, -17),
-            ("mb", -64, -65, -44),
-            ("md", -64, -65, -51),
+            ("ma", -64, 16),
+            ("mt", -64, 0),
+            ("mm", -64, -17),
+            ("mb", -64, -44),
+            ("md", -64, -51),
         ),
         ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
     )
-    def test_anchor(self, anchor, left, left_old, top):
+    def test_anchor(self, anchor, left, top):
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
