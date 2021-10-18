@@ -378,6 +378,12 @@ int ImagingLibTiffDecode(Imaging im, ImagingCodecState state, UINT8* buffer, Py_
 
         for (y = state->yoff; y < state->ysize; y += tile_length) {
             for (x = state->xoff; x < state->xsize; x += tile_width) {
+                if (!TIFFCheckTile(tiff, x, y, 0, 0)) {
+                    TRACE(("Check Tile Error, Tile at %dx%d\n", x, y));
+                    state->errcode = IMAGING_CODEC_BROKEN;
+                    TIFFClose(tiff);
+                    return -1;
+                }
                 if (ReadTile(tiff, x, y, (UINT32*) state->buffer) == -1) {
                     TRACE(("Decode Error, Tile at %dx%d\n", x, y));
                     state->errcode = IMAGING_CODEC_BROKEN;

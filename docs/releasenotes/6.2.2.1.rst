@@ -6,5 +6,8 @@ Security
 
 This release addresses CVE-2020-11538.
 
-CVE-2019-11538 is regarding SGI images. An out-of-bounds read can occur in the
+CVE-2020-11538 is regarding SGI images. An out-of-bounds read can occur in the
 parsing of SGI image files.
+
+CVE-2021-25289 is regarding Tiff images. A heap-based buffer overflow can occur
+when decoding crafted YCbCr files.

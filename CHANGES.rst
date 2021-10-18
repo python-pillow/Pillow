@@ -10,6 +10,9 @@ Changelog (Pillow)
 - Catch SGI out-of-bounds reads. CVE 2020-11538
   [ucodery]
 
+- Catch TiffDecode heap-based buffer overflow. CVE 2021-25289
+  [ucodery]
+
 6.2.2 (2020-01-02)
 ------------------
 
