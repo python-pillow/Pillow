@@ -1,0 +1,10 @@
+9.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.

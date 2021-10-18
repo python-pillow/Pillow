@@ -51,17 +51,6 @@ ImageFile.raise_ioerror
 So, ``ImageFile.raise_ioerror`` will be removed in Pillow 9.0.0 (2022-01-02).
 Use ``ImageFile.raise_oserror`` instead.
 
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.2.0
-
-``PILLOW_VERSION`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use ``__version__`` instead.
-
-It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
-more time to upgrade.
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -108,6 +97,17 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+.. versionremoved:: 9.0.0
+
+Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
+to give projects more time to upgrade.
 
 im.offset
 ~~~~~~~~~

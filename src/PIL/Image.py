@@ -45,45 +45,28 @@ except ImportError:
     ElementTree = None
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in a future release.
+# PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
-from . import (
-    ImageMode,
-    TiffTags,
-    UnidentifiedImageError,
-    __version__,
-    _plugins,
-    _raise_version_warning,
-)
+from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le
 from ._util import deferred_error, isPath
 
 if sys.version_info >= (3, 7):
 
     def __getattr__(name):
-        if name == "PILLOW_VERSION":
-            _raise_version_warning()
-            return __version__
-        else:
-            categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
-            if name in categories:
-                warnings.warn(
-                    "Image categories are deprecated and will be removed in Pillow 10 "
-                    "(2023-01-02). Use is_animated instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return categories[name]
+        categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+        if name in categories:
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-01-02). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return categories[name]
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:
-
-    from . import PILLOW_VERSION
-
-    # Silence warning
-    assert PILLOW_VERSION
-
     # categories
     NORMAL = 0
     SEQUENCE = 1
