@@ -42,7 +42,7 @@ jobs:
               ${{ matrix.package }}-python3-numpy \
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python3-pyqt5 \
+              ${{ matrix.package }}-python-pyqt6 \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-ghostscript \
