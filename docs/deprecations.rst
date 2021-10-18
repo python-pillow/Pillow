@@ -72,6 +72,17 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+.. versionremoved:: 9.0.0
+
+Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
+to give projects more time to upgrade.
+
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -99,17 +110,6 @@ ImageFile.raise_ioerror
 ``IOError`` was merged into ``OSError`` in Python 3.3.
 So, ``ImageFile.raise_ioerror`` has been removed.
 Use ``ImageFile.raise_oserror`` instead.
-
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.2.0
-.. versionremoved:: 9.0.0
-
-Use ``__version__`` instead.
-
-It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
-to give projects more time to upgrade.
 
 im.offset
 ~~~~~~~~~
