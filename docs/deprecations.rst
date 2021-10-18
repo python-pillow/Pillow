@@ -25,43 +25,6 @@ vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
-Image.show command parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-The ``command`` parameter will be removed in Pillow 9.0.0 (2022-01-02).
-Use a subclass of :py:class:`.ImageShow.Viewer` instead.
-
-Image._showxv
-~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-``Image._showxv`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
-:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
-
-ImageFile.raise_ioerror
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 7.2.0
-
-``IOError`` was merged into ``OSError`` in Python 3.3.
-So, ``ImageFile.raise_ioerror`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use ``ImageFile.raise_oserror`` instead.
-
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 5.2.0
-
-``PILLOW_VERSION`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use ``__version__`` instead.
-
-It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
-more time to upgrade.
-
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
@@ -108,6 +71,45 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+.. versionremoved:: 9.0.0
+
+Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
+to give projects more time to upgrade.
+
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+The ``command`` parameter has been removed. Use a subclass of
+:py:class:`.ImageShow.Viewer` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+``IOError`` was merged into ``OSError`` in Python 3.3.
+So, ``ImageFile.raise_ioerror`` has been removed.
+Use ``ImageFile.raise_oserror`` instead.
 
 im.offset
 ~~~~~~~~~

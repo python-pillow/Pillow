@@ -45,45 +45,28 @@ except ImportError:
     ElementTree = None
 
 # VERSION was removed in Pillow 6.0.0.
-# PILLOW_VERSION is deprecated and will be removed in a future release.
+# PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
-from . import (
-    ImageMode,
-    TiffTags,
-    UnidentifiedImageError,
-    __version__,
-    _plugins,
-    _raise_version_warning,
-)
+from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le
 from ._util import deferred_error, isPath
 
 if sys.version_info >= (3, 7):
 
     def __getattr__(name):
-        if name == "PILLOW_VERSION":
-            _raise_version_warning()
-            return __version__
-        else:
-            categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
-            if name in categories:
-                warnings.warn(
-                    "Image categories are deprecated and will be removed in Pillow 10 "
-                    "(2023-01-02). Use is_animated instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return categories[name]
+        categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+        if name in categories:
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-01-02). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return categories[name]
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 else:
-
-    from . import PILLOW_VERSION
-
-    # Silence warning
-    assert PILLOW_VERSION
-
     # categories
     NORMAL = 0
     SEQUENCE = 1
@@ -2264,7 +2247,7 @@ class Image:
         if frame != 0:
             raise EOFError
 
-    def show(self, title=None, command=None):
+    def show(self, title=None):
         """
         Displays this image. This method is mainly intended for debugging purposes.
 
@@ -2284,14 +2267,7 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        if command is not None:
-            warnings.warn(
-                "The command parameter is deprecated and will be removed in Pillow 9 "
-                "(2022-01-02). Use a subclass of ImageShow.Viewer instead.",
-                DeprecationWarning,
-            )
-
-        _show(self, title=title, command=command)
+        _show(self, title=title)
 
     def split(self):
         """
@@ -3250,22 +3226,9 @@ def register_encoder(name, encoder):
 
 
 def _show(image, **options):
-    options["_internal_pillow"] = True
-    _showxv(image, **options)
-
-
-def _showxv(image, title=None, **options):
     from . import ImageShow
 
-    if "_internal_pillow" in options:
-        del options["_internal_pillow"]
-    else:
-        warnings.warn(
-            "_showxv is deprecated and will be removed in Pillow 9 (2022-01-02). "
-            "Use Image.show instead.",
-            DeprecationWarning,
-        )
-    ImageShow.show(image, title, **options)
+    ImageShow.show(image, **options)
 
 
 # --------------------------------------------------------------------

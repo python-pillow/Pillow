@@ -6,8 +6,7 @@ import tempfile
 
 import pytest
 
-import PIL
-from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
 from .helper import (
     assert_image_equal,
@@ -626,22 +625,6 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_showxv_deprecation(self):
-        class TestViewer(ImageShow.Viewer):
-            def show_image(self, image, **options):
-                return True
-
-        viewer = TestViewer()
-        ImageShow.register(viewer, -1)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(DeprecationWarning):
-            Image._showxv(im)
-
-        # Restore original state
-        ImageShow._viewers.pop(0)
-
     def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -814,35 +797,6 @@ class TestImage:
             assert Image.CONTAINER == 2
 
     @pytest.mark.parametrize(
-        "test_module",
-        [PIL, Image],
-    )
-    def test_pillow_version(self, test_module):
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION == PIL.__version__
-
-        with pytest.warns(DeprecationWarning):
-            str(test_module.PILLOW_VERSION)
-
-        with pytest.warns(DeprecationWarning):
-            assert int(test_module.PILLOW_VERSION[0]) >= 7
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION < "9.9.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION <= "9.9.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION != "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION >= "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION > "7.0.0"
-
-    @pytest.mark.parametrize(
         "path",
         [
             "fli_overrun.bin",
@@ -876,18 +830,6 @@ class TestImage:
                 assert False
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
-
-    def test_show_deprecation(self, monkeypatch):
-        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(None) as raised:
-            im.show()
-        assert not raised
-
-        with pytest.warns(DeprecationWarning):
-            im.show(command="mock")
 
 
 class MockEncoder:

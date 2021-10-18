@@ -1,0 +1,61 @@
+9.0.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+PILLOW_VERSION constant
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``PILLOW_VERSION`` has been removed. Use ``__version__`` instead.
+
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``command`` parameter has been removed. Use a subclass of
+:py:class:`PIL.ImageShow.Viewer` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+``Image._showxv`` has been removed. Use :py:meth:`~PIL.Image.Image.show`
+instead. If custom behaviour is required, use :py:meth:`~PIL.ImageShow.register` to add
+a custom :py:class:`~PIL.ImageShow.Viewer` class.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+has been removed. Use ``ImageFile.raise_oserror`` instead.
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

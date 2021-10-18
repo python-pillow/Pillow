@@ -30,7 +30,6 @@
 import io
 import struct
 import sys
-import warnings
 
 from . import Image
 from ._util import isPath
@@ -65,15 +64,6 @@ def raise_oserror(error):
     if not message:
         message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
-
-
-def raise_ioerror(error):
-    warnings.warn(
-        "raise_ioerror is deprecated and will be removed in Pillow 9 (2022-01-02). "
-        "Use raise_oserror instead.",
-        DeprecationWarning,
-    )
-    return raise_oserror(error)
 
 
 def _tilesort(t):
