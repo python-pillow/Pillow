@@ -9,8 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "ubuntu-latest",
           "macOS-latest",
+          "ubuntu-latest",
         ]
         python-version: [
           "pypy-3.8",
