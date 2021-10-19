@@ -155,7 +155,6 @@ class TestImageFont:
         draw.text((10, 10), txt, font=ttf)
         draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
 
-        # Epsilon ~.5 fails with FreeType 2.7
         assert_image_similar_tofile(
             im, "Tests/images/rectangle_surrounding_text.png", 2.5
         )
@@ -216,8 +215,7 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), TEST_TEXT, font=ttf)
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 6.2)
+        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 0.01)
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -232,9 +230,8 @@ class TestImageFont:
             draw = ImageDraw.Draw(im)
             draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
 
-            # Epsilon ~.5 fails with FreeType 2.7
             assert_image_similar_tofile(
-                im, "Tests/images/multiline_text" + ext + ".png", 6.2
+                im, "Tests/images/multiline_text" + ext + ".png", 0.01
             )
 
     def test_unknown_align(self):
@@ -289,8 +286,7 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 6.2)
+        assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 2.5)
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
