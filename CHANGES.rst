@@ -2,6 +2,18 @@
 Changelog (Pillow)
 ==================
 
+9.0.0 (unreleased)
+------------------
+
+- Remove support for FreeType 2.7 and older #5777
+  [hugovk, radarhere]
+
+- Fix for PyQt6 #5775
+  [hugovk, radarhere]
+
+- Removed deprecated PILLOW_VERSION, Image.show command parameter, Image._showxv and ImageFile.raise_ioerror #5776
+  [radarhere]
+
 8.4.0 (2021-10-15)
 ------------------
 
