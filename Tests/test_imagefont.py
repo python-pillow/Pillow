@@ -155,7 +155,6 @@ class TestImageFont:
         draw.text((10, 10), txt, font=ttf)
         draw.rectangle((10, 10, 10 + size[0], 10 + size[1]))
 
-        # Epsilon ~.5 fails with FreeType 2.7
         assert_image_similar_tofile(
             im, "Tests/images/rectangle_surrounding_text.png", 2.5
         )
@@ -216,8 +215,7 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.text((0, 0), TEST_TEXT, font=ttf)
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 6.2)
+        assert_image_similar_tofile(im, "Tests/images/multiline_text.png", 0.01)
 
         # Test that text() can pass on additional arguments
         # to multiline_text()
@@ -232,9 +230,8 @@ class TestImageFont:
             draw = ImageDraw.Draw(im)
             draw.multiline_text((0, 0), TEST_TEXT, font=ttf, align=align)
 
-            # Epsilon ~.5 fails with FreeType 2.7
             assert_image_similar_tofile(
-                im, "Tests/images/multiline_text" + ext + ".png", 6.2
+                im, "Tests/images/multiline_text" + ext + ".png", 0.01
             )
 
     def test_unknown_align(self):
@@ -289,8 +286,7 @@ class TestImageFont:
         draw = ImageDraw.Draw(im)
         draw.multiline_text((0, 0), TEST_TEXT, font=ttf, spacing=10)
 
-        # Epsilon ~.5 fails with FreeType 2.7
-        assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 6.2)
+        assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 2.5)
 
     def test_rotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -738,30 +734,26 @@ class TestImageFont:
             d.textbbox((0, 0), "test", font=default_font)
 
     @pytest.mark.parametrize(
-        "anchor, left, left_old, top",
+        "anchor, left, top",
         (
             # test horizontal anchors
-            ("ls", 0, 0, -36),
-            ("ms", -64, -65, -36),
-            ("rs", -128, -129, -36),
+            ("ls", 0, -36),
+            ("ms", -64, -36),
+            ("rs", -128, -36),
             # test vertical anchors
-            ("ma", -64, -65, 16),
-            ("mt", -64, -65, 0),
-            ("mm", -64, -65, -17),
-            ("mb", -64, -65, -44),
-            ("md", -64, -65, -51),
+            ("ma", -64, 16),
+            ("mt", -64, 0),
+            ("mm", -64, -17),
+            ("mb", -64, -44),
+            ("md", -64, -51),
         ),
         ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
     )
-    def test_anchor(self, anchor, left, left_old, top):
+    def test_anchor(self, anchor, left, top):
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-        freetype = parse_version(features.version_module("freetype2"))
-        if freetype < parse_version("2.4"):
-            width, height = (129, 44)
-            left = left_old
-        elif self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
             width, height = (129, 44)
         else:
             width, height = (128, 44)
@@ -894,7 +886,6 @@ class TestImageFont:
 
         assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
 
-    @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt(self):
         try:
             font = ImageFont.truetype(
@@ -913,7 +904,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
-    @skip_unless_feature_version("freetype2", "2.5.0")
     def test_cbdt_mask(self):
         try:
             font = ImageFont.truetype(
@@ -934,7 +924,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
-    @skip_unless_feature_version("freetype2", "2.5.1")
     def test_sbix(self):
         try:
             font = ImageFont.truetype(
@@ -953,7 +942,6 @@ class TestImageFont:
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
 
-    @skip_unless_feature_version("freetype2", "2.5.1")
     def test_sbix_mask(self):
         try:
             font = ImageFont.truetype(
@@ -1008,7 +996,6 @@ class TestImageFont_RaqmLayout(TestImageFont):
     LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
 
 
-@skip_unless_feature_version("freetype2", "2.4", "Different metrics")
 def test_render_mono_size():
     # issue 4177
 
@@ -1022,18 +1009,6 @@ def test_render_mono_size():
 
     draw.text((10, 10), "r" * 10, "black", ttf)
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
-
-
-def test_freetype_deprecation(monkeypatch):
-    # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module):
-        return "2.7"
-
-    monkeypatch.setattr(features, "version_module", fake_version_module)
-
-    # Act / Assert
-    with pytest.warns(DeprecationWarning):
-        ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
 
 @pytest.mark.parametrize(
