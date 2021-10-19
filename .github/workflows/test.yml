@@ -9,23 +9,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "ubuntu-latest",
           "macOS-latest",
+          "ubuntu-latest",
         ]
         python-version: [
+          "pypy-3.8",
           "pypy-3.7",
-          "pypy-3.6",
           "3.10",
           "3.9",
           "3.8",
           "3.7",
-          "3.6",
         ]
         include:
-        - python-version: "3.6"
+        - python-version: "3.7"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
-        - python-version: "3.7"
+        - python-version: "3.8"
           PYTHONOPTIMIZE: 2
         # Include new variables for Codecov
         - os: ubuntu-latest
