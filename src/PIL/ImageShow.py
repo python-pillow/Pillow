@@ -189,8 +189,10 @@ class UnixViewer(Viewer):
 class DisplayViewer(UnixViewer):
     """The ImageMagick ``display`` command."""
 
-    def get_command_ex(self, file, **options):
+    def get_command_ex(self, file, title=None, **options):
         command = executable = "display"
+        if title:
+            command += f" -name {quote(title)}"
         return command, executable
 
 
