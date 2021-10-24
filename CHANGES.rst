@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Use title for display in ImageShow #5788
+  [radarhere]
+
 - Remove support for FreeType 2.7 and older #5777
   [hugovk, radarhere]
 
