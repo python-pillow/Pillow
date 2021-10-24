@@ -564,8 +564,8 @@ class pil_build_ext(build_ext):
                     library_dirs,
                     os.path.join(
                         os.environ["ANDROID_ROOT"],
-                        "lib" if struct.calcsize("l") == 4 else "lib64"
-                    )
+                        "lib" if struct.calcsize("l") == 4 else "lib64",
+                    ),
                 )
 
         elif sys.platform.startswith("netbsd"):
