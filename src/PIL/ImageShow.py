@@ -187,10 +187,15 @@ class UnixViewer(Viewer):
 
 
 class DisplayViewer(UnixViewer):
-    """The ImageMagick ``display`` command."""
+    """
+    The ImageMagick ``display`` command.
+    This viewer supports the ``title`` parameter.
+    """
 
-    def get_command_ex(self, file, **options):
+    def get_command_ex(self, file, title=None, **options):
         command = executable = "display"
+        if title:
+            command += f" -name {quote(title)}"
         return command, executable
 
 

@@ -63,10 +63,14 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Added support for "title" argument to DisplayViewer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Support has been added for the "title" argument in
+:py:class:`~PIL.ImageShow.UnixViewer.DisplayViewer`, so that when ``im.show()`` or
+:py:func:`.ImageShow.show()` use the ``display`` command line tool, the "title"
+argument will also now be supported, e.g. ``im.show(title="My Image")`` and
+``ImageShow.show(im, title="My Image")``.
 
 Security
 ========
