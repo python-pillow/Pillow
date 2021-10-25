@@ -58,7 +58,7 @@ if sys.version_info >= (3, 7):
         if name in categories:
             warnings.warn(
                 "Image categories are deprecated and will be removed in Pillow 10 "
-                "(2023-01-02). Use is_animated instead.",
+                "(2023-07-01). Use is_animated instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -521,7 +521,7 @@ class Image:
         if name == "category":
             warnings.warn(
                 "Image categories are deprecated and will be removed in Pillow 10 "
-                "(2023-01-02). Use is_animated instead.",
+                "(2023-07-01). Use is_animated instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
