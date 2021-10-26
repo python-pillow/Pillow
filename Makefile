@@ -96,7 +96,8 @@ release-test:
 
 .PHONY: sdist
 sdist:
-	python3 setup.py sdist --format=gztar
+	python3 -m build --help > /dev/null 2>&1 || python3 -m pip install build
+	python3 -m build --sdist
 
 .PHONY: test
 test:
