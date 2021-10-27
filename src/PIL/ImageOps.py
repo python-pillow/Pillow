@@ -439,7 +439,7 @@ def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
 
     # by Kevin Cazabon, Feb 17/2000
     # kevin@cazabon.com
-    # http://www.cazabon.com
+    # https://www.cazabon.com
 
     # ensure centering is mutable
     centering = list(centering)
