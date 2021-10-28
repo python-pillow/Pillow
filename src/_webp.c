@@ -392,6 +392,7 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
                     return (PyObject *)decp;
                 }
             }
+            WebPDataClear(&(decp->data));
         }
         PyObject_Del(decp);
     }
