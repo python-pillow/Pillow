@@ -1,4 +1,5 @@
 import os
+import platform
 import shutil
 import struct
 import subprocess
@@ -93,6 +94,7 @@ SF_MIRROR = "http://iweb.dl.sourceforge.net"
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
+    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
 header = [
@@ -490,7 +492,10 @@ if __name__ == "__main__":
     python_dir = os.environ.get("PYTHON")
     python_exe = os.environ.get("EXECUTABLE", "python.exe")
     architecture = os.environ.get(
-        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
+        "ARCHITECTURE",
+        "ARM64"
+        if platform.machine() == "ARM64"
+        else ("x86" if struct.calcsize("P") == 4 else "x64"),
     )
     build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     sources_dir = ""
