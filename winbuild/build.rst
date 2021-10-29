@@ -24,7 +24,7 @@ Download and install:
 * `CMake 3.12 or newer <https://cmake.org/download/>`_
   (also available as Visual Studio component C++ CMake tools for Windows)
 
-* `NASM <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
+* x86/x64: `NASM <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
 Any version of Visual Studio 2017 or newer should be supported,
 including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
@@ -42,8 +42,8 @@ behaviour of ``build_prepare.py``:
   If ``PYTHON`` is unset, the version of Python used to run
   ``build_prepare.py`` will be used. If only ``PYTHON`` is set,
   ``EXECUTABLE`` defaults to ``python.exe``.
-* ``ARCHITECTURE`` is used to select a ``x86`` or ``x64`` build. By default,
-  uses same architecture as the version of Python used to run ``build_prepare.py``.
+* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64``build.
+  By default, uses same architecture as the version of Python used to run ``build_prepare.py``.
   is used.
 * ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
   path, used to store generated build scripts and compiled libraries.
