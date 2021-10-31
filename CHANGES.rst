@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Fix compilation on 64-bit Termux #5793
+  [landfillbaby]
+
 - Use title for display in ImageShow #5788
   [radarhere]
 
