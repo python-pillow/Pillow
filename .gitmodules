@@ -3,4 +3,4 @@
 	url = git://github.com/python-Pillow/Pillow.git
 [submodule "multibuild"]
 	path = multibuild
-	url = https://github.com/matthew-brett/multibuild.git
+	url = git://github.com/multi-build/multibuild.git
