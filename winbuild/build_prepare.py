@@ -404,7 +404,7 @@ def write_script(name, lines):
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w") as f:
-        f.write("\n\r".join(lines))
+        f.write("\n".join(lines))
     if verbose:
         for line in lines:
             print("    " + line)
@@ -462,9 +462,20 @@ def build_dep_all():
         if dep_name in disabled:
             continue
         script = build_dep(dep_name)
-        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}"')
-        lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
-    lines.append("@echo All Pillow dependencies built successfully!")
+        lines.append(fr"SET {dep_name}=successful")
+        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}')
+        if dep_name == "libjpeg" or dep_name == "zlib":
+            lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        else:
+            lines.append(
+                fr"if errorlevel 1 echo Build failed! && SET {dep_name}=failed"
+            )
+        lines.append("")
+    lines.append("@echo Pillow dependencies build result:")
+    for dep_name in deps:
+        if dep_name in disabled:
+            continue
+        lines.append(fr"@echo   {dep_name}: %{dep_name}%")
     write_script("build_dep_all.cmd", lines)
 
 
