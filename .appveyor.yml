@@ -10,7 +10,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python39
+  - PYTHON: C:/Python310
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   - PYTHON: C:/Python36-x64
@@ -19,6 +19,7 @@ environment:
 
 
 install:
+- '%PYTHON%\%EXECUTABLE% --version'
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
 - 7z x pillow-depends.zip -oc:\
 - mv c:\pillow-depends-main c:\pillow-depends
