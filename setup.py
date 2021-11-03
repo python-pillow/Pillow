@@ -560,7 +560,11 @@ class pil_build_ext(build_ext):
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
                 _add_directory(
-                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                    library_dirs,
+                    os.path.join(
+                        os.environ["ANDROID_ROOT"],
+                        "lib" if struct.calcsize("l") == 4 else "lib64",
+                    ),
                 )
 
         elif sys.platform.startswith("netbsd"):
