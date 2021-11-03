@@ -31,10 +31,17 @@
 #endif
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#ifdef __CYGWIN__
+#undef _WIN64
+#undef _WIN32
+#undef __WIN32__
+#undef WIN32
+#endif
 
 #else
 /* For System that are not Windows, we'll need to define these. */
