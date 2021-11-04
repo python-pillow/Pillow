@@ -193,6 +193,10 @@ class TestImage:
         assert not im.readonly
 
     @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    @pytest.mark.skipif(
+        sys.platform == "cygwin",
+        reason="Test requires opening an mmaped file for writing",
+    )
     def test_readonly_save(self, tmp_path):
         temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
