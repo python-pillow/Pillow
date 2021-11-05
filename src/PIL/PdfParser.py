@@ -425,7 +425,7 @@ class PdfParser:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
-        self.f.write(f"% {s}\n".encode("utf-8"))
+        self.f.write(f"% {s}\n".encode())
 
     def write_catalog(self):
         self.del_root()
@@ -862,7 +862,7 @@ class PdfParser:
         if m:
             # filter out whitespace
             hex_string = bytearray(
-                [b for b in m.group(1) if b in b"0123456789abcdefABCDEF"]
+                b for b in m.group(1) if b in b"0123456789abcdefABCDEF"
             )
             if len(hex_string) % 2 == 1:
                 # append a 0 if the length is not even - yes, at the end

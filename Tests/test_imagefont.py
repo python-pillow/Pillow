@@ -900,7 +900,7 @@ class TestImageFont:
             d.text((10, 10), "\U0001f469", font=font, embedded_color=True)
 
             assert_image_similar_tofile(im, "Tests/images/cbdt_notocoloremoji.png", 6.2)
-        except IOError as e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
@@ -920,7 +920,7 @@ class TestImageFont:
             assert_image_similar_tofile(
                 im, "Tests/images/cbdt_notocoloremoji_mask.png", 6.2
             )
-        except IOError as e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or CBDT support")
 
@@ -938,7 +938,7 @@ class TestImageFont:
             d.text((50, 50), "\uE901", font=font, embedded_color=True)
 
             assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
-        except IOError as e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
 
@@ -956,7 +956,7 @@ class TestImageFont:
             d.text((50, 50), "\uE901", (100, 0, 0), font=font)
 
             assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
-        except IOError as e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             assert str(e) in ("unimplemented feature", "unknown file format")
             pytest.skip("freetype compiled without libpng or SBIX support")
 

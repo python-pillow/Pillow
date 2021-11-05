@@ -818,7 +818,7 @@ def test_palette_save_P(tmp_path):
     # Forcing a non-straight grayscale palette.
 
     im = hopper("P")
-    palette = bytes([255 - i // 3 for i in range(768)])
+    palette = bytes(255 - i // 3 for i in range(768))
 
     out = str(tmp_path / "temp.gif")
     im.save(out, palette=palette)
@@ -885,7 +885,7 @@ def test_getdata():
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 
-    passed_palette = bytes([255 - i // 3 for i in range(768)])
+    passed_palette = bytes(255 - i // 3 for i in range(768))
 
     GifImagePlugin._FORCE_OPTIMIZE = True
     try:

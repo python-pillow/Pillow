@@ -324,7 +324,7 @@ class GifImageFile(ImageFile.ImageFile):
         if not self.im and "transparency" in self.info:
             self.im = Image.core.fill(self.mode, self.size, self.info["transparency"])
 
-        super(GifImageFile, self).load_prepare()
+        super().load_prepare()
 
     def tell(self):
         return self.__frame

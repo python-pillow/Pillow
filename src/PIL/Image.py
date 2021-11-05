@@ -51,26 +51,18 @@ from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le
 from ._util import deferred_error, isPath
 
-if sys.version_info >= (3, 7):
 
-    def __getattr__(name):
-        categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
-        if name in categories:
-            warnings.warn(
-                "Image categories are deprecated and will be removed in Pillow 10 "
-                "(2023-07-01). Use is_animated instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return categories[name]
-        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
-
-
-else:
-    # categories
-    NORMAL = 0
-    SEQUENCE = 1
-    CONTAINER = 2
+def __getattr__(name):
+    categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
+    if name in categories:
+        warnings.warn(
+            "Image categories are deprecated and will be removed in Pillow 10 "
+            "(2023-07-01). Use is_animated instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return categories[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 logger = logging.getLogger(__name__)
@@ -926,12 +918,8 @@ class Image:
                     transparency = convert_transparency(matrix, transparency)
                 elif len(mode) == 3:
                     transparency = tuple(
-                        [
-                            convert_transparency(
-                                matrix[i * 4 : i * 4 + 4], transparency
-                            )
-                            for i in range(0, len(transparency))
-                        ]
+                        convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
+                        for i in range(0, len(transparency))
                     )
                 new.info["transparency"] = transparency
             return new
@@ -1934,7 +1922,7 @@ class Image:
             message = f"Unknown resampling filter ({resample})."
 
             filters = [
-                "{} ({})".format(filter[1], filter[0])
+                f"{filter[1]} ({filter[0]})"
                 for filter in (
                     (NEAREST, "Image.NEAREST"),
                     (LANCZOS, "Image.LANCZOS"),
@@ -2529,7 +2517,7 @@ class Image:
                 message = f"Unknown resampling filter ({resample})."
 
             filters = [
-                "{} ({})".format(filter[1], filter[0])
+                f"{filter[1]} ({filter[0]})"
                 for filter in (
                     (NEAREST, "Image.NEAREST"),
                     (BILINEAR, "Image.BILINEAR"),

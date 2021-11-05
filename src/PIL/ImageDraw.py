@@ -174,13 +174,11 @@ class ImageDraw:
                         angle -= 90
                         distance = width / 2 - 1
                         return tuple(
-                            [
-                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                                for p, p_d in (
-                                    (x, distance * math.cos(math.radians(angle))),
-                                    (y, distance * math.sin(math.radians(angle))),
-                                )
-                            ]
+                            p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                            for p, p_d in (
+                                (x, distance * math.cos(math.radians(angle))),
+                                (y, distance * math.sin(math.radians(angle))),
+                            )
                         )
 
                     flipped = (
@@ -979,6 +977,6 @@ def _color_diff(color1, color2):
     Uses 1-norm distance to calculate difference between two values.
     """
     if isinstance(color2, tuple):
-        return sum([abs(color1[i] - color2[i]) for i in range(0, len(color2))])
+        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
     else:
         return abs(color1 - color2)
