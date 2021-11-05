@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Drop support for soon-EOL Python 3.6 #5768
+  [hugovk, nulano, radarhere]
+
 - Fix compilation on 64-bit Termux #5793
   [landfillbaby]
 
