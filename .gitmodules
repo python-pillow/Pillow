@@ -1,6 +1,6 @@
 [submodule "Pillow"]
 	path = Pillow
-	url = git://github.com/python-Pillow/Pillow.git
+	url = https://github.com/python-Pillow/Pillow.git
 [submodule "multibuild"]
 	path = multibuild
-	url = git://github.com/multi-build/multibuild.git
+	url = https://github.com/multi-build/multibuild.git
