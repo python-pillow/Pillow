@@ -14,5 +14,5 @@ sphinx>=2.4
 sphinx-copybutton
 sphinx-issues
 sphinx-removed-in
-sphinx-rtd-theme
+sphinx-rtd-theme>=1.0
 sphinxext-opengraph
