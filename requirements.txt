@@ -3,8 +3,6 @@ black
 check-manifest
 coverage
 defusedxml
-# Remove docutils once https://github.com/readthedocs/sphinx_rtd_theme/issues/1115 released
-docutils==0.16
 markdown2
 olefile
 packaging
