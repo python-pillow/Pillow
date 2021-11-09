@@ -672,8 +672,7 @@ class TestFileJpeg:
             img.save(temp_file, convert_mode=True, fill_color="red")
 
         with Image.open(temp_file) as reloaded:
-            with Image.open("Tests/images/pil123rgba_red.jpg") as target:
-                assert_image_similar(reloaded, target, 4)
+            assert_image_similar_tofile(reloaded, "Tests/images/pil123rgba_red.jpg", 4)
 
     def test_save_tiff_with_dpi(self, tmp_path):
         # Arrange

@@ -344,17 +344,22 @@ def _save(im, fp, filename):
     fp.write(data)
 
 
-def _convert_mode(im):
-    mode = im.mode
-    if mode == 'P':
-        return 'RGBA' if 'A' in im.im.getpalettemode() else 'RGB'
-    return {
-        # Pillow doesn't support L modes for webp for now.
-        'L':'RGB',
-        'LA':'RGBA',
-        'I':'RGB',
-        'CMYK':'RGB'
-    }.get(mode)
+def _supported_modes():
+    return [
+        "RGB",
+        "RGBA",
+        "RGBa",
+        "RGBX",
+        "CMYK",
+        "YCbCr",
+        "HSV",
+        "I",
+        "F",
+        "P",
+        "LA",
+        "L",
+        "1",
+    ]
 
 
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
