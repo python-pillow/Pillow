@@ -72,6 +72,21 @@ Support has been added for the "title" argument in
 argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 ``ImageShow.show(im, title="My Image")``.
 
+Added support for pickling TrueType fonts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TrueType fonts may now be pickled and unpickled. For example:
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("arial.ttf", size=30)
+    pickled_font = pickle.dumps(font1, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # Later...
+    unpickled_font = pickle.loads(pickled_font)
+
 Security
 ========
 

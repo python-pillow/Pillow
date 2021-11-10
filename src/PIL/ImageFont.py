@@ -196,6 +196,13 @@ class FreeTypeFont:
         else:
             load_from_bytes(font)
 
+    def __getstate__(self):
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state):
+        path, size, index, encoding, layout_engine = state
+        self.__init__(path, size, index, encoding, layout_engine)
+
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
         return text.split(split_character)
