@@ -404,6 +404,27 @@ class pil_build_ext(build_ext):
                 self.extensions.remove(extension)
                 break
 
+    def get_macos_sdk_path(self):
+        try:
+            sdk_path = (
+                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            sdk_path = None
+        if (
+            not sdk_path
+            or sdk_path == "/Applications/Xcode.app/Contents/Developer"
+            "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+        ):
+            commandlinetools_sdk_path = (
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+            )
+            if os.path.exists(commandlinetools_sdk_path):
+                sdk_path = commandlinetools_sdk_path
+        return sdk_path
+
     def build_extensions(self):
 
         library_dirs = []
@@ -531,25 +552,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-            # SDK install path
-            try:
-                sdk_path = (
-                    subprocess.check_output(["xcrun", "--show-sdk-path"])
-                    .strip()
-                    .decode("latin1")
-                )
-            except Exception:
-                sdk_path = None
-            if (
-                not sdk_path
-                or sdk_path == "/Applications/Xcode.app/Contents/Developer"
-                "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-            ):
-                commandlinetools_sdk_path = (
-                    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
-                )
-                if os.path.exists(commandlinetools_sdk_path):
-                    sdk_path = commandlinetools_sdk_path
+            sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
