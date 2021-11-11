@@ -72,6 +72,17 @@ Support has been added for the "title" argument in
 argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 ``ImageShow.show(im, title="My Image")``.
 
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -87,19 +98,3 @@ TrueType fonts may now be pickled and unpickled. For example:
 
     # Later...
     unpickled_font = pickle.loads(pickled_font)
-
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-Other Changes
-=============
-
-TODO
-^^^^
-
-TODO
