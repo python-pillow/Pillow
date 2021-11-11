@@ -79,10 +79,11 @@ TrueType fonts may now be pickled and unpickled. For example:
 
 .. code-block:: python
 
-    from PIL import Image, ImageDraw, ImageFont
+    import pickle
+    from PIL import ImageFont
 
     font = ImageFont.truetype("arial.ttf", size=30)
-    pickled_font = pickle.dumps(font1, protocol=pickle.HIGHEST_PROTOCOL)
+    pickled_font = pickle.dumps(font, protocol=pickle.HIGHEST_PROTOCOL)
 
     # Later...
     unpickled_font = pickle.loads(pickled_font)
