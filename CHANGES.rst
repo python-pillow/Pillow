@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Add support for pickling TrueType fonts #5826
+  [hugovk, radarhere]
+
+- Only prefer command line tools SDK on macOS over default MacOSX SDK #5828
+  [radarhere]
+
 - Drop support for soon-EOL Python 3.6 #5768
   [hugovk, nulano, radarhere]
 
