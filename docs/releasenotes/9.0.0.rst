@@ -83,7 +83,18 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added support for pickling TrueType fonts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+TrueType fonts may now be pickled and unpickled. For example:
+
+.. code-block:: python
+
+    import pickle
+    from PIL import ImageFont
+
+    font = ImageFont.truetype("arial.ttf", size=30)
+    pickled_font = pickle.dumps(font, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # Later...
+    unpickled_font = pickle.loads(pickled_font)
