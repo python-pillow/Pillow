@@ -299,7 +299,7 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pushes_fd(ImagingEncoderObject *encoder) {
+_get_pushes_fd(ImagingEncoderObject *encoder, void *closure) {
     return PyBool_FromLong(encoder->pushes_fd);
 }
 
