@@ -444,7 +444,7 @@ draw_horizontal_lines(
  * Filled polygon draw function using scan line algorithm.
  */
 static inline int
-polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline) {
+polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha) {
     Edge **edge_table;
     float *xx;
     int edge_count = 0;
@@ -471,6 +471,9 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
             ymax = e[i].ymax;
         }
         if (e[i].ymin == e[i].ymax) {
+            if (hasAlpha != 1) {
+                (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
+            }
             continue;
         }
         edge_table[edge_count++] = (e + i);
@@ -491,7 +494,6 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
     }
     for (; ymin <= ymax; ymin++) {
         int j = 0;
-        int x_pos = 0;
         for (i = 0; i < edge_count; i++) {
             Edge *current = edge_table[i];
             if (ymin >= current->ymin && ymin <= current->ymax) {
@@ -504,31 +506,38 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
             }
         }
         qsort(xx, j, sizeof(float), x_cmp);
-        for (i = 1; i < j; i += 2) {
-            int x_end = ROUND_DOWN(xx[i]);
-            if (x_end < x_pos) {
-                // Line would be before the current position
-                continue;
-            }
-            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
-            if (x_end < x_pos) {
-                // Line would be before the current position
-                continue;
-            }
-
-            int x_start = ROUND_UP(xx[i - 1]);
-            if (x_pos > x_start) {
-                // Line would be partway through x_pos, so increase the starting point
-                x_start = x_pos;
-                if (x_end < x_start) {
-                    // Line would now end before it started
+        if (hasAlpha == 1) {
+            int x_pos = 0;
+            for (i = 1; i < j; i += 2) {
+                int x_end = ROUND_DOWN(xx[i]);
+                if (x_end < x_pos) {
+                    // Line would be before the current position
                     continue;
                 }
+                draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+                if (x_end < x_pos) {
+                    // Line would be before the current position
+                    continue;
+                }
+
+                int x_start = ROUND_UP(xx[i - 1]);
+                if (x_pos > x_start) {
+                    // Line would be partway through x_pos, so increase the starting point
+                    x_start = x_pos;
+                    if (x_end < x_start) {
+                        // Line would now end before it started
+                        continue;
+                    }
+                }
+                (*hline)(im, x_start, ymin, x_end, ink);
+                x_pos = x_end + 1;
             }
-            (*hline)(im, x_start, ymin, x_end, ink);
-            x_pos = x_end + 1;
+            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+        } else {
+            for (i = 1; i < j; i += 2) {
+                (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
+            }
         }
-        draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
     }
 
     free(xx);
@@ -538,17 +547,17 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
 
 static inline int
 polygon8(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline8);
+    return polygon_generic(im, n, e, ink, eofill, hline8, 0);
 }
 
 static inline int
 polygon32(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32);
+    return polygon_generic(im, n, e, ink, eofill, hline32, 0);
 }
 
 static inline int
 polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32rgba);
+    return polygon_generic(im, n, e, ink, eofill, hline32rgba, 1);
 }
 
 static inline void
