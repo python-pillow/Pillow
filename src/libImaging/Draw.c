@@ -742,7 +742,7 @@ ImagingDrawRectangle(
 }
 
 int
-ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int op) {
+ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
     INT32 ink;
@@ -790,10 +790,17 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
 
     } else {
         /* Outline */
-        for (i = 0; i < count - 1; i++) {
-            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
+        if (width == 1) {
+            for (i = 0; i < count - 1; i++) {
+                draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
+            }
+            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
+        } else {
+            for (i = 0; i < count - 1; i++) {
+                ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink_, width, op);
+            }
+            ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op);
         }
-        draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
     }
 
     return 0;

@@ -945,6 +945,18 @@ def test_triangle_right():
     )
 
 
+@pytest.mark.parametrize(
+    "fill, suffix",
+    ((BLACK, "width"), (None, "width_no_fill")),
+)
+def test_triangle_right_width(fill, suffix):
+    img, draw = create_base_image_draw((100, 100))
+    draw.polygon([(15, 25), (85, 25), (50, 60)], fill, WHITE, width=5)
+    assert_image_equal_tofile(
+        img, os.path.join(IMAGES_PATH, "triangle_right_" + suffix + ".png")
+    )
+
+
 def test_line_horizontal():
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 14, 5), BLACK, 2)
