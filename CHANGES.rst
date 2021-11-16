@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Only prevent repeated polygon pixels when drawing with transparency #5835
+  [radarhere]
+
 - Add support for pickling TrueType fonts #5826
   [hugovk, radarhere]
 
