@@ -31,22 +31,14 @@ jobs:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key:
-          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-${{ hashFiles('**/.github/workflows/test-windows.yml') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.architecture }}-
-          ${{ runner.os }}-${{ matrix.python-version }}-
-
     # sets env: pythonLocation
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
+        cache: pip
+        cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
       run: python .github/workflows/system-info.py
