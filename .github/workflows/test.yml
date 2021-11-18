@@ -43,7 +43,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: pip
-        cache-dependency-path: "**/.ci/*.sh"
+        cache-dependency-path: ".ci/*.sh"
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
