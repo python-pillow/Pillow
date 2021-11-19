@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.1/libjpeg-turbo-2.1.1.tar.gz",
-        "filename": "libjpeg-turbo-2.1.1.tar.gz",
-        "dir": "libjpeg-turbo-2.1.1",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.2/libjpeg-turbo-2.1.2.tar.gz",
+        "filename": "libjpeg-turbo-2.1.2.tar.gz",
+        "dir": "libjpeg-turbo-2.1.2",
         "build": [
             cmd_cmake(
                 [
