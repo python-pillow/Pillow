@@ -258,6 +258,7 @@ except ImportError:
 else:
     register(IPythonViewer)
 
+
 class CommandViewer(Viewer):
     """
     The viewer that use commands.
@@ -271,11 +272,13 @@ class CommandViewer(Viewer):
         """
 
         if not "command" in options:
-            raise TypeError("CommandViewer missing required keyword-only argument 'command'")
+            raise TypeError(
+                "CommandViewer missing required keyword-only argument 'command'"
+            )
         command = options["command"]
         if not isinstance(command, str):
             raise TypeError(f"'command' must be 'str' not '{type(command)}'")
-        values = {'file': file, **options}
+        values = {"file": file, **options}
         return command.format(values)
 
 
