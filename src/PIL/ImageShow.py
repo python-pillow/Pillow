@@ -279,7 +279,7 @@ class CommandViewer(Viewer):
         if not isinstance(command, str):
             raise TypeError(f"'command' must be 'str' not '{type(command)}'")
         values = {"file": quote(file), **options}
-        return command.format(values)
+        return command.format(**values)
 
 
 if __name__ == "__main__":
