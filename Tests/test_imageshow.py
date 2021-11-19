@@ -69,7 +69,7 @@ def test_viewers():
 
 def test_commandviewer():
     if is_win32():
-        basecmd = 
+        basecmd = \
         'start "Pillow" /WAIT "{file}" '             
         "&& ping -n 2 127.0.0.1 >NUL "
         '&& del /f "{file}"'
