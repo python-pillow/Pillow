@@ -272,7 +272,9 @@ class CommandViewer(Viewer):
         """
 
         if "command" not in options:
-            raise TypeError("CommandViewer missing required keyword-only argument 'command'")
+            raise TypeError(
+                "CommandViewer missing required keyword-only argument 'command'"
+            )
         command = options["command"]
         if not isinstance(command, str):
             raise TypeError(f"'command' must be 'str' not '{type(command)}'")
