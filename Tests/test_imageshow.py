@@ -67,6 +67,18 @@ def test_viewers():
         except NotImplementedError:
             pass
 
+def test_commandviewer():
+    if is_win32():
+        basecmd = 
+        'start "Pillow" /WAIT "{file}" '             
+        "&& ping -n 2 127.0.0.1 >NUL "
+        '&& del /f "{file}"'
+	else:
+		# Not guessing command, just deleting
+        basecmd = "rm -f {file}"
+	viewer = ImageShow.CommandViewer()
+	im = hopper()
+	assert viewer.show(im, command=basecmd) == 1
 
 def test_ipythonviewer():
     pytest.importorskip("IPython", reason="IPython not installed")
