@@ -78,7 +78,7 @@ def test_commandviewer():
         basecmd = "rm -f {file}"
     viewer = ImageShow.CommandViewer()
     im = hopper()
-    viewer.get_command(im, command=basecmd)
+    viewer.get_command(viewer.save_image(im), command=basecmd)
 
 
 def test_ipythonviewer():
