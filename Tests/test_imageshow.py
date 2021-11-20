@@ -79,9 +79,9 @@ def test_commandviewer():
     viewer = ImageShow.CommandViewer()
     im = hopper()
     with pytest.raises(TypeError):
-		viewer.get_command(viewer.save_image(im))
+        viewer.get_command(viewer.save_image(im))
     with pytest.raises(TypeError):
-		viewer.get_command(viewer.save_image(im), command=5)
+        viewer.get_command(viewer.save_image(im), command=5)
     viewer.get_command(viewer.save_image(im), command=basecmd)
 
 
