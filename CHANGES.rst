@@ -5,6 +5,21 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Added support for top right and bottom right TGA orientations #5829
+  [radarhere]
+
+- Corrected ICNS file length in header #5845
+  [radarhere]
+
+- Block tile TIFF tags when saving #5839
+  [radarhere]
+
+- Added width argument to polygon #5694
+  [radarhere]
+
+- Do not redeclare class each time when converting to NumPy #5844
+  [radarhere]
+
 - Only prevent repeated polygon pixels when drawing with transparency #5835
   [radarhere]
 
