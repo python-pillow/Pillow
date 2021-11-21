@@ -252,8 +252,8 @@ Methods
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
-    :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param outline: Color to use for the outline.
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None)
