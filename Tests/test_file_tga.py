@@ -171,6 +171,15 @@ def test_save_orientation(tmp_path):
         assert test_im.info["orientation"] == 1
 
 
+def test_horizontal_orientations():
+    # These images have been manually hexedited to have the relevant orientations
+    with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
+        assert im.load()[90, 90][:3] == (0, 0, 0)
+
+    with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
+        assert im.load()[90, 90][:3] == (0, 255, 0)
+
+
 def test_save_rle(tmp_path):
     test_file = "Tests/images/rgb32rle.tga"
     with Image.open(test_file) as im:

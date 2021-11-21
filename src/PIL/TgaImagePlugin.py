@@ -93,9 +93,10 @@ class TgaImageFile(ImageFile.ImageFile):
 
         # orientation
         orientation = flags & 0x30
-        if orientation == 0x20:
+        self._flip_horizontally = orientation in [0x10, 0x30]
+        if orientation in [0x20, 0x30]:
             orientation = 1
-        elif not orientation:
+        elif orientation in [0, 0x10]:
             orientation = -1
         else:
             raise SyntaxError("unknown TGA orientation")
@@ -148,6 +149,10 @@ class TgaImageFile(ImageFile.ImageFile):
                 ]
         except KeyError:
             pass  # cannot decode
+
+    def load_end(self):
+        if self._flip_horizontally:
+            self.im = self.im.transpose(Image.FLIP_LEFT_RIGHT)
 
 
 #
