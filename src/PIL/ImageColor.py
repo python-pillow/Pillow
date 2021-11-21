@@ -148,7 +148,7 @@ def getcolor(color, mode):
 
 
 colormap = {
-    # X11 colour table from https://drafts.csswg.org/css-color-4/, with
+    # X11 colour table from https://www.w3.org/TR/css-color-4/, with
     # gray/grey spelling issues fixed.  This is a superset of HTML 4.0
     # colour names used in CSS 1.
     "aliceblue": "#f0f8ff",
