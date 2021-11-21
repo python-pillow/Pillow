@@ -3124,7 +3124,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     PyObject *data;
     int ink;
     int fill = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &fill)) {
+    int width = 0;
+    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
         return NULL;
     }
 
@@ -3153,7 +3154,7 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, self->blend) < 0) {
+    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) < 0) {
         free(ixy);
         return NULL;
     }
