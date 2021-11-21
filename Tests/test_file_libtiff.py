@@ -920,6 +920,23 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
+    @pytest.mark.parametrize("compression", (None, "jpeg"))
+    def test_block_tile_tags(self, compression, tmp_path):
+        im = hopper()
+        out = str(tmp_path / "temp.tif")
+
+        tags = {
+            TiffImagePlugin.TILEWIDTH: 256,
+            TiffImagePlugin.TILELENGTH: 256,
+            TiffImagePlugin.TILEOFFSETS: 256,
+            TiffImagePlugin.TILEBYTECOUNTS: 256,
+        }
+        im.save(out, exif=tags, compression=compression)
+
+        with Image.open(out) as reloaded:
+            for tag in tags.keys():
+                assert tag not in reloaded.getexif()
+
     def test_old_style_jpeg(self):
         with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")

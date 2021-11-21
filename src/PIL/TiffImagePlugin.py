@@ -89,7 +89,10 @@ DATE_TIME = 306
 ARTIST = 315
 PREDICTOR = 317
 COLORMAP = 320
+TILEWIDTH = 322
+TILELENGTH = 323
 TILEOFFSETS = 324
+TILEBYTECOUNTS = 325
 SUBIFD = 330
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
@@ -1649,6 +1652,7 @@ def _save(im, fp, filename):
         }.items():
             ifd.setdefault(tag, value)
 
+    blocklist = [TILEWIDTH, TILELENGTH, TILEOFFSETS, TILEBYTECOUNTS]
     if libtiff:
         if "quality" in encoderinfo:
             quality = encoderinfo["quality"]
@@ -1680,7 +1684,7 @@ def _save(im, fp, filename):
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         # SUBIFD may also cause a segfault.
-        blocklist = [
+        blocklist += [
             REFERENCEBLACKWHITE,
             SAMPLEFORMAT,
             STRIPBYTECOUNTS,
@@ -1753,6 +1757,8 @@ def _save(im, fp, filename):
             raise OSError(f"encoder error {s} when writing image file")
 
     else:
+        for tag in blocklist:
+            del ifd[tag]
         offset = ifd.save(fp)
 
         ImageFile._save(
