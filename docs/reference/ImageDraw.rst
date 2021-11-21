@@ -242,7 +242,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the point.
 
-.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None)
+.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None, width=1)
 
     Draws a polygon.
 
@@ -254,6 +254,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None)
