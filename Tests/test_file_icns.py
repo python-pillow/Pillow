@@ -1,8 +1,9 @@
 import io
+import os
 
 import pytest
 
-from PIL import IcnsImagePlugin, Image, features
+from PIL import IcnsImagePlugin, Image, _binary, features
 
 from .helper import assert_image_equal, assert_image_similar_tofile
 
@@ -37,6 +38,11 @@ def test_save(tmp_path):
         assert reread.mode == "RGBA"
         assert reread.size == (1024, 1024)
         assert reread.format == "ICNS"
+
+    file_length = os.path.getsize(temp_file)
+    with open(temp_file, "rb") as fp:
+        fp.seek(4)
+        assert _binary.i32be(fp.read(4)) == file_length
 
 
 def test_save_append_images(tmp_path):

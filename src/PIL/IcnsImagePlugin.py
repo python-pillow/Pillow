@@ -337,23 +337,28 @@ def _save(im, fp, filename):
     entries = []
     for type, size in sizes.items():
         stream = size_streams[size]
-        entries.append({"type": type, "size": len(stream), "stream": stream})
+        entries.append(
+            {"type": type, "size": HEADERSIZE + len(stream), "stream": stream}
+        )
 
     # Header
     fp.write(MAGIC)
-    fp.write(struct.pack(">i", sum(entry["size"] for entry in entries)))
+    file_length = HEADERSIZE  # Header
+    file_length += HEADERSIZE + 8 * len(entries)  # TOC
+    file_length += sum(entry["size"] for entry in entries)
+    fp.write(struct.pack(">i", file_length))
 
     # TOC
     fp.write(b"TOC ")
     fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
     for entry in entries:
         fp.write(entry["type"])
-        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+        fp.write(struct.pack(">i", entry["size"]))
 
     # Data
     for entry in entries:
         fp.write(entry["type"])
-        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+        fp.write(struct.pack(">i", entry["size"]))
         fp.write(entry["stream"])
 
     if hasattr(fp, "flush"):
