@@ -55,8 +55,10 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Added line width parameter to ImageDraw polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An optional line ``width`` parameter has been added to ``ImageDraw.Draw.polygon``.
 
 TODO
 
@@ -98,3 +100,8 @@ TrueType fonts may now be pickled and unpickled. For example:
 
     # Later...
     unpickled_font = pickle.loads(pickled_font)
+
+Added support for additional TGA orientations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TGA images with top right or bottom right orientations are now supported.
