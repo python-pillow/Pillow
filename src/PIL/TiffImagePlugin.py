@@ -1676,8 +1676,6 @@ def _save(im, fp, filename):
 
         # optional types for non core tags
         types = {}
-        # SAMPLEFORMAT is determined by the image format and should not be copied
-        # from legacy_ifd.
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
         # The other tags expect arrays with a certain length (fixed or depending on
@@ -1686,7 +1684,6 @@ def _save(im, fp, filename):
         # SUBIFD may also cause a segfault.
         blocklist += [
             REFERENCEBLACKWHITE,
-            SAMPLEFORMAT,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,
@@ -1702,9 +1699,14 @@ def _save(im, fp, filename):
         legacy_ifd = {}
         if hasattr(im, "tag"):
             legacy_ifd = im.tag.to_v2()
-        for tag, value in itertools.chain(
-            ifd.items(), getattr(im, "tag_v2", {}).items(), legacy_ifd.items()
-        ):
+
+        # SAMPLEFORMAT is determined by the image format and should not be copied
+        # from legacy_ifd.
+        supplied_tags = {**getattr(im, "tag_v2", {}), **legacy_ifd}
+        if SAMPLEFORMAT in supplied_tags:
+            del supplied_tags[SAMPLEFORMAT]
+
+        for tag, value in itertools.chain(ifd.items(), supplied_tags.items()):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.
             # Custom items are supported for int, float, unicode, string and byte
@@ -1728,6 +1730,9 @@ def _save(im, fp, filename):
                     atts[tag] = float(value)
                 else:
                     atts[tag] = value
+
+        if SAMPLEFORMAT in atts and len(atts[SAMPLEFORMAT]) == 1:
+            atts[SAMPLEFORMAT] = atts[SAMPLEFORMAT][0]
 
         logger.debug("Converted items: %s" % sorted(atts.items()))
 
