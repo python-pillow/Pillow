@@ -2773,7 +2773,7 @@ def fromarray(obj, mode=None):
 
       from PIL import Image
       import numpy as np
-      im = Image.open('hopper.jpg')
+      im = Image.open("hopper.jpg")
       a = np.asarray(im)
 
     Then this can be used to convert it to a Pillow image::
@@ -2781,8 +2781,21 @@ def fromarray(obj, mode=None):
       im = Image.fromarray(a)
 
     :param obj: Object with array interface
-    :param mode: Mode to use (will be determined from type if None)
-      See: :ref:`concept-modes`.
+    :param mode: Optional mode to use when reading ``obj``. Will be determined from
+      type if ``None``.
+
+      This will not be used to convert the data after reading, but will be used to
+      change how the data is read::
+
+        from PIL import Image
+        import numpy as np
+        a = np.full((1, 1), 300)
+        im = Image.fromarray(a, mode="L")
+        im.getpixel((0, 0))  # 44
+        im = Image.fromarray(a, mode="RGB")
+        im.getpixel((0, 0))  # (44, 1, 0)
+
+      See: :ref:`concept-modes` for general information about modes.
     :returns: An image object.
 
     .. versionadded:: 1.1.6
