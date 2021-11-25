@@ -31,9 +31,9 @@ def roundtrip(im, **options):
     im.save(out, "JPEG2000", **options)
     test_bytes = out.tell()
     out.seek(0)
-    im = Image.open(out)
-    im.bytes = test_bytes  # for testing only
-    im.load()
+    with Image.open(out) as im:
+        im.bytes = test_bytes  # for testing only
+        im.load()
     return im
 
 

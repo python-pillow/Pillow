@@ -154,8 +154,8 @@ class TestImagingCoreResize:
 
 @pytest.fixture
 def gradients_image():
-    im = Image.open("Tests/images/radial_gradients.png")
-    im.load()
+    with Image.open("Tests/images/radial_gradients.png") as im:
+        im.load()
     try:
         yield im
     finally:
