@@ -88,10 +88,10 @@ def test_pickle_la_mode_with_palette(tmp_path):
 @skip_unless_feature("webp")
 def test_pickle_tell():
     # Arrange
-    image = Image.open("Tests/images/hopper.webp")
+    with Image.open("Tests/images/hopper.webp") as image:
 
-    # Act: roundtrip
-    unpickled_image = pickle.loads(pickle.dumps(image))
+        # Act: roundtrip
+        unpickled_image = pickle.loads(pickle.dumps(image))
 
     # Assert
     assert unpickled_image.tell() == 0

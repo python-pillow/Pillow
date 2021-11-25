@@ -757,8 +757,8 @@ class TestFilePng:
 
         if buffer:
             mystdout = mystdout.buffer
-        reloaded = Image.open(mystdout)
-        assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+        with Image.open(mystdout) as reloaded:
+            assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
