@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Do not prematurely return in ImageFile when saving to stdout #5665
+  [infmagic2047, radarhere]
+
 - Added support for top right and bottom right TGA orientations #5829
   [radarhere]
 
@@ -14,7 +17,7 @@ Changelog (Pillow)
 - Block tile TIFF tags when saving #5839
   [radarhere]
 
-- Added width argument to polygon #5694
+- Added line width argument to polygon #5694
   [radarhere]
 
 - Do not redeclare class each time when converting to NumPy #5844
