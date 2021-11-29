@@ -313,18 +313,14 @@ class GifImageFile(ImageFile.ImageFile):
             pass
 
         if interlace is not None:
-            transparency = -1
-            if frame_transparency is not None:
-                if frame == 0:
-                    self.info["transparency"] = frame_transparency
-                else:
-                    transparency = frame_transparency
+            if frame == 0 and frame_transparency is not None:
+                self.info["transparency"] = frame_transparency
             self.tile = [
                 (
                     "gif",
                     (x0, y0, x1, y1),
                     self.__offset,
-                    (bits, interlace, transparency),
+                    (bits, interlace),
                 )
             ]
         else:
