@@ -163,6 +163,32 @@ def test_roundtrip_save_all(tmp_path):
         assert reread.n_frames == 5
 
 
+@pytest.mark.parametrize(
+    "path, mode",
+    (
+        ("Tests/images/dispose_bgnd.gif", "RGB"),
+        # Hexeditted copy of dispose_bgnd to add transparency
+        ("Tests/images/dispose_bgnd_rgba.gif", "RGBA"),
+    ),
+)
+def test_loading_multiple_palettes(path, mode):
+    with Image.open(path) as im:
+        assert im.mode == "P"
+        first_frame_colors = im.palette.colors.keys()
+        original_color = im.convert("RGB").load()[0, 0]
+
+        im.seek(1)
+        assert im.mode == mode
+        if mode == "RGBA":
+            im = im.convert("RGB")
+
+        # Check a color only from the old palette
+        assert im.load()[0, 0] == original_color
+
+        # Check a color from the new palette
+        assert im.load()[24, 24] not in first_frame_colors
+
+
 def test_headers_saving_for_animated_gifs(tmp_path):
     important_headers = ["background", "version", "duration", "loop"]
     # Multiframe image
