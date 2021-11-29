@@ -324,7 +324,7 @@ def test_dispose_none_load_end():
     with Image.open("Tests/images/dispose_none_load_end.gif") as img:
         img.seek(1)
 
-        assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.gif")
+        assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.png")
 
 
 def test_dispose_background():
@@ -340,12 +340,16 @@ def test_dispose_background():
 def test_dispose_background_transparency():
     with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
         img.seek(2)
-        px = img.convert("RGBA").load()
+        px = img.load()
         assert px[35, 30][3] == 0
 
 
 def test_transparent_dispose():
-    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
+    expected_colors = [
+        (2, 1, 2),
+        ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
+        ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
+    ]
     with Image.open("Tests/images/transparent_dispose.gif") as img:
         for frame in range(3):
             img.seek(frame)
@@ -368,7 +372,7 @@ def test_dispose_previous_first_frame():
     with Image.open("Tests/images/dispose_prev_first_frame.gif") as im:
         im.seek(1)
         assert_image_equal_tofile(
-            im, "Tests/images/dispose_prev_first_frame_seeked.gif"
+            im, "Tests/images/dispose_prev_first_frame_seeked.png"
         )
 
 
@@ -508,7 +512,7 @@ def test_dispose2_background(tmp_path):
 
     with Image.open(out) as im:
         im.seek(1)
-        assert im.getpixel((0, 0)) == 0
+        assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
 def test_transparency_in_second_frame():
@@ -517,9 +521,9 @@ def test_transparency_in_second_frame():
 
         # Seek to the second frame
         im.seek(im.tell() + 1)
-        assert im.info["transparency"] == 0
+        assert "transparency" not in im.info
 
-        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.gif")
+        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.png")
 
 
 def test_no_transparency_in_second_frame():
@@ -926,4 +930,4 @@ def test_missing_background():
     # but the disposal method is "Restore to background color"
     with Image.open("Tests/images/missing_background.gif") as im:
         im.seek(1)
-        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.gif")
+        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.png")
