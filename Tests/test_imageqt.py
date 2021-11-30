@@ -42,7 +42,7 @@ def test_rgb():
 
 
 def test_image():
-    for mode in ("1", "RGB", "RGBA", "L", "P"):
+    for mode in ("1", "RGB", "RGBA", "L", "P", "I;16"):
         ImageQt.ImageQt(hopper(mode))
 
 
