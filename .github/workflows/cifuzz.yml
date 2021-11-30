@@ -1,4 +1,5 @@
 name: CIFuzz
+
 on:
   push:
     paths:
@@ -8,6 +9,7 @@ on:
     paths:
       - "**.c"
       - "**.h"
+  workflow_dispatch:
 
 jobs:
   Fuzzing:
