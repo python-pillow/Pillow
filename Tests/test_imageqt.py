@@ -42,8 +42,11 @@ def test_rgb():
 
 
 def test_image():
-    for mode in ("1", "RGB", "RGBA", "L", "P", "I;16"):
+    for mode in ("1", "RGB", "RGBA", "L", "P"):
         ImageQt.ImageQt(hopper(mode))
+    qt_format = ImageQt.QImage.Format if ImageQt.qt_version == "6" else ImageQt.QImage
+    if hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+        ImageQt.ImageQt(hopper("I;16"))
 
 
 def test_closed_file():
