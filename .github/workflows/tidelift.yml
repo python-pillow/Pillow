@@ -22,3 +22,5 @@ jobs:
         uses: tidelift/scan-action@main
         env:
           TIDELIFT_API_KEY: ${{ secrets.TIDELIFT_API_KEY }}
+          TIDELIFT_ORGANIZATION: team/aclark4life
+          TIDELIFT_PROJECT: pillow
