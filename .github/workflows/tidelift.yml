@@ -1,5 +1,14 @@
 name: Tidelift Align
-on: [push]
+on:
+  schedule:
+    - cron: "30 2 * * *"  # daily at 02:30 UTC
+  push:
+    paths:
+      - ".github/workflows/tidelift.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/tidelift.yml"
+  workflow_dispatch:
 
 jobs:
   build:
