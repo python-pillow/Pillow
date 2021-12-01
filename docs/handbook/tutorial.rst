@@ -417,7 +417,7 @@ This example uses PIL together with pathlib, in order to reduce the quality of a
     from pathlib import Path
 
 
-    def compressImg(filepath, verbose=False):
+    def compressImg(filepath):
         file = filepath.stem
         with Image.open(filepath) as img:
             if img.mode != 'RGB':
