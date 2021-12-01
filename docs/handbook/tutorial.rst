@@ -409,7 +409,7 @@ Using the ImageSequence Iterator class
 Batch processing with Pathlib
 -----------------------------
 
-This example uses PIL togehter with pathlib, in order to reduce the quality of all png images in a folder
+This example uses PIL together with pathlib, in order to reduce the quality of all png images in a folder
 
 ::
 
@@ -419,13 +419,13 @@ This example uses PIL togehter with pathlib, in order to reduce the quality of a
 
     def compressImg(filepath, verbose=False):
         file = filepath.stem
-        img = Image.open(filepath)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        img.save(file + ".jpg",
-                "JPEG",
-                optimize=True,
-                quality=80)
+        with Image.open(filepath) as img:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(file + ".jpg",
+                    "JPEG",
+                    optimize=True,
+                    quality=80)
         return
 
 
