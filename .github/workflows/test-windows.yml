@@ -132,7 +132,7 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS=""
-        if ('${{ github.event_name }}' -eq 'push') { $FLAGS="--disable-imagequant" }
+        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS="--disable-imagequant" }
         & winbuild\build\build_pillow.cmd $FLAGS install
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
@@ -175,14 +175,14 @@ jobs:
 
     - name: Build wheel
       id: wheel
-      if: "github.event_name == 'push'"
+      if: "github.event_name != 'pull_request'"
       run: |
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
     - uses: actions/upload-artifact@v2
-      if: "github.event_name == 'push'"
+      if: "github.event_name != 'pull_request'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
