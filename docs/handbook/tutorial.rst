@@ -406,26 +406,23 @@ Using the ImageSequence Iterator class
         # ...do something to frame...
 
 
-Batch processing with Pathlib
+Batch processing with pathlib
 -----------------------------
 
-This example uses PIL together with pathlib, in order to reduce the quality of all png images in a folder
+This example uses Pillow together with pathlib, in order to reduce the quality of all PNG images in a folder:
 
 ::
 
-    from PIL import Image
     from pathlib import Path
+    from PIL import Image
 
 
-    def compressImg(filepath):
+    def compress_image(filepath):
         file = filepath.stem
         with Image.open(filepath) as img:
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            img.save(file + ".jpg",
-                    "JPEG",
-                    optimize=True,
-                    quality=80)
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            img.save(file + ".jpg", "JPEG", optimize=True, quality=80)
         return
 
 
@@ -434,7 +431,7 @@ This example uses PIL together with pathlib, in order to reduce the quality of a
     for path in base_directory.iterdir():
         if path.suffix == ".png":
             print(path)
-            compressImg(path)
+            compress_image(path)
 
 
 
