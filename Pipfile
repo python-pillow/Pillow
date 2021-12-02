@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+black = "*"
+check-manifest = "*"
+coverage = "*"
+defusedxml = "*"
+docutils = "==0.16"
+markdown2 = "*"
+olefile = "*"
+pyroma = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-timeout = "*"
+sphinx-copybutton = "*"
+sphinx-issues = "*"
+sphinx-removed-in = "*"
+sphinx-rtd-theme = "*"
+sphinxext-opengraph = "*"
+Sphinx = ">=2.4"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
