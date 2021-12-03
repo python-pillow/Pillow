@@ -87,10 +87,13 @@ true color.
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
 
-    Image.register_extensions(SpamImageFile.format, [
-        ".spam",
-        ".spa",  # DOS version
-    ])
+    Image.register_extensions(
+        SpamImageFile.format,
+        [
+            ".spam",
+            ".spa",  # DOS version
+        ],
+    )
 
 
 The format handler must always set the
@@ -111,6 +114,7 @@ Once the plugin has been imported, it can be used:
 
     from PIL import Image
     import SpamImagePlugin
+
     with Image.open("hopper.spam") as im:
         pass
 

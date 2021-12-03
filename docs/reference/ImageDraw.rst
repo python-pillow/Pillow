@@ -81,11 +81,12 @@ Example: Draw Partial Opacity Text
 .. code-block:: python
 
     from PIL import Image, ImageDraw, ImageFont
+
     # get an image
     with Image.open("Pillow/Tests/images/hopper.png").convert("RGBA") as base:
 
         # make a blank image for the text, initialized to transparent text color
-        txt = Image.new("RGBA", base.size, (255,255,255,0))
+        txt = Image.new("RGBA", base.size, (255, 255, 255, 0))
 
         # get a font
         fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
@@ -93,9 +94,9 @@ Example: Draw Partial Opacity Text
         d = ImageDraw.Draw(txt)
 
         # draw text, half opacity
-        d.text((10,10), "Hello", font=fnt, fill=(255,255,255,128))
+        d.text((10, 10), "Hello", font=fnt, fill=(255, 255, 255, 128))
         # draw text, full opacity
-        d.text((10,60), "World", font=fnt, fill=(255,255,255,255))
+        d.text((10, 60), "World", font=fnt, fill=(255, 255, 255, 255))
 
         out = Image.alpha_composite(base, txt)
 
@@ -117,7 +118,7 @@ Example: Draw Multiline Text
     d = ImageDraw.Draw(out)
 
     # draw multiline text
-    d.multiline_text((10,10), "Hello\nWorld", font=fnt, fill=(0, 0, 0))
+    d.multiline_text((10, 10), "Hello\nWorld", font=fnt, fill=(0, 0, 0))
 
     out.show()
 
@@ -557,7 +558,9 @@ Methods
 
     .. code-block:: python
 
-        hello = draw.textlength("HelloW", font) - draw.textlength("W", font)  # adjusted for kerning
+        hello = draw.textlength("HelloW", font) - draw.textlength(
+            "W", font
+        )  # adjusted for kerning
         world = draw.textlength("World", font)
         hello_world = hello + world  # adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # True

@@ -75,9 +75,9 @@ method with the following parameters to affect how Ghostscript renders the EPS
     relative position of the bounding box is maintained::
 
         im = Image.open(...)
-        im.size #(100,100)
+        im.size  # (100,100)
         im.load(scale=2)
-        im.size #(200,200)
+        im.size  # (200,200)
 
 **transparency**
     If true, generates an RGBA image with a transparent background, instead of
@@ -760,7 +760,7 @@ The :py:meth:`~PIL.Image.open` method sets the following attributes:
 A convenience method, :py:meth:`~PIL.SpiderImagePlugin.SpiderImageFile.convert2byte`,
 is provided for converting floating point data to byte data (mode ``L``)::
 
-    im = Image.open('image001.spi').convert2byte()
+    im = Image.open("image001.spi").convert2byte()
 
 Writing files in SPIDER format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1201,6 +1201,7 @@ dpi. To load it at another resolution:
 .. code-block:: python
 
     from PIL import Image
+
     with Image.open("drawing.wmf") as im:
         im.load(dpi=144)
 
@@ -1212,14 +1213,18 @@ To add other read or write support, use
     from PIL import Image
     from PIL import WmfImagePlugin
 
+
     class WmfHandler:
         def open(self, im):
             ...
+
         def load(self, im):
             ...
             return image
+
         def save(self, im, fp, filename):
             ...
+
 
     wmf_handler = WmfHandler()
 

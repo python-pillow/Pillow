@@ -17,11 +17,12 @@ changes it.
 .. code-block:: python
 
     from PIL import Image
-    with Image.open('hopper.jpg') as im:
+
+    with Image.open("hopper.jpg") as im:
         px = im.load()
-    print (px[4,4])
-    px[4,4] = (0,0,0)
-    print (px[4,4])
+    print(px[4, 4])
+    px[4, 4] = (0, 0, 0)
+    print(px[4, 4])
 
 Results in the following::
 
@@ -32,8 +33,8 @@ Access using negative indexes is also possible.
 
 .. code-block:: python
 
-    px[-1,-1] = (0,0,0)
-    print (px[-1,-1])
+    px[-1, -1] = (0, 0, 0)
+    print(px[-1, -1])
 
 
 
