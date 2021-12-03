@@ -167,16 +167,16 @@ TIFF, and many others. To use the raw decoder with the
 
     image = Image.frombytes(
         mode, size, data, "raw",
-        raw mode, stride, orientation
+        raw_mode, stride, orientation
         )
 
 When used in a tile descriptor, the parameter field should look like::
 
-    (raw mode, stride, orientation)
+    (raw_mode, stride, orientation)
 
 The fields are used as follows:
 
-**raw mode**
+**raw_mode**
     The pixel layout used in the file, and is used to properly convert data to
     PIL’s internal layout. For a summary of the available formats, see the
     table below.
