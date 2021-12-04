@@ -63,6 +63,7 @@ Take your test image, and make a really simple harness.
 ::
 
     from PIL import Image
+
     with Image.open(path) as im:
         im.load()
 
