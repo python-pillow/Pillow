@@ -185,7 +185,7 @@ def _find_library_dirs_ldconfig():
         return []
     [data, _] = p.communicate()
     if isinstance(data, bytes):
-        data = data.decode()
+        data = data.decode("latin1")
 
     dirs = []
     for dll in re.findall(expr, data):
