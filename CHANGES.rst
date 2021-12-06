@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Convert subsequent GIF frames to RGB or RGBA #5857
+  [radarhere]
+
 - Do not prematurely return in ImageFile when saving to stdout #5665
   [infmagic2047, radarhere]
 
