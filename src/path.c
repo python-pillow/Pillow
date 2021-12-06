@@ -327,21 +327,26 @@ path_getbbox(PyPathObject *self, PyObject *args) {
 
     xy = self->xy;
 
-    x0 = x1 = xy[0];
-    y0 = y1 = xy[1];
+    if (self->count == 0) {
+        x0 = x1 = 0;
+        y0 = y1 = 0;
+    } else {
+        x0 = x1 = xy[0];
+        y0 = y1 = xy[1];
 
-    for (i = 1; i < self->count; i++) {
-        if (xy[i + i] < x0) {
-            x0 = xy[i + i];
-        }
-        if (xy[i + i] > x1) {
-            x1 = xy[i + i];
-        }
-        if (xy[i + i + 1] < y0) {
-            y0 = xy[i + i + 1];
-        }
-        if (xy[i + i + 1] > y1) {
-            y1 = xy[i + i + 1];
+        for (i = 1; i < self->count; i++) {
+            if (xy[i + i] < x0) {
+                x0 = xy[i + i];
+            }
+            if (xy[i + i] > x1) {
+                x1 = xy[i + i];
+            }
+            if (xy[i + i + 1] < y0) {
+                y0 = xy[i + i + 1];
+            }
+            if (xy[i + i + 1] > y1) {
+                y1 = xy[i + i + 1];
+            }
         }
     }
 
