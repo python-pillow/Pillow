@@ -248,33 +248,27 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
         /* To squeeze some extra pixels out of this loop, we test for
            some common cases and handle them separately. */
 
-        /* If we have transparency, we need to use the regular loop. */
-        if (context->transparency == -1) {
-            if (i == 1) {
-                if (state->x < state->xsize - 1) {
-                    /* Single pixel, not at the end of the line. */
-                    *out++ = p[0];
-                    state->x++;
-                    continue;
-                }
-            } else if (state->x + i <= state->xsize) {
-                /* This string fits into current line. */
-                memcpy(out, p, i);
-                out += i;
-                state->x += i;
-                if (state->x == state->xsize) {
-                    NEWLINE(state, context);
-                }
+        if (i == 1) {
+            if (state->x < state->xsize - 1) {
+                /* Single pixel, not at the end of the line. */
+                *out++ = p[0];
+                state->x++;
                 continue;
             }
+        } else if (state->x + i <= state->xsize) {
+            /* This string fits into current line. */
+            memcpy(out, p, i);
+            out += i;
+            state->x += i;
+            if (state->x == state->xsize) {
+                NEWLINE(state, context);
+            }
+            continue;
         }
 
         /* No shortcut, copy pixel by pixel */
         for (c = 0; c < i; c++) {
-            if (p[c] != context->transparency) {
-                *out = p[c];
-            }
-            out++;
+            *out++ = p[c];
             if (++state->x >= state->xsize) {
                 NEWLINE(state, context);
             }

@@ -135,7 +135,7 @@ def _save(im, fp, filename, save_all=False):
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
-                palette = im.im.getpalette("RGB")
+                palette = im.getpalette()
                 colorspace = [
                     PdfParser.PdfName("Indexed"),
                     PdfParser.PdfName("DeviceRGB"),
