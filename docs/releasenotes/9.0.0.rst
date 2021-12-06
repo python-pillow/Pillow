@@ -85,6 +85,14 @@ TODO
 Other Changes
 =============
 
+Convert subsequent GIF frames to RGB or RGBA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Since each frame of a GIF can have up to 256 colors, after the first frame it is
+possible for there to be too many colors to fit in a P mode image. To allow for this,
+seeking to any subsequent GIF frame will now convert the image to RGB or RGBA,
+depending on whether or not the first frame had transparency.
+
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
