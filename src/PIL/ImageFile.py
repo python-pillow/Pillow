@@ -545,12 +545,13 @@ def _safe_read(fp, size):
             raise OSError("Truncated File Read")
         return data
     data = []
-    while size > 0:
-        block = fp.read(min(size, SAFEBLOCK))
+    remaining_size = size
+    while remaining_size > 0:
+        block = fp.read(min(remaining_size, SAFEBLOCK))
         if not block:
             break
         data.append(block)
-        size -= len(block)
+        remaining_size -= len(block)
     if sum(len(d) for d in data) < size:
         raise OSError("Truncated File Read")
     return b"".join(data)
