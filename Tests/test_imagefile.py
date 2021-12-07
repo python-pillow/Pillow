@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import EpsImagePlugin, Image, ImageFile, features
+from PIL import BmpImagePlugin, EpsImagePlugin, Image, ImageFile, _binary, features
 
 from .helper import (
     assert_image,
@@ -110,6 +110,20 @@ class TestImageFile:
         p.feed(input)
         with pytest.raises(OSError):
             p.close()
+
+    def test_truncated(self):
+        b = BytesIO(
+            b"BM000000000000"  # head_data
+            + _binary.o32le(
+                ImageFile.SAFEBLOCK + 1 + 4
+            )  # header_size, so BmpImagePlugin will try to read SAFEBLOCK + 1 bytes
+            + (
+                b"0" * ImageFile.SAFEBLOCK
+            )  # only SAFEBLOCK bytes, so that the header is truncated
+        )
+        with pytest.raises(OSError) as e:
+            BmpImagePlugin.BmpImageFile(b)
+        assert str(e.value) == "Truncated File Read"
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
