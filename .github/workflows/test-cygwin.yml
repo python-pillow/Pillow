@@ -34,15 +34,15 @@ jobs:
         with:
           dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
       - name: Build Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe'
+        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
           /usr/bin/python3.8 setup.py bdist_wheel
       - name: Install Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe'
+        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
           /usr/bin/python3.8 -m pip install Pillow-*-cp38-cp38-cygwin_*_x86_64.whl
       - name: Test Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe'
+        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
           /usr/bin/python3.8 selftest.py
           xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
