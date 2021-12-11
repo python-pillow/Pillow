@@ -77,6 +77,13 @@ def test_quantize_dither_diff():
     assert dither.tobytes() != nodither.tobytes()
 
 
+def test_colors():
+    im = hopper()
+    colors = 2
+    converted = im.quantize(colors)
+    assert len(converted.palette.palette) == colors * len("RGB")
+
+
 def test_transparent_colors_equal():
     im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
     px = im.load()
