@@ -60,7 +60,7 @@ jobs:
           C:\tools\cygwin\bin\bash .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-actions@v2
+        uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
