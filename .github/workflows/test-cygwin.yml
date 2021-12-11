@@ -45,7 +45,9 @@ jobs:
       - name: Install Pillow
         run: |
           C:\tools\cygwin\bin\dash -c '/usr/bin/python3.8 -m pip install dist/*.whl'
-      - name: Test Pillow
+      - name: Check Pillow configuration
         run: |
           C:\tools\cygwin\bin\python3.8 selftest.py
+      - name: Test Pillow
+        run: |
           C:\tools\cygwin\bin\xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
