@@ -23,8 +23,7 @@ jobs:
             xinit python38-setuptools python38-devel python38-tkinter
             python38-wheel python38-pip python38-olefile
             python38-numpy python38-pytest python38-sphinx
-            python38-packaging python38-cffi
-            libfribidi-devel zlib-devel libX11-xcb-devel tcl-tk-devel
+            python38-packaging python38-cffi python38-requests
           install-dir: 'C:\tools\cygwin'
 
       - name: Clean up path
@@ -54,11 +53,11 @@ jobs:
 
       - name: Test Pillow
         run: |
-          C:\tools\cygwin\bin\xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          C:\tools\cygwin\bin\dash /usr/bin/xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
 
       - name: After success
         run: |
-          C:\tools\cygwin\bin\dash .ci/after_success.sh
+          C:\tools\cygwin\bin\bash .ci/after_success.sh
 
       - name: Upload coverage
         run: |
