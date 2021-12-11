@@ -439,7 +439,6 @@ path_setitem(PyPathObject *self, Py_ssize_t i, PyObject *op) {
 
     return 0;
 }
-
 static PyObject *
 path_tolist(PyPathObject *self, PyObject *args) {
     PyObject *list;
@@ -449,7 +448,6 @@ path_tolist(PyPathObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "|i:tolist", &flat)) {
         return NULL;
     }
-
     if (flat) {
         list = PyList_New(self->count * 2);
         for (i = 0; i < self->count * 2; i++) {
@@ -471,30 +469,23 @@ path_tolist(PyPathObject *self, PyObject *args) {
             PyList_SetItem(list, i, item);
         }
     }
-
     return list;
-
 error:
     Py_DECREF(list);
     return NULL;
 }
-
 static PyObject *
 path_transform(PyPathObject *self, PyObject *args) {
     /* Apply affine transform to coordinate set */
     Py_ssize_t i;
     double *xy;
     double a, b, c, d, e, f;
-
     double wrap = 0.0;
-
     if (!PyArg_ParseTuple(
             args, "(dddddd)|d:transform", &a, &b, &c, &d, &e, &f, &wrap)) {
         return NULL;
     }
-
     xy = self->xy;
-
     /* transform the coordinate set */
     if (b == 0.0 && d == 0.0) {
         /* scaling */
@@ -518,11 +509,9 @@ path_transform(PyPathObject *self, PyObject *args) {
             xy[i + i] = fmod(xy[i + i], wrap);
         }
     }
-
     Py_INCREF(Py_None);
     return Py_None;
 }
-
 static struct PyMethodDef methods[] = {
     {"getbbox", (PyCFunction)path_getbbox, METH_VARARGS},
     {"tolist", (PyCFunction)path_tolist, METH_VARARGS},
@@ -531,14 +520,11 @@ static struct PyMethodDef methods[] = {
     {"transform", (PyCFunction)path_transform, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
-
 static PyObject *
 path_getattr_id(PyPathObject *self, void *closure) {
     return Py_BuildValue("n", (Py_ssize_t)self->xy);
 }
-
 static struct PyGetSetDef getsetters[] = {{"id", (getter)path_getattr_id}, {NULL}};
-
 static PyObject *
 path_subscript(PyPathObject *self, PyObject *item) {
     if (PyIndex_Check(item)) {
@@ -574,7 +560,6 @@ path_subscript(PyPathObject *self, PyObject *item) {
         return NULL;
     }
 }
-
 static PySequenceMethods path_as_sequence = {
     (lenfunc)path_len,                /*sq_length*/
     (binaryfunc)0,                    /*sq_concat*/
