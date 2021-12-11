@@ -29,26 +29,23 @@ jobs:
             python38-wheel python38-pip python38-olefile
             python38-numpy python38-pytest python38-sphinx
             python38-packaging python38-cffi
+            libfribidi-devel zlib-devel libX11-xcb-devel tcl-tk-devel
           install-dir: 'C:\tools\cygwin'
       - name: Clean up path
         uses: egor-tensin/cleanup-path@v2
         with:
           dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
       - name: Ensure python dependencies installed
-        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
-          /usr/bin/python3.8 -m pip install pip wheel setuptools
-          /usr/bin/python3.8 -m pip install -r requirements.txt
+          C:\tools\cygwin\bin\python3.8 -m pip install pip wheel setuptools
+          C:\tools\cygwin\bin\python3.8 -m pip install -r requirements.txt
       - name: Build Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
-          /usr/bin/python3.8 setup.py bdist_wheel
+          C:\tools\cygwin\bin\python3.8 setup.py bdist_wheel
       - name: Install Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
-          /usr/bin/python3.8 -m pip install Pillow-*-cp38-cp38-cygwin_*_x86_64.whl
+          C:\tools\cygwin\bin\python3.8 -m pip install Pillow-*-cp38-cp38-cygwin_*_x86_64.whl
       - name: Test Pillow
-        shell: 'C:\tools\cygwin\bin\dash.exe {0}'
         run: |
-          /usr/bin/python3.8 selftest.py
-          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          C:\tools\cygwin\bin\python3.8 selftest.py
+          C:\tools\cygwin\bin\xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
