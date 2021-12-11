@@ -44,7 +44,7 @@ jobs:
           C:\tools\cygwin\bin\python3.8 setup.py bdist_wheel
       - name: Install Pillow
         run: |
-          C:\tools\cygwin\bin\dash -c '/usr/bin/python3.8 -m pip install *.whl'
+          C:\tools\cygwin\bin\dash -c '/usr/bin/python3.8 -m pip install dist/*.whl'
       - name: Test Pillow
         run: |
           C:\tools\cygwin\bin\python3.8 selftest.py
