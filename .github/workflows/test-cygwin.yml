@@ -60,5 +60,8 @@ jobs:
           C:\tools\cygwin\bin\bash .ci/after_success.sh
 
       - name: Upload coverage
-        run: |
-          C:\tools\cygwin\bin\bash -c 'bash <(curl -s https://codecov.io/bash) -F'
+        uses: codecov/codecov-actions@v2
+        with:
+          file: ./coverage.xml
+          flags: GHA_Cygwin
+          name: ${{ runner.os }} Cygwin Python 3.8 ${{ matrix.architecture }}
