@@ -1,12 +1,6 @@
 name: Test Cygwin
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -16,6 +10,7 @@ jobs:
     steps:
       - name: Checkout Pillow
         uses: actions/checkout@v2
+
       - name: Set up Cygwin
         uses: egor-tensin/setup-cygwin@v3
         with:
@@ -31,23 +26,40 @@ jobs:
             python38-packaging python38-cffi
             libfribidi-devel zlib-devel libX11-xcb-devel tcl-tk-devel
           install-dir: 'C:\tools\cygwin'
+
       - name: Clean up path
         uses: egor-tensin/cleanup-path@v2
         with:
           dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
-      - name: Ensure python dependencies installed
+
+      - name: Build system information
+        run: C:\tools\cygwin\bin\python3.8 .github/workflows/system-info.py
+
+      - name: Ensure Python dependencies are installed
         run: |
           C:\tools\cygwin\bin\python3.8 -m pip install pip wheel setuptools
           C:\tools\cygwin\bin\python3.8 -m pip install -r requirements.txt
+
       - name: Build Pillow
         run: |
           C:\tools\cygwin\bin\python3.8 setup.py bdist_wheel
+
       - name: Install Pillow
         run: |
           C:\tools\cygwin\bin\dash -c '/usr/bin/python3.8 -m pip install dist/*.whl'
+
       - name: Check Pillow configuration
         run: |
           C:\tools\cygwin\bin\python3.8 selftest.py
+
       - name: Test Pillow
         run: |
           C:\tools\cygwin\bin\xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+
+      - name: After success
+        run: |
+          C:\tools\cygwin\bin\dash .ci/after_success.sh
+
+      - name: Upload coverage
+        run: |
+          C:\tools\cygwin\bin\bash -c 'bash <(curl -s https://codecov.io/bash) -F'
