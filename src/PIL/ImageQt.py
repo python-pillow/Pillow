@@ -168,6 +168,8 @@ def _toqclass_helper(im):
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
     elif im.mode == "I;16" and hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+        im = im.point(lambda i: i * 256)
+
         format = qt_format.Format_Grayscale16
     else:
         if exclusive_fp:

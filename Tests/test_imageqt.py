@@ -2,7 +2,7 @@ import pytest
 
 from PIL import ImageQt
 
-from .helper import hopper
+from .helper import assert_image_similar, hopper
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
@@ -42,11 +42,17 @@ def test_rgb():
 
 
 def test_image():
-    for mode in ("1", "RGB", "RGBA", "L", "P"):
-        ImageQt.ImageQt(hopper(mode))
+    modes = ["1", "RGB", "RGBA", "L", "P"]
     qt_format = ImageQt.QImage.Format if ImageQt.qt_version == "6" else ImageQt.QImage
     if hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
-        ImageQt.ImageQt(hopper("I;16"))
+        modes.append("I;16")
+
+    for mode in modes:
+        im = hopper(mode)
+        roundtripped_im = ImageQt.fromqimage(ImageQt.ImageQt(im))
+        if mode not in ("RGB", "RGBA"):
+            im = im.convert("RGB")
+        assert_image_similar(roundtripped_im, im, 1)
 
 
 def test_closed_file():
