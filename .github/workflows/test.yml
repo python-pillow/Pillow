@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "macos-10.15",
+          "macos-latest",
           "ubuntu-latest",
         ]
         python-version: [
@@ -29,8 +29,19 @@ jobs:
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu
+        - os: macos-latest
+          codecov-flag: GHA_macOS
         - os: macos-10.15
           codecov-flag: GHA_macOS
+          python-version: pypy-3.8
+        - os: macos-10.15
+          codecov-flag: GHA_macOS
+          python-version: pypy-3.7
+        exclude:
+        - os: macos-latest
+          python-version: pypy-3.8
+        - os: macos-latest
+          python-version: pypy-3.7
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
