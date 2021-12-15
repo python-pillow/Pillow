@@ -649,13 +649,16 @@ class Image:
 
         # Same as __repr__ but without unpredicatable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
-        p.text("<%s.%s image mode=%s size=%dx%d>" % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.mode,
-            self.size[0],
-            self.size[1],
-        ))
+        p.text(
+            "<%s.%s image mode=%s size=%dx%d>"
+            % (
+                self.__class__.__module__,
+                self.__class__.__name__,
+                self.mode,
+                self.size[0],
+                self.size[1],
+            )
+        )
 
     def _repr_png_(self):
         """iPython display hook support
