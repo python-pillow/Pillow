@@ -467,6 +467,23 @@ def test_shape2():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_shape2.png")
 
 
+def test_transform():
+    # Arrange
+    im = Image.new("RGB", (100, 100), "white")
+    expected = im.copy()
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    s = ImageDraw.Outline()
+    s.line(0, 0)
+    s.transform((0, 0, 0, 0, 0, 0))
+
+    draw.shape(s, fill=1)
+
+    # Assert
+    assert_image_equal(im, expected)
+
+
 def helper_pieslice(bbox, start, end):
     # Arrange
     im = Image.new("RGB", (W, H))
