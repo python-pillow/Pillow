@@ -497,11 +497,12 @@ Reading from a tar archive
 Batch processing
 ^^^^^^^^^^^^^^^^
 
-This example uses Pillow together with pathlib, in order to reduce the quality of all PNG images in a folder:
+Operations can be applied to multiple image files. For example, all PNG images
+in the current directory can be saved as JPEGs at reduced quality.
 
 ::
 
-    from pathlib import Path
+    import os
     from PIL import Image
 
 
@@ -512,12 +513,20 @@ This example uses Pillow together with pathlib, in order to reduce the quality o
             img.save(dest_path, "JPEG", optimize=True, quality=80)
 
 
-    base_directory = Path.cwd()
+    paths = [path for path in os.listdir(".") if path.endsWith(".png")]
+    for path in paths:
+        compress_image(path, path[:-4] + ".jpg")
 
-    for path in base_directory.iterdir():
-        if path.suffix == ".png":
-            print(path)
-            compress_image(path, filepath.stem + ".jpg")
+Since images can also be opened from a ``Path`` from the ``pathlib`` module,
+the example could be modified to use ``pathlib`` instead of ``os``.
+
+::
+
+    from pathlib import Path
+
+    paths = [path for path in Path.cwd().iterdir() if path.suffix == ".png"]
+    for path in paths:
+        compress_image(path, filepath.stem + ".jpg")
 
 
 Controlling the decoder
