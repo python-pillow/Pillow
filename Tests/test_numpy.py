@@ -189,8 +189,9 @@ def test_putdata():
     assert len(im.getdata()) == len(arr)
 
 
-def test_roundtrip_eye():
-    for dtype in (
+@pytest.mark.parametrize(
+    "dtype",
+    (
         bool,
         numpy.bool8,
         numpy.int8,
@@ -202,9 +203,11 @@ def test_roundtrip_eye():
         float,
         numpy.float32,
         numpy.float64,
-    ):
-        arr = numpy.eye(10, dtype=dtype)
-        numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
+    ),
+)
+def test_roundtrip_eye(dtype):
+    arr = numpy.eye(10, dtype=dtype)
+    numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
 
 
 def test_zero_size():
