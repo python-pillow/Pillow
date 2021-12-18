@@ -60,7 +60,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 setup.py build_ext install
+        run: CFLAGS="-coverage" python3 -m pip install --global-option="build_ext" .
 
       - name: Test Pillow
         run: |
