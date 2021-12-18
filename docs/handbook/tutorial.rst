@@ -406,33 +406,6 @@ Using the ImageSequence Iterator class
         # ...do something to frame...
 
 
-Batch processing with pathlib
------------------------------
-
-This example uses Pillow together with pathlib, in order to reduce the quality of all PNG images in a folder:
-
-::
-
-    from pathlib import Path
-    from PIL import Image
-
-
-    def compress_image(source_path, dest_path):
-        with Image.open(source_path) as img:
-            if img.mode != "RGB":
-                img = img.convert("RGB")
-            img.save(dest_path, "JPEG", optimize=True, quality=80)
-
-
-    base_directory = Path.cwd()
-
-    for path in base_directory.iterdir():
-        if path.suffix == ".png":
-            print(path)
-            compress_image(path, filepath.stem + ".jpg")
-
-
-
 PostScript printing
 -------------------
 
@@ -519,6 +492,33 @@ Reading from a tar archive
 
     fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
     im = Image.open(fp)
+
+
+Batch processing
+^^^^^^^^^^^^^^^^
+
+This example uses Pillow together with pathlib, in order to reduce the quality of all PNG images in a folder:
+
+::
+
+    from pathlib import Path
+    from PIL import Image
+
+
+    def compress_image(source_path, dest_path):
+        with Image.open(source_path) as img:
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            img.save(dest_path, "JPEG", optimize=True, quality=80)
+
+
+    base_directory = Path.cwd()
+
+    for path in base_directory.iterdir():
+        if path.suffix == ".png":
+            print(path)
+            compress_image(path, filepath.stem + ".jpg")
+
 
 Controlling the decoder
 -----------------------
