@@ -1,6 +1,11 @@
 Changelog (Pillow-SIMD)
 =======================
 
+7.0.0.post4
+-----------
+
+- Filter: fixed wrong offset handling for 3x3 single-band version
+
 7.0.0.post3
 -----------
 
