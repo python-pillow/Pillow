@@ -527,7 +527,7 @@ module.
 
     paths = Path(".").glob("*.png")
     for path in paths:
-        compress_image(path, filepath.stem + ".jpg")
+        compress_image(path, path.stem + ".jpg")
 
 
 Controlling the decoder
