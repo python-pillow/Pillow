@@ -502,7 +502,7 @@ in the current directory can be saved as JPEGs at reduced quality.
 
 ::
 
-    import os
+    import glob
     from PIL import Image
 
 
@@ -513,12 +513,13 @@ in the current directory can be saved as JPEGs at reduced quality.
             img.save(dest_path, "JPEG", optimize=True, quality=80)
 
 
-    paths = glob.glob(".png")
+    paths = glob.glob("*.png")
     for path in paths:
         compress_image(path, path[:-4] + ".jpg")
 
 Since images can also be opened from a ``Path`` from the ``pathlib`` module,
-the example could be modified to use ``pathlib`` instead of ``os``.
+the example could be modified to use ``pathlib`` instead of the ``glob``
+module.
 
 ::
 
