@@ -50,7 +50,7 @@ help:
 
 .PHONY: inplace
 inplace: clean
-	python3 setup.py develop build_ext --inplace
+	python3 -m pip install -e --global-option="build_ext" --global-option="--inplace" .
 
 .PHONY: install
 install:
@@ -83,7 +83,7 @@ install-venv:
 .PHONY: release-test
 release-test:
 	$(MAKE) install-req
-	python3 setup.py develop
+	python3 -m pip install -e .
 	python3 selftest.py
 	python3 -m pytest Tests
 	python3 -m pip install .
