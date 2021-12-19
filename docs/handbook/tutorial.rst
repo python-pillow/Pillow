@@ -497,6 +497,43 @@ Reading from a tar archive
     fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
     im = Image.open(fp)
 
+
+Batch processing
+^^^^^^^^^^^^^^^^
+
+Operations can be applied to multiple image files. For example, all PNG images
+in the current directory can be saved as JPEGs at reduced quality.
+
+::
+
+    import glob
+    from PIL import Image
+
+
+    def compress_image(source_path, dest_path):
+        with Image.open(source_path) as img:
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            img.save(dest_path, "JPEG", optimize=True, quality=80)
+
+
+    paths = glob.glob("*.png")
+    for path in paths:
+        compress_image(path, path[:-4] + ".jpg")
+
+Since images can also be opened from a ``Path`` from the ``pathlib`` module,
+the example could be modified to use ``pathlib`` instead of the ``glob``
+module.
+
+::
+
+    from pathlib import Path
+
+    paths = Path(".").glob("*.png")
+    for path in paths:
+        compress_image(path, path.stem + ".jpg")
+
+
 Controlling the decoder
 -----------------------
 
