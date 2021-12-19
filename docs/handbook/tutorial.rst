@@ -513,7 +513,7 @@ in the current directory can be saved as JPEGs at reduced quality.
             img.save(dest_path, "JPEG", optimize=True, quality=80)
 
 
-    paths = [path for path in os.listdir(".") if path.endsWith(".png")]
+    paths = glob.glob(".png")
     for path in paths:
         compress_image(path, path[:-4] + ".jpg")
 
@@ -524,7 +524,7 @@ the example could be modified to use ``pathlib`` instead of ``os``.
 
     from pathlib import Path
 
-    paths = [path for path in Path.cwd().iterdir() if path.suffix == ".png"]
+    paths = Path(".").glob("*.png")
     for path in paths:
         compress_image(path, filepath.stem + ".jpg")
 
