@@ -3,14 +3,12 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
                      float offset)
 {
 #define MM_KERNEL1x3_SUM1(ss, row, kernel) \
-    ss = _mm_set1_ps(offset); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, kernel0##kernel)); \
+    ss = _mm_mul_ps(pix0##row, kernel0##kernel); \
     ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel1##kernel)); \
     ss = _mm_add_ps(ss, _mm_mul_ps(pix2##row, kernel2##kernel));
 
 #define MM_KERNEL1x3_SUM1_2(ss, row, kernel) \
-    ss = _mm_set1_ps(offset); \
-    ss = _mm_add_ps(ss, _mm_mul_ps(pix3##row, kernel0##kernel)); \
+    ss = _mm_mul_ps(pix3##row, kernel0##kernel); \
     ss = _mm_add_ps(ss, _mm_mul_ps(pix0##row, kernel1##kernel)); \
     ss = _mm_add_ps(ss, _mm_mul_ps(pix1##row, kernel2##kernel));
 
@@ -26,6 +24,7 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
     __m128 kernel01 = _mm_set_ps(kernel[2], kernel[1], kernel[0], 0);
     __m128 kernel11 = _mm_set_ps(kernel[5], kernel[4], kernel[3], 0);
     __m128 kernel21 = _mm_set_ps(kernel[8], kernel[7], kernel[6], 0);
+    __m128 mm_offset = _mm_set1_ps(offset);
 
     memcpy(imOut->image8[0], im->image8[0], im->linesize);
     y = 1;
@@ -64,12 +63,14 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
             ss4 = _mm_hadd_ps(ss4, ss5);
             
             ss0 = _mm_hadd_ps(ss0, ss1);
+            ss0 = _mm_add_ps(ss0, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss0);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
             *((UINT32*) &out0[x]) = _mm_cvtsi128_si32(ssi0);
 
             ss3 = _mm_hadd_ps(ss3, ss4);
+            ss3 = _mm_add_ps(ss3, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss3);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
@@ -89,6 +90,7 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
 
             ss0 = _mm_hadd_ps(ss0, ss0);
             ss0 = _mm_hadd_ps(ss0, ss0);
+            ss0 = _mm_add_ps(ss0, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss0);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
@@ -96,6 +98,7 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
 
             ss1 = _mm_hadd_ps(ss1, ss1);
             ss1 = _mm_hadd_ps(ss1, ss1);
+            ss1 = _mm_add_ps(ss1, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss1);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
@@ -122,6 +125,7 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
 
             ss = _mm_hadd_ps(ss, ss);
             ss = _mm_hadd_ps(ss, ss);
+            ss = _mm_add_ps(ss, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
@@ -139,6 +143,7 @@ ImagingFilter3x3f_u8(Imaging imOut, Imaging im, const float* kernel,
 
             ss = _mm_hadd_ps(ss, ss);
             ss = _mm_hadd_ps(ss, ss);
+            ss = _mm_add_ps(ss, mm_offset);
             ssi0 = _mm_cvtps_epi32(ss);
             ssi0 = _mm_packs_epi32(ssi0, ssi0);
             ssi0 = _mm_packus_epi16(ssi0, ssi0);
