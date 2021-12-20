@@ -186,6 +186,16 @@ class UnixViewer(Viewer):
         return 1
 
 
+class XDGViewer(UnixViewer):
+    """
+    The freedesktop.org ``xdg-open`` command.
+    """
+
+    def get_command_ex(self, file, **options):
+        command = executable = "xdg-open"
+        return command, executable
+
+
 class DisplayViewer(UnixViewer):
     """
     The ImageMagick ``display`` command.
@@ -233,6 +243,8 @@ class XVViewer(UnixViewer):
 
 
 if sys.platform not in ("win32", "darwin"):  # unixoids
+    if shutil.which("xdg-open"):
+        register(XDGViewer)
     if shutil.which("display"):
         register(DisplayViewer)
     if shutil.which("gm"):
