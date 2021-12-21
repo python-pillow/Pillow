@@ -963,10 +963,17 @@ static struct {
 
     {"HSV", "RGB", hsv2rgb},
 
+#ifdef WORDS_BIGENDIAN
+    {"I", "I;16", I_I16B},
+    {"I;16", "I", I16B_I},
+    {"L", "I;16", L_I16B},
+    {"I;16", "L", I16B_L},
+#else
     {"I", "I;16", I_I16L},
     {"I;16", "I", I16L_I},
     {"L", "I;16", L_I16L},
     {"I;16", "L", I16L_L},
+#endif
 
     {"I", "I;16L", I_I16L},
     {"I;16L", "I", I16L_I},

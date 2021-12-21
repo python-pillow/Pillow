@@ -13,7 +13,6 @@ from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
     hopper,
-    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -77,7 +76,6 @@ class TestFilePng:
                     png.crc(cid, s)
         return chunks
 
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_sanity(self, tmp_path):
 
         # internal version number
