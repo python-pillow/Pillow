@@ -123,3 +123,10 @@ def test_rgba_bitfields():
         im = Image.merge("RGB", (r, g, b))
 
     assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
+
+
+def test_offset():
+    # This image has been hexedited
+    # to exclude the palette size from the pixel data offset
+    with Image.open("Tests/images/pal8_offset.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
