@@ -486,7 +486,7 @@ static struct PyMethodDef _anim_encoder_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-// WebPAnimDecoder type definition
+// WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
     sizeof(WebPAnimEncoderObject),                    /*tp_size */
