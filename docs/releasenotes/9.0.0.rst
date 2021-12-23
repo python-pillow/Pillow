@@ -67,14 +67,6 @@ ImageFile.raise_ioerror
 has been removed. Use ``ImageFile.raise_oserror`` instead.
 
 
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API Changes
 ===========
 
@@ -83,10 +75,18 @@ Added line width parameter to ImageDraw polygon
 
 An optional line ``width`` parameter has been added to ``ImageDraw.Draw.polygon``.
 
-TODO
 
 API Additions
 =============
+
+ImageShow.XDGViewer
+^^^^^^^^^^^^^^^^^^^
+
+If ``xdg-open`` is present on Linux, this new :py:class:`PIL.ImageShow.Viewer` subclass
+will be registered. It displays images using the application selected by the system.
+
+It is higher in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will be preferred by ``im.show()`` or :py:func:`.ImageShow.show()`.
 
 Added support for "title" argument to DisplayViewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
