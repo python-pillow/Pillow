@@ -49,6 +49,10 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
    :alt: Tidelift
 
+.. image:: https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml
+   :alt: Tidelift Align
+
 .. image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.org/project/Pillow/
    :alt: Latest PyPI version
