@@ -1,6 +1,29 @@
 9.0.0
 -----
 
+Fredrik Lundh
+=============
+
+This release is dedicated to the memory of Fredrik Lundh, aka Effbot, who died in
+November 2021. Fredrik created PIL in 1995 and he was instrumental in the early
+success of Python.
+
+`Guido wrote <https://mail.python.org/archives/list/python-dev@python.org/thread/36Q5QBILL3QIFIA3KHNGFBNJQKXKN7SD/>`_:
+
+    Fredrik was an early Python contributor (e.g. Elementtree and the 're'
+    module) and his enthusiasm for the language and community were inspiring
+    for all who encountered him or his work. He spent countless hours on
+    comp.lang.python answering questions from newbies and advanced users alike.
+
+    He also co-founded an early Python startup, Secret Labs AB, which among
+    other software released an IDE named PythonWorks. Fredrik also created the
+    Python Imaging Library (PIL) which is still THE way to interact with images
+    in Python, now most often through its Pillow fork. His effbot.org site was
+    a valuable resource for generations of Python users, especially its Tkinter
+    documentation.
+
+Thank you, Fredrik.
+
 Backwards Incompatible Changes
 ==============================
 
@@ -44,14 +67,6 @@ ImageFile.raise_ioerror
 has been removed. Use ``ImageFile.raise_oserror`` instead.
 
 
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API Changes
 ===========
 
@@ -60,10 +75,18 @@ Added line width parameter to ImageDraw polygon
 
 An optional line ``width`` parameter has been added to ``ImageDraw.Draw.polygon``.
 
-TODO
 
 API Additions
 =============
+
+ImageShow.XDGViewer
+^^^^^^^^^^^^^^^^^^^
+
+If ``xdg-open`` is present on Linux, this new :py:class:`PIL.ImageShow.Viewer` subclass
+will be registered. It displays images using the application selected by the system.
+
+It is higher in priority than the other default :py:class:`PIL.ImageShow.Viewer`
+instances, so it will be preferred by ``im.show()`` or :py:func:`.ImageShow.show()`.
 
 Added support for "title" argument to DisplayViewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

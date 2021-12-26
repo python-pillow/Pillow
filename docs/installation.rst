@@ -275,10 +275,6 @@ Build Options
 
 Sample usage::
 
-    MAX_CONCURRENCY=1 python3 setup.py build_ext --enable-[feature] install
-
-or using pip::
-
     python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
@@ -310,7 +306,7 @@ Now install Pillow with::
 
 or from within the uncompressed source directory::
 
-    python3 setup.py install
+    python3 -m pip install .
 
 Building on Windows
 ^^^^^^^^^^^^^^^^^^^

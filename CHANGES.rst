@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Added ImageShow support for xdg-open #5897
+  [m-shinder, radarhere]
+
+- Support 16-bit grayscale ImageQt conversion #5856
+  [cmbruns, radarhere]
+
 - Convert subsequent GIF frames to RGB or RGBA #5857
   [radarhere]
 
