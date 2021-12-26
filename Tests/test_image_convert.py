@@ -41,7 +41,7 @@ def test_sanity():
 def test_default():
 
     im = hopper("P")
-    assert_image(im, "P", im.size)
+    assert im.mode == "P"
     converted_im = im.convert()
     assert_image(converted_im, "RGB", im.size)
     converted_im = im.convert()
