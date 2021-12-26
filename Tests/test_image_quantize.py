@@ -2,18 +2,18 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image, assert_image_similar, hopper, is_ppc64le
+from .helper import assert_image_similar, hopper, is_ppc64le
 
 
 def test_sanity():
     image = hopper()
     converted = image.quantize()
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 10)
 
     image = hopper()
     converted = image.quantize(palette=hopper("P"))
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 60)
 
 
@@ -27,7 +27,7 @@ def test_libimagequant_quantize():
             pytest.skip("libimagequant support not available")
         else:
             raise
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
     assert len(converted.getcolors()) == 100
 
@@ -35,7 +35,7 @@ def test_libimagequant_quantize():
 def test_octree_quantize():
     image = hopper()
     converted = image.quantize(100, Image.FASTOCTREE)
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 20)
     assert len(converted.getcolors()) == 100
 
@@ -52,7 +52,7 @@ def test_quantize():
     with Image.open("Tests/images/caption_6_33_22.png") as image:
         image = image.convert("RGB")
     converted = image.quantize()
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 1)
 
 
@@ -62,7 +62,7 @@ def test_quantize_no_dither():
         palette = palette.convert("P")
 
     converted = image.quantize(dither=0, palette=palette)
-    assert_image(converted, "P", converted.size)
+    assert converted.mode == "P"
     assert converted.palette.palette == palette.palette.palette
 
 
