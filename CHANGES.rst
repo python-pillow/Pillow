@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Fixed freeing pointer in ImageDraw.Outline.transform #5909
+  [radarhere]
+
 - Added ImageShow support for xdg-open #5897
   [m-shinder, radarhere]
 
