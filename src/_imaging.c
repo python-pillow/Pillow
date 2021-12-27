@@ -1526,7 +1526,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 /* Clipped data */
                 for (i = x = y = 0; i < n; i++) {
                     op = PySequence_Fast_GET_ITEM(seq, i);
-                    image->image8[y][x] = (UINT8)CLIP8(PyLong_AsLong(op));
+                    image->image8[y][x] = (UINT8)CLIP8((int)PyFloat_AsDouble(op));
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }

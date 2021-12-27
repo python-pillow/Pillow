@@ -47,6 +47,12 @@ def test_pypy_performance():
     im.putdata(list(range(256)) * 256)
 
 
+def test_mode_with_L_with_float():
+    im = Image.new("L", (1, 1), 0)
+    im.putdata([2.0])
+    assert im.getpixel((0, 0)) == 2
+
+
 def test_mode_i():
     src = hopper("L")
     data = list(src.getdata())
