@@ -1,6 +1,8 @@
 import sys
 from array import array
 
+import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
@@ -93,3 +95,18 @@ def test_array_F():
     im.putdata(arr)
 
     assert len(im.getdata()) == len(arr)
+
+
+def test_not_flattened():
+    im = Image.new("L", (1, 1))
+    with pytest.raises(TypeError):
+        im.putdata([[0]])
+    with pytest.raises(TypeError):
+        im.putdata([[0]], 2)
+
+    with pytest.raises(TypeError):
+        im = Image.new("I", (1, 1))
+        im.putdata([[0]])
+    with pytest.raises(TypeError):
+        im = Image.new("F", (1, 1))
+        im.putdata([[0]])
