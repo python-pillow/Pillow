@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Exclude carriage return in PDF regex to help prevent ReDoS #5912
+  [hugovk]
+
 - Fixed freeing pointer in ImageDraw.Outline.transform #5909
   [radarhere]
 
