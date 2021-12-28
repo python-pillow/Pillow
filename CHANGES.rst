@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Improved I;16 operations on big endian #5901
+  [radarhere]
+
+- Limit quantized palette to number of colors #5879
+  [radarhere]
+
+- Fixed palette index for zeroed color in FASTOCTREE quantize #5869
+  [radarhere]
+
+- When saving RGBA to GIF, make use of first transparent palette entry #5859
+  [radarhere]
+
+- Pass SAMPLEFORMAT to libtiff #5848
+  [radarhere]
+
+- Added rounding when converting P and PA #5824
+  [radarhere]
+
 - Improved putdata() documentation and data handling #5910
   [radarhere]
 
