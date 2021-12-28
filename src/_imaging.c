@@ -1494,6 +1494,14 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+#define set_value_to_item(seq, i) \
+op = PySequence_Fast_GET_ITEM(seq, i); \
+if (PySequence_Check(op)) { \
+    PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
+    return NULL; \
+} else { \
+    value = PyFloat_AsDouble(op); \
+}
     if (image->image8) {
         if (PyBytes_Check(data)) {
             unsigned char *p;
@@ -1522,11 +1530,12 @@ _putdata(ImagingObject *self, PyObject *args) {
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
+            double value;
             if (scale == 1.0 && offset == 0.0) {
                 /* Clipped data */
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
-                    image->image8[y][x] = (UINT8)CLIP8(PyLong_AsLong(op));
+                    set_value_to_item(seq, i);
+                    image->image8[y][x] = (UINT8)CLIP8(value);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1535,9 +1544,8 @@ _putdata(ImagingObject *self, PyObject *args) {
             } else {
                 /* Scaled and clipped data */
                 for (i = x = y = 0; i < n; i++) {
-                    PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
-                    image->image8[y][x] =
-                        CLIP8((int)(PyFloat_AsDouble(op) * scale + offset));
+                    set_value_to_item(seq, i);
+                    image->image8[y][x] = CLIP8(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1555,9 +1563,10 @@ _putdata(ImagingObject *self, PyObject *args) {
         switch (image->type) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    double value;
+                    set_value_to_item(seq, i);
                     IMAGING_PIXEL_INT32(image, x, y) =
-                        (INT32)(PyFloat_AsDouble(op) * scale + offset);
+                        (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1566,9 +1575,10 @@ _putdata(ImagingObject *self, PyObject *args) {
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    double value;
+                    set_value_to_item(seq, i);
                     IMAGING_PIXEL_FLOAT32(image, x, y) =
-                        (FLOAT32)(PyFloat_AsDouble(op) * scale + offset);
+                        (FLOAT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
