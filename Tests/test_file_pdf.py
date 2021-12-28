@@ -313,8 +313,9 @@ def test_pdf_append_to_bytesio():
 
 
 @pytest.mark.timeout(1)
-def test_redos():
-    malicious = b" trailer<<>>" + b"\n" * 3456
+@pytest.mark.parametrize("newline", (b"\r", b"\n"))
+def test_redos(newline):
+    malicious = b" trailer<<>>" + newline * 3456
 
     # This particular exception isn't relevant here.
     # The important thing is it doesn't timeout, cause a ReDoS (CVE-2021-25292).
