@@ -957,3 +957,13 @@ def test_missing_background():
     with Image.open("Tests/images/missing_background.gif") as im:
         im.seek(1)
         assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.png")
+
+
+def test_saving_rgba(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/transparent.png") as im:
+        im.save(out)
+
+    with Image.open(out) as reloaded:
+        reloaded_rgba = reloaded.convert("RGBA")
+        assert reloaded_rgba.load()[0, 0][3] == 0

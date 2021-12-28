@@ -425,7 +425,13 @@ def _normalize_mode(im, initial_call=False):
             palette_size = 256
             if im.palette:
                 palette_size = len(im.palette.getdata()[1]) // 3
-            return im.convert("P", palette=Image.ADAPTIVE, colors=palette_size)
+            im = im.convert("P", palette=Image.ADAPTIVE, colors=palette_size)
+            if im.palette.mode == "RGBA":
+                for rgba in im.palette.colors.keys():
+                    if rgba[3] == 0:
+                        im.info["transparency"] = im.palette.colors[rgba]
+                        break
+            return im
         else:
             return im.convert("P")
     return im.convert("L")
