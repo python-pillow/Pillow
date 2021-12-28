@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.0.0 (unreleased)
 ------------------
 
+- Improved putdata() documentation and data handling #5910
+  [radarhere]
+
 - Exclude carriage return in PDF regex to help prevent ReDoS #5912
   [hugovk]
 
