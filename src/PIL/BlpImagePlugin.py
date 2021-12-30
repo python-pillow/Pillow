@@ -370,7 +370,6 @@ class BLP1Decoder(_BLPBaseDecoder):
 
             a = ImageOps.invert(a)
 
-
         image = Image.merge("RGBA", (r, g, b, a))
         self.set_as_raw(image.tobytes())
 
