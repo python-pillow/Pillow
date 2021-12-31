@@ -116,6 +116,12 @@ possible for there to be too many colors to fit in a P mode image. To allow for 
 seeking to any subsequent GIF frame will now convert the image to RGB or RGBA,
 depending on whether or not the first frame had transparency.
 
+Switched to libjpeg-turbo in macOS and Linux wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Pillow wheels from PyPI for macOS and Linux have switched from libjpeg to
+libjpeg-turbo. It is a fork of libjpeg, popular for its speed.
+
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
