@@ -8,7 +8,7 @@ FREETYPE_VERSION=2.11.1
 HARFBUZZ_VERSION=3.2.0
 LIBPNG_VERSION=1.6.37
 ZLIB_VERSION=1.2.11
-JPEG_VERSION=9d
+JPEGTURBO_VERSION=2.1.2
 OPENJPEG_VERSION=2.4.0
 XZ_VERSION=5.2.5
 TIFF_VERSION=4.3.0
@@ -17,6 +17,20 @@ GIFLIB_VERSION=5.1.4
 LIBWEBP_VERSION=1.2.1
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
+
+function build_libjpeg_turbo {
+    local cmake=$(get_modern_cmake)
+    fetch_unpack https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${JPEGTURBO_VERSION}.tar.gz
+    (cd libjpeg-turbo-${JPEGTURBO_VERSION} \
+        && $cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=/usr/local/lib . \
+        && make install)
+    if [ -n "$IS_MACOS" ]; then
+        rm /usr/local/lib/libjpeg.dylib
+    fi
+
+    # Prevent build_jpeg
+    touch jpeg-stamp
+}
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
@@ -51,11 +65,7 @@ function pre_build {
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
     fi
 
-    # Custom flags to include both multibuild and jpeg defaults
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -g -O2"
-    build_jpeg
-    CFLAGS=$ORIGINAL_CFLAGS
+    build_libjpeg_turbo
 
     if [[ -n "$IS_MACOS" ]]; then
         TIFF_VERSION=4.2.0
@@ -122,10 +132,10 @@ EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]] && [[ "$MACHTYPE" != aarch64* ]]; then
-  EXP_FEATURES="fribidi harfbuzz raqm transp_webp webp_anim webp_mux xcb"
+  EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
 else
   # can't find FriBiDi
-  EXP_FEATURES="transp_webp webp_anim webp_mux xcb"
+  EXP_FEATURES="libjpeg_turbo transp_webp webp_anim webp_mux xcb"
 fi
 
 function run_tests {
