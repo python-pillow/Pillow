@@ -22,7 +22,7 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
   pyinstaller \
-      --add-binary /usr/local/lib/libjpeg.so.9:. \
+      --add-binary /usr/local/lib/libjpeg.so.62.3.0:. \
       --add-binary /usr/local/lib/libfreetype.so.6:. \
       --add-binary /usr/local/lib/liblcms2.so.2:. \
       --add-binary /usr/local/lib/libopenjp2.so.7:. \
