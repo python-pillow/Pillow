@@ -28,6 +28,7 @@
 #
 
 import io
+import itertools
 import struct
 import sys
 
@@ -210,6 +211,13 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
+            # Remove consecutive duplicates that only differ by their offset
+            self.tile = [
+                list(tiles)[-1]
+                for _, tiles in itertools.groupby(
+                    self.tile, lambda tile: (tile[0], tile[1], tile[3])
+                )
+            ]
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
