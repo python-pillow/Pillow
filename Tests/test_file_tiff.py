@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, TiffImagePlugin
+from PIL import Image, ImageFile, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
@@ -725,6 +725,14 @@ class TestFileTiff:
         with Image.open("Tests/images/string_dimension.tiff") as im:
             with pytest.raises(OSError):
                 im.load()
+
+    @pytest.mark.timeout(6)
+    @pytest.mark.filterwarnings("ignore:Truncated File Read")
+    def test_timeout(self):
+        with Image.open("Tests/images/timeout-6646305047838720") as im:
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
