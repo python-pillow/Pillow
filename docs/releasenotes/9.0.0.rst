@@ -100,10 +100,28 @@ argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 Security
 ========
 
-TODO
-^^^^
+Ensure JpegImagePlugin stops at the end of a truncated file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+``JpegImagePlugin`` may append an EOF marker to the end of a truncated file, so that
+the last segment of the data will still be processed by the decoder.
+
+If the EOF marker is not detected as such however, this could lead to an infinite
+loop where ``JpegImagePlugin`` keeps trying to end the file.
+
+Remove consecutive duplicate tiles that only differ by their offset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To prevent attempts to slow down loading times for images, if an image has consecutive
+duplicate tiles that only differ by their offset, only load the last tile. Credit to
+Google's `OSS-Fuzz`_ project for finding this issue.
+
+Fixed ImagePath.Path array handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CWE-126 and CWE-665 were found when initializing ``ImagePath.Path``.
+
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
 Other Changes
 =============
