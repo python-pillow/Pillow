@@ -1,3 +1,5 @@
+import pytest
+
 from PIL import Image, ImageMath
 
 
@@ -48,6 +50,11 @@ def test_ops():
     assert pixel(ImageMath.eval("float(A)/B", images)) == "F 0.5"
     assert pixel(ImageMath.eval("float(B)**2", images)) == "F 4.0"
     assert pixel(ImageMath.eval("float(B)**33", images)) == "F 8589934592.0"
+
+
+def test_prevent_exec():
+    with pytest.raises(ValueError):
+        ImageMath.eval("exec('pass')")
 
 
 def test_logical():
