@@ -122,12 +122,12 @@ Restrict builtins available to ImageMath.eval
 To limit :py:class:`PIL.ImageMath` to working with images, Pillow will now restrict the
 builtins available to :py:meth:`PIL.ImageMath.eval`. This will help prevent problems
 arising if users evaluate arbitrary expressions, such as
-``ImageMath.eval("exec(exit())")``.
+``ImageMath.eval("exec(exit())")``. CVE TBD
 
 Fixed ImagePath.Path array handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-CWE-126 and CWE-665 were found when initializing ``ImagePath.Path``.
+CWE-126 and CWE-665 were found when initializing ``ImagePath.Path``. CVEs TBD
 
 .. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
