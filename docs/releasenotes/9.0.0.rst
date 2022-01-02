@@ -116,6 +116,14 @@ To prevent attempts to slow down loading times for images, if an image has conse
 duplicate tiles that only differ by their offset, only load the last tile. Credit to
 Google's `OSS-Fuzz`_ project for finding this issue.
 
+Restrict builtins available to ImageMath.eval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To limit :py:class:`PIL.ImageMath` to working with images, Pillow will now restrict the
+builtins available to :py:meth:`PIL.ImageMath.eval`. This will help prevent problems
+arising if users evaluate arbitrary expressions, such as
+``ImageMath.eval("exec(exit())")``.
+
 Fixed ImagePath.Path array handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
