@@ -147,6 +147,8 @@ function run_tests {
         python3 -m pip install numpy==1.20.3
     elif [[ "$MB_PYTHON_VERSION" == 3.10 ]] && [[ $(uname -m) == "i686" ]]; then
         python3 -m pip install numpy==1.21.4
+    elif [[ "$MB_PYTHON_VERSION" == 3.8 || "$MB_PYTHON_VERSION" == 3.9 ]] && [[ $(uname -m) == "i686" ]]; then
+        python3 -m pip install numpy==1.21.5
     else
         python3 -m pip install numpy
     fi
