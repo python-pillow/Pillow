@@ -3,7 +3,9 @@ pull_request_rules:
     conditions:
       - "#approved-reviews-by>=1"
       - label=automerge
+      - status-success=Lint
       - status-success=Travis CI - Pull Request
+      - status-success=Wheels
     actions:
       merge:
         method: merge
