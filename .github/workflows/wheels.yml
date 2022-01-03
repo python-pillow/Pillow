@@ -135,3 +135,11 @@ jobs:
         env:
           GHR_PATH: .
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  success:
+    needs: [build, build-latest]
+    runs-on: ubuntu-latest
+    name: Wheels Successful
+    steps:
+      - name: Success
+        run: echo Wheels Successful

@@ -5,7 +5,7 @@ pull_request_rules:
       - label=automerge
       - status-success=Lint
       - status-success=Travis CI - Pull Request
-      - status-success=Wheels
+      - status-success=Wheels Successful
     actions:
       merge:
         method: merge
