@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 911470a610e47d9da5ea938b0887c3df62819b85  # frozen: 21.9b0
+    rev: f1d4e742c91dd5179d742b0db9293c4472b765f8  # frozen: 21.12b0
     hooks:
       - id: black
         args: ["--target-version", "py37"]
@@ -9,12 +9,12 @@ repos:
         types: []
 
   - repo: https://github.com/PyCQA/isort
-    rev: fd5ba70665a37ec301a1f714ed09336048b3be63  # frozen: 5.9.3
+    rev: c5e8fa75dda5f764d20f66a215d71c21cfa198e1  # frozen: 5.10.1
     hooks:
       - id: isort
 
   - repo: https://github.com/asottile/yesqa
-    rev: 644ede78511c02fc6f8e03e014cc1ddcfbf1e1f5  # frozen: v1.2.3
+    rev: 35cf7dc24fa922927caded7a21b2a8cb04bf8e10  # frozen: v1.3.0
     hooks:
       - id: yesqa
 
@@ -25,7 +25,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)
 
   - repo: https://github.com/PyCQA/flake8
-    rev: dcd740bc0ebaf2b3d43e59a0060d157c97de13f3  # frozen: 3.9.2
+    rev: cbeb4c9c4137cff1568659fcc48e8b85cddd0c8d  # frozen: 4.0.1
     hooks:
       - id: flake8
         additional_dependencies: [flake8-2020, flake8-implicit-str-concat]
@@ -37,7 +37,7 @@ repos:
       - id: rst-backticks
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 38b88246ccc552bffaaf54259d064beeee434539  # frozen: v4.0.1
+    rev: 8fe62d14e0b4d7d845a7022c5c2c3ae41bdd3f26  # frozen: v4.1.0
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
