@@ -10,10 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         docker: [
-          # Run slower jobs first to give them a headstart and reduce waiting time
-          ubuntu-20.04-focal-arm64v8,
-          ubuntu-20.04-focal-ppc64le,
-          ubuntu-20.04-focal-s390x,
           # Then run the remainder
           alpine,
           amazon-2-amd64,
@@ -28,13 +24,6 @@ jobs:
           ubuntu-20.04-focal-amd64,
         ]
         dockerTag: [main]
-        include:
-          - docker: "ubuntu-20.04-focal-arm64v8"
-            qemu-arch: "aarch64"
-          - docker: "ubuntu-20.04-focal-ppc64le"
-            qemu-arch: "ppc64le"
-          - docker: "ubuntu-20.04-focal-s390x"
-            qemu-arch: "s390x"
 
     name: ${{ matrix.docker }}
 
