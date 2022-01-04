@@ -627,7 +627,6 @@ class Image:
             and self.size == other.size
             and self.info == other.info
             and self._category == other._category
-            and self.readonly == other.readonly
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
         )
