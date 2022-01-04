@@ -1,6 +1,13 @@
 Changelog (Pillow-SIMD)
 =======================
 
+9.0.0.post1
+-----------
+
+- Fixed possible overflow in LUT processing
+- Restored compativlity with Visual C Compiler
+
+
 7.0.0.post4
 -----------
 
