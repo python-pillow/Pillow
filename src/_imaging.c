@@ -761,7 +761,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
     }
 
     /* malloc check ok, max is 2 * 4 * 65**3 = 2197000 */
-    prepared = (INT16 *)malloc(sizeof(INT16) * table_size + 2);
+    prepared = (INT16 *)malloc(sizeof(INT16) * (table_size + 2));
     if (!prepared) {
         if (free_table_data) {
             free(table_data);
