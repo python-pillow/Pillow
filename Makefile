@@ -112,7 +112,7 @@ valgrind:
 
 .PHONY: readme
 readme:
-	python3 setup.py --long-description | markdown2 > .long-description.html && open .long-description.html
+	markdown2 README.md > .long-description.html && open .long-description.html
 
 
 .PHONY: lint
