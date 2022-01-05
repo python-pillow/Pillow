@@ -32,6 +32,11 @@ class TestImageTransform:
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
 
+    def test_palette(self):
+        with Image.open("Tests/images/hopper.gif") as im:
+            transformed = im.transform(im.size, Image.AFFINE, [1, 0, 0, 0, 1, 0])
+            assert im.palette.palette == transformed.palette.palette
+
     def test_extent(self):
         im = hopper("RGB")
         (w, h) = im.size

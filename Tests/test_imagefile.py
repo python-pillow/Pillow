@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import EpsImagePlugin, Image, ImageFile, features
+from PIL import BmpImagePlugin, EpsImagePlugin, Image, ImageFile, _binary, features
 
 from .helper import (
     assert_image,
@@ -82,6 +82,19 @@ class TestImageFile:
             p.feed(data)
             assert (48, 48) == p.image.size
 
+    @skip_unless_feature("webp")
+    @skip_unless_feature("webp_anim")
+    def test_incremental_webp(self):
+        with ImageFile.Parser() as p:
+            with open("Tests/images/hopper.webp", "rb") as f:
+                p.feed(f.read(1024))
+
+                # Check that insufficient data was given in the first feed
+                assert not p.image
+
+                p.feed(f.read())
+            assert (128, 128) == p.image.size
+
     @skip_unless_feature("zlib")
     def test_safeblock(self):
         im1 = hopper()
@@ -93,12 +106,6 @@ class TestImageFile:
             ImageFile.SAFEBLOCK = SAFEBLOCK
 
         assert_image_equal(im1, im2)
-
-    def test_raise_ioerror(self):
-        with pytest.raises(IOError):
-            with pytest.warns(DeprecationWarning) as record:
-                ImageFile.raise_ioerror(1)
-        assert len(record) == 1
 
     def test_raise_oserror(self):
         with pytest.raises(OSError):
@@ -116,6 +123,20 @@ class TestImageFile:
         p.feed(input)
         with pytest.raises(OSError):
             p.close()
+
+    def test_truncated(self):
+        b = BytesIO(
+            b"BM000000000000"  # head_data
+            + _binary.o32le(
+                ImageFile.SAFEBLOCK + 1 + 4
+            )  # header_size, so BmpImagePlugin will try to read SAFEBLOCK + 1 bytes
+            + (
+                b"0" * ImageFile.SAFEBLOCK
+            )  # only SAFEBLOCK bytes, so that the header is truncated
+        )
+        with pytest.raises(OSError) as e:
+            BmpImagePlugin.BmpImageFile(b)
+        assert str(e.value) == "Truncated File Read"
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self):
@@ -248,4 +269,4 @@ class TestPyDecoder:
     def test_oserror(self):
         im = Image.new("RGB", (1, 1))
         with pytest.raises(OSError):
-            im.save(BytesIO(), "JPEG2000")
+            im.save(BytesIO(), "JPEG2000", num_resolutions=2)

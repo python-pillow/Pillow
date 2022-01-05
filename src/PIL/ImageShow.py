@@ -133,7 +133,7 @@ if sys.platform == "win32":
 
 
 class MacViewer(Viewer):
-    """The default viewer on MacOS using ``Preview.app``."""
+    """The default viewer on macOS using ``Preview.app``."""
 
     format = "PNG"
     options = {"compress_level": 1}
@@ -186,11 +186,35 @@ class UnixViewer(Viewer):
         return 1
 
 
-class DisplayViewer(UnixViewer):
-    """The ImageMagick ``display`` command."""
+class XDGViewer(UnixViewer):
+    """
+    The freedesktop.org ``xdg-open`` command.
+    """
 
     def get_command_ex(self, file, **options):
+        command = executable = "xdg-open"
+        return command, executable
+
+
+class DisplayViewer(UnixViewer):
+    """
+    The ImageMagick ``display`` command.
+    This viewer supports the ``title`` parameter.
+    """
+
+    def get_command_ex(self, file, title=None, **options):
         command = executable = "display"
+        if title:
+            command += f" -name {quote(title)}"
+        return command, executable
+
+
+class GmDisplayViewer(UnixViewer):
+    """The GraphicsMagick ``gm display`` command."""
+
+    def get_command_ex(self, file, **options):
+        executable = "gm"
+        command = "gm display"
         return command, executable
 
 
@@ -198,7 +222,8 @@ class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
     def get_command_ex(self, file, **options):
-        command = executable = "eog"
+        executable = "eog"
+        command = "eog -n"
         return command, executable
 
 
@@ -218,8 +243,12 @@ class XVViewer(UnixViewer):
 
 
 if sys.platform not in ("win32", "darwin"):  # unixoids
+    if shutil.which("xdg-open"):
+        register(XDGViewer)
     if shutil.which("display"):
         register(DisplayViewer)
+    if shutil.which("gm"):
+        register(GmDisplayViewer)
     if shutil.which("eog"):
         register(EogViewer)
     if shutil.which("xv"):
@@ -245,7 +274,7 @@ else:
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Syntax: python ImageShow.py imagefile [title]")
+        print("Syntax: python3 ImageShow.py imagefile [title]")
         sys.exit()
 
     with Image.open(sys.argv[1]) as im:

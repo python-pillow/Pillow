@@ -39,6 +39,21 @@
 #include <hb.h>
 #include <hb-ft.h>
 
+#if FREETYPE_MAJOR > 2 || \
+    FREETYPE_MAJOR == 2 && FREETYPE_MINOR >= 11
+#define HAVE_FT_GET_TRANSFORM
+#endif
+
+#if HB_VERSION_ATLEAST(2, 0, 0)
+#define HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH
+#endif
+
+#if HB_VERSION_ATLEAST(1, 8, 0)
+#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 1
+#else
+#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 0
+#endif
+
 #include "raqm.h"
 
 #if FRIBIDI_MAJOR_VERSION >= 1
@@ -455,8 +470,6 @@ raqm_set_text_utf8 (raqm_t         *rq,
     return true;
   }
 
-  RAQM_TEST ("Text is: %s\n", text);
-
   rq->flags |= RAQM_FLAG_UTF8;
 
   rq->text_utf8 = malloc (sizeof (char) * len);
@@ -491,7 +504,7 @@ raqm_set_text_utf8 (raqm_t         *rq,
  *
  * The default is #RAQM_DIRECTION_DEFAULT, which determines the paragraph
  * direction based on the first character with strong bidi type (see [rule
- * P2](http://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
+ * P2](https://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
  * which can be good enough for many cases but has problems when a mainly
  * right-to-left paragraph starts with a left-to-right character and vice versa
  * as the detected paragraph direction will be the wrong one, or when text does
@@ -1556,6 +1569,21 @@ _raqm_resolve_scripts (raqm_t *rq)
   return true;
 }
 
+static void
+_raqm_ft_transform (int      *x,
+                    int      *y,
+                    FT_Matrix matrix)
+{
+  FT_Vector vector;
+  vector.x = *x;
+  vector.y = *y;
+
+  FT_Vector_Transform (&vector, &matrix);
+
+  *x = vector.x;
+  *y = vector.y;
+}
+
 static bool
 _raqm_shape (raqm_t *rq)
 {
@@ -1585,6 +1613,22 @@ _raqm_shape (raqm_t *rq)
 
     hb_shape_full (run->font, run->buffer, rq->features, rq->features_len,
                    NULL);
+
+#ifdef HAVE_FT_GET_TRANSFORM
+    {
+      FT_Matrix matrix;
+      hb_glyph_position_t *pos;
+      unsigned int len;
+
+      FT_Get_Transform (hb_ft_font_get_face (run->font), &matrix, NULL);
+      pos = hb_buffer_get_glyph_positions (run->buffer, &len);
+      for (unsigned int i = 0; i < len; i++)
+      {
+        _raqm_ft_transform (&pos[i].x_advance, &pos[i].y_advance, matrix);
+        _raqm_ft_transform (&pos[i].x_offset, &pos[i].y_offset, matrix);
+      }
+    }
+#endif
   }
 
   return true;

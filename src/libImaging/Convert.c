@@ -1013,7 +1013,7 @@ p2l(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++) {
-        *out++ = L(&palette[in[x] * 4]) / 1000;
+        *out++ = L24(&palette[in[x] * 4]) >> 16;
     }
 }
 
@@ -1022,7 +1022,7 @@ pa2l(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = L(&palette[in[0] * 4]) / 1000;
+        *out++ = L24(&palette[in[0] * 4]) >> 16;
     }
 }
 
@@ -1044,7 +1044,7 @@ p2la(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
         const UINT8 *rgba = &palette[*in++ * 4];
-        out[0] = out[1] = out[2] = L(rgba) / 1000;
+        out[0] = out[1] = out[2] = L24(rgba) >> 16;
         out[3] = rgba[3];
     }
 }
@@ -1054,7 +1054,7 @@ pa2la(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-        out[0] = out[1] = out[2] = L(&palette[in[0] * 4]) / 1000;
+        out[0] = out[1] = out[2] = L24(&palette[in[0] * 4]) >> 16;
         out[3] = in[3];
     }
 }
@@ -1063,7 +1063,7 @@ static void
 p2i(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
     int x;
     for (x = 0; x < xsize; x++, out_ += 4) {
-        INT32 v = L(&palette[in[x] * 4]) / 1000;
+        INT32 v = L24(&palette[in[x] * 4]) >> 16;
         memcpy(out_, &v, sizeof(v));
     }
 }
@@ -1073,7 +1073,7 @@ pa2i(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
     int x;
     INT32 *out = (INT32 *)out_;
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = L(&palette[in[0] * 4]) / 1000;
+        *out++ = L24(&palette[in[0] * 4]) >> 16;
     }
 }
 
@@ -1594,9 +1594,8 @@ convert(
 #ifdef notdef
         return (Imaging)ImagingError_ValueError("conversion not supported");
 #else
-        static char buf[256];
-        /* FIXME: may overflow if mode is too large */
-        sprintf(buf, "conversion from %s to %s not supported", imIn->mode, mode);
+        static char buf[100];
+        snprintf(buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
         return (Imaging)ImagingError_ValueError(buf);
 #endif
     }
@@ -1645,11 +1644,11 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     }
 #else
     {
-        static char buf[256];
-        /* FIXME: may overflow if mode is too large */
-        sprintf(
+        static char buf[100];
+        snprintf(
             buf,
-            "conversion from %s to %s not supported in convert_transparent",
+            100,
+            "conversion from %.10s to %.10s not supported in convert_transparent",
             imIn->mode,
             mode);
         return (Imaging)ImagingError_ValueError(buf);

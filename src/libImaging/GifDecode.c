@@ -221,7 +221,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 
                 if (context->next < GIFTABLE) {
                     /* We'll only add this symbol if we have room
-                       for it (take advise, Netscape!) */
+                       for it (take the advice, Netscape!) */
                     context->data[context->next] = c;
                     context->link[context->next] = context->lastcode;
 
@@ -247,8 +247,6 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 
         /* To squeeze some extra pixels out of this loop, we test for
            some common cases and handle them separately. */
-
-        /* FIXME: should we handle the transparency index in here??? */
 
         if (i == 1) {
             if (state->x < state->xsize - 1) {

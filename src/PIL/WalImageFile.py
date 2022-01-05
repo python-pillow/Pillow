@@ -23,10 +23,42 @@ and has been tested with a few sample files found using google.
     To open a WAL file, use the :py:func:`PIL.WalImageFile.open()` function instead.
 """
 
-import builtins
-
-from . import Image
+from . import Image, ImageFile
 from ._binary import i32le as i32
+
+
+class WalImageFile(ImageFile.ImageFile):
+
+    format = "WAL"
+    format_description = "Quake2 Texture"
+
+    def _open(self):
+        self.mode = "P"
+
+        # read header fields
+        header = self.fp.read(32 + 24 + 32 + 12)
+        self._size = i32(header, 32), i32(header, 36)
+        Image._decompression_bomb_check(self.size)
+
+        # load pixel data
+        offset = i32(header, 40)
+        self.fp.seek(offset)
+
+        # strings are null-terminated
+        self.info["name"] = header[:32].split(b"\0", 1)[0]
+        next_name = header[56 : 56 + 32].split(b"\0", 1)[0]
+        if next_name:
+            self.info["next_name"] = next_name
+
+    def load(self):
+        if self.im:
+            # Already loaded
+            return
+
+        self.im = Image.core.new(self.mode, self.size)
+        self.frombytes(self.fp.read(self.size[0] * self.size[1]))
+        self.putpalette(quake2palette)
+        Image.Image.load(self)
 
 
 def open(filename):
@@ -39,38 +71,7 @@ def open(filename):
     :param filename: WAL file name, or an opened file handle.
     :returns: An image instance.
     """
-    # FIXME: modify to return a WalImageFile instance instead of
-    # plain Image object ?
-
-    def imopen(fp):
-        # read header fields
-        header = fp.read(32 + 24 + 32 + 12)
-        size = i32(header, 32), i32(header, 36)
-        offset = i32(header, 40)
-
-        # load pixel data
-        fp.seek(offset)
-
-        Image._decompression_bomb_check(size)
-        im = Image.frombytes("P", size, fp.read(size[0] * size[1]))
-        im.putpalette(quake2palette)
-
-        im.format = "WAL"
-        im.format_description = "Quake2 Texture"
-
-        # strings are null-terminated
-        im.info["name"] = header[:32].split(b"\0", 1)[0]
-        next_name = header[56 : 56 + 32].split(b"\0", 1)[0]
-        if next_name:
-            im.info["next_name"] = next_name
-
-        return im
-
-    if hasattr(filename, "read"):
-        return imopen(filename)
-    else:
-        with builtins.open(filename, "rb") as fp:
-            return imopen(fp)
+    return WalImageFile(filename)
 
 
 quake2palette = (

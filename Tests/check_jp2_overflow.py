@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Reproductions/tests for OOB read errors in FliDecode.c
 
@@ -19,8 +19,8 @@ from PIL import Image
 repro = ("00r0_gray_l.jp2", "00r1_graya_la.jp2")
 
 for path in repro:
-    im = Image.open(path)
-    try:
-        im.load()
-    except Exception as msg:
-        print(msg)
+    with Image.open(path) as im:
+        try:
+            im.load()
+        except Exception as msg:
+            print(msg)

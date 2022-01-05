@@ -235,19 +235,19 @@ def test_negate():
     )
 
 
-def test_non_binary_images():
+def test_incorrect_mode():
     im = hopper("RGB")
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
-    with pytest.raises(Exception) as e:
+    with pytest.raises(ValueError) as e:
         mop.apply(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
-    with pytest.raises(Exception) as e:
+    assert str(e.value) == "Image mode must be L"
+    with pytest.raises(ValueError) as e:
         mop.match(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
-    with pytest.raises(Exception) as e:
+    assert str(e.value) == "Image mode must be L"
+    with pytest.raises(ValueError) as e:
         mop.get_on_pixels(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
+    assert str(e.value) == "Image mode must be L"
 
 
 def test_add_patterns():

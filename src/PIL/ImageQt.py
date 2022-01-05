@@ -66,7 +66,13 @@ def fromqimage(im):
     :param im: QImage or PIL ImageQt object
     """
     buffer = QBuffer()
-    qt_openmode = QIODevice.OpenMode if qt_version == "6" else QIODevice
+    if qt_version == "6":
+        try:
+            qt_openmode = QIODevice.OpenModeFlag
+        except AttributeError:
+            qt_openmode = QIODevice.OpenMode
+    else:
+        qt_openmode = QIODevice
     buffer.open(qt_openmode.ReadWrite)
     # preserve alpha channel with png
     # otherwise ppm is more friendly with Image.open
@@ -102,7 +108,7 @@ def align8to32(bytes, width, mode):
     converts each scanline of data from 8 bit to 32 bit aligned
     """
 
-    bits_per_pixel = {"1": 1, "L": 8, "P": 8}[mode]
+    bits_per_pixel = {"1": 1, "L": 8, "P": 8, "I;16": 16}[mode]
 
     # calculate bytes per line and the extra padding if needed
     bits_per_line = bits_per_pixel * width
@@ -161,6 +167,10 @@ def _toqclass_helper(im):
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
+    elif im.mode == "I;16" and hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+        im = im.point(lambda i: i * 256)
+
+        format = qt_format.Format_Grayscale16
     else:
         if exclusive_fp:
             im.close()

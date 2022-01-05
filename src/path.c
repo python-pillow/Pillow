@@ -57,7 +57,7 @@ alloc_array(Py_ssize_t count) {
     if ((unsigned long long)count > (SIZE_MAX / (2 * sizeof(double))) - 1) {
         return ImagingError_MemoryError();
     }
-    xy = malloc(2 * count * sizeof(double) + 1);
+    xy = calloc(2 * count * sizeof(double) + 1, sizeof(double));
     if (!xy) {
         ImagingError_MemoryError();
     }
@@ -327,21 +327,26 @@ path_getbbox(PyPathObject *self, PyObject *args) {
 
     xy = self->xy;
 
-    x0 = x1 = xy[0];
-    y0 = y1 = xy[1];
+    if (self->count == 0) {
+        x0 = x1 = 0;
+        y0 = y1 = 0;
+    } else {
+        x0 = x1 = xy[0];
+        y0 = y1 = xy[1];
 
-    for (i = 1; i < self->count; i++) {
-        if (xy[i + i] < x0) {
-            x0 = xy[i + i];
-        }
-        if (xy[i + i] > x1) {
-            x1 = xy[i + i];
-        }
-        if (xy[i + i + 1] < y0) {
-            y0 = xy[i + i + 1];
-        }
-        if (xy[i + i + 1] > y1) {
-            y1 = xy[i + i + 1];
+        for (i = 1; i < self->count; i++) {
+            if (xy[i + i] < x0) {
+                x0 = xy[i + i];
+            }
+            if (xy[i + i] > x1) {
+                x1 = xy[i + i];
+            }
+            if (xy[i + i + 1] < y0) {
+                y0 = xy[i + i + 1];
+            }
+            if (xy[i + i + 1] > y1) {
+                y1 = xy[i + i + 1];
+            }
         }
     }
 
@@ -524,11 +529,11 @@ path_transform(PyPathObject *self, PyObject *args) {
 }
 
 static struct PyMethodDef methods[] = {
-    {"getbbox", (PyCFunction)path_getbbox, 1},
-    {"tolist", (PyCFunction)path_tolist, 1},
-    {"compact", (PyCFunction)path_compact, 1},
-    {"map", (PyCFunction)path_map, 1},
-    {"transform", (PyCFunction)path_transform, 1},
+    {"getbbox", (PyCFunction)path_getbbox, METH_VARARGS},
+    {"tolist", (PyCFunction)path_tolist, METH_VARARGS},
+    {"compact", (PyCFunction)path_compact, METH_VARARGS},
+    {"map", (PyCFunction)path_map, METH_VARARGS},
+    {"transform", (PyCFunction)path_transform, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 

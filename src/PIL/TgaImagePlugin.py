@@ -93,9 +93,10 @@ class TgaImageFile(ImageFile.ImageFile):
 
         # orientation
         orientation = flags & 0x30
-        if orientation == 0x20:
+        self._flip_horizontally = orientation in [0x10, 0x30]
+        if orientation in [0x20, 0x30]:
             orientation = 1
-        elif not orientation:
+        elif orientation in [0, 0x10]:
             orientation = -1
         else:
             raise SyntaxError("unknown TGA orientation")
@@ -110,10 +111,10 @@ class TgaImageFile(ImageFile.ImageFile):
 
         if colormaptype:
             # read palette
-            start, size, mapdepth = i16(s, 3), i16(s, 5), i16(s, 7)
+            start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;16", b"\0" * 2 * start + self.fp.read(2 * size)
+                    "BGR;15", b"\0" * 2 * start + self.fp.read(2 * size)
                 )
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
@@ -148,6 +149,10 @@ class TgaImageFile(ImageFile.ImageFile):
                 ]
         except KeyError:
             pass  # cannot decode
+
+    def load_end(self):
+        if self._flip_horizontally:
+            self.im = self.im.transpose(Image.FLIP_LEFT_RIGHT)
 
 
 #

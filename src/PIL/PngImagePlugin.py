@@ -500,7 +500,7 @@ class PngStream(ChunkStream):
         px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
         if unit == 1:  # meter
-            dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
+            dpi = px * 0.0254, py * 0.0254
             self.im_info["dpi"] = dpi
         elif unit == 0:
             self.im_info["aspect"] = px, py
@@ -920,6 +920,8 @@ class PngImageFile(ImageFile.ImageFile):
 
     def load_end(self):
         """internal: finished reading image data"""
+        if self.__idat != 0:
+            self.fp.read(self.__idat)
         while True:
             self.fp.read(4)  # CRC
 
@@ -975,6 +977,18 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
 
         return super().getexif()
+
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+        :returns: XMP tags in a dictionary.
+        """
+        return (
+            self._getxmp(self.info["XML:com.adobe.xmp"])
+            if "XML:com.adobe.xmp" in self.info
+            else {}
+        )
 
     def _close__fp(self):
         try:
@@ -1047,8 +1061,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
     default_image = im.encoderinfo.get("default_image", im.info.get("default_image"))
     duration = im.encoderinfo.get("duration", im.info.get("duration", 0))
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
-    disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
-    blend = im.encoderinfo.get("blend", im.info.get("blend"))
+    disposal = im.encoderinfo.get(
+        "disposal", im.info.get("disposal", APNG_DISPOSE_OP_NONE)
+    )
+    blend = im.encoderinfo.get("blend", im.info.get("blend", APNG_BLEND_OP_SOURCE))
 
     if default_image:
         chain = itertools.chain(im.encoderinfo.get("append_images", []))
@@ -1103,12 +1119,8 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                     and prev_disposal == encoderinfo.get("disposal")
                     and prev_blend == encoderinfo.get("blend")
                 ):
-                    duration = encoderinfo.get("duration", 0)
-                    if duration:
-                        if "duration" in previous["encoderinfo"]:
-                            previous["encoderinfo"]["duration"] += duration
-                        else:
-                            previous["encoderinfo"]["duration"] = duration
+                    if isinstance(duration, (list, tuple)):
+                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     continue
             else:
                 bbox = None
@@ -1135,9 +1147,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
             bbox = frame_data["bbox"]
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
-        duration = int(round(frame_data["encoderinfo"].get("duration", 0)))
-        disposal = frame_data["encoderinfo"].get("disposal", APNG_DISPOSE_OP_NONE)
-        blend = frame_data["encoderinfo"].get("blend", APNG_BLEND_OP_SOURCE)
+        encoderinfo = frame_data["encoderinfo"]
+        frame_duration = int(round(encoderinfo.get("duration", duration)))
+        frame_disposal = encoderinfo.get("disposal", disposal)
+        frame_blend = encoderinfo.get("blend", blend)
         # frame control
         chunk(
             fp,
@@ -1147,10 +1160,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
             o32(size[1]),  # height
             o32(bbox[0]),  # x_offset
             o32(bbox[1]),  # y_offset
-            o16(duration),  # delay_numerator
+            o16(frame_duration),  # delay_numerator
             o16(1000),  # delay_denominator
-            o8(disposal),  # dispose_op
-            o8(blend),  # blend_op
+            o8(frame_disposal),  # dispose_op
+            o8(frame_blend),  # blend_op
         )
         seq_num += 1
         # frame data

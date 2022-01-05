@@ -32,17 +32,17 @@ typedef struct {
     toff_t loc;   /* toff_t == uint32 */
     tsize_t size; /* tsize_t == int32 */
     int fp;
-    uint32 ifd; /* offset of the ifd, used for multipage
-                 * Should be uint32 for libtiff 3.9.x
-                 * uint64 for libtiff 4.0.x
-                 */
+    uint32_t ifd; /* offset of the ifd, used for multipage
+                   * Should be uint32 for libtiff 3.9.x
+                   * uint64 for libtiff 4.0.x
+                   */
     TIFF *tiff; /* Used in write */
     toff_t eof;
     int flrealloc; /* may we realloc */
 } TIFFSTATE;
 
 extern int
-ImagingLibTiffInit(ImagingCodecState state, int fp, uint32 offset);
+ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset);
 extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int

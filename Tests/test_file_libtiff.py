@@ -9,7 +9,7 @@ from ctypes import c_float
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SUBIFD
+from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -17,6 +17,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -96,13 +97,13 @@ class TestFileLibTiff(LibTiffTestCase):
             self._assert_noerr(tmp_path, im)
 
     def test_g4_eq_png(self):
-        """ Checking that we're actually getting the data that we expect"""
+        """Checking that we're actually getting the data that we expect"""
         with Image.open("Tests/images/hopper_bw_500.png") as png:
             assert_image_equal_tofile(png, "Tests/images/hopper_g4_500.tif")
 
     # see https://github.com/python-pillow/Pillow/issues/279
     def test_g4_fillorder_eq_png(self):
-        """ Checking that we're actually getting the data that we expect"""
+        """Checking that we're actually getting the data that we expect"""
         with Image.open("Tests/images/g4-fillorder-test.tif") as g4:
             assert_image_equal_tofile(g4, "Tests/images/g4-fillorder-test.png")
 
@@ -136,7 +137,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_write_metadata(self, tmp_path):
-        """ Test metadata writing through libtiff """
+        """Test metadata writing through libtiff"""
         for legacy_api in [False, True]:
             f = str(tmp_path / "temp.tiff")
             with Image.open("Tests/images/hopper_g4.tif") as img:
@@ -577,6 +578,17 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.READ_LIBTIFF = False
 
+    def test_multipage_seek_backwards(self):
+        TiffImagePlugin.READ_LIBTIFF = True
+        with Image.open("Tests/images/multipage.tiff") as im:
+            im.seek(1)
+            im.load()
+
+            im.seek(0)
+            assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
+
+        TiffImagePlugin.READ_LIBTIFF = False
+
     def test__next(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/hopper.tif") as im:
@@ -657,6 +669,15 @@ class TestFileLibTiff(LibTiffTestCase):
 
         TiffImagePlugin.WRITE_LIBTIFF = False
         TiffImagePlugin.READ_LIBTIFF = False
+
+    def test_save_ycbcr(self, tmp_path):
+        im = hopper("YCbCr")
+        outfile = str(tmp_path / "temp.tif")
+        im.save(outfile, compression="jpeg")
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2[530] == (1, 1)
+            assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
     def test_crashing_metadata(self, tmp_path):
         # issue 1597
@@ -804,6 +825,17 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
 
+    def test_sampleformat_write(self, tmp_path):
+        im = Image.new("F", (1, 1))
+        out = str(tmp_path / "temp.tif")
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == "F"
+            assert reloaded.getexif()[SAMPLEFORMAT] == 3
+
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:
             assert im.mode == "RGB"
@@ -822,13 +854,17 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -839,13 +875,17 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
@@ -891,9 +931,31 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
+    @pytest.mark.parametrize("compression", (None, "jpeg"))
+    def test_block_tile_tags(self, compression, tmp_path):
+        im = hopper()
+        out = str(tmp_path / "temp.tif")
+
+        tags = {
+            TiffImagePlugin.TILEWIDTH: 256,
+            TiffImagePlugin.TILELENGTH: 256,
+            TiffImagePlugin.TILEOFFSETS: 256,
+            TiffImagePlugin.TILEBYTECOUNTS: 256,
+        }
+        im.save(out, exif=tags, compression=compression)
+
+        with Image.open(out) as reloaded:
+            for tag in tags.keys():
+                assert tag not in reloaded.getexif()
+
     def test_old_style_jpeg(self):
-        infile = "Tests/images/old-style-jpeg-compression.tif"
-        with Image.open(infile) as im:
+        with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
+            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
+    def test_open_missing_samplesperpixel(self):
+        with Image.open(
+            "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif"
+        ) as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_no_rows_per_strip(self):
@@ -942,3 +1004,34 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that the error code is IMAGING_CODEC_MEMORY
             assert str(e.value) == "-9"
         TiffImagePlugin.READ_LIBTIFF = False
+
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
+    def test_save_multistrip(self, compression, tmp_path):
+        im = hopper("RGB").resize((256, 256))
+        out = str(tmp_path / "temp.tif")
+        im.save(out, compression=compression)
+
+        with Image.open(out) as im:
+            # Assert that there are multiple strips
+            assert len(im.tag_v2[STRIPOFFSETS]) > 1
+
+    def test_save_single_strip(self, tmp_path):
+        im = hopper("RGB").resize((256, 256))
+        out = str(tmp_path / "temp.tif")
+
+        TiffImagePlugin.STRIP_SIZE = 2 ** 18
+        try:
+
+            im.save(out, compression="tiff_adobe_deflate")
+
+            with Image.open(out) as im:
+                assert len(im.tag_v2[STRIPOFFSETS]) == 1
+        finally:
+            TiffImagePlugin.STRIP_SIZE = 65536
+
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
+    def test_save_zero(self, compression, tmp_path):
+        im = Image.new("RGB", (0, 0))
+        out = str(tmp_path / "temp.tif")
+        with pytest.raises(SystemError):
+            im.save(out, compression=compression)

@@ -1,8 +1,7 @@
 Raqm
 ====
 
-[![Linux & macOS build](https://travis-ci.org/HOST-Oman/libraqm.svg?branch=master)](https://travis-ci.org/HOST-Oman/libraqm)
-[![Windows build](https://img.shields.io/appveyor/ci/HOSTOman/libraqm/master.svg)](https://ci.appveyor.com/project/HOSTOman/libraqm)
+[![Build](https://github.com/HOST-Oman/libraqm/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HOST-Oman/libraqm/actions)
 
 Raqm is a small library that encapsulates the logic for complex text layout and
 provides a convenient API.
@@ -15,7 +14,7 @@ The documentation can be accessed on the web at:
 > http://host-oman.github.io/libraqm/
 
 Raqm (Arabic: رَقْم) is writing, also number or digit and the Arabic word for
-digital (رَقَمِيّ) shares the same root, so it is a play on “digital writing”.
+digital (رَقَمِيّ) shares the same root, so it is a play on “digital writing”.
 
 Building
 --------
@@ -30,31 +29,30 @@ To build the documentation you will also need:
 
 To install dependencies on Fedora:
 
-    sudo dnf install freetype-devel harfbuzz-devel fribidi-devel gtk-doc
+    sudo dnf install freetype-devel harfbuzz-devel fribidi-devel meson gtk-doc
 
 To install dependencies on Ubuntu:
 
-    sudo apt-get install libfreetype6-dev libharfbuzz-dev libfribidi-dev \
-                         gtk-doc-tools
+    sudo apt-get install libfreetype6-dev libharfbuzz-dev libfribidi-dev meson gtk-doc-tools
 
 On Mac OS X you can use Homebrew:
 
-    brew install freetype harfbuzz fribidi gtk-doc
+    brew install freetype harfbuzz fribidi meson gtk-doc
     export XML_CATALOG_FILES="/usr/local/etc/xml/catalog" # for the docs
 
 Once you have the source code and the dependencies, you can proceed to build.
 To do that, run the customary sequence of commands in the source code
 directory:
 
-    $ ./configure
-    $ make
-    $ make install
+    $ meson build
+    $ ninja -C build
+    $ ninja -C build install
 
-To build the documentation, pass `--enable-gtk-doc` to the `configure` script.
+To build the documentation, pass `-Ddocs=enable` to the `meson`.
 
 To run the tests:
 
-    $ make check
+    $ ninja -C test
 
 Contributing
 ------------

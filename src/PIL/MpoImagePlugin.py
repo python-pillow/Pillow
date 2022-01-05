@@ -21,9 +21,8 @@
 from . import Image, ImageFile, JpegImagePlugin
 from ._binary import i16be as i16
 
-
-def _accept(prefix):
-    return JpegImagePlugin._accept(prefix)
+# def _accept(prefix):
+#     return JpegImagePlugin._accept(prefix)
 
 
 def _save(im, fp, filename):

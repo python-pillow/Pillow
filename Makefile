@@ -50,16 +50,16 @@ help:
 
 .PHONY: inplace
 inplace: clean
-	python3 setup.py develop build_ext --inplace
+	python3 -m pip install -e --global-option="build_ext" --global-option="--inplace" .
 
 .PHONY: install
 install:
-	python3 setup.py install
+	python3 -m pip install .
 	python3 selftest.py
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 setup.py build_ext install
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip install --global-option="build_ext" .
 	python3 selftest.py
 
 .PHONY: debug
@@ -68,7 +68,7 @@ debug:
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python3 setup.py build_ext install > /dev/null
+	CFLAGS='-g -O0' python3 -m pip install --global-option="build_ext" . > /dev/null
 
 .PHONY: install-req
 install-req:
@@ -83,10 +83,10 @@ install-venv:
 .PHONY: release-test
 release-test:
 	$(MAKE) install-req
-	python3 setup.py develop
+	python3 -m pip install -e .
 	python3 selftest.py
 	python3 -m pytest Tests
-	python3 setup.py install
+	python3 -m pip install .
 	-rm dist/*.egg
 	-rmdir dist
 	python3 -m pytest -qq
@@ -96,11 +96,19 @@ release-test:
 
 .PHONY: sdist
 sdist:
-	python3 setup.py sdist --format=gztar
+	python3 -m build --help > /dev/null 2>&1 || python3 -m pip install build
+	python3 -m build --sdist
 
 .PHONY: test
 test:
 	pytest -qq
+
+.PHONY: valgrind
+valgrind:
+	python3 -c "import pytest_valgrind" || pip3 install pytest-valgrind
+	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
+            --log-file=/tmp/valgrind-output \
+            python3 -m pytest --no-memcheck -vv --valgrind --valgrind-log=/tmp/valgrind-output
 
 .PHONY: readme
 readme:
@@ -114,5 +122,5 @@ lint:
 
 .PHONY: lint-fix
 lint-fix:
-	black --target-version py36 .
+	black --target-version py37 .
 	isort .

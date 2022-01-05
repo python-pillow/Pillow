@@ -13,6 +13,14 @@ contents, not their names, but the :py:meth:`~PIL.Image.Image.save` method
 looks at the name to determine which format to use, unless the format is given
 explicitly.
 
+When an image is opened from a file, only that instance of the image is considered to
+have the format. Copies of the image will contain data loaded from the file, but not
+the file itself, meaning that it can no longer be considered to be in the original
+format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
+internally creates a copy of the image, the ``fp`` (file pointer), along with any
+methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
+attribute will be ``None``.
+
 Fully supported formats
 -----------------------
 
@@ -30,6 +38,13 @@ The :py:meth:`~PIL.Image.open` method sets the following
 
 **compression**
     Set to ``bmp_rle`` if the file is run-length encoded.
+
+DDS
+^^^
+
+DDS is a popular container texture format used in video games and natively supported
+by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
+DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 
 DIB
 ^^^
@@ -51,7 +66,7 @@ than leaving them in the original color space. The EPS driver can write images
 in ``L``, ``RGB`` and ``CMYK`` modes.
 
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameter to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
@@ -60,9 +75,14 @@ method with the following parameter to affect how Ghostscript renders the EPS
     relative position of the bounding box is maintained::
 
         im = Image.open(...)
-        im.size #(100,100)
+        im.size  # (100,100)
         im.load(scale=2)
-        im.size #(200,200)
+        im.size  # (200,200)
+
+**transparency**
+    If true, generates an RGBA image with a transparent background, instead of
+    the default behaviour of an RGB image with a white background.
+
 
 GIF
 ^^^
@@ -71,8 +91,9 @@ Pillow reads GIF87a and GIF89a versions of the GIF file format. The library
 writes run-length encoded files in GIF87a by default, unless GIF89a features
 are used or GIF89a is already in use.
 
-Note that GIF files are always read as grayscale (``L``)
-or palette mode (``P``) images.
+GIF files are initially read as grayscale (``L``) or palette mode (``P``)
+images, but seeking to later frames in an image will change the mode to either
+``RGB`` or ``RGBA``, depending on whether the first frame had transparency.
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -200,11 +221,15 @@ attributes before loading the file::
 ICNS
 ^^^^
 
-Pillow reads and (macOS only) writes macOS ``.icns`` files.  By default, the
+Pillow reads and writes macOS ``.icns`` files.  By default, the
 largest available icon is read, though you can override this by setting the
 :py:attr:`~PIL.Image.Image.size` property before calling
 :py:meth:`~PIL.Image.Image.load`.  The :py:meth:`~PIL.Image.open` method
 sets the following :py:attr:`~PIL.Image.Image.info` property:
+
+.. note::
+
+    Prior to version 8.3.0, Pillow could only write ICNS files on macOS.
 
 **sizes**
     A list of supported sizes found in this icon file; these are a
@@ -246,6 +271,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     the size of each image.
 
     .. versionadded:: 8.1.0
+
+**bitmap_format**
+    By default, the image data will be saved in PNG format. With a bitmap format of
+    "bmp", image data will be saved in BMP format instead.
+
+    .. versionadded:: 8.3.0
 
 IM
 ^^
@@ -730,7 +761,7 @@ The :py:meth:`~PIL.Image.open` method sets the following attributes:
 A convenience method, :py:meth:`~PIL.SpiderImagePlugin.SpiderImageFile.convert2byte`,
 is provided for converting floating point data to byte data (mode ``L``)::
 
-    im = Image.open('image001.spi').convert2byte()
+    im = Image.open("image001.spi").convert2byte()
 
 Writing files in SPIDER format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -814,7 +845,7 @@ Reading Multi-frame TIFF Images
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
 :py:meth:`~PIL.Image.Image.tell` methods, taking and returning frame numbers
 within the image file. You can combine these methods to seek to the next frame
-(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.num_frames - 1``,
+(``im.seek(im.tell() + 1)``). Frames are numbered from 0 to ``im.n_frames - 1``,
 and can be accessed in any order.
 
 ``im.seek()`` raises an :py:exc:`EOFError` if you try to seek after the
@@ -872,6 +903,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
+
+**exif**
+    Alternate keyword to "tiffinfo", for consistency with other formats.
+
+    .. versionadded:: 8.4.0
 
 **compression**
     A string containing the desired compression method for the
@@ -940,7 +976,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     files compared to the slowest, but best, 100.
 
 **method**
-    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 0.
+    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
 
 **icc_profile**
     The ICC Profile to include in the saved file. Only supported if
@@ -1027,17 +1063,6 @@ is commonly used in fax applications. The DCX decoder can read files containing
 
 When the file is opened, only the first image is read. You can use
 :py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
-
-
-DDS
-^^^
-
-DDS is a popular container texture format used in video games and natively
-supported by DirectX.
-Currently, uncompressed RGB data and DXT1, DXT3, and DXT5 pixel formats are
-supported, and only in ``RGBA`` mode.
-
-.. versionadded:: 3.4.0 DXT3
 
 FLI, FLC
 ^^^^^^^^
@@ -1177,6 +1202,7 @@ dpi. To load it at another resolution:
 .. code-block:: python
 
     from PIL import Image
+
     with Image.open("drawing.wmf") as im:
         im.load(dpi=144)
 
@@ -1188,14 +1214,18 @@ To add other read or write support, use
     from PIL import Image
     from PIL import WmfImagePlugin
 
+
     class WmfHandler:
         def open(self, im):
             ...
+
         def load(self, im):
             ...
             return image
+
         def save(self, im, fp, filename):
             ...
+
 
     wmf_handler = WmfHandler()
 
@@ -1242,8 +1272,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 3.0.0
 
 **append_images**
-    A list of images to append as additional pages. Each of the
-    images in the list can be single or multiframe images.
+    A list of :py:class:`PIL.Image.Image` objects to append as additional pages. Each
+    of the images in the list can be single or multiframe images. The ``save_all``
+    parameter must be present and set to ``True`` in conjunction with
+    ``append_images``.
 
     .. versionadded:: 4.2.0
 

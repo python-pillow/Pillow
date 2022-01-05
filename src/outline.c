@@ -145,11 +145,11 @@ _outline_transform(OutlineObject *self, PyObject *args) {
 }
 
 static struct PyMethodDef _outline_methods[] = {
-    {"line", (PyCFunction)_outline_line, 1},
-    {"curve", (PyCFunction)_outline_curve, 1},
-    {"move", (PyCFunction)_outline_move, 1},
-    {"close", (PyCFunction)_outline_close, 1},
-    {"transform", (PyCFunction)_outline_transform, 1},
+    {"line", (PyCFunction)_outline_line, METH_VARARGS},
+    {"curve", (PyCFunction)_outline_curve, METH_VARARGS},
+    {"move", (PyCFunction)_outline_move, METH_VARARGS},
+    {"close", (PyCFunction)_outline_close, METH_VARARGS},
+    {"transform", (PyCFunction)_outline_transform, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 

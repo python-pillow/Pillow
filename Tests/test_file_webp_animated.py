@@ -45,12 +45,12 @@ def test_write_animation_L(tmp_path):
             # Compare first and last frames to the original animated GIF
             orig.load()
             im.load()
-            assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            assert_image_similar(im, orig.convert("RGBA"), 32.9)
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
             orig.load()
             im.load()
-            assert_image_similar(im, orig.convert("RGBA"), 25.0)
+            assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
 
 @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")

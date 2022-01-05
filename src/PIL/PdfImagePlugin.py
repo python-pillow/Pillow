@@ -124,7 +124,7 @@ def _save(im, fp, filename, save_all=False):
             decode = None
 
             if im.mode == "1":
-                filter = "ASCIIHexDecode"
+                filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
                 bits = 1
@@ -135,7 +135,7 @@ def _save(im, fp, filename, save_all=False):
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
-                palette = im.im.getpalette("RGB")
+                palette = im.getpalette()
                 colorspace = [
                     PdfParser.PdfName("Indexed"),
                     PdfParser.PdfName("DeviceRGB"),
@@ -161,12 +161,6 @@ def _save(im, fp, filename, save_all=False):
             op = io.BytesIO()
 
             if filter == "ASCIIHexDecode":
-                if bits == 1:
-                    # FIXME: the hex encoder doesn't support packed 1-bit
-                    # images; do things the hard way...
-                    data = im.tobytes("raw", "1")
-                    im = Image.new("L", im.size)
-                    im.putdata(data)
                 ImageFile._save(im, op, [("hex", (0, 0) + im.size, 0, im.mode)])
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
@@ -208,8 +202,8 @@ def _save(im, fp, filename, save_all=False):
                 MediaBox=[
                     0,
                     0,
-                    int(width * 72.0 / resolution),
-                    int(height * 72.0 / resolution),
+                    width * 72.0 / resolution,
+                    height * 72.0 / resolution,
                 ],
                 Contents=contents_refs[pageNumber],
             )
@@ -217,9 +211,9 @@ def _save(im, fp, filename, save_all=False):
             #
             # page contents
 
-            page_contents = b"q %d 0 0 %d 0 0 cm /image Do Q\n" % (
-                int(width * 72.0 / resolution),
-                int(height * 72.0 / resolution),
+            page_contents = b"q %f 0 0 %f 0 0 cm /image Do Q\n" % (
+                width * 72.0 / resolution,
+                height * 72.0 / resolution,
             )
 
             existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)

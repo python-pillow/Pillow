@@ -24,8 +24,14 @@ from .helper import (
     djpeg_available,
     hopper,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
+
+try:
+    import defusedxml.ElementTree as ElementTree
+except ImportError:
+    ElementTree = None
 
 TEST_FILE = "Tests/images/hopper.jpg"
 
@@ -79,26 +85,26 @@ class TestFileJpeg:
         f = "Tests/images/pil_sample_cmyk.jpg"
         with Image.open(f) as im:
             # the source image has red pixels in the upper left corner.
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
 
     @pytest.mark.parametrize(
@@ -116,7 +122,9 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_icc(self, tmp_path):
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
@@ -156,7 +164,9 @@ class TestFileJpeg:
         test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
         test(ImageFile.MAXBLOCK * 4 + 3)  # large block
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_large_icc_meta(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
@@ -423,7 +433,9 @@ class TestFileJpeg:
         with Image.open(filename):
             pass
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_truncated_jpeg_should_read_all_the_data(self):
         filename = "Tests/images/truncated_jpeg.jpg"
         ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -442,7 +454,9 @@ class TestFileJpeg:
             with pytest.raises(OSError):
                 im.load()
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_qtables(self, tmp_path):
         def _n_qtables_helper(n, test_file):
             with Image.open(test_file) as im:
@@ -452,7 +466,7 @@ class TestFileJpeg:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
-                assert reloaded.quantization[0].typecode == "B"
+                assert max(reloaded.quantization[0]) <= 255
 
         with Image.open("Tests/images/hopper.jpg") as im:
             qtables = im.quantization
@@ -464,7 +478,8 @@ class TestFileJpeg:
 
             # valid bounds for baseline qtable
             bounds_qtable = [int(s) for s in ("255 1 " * 32).split(None)]
-            self.roundtrip(im, qtables=[bounds_qtable])
+            im2 = self.roundtrip(im, qtables=[bounds_qtable])
+            assert im2.quantization == {0: bounds_qtable}
 
             # values from wizard.txt in jpeg9-a src package.
             standard_l_qtable = [
@@ -575,6 +590,12 @@ class TestFileJpeg:
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
 
+    def test_convert_dict_qtables_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            qtable = {0: [1, 2, 3, 4]}
+            qtable2 = JpegImagePlugin.convert_dict_qtables(qtable)
+            assert qtable == qtable2
+
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
@@ -609,7 +630,7 @@ class TestFileJpeg:
             reloaded.save(f, quality="keep", optimize=True)
 
     def test_bad_mpo_header(self):
-        """ Treat unknown MPO as JPEG """
+        """Treat unknown MPO as JPEG"""
         # Arrange
 
         # Act
@@ -646,15 +667,6 @@ class TestFileJpeg:
             with Image.open(outfile) as reloaded:
                 reloaded.load()
                 assert im.info["dpi"] == reloaded.info["dpi"]
-
-    def test_load_dpi_rounding(self):
-        # Round up
-        with Image.open("Tests/images/iptc_roundUp.jpg") as im:
-            assert im.info["dpi"] == (44, 44)
-
-        # Round down
-        with Image.open("Tests/images/iptc_roundDown.jpg") as im:
-            assert im.info["dpi"] == (2, 2)
 
     def test_save_dpi_rounding(self, tmp_path):
         outfile = str(tmp_path / "temp.jpg")
@@ -706,6 +718,15 @@ class TestFileJpeg:
             # This should return the default, and not raise a ZeroDivisionError
             assert im.info.get("dpi") == (72, 72)
 
+    def test_dpi_exif_string(self):
+        # Arrange
+        # 0x011A tag in this exif contains string '300300\x02'
+        with Image.open("Tests/images/broken_exif_dpi.jpg") as im:
+
+            # Act / Assert
+            # This should return the default
+            assert im.info.get("dpi") == (72, 72)
+
     def test_no_dpi_in_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
@@ -726,7 +747,9 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_x_resolution(self, tmp_path):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
@@ -757,7 +780,9 @@ class TestFileJpeg:
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 
-    @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_photoshop(self):
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
             assert im.info["photoshop"][0x03ED] == {
@@ -782,6 +807,20 @@ class TestFileJpeg:
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
             assert [65504, 24] == apps_13_lengths
 
+    def test_adobe_transform(self):
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert im.info["adobe_transform"] == 1
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            assert im.info["adobe_transform"] == 2
+
+        # This image has been manually hexedited
+        # so that the APP14 reports its length to be 11,
+        # leaving no room for "adobe_transform"
+        with Image.open("Tests/images/truncated_app14.jpg") as im:
+            assert "adobe" in im.info
+            assert "adobe_transform" not in im.info
+
     def test_icc_after_SOF(self):
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
@@ -804,6 +843,56 @@ class TestFileJpeg:
 
         # Assert the entire file has not been read
         assert 0 < buffer.max_pos < size
+
+    def test_getxmp(self):
+        with Image.open("Tests/images/xmp_test.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
+            else:
+                xmp = im.getxmp()
+
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description["DerivedFrom"] == {
+                    "documentID": "8367D410E636EA95B7DE7EBA1C43A412",
+                    "originalDocumentID": "8367D410E636EA95B7DE7EBA1C43A412",
+                }
+                assert description["Look"]["Description"]["Group"]["Alt"]["li"] == {
+                    "lang": "x-default",
+                    "text": "Profiles",
+                }
+                assert description["ToneCurve"]["Seq"]["li"] == ["0, 0", "255, 255"]
+
+                # Attribute
+                assert description["Version"] == "10.4"
+
+        if ElementTree is not None:
+            with Image.open("Tests/images/hopper.jpg") as im:
+                assert im.getxmp() == {}
+
+    @pytest.mark.timeout(timeout=1)
+    def test_eof(self):
+        # Even though this decoder never says that it is finished
+        # the image should still end when there is no new data
+        class InfiniteMockPyDecoder(ImageFile.PyDecoder):
+            def decode(self, buffer):
+                return 0, 0
+
+        decoder = InfiniteMockPyDecoder(None)
+
+        def closure(mode, *args):
+            decoder.__init__(mode, *args)
+            return decoder
+
+        Image.register_decoder("INFINITE", closure)
+
+        with Image.open(TEST_FILE) as im:
+            im.tile = [
+                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+            ]
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

@@ -9,12 +9,6 @@
 
 #include "Python.h"
 
-/* Workaround issue #2479 */
-#if PY_VERSION_HEX < 0x03070000 && defined(PySlice_GetIndicesEx) && \
-    !defined(PYPY_VERSION)
-#undef PySlice_GetIndicesEx
-#endif
-
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES
 #error Sorry, this library requires support for ANSI prototypes.
@@ -31,10 +25,17 @@
 #endif
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#ifdef __CYGWIN__
+#undef _WIN64
+#undef _WIN32
+#undef __WIN32__
+#undef WIN32
+#endif
 
 #else
 /* For System that are not Windows, we'll need to define these. */

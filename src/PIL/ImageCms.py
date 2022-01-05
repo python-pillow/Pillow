@@ -34,10 +34,10 @@ pyCMS
     a Python / PIL interface to the littleCMS ICC Color Management System
     Copyright (C) 2002-2003 Kevin Cazabon
     kevin@cazabon.com
-    http://www.cazabon.com
+    https://www.cazabon.com
 
-    pyCMS home page:  http://www.cazabon.com/pyCMS
-    littleCMS home page:  http://www.littlecms.com
+    pyCMS home page:  https://www.cazabon.com/pyCMS
+    littleCMS home page:  https://www.littlecms.com
     (littleCMS is Copyright (C) 1998-2001 Marti Maria)
 
     Originally released under LGPL.  Graciously donated to PIL in

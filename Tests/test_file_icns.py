@@ -1,9 +1,9 @@
 import io
-import sys
+import os
 
 import pytest
 
-from PIL import IcnsImagePlugin, Image, features
+from PIL import IcnsImagePlugin, Image, _binary, features
 
 from .helper import assert_image_equal, assert_image_similar_tofile
 
@@ -28,7 +28,6 @@ def test_sanity():
         assert im.format == "ICNS"
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save(tmp_path):
     temp_file = str(tmp_path / "temp.icns")
 
@@ -40,8 +39,12 @@ def test_save(tmp_path):
         assert reread.size == (1024, 1024)
         assert reread.format == "ICNS"
 
+    file_length = os.path.getsize(temp_file)
+    with open(temp_file, "rb") as fp:
+        fp.seek(4)
+        assert _binary.i32be(fp.read(4)) == file_length
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
+
 def test_save_append_images(tmp_path):
     temp_file = str(tmp_path / "temp.icns")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
@@ -57,7 +60,6 @@ def test_save_append_images(tmp_path):
             assert_image_equal(reread, provided_im)
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires macOS")
 def test_save_fp():
     fp = io.BytesIO()
 

@@ -9,10 +9,10 @@
 
 /* Max size for a LZW code word. */
 
-#define GIFBITS 12
+#define GIFBITS     12
 
-#define GIFTABLE (1 << GIFBITS)
-#define GIFBUFFER (1 << GIFBITS)
+#define GIFTABLE    (1<<GIFBITS)
+#define GIFBUFFER   (1<<GIFBITS)
 
 typedef struct {
     /* CONFIGURATION */
@@ -62,11 +62,8 @@ typedef struct {
 
 } GIFDECODERSTATE;
 
-typedef struct GIFENCODERBLOCK_T {
-    struct GIFENCODERBLOCK_T *next;
-    int size;
-    UINT8 data[255];
-} GIFENCODERBLOCK;
+/* For GIF LZW encoder. */
+#define TABLE_SIZE  8192
 
 typedef struct {
     /* CONFIGURATION */
@@ -84,21 +81,17 @@ typedef struct {
     /* PRIVATE CONTEXT (set by encoder) */
 
     /* Interlace parameters */
-    int step, repeat;
+    int step;
 
-    /* Output bit buffer */
-    INT32 bitbuffer;
-    int bitcount;
-
-    /* Output buffer list (linked list) */
-    GIFENCODERBLOCK *block; /* current block */
-    GIFENCODERBLOCK *flush; /* output queue */
-    GIFENCODERBLOCK *free;  /* if not null, use this */
-
-    /* Fields used for run-length encoding */
-    int first; /* true if we haven't read the first pixel */
-    int last;  /* last byte value seen */
-    int count; /* how many bytes with that value we've seen */
-    int lastcode;
+    /* For GIF LZW encoder. */
+    UINT32 put_state;
+    UINT32 entry_state;
+    UINT32 clear_code, end_code, next_code, max_code;
+    UINT32 code_width, code_bits_left, buf_bits_left;
+    UINT32 code_buffer;
+    UINT32 head, tail;
+    int probe;
+    UINT32 code;
+    UINT32 codes[TABLE_SIZE];
 
 } GIFENCODERSTATE;

@@ -1,9 +1,11 @@
+import pytest
+
 from PIL import Image, ImageMath
 
 
 def pixel(im):
     if hasattr(im, "im"):
-        return "{} {}".format(im.mode, repr(im.getpixel((0, 0))))
+        return f"{im.mode} {repr(im.getpixel((0, 0)))}"
     else:
         if isinstance(im, int):
             return int(im)  # hack to deal with booleans
@@ -48,6 +50,11 @@ def test_ops():
     assert pixel(ImageMath.eval("float(A)/B", images)) == "F 0.5"
     assert pixel(ImageMath.eval("float(B)**2", images)) == "F 4.0"
     assert pixel(ImageMath.eval("float(B)**33", images)) == "F 8589934592.0"
+
+
+def test_prevent_exec():
+    with pytest.raises(ValueError):
+        ImageMath.eval("exec('pass')")
 
 
 def test_logical():

@@ -58,7 +58,7 @@ def _dib_accept(prefix):
 # Image plugin for the Windows BMP format.
 # =============================================================================
 class BmpImageFile(ImageFile.ImageFile):
-    """ Image plugin for the Windows Bitmap format (BMP) """
+    """Image plugin for the Windows Bitmap format (BMP)"""
 
     # ------------------------------------------------------------- Description
     format_description = "Windows Bitmap"
@@ -70,7 +70,7 @@ class BmpImageFile(ImageFile.ImageFile):
         vars()[k] = v
 
     def _bitmap(self, header=0, offset=0):
-        """ Read relevant info about the BMP """
+        """Read relevant info about the BMP"""
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
@@ -115,9 +115,7 @@ class BmpImageFile(ImageFile.ImageFile):
             )
             file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
-            self.info["dpi"] = tuple(
-                int(x / 39.3701 + 0.5) for x in file_info["pixels_per_meter"]
-            )
+            self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
             if file_info["compression"] == self.BITFIELDS:
                 if len(header_data) >= 52:
                     for idx, mask in enumerate(
@@ -160,6 +158,8 @@ class BmpImageFile(ImageFile.ImageFile):
             if file_info.get("colors", 0)
             else (1 << file_info["bits"])
         )
+        if offset == 14 + file_info["header_size"] and file_info["bits"] <= 8:
+            offset += 4 * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
@@ -259,7 +259,7 @@ class BmpImageFile(ImageFile.ImageFile):
         ]
 
     def _open(self):
-        """ Open file, check magic number and read header """
+        """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes

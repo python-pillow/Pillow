@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import pytest
 
 from PIL import Image
@@ -22,6 +21,6 @@ from PIL import Image
 )
 def test_crashes(test_file):
     with open(test_file, "rb") as f:
-        im = Image.open(f)
-        with pytest.raises(OSError):
-            im.load()
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()

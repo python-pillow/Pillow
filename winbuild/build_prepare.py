@@ -105,9 +105,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.6/libjpeg-turbo-2.0.6.tar.gz",
-        "filename": "libjpeg-turbo-2.0.6.tar.gz",
-        "dir": "libjpeg-turbo-2.0.6",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.2/libjpeg-turbo-2.1.2.tar.gz",
+        "filename": "libjpeg-turbo-2.1.2.tar.gz",
+        "dir": "libjpeg-turbo-2.1.2",
         "build": [
             cmd_cmake(
                 [
@@ -141,22 +141,22 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.2.0.tar.gz",
-        "filename": "tiff-4.2.0.tar.gz",
-        "dir": "tiff-4.2.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
+        "filename": "tiff-4.3.0.tar.gz",
+        "dir": "tiff-4.3.0",
         "build": [
-            cmd_copy(r"{winbuild_dir}\tiff.opt", "nmake.opt"),
-            cmd_nmake("makefile.vc", "clean"),
-            cmd_nmake("makefile.vc", "lib"),
+            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="tiff"),
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.0.tar.gz",
-        "filename": "libwebp-1.2.0.tar.gz",
-        "dir": "libwebp-1.2.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.1.tar.gz",
+        "filename": "libwebp-1.2.1.tar.gz",
+        "dir": "libwebp-1.2.1",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -184,9 +184,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz",  # noqa: E501
-        "filename": "freetype-2.10.4.tar.gz",
-        "dir": "freetype-2.10.4",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.11.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.11.1.tar.gz",
+        "dir": "freetype-2.11.1",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -236,7 +236,9 @@ deps = {
             cmd_rmdir("Lib"),
             cmd_rmdir(r"Projects\VC2017\Release"),
             cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static"),
+            cmd_msbuild(
+                r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static:Rebuild"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
@@ -255,29 +257,30 @@ deps = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # Merge master into msvc (matches 2.14.1 except for version bump)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",  # noqa: E501
-        "filename": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a.zip",
-        "dir": "libimagequant-16adaded22d1f90db5c9154a06d00a8b672ca09a",
+        # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
+        "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "patch": {
             "CMakeLists.txt": {
-                "add_library": "add_compile_options(-openmp-)\r\nadd_library",
-                " SHARED": " STATIC",
+                "if(OPENMP_FOUND)": "if(false)",
+                "install": "#install",
             }
         },
         "build": [
             # lint: do not inline
             cmd_cmake(),
             cmd_nmake(target="clean"),
-            cmd_nmake(),
+            cmd_nmake(target="imagequant_a"),
+            cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
-        "libs": [r"*.lib"],
+        "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.8.0.zip",
-        "filename": "harfbuzz-2.8.0.zip",
-        "dir": "harfbuzz-2.8.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/3.2.0.zip",
+        "filename": "harfbuzz-3.2.0.zip",
+        "dir": "harfbuzz-3.2.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -287,9 +290,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.10.zip",
-        "filename": "fribidi-1.0.10.zip",
-        "dir": "fribidi-1.0.10",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.11.zip",
+        "filename": "fribidi-1.0.11.zip",
+        "dir": "fribidi-1.0.11",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
@@ -435,6 +438,7 @@ def build_dep(name):
             assert patch_from in text
             text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
+            print(f"Patching {patch_file}")
             f.write(text)
 
     banner = f"Building {name} ({dir})"
@@ -470,8 +474,6 @@ def build_pillow():
         cmd_cd("{pillow_dir}"),
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("MSSdk", "1"),  # for PyPy3.6
-        cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
         r'"{python_dir}\{python_exe}" setup.py build_ext --vendor-raqm --vendor-fribidi %*',  # noqa: E501
     ]
 

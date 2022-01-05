@@ -1,5 +1,6 @@
 import io
 import re
+import sys
 
 import pytest
 
@@ -103,6 +104,13 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
+    def test_icc_profile(self, tmp_path):
+        self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
+        if _webp.HAVE_WEBPANIM:
+            self._roundtrip(
+                tmp_path, self.rgb_mode, 12.5, {"icc_profile": None, "save_all": True}
+            )
+
     def test_write_unsupported_mode_L(self, tmp_path):
         """
         Saving a black-and-white file to WebP format should work, and be
@@ -118,6 +126,14 @@ class TestFileWebp:
         """
 
         self._roundtrip(tmp_path, "P", 50.0)
+
+    @pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="Requires 64-bit system")
+    def test_write_encoding_error_message(self, tmp_path):
+        temp_file = str(tmp_path / "temp.webp")
+        im = Image.new("RGB", (15000, 15000))
+        with pytest.raises(ValueError) as e:
+            im.save(temp_file, method=0)
+        assert str(e.value) == "encoding error 6"
 
     def test_WebPEncode_with_invalid_args(self):
         """
@@ -172,9 +188,7 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum(
-            [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
-        )
+        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
         assert difference < 5
 
     @skip_unless_feature("webp")

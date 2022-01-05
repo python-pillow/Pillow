@@ -63,7 +63,11 @@ typedef uint32_t FriBidiParType;
 /* functions */
 
 #ifdef FRIBIDI_SHIM_IMPLEMENTATION
+#ifdef _MSC_VER
 #define FRIBIDI_ENTRY
+#else
+#define FRIBIDI_ENTRY __attribute__((visibility ("hidden")))
+#endif
 #else
 #define FRIBIDI_ENTRY extern
 #endif

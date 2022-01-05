@@ -219,7 +219,7 @@ TkImaging_Init(Tcl_Interp *interp) {
 
 #define TKINTER_FINDER "PIL._tkinter_finder"
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
 
 /*
  * On Windows, we can't load the tkinter module to get the Tcl or Tk symbols,

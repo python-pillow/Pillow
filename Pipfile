@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+black = "*"
+check-manifest = "*"
+coverage = "*"
+defusedxml = "*"
+packaging = "*"
+markdown2 = "*"
+olefile = "*"
+pyroma = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-timeout = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

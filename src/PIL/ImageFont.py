@@ -28,10 +28,9 @@
 import base64
 import os
 import sys
-import warnings
 from io import BytesIO
 
-from . import Image, features
+from . import Image
 from ._util import isDirectory, isPath
 
 LAYOUT_BASIC = 0
@@ -165,21 +164,6 @@ class FreeTypeFont:
         self.index = index
         self.encoding = encoding
 
-        try:
-            from packaging.version import parse as parse_version
-        except ImportError:
-            pass
-        else:
-            freetype_version = parse_version(features.version_module("freetype2"))
-            if freetype_version < parse_version("2.8"):
-                warnings.warn(
-                    "Support for FreeType 2.7 is deprecated and will be removed"
-                    " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
-                    "or newer, preferably FreeType 2.10.4 which fixes "
-                    "CVE-2020-15999.",
-                    DeprecationWarning,
-                )
-
         if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
             layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
@@ -211,6 +195,13 @@ class FreeTypeFont:
             )
         else:
             load_from_bytes(font)
+
+    def __getstate__(self):
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state):
+        path, size, index, encoding, layout_engine = state
+        self.__init__(path, size, index, encoding, layout_engine)
 
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
@@ -669,6 +660,7 @@ class FreeTypeFont:
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
             text, im.id, mode, direction, features, language, stroke_width, ink

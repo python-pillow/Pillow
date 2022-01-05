@@ -392,10 +392,11 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
                     return (PyObject *)decp;
                 }
             }
+            WebPDataClear(&(decp->data));
         }
         PyObject_Del(decp);
     }
-    PyErr_SetString(PyExc_RuntimeError, "could not create decoder object");
+    PyErr_SetString(PyExc_OSError, "could not create decoder object");
     return NULL;
 }
 
@@ -485,7 +486,7 @@ static struct PyMethodDef _anim_encoder_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-// WebPAnimDecoder type definition
+// WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
     sizeof(WebPAnimEncoderObject),                    /*tp_size */
@@ -663,7 +664,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     WebPPictureFree(&pic);
     if (!ok) {
-        PyErr_SetString(PyExc_ValueError, "encoding error");
+        PyErr_Format(PyExc_ValueError, "encoding error %d", (&pic)->error_code);
         return NULL;
     }
     output = writer.mem;
