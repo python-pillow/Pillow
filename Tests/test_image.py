@@ -786,6 +786,11 @@ class TestImage:
                 34665: 196,
             }
 
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_tobytes(self, size):
+        im = Image.new("RGB", size)
+        assert im.tobytes() == b""
+
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0
