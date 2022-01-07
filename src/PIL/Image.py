@@ -716,6 +716,9 @@ class Image:
 
         self.load()
 
+        if self.width == 0 or self.height == 0:
+            return b""
+
         # unpack data
         e = _getencoder(self.mode, encoder_name, args)
         e.setimage(self.im)
