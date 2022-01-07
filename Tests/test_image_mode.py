@@ -65,6 +65,5 @@ def test_properties():
     check("RGB", "RGB", "L", 3, ("R", "G", "B"))
     check("RGBA", "RGB", "L", 4, ("R", "G", "B", "A"))
     check("RGBX", "RGB", "L", 4, ("R", "G", "B", "X"))
-    check("RGBX", "RGB", "L", 4, ("R", "G", "B", "X"))
     check("CMYK", "RGB", "L", 4, ("C", "M", "Y", "K"))
     check("YCbCr", "RGB", "L", 3, ("Y", "Cb", "Cr"))
