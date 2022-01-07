@@ -18,12 +18,13 @@ jobs:
           packages: >
             libfreetype-devel libimagequant-devel libjpeg-devel
             liblcms2-devel libopenjp2-devel libraqm-devel
-            libtiff-devel libwebp-devel libxcb-devel netpbm
-            ImageMagick jpeg xorg-server-extra xorg-server-common
-            xinit python38-setuptools python38-devel python38-tkinter
-            python38-wheel python38-pip python38-olefile
-            python38-numpy python38-pytest python38-sphinx
-            python38-packaging python38-cffi python38-requests
+            libtiff-devel libwebp-devel libxcb-devel libpng-devel
+            netpbm ImageMagick jpeg xorg-server-extra
+            xorg-server-common xinit subversion python38-setuptools
+            python38-devel python38-tkinter python38-wheel
+            python38-pip python38-olefile python38-numpy
+            python38-pytest python38-sphinx python38-packaging
+            python38-cffi python38-requests
           install-dir: 'C:\tools\cygwin'
 
       - name: Clean up path
@@ -39,6 +40,12 @@ jobs:
           C:\tools\cygwin\bin\python3.8 -m pip install pip wheel setuptools
           C:\tools\cygwin\bin\python3.8 -m pip install -r requirements.txt
           C:\tools\cygwin\bin\python3.8 -m pip install pytest-forked
+
+      - name: Download extra test images
+        run: |
+          C:\tools\cygwin\bin\dash -c "tr -d '\r' <depends/install_extra_test_images.sh >install_extra_test_images.sh"
+          C:\tools\cygwin\bin\dash -c "mv install_extra_test_images.sh depends/install_extra_test_images.sh"
+          C:\tools\cygwin\bin\dash -c "cd depends; dash install_extra_test_images.sh"
 
       - name: Build Pillow
         run: |
@@ -57,11 +64,16 @@ jobs:
           C:\tools\cygwin\bin\mv .ci/test.sh .ci/test.sh.dos
           C:\tools\cygwin\bin\dash -c "/bin/tr -d '\r' <.ci/test.sh.dos >.ci/test.sh"
           C:\tools\cygwin\bin\chmod u+x .ci/test.sh
+          C:\tools\cygwin\bin\dash /usr/bin/xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh .8 --ignore=Tests/test_numpy.py
+
+      - name: Test the possibly-segfaulting NumPy tests separately
+        run: |
           C:\tools\cygwin\bin\python3.8 -m pytest --forked Tests/test_numpy.py -k roundtrip
-          C:\tools\cygwin\bin\dash /usr/bin/xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh .8
 
       - name: After success
         run: |
+          C:\tools\cygwin\bin\mv .ci/after_success.sh .ci/after_success.sh.dos
+          C:\tools\cygwin\bin\dash -c "tr -d '\r' <.ci/after_success.sh.dos >.ci/after_success.sh"
           C:\tools\cygwin\bin\bash .ci/after_success.sh
 
       - name: Upload coverage
