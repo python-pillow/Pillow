@@ -70,8 +70,10 @@ def test_invalid_coords():
     coords = ["a", "b"]
 
     # Act / Assert
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
+
+    assert str(e.value) == "incorrect coordinate type"
 
 
 def test_path_odd_number_of_coordinates():

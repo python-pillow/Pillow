@@ -162,42 +162,37 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         return -1;
     }
 
+#define assign_item_to_array(op, decref) \
+if (PyFloat_Check(op)) { \
+    xy[j++] = PyFloat_AS_DOUBLE(op); \
+} else if (PyLong_Check(op)) { \
+    xy[j++] = (float)PyLong_AS_LONG(op); \
+} else if (PyNumber_Check(op)) { \
+    xy[j++] = PyFloat_AsDouble(op); \
+} else if (PyArg_ParseTuple(op, "dd", &x, &y)) { \
+    xy[j++] = x; \
+    xy[j++] = y; \
+} else { \
+    PyErr_SetString(PyExc_ValueError, "incorrect coordinate type"); \
+    if (decref) { \
+        Py_DECREF(op); \
+    } \
+    free(xy); \
+    return -1; \
+}
+
     /* Copy table to path array */
     if (PyList_Check(data)) {
         for (i = 0; i < n; i++) {
             double x, y;
             PyObject *op = PyList_GET_ITEM(data, i);
-            if (PyFloat_Check(op)) {
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            } else if (PyLong_Check(op)) {
-                xy[j++] = (float)PyLong_AS_LONG(op);
-            } else if (PyNumber_Check(op)) {
-                xy[j++] = PyFloat_AsDouble(op);
-            } else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
-                xy[j++] = x;
-                xy[j++] = y;
-            } else {
-                free(xy);
-                return -1;
-            }
+            assign_item_to_array(op, 0);
         }
     } else if (PyTuple_Check(data)) {
         for (i = 0; i < n; i++) {
             double x, y;
             PyObject *op = PyTuple_GET_ITEM(data, i);
-            if (PyFloat_Check(op)) {
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            } else if (PyLong_Check(op)) {
-                xy[j++] = (float)PyLong_AS_LONG(op);
-            } else if (PyNumber_Check(op)) {
-                xy[j++] = PyFloat_AsDouble(op);
-            } else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
-                xy[j++] = x;
-                xy[j++] = y;
-            } else {
-                free(xy);
-                return -1;
-            }
+            assign_item_to_array(op, 0);
         }
     } else {
         for (i = 0; i < n; i++) {
@@ -213,20 +208,7 @@ PyPath_Flatten(PyObject *data, double **pxy) {
                     return -1;
                 }
             }
-            if (PyFloat_Check(op)) {
-                xy[j++] = PyFloat_AS_DOUBLE(op);
-            } else if (PyLong_Check(op)) {
-                xy[j++] = (float)PyLong_AS_LONG(op);
-            } else if (PyNumber_Check(op)) {
-                xy[j++] = PyFloat_AsDouble(op);
-            } else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
-                xy[j++] = x;
-                xy[j++] = y;
-            } else {
-                Py_DECREF(op);
-                free(xy);
-                return -1;
-            }
+            assign_item_to_array(op, 1);
             Py_DECREF(op);
         }
     }
