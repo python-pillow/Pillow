@@ -19,7 +19,7 @@ jobs:
             libfreetype-devel libimagequant-devel libjpeg-devel
             liblcms2-devel libopenjp2-devel libraqm-devel
             libtiff-devel libwebp-devel libxcb-devel libpng-devel
-            ImageMagick jpeg xorg-server-extra
+            ImageMagick jpeg netpbm perl xorg-server-extra
             xorg-server-common xinit subversion python38-setuptools
             python38-devel python38-tkinter python38-wheel
             python38-pip python38-olefile python38-numpy
