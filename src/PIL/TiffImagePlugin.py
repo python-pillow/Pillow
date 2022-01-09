@@ -1234,6 +1234,12 @@ class TiffImageFile(ImageFile.ImageFile):
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
+        if fp:
+            try:
+                os.close(fp)
+            except OSError:
+                pass
+
         self.tile = []
         self.readonly = 0
 
