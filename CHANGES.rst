@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+9.1.0 (unreleased)
+------------------
+
+- Ensure duplicated file pointer is closed #5946
+  [radarhere]
+
+- Added specific error if ImagePath coordinate type is incorrect #5942
+  [radarhere]
+
+- Return an empty bytestring from tobytes() for an empty image #5938
+  [radarhere]
+
+- Remove readonly from Image.__eq__ #5930
+  [hugovk]
+
 9.0.0 (2022-01-02)
 ------------------
 
