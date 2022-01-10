@@ -243,8 +243,6 @@ class XVViewer(UnixViewer):
 
 
 if sys.platform not in ("win32", "darwin"):  # unixoids
-    if shutil.which("xdg-open"):
-        register(XDGViewer)
     if shutil.which("display"):
         register(DisplayViewer)
     if shutil.which("gm"):
@@ -253,6 +251,8 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
         register(EogViewer)
     if shutil.which("xv"):
         register(XVViewer)
+    if shutil.which("xdg-open"):
+        register(XDGViewer)
 
 
 class IPythonViewer(Viewer):
