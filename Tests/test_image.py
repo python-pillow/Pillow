@@ -641,6 +641,15 @@ class TestImage:
                 im.save(temp_file)
             assert not record
 
+    def test_no_new_file_on_error(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
+
+        im = Image.new("RGB", (0, 0))
+        with pytest.raises(SystemError):
+            im.save(temp_file)
+
+        assert not os.path.exists(temp_file)
+
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
 

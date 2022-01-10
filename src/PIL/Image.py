@@ -2202,16 +2202,23 @@ class Image:
         else:
             save_handler = SAVE[format.upper()]
 
+        new_file = False
         if open_fp:
             if params.get("append", False):
                 # Open also for reading ("+"), because TIFF save_all
                 # writer needs to go back and edit the written data.
                 fp = builtins.open(filename, "r+b")
+            elif not os.path.exists(filename):
+                new_file = True
+                fp = io.BytesIO()
             else:
                 fp = builtins.open(filename, "w+b")
 
         try:
             save_handler(self, fp, filename)
+            if new_file:
+                with builtins.open(filename, "w+b") as new_file_fp:
+                    new_file_fp.write(fp.getvalue())
         finally:
             # do what we can to clean up
             if open_fp:
