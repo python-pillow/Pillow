@@ -67,8 +67,6 @@ class _Operand:
                     im1 = im1.convert("F")
                 if im2.mode != "F":
                     im2 = im2.convert("F")
-                if im1.mode != im2.mode:
-                    raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
                 size = (min(im1.size[0], im2.size[0]), min(im1.size[1], im2.size[1]))
