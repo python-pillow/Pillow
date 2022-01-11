@@ -19,8 +19,6 @@ import builtins
 
 from . import Image, _imagingmath
 
-VERBOSE = 0
-
 
 def _isconstant(v):
     return isinstance(v, (int, float))
@@ -69,8 +67,6 @@ class _Operand:
                     im1 = im1.convert("F")
                 if im2.mode != "F":
                     im2 = im2.convert("F")
-                if im1.mode != im2.mode:
-                    raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
                 size = (min(im1.size[0], im2.size[0]), min(im1.size[1], im2.size[1]))
@@ -78,9 +74,7 @@ class _Operand:
                     im1 = im1.crop((0, 0) + size)
                 if im2.size != size:
                     im2 = im2.crop((0, 0) + size)
-                out = Image.new(mode or im1.mode, size, None)
-            else:
-                out = Image.new(mode or im1.mode, im1.size, None)
+            out = Image.new(mode or im1.mode, im1.size, None)
             im1.load()
             im2.load()
             try:
