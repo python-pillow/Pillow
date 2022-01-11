@@ -19,8 +19,6 @@ import builtins
 
 from . import Image, _imagingmath
 
-VERBOSE = 0
-
 
 def _isconstant(v):
     return isinstance(v, (int, float))
