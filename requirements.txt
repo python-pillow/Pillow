@@ -12,7 +12,7 @@ pytest-cov
 pytest-timeout
 sphinx>=2.4
 sphinx-copybutton
-sphinx-issues
+sphinx-issues>=3.0.1
 sphinx-removed-in
 sphinx-rtd-theme>=1.0
 sphinxext-opengraph

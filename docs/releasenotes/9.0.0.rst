@@ -127,8 +127,8 @@ help prevent problems arising if users evaluate arbitrary expressions, such as
 Fixed ImagePath.Path array handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:cve:`CVE-2022-22815` (CWE-126) and :cve:`CVE-2022-22816` (CWE-665) were found when
-initializing ``ImagePath.Path``.
+:cve:`CVE-2022-22815` (:cwe:`CWE-126`) and :cve:`CVE-2022-22816` (:cwe:`CWE-665`) were
+found when initializing ``ImagePath.Path``.
 
 .. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
