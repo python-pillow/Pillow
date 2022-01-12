@@ -238,13 +238,13 @@ def makeSpiderHeader(im):
     if 1024 % lenbyt != 0:
         labrec += 1
     labbyt = labrec * lenbyt
-    hdr = []
     nvalues = int(labbyt / 4)
+    if nvalues < 23:
+        return []
+
+    hdr = []
     for i in range(nvalues):
         hdr.append(0.0)
-
-    if len(hdr) < 23:
-        return []
 
     # NB these are Fortran indices
     hdr[1] = 1.0  # nslice (=1 for an image)
@@ -259,10 +259,7 @@ def makeSpiderHeader(im):
     hdr = hdr[1:]
     hdr.append(0.0)
     # pack binary data into a string
-    hdrstr = []
-    for v in hdr:
-        hdrstr.append(struct.pack("f", v))
-    return hdrstr
+    return [struct.pack("f", v) for v in hdr]
 
 
 def _save(im, fp, filename):
