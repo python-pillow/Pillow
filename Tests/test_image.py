@@ -802,6 +802,31 @@ class TestImage:
         with pytest.warns(DeprecationWarning):
             assert Image.CONTAINER == 2
 
+    def test_constants_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            assert Image.NEAREST == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.NONE == 0
+
+        with pytest.warns(DeprecationWarning):
+            assert Image.LINEAR == Image.Resampling.BILINEAR
+        with pytest.warns(DeprecationWarning):
+            assert Image.CUBIC == Image.Resampling.BICUBIC
+        with pytest.warns(DeprecationWarning):
+            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
+
+        for enum in (
+            Image.Transpose,
+            Image.Transform,
+            Image.Resampling,
+            Image.Dither,
+            Image.Palette,
+            Image.Quantize,
+        ):
+            for name in enum.__members__:
+                with pytest.warns(DeprecationWarning):
+                    assert getattr(Image, name) == enum[name]
+
     @pytest.mark.parametrize(
         "path",
         [

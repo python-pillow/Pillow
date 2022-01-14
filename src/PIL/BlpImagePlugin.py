@@ -30,6 +30,7 @@ BLP files come in many different flavours:
 """
 
 import struct
+import warnings
 from enum import IntEnum
 from io import BytesIO
 
@@ -52,11 +53,31 @@ class AlphaEncoding(IntEnum):
     DXT5 = 7
 
 
-globals().update({"BLP_FORMAT_" + k: v for k, v in Format.__members__.items()})
-globals().update({"BLP_ENCODING_" + k: v for k, v in Encoding.__members__.items()})
-globals().update(
-    {"BLP_ALPHA_ENCODING_" + k: v for k, v in AlphaEncoding.__members__.items()}
-)
+def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
+    for enum, prefix in {
+        Format: "BLP_FORMAT_",
+        Encoding: "BLP_ENCODING_",
+        AlphaEncoding: "BLP_ALPHA_ENCODING_",
+    }.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                warnings.warn(
+                    prefix
+                    + name
+                    + " is "
+                    + deprecated
+                    + "Use "
+                    + enum.__name__
+                    + "."
+                    + name
+                    + " instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def unpack_565(i):

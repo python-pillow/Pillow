@@ -130,8 +130,27 @@ class Blend(IntEnum):
     """
 
 
-globals().update({"APNG_DISPOSE_" + k: v for k, v in Disposal.__members__.items()})
-globals().update(Blend.__members__)
+def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
+    for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                warnings.warn(
+                    prefix
+                    + name
+                    + " is "
+                    + deprecated
+                    + "Use "
+                    + enum.__name__
+                    + "."
+                    + name
+                    + " instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def _safe_zlib_decompress(s):

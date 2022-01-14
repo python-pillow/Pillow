@@ -635,3 +635,13 @@ def test_apng_save_blend(tmp_path):
     with Image.open(test_file) as im:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        PngImagePlugin.Disposal: "APNG_DISPOSE_",
+        PngImagePlugin.Blend: "APNG_BLEND_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(PngImagePlugin, prefix + name) == enum[name]

@@ -593,3 +593,13 @@ def test_auxiliary_channels_isolated():
                 )
 
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        ImageCms.Intent: "INTENT_",
+        ImageCms.Direction: "DIRECTION_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(ImageCms, prefix + name) == enum[name]

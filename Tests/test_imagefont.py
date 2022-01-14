@@ -1022,3 +1022,12 @@ def test_oom(test_file):
         font = ImageFont.truetype(BytesIO(f.read()))
         with pytest.raises(Image.DecompressionBombError):
             font.getmask("Test Text")
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        ImageFont.Layout: "LAYOUT_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(ImageFont, prefix + name) == enum[name]

@@ -16,6 +16,7 @@
 # below for the original description.
 
 import sys
+import warnings
 from enum import IntEnum
 
 from PIL import Image
@@ -115,8 +116,28 @@ class Direction(IntEnum):
     PROOF = 2
 
 
-globals().update({"INTENT_" + k: v for k, v in Intent.__members__.items()})
-globals().update({"DIRECTION_" + k: v for k, v in Direction.__members__.items()})
+def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
+    for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                warnings.warn(
+                    prefix
+                    + name
+                    + " is "
+                    + deprecated
+                    + "Use "
+                    + enum.__name__
+                    + "."
+                    + name
+                    + " instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
 
 #
 # flags
