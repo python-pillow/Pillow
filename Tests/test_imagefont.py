@@ -29,7 +29,7 @@ pytestmark = skip_unless_feature("freetype2")
 
 
 class TestImageFont:
-    LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
+    LAYOUT_ENGINE = ImageFont.Layout.BASIC
 
     def get_font(self):
         return ImageFont.truetype(
@@ -94,12 +94,12 @@ class TestImageFont:
 
         try:
             ttf = ImageFont.truetype(
-                FONT_PATH, FONT_SIZE, layout_engine=ImageFont.LAYOUT_RAQM
+                FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
             )
         finally:
             ImageFont.core.HAVE_RAQM = have_raqm
 
-        assert ttf.layout_engine == ImageFont.LAYOUT_BASIC
+        assert ttf.layout_engine == ImageFont.Layout.BASIC
 
     def _render(self, font):
         txt = "Hello World!"
@@ -182,7 +182,7 @@ class TestImageFont:
         im = Image.new(mode, (1, 1), 0)
         d = ImageDraw.Draw(im)
 
-        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
+        if self.LAYOUT_ENGINE == ImageFont.Layout.BASIC:
             length = d.textlength(text, f)
             assert length == length_basic
         else:
@@ -294,7 +294,7 @@ class TestImageFont:
         word = "testing"
         font = self.get_font()
 
-        orientation = Image.ROTATE_90
+        orientation = Image.Transpose.ROTATE_90
         transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
         # Original font
@@ -333,7 +333,7 @@ class TestImageFont:
         # Arrange
         text = "mask this"
         font = self.get_font()
-        orientation = Image.ROTATE_90
+        orientation = Image.Transpose.ROTATE_90
         transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
         # Act
@@ -604,7 +604,7 @@ class TestImageFont:
         # Arrange
         t = self.get_font()
         # Act / Assert
-        if t.layout_engine == ImageFont.LAYOUT_BASIC:
+        if t.layout_engine == ImageFont.Layout.BASIC:
             with pytest.raises(KeyError):
                 t.getmask("абвг", direction="rtl")
             with pytest.raises(KeyError):
@@ -753,7 +753,7 @@ class TestImageFont:
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+        if self.LAYOUT_ENGINE == ImageFont.Layout.RAQM:
             width, height = (129, 44)
         else:
             width, height = (128, 44)
@@ -993,7 +993,7 @@ class TestImageFont:
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
-    LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
+    LAYOUT_ENGINE = ImageFont.Layout.RAQM
 
 
 def test_render_mono_size():
@@ -1004,7 +1004,7 @@ def test_render_mono_size():
     ttf = ImageFont.truetype(
         "Tests/fonts/DejaVuSans/DejaVuSans.ttf",
         18,
-        layout_engine=ImageFont.LAYOUT_BASIC,
+        layout_engine=ImageFont.Layout.BASIC,
     )
 
     draw.text((10, 10), "r" * 10, "black", ttf)

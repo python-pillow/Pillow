@@ -30,19 +30,33 @@ BLP files come in many different flavours:
 """
 
 import struct
+from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
 
-BLP_FORMAT_JPEG = 0
 
-BLP_ENCODING_UNCOMPRESSED = 1
-BLP_ENCODING_DXT = 2
-BLP_ENCODING_UNCOMPRESSED_RAW_BGRA = 3
+class Format(IntEnum):
+    JPEG = 0
 
-BLP_ALPHA_ENCODING_DXT1 = 0
-BLP_ALPHA_ENCODING_DXT3 = 1
-BLP_ALPHA_ENCODING_DXT5 = 7
+
+class Encoding(IntEnum):
+    UNCOMPRESSED = 1
+    DXT = 2
+    UNCOMPRESSED_RAW_BGRA = 3
+
+
+class AlphaEncoding(IntEnum):
+    DXT1 = 0
+    DXT3 = 1
+    DXT5 = 7
+
+
+globals().update({"BLP_FORMAT_" + k: v for k, v in Format.__members__.items()})
+globals().update({"BLP_ENCODING_" + k: v for k, v in Encoding.__members__.items()})
+globals().update(
+    {"BLP_ALPHA_ENCODING_" + k: v for k, v in AlphaEncoding.__members__.items()}
+)
 
 
 def unpack_565(i):
@@ -320,7 +334,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
 
 class BLP1Decoder(_BLPBaseDecoder):
     def _load(self):
-        if self._blp_compression == BLP_FORMAT_JPEG:
+        if self._blp_compression == Format.JPEG:
             self._decode_jpeg_stream()
 
         elif self._blp_compression == 1:
@@ -372,7 +386,7 @@ class BLP2Decoder(_BLPBaseDecoder):
         if self._blp_compression == 1:
             # Uncompressed or DirectX compression
 
-            if self._blp_encoding == BLP_ENCODING_UNCOMPRESSED:
+            if self._blp_encoding == Encoding.UNCOMPRESSED:
                 _data = BytesIO(self._safe_read(self._blp_lengths[0]))
                 while True:
                     try:
@@ -382,8 +396,8 @@ class BLP2Decoder(_BLPBaseDecoder):
                     b, g, r, a = palette[offset]
                     data.extend((r, g, b))
 
-            elif self._blp_encoding == BLP_ENCODING_DXT:
-                if self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT1:
+            elif self._blp_encoding == Encoding.DXT:
+                if self._blp_alpha_encoding == AlphaEncoding.DXT1:
                     linesize = (self.size[0] + 3) // 4 * 8
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt1(
@@ -391,13 +405,13 @@ class BLP2Decoder(_BLPBaseDecoder):
                         ):
                             data += d
 
-                elif self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT3:
+                elif self._blp_alpha_encoding == AlphaEncoding.DXT3:
                     linesize = (self.size[0] + 3) // 4 * 16
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt3(self._safe_read(linesize)):
                             data += d
 
-                elif self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT5:
+                elif self._blp_alpha_encoding == AlphaEncoding.DXT5:
                     linesize = (self.size[0] + 3) // 4 * 16
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt5(self._safe_read(linesize)):

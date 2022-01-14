@@ -140,7 +140,7 @@ def test_intent():
     skip_missing()
     assert ImageCms.getDefaultIntent(SRGB) == 0
     support = ImageCms.isIntentSupported(
-        SRGB, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC, ImageCms.DIRECTION_INPUT
+        SRGB, ImageCms.Intent.ABSOLUTE_COLORIMETRIC, ImageCms.Direction.INPUT
     )
     assert support == 1
 
@@ -153,7 +153,7 @@ def test_profile_object():
     #     ["sRGB built-in", "", "WhitePoint : D65 (daylight)", "", ""]
     assert ImageCms.getDefaultIntent(p) == 0
     support = ImageCms.isIntentSupported(
-        p, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC, ImageCms.DIRECTION_INPUT
+        p, ImageCms.Intent.ABSOLUTE_COLORIMETRIC, ImageCms.Direction.INPUT
     )
     assert support == 1
 

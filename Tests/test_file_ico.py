@@ -48,7 +48,9 @@ def test_save_to_bytes():
         assert im.mode == reloaded.mode
         assert (64, 64) == reloaded.size
         assert reloaded.format == "ICO"
-        assert_image_equal(reloaded, hopper().resize((64, 64), Image.LANCZOS))
+        assert_image_equal(
+            reloaded, hopper().resize((64, 64), Image.Resampling.LANCZOS)
+        )
 
     # The other one
     output.seek(0)
@@ -58,7 +60,9 @@ def test_save_to_bytes():
         assert im.mode == reloaded.mode
         assert (32, 32) == reloaded.size
         assert reloaded.format == "ICO"
-        assert_image_equal(reloaded, hopper().resize((32, 32), Image.LANCZOS))
+        assert_image_equal(
+            reloaded, hopper().resize((32, 32), Image.Resampling.LANCZOS)
+        )
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
@@ -75,7 +79,7 @@ def test_save_to_bytes_bmp(mode):
         assert "RGBA" == reloaded.mode
         assert (64, 64) == reloaded.size
         assert reloaded.format == "ICO"
-        im = hopper(mode).resize((64, 64), Image.LANCZOS).convert("RGBA")
+        im = hopper(mode).resize((64, 64), Image.Resampling.LANCZOS).convert("RGBA")
         assert_image_equal(reloaded, im)
 
     # The other one
@@ -86,7 +90,7 @@ def test_save_to_bytes_bmp(mode):
         assert "RGBA" == reloaded.mode
         assert (32, 32) == reloaded.size
         assert reloaded.format == "ICO"
-        im = hopper(mode).resize((32, 32), Image.LANCZOS).convert("RGBA")
+        im = hopper(mode).resize((32, 32), Image.Resampling.LANCZOS).convert("RGBA")
         assert_image_equal(reloaded, im)
 
 

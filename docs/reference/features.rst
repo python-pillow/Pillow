@@ -57,7 +57,7 @@ Support for the following features can be checked:
 * ``transp_webp``: Support for transparency in WebP images.
 * ``webp_mux``: (compile time) Support for EXIF data in WebP images.
 * ``webp_anim``: (compile time) Support for animated WebP images.
-* ``raqm``: Raqm library, required for ``ImageFont.LAYOUT_RAQM`` in :py:func:`PIL.ImageFont.truetype`. Run-time version number is available for Raqm 0.7.0 or newer.
+* ``raqm``: Raqm library, required for ``ImageFont.Layout.RAQM`` in :py:func:`PIL.ImageFont.truetype`. Run-time version number is available for Raqm 0.7.0 or newer.
 * ``libimagequant``: (compile time) ImageQuant quantization support in :py:func:`PIL.Image.Image.quantize`. Run-time version number is available.
 * ``xcb``: (compile time) Support for X11 in :py:func:`PIL.ImageGrab.grab` via the XCB library.
 
