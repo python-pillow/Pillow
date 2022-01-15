@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Fixed Spider images for use with Bio-formats library #5956
+  [radarhere]
+
 - Ensure duplicated file pointer is closed #5946
   [radarhere]
 
