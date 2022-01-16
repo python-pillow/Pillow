@@ -85,11 +85,13 @@ def test_ipythonviewer():
     not on_ci() or is_win32(),
     reason="Only run on CIs; hangs on Windows CIs",
 )
-def test_file_deprecated():
+def test_file_deprecated(tmp_path):
+    f = str(tmp_path / "temp.jpg")
     for viewer in ImageShow._viewers:
+        hopper().save(f)
         with pytest.warns(DeprecationWarning):
             try:
-                viewer.show_file(file="test.jpg")
+                viewer.show_file(file=f)
             except NotImplementedError:
                 pass
         with pytest.raises(TypeError):
