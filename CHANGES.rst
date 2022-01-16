@@ -5,7 +5,10 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
-- Fixed Spider images for use with Bio-formats library #5956
+- Deprecated show_file "file" argument in favour of "path" #5959
+  [radarhere]
+
+- Fixed SPIDER images for use with Bio-formats library #5956
   [radarhere]
 
 - Ensure duplicated file pointer is closed #5946
