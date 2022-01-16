@@ -107,7 +107,12 @@ class Viewer:
         return self.show_file(self.save_image(image), **options)
 
     def show_file(self, path=None, **options):
-        """Display given file."""
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
         if path is None:
             if "file" in options:
                 warnings.warn(
@@ -157,7 +162,12 @@ class MacViewer(Viewer):
         return command
 
     def show_file(self, path=None, **options):
-        """Display given file"""
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
         if path is None:
             if "file" in options:
                 warnings.warn(
@@ -194,7 +204,12 @@ class UnixViewer(Viewer):
         return f"({command} {quote(file)}; rm -f {quote(file)})&"
 
     def show_file(self, path=None, **options):
-        """Display given file"""
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
         if path is None:
             if "file" in options:
                 warnings.warn(
