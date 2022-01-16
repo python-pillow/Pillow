@@ -244,6 +244,9 @@ def eval(expression, _dict={}, **kw):
     for name in code.co_names:
         if name not in args and name != "abs":
             raise ValueError(f"'{name}' not allowed")
+    for const in code.co_consts:
+        if getattr(const, "co_name", None) == "<lambda>":
+            raise ValueError("Lambda expressions are not allowed")
 
     out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
     try:
