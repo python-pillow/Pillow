@@ -15,7 +15,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import warnings
 from shlex import quote
 
@@ -180,16 +179,15 @@ class MacViewer(Viewer):
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        fd, temp_path = tempfile.mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write(path)
-        with open(temp_path) as f:
-            subprocess.Popen(
-                ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
-                shell=True,
-                stdin=f,
-            )
-        os.remove(temp_path)
+        subprocess.call(["open", "-a", "Preview.app", path])
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time;time.sleep(20);os.remove(sys.argv[1])",
+                path,
+            ]
+        )
         return 1
 
 
@@ -204,6 +202,16 @@ class UnixViewer(Viewer):
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]
         return f"({command} {quote(file)}; rm -f {quote(file)})&"
+
+
+class XDGViewer(UnixViewer):
+    """
+    The freedesktop.org ``xdg-open`` command.
+    """
+
+    def get_command_ex(self, file, **options):
+        command = executable = "xdg-open"
+        return command, executable
 
     def show_file(self, path=None, **options):
         """
@@ -223,26 +231,9 @@ class UnixViewer(Viewer):
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        fd, temp_path = tempfile.mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write(path)
-        with open(temp_path) as f:
-            command = self.get_command_ex(path, **options)[0]
-            subprocess.Popen(
-                ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
-            )
-        os.remove(temp_path)
+        subprocess.Popen(["xdg-open", path])
+        os.remove(path)
         return 1
-
-
-class XDGViewer(UnixViewer):
-    """
-    The freedesktop.org ``xdg-open`` command.
-    """
-
-    def get_command_ex(self, file, **options):
-        command = executable = "xdg-open"
-        return command, executable
 
 
 class DisplayViewer(UnixViewer):
@@ -257,6 +248,32 @@ class DisplayViewer(UnixViewer):
             command += f" -name {quote(title)}"
         return command, executable
 
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        args = ["display"]
+        if "title" in options:
+            args += ["-name", options["title"]]
+        args.append(path)
+
+        subprocess.Popen(args)
+        os.remove(path)
+        return 1
+
 
 class GmDisplayViewer(UnixViewer):
     """The GraphicsMagick ``gm display`` command."""
@@ -266,6 +283,27 @@ class GmDisplayViewer(UnixViewer):
         command = "gm display"
         return command, executable
 
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        subprocess.Popen(["gm", "display", path])
+        os.remove(path)
+        return 1
+
 
 class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
@@ -274,6 +312,27 @@ class EogViewer(UnixViewer):
         executable = "eog"
         command = "eog -n"
         return command, executable
+
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        subprocess.Popen(["eog", "-n", path])
+        os.remove(path)
+        return 1
 
 
 class XVViewer(UnixViewer):
@@ -289,6 +348,32 @@ class XVViewer(UnixViewer):
         if title:
             command += f" -name {quote(title)}"
         return command, executable
+
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and ``path`` should be used instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        args = ["xv"]
+        if "title" in options:
+            args += ["-name", options["title"]]
+        args.append(path)
+
+        subprocess.Popen(args)
+        os.remove(path)
+        return 1
 
 
 if sys.platform not in ("win32", "darwin"):  # unixoids
