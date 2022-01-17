@@ -361,7 +361,6 @@ class BLP1Decoder(_BLPBaseDecoder):
         image.tile = [("jpeg", (0, 0) + self.size, 0, ("RGBA", ""))]
 
         b, g, r, a = image.split()
-        print(b, g, r, a)
         if not any(
             [a.getpixel((x, y)) for x in range(a.width) for y in range(a.height)]
         ):
