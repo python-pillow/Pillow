@@ -5,7 +5,7 @@ Changelog (Pillow-SIMD)
 -----------
 
 - Fixed possible overflow in LUT processing
-- Restored compativlity with Visual C Compiler
+- Restored compatibility with Visual C Compiler
 
 
 7.0.0.post4
@@ -26,7 +26,7 @@ Changelog (Pillow-SIMD)
 7.0.0.post1 & 6.2.2.post1 & 6.1.0.post1 & 6.0.0.post2
 -----------------------------------------------------
 
-- Bands: access violation in getband in some enviroments
+- Bands: access violation in getband in some environments
 
 7.0.0.post0
 -----------
