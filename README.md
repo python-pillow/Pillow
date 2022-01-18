@@ -42,10 +42,10 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
                 alt="GitHub Actions wheels build status (Wheels)"
                 src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
-            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
+            <a href="https://app.travis-ci.com/github/python-pillow/pillow-wheels"><img
                 alt="Travis CI wheels build status (aarch64)"
                 src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
-            <a href="https://codecov.io/gh/python-pillow/Pillow"><img
+            <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"><img
