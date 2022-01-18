@@ -86,21 +86,12 @@ class TestDecompressionCrop:
             pytest.warns(Image.DecompressionBombWarning, src.crop, box)
 
     def test_crop_decompression_checks(self):
-
         im = Image.new("RGB", (100, 100))
 
-        good_values = ((-9999, -9999, -9990, -9990), (-999, -999, -990, -990))
-
-        warning_values = ((-160, -160, 99, 99), (160, 160, -99, -99))
-
-        error_values = ((-99909, -99990, 99999, 99999), (99909, 99990, -99999, -99999))
-
-        for value in good_values:
+        for value in ((-9999, -9999, -9990, -9990), (-999, -999, -990, -990)):
             assert im.crop(value).size == (9, 9)
 
-        for value in warning_values:
-            pytest.warns(Image.DecompressionBombWarning, im.crop, value)
+        pytest.warns(Image.DecompressionBombWarning, im.crop, (-160, -160, 99, 99))
 
-        for value in error_values:
-            with pytest.raises(Image.DecompressionBombError):
-                im.crop(value)
+        with pytest.raises(Image.DecompressionBombError):
+            im.crop((-99909, -99990, 99999, 99999))

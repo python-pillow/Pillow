@@ -1145,6 +1145,11 @@ class Image:
         if box is None:
             return self.copy()
 
+        if box[2] < box[0]:
+            raise ValueError("Region right less than region left")
+        elif box[3] < box[1]:
+            raise ValueError("Region lower less than region upper")
+
         self.load()
         return self._new(self._crop(self.im, box))
 
