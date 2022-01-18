@@ -10,7 +10,7 @@ This repository creates wheels for tagged versions of Pillow::
    :alt: GitHub Actions build status
 
 .. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg
-   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
+   :target: https://app.travis-ci.com/github/python-pillow/pillow-wheels
    :alt: Travis CI build status
 
 Archives
