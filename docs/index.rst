@@ -34,11 +34,11 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: GitHub Actions wheels build status (Wheels)
 
 .. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels
-   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
+   :target: https://app.travis-ci.com/github/python-pillow/pillow-wheels
    :alt: Travis CI wheels build status (aarch64)
 
 .. image:: https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/python-pillow/Pillow
+   :target: https://app.codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
 
 .. image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
