@@ -151,7 +151,7 @@ class MacViewer(Viewer):
             [
                 sys.executable,
                 "-c",
-                "import os, sys, time;time.sleep(20);os.remove(sys.argv[1])",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
                 file,
             ]
         )
