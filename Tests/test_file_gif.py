@@ -366,16 +366,12 @@ def test_dispose_background():
 def test_dispose_background_transparency():
     with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
         img.seek(2)
-        px = img.load()
+        px = img.convert("RGBA").load()
         assert px[35, 30][3] == 0
 
 
 def test_transparent_dispose():
-    expected_colors = [
-        (2, 1, 2),
-        ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
-        ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
-    ]
+    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
     with Image.open("Tests/images/transparent_dispose.gif") as img:
         for frame in range(3):
             img.seek(frame)
@@ -956,7 +952,9 @@ def test_missing_background():
     # but the disposal method is "Restore to background color"
     with Image.open("Tests/images/missing_background.gif") as im:
         im.seek(1)
-        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.png")
+        assert_image_equal_tofile(
+            im.convert("RGBA"), "Tests/images/missing_background_first_frame.png"
+        )
 
 
 def test_saving_rgba(tmp_path):

@@ -55,6 +55,9 @@ class GifImageFile(ImageFile.ImageFile):
 
     global_palette = None
 
+    constant_palette = True
+    last_palette = None
+
     def data(self):
         s = self.fp.read(1)
         if s and s[0]:
@@ -82,7 +85,7 @@ class GifImageFile(ImageFile.ImageFile):
             for i in range(0, len(p), 3):
                 if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                     p = ImagePalette.raw("RGB", p)
-                    self.global_palette = self.palette = p
+                    self.global_palette = self.last_palette = self.palette = p
                     break
 
         self.__fp = self.fp  # FIXME: hack
@@ -164,25 +167,12 @@ class GifImageFile(ImageFile.ImageFile):
                 pass
             self.__offset = 0
 
-        if self.__frame == 1:
-            self.pyaccess = None
-            if "transparency" in self.info:
-                self.mode = "RGBA"
-                self.im.putpalettealpha(self.info["transparency"], 0)
-                self.im = self.im.convert("RGBA", Image.FLOYDSTEINBERG)
-
-                del self.info["transparency"]
-            else:
-                self.mode = "RGB"
-                self.im = self.im.convert("RGB", Image.FLOYDSTEINBERG)
-        if self.dispose:
-            self.im.paste(self.dispose, self.dispose_extent)
-
         palette = None
 
         info = {}
         frame_transparency = None
         interlace = None
+        tmp_dispose_extent = None
         while True:
 
             s = self.fp.read(1)
@@ -247,7 +237,7 @@ class GifImageFile(ImageFile.ImageFile):
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if x1 > self.size[0] or y1 > self.size[1]:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
-                self.dispose_extent = x0, y0, x1, y1
+                tmp_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
                 interlace = (flags & 64) != 0
@@ -266,6 +256,41 @@ class GifImageFile(ImageFile.ImageFile):
                 # raise OSError, "illegal GIF tag `%x`" % s[0]
 
         frame_palette = palette or self.global_palette
+
+        # as long as we have a constant palette, we check whether this frame
+        # still has the same palette
+        if self.constant_palette:
+            if self.last_palette is None:
+                self.last_palette = palette
+            else:
+                if self.last_palette != frame_palette:
+                    self.constant_palette = False
+
+        if self.__frame > 0:
+            # for every frame after the first frame, we check whether the
+            # palette is still constant and convert to RGB or RGBA if not
+            self.pyaccess = None
+            if not self.constant_palette and self.mode not in ("RGB", "RGBA"):
+                if "transparency" in self.info:
+                    self.mode = "RGBA"
+                    self.im.putpalettealpha(self.info["transparency"], 0)
+                    self.im = self.im.convert("RGBA", Image.FLOYDSTEINBERG)
+                    if self.dispose:
+                        self.dispose = self.dispose.convert(
+                            "RGBA", Image.FLOYDSTEINBERG
+                        )
+
+                    del self.info["transparency"]
+                else:
+                    self.mode = "RGB"
+                    self.im = self.im.convert("RGB", Image.FLOYDSTEINBERG)
+                    if self.dispose:
+                        self.dispose = self.dispose.convert("RGB", Image.FLOYDSTEINBERG)
+        if self.dispose:
+            self.im.paste(self.dispose, self.dispose_extent)
+
+        if tmp_dispose_extent is not None:
+            self.dispose_extent = tmp_dispose_extent
 
         def _rgb(color):
             if frame_palette:
@@ -289,13 +314,18 @@ class GifImageFile(ImageFile.ImageFile):
 
                 # by convention, attempt to use transparency first
                 color = self.info.get("transparency", frame_transparency)
-                if color is not None:
-                    dispose_mode = "RGBA"
-                    color = _rgb(color) + (0,)
+                if self.constant_palette:
+                    if color is None:
+                        color = self.info.get("background", 0)
+                    self.dispose = Image.core.fill("P", dispose_size, color)
                 else:
-                    dispose_mode = "RGB"
-                    color = _rgb(self.info.get("background", 0))
-                self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
+                    if color is not None:
+                        dispose_mode = "RGBA"
+                        color = _rgb(color) + (0,)
+                    else:
+                        dispose_mode = "RGB"
+                        color = _rgb(self.info.get("background", 0))
+                    self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
             else:
                 # replace with previous contents
                 if self.im:
@@ -307,7 +337,11 @@ class GifImageFile(ImageFile.ImageFile):
 
                     Image._decompression_bomb_check(dispose_size)
                     self.dispose = Image.core.fill(
-                        "RGBA", dispose_size, _rgb(frame_transparency) + (0,)
+                        "P" if self.constant_palette else "RGBA",
+                        dispose_size,
+                        frame_transparency
+                        if self.constant_palette
+                        else _rgb(frame_transparency) + (0,),
                     )
         except AttributeError:
             pass
@@ -367,11 +401,13 @@ class GifImageFile(ImageFile.ImageFile):
     def load_end(self):
         if self.__frame == 0:
             return
-        if self._frame_transparency is not None:
-            self.im.putpalettealpha(self._frame_transparency, 0)
-            frame_im = self.im.convert("RGBA")
-        else:
-            frame_im = self.im.convert("RGB")
+        frame_im = self.im
+        if self._prev_im.mode != self.im.mode:
+            if self._frame_transparency is not None:
+                self.im.putpalettealpha(self._frame_transparency, 0)
+                frame_im = self.im.convert("RGBA")
+            else:
+                frame_im = self.im.convert("RGB")
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im
