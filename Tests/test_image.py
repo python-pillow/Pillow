@@ -88,6 +88,17 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_repr_pretty(self):
+        class Pretty:
+            def text(self, text):
+                self.pretty_output = text
+
+        im = Image.new("L", (100, 100))
+
+        p = Pretty()
+        im._repr_pretty_(p, None)
+        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"
         JPGFILE = "Tests/images/hopper.jpg"
