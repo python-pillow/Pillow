@@ -29,7 +29,7 @@
  * 1995-09-12 fl  Created
  * 1996-04-08 fl  Ready for release
  * 1997-05-09 fl  Use command instead of image type
- * 2001-03-18 fl  Initialize alpha layer pointer (struct changed in 8.3)
+ * 2001-03-18 fl  Initialize alpha layer pointer (struct changed in Tk 8.3)
  * 2003-04-23 fl  Fixed building for Tk 8.4.1 and later (Jack Jansen)
  * 2004-06-24 fl  Fixed building for Tk 8.4.6 and later.
  *
@@ -116,7 +116,7 @@ PyImagingPhotoPut(
         block.offset[1] = 1;
         block.offset[2] = 2;
         if (strcmp(im->mode, "RGBA") == 0) {
-            block.offset[3] = 3; /* alpha (or reserved, under 8.2) */
+            block.offset[3] = 3; /* alpha (or reserved, under Tk 8.2) */
         } else {
             block.offset[3] = 0; /* no alpha */
         }
