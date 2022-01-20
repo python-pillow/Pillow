@@ -1146,9 +1146,9 @@ class Image:
             return self.copy()
 
         if box[2] < box[0]:
-            raise ValueError("Region right less than region left")
+            raise ValueError("Coordinate 'right' is less than 'left'")
         elif box[3] < box[1]:
-            raise ValueError("Region lower less than region upper")
+            raise ValueError("Coordinate 'lower' is less than 'upper'")
 
         self.load()
         return self._new(self._crop(self.im, box))
