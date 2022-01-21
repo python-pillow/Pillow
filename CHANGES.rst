@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Raise an error when performing a negative crop #5972
+  [radarhere, hugovk]
+
 - Deprecated show_file "file" argument in favour of "path" #5959
   [radarhere]
 
