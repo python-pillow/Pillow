@@ -50,7 +50,7 @@ def test_write_animation_L(tmp_path):
             if is_big_endian():
                 webp = parse_version(features.version_module("webp"))
                 if webp < parse_version("1.2.2"):
-                    return
+                    pytest.skip("Fails with libwebp earlier than 1.2.2")
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
             orig.load()
@@ -76,7 +76,7 @@ def test_write_animation_RGB(tmp_path):
             if is_big_endian():
                 webp = parse_version(features.version_module("webp"))
                 if webp < parse_version("1.2.2"):
-                    return
+                    pytest.skip("Fails with libwebp earlier than 1.2.2")
             im.seek(1)
             im.load()
             assert_image_equal(im, frame2.convert("RGBA"))
