@@ -195,7 +195,6 @@ def _layerinfo(fp, ct_bytes):
         x1 = i32(read(4))
 
         # image info
-        info = []
         mode = []
         ct_types = i16(read(2))
         types = list(range(ct_types))
@@ -211,8 +210,7 @@ def _layerinfo(fp, ct_bytes):
                 m = "RGBA"[type]
 
             mode.append(m)
-            size = i32(read(4))
-            info.append((m, size))
+            read(4)  # size
 
         # figure out the image mode
         mode.sort()
@@ -229,26 +227,22 @@ def _layerinfo(fp, ct_bytes):
         read(12)  # filler
         name = ""
         size = i32(read(4))  # length of the extra data field
-        combined = 0
         if size:
             data_end = fp.tell() + size
 
             length = i32(read(4))
             if length:
                 fp.seek(length - 16, io.SEEK_CUR)
-            combined += length + 4
 
             length = i32(read(4))
             if length:
                 fp.seek(length, io.SEEK_CUR)
-            combined += length + 4
 
             length = i8(read(1))
             if length:
                 # Don't know the proper encoding,
                 # Latin-1 should be a good guess
                 name = read(length).decode("latin-1", "replace")
-            combined += length + 1
 
             fp.seek(data_end)
         layers.append((name, mode, (x0, y0, x1, y1)))
