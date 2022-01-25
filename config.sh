@@ -13,7 +13,11 @@ OPENJPEG_VERSION=2.4.0
 XZ_VERSION=5.2.5
 TIFF_VERSION=4.3.0
 LCMS2_VERSION=2.12
-GIFLIB_VERSION=5.1.4
+if [[ -n "$IS_MACOS" ]]; then
+    GIFLIB_VERSION=5.1.4
+else
+    GIFLIB_VERSION=5.2.1
+fi
 LIBWEBP_VERSION=1.2.2
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
@@ -30,6 +34,27 @@ function build_libjpeg_turbo {
 
     # Prevent build_jpeg
     touch jpeg-stamp
+}
+
+function build_giflib {
+    local name=giflib
+    local version=$GIFLIB_VERSION
+    local url=https://downloads.sourceforge.net/project/giflib
+    if [ $(lex_ver $GIFLIB_VERSION) -lt $(lex_ver 5.1.5) ]; then
+        build_simple $name $version $url
+    else
+        local ext=tar.gz
+        if [ -e "${name}-stamp" ]; then
+            return
+        fi
+        local name_version="${name}-${version}"
+        local archive=${name_version}.${ext}
+        fetch_unpack $url/$archive
+        (cd $name_version \
+            && make -j4 \
+            && make install)
+        touch "${name}-stamp"
+    fi
 }
 
 function pre_build {
