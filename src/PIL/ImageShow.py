@@ -111,7 +111,8 @@ class Viewer:
         Display given file.
 
         Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
         """
         if path is None:
             if "file" in options:
@@ -166,7 +167,8 @@ class MacViewer(Viewer):
         Display given file.
 
         Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
         """
         if path is None:
             if "file" in options:
@@ -208,7 +210,8 @@ class UnixViewer(Viewer):
         Display given file.
 
         Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
         """
         if path is None:
             if "file" in options:
