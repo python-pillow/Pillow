@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016 Khaled Hosny <khaledhosny@eglug.org>
+ * Copyright © 2016-2021 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -30,10 +30,17 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef RAQM_SHEENBIDI
+#include <SheenBidi.h>
+#else
 #ifdef HAVE_FRIBIDI_SYSTEM
 #include <fribidi.h>
 #else
 #include "../fribidi-shim/fribidi.h"
+#endif
+#if FRIBIDI_MAJOR_VERSION >= 1
+#define USE_FRIBIDI_EX_API
+#endif
 #endif
 
 #include <hb.h>
@@ -55,10 +62,6 @@
 #endif
 
 #include "raqm.h"
-
-#if FRIBIDI_MAJOR_VERSION >= 1
-#define USE_FRIBIDI_EX_API
-#endif
 
 /**
  * SECTION:raqm
@@ -176,6 +179,15 @@
     buff[4] = '\0';
 #else
 # define RAQM_TEST(...)
+#endif
+
+#define RAQM_BIDI_LEVEL_IS_RTL(level) \
+    ((level) & 1)
+
+#ifdef RAQM_SHEENBIDI
+  typedef SBLevel _raqm_bidi_level_t;
+#else
+  typedef FriBidiLevel _raqm_bidi_level_t;
 #endif
 
 typedef enum {
@@ -438,6 +450,53 @@ raqm_set_text (raqm_t         *rq,
   return true;
 }
 
+static void *
+_raqm_get_utf8_codepoint (const void *str,
+                          uint32_t *out_codepoint)
+{
+  const char *s = (const char *)str;
+
+  if (0xf0 == (0xf8 & s[0]))
+  {
+    *out_codepoint = ((0x07 & s[0]) << 18) | ((0x3f & s[1]) << 12) | ((0x3f & s[2]) << 6) | (0x3f & s[3]);
+    s += 4;
+  }
+  else if (0xe0 == (0xf0 & s[0]))
+  {
+    *out_codepoint = ((0x0f & s[0]) << 12) | ((0x3f & s[1]) << 6) | (0x3f & s[2]);
+    s += 3;
+  }
+  else if (0xc0 == (0xe0 & s[0]))
+  {
+    *out_codepoint = ((0x1f & s[0]) << 6) | (0x3f & s[1]);
+    s += 2;
+  }
+  else
+  {
+    *out_codepoint = s[0];
+    s += 1;
+  }
+
+  return (void *)s;
+}
+
+static size_t
+_raqm_u8_to_u32 (const char *text, size_t len, uint32_t *unicode)
+{
+  size_t in_len = 0;
+  uint32_t *out_utf32 = unicode;
+  const char *in_utf8 = text;
+
+  while ((*in_utf8 != '\0') && (in_len < len))
+  {
+    in_utf8 = _raqm_get_utf8_codepoint (in_utf8, out_utf32);
+    ++out_utf32;
+    ++in_len;
+  }
+
+  return (out_utf32 - unicode);
+}
+
 /**
  * raqm_set_text_utf8:
  * @rq: a #raqm_t.
@@ -482,9 +541,7 @@ raqm_set_text_utf8 (raqm_t         *rq,
 
   memcpy (rq->text_utf8, text, sizeof (char) * len);
 
-  ulen = fribidi_charset_to_unicode (FRIBIDI_CHAR_SET_UTF8,
-                                     text, len, unicode);
-
+  ulen = _raqm_u8_to_u32 (text, len, unicode);
   ok = raqm_set_text (rq, unicode, ulen);
 
   free (unicode);
@@ -504,7 +561,7 @@ raqm_set_text_utf8 (raqm_t         *rq,
  *
  * The default is #RAQM_DIRECTION_DEFAULT, which determines the paragraph
  * direction based on the first character with strong bidi type (see [rule
- * P2](https://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
+ * P2](http://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
  * which can be good enough for many cases but has problems when a mainly
  * right-to-left paragraph starts with a left-to-right character and vice versa
  * as the detected paragraph direction will be the wrong one, or when text does
@@ -971,17 +1028,78 @@ raqm_get_glyphs (raqm_t *rq,
   return rq->glyphs;
 }
 
+/**
+ * raqm_get_par_resolved_direction:
+ * @rq: a #raqm_t.
+ *
+ * Gets the resolved direction of the paragraph;
+ *
+ * Return value:
+ * The #raqm_direction_t specifying the resolved direction of text,
+ * or #RAQM_DIRECTION_DEFAULT if raqm_layout() has not been called on @rq.
+ *
+ * Since: 0.8
+ */
+RAQM_API raqm_direction_t
+raqm_get_par_resolved_direction (raqm_t *rq)
+{
+  if (!rq)
+    return RAQM_DIRECTION_DEFAULT;
+
+  return rq->resolved_dir;
+}
+
+/**
+ * raqm_get_direction_at_index:
+ * @rq: a #raqm_t.
+ * @index: (in): character index.
+ *
+ * Gets the resolved direction of the character at specified index;
+ *
+ * Return value:
+ * The #raqm_direction_t specifying the resolved direction of text at the
+ * specified index, or #RAQM_DIRECTION_DEFAULT if raqm_layout() has not been
+ * called on @rq.
+ *
+ * Since: 0.8
+ */
+RAQM_API raqm_direction_t
+raqm_get_direction_at_index (raqm_t *rq,
+                             size_t index)
+{
+  if (!rq)
+    return RAQM_DIRECTION_DEFAULT;
+
+  for (raqm_run_t *run = rq->runs; run != NULL; run = run->next)
+  {
+    if (run->pos <= index && index < run->pos + run->len) {
+      switch (run->direction) {
+        case HB_DIRECTION_LTR:
+          return RAQM_DIRECTION_LTR;
+        case HB_DIRECTION_RTL:
+          return RAQM_DIRECTION_RTL;
+        case HB_DIRECTION_TTB:
+          return RAQM_DIRECTION_TTB;
+        default:
+          return RAQM_DIRECTION_DEFAULT;
+      }
+    }
+  }
+
+  return RAQM_DIRECTION_DEFAULT;
+}
+
 static bool
 _raqm_resolve_scripts (raqm_t *rq);
 
 static hb_direction_t
-_raqm_hb_dir (raqm_t *rq, FriBidiLevel level)
+_raqm_hb_dir (raqm_t *rq, _raqm_bidi_level_t level)
 {
   hb_direction_t dir = HB_DIRECTION_LTR;
 
   if (rq->base_dir == RAQM_DIRECTION_TTB)
       dir = HB_DIRECTION_TTB;
-  else if (FRIBIDI_LEVEL_IS_RTL (level))
+  else if (RAQM_BIDI_LEVEL_IS_RTL(level))
       dir = HB_DIRECTION_RTL;
 
   return dir;
@@ -990,9 +1108,65 @@ _raqm_hb_dir (raqm_t *rq, FriBidiLevel level)
 typedef struct {
   size_t pos;
   size_t len;
-  FriBidiLevel level;
+  _raqm_bidi_level_t level;
 } _raqm_bidi_run;
 
+#ifdef RAQM_SHEENBIDI
+static _raqm_bidi_run *
+_raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
+{
+  _raqm_bidi_run *runs;
+  SBAlgorithmRef bidi;
+  SBParagraphRef par;
+  SBUInteger par_len;
+  SBLineRef line;
+
+  SBLevel base_level = SBLevelDefaultLTR;
+  SBCodepointSequence input = {
+     SBStringEncodingUTF32,
+     (void *) rq->text,
+     rq->text_len
+  };
+
+  if (rq->base_dir == RAQM_DIRECTION_RTL)
+    base_level = 1;
+  else if (rq->base_dir == RAQM_DIRECTION_LTR)
+    base_level = 0;
+
+  /* paragraph */
+  bidi = SBAlgorithmCreate (&input);
+  par = SBAlgorithmCreateParagraph (bidi, 0, INT32_MAX, base_level);
+  par_len = SBParagraphGetLength (par);
+
+  /* lines */
+  line = SBParagraphCreateLine (par, 0, par_len);
+  *run_count = SBLineGetRunCount (line);
+
+  if (SBParagraphGetBaseLevel (par) == 0)
+    rq->resolved_dir = RAQM_DIRECTION_LTR;
+  else
+    rq->resolved_dir = RAQM_DIRECTION_RTL;
+
+  runs = malloc (sizeof (_raqm_bidi_run) * (*run_count));
+  if (runs)
+  {
+    const SBRun *sheenbidi_runs = SBLineGetRunsPtr(line);
+
+    for (size_t i = 0; i < (*run_count); ++i)
+    {
+      runs[i].pos = sheenbidi_runs[i].offset;
+      runs[i].len = sheenbidi_runs[i].length;
+      runs[i].level = sheenbidi_runs[i].level;
+    }
+  }
+
+  SBLineRelease (line);
+  SBParagraphRelease (par);
+  SBAlgorithmRelease (bidi);
+
+  return runs;
+}
+#else
 static void
 _raqm_reverse_run (_raqm_bidi_run *run, const size_t len)
 {
@@ -1093,19 +1267,78 @@ _raqm_reorder_runs (const FriBidiCharType *types,
   return runs;
 }
 
-static bool
-_raqm_itemize (raqm_t *rq)
+static _raqm_bidi_run *
+_raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
 {
   FriBidiParType par_type = FRIBIDI_PAR_ON;
+  _raqm_bidi_run *runs = NULL;
+
   FriBidiCharType *types;
+  _raqm_bidi_level_t *levels;
+  int max_level = 0;
 #ifdef USE_FRIBIDI_EX_API
   FriBidiBracketType *btypes;
 #endif
-  FriBidiLevel *levels;
+
+  types = calloc (rq->text_len, sizeof (FriBidiCharType));
+#ifdef USE_FRIBIDI_EX_API
+  btypes = calloc (rq->text_len, sizeof (FriBidiBracketType));
+#endif
+  levels = calloc (rq->text_len, sizeof (_raqm_bidi_level_t));
+
+  if (!types || !levels
+#ifdef USE_FRIBIDI_EX_API
+      || !btypes
+#endif
+      )
+  {
+    goto done;
+  }
+
+  if (rq->base_dir == RAQM_DIRECTION_RTL)
+    par_type = FRIBIDI_PAR_RTL;
+  else if (rq->base_dir == RAQM_DIRECTION_LTR)
+    par_type = FRIBIDI_PAR_LTR;
+
+  fribidi_get_bidi_types (rq->text, rq->text_len, types);
+#ifdef USE_FRIBIDI_EX_API
+  fribidi_get_bracket_types (rq->text, rq->text_len, types, btypes);
+  max_level = fribidi_get_par_embedding_levels_ex (types, btypes,
+                                                   rq->text_len, &par_type,
+                                                   levels);
+#else
+  max_level = fribidi_get_par_embedding_levels (types, rq->text_len,
+                                                &par_type, levels);
+#endif
+
+  if (par_type == FRIBIDI_PAR_LTR)
+    rq->resolved_dir = RAQM_DIRECTION_LTR;
+  else
+    rq->resolved_dir = RAQM_DIRECTION_RTL;
+
+  if (max_level == 0)
+    goto done;
+
+  /* Get the number of bidi runs */
+  runs = _raqm_reorder_runs (types, rq->text_len, par_type, levels, run_count);
+
+done:
+  free (types);
+  free (levels);
+#ifdef USE_FRIBIDI_EX_API
+  free (btypes);
+#endif
+
+  return runs;
+}
+#endif
+
+static bool
+_raqm_itemize (raqm_t *rq)
+{
   _raqm_bidi_run *runs = NULL;
   raqm_run_t *last;
-  int max_level;
-  size_t run_count;
+  size_t run_count = 0;
   bool ok = true;
 
 #ifdef RAQM_TESTING
@@ -1127,67 +1360,28 @@ _raqm_itemize (raqm_t *rq)
   }
 #endif
 
-  types = calloc (rq->text_len, sizeof (FriBidiCharType));
-#ifdef USE_FRIBIDI_EX_API
-  btypes = calloc (rq->text_len, sizeof (FriBidiBracketType));
-#endif
-  levels = calloc (rq->text_len, sizeof (FriBidiLevel));
-  if (!types || !levels
-#ifdef USE_FRIBIDI_EX_API
-      || !btypes
-#endif
-      )
-  {
-    ok = false;
-    goto done;
-  }
-
-  if (rq->base_dir == RAQM_DIRECTION_RTL)
-    par_type = FRIBIDI_PAR_RTL;
-  else if (rq->base_dir == RAQM_DIRECTION_LTR)
-    par_type = FRIBIDI_PAR_LTR;
-
-  if (rq->base_dir == RAQM_DIRECTION_TTB)
-  {
-    /* Treat every thing as LTR in vertical text */
-    max_level = 1;
-    memset (types, FRIBIDI_TYPE_LTR, rq->text_len);
-    memset (levels, 0, rq->text_len);
-    rq->resolved_dir = RAQM_DIRECTION_LTR;
-  }
-  else
-  {
-    fribidi_get_bidi_types (rq->text, rq->text_len, types);
-#ifdef USE_FRIBIDI_EX_API
-    fribidi_get_bracket_types (rq->text, rq->text_len, types, btypes);
-    max_level = fribidi_get_par_embedding_levels_ex (types, btypes,
-                                                     rq->text_len, &par_type,
-                                                     levels);
-#else
-    max_level = fribidi_get_par_embedding_levels (types, rq->text_len,
-                                                  &par_type, levels);
-#endif
-
-   if (par_type == FRIBIDI_PAR_LTR)
-     rq->resolved_dir = RAQM_DIRECTION_LTR;
-   else
-     rq->resolved_dir = RAQM_DIRECTION_RTL;
-  }
-
-  if (max_level == 0)
-  {
-    ok = false;
-    goto done;
-  }
-
   if (!_raqm_resolve_scripts (rq))
   {
     ok = false;
     goto done;
   }
 
-  /* Get the number of bidi runs */
-  runs = _raqm_reorder_runs (types, rq->text_len, par_type, levels, &run_count);
+  if (rq->base_dir == RAQM_DIRECTION_TTB)
+  {
+    /* Treat every thing as LTR in vertical text */
+    run_count = 1;
+    rq->resolved_dir = RAQM_DIRECTION_TTB;
+    runs = malloc (sizeof (_raqm_bidi_run));
+    if (runs)
+    {
+      runs->pos = 0;
+      runs->len = rq->text_len;
+      runs->level = 0;
+    }
+  } else {
+    runs = _raqm_bidi_itemize (rq, &run_count);
+  }
+
   if (!runs)
   {
     ok = false;
@@ -1197,7 +1391,7 @@ _raqm_itemize (raqm_t *rq)
 #ifdef RAQM_TESTING
   RAQM_TEST ("Number of runs before script itemization: %zu\n\n", run_count);
 
-  RAQM_TEST ("Fribidi Runs:\n");
+  RAQM_TEST ("BiDi Runs:\n");
   for (size_t i = 0; i < run_count; i++)
   {
     RAQM_TEST ("run[%zu]:\t start: %zu\tlength: %zu\tlevel: %d\n",
@@ -1309,11 +1503,6 @@ _raqm_itemize (raqm_t *rq)
 
 done:
   free (runs);
-  free (types);
-#ifdef USE_FRIBIDI_EX_API
-  free (btypes);
-#endif
-  free (levels);
 
   return ok;
 }
@@ -1328,7 +1517,7 @@ typedef struct {
 
 /* Special paired characters for script detection */
 static size_t paired_len = 34;
-static const FriBidiChar paired_chars[] =
+static const uint32_t paired_chars[] =
 {
   0x0028, 0x0029, /* ascii paired punctuation */
   0x003c, 0x003e,
@@ -1431,7 +1620,7 @@ _raqm_stack_push (_raqm_stack_t *stack,
 }
 
 static int
-_get_pair_index (const FriBidiChar ch)
+_get_pair_index (const uint32_t ch)
 {
   int lower = 0;
   int upper = paired_len - 1;
@@ -1569,6 +1758,7 @@ _raqm_resolve_scripts (raqm_t *rq)
   return true;
 }
 
+#ifdef HAVE_FT_GET_TRANSFORM
 static void
 _raqm_ft_transform (int      *x,
                     int      *y,
@@ -1583,6 +1773,7 @@ _raqm_ft_transform (int      *x,
   *x = vector.x;
   *y = vector.y;
 }
+#endif
 
 static bool
 _raqm_shape (raqm_t *rq)
@@ -1634,20 +1825,30 @@ _raqm_shape (raqm_t *rq)
   return true;
 }
 
+/* Count equivalent UTF-8 bytes in codepoint */
+static size_t
+_raqm_count_codepoint_utf8_bytes (uint32_t chr)
+{
+  if (0 == ((uint32_t) 0xffffff80 & chr))
+    return 1;
+  else if (0 == ((uint32_t) 0xfffff800 & chr))
+    return 2;
+  else if (0 == ((uint32_t) 0xffff0000 & chr))
+    return 3;
+  else
+    return 4;
+}
+
 /* Convert index from UTF-32 to UTF-8 */
 static uint32_t
 _raqm_u32_to_u8_index (raqm_t   *rq,
                        uint32_t  index)
 {
-  FriBidiStrIndex length;
-  char *output = malloc ((sizeof (char) * 4 * index) + 1);
+  size_t length = 0;
 
-  length = fribidi_unicode_to_charset (FRIBIDI_CHAR_SET_UTF8,
-                                       rq->text,
-                                       index,
-                                       output);
+  for (uint32_t i = 0; i < index; ++i)
+    length += _raqm_count_codepoint_utf8_bytes (rq->text[i]);
 
-  free (output);
   return length;
 }
 
@@ -1656,15 +1857,27 @@ static uint32_t
 _raqm_u8_to_u32_index (raqm_t   *rq,
                        uint32_t  index)
 {
-  FriBidiStrIndex length;
-  uint32_t *output = malloc (sizeof (uint32_t) * (index + 1));
+  const unsigned char *s = (const unsigned char *) rq->text_utf8;
+  const unsigned char *t = s;
+  size_t length = 0;
 
-  length = fribidi_charset_to_unicode (FRIBIDI_CHAR_SET_UTF8,
-                                       rq->text_utf8,
-                                       index,
-                                       output);
+  while (((size_t) (s - t) < index) && ('\0' != *s))
+  {
+    if (0xf0 == (0xf8 & *s))
+      s += 4;
+    else if (0xe0 == (0xf0 & *s))
+      s += 3;
+    else if (0xc0 == (0xe0 & *s))
+      s += 2;
+    else
+      s += 1;
 
-  free (output);
+    length++;
+  }
+
+  if ((size_t) (s-t) > index)
+    length--;
+
   return length;
 }
 
