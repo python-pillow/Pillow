@@ -33,6 +33,9 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
+                alt="GitHub Actions build status (Test MinGW)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>

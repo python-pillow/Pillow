@@ -25,6 +25,10 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml
    :alt: GitHub Actions build status (Test Windows)
 
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
+   :alt: GitHub Actions build status (Test MinGW)
+
 .. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
    :alt: AppVeyor CI build status (Windows)
