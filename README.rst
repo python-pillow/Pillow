@@ -5,9 +5,13 @@ This repository creates wheels for tagged versions of Pillow::
 
     ./update-pillow-tag.sh <VERSION>
 
+.. image:: https://github.com/python-pillow/pillow-wheels/workflows/Lint/badge.svg
+   :target: https://github.com/python-pillow/pillow-wheels/actions/workflows/lint.yml
+   :alt: GitHub Actions build status (Lint)
+
 .. image:: https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg
-   :target: https://github.com/python-pillow/pillow-wheels/actions
-   :alt: GitHub Actions build status
+   :target: https://github.com/python-pillow/pillow-wheels/actions/workflows/wheels.yml
+   :alt: GitHub Actions build status (Wheels)
 
 .. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg
    :target: https://app.travis-ci.com/github/python-pillow/pillow-wheels
