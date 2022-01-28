@@ -24,16 +24,19 @@ As of 2019, Pillow development is
     <tr>
         <th>tests</th>
         <td>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/lint.yml"><img
                 alt="GitHub Actions build status (Lint)"
                 src="https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test.yml"><img
                 alt="GitHub Actions build status (Test Linux and macOS)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
+                alt="GitHub Actions build status (Test MinGW)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
