@@ -870,6 +870,30 @@ class TestFileJpeg:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
 
+    @pytest.mark.timeout(timeout=1)
+    def test_eof(self):
+        # Even though this decoder never says that it is finished
+        # the image should still end when there is no new data
+        class InfiniteMockPyDecoder(ImageFile.PyDecoder):
+            def decode(self, buffer):
+                return 0, 0
+
+        decoder = InfiniteMockPyDecoder(None)
+
+        def closure(mode, *args):
+            decoder.__init__(mode, *args)
+            return decoder
+
+        Image.register_decoder("INFINITE", closure)
+
+        with Image.open(TEST_FILE) as im:
+            im.tile = [
+                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+            ]
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")

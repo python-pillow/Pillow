@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016 Khaled Hosny <khaledhosny@eglug.org>
+ * Copyright © 2016-2021 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -155,6 +155,13 @@ raqm_layout (raqm_t *rq);
 RAQM_API raqm_glyph_t *
 raqm_get_glyphs (raqm_t *rq,
                  size_t *length);
+
+RAQM_API raqm_direction_t
+raqm_get_par_resolved_direction (raqm_t *rq);
+
+RAQM_API raqm_direction_t
+raqm_get_direction_at_index (raqm_t *rq,
+                             size_t index);
 
 RAQM_API bool
 raqm_index_to_position (raqm_t *rq,

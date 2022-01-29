@@ -2,8 +2,71 @@
 Changelog (Pillow)
 ==================
 
-9.0.0 (unreleased)
+9.1.0 (unreleased)
 ------------------
+
+- Raise an error when performing a negative crop #5972
+  [radarhere, hugovk]
+
+- Deprecated show_file "file" argument in favour of "path" #5959
+  [radarhere]
+
+- Fixed SPIDER images for use with Bio-formats library #5956
+  [radarhere]
+
+- Ensure duplicated file pointer is closed #5946
+  [radarhere]
+
+- Added specific error if ImagePath coordinate type is incorrect #5942
+  [radarhere]
+
+- Return an empty bytestring from tobytes() for an empty image #5938
+  [radarhere]
+
+- Remove readonly from Image.__eq__ #5930
+  [hugovk]
+
+9.0.0 (2022-01-02)
+------------------
+
+- Restrict builtins for ImageMath.eval(). CVE-2022-22817 #5923
+  [radarhere]
+
+- Ensure JpegImagePlugin stops at the end of a truncated file #5921
+  [radarhere]
+
+- Fixed ImagePath.Path array handling. CVE-2022-22815, CVE-2022-22816 #5920
+  [radarhere]
+
+- Remove consecutive duplicate tiles that only differ by their offset #5919
+  [radarhere]
+
+- Improved I;16 operations on big endian #5901
+  [radarhere]
+
+- Limit quantized palette to number of colors #5879
+  [radarhere]
+
+- Fixed palette index for zeroed color in FASTOCTREE quantize #5869
+  [radarhere]
+
+- When saving RGBA to GIF, make use of first transparent palette entry #5859
+  [radarhere]
+
+- Pass SAMPLEFORMAT to libtiff #5848
+  [radarhere]
+
+- Added rounding when converting P and PA #5824
+  [radarhere]
+
+- Improved putdata() documentation and data handling #5910
+  [radarhere]
+
+- Exclude carriage return in PDF regex to help prevent ReDoS #5912
+  [hugovk]
+
+- Fixed freeing pointer in ImageDraw.Outline.transform #5909
+  [radarhere]
 
 - Added ImageShow support for xdg-open #5897
   [m-shinder, radarhere]

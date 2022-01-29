@@ -154,9 +154,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.1.tar.gz",
-        "filename": "libwebp-1.2.1.tar.gz",
-        "dir": "libwebp-1.2.1",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.2.tar.gz",
+        "filename": "libwebp-1.2.2.tar.gz",
+        "dir": "libwebp-1.2.2",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -257,10 +257,10 @@ deps = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # commit: Merge branch 'master' into msvc (matches 2.16.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/f41ee301ff3a407b16991af3dbe03910919bbdc3.zip",  # noqa: E501
-        "filename": "libimagequant-f41ee301ff3a407b16991af3dbe03910919bbdc3.zip",
-        "dir": "libimagequant-f41ee301ff3a407b16991af3dbe03910919bbdc3",
+        # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
+        "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "patch": {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",

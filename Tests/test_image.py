@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+import sys
 import tempfile
 
 import pytest
@@ -87,6 +88,17 @@ class TestImage:
             Image.new("", (100, 100))
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
+
+    def test_repr_pretty(self):
+        class Pretty:
+            def text(self, text):
+                self.pretty_output = text
+
+        im = Image.new("L", (100, 100))
+
+        p = Pretty()
+        im._repr_pretty_(p, None)
+        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"
@@ -192,6 +204,10 @@ class TestImage:
         assert not im.readonly
 
     @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    @pytest.mark.skipif(
+        sys.platform == "cygwin",
+        reason="Test requires opening an mmaped file for writing",
+    )
     def test_readonly_save(self, tmp_path):
         temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
@@ -780,6 +796,11 @@ class TestImage:
                 531: 1,
                 34665: 196,
             }
+
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_tobytes(self, size):
+        im = Image.new("RGB", size)
+        assert im.tobytes() == b""
 
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):

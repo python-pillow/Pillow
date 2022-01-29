@@ -158,6 +158,8 @@ class BmpImageFile(ImageFile.ImageFile):
             if file_info.get("colors", 0)
             else (1 << file_info["bits"])
         )
+        if offset == 14 + file_info["header_size"] and file_info["bits"] <= 8:
+            offset += 4 * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
         self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))

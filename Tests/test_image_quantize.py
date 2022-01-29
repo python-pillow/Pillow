@@ -77,6 +77,13 @@ def test_quantize_dither_diff():
     assert dither.tobytes() != nodither.tobytes()
 
 
+def test_colors():
+    im = hopper()
+    colors = 2
+    converted = im.quantize(colors)
+    assert len(converted.palette.palette) == colors * len("RGB")
+
+
 def test_transparent_colors_equal():
     im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
     px = im.load()
@@ -85,3 +92,20 @@ def test_transparent_colors_equal():
     converted = im.quantize()
     converted_px = converted.load()
     assert converted_px[0, 0] == converted_px[0, 1]
+
+
+@pytest.mark.parametrize(
+    "method, color",
+    (
+        (Image.MEDIANCUT, (0, 0, 0)),
+        (Image.MAXCOVERAGE, (0, 0, 0)),
+        (Image.FASTOCTREE, (0, 0, 0)),
+        (Image.FASTOCTREE, (0, 0, 0, 0)),
+    ),
+)
+def test_palette(method, color):
+    im = Image.new("RGBA" if len(color) == 4 else "RGB", (1, 1), color)
+
+    converted = im.quantize(method=method)
+    converted_px = converted.load()
+    assert converted_px[0, 0] == converted.palette.colors[color]

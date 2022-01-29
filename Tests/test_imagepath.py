@@ -70,8 +70,10 @@ def test_invalid_coords():
     coords = ["a", "b"]
 
     # Act / Assert
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
+
+    assert str(e.value) == "incorrect coordinate type"
 
 
 def test_path_odd_number_of_coordinates():
@@ -90,6 +92,8 @@ def test_path_odd_number_of_coordinates():
     [
         ([0, 1, 2, 3], (0.0, 1.0, 2.0, 3.0)),
         ([3, 2, 1, 0], (1.0, 0.0, 3.0, 2.0)),
+        (0, (0.0, 0.0, 0.0, 0.0)),
+        (1, (0.0, 0.0, 0.0, 0.0)),
     ],
 )
 def test_getbbox(coords, expected):

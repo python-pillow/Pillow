@@ -543,7 +543,7 @@ ImagingLibTiffDecode(
     Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     char *filename = "tempfile.tif";
-    char *mode = "r";
+    char *mode = "rC";
     TIFF *tiff;
     uint16_t photometric = 0;  // init to not PHOTOMETRIC_YCBCR
     uint16_t compression;

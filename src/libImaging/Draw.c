@@ -1854,14 +1854,8 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
     eIn = outline->edges;
     n = outline->count;
 
-    /* FIXME: ugly! */
-    outline->edges = NULL;
-    outline->count = outline->size = 0;
-
     eOut = allocate(outline, n);
     if (!eOut) {
-        outline->edges = eIn;
-        outline->count = outline->size = n;
         ImagingError_MemoryError();
         return -1;
     }
@@ -1897,7 +1891,11 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
         eOut++;
     }
 
-    free(eIn);
+    free(outline->edges);
+
+    /* FIXME: ugly! */
+    outline->edges = NULL;
+    outline->count = outline->size = 0;
 
     return 0;
 }

@@ -138,8 +138,6 @@ def isImageType(t):
 #
 # Constants
 
-NONE = 0
-
 # transpose
 FLIP_LEFT_RIGHT = 0
 FLIP_TOP_BOTTOM = 1
@@ -629,7 +627,6 @@ class Image:
             and self.size == other.size
             and self.info == other.info
             and self._category == other._category
-            and self.readonly == other.readonly
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
         )
@@ -642,6 +639,22 @@ class Image:
             self.size[0],
             self.size[1],
             id(self),
+        )
+
+    def _repr_pretty_(self, p, cycle):
+        """IPython plain text display support"""
+
+        # Same as __repr__ but without unpredicatable id(self),
+        # to keep Jupyter notebook `text/plain` output stable.
+        p.text(
+            "<%s.%s image mode=%s size=%dx%d>"
+            % (
+                self.__class__.__module__,
+                self.__class__.__name__,
+                self.mode,
+                self.size[0],
+                self.size[1],
+            )
         )
 
     def _repr_png_(self):
@@ -718,6 +731,9 @@ class Image:
             args = self.mode
 
         self.load()
+
+        if self.width == 0 or self.height == 0:
+            return b""
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, args)
@@ -814,7 +830,7 @@ class Image:
             palette_length = self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
-            if "transparency" in self.info and mode in ("RGBA", "LA", "PA"):
+            if "transparency" in self.info and mode in ("LA", "PA"):
                 if isinstance(self.info["transparency"], int):
                     self.im.putpalettealpha(self.info["transparency"], 0)
                 else:
@@ -1111,7 +1127,8 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        im.palette = ImagePalette.ImagePalette(mode, im.im.getpalette(mode, mode))
+        palette = im.im.getpalette(mode, mode)[: colors * len(mode)]
+        im.palette = ImagePalette.ImagePalette(mode, palette)
 
         return im
 
@@ -1143,6 +1160,11 @@ class Image:
 
         if box is None:
             return self.copy()
+
+        if box[2] < box[0]:
+            raise ValueError("Coordinate 'right' is less than 'left'")
+        elif box[3] < box[1]:
+            raise ValueError("Coordinate 'lower' is less than 'upper'")
 
         self.load()
         return self._new(self._crop(self.im, box))
@@ -1707,13 +1729,14 @@ class Image:
 
     def putdata(self, data, scale=1.0, offset=0.0):
         """
-        Copies pixel data to this image.  This method copies data from a
-        sequence object into the image, starting at the upper left
-        corner (0, 0), and continuing until either the image or the
-        sequence ends.  The scale and offset values are used to adjust
-        the sequence values: **pixel = value*scale + offset**.
+        Copies pixel data from a flattened sequence object into the image. The
+        values should start at the upper left corner (0, 0), continue to the
+        end of the line, followed directly by the first value of the second
+        line, and so on. Data will be read until either the image or the
+        sequence ends. The scale and offset values are used to adjust the
+        sequence values: **pixel = value*scale + offset**.
 
-        :param data: A sequence object.
+        :param data: A flattened sequence object.
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """

@@ -9,7 +9,7 @@ from ctypes import c_float
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import STRIPOFFSETS, SUBIFD
+from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -824,6 +824,17 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.mode == "RGB"
 
             assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
+
+    def test_sampleformat_write(self, tmp_path):
+        im = Image.new("F", (1, 1))
+        out = str(tmp_path / "temp.tif")
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == "F"
+            assert reloaded.getexif()[SAMPLEFORMAT] == 3
 
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:

@@ -180,9 +180,11 @@ j2ku_gray_i(
         case 2:
             for (y = 0; y < h; ++y) {
                 const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
-                UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
+                UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
                 for (x = 0; x < w; ++x) {
-                    *row++ = j2ku_shift(offset + *data++, shift);
+                    UINT16 pixel = j2ku_shift(offset + *data++, shift);
+                    *row++ = pixel;
+                    *row++ = pixel >> 8;
                 }
             }
             break;

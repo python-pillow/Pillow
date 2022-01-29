@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import warnings
 from shlex import quote
 
 from PIL import Image
@@ -105,9 +106,25 @@ class Viewer:
         """Display the given image."""
         return self.show_file(self.save_image(image), **options)
 
-    def show_file(self, file, **options):
-        """Display the given file."""
-        os.system(self.get_command(file, **options))
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        os.system(self.get_command(path, **options))
         return 1
 
 
@@ -145,18 +162,34 @@ class MacViewer(Viewer):
         command = f"({command} {quote(file)}; sleep 20; rm -f {quote(file)})&"
         return command
 
-    def show_file(self, file, **options):
-        """Display given file"""
-        fd, path = tempfile.mkstemp()
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        fd, temp_path = tempfile.mkstemp()
         with os.fdopen(fd, "w") as f:
-            f.write(file)
-        with open(path) as f:
+            f.write(path)
+        with open(temp_path) as f:
             subprocess.Popen(
                 ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
                 shell=True,
                 stdin=f,
             )
-        os.remove(path)
+        os.remove(temp_path)
         return 1
 
 
@@ -172,17 +205,33 @@ class UnixViewer(Viewer):
         command = self.get_command_ex(file, **options)[0]
         return f"({command} {quote(file)}; rm -f {quote(file)})&"
 
-    def show_file(self, file, **options):
-        """Display given file"""
-        fd, path = tempfile.mkstemp()
+    def show_file(self, path=None, **options):
+        """
+        Display given file.
+
+        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
+        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
+        instead.
+        """
+        if path is None:
+            if "file" in options:
+                warnings.warn(
+                    "The 'file' argument is deprecated and will be removed in Pillow "
+                    "10 (2023-07-01). Use 'path' instead.",
+                    DeprecationWarning,
+                )
+                path = options.pop("file")
+            else:
+                raise TypeError("Missing required argument: 'path'")
+        fd, temp_path = tempfile.mkstemp()
         with os.fdopen(fd, "w") as f:
-            f.write(file)
-        with open(path) as f:
-            command = self.get_command_ex(file, **options)[0]
+            f.write(path)
+        with open(temp_path) as f:
+            command = self.get_command_ex(path, **options)[0]
             subprocess.Popen(
                 ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
             )
-        os.remove(path)
+        os.remove(temp_path)
         return 1
 
 

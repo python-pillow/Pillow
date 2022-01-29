@@ -123,7 +123,7 @@ def test_no_icc_profile():
 
 
 def test_combined_larger_than_size():
-    # The 'combined' sizes of the individual parts is larger than the
+    # The combined size of the individual parts is larger than the
     # declared 'size' of the extra data field, resulting in a backwards seek.
 
     # If we instead take the 'size' of the extra data field as the source of truth,

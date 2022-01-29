@@ -10,20 +10,24 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: Documentation Status
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/lint.yml
    :alt: GitHub Actions build status (Lint)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml
    :alt: GitHub Actions build status (Test Docker)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Test/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test.yml
    :alt: GitHub Actions build status (Test Linux and macOS)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml
    :alt: GitHub Actions build status (Test Windows)
+
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
+   :alt: GitHub Actions build status (Test MinGW)
 
 .. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build
    :target: https://ci.appveyor.com/project/python-pillow/Pillow
@@ -34,11 +38,11 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: GitHub Actions wheels build status (Wheels)
 
 .. image:: https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels
-   :target: https://travis-ci.com/github/python-pillow/pillow-wheels
+   :target: https://app.travis-ci.com/github/python-pillow/pillow-wheels
    :alt: Travis CI wheels build status (aarch64)
 
 .. image:: https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/python-pillow/Pillow
+   :target: https://app.codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
 
 .. image:: https://zenodo.org/badge/17549/python-pillow/Pillow.svg
