@@ -68,6 +68,7 @@ Projects using Raqm
 3. [FontView](https://github.com/googlei18n/fontview)
 4. [Pillow](https://github.com/python-pillow)
 5. [mplcairo](https://github.com/anntzer/mplcairo)
+6. [CEGUI](https://github.com/cegui/cegui)
 
 The following projects have patches to support complex text layout using Raqm:
 
@@ -77,8 +78,8 @@ The following projects have patches to support complex text layout using Raqm:
 
 
 
-[1]: http://fribidi.org
+[1]: https://github.com/fribidi/fribidi
 [2]: https://github.com/Tehreer/SheenBidi
-[3]: http://harfbuzz.org
+[3]: https://github.com/harfbuzz/harfbuzz
 [4]: https://www.freetype.org
 [5]: https://www.gtk.org/gtk-doc
