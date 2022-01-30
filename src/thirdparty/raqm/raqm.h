@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016-2021 Khaled Hosny <khaled@aliftype.com>
+ * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -106,6 +106,9 @@ raqm_reference (raqm_t *rq);
 RAQM_API void
 raqm_destroy (raqm_t *rq);
 
+RAQM_API void
+raqm_clear_contents (raqm_t *rq);
+
 RAQM_API bool
 raqm_set_text (raqm_t         *rq,
                const uint32_t *text,
@@ -144,6 +147,12 @@ raqm_set_freetype_face_range (raqm_t *rq,
 RAQM_API bool
 raqm_set_freetype_load_flags (raqm_t *rq,
                               int flags);
+
+RAQM_API bool
+raqm_set_freetype_load_flags_range (raqm_t *rq,
+                                    int     flags,
+                                    size_t  start,
+                                    size_t  len);
 
 RAQM_API bool
 raqm_set_invisible_glyph (raqm_t *rq,
