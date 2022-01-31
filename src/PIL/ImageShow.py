@@ -190,7 +190,8 @@ class UnixViewer(Viewer):
     def thread_monitor(self, th):
         """
         Monitors image viewing threads.
-        The last remaining monitoring thread is responsible for removal of temporary images.
+        The last remaining monitoring thread is responsible
+        for removal of temporary images.
         """
         th.join()
         if threading.active_count() == 2:
@@ -226,12 +227,15 @@ class UnixViewer(Viewer):
 
         path = quote(path)
         command = self.get_command(path, **options)
-        th = threading.Thread(target=subprocess.run, args=(command.split(),),
-                              kwargs={
-                                  "stdout": subprocess.PIPE,
-                                  "stderr": subprocess.PIPE,
-                              },
-                              name=path)
+        th = threading.Thread(
+            target=subprocess.run,
+            args=(command.split(),),
+            kwargs={
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE,
+            },
+            name=path,
+        )
         self.opened_images.append(th.name)
         th.start()
 
