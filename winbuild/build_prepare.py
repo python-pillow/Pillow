@@ -219,7 +219,7 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.12/lcms2-2.13.tar.gz",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.tar.gz",
         "filename": "lcms2-2.13.tar.gz",
         "dir": "lcms2-2.13",
         "patch": {
