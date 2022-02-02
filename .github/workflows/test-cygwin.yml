@@ -5,7 +5,15 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: windows-latest
-    name: Cygwin Python 3.8
+    strategy:
+      fail-fast: false
+      matrix:
+        python-minor-version: [7, 8]
+        architecture: ["x86", "x86_64"]
+
+    timeout-minutes: 30
+
+    name: Python 3.${{ matrix.python-minor-version }} ${{ matrix.architecture }}
 
     steps:
       - name: Fix line endings
@@ -18,12 +26,15 @@ jobs:
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v1
         with:
-          platform: x86_64
+          platform: ${{ matrix.architecture }}
           packages: >
-            ImageMagick python38-cffi python38-numpy python38-sip
-            python38-devel python38-tkinter ghostscript libfreetype-devel
-            libimagequant-devel libjpeg-devel liblcms2-devel libopenjp2-devel
-            libraqm-devel libtiff-devel libwebp-devel libxcb-devel
+            ImageMagick python3${{ matrix.python-minor-version }}-cffi
+            python3${{ matrix.python-minor-version }}-devel
+            python3${{ matrix.python-minor-version }}-numpy
+            python3${{ matrix.python-minor-version }}-sip
+            python3${{ matrix.python-minor-version }}-tkinter ghostscript
+            libfreetype-devel libimagequant-devel libjpeg-devel liblcms2-devel
+            libopenjp2-devel libraqm-devel libtiff-devel libwebp-devel libxcb-devel
             libxcb-xinerama0 qt5-devel-tools xorg-server-extra zlib-devel
 
       - name: Build system information
@@ -60,7 +71,7 @@ jobs:
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
-          name: ${{ runner.os }} Cygwin Python 3.8 ${{ matrix.architecture }}
+          name: Cygwin Python 3.${{ matrix.python-minor-version }} ${{ matrix.architecture }}
 
       - name: After failure
         if: failure()
