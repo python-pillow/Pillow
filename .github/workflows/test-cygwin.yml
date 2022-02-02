@@ -8,73 +8,52 @@ jobs:
     name: Cygwin Python 3.8
 
     steps:
+      - name: Fix line endings
+        run: |
+          git config --global core.autocrlf input
+
       - name: Checkout Pillow
         uses: actions/checkout@v2
 
-      - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@v3
+      - name: Install Cygwin
+        uses: cygwin/cygwin-install-action@v1
         with:
-          platform: x64
+          platform: x86_64
           packages: >
-            libfreetype-devel libimagequant-devel libjpeg-devel
-            liblcms2-devel libopenjp2-devel libraqm-devel
-            libtiff-devel libwebp-devel libxcb-devel libpng-devel
-            ImageMagick jpeg netpbm perl xorg-server-extra
-            xorg-server-common xinit subversion python38-setuptools
-            python38-devel python38-tkinter python38-wheel
-            python38-pip python38-olefile python38-numpy
-            python38-pytest python38-sphinx python38-packaging
-            python38-cffi python38-requests
-          install-dir: 'C:\tools\cygwin'
-
-      - name: Clean up path
-        uses: egor-tensin/cleanup-path@v2
-        with:
-          dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
+            ImageMagick python38-cffi python38-numpy python38-sip
+            python38-devel python38-tkinter ghostscript libfreetype-devel
+            libimagequant-devel libjpeg-devel liblcms2-devel libopenjp2-devel
+            libraqm-devel libtiff-devel libwebp-devel libxcb-devel
+            libxcb-xinerama0 qt5-devel-tools xorg-server-extra zlib-devel
 
       - name: Build system information
-        run: C:\tools\cygwin\bin\python3.8 .github/workflows/system-info.py
+        run: |
+          bash.exe -c "python3 .github/workflows/system-info.py"
 
       - name: Ensure Python dependencies are installed
         run: |
-          C:\tools\cygwin\bin\python3.8 -m pip install pip wheel setuptools
-          C:\tools\cygwin\bin\python3.8 -m pip install -r requirements.txt
-          C:\tools\cygwin\bin\python3.8 -m pip install pytest-forked
+          bash.exe -c "python3 -m pip install pip wheel setuptools"
+          bash.exe -c "python3 -m pip install -r requirements.txt"
 
       - name: Download extra test images
         run: |
-          C:\tools\cygwin\bin\dash -c "tr -d '\r' <depends/install_extra_test_images.sh >install_extra_test_images.sh"
-          C:\tools\cygwin\bin\dash -c "mv install_extra_test_images.sh depends/install_extra_test_images.sh"
-          C:\tools\cygwin\bin\dash -c "cd depends; dash install_extra_test_images.sh"
+          bash.exe -c "cd depends; dash install_extra_test_images.sh"
 
       - name: Build Pillow
         run: |
-          C:\tools\cygwin\bin\python3.8 setup.py bdist_wheel
+          bash.exe -c "python3 setup.py bdist_wheel"
 
       - name: Install Pillow
         run: |
-          C:\tools\cygwin\bin\dash -c '/usr/bin/python3.8 -m pip install dist/*.whl'
-
-      - name: Check Pillow configuration
-        run: |
-          C:\tools\cygwin\bin\python3.8 selftest.py
+          bash.exe -c "python3 -m pip install dist/*.whl"
 
       - name: Test Pillow
         run: |
-          C:\tools\cygwin\bin\mv .ci/test.sh .ci/test.sh.dos
-          C:\tools\cygwin\bin\dash -c "/bin/tr -d '\r' <.ci/test.sh.dos >.ci/test.sh"
-          C:\tools\cygwin\bin\chmod u+x .ci/test.sh
-          C:\tools\cygwin\bin\dash /usr/bin/xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh .8 --ignore=Tests/test_numpy.py
-
-      - name: Test the possibly-segfaulting NumPy tests separately
-        run: |
-          C:\tools\cygwin\bin\python3.8 -m pytest --forked Tests/test_numpy.py -k roundtrip
+          bash.exe xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
 
       - name: After success
         run: |
-          C:\tools\cygwin\bin\mv .ci/after_success.sh .ci/after_success.sh.dos
-          C:\tools\cygwin\bin\dash -c "tr -d '\r' <.ci/after_success.sh.dos >.ci/after_success.sh"
-          C:\tools\cygwin\bin\bash .ci/after_success.sh
+          bash.exe .ci/after_success.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2
