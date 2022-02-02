@@ -2,6 +2,15 @@
 Changelog (Pillow)
 ==================
 
+9.0.1 (2022-02-03)
+------------------
+
+- In show_file, use os.remove to remove temporary images. CVE-2022-24303 #6010
+  [radarhere, hugovk]
+
+- Restrict builtins within lambdas for ImageMath.eval. CVE-2022-22817 #6009
+  [radarhere]
+
 9.0.0 (2022-01-02)
 ------------------
 
