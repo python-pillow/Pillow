@@ -52,9 +52,17 @@ def test_ops():
     assert pixel(ImageMath.eval("float(B)**33", images)) == "F 8589934592.0"
 
 
-def test_prevent_exec():
+@pytest.mark.parametrize(
+    "expression",
+    (
+        "exec('pass')",
+        "(lambda: exec('pass'))()",
+        "(lambda: (lambda: exec('pass'))())()",
+    ),
+)
+def test_prevent_exec(expression):
     with pytest.raises(ValueError):
-        ImageMath.eval("exec('pass')")
+        ImageMath.eval(expression)
 
 
 def test_logical():
