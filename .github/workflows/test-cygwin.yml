@@ -4,7 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-latest
     name: Cygwin Python 3.8
 
     steps:
