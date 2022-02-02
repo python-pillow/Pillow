@@ -41,24 +41,15 @@ jobs:
         run: |
           bash.exe -c "python3 .github/workflows/system-info.py"
 
-      - name: Ensure Python dependencies are installed
+      - name: Install dependencies
         run: |
-          bash.exe -c "python3 -m pip install pip wheel setuptools"
-          bash.exe -c "python3 -m pip install -r requirements.txt"
+          bash.exe .ci/install.sh
 
-      - name: Download extra test images
+      - name: Build
         run: |
-          bash.exe -c "cd depends; dash install_extra_test_images.sh"
+          bash.exe .ci/build_cygwin.sh
 
-      - name: Build Pillow
-        run: |
-          bash.exe -c "python3 setup.py bdist_wheel"
-
-      - name: Install Pillow
-        run: |
-          bash.exe -c "python3 -m pip install dist/*.whl"
-
-      - name: Test Pillow
+      - name: Test
         run: |
           bash.exe xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
 
