@@ -126,6 +126,16 @@ class Viewer:
         os.system(self.get_command(path, **options))
         return 1
 
+    def _remove_path_after_delay(self, path):
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                path,
+            ]
+        )
+
 
 # --------------------------------------------------------------------
 
@@ -180,14 +190,7 @@ class MacViewer(Viewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.call(["open", "-a", "Preview.app", path])
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-c",
-                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                path,
-            ]
-        )
+        self._remove_path_after_delay(path)
         return 1
 
 
@@ -232,7 +235,7 @@ class XDGViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["xdg-open", path])
-        os.remove(path)
+        self._remove_path_after_delay(path)
         return 1
 
 
