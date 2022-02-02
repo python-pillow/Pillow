@@ -105,9 +105,19 @@ class Viewer:
         return self.show_file(self.save_image(image), **options)
 
     def show_file(self, file, **options):
-        """Display the given file."""
+        """Display given file"""
         os.system(self.get_command(file, **options))
         return 1
+
+    def _remove_file_after_delay(self, file):
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                file,
+            ]
+        )
 
 
 # --------------------------------------------------------------------
@@ -147,14 +157,7 @@ class MacViewer(Viewer):
     def show_file(self, file, **options):
         """Display given file"""
         subprocess.call(["open", "-a", "Preview.app", file])
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-c",
-                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                file,
-            ]
-        )
+        self._remove_file_after_delay(file)
         return 1
 
 
@@ -181,8 +184,9 @@ class XDGViewer(UnixViewer):
         return command, executable
 
     def show_file(self, file, **options):
+        """Display given file"""
         subprocess.Popen(["xdg-open", file])
-        os.remove(file)
+        self._remove_file_after_delay(file)
         return 1
 
 
@@ -199,6 +203,7 @@ class DisplayViewer(UnixViewer):
         return command, executable
 
     def show_file(self, file, **options):
+        """Display given file"""
         args = ["display"]
         if "title" in options:
             args += ["-name", options["title"]]
@@ -218,6 +223,7 @@ class GmDisplayViewer(UnixViewer):
         return command, executable
 
     def show_file(self, file, **options):
+        """Display given file"""
         subprocess.Popen(["gm", "display", file])
         os.remove(file)
         return 1
@@ -232,6 +238,7 @@ class EogViewer(UnixViewer):
         return command, executable
 
     def show_file(self, file, **options):
+        """Display given file"""
         subprocess.Popen(["eog", "-n", file])
         os.remove(file)
         return 1
@@ -252,6 +259,7 @@ class XVViewer(UnixViewer):
         return command, executable
 
     def show_file(self, file, **options):
+        """Display given file"""
         args = ["xv"]
         if "title" in options:
             args += ["-name", options["title"]]
