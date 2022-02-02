@@ -58,6 +58,15 @@ def test_sanity():
         assert image2_scale2.format == "EPS"
 
 
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_load():
+    with Image.open(FILE1) as im:
+        assert im.load()[0, 0] == (255, 255, 255)
+
+        # Test again now that it has already been loaded once
+        assert im.load()[0, 0] == (255, 255, 255)
+
+
 def test_invalid_file():
     invalid_file = "Tests/images/flower.jpg"
 

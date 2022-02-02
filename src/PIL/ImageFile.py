@@ -328,6 +328,7 @@ class StubImageFile(ImageFile):
         # become the other object (!)
         self.__class__ = image.__class__
         self.__dict__ = image.__dict__
+        return image.load()
 
     def _load(self):
         """(Hook) Find actual image loader."""
