@@ -1,4 +1,5 @@
 import os
+import platform
 import shutil
 import struct
 import subprocess
@@ -93,6 +94,7 @@ SF_MIRROR = "http://iweb.dl.sourceforge.net"
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
+    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
 header = [
@@ -223,21 +225,21 @@ deps = {
         "filename": "lcms2-2.13.tar.gz",
         "dir": "lcms2-2.13",
         "patch": {
-            r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
+            r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
+                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC2017\Release"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
+            cmd_rmdir(r"Projects\VC2019\Release"),
+            cmd_msbuild(r"Projects\VC2019\lcms2.sln", "Release", "Clean"),
             cmd_msbuild(
-                r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static:Rebuild"
+                r"Projects\VC2019\lcms2.sln", "Release", "lcms2_static:Rebuild"
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
@@ -490,7 +492,10 @@ if __name__ == "__main__":
     python_dir = os.environ.get("PYTHON")
     python_exe = os.environ.get("EXECUTABLE", "python.exe")
     architecture = os.environ.get(
-        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
+        "ARCHITECTURE",
+        "ARM64"
+        if platform.machine() == "ARM64"
+        else ("x86" if struct.calcsize("P") == 4 else "x64"),
     )
     build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     sources_dir = ""
