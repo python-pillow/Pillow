@@ -79,3 +79,11 @@ jobs:
           C:\tools\cygwin\bin\uname -a
           C:\tools\cygwin\bin\python3.8 -m pip list
           C:\tools\cygwin\bin\python3.8 -m pip show --files Pillow
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Cygwin Test Successful
+    steps:
+      - name: Success
+        run: echo Cygwin Test Successful
