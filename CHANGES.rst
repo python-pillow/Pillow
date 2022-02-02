@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Enable arm64 for MSVC on Windows #5811
+  [gaborkertesz-linaro, gaborkertesz]
+
+- Keep IPython/Jupyter text/plain output stable #5891
+  [shamrin, radarhere]
+
 - Raise an error when performing a negative crop #5972
   [radarhere, hugovk]
 
