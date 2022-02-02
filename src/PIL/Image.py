@@ -2269,14 +2269,16 @@ class Image:
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
 
-        On Unix, the image is then opened using the **display**, **eog** or
-        **xv** utility, depending on which one can be found.
+        On Unix, the image is then opened using the **display**, **gm**, **eog**,
+        or **xv** utility. Finally, if all the viewers failed, the attempt is made
+        to open the image file using **xdg-open** command,
+        this command uses the default system image viewer.
 
         On macOS, the image is opened with the native Preview application.
 
         On Windows, the image is opened with the standard PNG display utility.
 
-        :param title: Optional title to use for the image window, where possible.
+        :param title: has been deprecated
         """
 
         _show(self, title=title)

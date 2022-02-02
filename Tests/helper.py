@@ -27,8 +27,7 @@ if os.environ.get("SHOW_ERRORS", None):
     class test_image_results:
         @staticmethod
         def upload(a, b):
-            a.show()
-            b.show()
+            return None
 
 elif "GITHUB_ACTIONS" in os.environ:
     HAS_UPLOADER = True
