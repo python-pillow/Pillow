@@ -42,11 +42,10 @@ def test_viewer_show(order):
 
 
 @pytest.mark.skip(
-    reason=(
-        "Due to implementation of Unix and Windows viewers",
-        "a program or a test relying on the viewer will not terminate",
-        "till the image is explicitly closed",
-    )
+    reason="""Due to implementation of Unix and Windows viewers",
+        a program or a test relying on the viewer will not terminate"
+        "till the image is explicitly closed"
+        """
 )
 def test_show():
     for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
