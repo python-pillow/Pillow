@@ -35,7 +35,7 @@ jobs:
             python3${{ matrix.python-minor-version }}-tkinter ghostscript
             libfreetype-devel libimagequant-devel libjpeg-devel liblcms2-devel
             libopenjp2-devel libraqm-devel libtiff-devel libwebp-devel libxcb-devel
-            libxcb-xinerama0 qt5-devel-tools xorg-server-extra zlib-devel
+            libxcb-xinerama0 netpbm perl qt5-devel-tools xorg-server-extra zlib-devel
 
       - name: Build system information
         run: |
