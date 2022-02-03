@@ -61,6 +61,11 @@ def show(image, title=None, **options):
 class Viewer:
     """Base class for viewers."""
 
+    format = "PNG"
+    """The format to convert the image into."""
+    options = {"compress_level": 1}
+    """Additional options used to convert the image."""
+
     # main api
 
     def show(self, image, **options):
@@ -80,11 +85,6 @@ class Viewer:
         return self.show_image(image, **options)
 
     # hook methods
-
-    format = None
-    """The format to convert the image into."""
-    options = {}
-    """Additional options used to convert the image."""
 
     def get_format(self, image):
         """Return format name, or ``None`` to save as PGM/PPM."""
@@ -143,9 +143,6 @@ class Viewer:
 class WindowsViewer(Viewer):
     """The default viewer on Windows is the default system application for PNG files."""
 
-    format = "PNG"
-    options = {"compress_level": 1}
-
     def get_command(self, file, **options):
         return (
             f'start "Pillow" /WAIT "{file}" '
@@ -160,9 +157,6 @@ if sys.platform == "win32":
 
 class MacViewer(Viewer):
     """The default viewer on macOS using ``Preview.app``."""
-
-    format = "PNG"
-    options = {"compress_level": 1}
 
     def get_command(self, file, **options):
         # on darwin open returns immediately resulting in the temp
@@ -199,9 +193,6 @@ if sys.platform == "darwin":
 
 
 class UnixViewer(Viewer):
-    format = "PNG"
-    options = {"compress_level": 1}
-
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]
         return f"({command} {quote(file)}; rm -f {quote(file)})&"
@@ -394,6 +385,9 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
 
 class IPythonViewer(Viewer):
     """The viewer for IPython frontends."""
+
+    format = None
+    options = {}
 
     def show_image(self, image, **options):
         ipython_display(image)

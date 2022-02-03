@@ -54,7 +54,7 @@ def test_show():
 def test_viewer():
     viewer = ImageShow.Viewer()
 
-    assert viewer.get_format(None) is None
+    assert viewer.get_format(None) == "PNG"
 
     with pytest.raises(NotImplementedError):
         viewer.get_command(None)
