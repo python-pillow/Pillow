@@ -196,6 +196,13 @@ class FreeTypeFont:
         else:
             load_from_bytes(font)
 
+    def __getstate__(self):
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state):
+        path, size, index, encoding, layout_engine = state
+        self.__init__(path, size, index, encoding, layout_engine)
+
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
         return text.split(split_character)
@@ -285,7 +292,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :return: Width for horizontal, height for vertical text.
@@ -338,7 +345,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
         :param stroke_width: The width of the text stroke.
@@ -398,7 +405,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -455,7 +462,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -539,7 +546,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -625,7 +632,7 @@ class FreeTypeFont:
                          the font which language the text is in, and to apply the
                          correct substitutions as appropriate, if available.
                          It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`
+                         <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
                          .. versionadded:: 6.0.0
@@ -653,6 +660,7 @@ class FreeTypeFont:
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
             text, im.id, mode, direction, features, language, stroke_width, ink

@@ -4,7 +4,7 @@ from PIL import PyAccess
 
 from .helper import hopper
 
-# Not running this test by default. No DOS against Travis CI.
+# Not running this test by default. No DOS against CI.
 
 
 def iterate_get(size, access):

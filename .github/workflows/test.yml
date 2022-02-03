@@ -1,6 +1,6 @@
 name: Test
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -9,26 +9,27 @@ jobs:
       fail-fast: false
       matrix:
         os: [
+          "macos-latest",
           "ubuntu-latest",
-          "macOS-latest",
         ]
         python-version: [
-          "pypy3",
-          "3.10-dev",
+          "pypy-3.8",
+          "pypy-3.7",
+          "3.10",
           "3.9",
           "3.8",
           "3.7",
-          "3.6",
         ]
         include:
-        - python-version: "3.6"
-          env: PYTHONOPTIMIZE=1
         - python-version: "3.7"
-          env: PYTHONOPTIMIZE=2
+          PYTHONOPTIMIZE: 1
+          REVERSE: "--reverse"
+        - python-version: "3.8"
+          PYTHONOPTIMIZE: 2
         # Include new variables for Codecov
         - os: ubuntu-latest
           codecov-flag: GHA_Ubuntu
-        - os: macOS-latest
+        - os: macos-latest
           codecov-flag: GHA_macOS
 
     runs-on: ${{ matrix.os }}
@@ -41,23 +42,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Get pip cache dir
-      id: pip-cache
-      run: |
-        echo "::set-output name=dir::$(python3 -m pip cache dir)"
-
-    - name: pip cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key:
-          ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/.ci/*.sh') }}
-        restore-keys: |
-          ${{ matrix.os }}-${{ matrix.python-version }}-
+        cache: pip
+        cache-dependency-path: ".ci/*.sh"
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -70,8 +59,6 @@ jobs:
       if: startsWith(matrix.os, 'macOS')
       run: |
         .github/workflows/macos-install.sh
-      env:
-        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Build
       run: |
@@ -79,13 +66,22 @@ jobs:
 
     - name: Test
       run: |
-        .ci/test.sh
+        if [ $REVERSE ]; then
+          python3 -m pip install pytest-reverse
+        fi
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+        else
+          .ci/test.sh
+        fi
+      env:
+        PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
+        REVERSE: ${{ matrix.REVERSE }}
 
     - name: Prepare to upload errors
       if: failure()
       run: |
         mkdir -p Tests/errors
-      shell: pwsh
 
     - name: Upload errors
       uses: actions/upload-artifact@v2
@@ -97,7 +93,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
       run: |
-        python3 -m pip install sphinx-removed-in sphinx-rtd-theme
+        python3 -m pip install sphinx-copybutton sphinx-issues sphinx-removed-in sphinx-rtd-theme sphinxext-opengraph
         make doccheck
 
     - name: After success

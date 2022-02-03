@@ -12,48 +12,117 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Image.show command parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tk/Tcl 8.4
+~~~~~~~~~~
 
-.. deprecated:: 7.2.0
+.. deprecated:: 8.2.0
 
-The ``command`` parameter was deprecated and will be removed in a future release.
-Use a subclass of :py:class:`.ImageShow.Viewer` instead.
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
+when Tk/Tcl 8.5 will be the minimum supported.
 
-Image._showxv
-~~~~~~~~~~~~~
+Categories
+~~~~~~~~~~
 
-.. deprecated:: 7.2.0
+.. deprecated:: 8.2.0
 
-``Image._showxv`` has been deprecated. Use :py:meth:`.Image.Image.show`
-instead. If custom behaviour is required, use :py:func:`.ImageShow.register` to add
-a custom :py:class:`.ImageShow.Viewer` class.
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
 
-ImageFile.raise_ioerror
-~~~~~~~~~~~~~~~~~~~~~~~
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
 
-.. deprecated:: 7.2.0
+JpegImagePlugin.convert_dict_qtables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
-is now deprecated and will be removed in a future release. Use
-``ImageFile.raise_oserror`` instead.
+.. deprecated:: 8.3.0
 
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
+JPEG ``quantization`` is now automatically converted, but still returned as a
+dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+performs any operations on the data given to it, has been deprecated and will be
+removed in Pillow 10.0.0 (2023-07-01).
 
-.. deprecated:: 5.2.0
+ImagePalette size parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``PILLOW_VERSION`` has been deprecated and will be removed in a future release. Use
-``__version__`` instead.
+.. deprecated:: 8.4.0
 
-It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
-more time to upgrade.
+The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
+
+Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
+default, and the size parameter could be used to override that. Pillow 8.3.0 removed
+the default required length, also removing the need for the size parameter.
+
+ImageShow.Viewer.show_file file argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+
+The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
+deprecated and will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
+``path``.
+
+In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
+``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
+``viewer.show_file(path="test.jpg")`` instead.
 
 Removed features
 ----------------
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+.. versionremoved:: 9.0.0
+
+Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
+to give projects more time to upgrade.
+
+Image.show command parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+The ``command`` parameter has been removed. Use a subclass of
+:py:class:`.ImageShow.Viewer` instead.
+
+Image._showxv
+~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+:py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
+
+ImageFile.raise_ioerror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
+
+``IOError`` was merged into ``OSError`` in Python 3.3.
+So, ``ImageFile.raise_ioerror`` has been removed.
+Use ``ImageFile.raise_oserror`` instead.
+
+FreeType 2.7
+~~~~~~~~~~~~
+
+.. deprecated:: 8.1.0
+.. versionremoved:: 9.0.0
+
+Support for FreeType 2.7 has been removed.
+
+We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _FreeType: https://www.freetype.org
 
 im.offset
 ~~~~~~~~~
@@ -92,7 +161,6 @@ Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6
 they issued a ``DeprecationWarning``:
 
 ========================  ===================================================
-
 Removed                   Use instead
 ========================  ===================================================
 ``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
@@ -218,7 +286,7 @@ PIL.OleFileIO
 .. deprecated:: 4.0.0
 .. versionremoved:: 6.0.0
 
-PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+PIL.OleFileIO was removed as a vendored file in Pillow 4.0.0 (2017-01) in favour of
 the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).

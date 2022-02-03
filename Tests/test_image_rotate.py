@@ -1,6 +1,11 @@
 from PIL import Image
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 
 def rotate(im, mode, angle, center=None, translate=None):
@@ -27,6 +32,9 @@ def test_angle():
     for angle in (0, 90, 180, 270):
         with Image.open("Tests/images/test-card.png") as im:
             rotate(im, im.mode, angle)
+
+        im = hopper()
+        assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
 
 
 def test_zero():
@@ -113,15 +121,13 @@ def test_center():
 def test_rotate_no_fill():
     im = Image.new("RGB", (100, 100), "green")
     im = im.rotate(45)
-    with Image.open("Tests/images/rotate_45_no_fill.png") as target:
-        assert_image_equal(im, target)
+    assert_image_equal_tofile(im, "Tests/images/rotate_45_no_fill.png")
 
 
 def test_rotate_with_fill():
     im = Image.new("RGB", (100, 100), "green")
     im = im.rotate(45, fillcolor="white")
-    with Image.open("Tests/images/rotate_45_with_fill.png") as target:
-        assert_image_equal(im, target)
+    assert_image_equal_tofile(im, "Tests/images/rotate_45_with_fill.png")
 
 
 def test_alpha_rotate_no_fill():

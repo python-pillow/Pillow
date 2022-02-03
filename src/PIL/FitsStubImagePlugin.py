@@ -38,20 +38,44 @@ class FITSStubImageFile(ImageFile.StubImageFile):
     format_description = "FITS"
 
     def _open(self):
-
         offset = self.fp.tell()
 
-        if not _accept(self.fp.read(6)):
-            raise SyntaxError("Not a FITS file")
+        headers = {}
+        while True:
+            header = self.fp.read(80)
+            if not header:
+                raise OSError("Truncated FITS file")
+            keyword = header[:8].strip()
+            if keyword == b"END":
+                break
+            value = header[8:].strip()
+            if value.startswith(b"="):
+                value = value[1:].strip()
+            if not headers and (not _accept(keyword) or value != b"T"):
+                raise SyntaxError("Not a FITS file")
+            headers[keyword] = value
 
-        # FIXME: add more sanity checks here; mandatory header items
-        # include SIMPLE, BITPIX, NAXIS, etc.
+        naxis = int(headers[b"NAXIS"])
+        if naxis == 0:
+            raise ValueError("No image data")
+        elif naxis == 1:
+            self._size = 1, int(headers[b"NAXIS1"])
+        else:
+            self._size = int(headers[b"NAXIS1"]), int(headers[b"NAXIS2"])
+
+        number_of_bits = int(headers[b"BITPIX"])
+        if number_of_bits == 8:
+            self.mode = "L"
+        elif number_of_bits == 16:
+            self.mode = "I"
+            # rawmode = "I;16S"
+        elif number_of_bits == 32:
+            self.mode = "I"
+        elif number_of_bits in (-32, -64):
+            self.mode = "F"
+            # rawmode = "F" if number_of_bits == -32 else "F;64F"
 
         self.fp.seek(offset)
-
-        # make something up
-        self.mode = "F"
-        self._size = 1, 1
 
         loader = self._load()
         if loader:

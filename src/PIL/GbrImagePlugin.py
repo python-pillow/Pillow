@@ -29,7 +29,7 @@ from ._binary import i32be as i32
 
 
 def _accept(prefix):
-    return len(prefix) >= 8 and i32(prefix[:4]) >= 20 and i32(prefix[4:8]) in (1, 2)
+    return len(prefix) >= 8 and i32(prefix, 0) >= 20 and i32(prefix, 4) in (1, 2)
 
 
 ##
@@ -84,12 +84,10 @@ class GbrImageFile(ImageFile.ImageFile):
         self._data_size = width * height * color_depth
 
     def load(self):
-        if self.im:
-            # Already loaded
-            return
-
-        self.im = Image.core.new(self.mode, self.size)
-        self.frombytes(self.fp.read(self._data_size))
+        if not self.im:
+            self.im = Image.core.new(self.mode, self.size)
+            self.frombytes(self.fp.read(self._data_size))
+        return Image.Image.load(self)
 
 
 #

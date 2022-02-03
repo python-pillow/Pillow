@@ -44,6 +44,14 @@ def test_odd(tmp_path):
         _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
 
 
+def test_odd_read():
+    # Reading an image with an odd stride, making it malformed
+    with Image.open("Tests/images/odd_stride.pcx") as im:
+        im.load()
+
+        assert im.size == (371, 150)
+
+
 def test_pil184():
     # Check reading of files where xmin/xmax is not zero.
 

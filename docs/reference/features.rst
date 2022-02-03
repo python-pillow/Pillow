@@ -17,7 +17,7 @@ Modules
 Support for the following modules can be checked:
 
 * ``pil``: The Pillow core module, required for all functionality.
-* ``tkinter``: Tkinter support. Version number not available.
+* ``tkinter``: Tkinter support.
 * ``freetype2``: FreeType font support via :py:func:`PIL.ImageFont.truetype`.
 * ``littlecms2``: LittleCMS 2 support via :py:mod:`PIL.ImageCms`.
 * ``webp``: WebP image support.

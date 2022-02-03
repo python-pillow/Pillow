@@ -24,13 +24,11 @@ jQuery(document).ready(function ($) {
                     var $upperA = $sidebarItem.parent().children('a');
                     var $upperAParent = $upperA.parent();
                     if ($upperAParent.hasClass('toctree-l2')) {
-                        $a.css('background-color', '#c9c9c9');
                         $a.css('padding-left', '4em');
                     } else if ($upperAParent.hasClass('toctree-l3')) {
                         if (!$upperA.find('.toctree-expand').length) {
                             $upperA.prepend($('<span />').addClass('toctree-expand'));
                         }
-                        $a.css('background-color', '#c9c9c9');
                         $a.css('padding-left', '5em');
                     } else {
                         $a.css('background-color', '#bdbdbd');

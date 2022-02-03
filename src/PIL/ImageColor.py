@@ -24,14 +24,16 @@ from . import Image
 
 def getrgb(color):
     """
-     Convert a color string to an RGB tuple. If the string cannot be parsed,
-     this function raises a :py:exc:`ValueError` exception.
+     Convert a color string to an RGB or RGBA tuple. If the string cannot be
+     parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
     :param color: A color string
     :return: ``(red, green, blue[, alpha])``
     """
+    if len(color) > 100:
+        raise ValueError("color specifier is too long")
     color = color.lower()
 
     rgb = colormap.get(color, None)

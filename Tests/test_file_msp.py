@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, MspImagePlugin
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"
@@ -52,8 +52,7 @@ def test_open_windows_v1():
 
 def _assert_file_image_equal(source_path, target_path):
     with Image.open(source_path) as im:
-        with Image.open(target_path) as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, target_path)
 
 
 @pytest.mark.skipif(

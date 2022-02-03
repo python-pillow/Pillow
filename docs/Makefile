@@ -156,4 +156,4 @@ livehtml: html
 	livereload $(BUILDDIR)/html -p 33233
 
 serve:
-	cd $(BUILDDIR)/html; python -m SimpleHTTPServer
+	cd $(BUILDDIR)/html; python3 -m http.server

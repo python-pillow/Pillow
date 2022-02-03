@@ -176,12 +176,13 @@ Rolling an image
         xsize, ysize = image.size
 
         delta = delta % xsize
-        if delta == 0: return image
+        if delta == 0:
+            return image
 
         part1 = image.crop((0, 0, delta, ysize))
         part2 = image.crop((delta, 0, xsize, ysize))
-        image.paste(part1, (xsize-delta, 0, xsize, ysize))
-        image.paste(part2, (0, 0, xsize-delta, ysize))
+        image.paste(part1, (xsize - delta, 0, xsize, ysize))
+        image.paste(part2, (0, 0, xsize - delta, ysize))
 
         return image
 
@@ -264,6 +265,7 @@ Converting between modes
 ::
 
     from PIL import Image
+
     with Image.open("hopper.ppm") as im:
         im = im.convert("L")
 
@@ -382,14 +384,14 @@ Reading sequences
     from PIL import Image
 
     with Image.open("animation.gif") as im:
-        im.seek(1) # skip to the second frame
+        im.seek(1)  # skip to the second frame
 
         try:
             while 1:
-                im.seek(im.tell()+1)
+                im.seek(im.tell() + 1)
                 # do something to im
         except EOFError:
-            pass # end of sequence
+            pass  # end of sequence
 
 As seen in this example, you’ll get an :py:exc:`EOFError` exception when the
 sequence ends.
@@ -422,9 +424,9 @@ Drawing PostScript
 
     with Image.open("hopper.ppm") as im:
         title = "hopper"
-        box = (1*72, 2*72, 7*72, 10*72) # in points
+        box = (1 * 72, 2 * 72, 7 * 72, 10 * 72)  # in points
 
-        ps = PSDraw.PSDraw() # default is sys.stdout
+        ps = PSDraw.PSDraw()  # default is sys.stdout or sys.stdout.buffer
         ps.begin_document(title)
 
         # draw the image (75 dpi)
@@ -433,7 +435,7 @@ Drawing PostScript
 
         # draw title
         ps.setfont("HelveticaNarrow-Bold", 36)
-        ps.text((3*72, 4*72), title)
+        ps.text((3 * 72, 4 * 72), title)
 
         ps.end_document()
 
@@ -462,6 +464,7 @@ Reading from an open file
 ::
 
     from PIL import Image
+
     with open("hopper.ppm", "rb") as fp:
         im = Image.open(fp)
 
@@ -475,6 +478,7 @@ Reading from binary data
 
     from PIL import Image
     import io
+
     im = Image.open(io.BytesIO(buffer))
 
 Note that the library rewinds the file (using ``seek(0)``) before reading the
@@ -492,6 +496,43 @@ Reading from a tar archive
 
     fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
     im = Image.open(fp)
+
+
+Batch processing
+^^^^^^^^^^^^^^^^
+
+Operations can be applied to multiple image files. For example, all PNG images
+in the current directory can be saved as JPEGs at reduced quality.
+
+::
+
+    import glob
+    from PIL import Image
+
+
+    def compress_image(source_path, dest_path):
+        with Image.open(source_path) as img:
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            img.save(dest_path, "JPEG", optimize=True, quality=80)
+
+
+    paths = glob.glob("*.png")
+    for path in paths:
+        compress_image(path, path[:-4] + ".jpg")
+
+Since images can also be opened from a ``Path`` from the ``pathlib`` module,
+the example could be modified to use ``pathlib`` instead of the ``glob``
+module.
+
+::
+
+    from pathlib import Path
+
+    paths = Path(".").glob("*.png")
+    for path in paths:
+        compress_image(path, path.stem + ".jpg")
+
 
 Controlling the decoder
 -----------------------

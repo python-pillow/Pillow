@@ -15,11 +15,11 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 
     from PIL import Image, ImageMath
 
-    im1 = Image.open("image1.jpg")
-    im2 = Image.open("image2.jpg")
+    with Image.open("image1.jpg") as im1:
+        with Image.open("image2.jpg") as im2:
 
-    out = ImageMath.eval("convert(min(a, b), 'L')", a=im1, b=im2)
-    out.save("result.png")
+            out = ImageMath.eval("convert(min(a, b), 'L')", a=im1, b=im2)
+            out.save("result.png")
 
 .. py:function:: eval(expression, environment)
 

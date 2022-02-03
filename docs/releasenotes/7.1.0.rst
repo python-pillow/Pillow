@@ -74,11 +74,11 @@ Security
 
 This release includes security fixes.
 
-* CVE-2020-10177 Fix multiple OOB reads in FLI decoding
-* CVE-2020-10378 Fix bounds overflow in PCX decoding
-* CVE-2020-10379 Fix two buffer overflows in TIFF decoding
-* CVE-2020-10994 Fix bounds overflow in JPEG 2000 decoding
-* CVE-2020-11538 Fix buffer overflow in SGI-RLE decoding
+* :cve:`CVE-2020-10177` Fix multiple out-of-bounds reads in FLI decoding
+* :cve:`CVE-2020-10378` Fix bounds overflow in PCX decoding
+* :cve:`CVE-2020-10379` Fix two buffer overflows in TIFF decoding
+* :cve:`CVE-2020-10994` Fix bounds overflow in JPEG 2000 decoding
+* :cve:`CVE-2020-11538` Fix buffer overflow in SGI-RLE decoding
 
 Other Changes
 =============

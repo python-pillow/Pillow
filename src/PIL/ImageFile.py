@@ -28,9 +28,9 @@
 #
 
 import io
+import itertools
 import struct
 import sys
-import warnings
 
 from . import Image
 from ._util import isPath
@@ -65,15 +65,6 @@ def raise_oserror(error):
     if not message:
         message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
-
-
-def raise_ioerror(error):
-    warnings.warn(
-        "raise_ioerror is deprecated and will be removed in a future release. "
-        "Use raise_oserror instead.",
-        DeprecationWarning,
-    )
-    return raise_oserror(error)
 
 
 def _tilesort(t):
@@ -192,24 +183,14 @@ class ImageFile(Image.Image):
                 and args[0] in Image._MAPMODES
             ):
                 try:
-                    if hasattr(Image.core, "map"):
-                        # use built-in mapper  WIN32 only
-                        self.map = Image.core.map(self.filename)
-                        self.map.seek(offset)
-                        self.im = self.map.readimage(
-                            self.mode, self.size, args[1], args[2]
-                        )
-                    else:
-                        # use mmap, if possible
-                        import mmap
+                    # use mmap, if possible
+                    import mmap
 
-                        with open(self.filename) as fp:
-                            self.map = mmap.mmap(
-                                fp.fileno(), 0, access=mmap.ACCESS_READ
-                            )
-                        self.im = Image.core.map_buffer(
-                            self.map, self.size, decoder_name, offset, args
-                        )
+                    with open(self.filename) as fp:
+                        self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
+                    self.im = Image.core.map_buffer(
+                        self.map, self.size, decoder_name, offset, args
+                    )
                     readonly = 1
                     # After trashing self.im,
                     # we might need to reload the palette data.
@@ -230,6 +211,13 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
+            # Remove consecutive duplicates that only differ by their offset
+            self.tile = [
+                list(tiles)[-1]
+                for _, tiles in itertools.groupby(
+                    self.tile, lambda tile: (tile[0], tile[1], tile[3])
+                )
+            ]
             for decoder_name, extents, offset, args in self.tile:
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
@@ -340,6 +328,7 @@ class StubImageFile(ImageFile):
         # become the other object (!)
         self.__class__ = image.__class__
         self.__dict__ = image.__dict__
+        return image.load()
 
     def _load(self):
         """(Hook) Find actual image loader."""
@@ -503,9 +492,6 @@ def _save(im, fp, tile, bufsize=0):
     # But, it would need at least the image size in most cases. RawEncode is
     # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
-    if fp == sys.stdout:
-        fp.flush()
-        return
     try:
         fh = fp.fileno()
         fp.flush()
@@ -555,19 +541,28 @@ def _safe_read(fp, size):
 
     :param fp: File handle.  Must implement a <b>read</b> method.
     :param size: Number of bytes to read.
-    :returns: A string containing up to <i>size</i> bytes of data.
+    :returns: A string containing <i>size</i> bytes of data.
+
+    Raises an OSError if the file is truncated and the read cannot be completed
+
     """
     if size <= 0:
         return b""
     if size <= SAFEBLOCK:
-        return fp.read(size)
+        data = fp.read(size)
+        if len(data) < size:
+            raise OSError("Truncated File Read")
+        return data
     data = []
-    while size > 0:
-        block = fp.read(min(size, SAFEBLOCK))
+    remaining_size = size
+    while remaining_size > 0:
+        block = fp.read(min(remaining_size, SAFEBLOCK))
         if not block:
             break
         data.append(block)
-        size -= len(block)
+        remaining_size -= len(block)
+    if sum(len(d) for d in data) < size:
+        raise OSError("Truncated File Read")
     return b"".join(data)
 
 

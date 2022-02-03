@@ -9,7 +9,7 @@ from . import Image
 
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
-    "tkinter": ("PIL._tkinter_finder", None),
+    "tkinter": ("PIL._tkinter_finder", "tk_version"),
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),
@@ -118,6 +118,8 @@ features = {
     "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
+    "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
+    "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
     "xcb": ("PIL._imaging", "HAVE_XCB", None),
@@ -216,7 +218,7 @@ def get_supported():
 def pilinfo(out=None, supported_formats=True):
     """
     Prints information about this installation of Pillow.
-    This function can be called with ``python -m PIL``.
+    This function can be called with ``python3 -m PIL``.
 
     :param out:
         The output stream to print to. Defaults to ``sys.stdout`` if ``None``.
@@ -274,6 +276,11 @@ def pilinfo(out=None, supported_formats=True):
                     # this check is also in src/_imagingcms.c:setup_module()
                     version_static = tuple(int(x) for x in v.split(".")) < (2, 7)
                 t = "compiled for" if version_static else "loaded"
+                if name == "raqm":
+                    for f in ("fribidi", "harfbuzz"):
+                        v2 = version_feature(f)
+                        if v2 is not None:
+                            v += f", {f} {v2}"
                 print("---", feature, "support ok,", t, v, file=out)
             else:
                 print("---", feature, "support ok", file=out)

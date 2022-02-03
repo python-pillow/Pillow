@@ -1,6 +1,6 @@
 name: Lint
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -11,14 +11,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: pip cache
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: lint-pip-${{ hashFiles('**/setup.py') }}
-        restore-keys: |
-          lint-pip-
 
     - name: pre-commit cache
       uses: actions/cache@v2
@@ -31,18 +23,19 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.10"
+        cache: pip
+        cache-dependency-path: "setup.py"
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Install dependencies
       run: |
-        python -m pip install -U pip
-        python -m pip install -U tox
+        python3 -m pip install -U pip
+        python3 -m pip install -U tox
 
     - name: Lint
       run: tox -e lint
       env:
         PRE_COMMIT_COLOR: always
-

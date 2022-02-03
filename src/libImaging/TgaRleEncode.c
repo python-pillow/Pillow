@@ -4,18 +4,15 @@
 #include <assert.h>
 #include <string.h>
 
-
-static int comparePixels(const UINT8* buf, int x, int bytesPerPixel)
-{
+static int
+comparePixels(const UINT8 *buf, int x, int bytesPerPixel) {
     buf += x * bytesPerPixel;
     return memcmp(buf, buf + bytesPerPixel, bytesPerPixel) == 0;
 }
 
-
 int
-ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
-{
-    UINT8* dst;
+ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    UINT8 *dst;
     int bytesPerPixel;
 
     if (state->state == 0) {
@@ -40,7 +37,7 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
          * excluding the 1-byte descriptor.
          */
         if (state->count == 0) {
-            UINT8* row;
+            UINT8 *row;
             UINT8 descriptor;
             int startX;
 
@@ -64,8 +61,8 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             if (state->x == 0) {
                 state->shuffle(
                     state->buffer,
-                    (UINT8*)im->image[state->y + state->yoff]
-                        + state->xoff * im->pixelsize,
+                    (UINT8 *)im->image[state->y + state->yoff] +
+                        state->xoff * im->pixelsize,
                     state->xsize);
             }
 
@@ -149,9 +146,7 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
         }
 
         memcpy(
-            dst,
-            state->buffer + (state->x * bytesPerPixel - state->count),
-            flushCount);
+            dst, state->buffer + (state->x * bytesPerPixel - state->count), flushCount);
         dst += flushCount;
         bytes -= flushCount;
 

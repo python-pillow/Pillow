@@ -29,20 +29,20 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with pytest.warns(None) as record:
         im = Image.open(test_file)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_context_manager():
-    def open():
+    with pytest.warns(None) as record:
         with Image.open(test_file) as im:
             im.load()
 
-    pytest.warns(None, open)
+    assert not record
 
 
 def test_invalid_file():
@@ -57,9 +57,10 @@ def test_n_frames():
         assert im.n_frames == 1
         assert not im.is_animated
 
-    with Image.open(test_file) as im:
-        assert im.n_frames == 2
-        assert im.is_animated
+    for path in [test_file, "Tests/images/negative_layer_count.psd"]:
+        with Image.open(path) as im:
+            assert im.n_frames == 2
+            assert im.is_animated
 
 
 def test_eoferror():
@@ -122,10 +123,33 @@ def test_no_icc_profile():
 
 
 def test_combined_larger_than_size():
-    # The 'combined' sizes of the individual parts is larger than the
+    # The combined size of the individual parts is larger than the
     # declared 'size' of the extra data field, resulting in a backwards seek.
 
     # If we instead take the 'size' of the extra data field as the source of truth,
     # then the seek can't be negative
     with pytest.raises(OSError):
-        Image.open("Tests/images/combined_larger_than_size.psd")
+        with Image.open("Tests/images/combined_larger_than_size.psd"):
+            pass
+
+
+@pytest.mark.parametrize(
+    "test_file,raises",
+    [
+        (
+            "Tests/images/timeout-1ee28a249896e05b83840ae8140622de8e648ba9.psd",
+            Image.UnidentifiedImageError,
+        ),
+        (
+            "Tests/images/timeout-598843abc37fc080ec36a2699ebbd44f795d3a6f.psd",
+            Image.UnidentifiedImageError,
+        ),
+        ("Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd", OSError),
+        ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
+    ],
+)
+def test_crashes(test_file, raises):
+    with open(test_file, "rb") as f:
+        with pytest.raises(raises):
+            with Image.open(f):
+                pass

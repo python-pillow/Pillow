@@ -6,12 +6,7 @@ import pytest
 
 from PIL import Image, ImageGrab
 
-from .helper import (
-    assert_image,
-    assert_image_equal_tofile,
-    is_win32_docker,
-    skip_unless_feature,
-)
+from .helper import assert_image_equal_tofile, is_win32_docker, skip_unless_feature
 
 
 class TestImageGrab:
@@ -20,25 +15,20 @@ class TestImageGrab:
     )
     @pytest.mark.skipif(is_win32_docker(), reason="running on headless Windows")
     def test_grab(self):
-        for im in [
-            ImageGrab.grab(),
-            ImageGrab.grab(include_layered_windows=True),
-            ImageGrab.grab(all_screens=True),
-        ]:
-            assert_image(im, im.mode, im.size)
+        ImageGrab.grab()
+        ImageGrab.grab(include_layered_windows=True)
+        ImageGrab.grab(all_screens=True)
 
         im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-        assert_image(im, im.mode, (40, 60))
+        assert im.size == (40, 60)
 
     @skip_unless_feature("xcb")
     def test_grab_x11(self):
         try:
             if sys.platform not in ("win32", "darwin"):
-                im = ImageGrab.grab()
-                assert_image(im, im.mode, im.size)
+                ImageGrab.grab()
 
-            im2 = ImageGrab.grab(xdisplay="")
-            assert_image(im2, im2.mode, im2.size)
+            ImageGrab.grab(xdisplay="")
         except OSError as e:
             pytest.skip(str(e))
 
@@ -77,8 +67,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             assert str(e.value) == "ImageGrab.grabclipboard() is macOS and Windows only"
             return
 
-        im = ImageGrab.grabclipboard()
-        assert_image(im, im.mode, im.size)
+        ImageGrab.grabclipboard()
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_file(self):
