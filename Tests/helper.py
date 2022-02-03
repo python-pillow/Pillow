@@ -27,8 +27,7 @@ if os.environ.get("SHOW_ERRORS", None):
     class test_image_results:
         @staticmethod
         def upload(a, b):
-            a.show()
-            b.show()
+            return None
 
 elif "GITHUB_ACTIONS" in os.environ:
     HAS_UPLOADER = True
@@ -314,6 +313,10 @@ def is_ppc64le():
 
 def is_win32():
     return sys.platform.startswith("win32")
+
+
+def is_macos():
+    return sys.platform.startswith("darwin")
 
 
 def is_pypy():
