@@ -269,7 +269,7 @@ class DisplayViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         args = ["display"]
-        if "title" in options:
+        if "title" in options and options["title"] is not None:
             args += ["-name", options["title"]]
         args.append(path)
 
