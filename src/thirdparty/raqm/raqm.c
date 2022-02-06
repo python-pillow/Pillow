@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016-2021 Khaled Hosny <khaled@aliftype.com>
+ * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -24,7 +24,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#undef HAVE_CONFIG_H  // Workaround for Fribidi 1.0.5 and earlier
 #endif
 
 #include <assert.h>
@@ -38,28 +37,10 @@
 #else
 #include "../fribidi-shim/fribidi.h"
 #endif
-#if FRIBIDI_MAJOR_VERSION >= 1
-#define USE_FRIBIDI_EX_API
-#endif
 #endif
 
 #include <hb.h>
 #include <hb-ft.h>
-
-#if FREETYPE_MAJOR > 2 || \
-    FREETYPE_MAJOR == 2 && FREETYPE_MINOR >= 11
-#define HAVE_FT_GET_TRANSFORM
-#endif
-
-#if HB_VERSION_ATLEAST(2, 0, 0)
-#define HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH
-#endif
-
-#if HB_VERSION_ATLEAST(1, 8, 0)
-#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 1
-#else
-#define HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES 0
-#endif
 
 #include "raqm.h"
 
@@ -190,13 +171,9 @@
   typedef FriBidiLevel _raqm_bidi_level_t;
 #endif
 
-typedef enum {
-  RAQM_FLAG_NONE = 0,
-  RAQM_FLAG_UTF8 = 1 << 0
-} _raqm_flags_t;
-
 typedef struct {
   FT_Face       ftface;
+  int           ftloadflags;
   hb_language_t lang;
   hb_script_t   script;
 } _raqm_text_info;
@@ -209,6 +186,7 @@ struct _raqm {
   uint32_t        *text;
   char            *text_utf8;
   size_t           text_len;
+  size_t           text_capacity_bytes;
 
   _raqm_text_info *text_info;
 
@@ -219,17 +197,17 @@ struct _raqm {
   size_t           features_len;
 
   raqm_run_t      *runs;
+  raqm_run_t      *runs_pool;
+
   raqm_glyph_t    *glyphs;
+  size_t           glyphs_capacity;
 
-  _raqm_flags_t    flags;
-
-  int              ft_loadflags;
   int              invisible_glyph;
 };
 
 struct _raqm_run {
-  int            pos;
-  int            len;
+  uint32_t       pos;
+  uint32_t       len;
 
   hb_direction_t direction;
   hb_script_t    script;
@@ -243,31 +221,21 @@ static uint32_t
 _raqm_u8_to_u32_index (raqm_t   *rq,
                        uint32_t  index);
 
-static bool
+static void
 _raqm_init_text_info (raqm_t *rq)
 {
-  hb_language_t default_lang;
-
-  if (rq->text_info)
-    return true;
-
-  rq->text_info = malloc (sizeof (_raqm_text_info) * rq->text_len);
-  if (!rq->text_info)
-    return false;
-
-  default_lang = hb_language_get_default ();
+  hb_language_t default_lang = hb_language_get_default ();
   for (size_t i = 0; i < rq->text_len; i++)
   {
     rq->text_info[i].ftface = NULL;
+    rq->text_info[i].ftloadflags = -1;
     rq->text_info[i].lang = default_lang;
     rq->text_info[i].script = HB_SCRIPT_INVALID;
   }
-
-  return true;
 }
 
 static void
-_raqm_free_text_info (raqm_t *rq)
+_raqm_release_text_info (raqm_t *rq)
 {
   if (!rq->text_info)
     return;
@@ -277,9 +245,6 @@ _raqm_free_text_info (raqm_t *rq)
     if (rq->text_info[i].ftface)
       FT_Done_Face (rq->text_info[i].ftface);
   }
-
-  free (rq->text_info);
-  rq->text_info = NULL;
 }
 
 static bool
@@ -289,6 +254,9 @@ _raqm_compare_text_info (_raqm_text_info a,
   if (a.ftface != b.ftface)
     return false;
 
+  if (a.ftloadflags != b.ftloadflags)
+    return false;
+
   if (a.lang != b.lang)
     return false;
 
@@ -296,6 +264,88 @@ _raqm_compare_text_info (_raqm_text_info a,
     return false;
 
   return true;
+}
+
+static void
+_raqm_free_text(raqm_t* rq)
+{
+  free (rq->text);
+  rq->text = NULL;
+  rq->text_info = NULL;
+  rq->text_utf8 = NULL;
+  rq->text_len = 0;
+  rq->text_capacity_bytes = 0;
+}
+
+static bool
+_raqm_alloc_text(raqm_t *rq,
+                 size_t  len,
+                 bool    need_utf8)
+{
+  /* Allocate contiguous memory block for texts and text_info */
+  size_t mem_size = (sizeof (uint32_t) + sizeof (_raqm_text_info)) * len;
+  if (need_utf8)
+    mem_size += sizeof (char) * len;
+
+  if (mem_size > rq->text_capacity_bytes)
+  {
+    void* new_mem = realloc (rq->text, mem_size);
+    if (!new_mem)
+    {
+      _raqm_free_text (rq);
+      return false;
+    }
+
+    rq->text_capacity_bytes = mem_size;
+    rq->text = new_mem;
+  }
+
+  rq->text_info = (_raqm_text_info*)(rq->text + len);
+  rq->text_utf8 = need_utf8 ? (char*)(rq->text_info + len) : NULL;
+
+  return true;
+}
+
+static raqm_run_t*
+_raqm_alloc_run (raqm_t *rq)
+{
+  raqm_run_t *run = rq->runs_pool;
+  if (run)
+  {
+    rq->runs_pool = run->next;
+  }
+  else
+  {
+    run = malloc (sizeof (raqm_run_t));
+    run->font = NULL;
+    run->buffer = NULL;
+  }
+
+  run->pos = 0;
+  run->len = 0;
+  run->direction = HB_DIRECTION_INVALID;
+  run->script = HB_SCRIPT_INVALID;
+  run->next = NULL;
+
+  return run;
+}
+
+static void
+_raqm_free_runs (raqm_run_t *runs)
+{
+  while (runs)
+  {
+    raqm_run_t *run = runs;
+    runs = runs->next;
+
+    if (run->buffer)
+      hb_buffer_destroy (run->buffer);
+
+    if (run->font)
+      hb_font_destroy (run->font);
+
+    free (run);
+  }
 }
 
 /**
@@ -322,25 +372,25 @@ raqm_create (void)
 
   rq->ref_count = 1;
 
-  rq->text = NULL;
-  rq->text_utf8 = NULL;
-  rq->text_len = 0;
-
-  rq->text_info = NULL;
-
   rq->base_dir = RAQM_DIRECTION_DEFAULT;
   rq->resolved_dir = RAQM_DIRECTION_DEFAULT;
 
   rq->features = NULL;
   rq->features_len = 0;
 
-  rq->runs = NULL;
-  rq->glyphs = NULL;
-
-  rq->flags = RAQM_FLAG_NONE;
-
-  rq->ft_loadflags = -1;
   rq->invisible_glyph = 0;
+
+  rq->text = NULL;
+  rq->text_utf8 = NULL;
+  rq->text_info = NULL;
+  rq->text_capacity_bytes = 0;
+  rq->text_len = 0;
+
+  rq->runs = NULL;
+  rq->runs_pool = NULL;
+
+  rq->glyphs = NULL;
+  rq->glyphs_capacity = 0;
 
   return rq;
 }
@@ -366,28 +416,13 @@ raqm_reference (raqm_t *rq)
   return rq;
 }
 
-static void
-_raqm_free_runs (raqm_t *rq)
-{
-  raqm_run_t *runs = rq->runs;
-  while (runs)
-  {
-    raqm_run_t *run = runs;
-    runs = runs->next;
-
-    hb_buffer_destroy (run->buffer);
-    hb_font_destroy (run->font);
-    free (run);
-  }
-}
-
 /**
  * raqm_destroy:
  * @rq: a #raqm_t.
  *
  * Decreases the reference count on @rq by one. If the result is zero, then @rq
  * and all associated resources are freed.
- * See cairo_reference().
+ * See raqm_reference().
  *
  * Since: 0.1
  */
@@ -397,12 +432,58 @@ raqm_destroy (raqm_t *rq)
   if (!rq || --rq->ref_count != 0)
     return;
 
-  free (rq->text);
-  free (rq->text_utf8);
-  _raqm_free_text_info (rq);
-  _raqm_free_runs (rq);
+  _raqm_release_text_info (rq);
+  _raqm_free_text (rq);
+  _raqm_free_runs (rq->runs);
+  _raqm_free_runs (rq->runs_pool);
   free (rq->glyphs);
+  free (rq->features);
   free (rq);
+}
+
+/**
+ * raqm_clear_contents:
+ * @rq: a #raqm_t.
+ *
+ * Clears internal state of previously used raqm_t object, making it ready
+ * for reuse and keeping some of allocated memory to increase performance.
+ *
+ * Since: 0.9
+ */
+void
+raqm_clear_contents (raqm_t *rq)
+{
+  if (!rq)
+    return;
+
+  _raqm_release_text_info (rq);
+
+  /* Return allocated runs to the pool, keep hb buffers for reuse */
+  raqm_run_t *run = rq->runs;
+  while (run)
+  {
+    if (run->buffer)
+      hb_buffer_reset (run->buffer);
+
+    if (run->font)
+    {
+      hb_font_destroy (run->font);
+      run->font = NULL;
+    }
+
+    if (!run->next)
+    {
+      run->next = rq->runs_pool;
+      rq->runs_pool = rq->runs;
+      rq->runs = NULL;
+      break;
+    }
+
+    run = run->next;
+  }
+
+  rq->text_len = 0;
+  rq->resolved_dir = RAQM_DIRECTION_DEFAULT;
 }
 
 /**
@@ -429,23 +510,20 @@ raqm_set_text (raqm_t         *rq,
   if (!rq || !text)
     return false;
 
-  rq->text_len = len;
+  /* Call raqm_clear_contents to reuse this raqm_t */
+  if (rq->text_len)
+    return false;
 
   /* Empty string, don’t fail but do nothing */
   if (!len)
     return true;
 
-  free (rq->text);
+  if (!_raqm_alloc_text(rq, len, false))
+      return false;
 
-  rq->text = malloc (sizeof (uint32_t) * rq->text_len);
-  if (!rq->text)
-    return false;
-
-  _raqm_free_text_info (rq);
-  if (!_raqm_init_text_info (rq))
-    return false;
-
-  memcpy (rq->text, text, sizeof (uint32_t) * rq->text_len);
+  rq->text_len = len;
+  memcpy (rq->text, text, sizeof (uint32_t) * len);
+  _raqm_init_text_info (rq);
 
   return true;
 }
@@ -511,41 +589,29 @@ _raqm_u8_to_u32 (const char *text, size_t len, uint32_t *unicode)
  * Since: 0.1
  */
 bool
-raqm_set_text_utf8 (raqm_t         *rq,
-                    const char     *text,
-                    size_t          len)
+raqm_set_text_utf8 (raqm_t     *rq,
+                    const char *text,
+                    size_t      len)
 {
-  uint32_t *unicode;
-  size_t ulen;
-  bool ok;
-
   if (!rq || !text)
+    return false;
+
+  /* Call raqm_clear_contents to reuse this raqm_t */
+  if (rq->text_len)
     return false;
 
   /* Empty string, don’t fail but do nothing */
   if (!len)
-  {
-    rq->text_len = len;
     return true;
-  }
 
-  rq->flags |= RAQM_FLAG_UTF8;
+  if (!_raqm_alloc_text(rq, len, true))
+      return false;
 
-  rq->text_utf8 = malloc (sizeof (char) * len);
-  if (!rq->text_utf8)
-    return false;
-
-  unicode = malloc (sizeof (uint32_t) * len);
-  if (!unicode)
-    return false;
-
+  rq->text_len = _raqm_u8_to_u32 (text, len, rq->text);
   memcpy (rq->text_utf8, text, sizeof (char) * len);
+  _raqm_init_text_info (rq);
 
-  ulen = _raqm_u8_to_u32 (text, len, unicode);
-  ok = raqm_set_text (rq, unicode, ulen);
-
-  free (unicode);
-  return ok;
+  return true;
 }
 
 /**
@@ -561,7 +627,7 @@ raqm_set_text_utf8 (raqm_t         *rq,
  *
  * The default is #RAQM_DIRECTION_DEFAULT, which determines the paragraph
  * direction based on the first character with strong bidi type (see [rule
- * P2](http://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
+ * P2](https://unicode.org/reports/tr9/#P2) in Unicode Bidirectional Algorithm),
  * which can be good enough for many cases but has problems when a mainly
  * right-to-left paragraph starts with a left-to-right character and vice versa
  * as the detected paragraph direction will be the wrong one, or when text does
@@ -629,7 +695,7 @@ raqm_set_language (raqm_t       *rq,
   if (!rq->text_len)
     return true;
 
-  if (rq->flags & RAQM_FLAG_UTF8)
+  if (rq->text_utf8)
   {
     start = _raqm_u8_to_u32_index (rq, start);
     end = _raqm_u8_to_u32_index (rq, end);
@@ -686,13 +752,14 @@ raqm_add_font_feature (raqm_t     *rq,
   ok = hb_feature_from_string (feature, len, &fea);
   if (ok)
   {
-    rq->features_len++;
-    rq->features = realloc (rq->features,
-                            sizeof (hb_feature_t) * (rq->features_len));
-    if (!rq->features)
+    void* new_features = realloc (rq->features,
+                                  sizeof (hb_feature_t) * (rq->features_len + 1));
+    if (!new_features)
       return false;
 
-    rq->features[rq->features_len - 1] = fea;
+    rq->features = new_features;
+    rq->features[rq->features_len] = fea;
+    rq->features_len++;
   }
 
   return ok;
@@ -700,12 +767,13 @@ raqm_add_font_feature (raqm_t     *rq,
 
 static hb_font_t *
 _raqm_create_hb_font (raqm_t *rq,
-                      FT_Face face)
+                      FT_Face face,
+                      int     loadflags)
 {
   hb_font_t *font = hb_ft_font_create_referenced (face);
 
-  if (rq->ft_loadflags >= 0)
-    hb_ft_font_set_load_flags (font, rq->ft_loadflags);
+  if (loadflags >= 0)
+    hb_ft_font_set_load_flags (font, loadflags);
 
   return font;
 }
@@ -796,13 +864,37 @@ raqm_set_freetype_face_range (raqm_t *rq,
   if (!rq->text_len)
     return true;
 
-  if (rq->flags & RAQM_FLAG_UTF8)
+  if (rq->text_utf8)
   {
     start = _raqm_u8_to_u32_index (rq, start);
     end = _raqm_u8_to_u32_index (rq, end);
   }
 
   return _raqm_set_freetype_face (rq, face, start, end);
+}
+
+static bool
+_raqm_set_freetype_load_flags (raqm_t *rq,
+                               int     flags,
+                               size_t  start,
+                               size_t  end)
+{
+  if (!rq)
+    return false;
+
+  if (!rq->text_len)
+    return true;
+
+  if (start >= rq->text_len || end > rq->text_len)
+    return false;
+
+  if (!rq->text_info)
+    return false;
+
+  for (size_t i = start; i < end; i++)
+    rq->text_info[i].ftloadflags = flags;
+
+  return true;
 }
 
 /**
@@ -823,14 +915,59 @@ raqm_set_freetype_face_range (raqm_t *rq,
  */
 bool
 raqm_set_freetype_load_flags (raqm_t *rq,
-                              int flags)
+                              int     flags)
 {
+  return _raqm_set_freetype_load_flags(rq, flags, 0, rq->text_len);
+}
+
+/**
+ * raqm_set_freetype_load_flags_range:
+ * @rq: a #raqm_t.
+ * @flags: FreeType load flags.
+ * @start: index of first character that should use @flags.
+ * @len: number of characters using @flags.
+ *
+ * Sets the load flags passed to FreeType when loading glyphs for @len-number
+ * of characters staring at @start. Flags should be the same as used by the
+ * client when rendering corresponding FreeType glyphs. The @start and @len
+ * are input string array indices (i.e. counting bytes in UTF-8 and scaler
+ * values in UTF-32).
+ *
+ * This method can be used repeatedly to set different flags for different
+ * parts of the text. It is the responsibility of the client to make sure that
+ * flag ranges cover the whole text.
+ *
+ * This requires version of HarfBuzz that has hb_ft_font_set_load_flags(), for
+ * older version the flags will be ignored.
+ *
+ * See also raqm_set_freetype_load_flags().
+ *
+ * Return value:
+ * %true if no errors happened, %false otherwise.
+ *
+ * Since: 0.9
+ */
+bool
+raqm_set_freetype_load_flags_range (raqm_t *rq,
+                                    int     flags,
+                                    size_t  start,
+                                    size_t  len)
+{
+  size_t end = start + len;
+
   if (!rq)
     return false;
 
-  rq->ft_loadflags = flags;
+  if (!rq->text_len)
+    return true;
 
-  return true;
+  if (rq->text_utf8)
+  {
+    start = _raqm_u8_to_u32_index (rq, start);
+    end = _raqm_u8_to_u32_index (rq, end);
+  }
+
+  return _raqm_set_freetype_load_flags (rq, flags, start, end);
 }
 
 /**
@@ -841,17 +978,10 @@ raqm_set_freetype_load_flags (raqm_t *rq,
  * Sets the glyph id to be used for invisible glyhphs.
  *
  * If @gid is negative, invisible glyphs will be suppressed from the output.
- * This requires HarfBuzz 1.8.0 or later. If raqm is used with an earlier
- * HarfBuzz version, the return value will be %false and the shaping behavior
- * does not change.
  *
  * If @gid is zero, invisible glyphs will be rendered as space.
- * This works on all versions of HarfBuzz.
  *
  * If @gid is a positive number, it will be used for invisible glyphs.
- * This requires a version of HarfBuzz that has
- * hb_buffer_set_invisible_glyph(). For older versions, the return value
- * will be %false and the shaping behavior does not change.
  *
  * Return value:
  * %true if no errors happened, %false otherwise.
@@ -864,17 +994,6 @@ raqm_set_invisible_glyph (raqm_t *rq,
 {
   if (!rq)
     return false;
-
-#ifndef HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH
-  if (gid > 0)
-    return false;
-#endif
-
-#if !defined(HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) || \
-    !HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES
-  if (gid < 0)
-    return false;
-#endif
 
   rq->invisible_glyph = gid;
   return true;
@@ -961,17 +1080,20 @@ raqm_get_glyphs (raqm_t *rq,
   for (raqm_run_t *run = rq->runs; run != NULL; run = run->next)
     count += hb_buffer_get_length (run->buffer);
 
-  *length = count;
-
-  if (rq->glyphs)
-    free (rq->glyphs);
-
-  rq->glyphs = malloc (sizeof (raqm_glyph_t) * count);
-  if (!rq->glyphs)
+  if (count > rq->glyphs_capacity)
   {
-    *length = 0;
-    return NULL;
+    void* new_mem = realloc (rq->glyphs, sizeof (raqm_glyph_t) * count);
+    if (!new_mem)
+    {
+      *length = 0;
+      return NULL;
+    }
+
+    rq->glyphs = new_mem;
+    rq->glyphs_capacity = count;
   }
+
+  *length = count;
 
   RAQM_TEST ("Glyph information:\n");
 
@@ -1005,7 +1127,7 @@ raqm_get_glyphs (raqm_t *rq,
     count += len;
   }
 
-  if (rq->flags & RAQM_FLAG_UTF8)
+  if (rq->text_utf8)
   {
 #ifdef RAQM_TESTING
     RAQM_TEST ("\nUTF-32 clusters:");
@@ -1276,24 +1398,14 @@ _raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
   FriBidiCharType *types;
   _raqm_bidi_level_t *levels;
   int max_level = 0;
-#ifdef USE_FRIBIDI_EX_API
   FriBidiBracketType *btypes;
-#endif
 
   types = calloc (rq->text_len, sizeof (FriBidiCharType));
-#ifdef USE_FRIBIDI_EX_API
   btypes = calloc (rq->text_len, sizeof (FriBidiBracketType));
-#endif
   levels = calloc (rq->text_len, sizeof (_raqm_bidi_level_t));
 
-  if (!types || !levels
-#ifdef USE_FRIBIDI_EX_API
-      || !btypes
-#endif
-      )
-  {
+  if (!types || !levels || !btypes)
     goto done;
-  }
 
   if (rq->base_dir == RAQM_DIRECTION_RTL)
     par_type = FRIBIDI_PAR_RTL;
@@ -1301,15 +1413,10 @@ _raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
     par_type = FRIBIDI_PAR_LTR;
 
   fribidi_get_bidi_types (rq->text, rq->text_len, types);
-#ifdef USE_FRIBIDI_EX_API
   fribidi_get_bracket_types (rq->text, rq->text_len, types, btypes);
   max_level = fribidi_get_par_embedding_levels_ex (types, btypes,
                                                    rq->text_len, &par_type,
                                                    levels);
-#else
-  max_level = fribidi_get_par_embedding_levels (types, rq->text_len,
-                                                &par_type, levels);
-#endif
 
   if (par_type == FRIBIDI_PAR_LTR)
     rq->resolved_dir = RAQM_DIRECTION_LTR;
@@ -1325,9 +1432,7 @@ _raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
 done:
   free (types);
   free (levels);
-#ifdef USE_FRIBIDI_EX_API
   free (btypes);
-#endif
 
   return runs;
 }
@@ -1403,7 +1508,7 @@ _raqm_itemize (raqm_t *rq)
   last = NULL;
   for (size_t i = 0; i < run_count; i++)
   {
-    raqm_run_t *run = calloc (1, sizeof (raqm_run_t));
+    raqm_run_t *run = _raqm_alloc_run (rq);
     if (!run)
     {
       ok = false;
@@ -1422,13 +1527,14 @@ _raqm_itemize (raqm_t *rq)
     {
       run->pos = runs[i].pos + runs[i].len - 1;
       run->script = rq->text_info[run->pos].script;
-      run->font = _raqm_create_hb_font (rq, rq->text_info[run->pos].ftface);
+      run->font = _raqm_create_hb_font (rq, rq->text_info[run->pos].ftface,
+          rq->text_info[run->pos].ftloadflags);
       for (int j = runs[i].len - 1; j >= 0; j--)
       {
         _raqm_text_info info = rq->text_info[runs[i].pos + j];
         if (!_raqm_compare_text_info (rq->text_info[run->pos], info))
         {
-          raqm_run_t *newrun = calloc (1, sizeof (raqm_run_t));
+          raqm_run_t *newrun = _raqm_alloc_run (rq);
           if (!newrun)
           {
             ok = false;
@@ -1438,7 +1544,8 @@ _raqm_itemize (raqm_t *rq)
           newrun->len = 1;
           newrun->direction = _raqm_hb_dir (rq, runs[i].level);
           newrun->script = info.script;
-          newrun->font = _raqm_create_hb_font (rq, info.ftface);
+          newrun->font = _raqm_create_hb_font (rq, info.ftface,
+              info.ftloadflags);
           run->next = newrun;
           run = newrun;
         }
@@ -1453,13 +1560,14 @@ _raqm_itemize (raqm_t *rq)
     {
       run->pos = runs[i].pos;
       run->script = rq->text_info[run->pos].script;
-      run->font = _raqm_create_hb_font (rq, rq->text_info[run->pos].ftface);
+      run->font = _raqm_create_hb_font (rq, rq->text_info[run->pos].ftface,
+          rq->text_info[run->pos].ftloadflags);
       for (size_t j = 0; j < runs[i].len; j++)
       {
         _raqm_text_info info = rq->text_info[runs[i].pos + j];
         if (!_raqm_compare_text_info (rq->text_info[run->pos], info))
         {
-          raqm_run_t *newrun = calloc (1, sizeof (raqm_run_t));
+          raqm_run_t *newrun = _raqm_alloc_run (rq);
           if (!newrun)
           {
             ok = false;
@@ -1469,7 +1577,8 @@ _raqm_itemize (raqm_t *rq)
           newrun->len = 1;
           newrun->direction = _raqm_hb_dir (rq, runs[i].level);
           newrun->script = info.script;
-          newrun->font = _raqm_create_hb_font (rq, info.ftface);
+          newrun->font = _raqm_create_hb_font (rq, info.ftface,
+              info.ftloadflags);
           run->next = newrun;
           run = newrun;
         }
@@ -1758,7 +1867,6 @@ _raqm_resolve_scripts (raqm_t *rq)
   return true;
 }
 
-#ifdef HAVE_FT_GET_TRANSFORM
 static void
 _raqm_ft_transform (int      *x,
                     int      *y,
@@ -1773,22 +1881,19 @@ _raqm_ft_transform (int      *x,
   *x = vector.x;
   *y = vector.y;
 }
-#endif
 
 static bool
 _raqm_shape (raqm_t *rq)
 {
   hb_buffer_flags_t hb_buffer_flags = HB_BUFFER_FLAG_BOT | HB_BUFFER_FLAG_EOT;
 
-#if defined(HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) && \
-    HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES
   if (rq->invisible_glyph < 0)
     hb_buffer_flags |= HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES;
-#endif
 
   for (raqm_run_t *run = rq->runs; run != NULL; run = run->next)
   {
-    run->buffer = hb_buffer_create ();
+    if (!run->buffer)
+      run->buffer = hb_buffer_create ();
 
     hb_buffer_add_utf32 (run->buffer, rq->text, rq->text_len,
                          run->pos, run->len);
@@ -1797,15 +1902,12 @@ _raqm_shape (raqm_t *rq)
     hb_buffer_set_direction (run->buffer, run->direction);
     hb_buffer_set_flags (run->buffer, hb_buffer_flags);
 
-#ifdef HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH
     if (rq->invisible_glyph > 0)
       hb_buffer_set_invisible_glyph (run->buffer, rq->invisible_glyph);
-#endif
 
     hb_shape_full (run->font, run->buffer, rq->features, rq->features_len,
                    NULL);
 
-#ifdef HAVE_FT_GET_TRANSFORM
     {
       FT_Matrix matrix;
       hb_glyph_position_t *pos;
@@ -1819,7 +1921,6 @@ _raqm_shape (raqm_t *rq)
         _raqm_ft_transform (&pos[i].x_offset, &pos[i].y_offset, matrix);
       }
     }
-#endif
   }
 
   return true;
@@ -1917,7 +2018,7 @@ raqm_index_to_position (raqm_t *rq,
   if (rq == NULL)
     return false;
 
-  if (rq->flags & RAQM_FLAG_UTF8)
+  if (rq->text_utf8)
     *index = _raqm_u8_to_u32_index (rq, *index);
 
   if (*index >= rq->text_len)
@@ -1974,7 +2075,7 @@ raqm_index_to_position (raqm_t *rq,
   }
 
 found:
-  if (rq->flags & RAQM_FLAG_UTF8)
+  if (rq->text_utf8)
     *index = _raqm_u32_to_u8_index (rq, *index);
   RAQM_TEST ("The position is %d at index %zu\n",*x ,*index);
   return true;

@@ -51,14 +51,11 @@ class WalImageFile(ImageFile.ImageFile):
             self.info["next_name"] = next_name
 
     def load(self):
-        if self.im:
-            # Already loaded
-            return
-
-        self.im = Image.core.new(self.mode, self.size)
-        self.frombytes(self.fp.read(self.size[0] * self.size[1]))
-        self.putpalette(quake2palette)
-        Image.Image.load(self)
+        if not self.im:
+            self.im = Image.core.new(self.mode, self.size)
+            self.frombytes(self.fp.read(self.size[0] * self.size[1]))
+            self.putpalette(quake2palette)
+        return Image.Image.load(self)
 
 
 def open(filename):

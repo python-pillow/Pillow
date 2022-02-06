@@ -169,7 +169,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.13**.
 
 * **libwebp** provides the WebP format.
 
@@ -187,7 +187,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.17.0**
+  * Pillow has been tested with libimagequant **2.6-4.0**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -453,8 +453,6 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | CentOS 7                         | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| CentOS 8                         | 3.9                        | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | CentOS Stream 8                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Debian 10 Buster                 | 3.7                        | x86                 |
@@ -531,6 +529,8 @@ These platforms have been reported to work at the versions mentioned.
 | Redhat Linux 6                   | 2.6                       |                  |x86           |
 +----------------------------------+---------------------------+------------------+--------------+
 | CentOS 6.3                       | 2.7, 3.3                  |                  |x86           |
++----------------------------------+---------------------------+------------------+--------------+
+| CentOS 8                         | 3.9                       | 9.0.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | Fedora 23                        | 2.7, 3.4                  | 3.1.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+

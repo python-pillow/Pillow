@@ -32,10 +32,10 @@
 #define _RAQM_VERSION_H_
 
 #define RAQM_VERSION_MAJOR 0
-#define RAQM_VERSION_MINOR 8
+#define RAQM_VERSION_MINOR 9
 #define RAQM_VERSION_MICRO 0
 
-#define RAQM_VERSION_STRING "0.8.0"
+#define RAQM_VERSION_STRING "0.9.0"
 
 #define RAQM_VERSION_ATLEAST(major,minor,micro) \
     ((major)*10000+(minor)*100+(micro) <= \

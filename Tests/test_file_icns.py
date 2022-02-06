@@ -28,6 +28,14 @@ def test_sanity():
         assert im.format == "ICNS"
 
 
+def test_load():
+    with Image.open(TEST_FILE) as im:
+        assert im.load()[0, 0] == (0, 0, 0, 0)
+
+        # Test again now that it has already been loaded once
+        assert im.load()[0, 0] == (0, 0, 0, 0)
+
+
 def test_save(tmp_path):
     temp_file = str(tmp_path / "temp.icns")
 

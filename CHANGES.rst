@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Enable arm64 for MSVC on Windows #5811
+  [gaborkertesz-linaro, gaborkertesz]
+
+- Keep IPython/Jupyter text/plain output stable #5891
+  [shamrin, radarhere]
+
 - Raise an error when performing a negative crop #5972
   [radarhere, hugovk]
 
@@ -25,6 +31,15 @@ Changelog (Pillow)
 
 - Remove readonly from Image.__eq__ #5930
   [hugovk]
+
+9.0.1 (2022-02-03)
+------------------
+
+- In show_file, use os.remove to remove temporary images. CVE-2022-24303 #6010
+  [radarhere, hugovk]
+
+- Restrict builtins within lambdas for ImageMath.eval. CVE-2022-22817 #6009
+  [radarhere]
 
 9.0.0 (2022-01-02)
 ------------------
