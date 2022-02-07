@@ -520,6 +520,11 @@ def invert(image):
     :param image: The image to invert.
     :return: An image.
     """
+    # Special case for 1-bit images using python translate() method
+    if image.mode == '1':
+        lut = bytearray(range(255,-1,-1))
+        return Image.frombuffer('1',image.size,image.tobytes().translate(lut))
+    
     lut = []
     for i in range(256):
         lut.append(255 - i)
