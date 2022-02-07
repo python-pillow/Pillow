@@ -64,27 +64,25 @@ def _pyimagingtkcall(command, photo, id):
         tk.call(command, photo, id)
     except tkinter.TclError:
         # activate Tkinter hook
+        # may raise an error if it cannot attach to Tkinter
+        from . import _imagingtk
+
         try:
-            from . import _imagingtk
+            if hasattr(tk, "interp"):
+                # Required for PyPy, which always has CFFI installed
+                from cffi import FFI
 
-            try:
-                if hasattr(tk, "interp"):
-                    # Required for PyPy, which always has CFFI installed
-                    from cffi import FFI
+                ffi = FFI()
 
-                    ffi = FFI()
-
-                    # PyPy is using an FFI CDATA element
-                    # (Pdb) self.tk.interp
-                    #  <cdata 'Tcl_Interp *' 0x3061b50>
-                    _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
-                else:
-                    _imagingtk.tkinit(tk.interpaddr(), 1)
-            except AttributeError:
-                _imagingtk.tkinit(id(tk), 0)
-            tk.call(command, photo, id)
-        except (ImportError, AttributeError, tkinter.TclError):
-            raise  # configuration problem; cannot attach to Tkinter
+                # PyPy is using an FFI CDATA element
+                # (Pdb) self.tk.interp
+                #  <cdata 'Tcl_Interp *' 0x3061b50>
+                _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
+            else:
+                _imagingtk.tkinit(tk.interpaddr(), 1)
+        except AttributeError:
+            _imagingtk.tkinit(id(tk), 0)
+        tk.call(command, photo, id)
 
 
 # --------------------------------------------------------------------
