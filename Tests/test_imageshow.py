@@ -44,7 +44,6 @@ def test_viewer_show(order):
 @pytest.mark.skip(
     reason="""Current implementation of some viewers requires manual closing of an image,
         because of that the tests calling show() method will hang infinitely.
-        Please also note that this test duplicates test_viewer_show() test.
     """
 )
 def test_show():
