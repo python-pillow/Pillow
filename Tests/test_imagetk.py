@@ -75,8 +75,9 @@ def test_photoimage_blank():
         assert im_tk.width() == 100
         assert im_tk.height() == 100
 
-        # reloaded = ImageTk.getimage(im_tk)
-        # assert_image_equal(reloaded, im)
+        im = Image.new(mode, (100, 100))
+        reloaded = ImageTk.getimage(im_tk)
+        assert_image_equal(reloaded.convert(mode), im)
 
 
 def test_bitmapimage():
