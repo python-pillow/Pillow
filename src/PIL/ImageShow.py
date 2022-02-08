@@ -240,11 +240,13 @@ class UnixViewer(Viewer):
         command = self.get_command(path, **options)
 
         kwargs = {
+            "shell": True,
             "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE
         }
 
         th = threading.Thread(
-            target=subprocess.run, args=(command.split(),), kwargs=kwargs, name=path
+            target=subprocess.run, args=(command, ), kwargs=kwargs, name=path
         )
         self.opened_images.append(th.name)
         th.start()
