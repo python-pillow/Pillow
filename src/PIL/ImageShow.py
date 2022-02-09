@@ -126,16 +126,6 @@ class Viewer:
         os.system(self.get_command(path, **options))
         return 1
 
-    def _remove_path_after_delay(self, path):
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-c",
-                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                path,
-            ]
-        )
-
 
 # --------------------------------------------------------------------
 
@@ -190,7 +180,14 @@ class MacViewer(Viewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.call(["open", "-a", "Preview.app", path])
-        self._remove_path_after_delay(path)
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                path,
+            ]
+        )
         return 1
 
 
@@ -206,10 +203,22 @@ class UnixViewer(Viewer):
         command = self.get_command_ex(file, **options)[0]
         return f"({command} {quote(file)}; rm -f {quote(file)})&"
 
+    def _run_and_remove_path(self, args):
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, subprocess, sys;"
+                "subprocess.run(sys.argv[1:]); os.remove(sys.argv[-1])",
+            ]
+            + args,
+            stderr=subprocess.DEVNULL,
+        )
+
 
 class XDGViewer(UnixViewer):
     """
-    The freedesktop.org ``xdg-open`` command.
+    The freedesktop.org xdg-utils.
     """
 
     def get_command_ex(self, file, **options):
@@ -234,8 +243,14 @@ class XDGViewer(UnixViewer):
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        subprocess.Popen(["xdg-open", path])
-        self._remove_path_after_delay(path)
+        filetype = subprocess.run(
+            ["xdg-mime", "query", "filetype", path], capture_output=True
+        ).stdout.strip()
+        application = subprocess.run(
+            ["xdg-mime", "query", "default", filetype], capture_output=True
+        ).stdout.strip()
+        command = application[:-8].split(b".")[-1]
+        self._run_and_remove_path([command, path])
         return 1
 
 
@@ -273,8 +288,7 @@ class DisplayViewer(UnixViewer):
             args += ["-title", options["title"]]
         args.append(path)
 
-        subprocess.Popen(args)
-        os.remove(path)
+        self._run_and_remove_path(args)
         return 1
 
 
@@ -303,8 +317,7 @@ class GmDisplayViewer(UnixViewer):
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        subprocess.Popen(["gm", "display", path])
-        os.remove(path)
+        self._run_and_remove_path(["gm", "display", path])
         return 1
 
 
@@ -333,8 +346,7 @@ class EogViewer(UnixViewer):
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        subprocess.Popen(["eog", "-n", path])
-        os.remove(path)
+        self._run_and_remove_path(["eog", "-n", path])
         return 1
 
 
@@ -374,13 +386,12 @@ class XVViewer(UnixViewer):
             args += ["-name", options["title"]]
         args.append(path)
 
-        subprocess.Popen(args)
-        os.remove(path)
+        self._run_and_remove_path(args)
         return 1
 
 
 if sys.platform not in ("win32", "darwin"):  # unixoids
-    if shutil.which("xdg-open"):
+    if shutil.which("xdg-open") and shutil.which("xdg-mime"):
         register(XDGViewer)
     if shutil.which("display"):
         register(DisplayViewer)
