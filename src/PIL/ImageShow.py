@@ -248,7 +248,7 @@ class DisplayViewer(UnixViewer):
     def get_command_ex(self, file, title=None, **options):
         command = executable = "display"
         if title:
-            command += f" -name {quote(title)}"
+            command += f" -title {quote(title)}"
         return command, executable
 
     def show_file(self, path=None, **options):
@@ -270,7 +270,7 @@ class DisplayViewer(UnixViewer):
                 raise TypeError("Missing required argument: 'path'")
         args = ["display"]
         if "title" in options:
-            args += ["-name", options["title"]]
+            args += ["-title", options["title"]]
         args.append(path)
 
         subprocess.Popen(args)
