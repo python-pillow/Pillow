@@ -169,6 +169,12 @@ class FreeTypeFont:
             if core.HAVE_RAQM:
                 layout_engine = LAYOUT_RAQM
         elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
+            import warnings
+
+            warnings.warn(
+                "Raqm layout was requested, but Raqm is not available. "
+                "Falling back to basic layout."
+            )
             layout_engine = LAYOUT_BASIC
 
         self.layout_engine = layout_engine
