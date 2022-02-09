@@ -169,7 +169,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.13.1**.
 
 * **libwebp** provides the WebP format.
 
@@ -187,7 +187,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.17.0**
+  * Pillow has been tested with libimagequant **2.6-4.0**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -394,7 +394,8 @@ Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
         libharfbuzz-dev libfribidi-dev libxcb1-dev
 
-Then see ``depends/install_raqm.sh`` to install libraqm.
+To install libraqm, ``sudo apt-get install meson`` and then see
+``depends/install_raqm.sh``.
 
 Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
 
@@ -452,11 +453,13 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | CentOS 7                         | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| CentOS 8                         | 3.9                        | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | CentOS Stream 8                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
+| CentOS Stream 9                  | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
 | Debian 10 Buster                 | 3.7                        | x86                 |
++----------------------------------+----------------------------+---------------------+
+| Debian 11 Bullseye               | 3.9                        | x86                 |
 +----------------------------------+----------------------------+---------------------+
 | Fedora 34                        | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -493,9 +496,13 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 11.0 Big Sur               | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
+| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |arm           |
++----------------------------------+---------------------------+------------------+--------------+
+| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+
-|                                  | 3.6, 3.7, 3.8, 3.9, 3.10  | 8.4.0            |x86-64        |
+|                                  | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |x86-64        |
+|                                  +---------------------------+------------------+--------------+
+|                                  | 3.6                       | 8.4.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9        | 8.3.2            |x86-64        |
 |                                  +---------------------------+------------------+              |
@@ -522,6 +529,8 @@ These platforms have been reported to work at the versions mentioned.
 | Redhat Linux 6                   | 2.6                       |                  |x86           |
 +----------------------------------+---------------------------+------------------+--------------+
 | CentOS 6.3                       | 2.7, 3.3                  |                  |x86           |
++----------------------------------+---------------------------+------------------+--------------+
+| CentOS 8                         | 3.9                       | 9.0.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | Fedora 23                        | 2.7, 3.4                  | 3.1.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+

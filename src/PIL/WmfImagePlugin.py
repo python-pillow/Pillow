@@ -158,7 +158,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 (x1 - x0) * self.info["dpi"] // self._inch,
                 (y1 - y0) * self.info["dpi"] // self._inch,
             )
-        super().load()
+        return super().load()
 
 
 def _save(im, fp, filename):

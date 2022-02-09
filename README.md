@@ -24,16 +24,19 @@ As of 2019, Pillow development is
     <tr>
         <th>tests</th>
         <td>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ALint"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/lint.yml"><img
                 alt="GitHub Actions build status (Lint)"
                 src="https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3ATest"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test.yml"><img
                 alt="GitHub Actions build status (Test Linux and macOS)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Windows%22"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions?query=workflow%3A%22Test+Docker%22"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
+                alt="GitHub Actions build status (Test MinGW)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
@@ -42,10 +45,10 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
                 alt="GitHub Actions wheels build status (Wheels)"
                 src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
-            <a href="https://travis-ci.com/github/python-pillow/pillow-wheels"><img
+            <a href="https://app.travis-ci.com/github/python-pillow/pillow-wheels"><img
                 alt="Travis CI wheels build status (aarch64)"
                 src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
-            <a href="https://codecov.io/gh/python-pillow/Pillow"><img
+            <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"><img

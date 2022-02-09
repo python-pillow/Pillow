@@ -18,6 +18,11 @@ def test_sanity():
     assert im.get_format_mimetype() == "image/x-icon"
 
 
+def test_load():
+    with Image.open(TEST_ICO_FILE) as im:
+        assert im.load()[0, 0] == (1, 1, 9, 255)
+
+
 def test_mask():
     with Image.open("Tests/images/hopper_mask.ico") as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_mask.png")

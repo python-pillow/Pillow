@@ -1024,6 +1024,19 @@ def test_oom(test_file):
             font.getmask("Test Text")
 
 
+def test_raqm_missing_warning(monkeypatch):
+    monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
+    with pytest.warns(UserWarning) as record:
+        font = ImageFont.truetype(
+            FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
+        )
+    assert font.layout_engine == ImageFont.Layout.BASIC
+    assert str(record[-1].message) == (
+        "Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout."
+    )
+
+
 def test_constants_deprecation():
     for enum, prefix in {
         ImageFont.Layout: "LAYOUT_",
