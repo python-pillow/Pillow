@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added unpacker from RGBA;15 to RGB #6031
+  [radarhere]
+
 - Enable arm64 for MSVC on Windows #5811
   [gaborkertesz-linaro, gaborkertesz]
 
