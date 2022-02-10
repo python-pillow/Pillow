@@ -26,7 +26,7 @@ Changelog (Pillow)
 - Ensure duplicated file pointer is closed #5946
   [radarhere]
 
-- Added specific error if ImagePath coordinate type is incorrect #5942
+- Added specific error if path coordinate type is incorrect #5942
   [radarhere]
 
 - Return an empty bytestring from tobytes() for an empty image #5938

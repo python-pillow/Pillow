@@ -11,6 +11,13 @@ Performing a negative crop on an image previously just returned a `(0, 0)` image
 it will raise a `ValueError`, to help reduce confusion if a user has unintentionally
 provided the wrong arguments.
 
+Added specific error if path coordinate type is incorrect
+---------------------------------------------------------
+
+Rather than returning a `SystemError`, passing the incorrect types of coordinates into
+a path will now raise a more specific `ValueError`, with the message "incorrect
+coordinate type".
+
 API Additions
 =============
 
