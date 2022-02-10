@@ -1,0 +1,16 @@
+9.1.0
+-----
+
+API Additions
+=============
+
+Added get_photoshop_blocks() to parse Photoshop TIFF tag
+--------------------------------------------------------
+
+:py:meth:`~PIL.TiffImagePlugin.TiffImageFile.get_photoshop_blocks` has been added, to
+allow users to determine what Photoshop "Image Resource Blocks" are contained within an
+image. The keys of the returned dictionary are the image resource IDs.
+
+At present, the information within each block is merely returned as a dictionary with a
+"data" entry. This will allow more useful information to be added in the future without
+breaking backwards compatibility.
