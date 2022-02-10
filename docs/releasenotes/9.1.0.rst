@@ -14,3 +14,13 @@ image. The keys of the returned dictionary are the image resource IDs.
 At present, the information within each block is merely returned as a dictionary with a
 "data" entry. This will allow more useful information to be added in the future without
 breaking backwards compatibility.
+
+Other Changes
+=============
+
+Image._repr_pretty_
+-------------------
+
+`im._repr_pretty_` has been added to provide a representation of an image without the
+identity of the object. This allows Jupyter to describe an image and have that
+description stay the same on subsequent executions of the same code.
