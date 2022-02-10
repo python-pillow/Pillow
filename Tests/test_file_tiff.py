@@ -692,6 +692,32 @@ class TestFileTiff:
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
 
+    def test_get_photoshop_blocks(self):
+        with Image.open("Tests/images/lab.tif") as im:
+            assert list(im.get_photoshop_blocks().keys()) == [
+                1061,
+                1002,
+                1005,
+                1062,
+                1037,
+                1049,
+                1011,
+                1034,
+                10000,
+                1013,
+                1016,
+                1032,
+                1054,
+                1050,
+                1064,
+                1041,
+                1044,
+                1036,
+                1057,
+                4000,
+                4001,
+            ]
+
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
