@@ -90,11 +90,18 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_wrong_bits_per_sample(self):
-        with Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff") as im:
-            assert im.mode == "RGBA"
-            assert im.size == (52, 53)
-            assert im.tile == [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))]
+    @pytest.mark.parametrize(
+        "file_name,mode,w,h,offset",
+        [
+            ("tiff_wrong_bits_per_sample.tiff", "RGBA", 52, 53, 160),
+            ("tiff_wrong_bits_per_sample_2.tiff", "RGB", 16, 16, 8),
+        ],
+    )
+    def test_wrong_bits_per_sample(self, file_name, mode, w, h, offset):
+        with Image.open("Tests/images/" + file_name) as im:
+            assert im.mode == mode
+            assert im.size == (w, h)
+            assert im.tile == [("raw", (0, 0, w, h), offset, (mode, 0, 1))]
             im.load()
 
     def test_set_legacy_api(self):

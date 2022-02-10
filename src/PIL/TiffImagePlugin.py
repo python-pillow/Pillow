@@ -1309,8 +1309,12 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_count = 1
         bps_count += len(extra_tuple)
         # Some files have only one value in bps_tuple,
-        # while should have more. Fix it
-        if bps_count > len(bps_tuple) and len(bps_tuple) == 1:
+        # while should have more. Or have more values
+        # than expected. Fix it
+        bps_actual_count = len(bps_tuple)
+        if bps_count < bps_actual_count:
+            bps_tuple = bps_tuple[:bps_count]
+        elif bps_count > bps_actual_count and bps_actual_count == 1:
             bps_tuple = bps_tuple * bps_count
 
         samplesPerPixel = self.tag_v2.get(
