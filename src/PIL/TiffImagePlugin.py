@@ -1307,13 +1307,14 @@ class TiffImageFile(ImageFile.ImageFile):
         else:
             bps_count = 1
         bps_count += len(extra_tuple)
-        # Some files have only one value in bps_tuple,
-        # while should have more. Or have more values
-        # than expected. Fix it
         bps_actual_count = len(bps_tuple)
         if bps_count < bps_actual_count:
+            # If a file has more values in bps_tuple than expected,
+            # remove the excess.
             bps_tuple = bps_tuple[:bps_count]
         elif bps_count > bps_actual_count and bps_actual_count == 1:
+            # If a file has only one value in bps_tuple, when it should have more,
+            # presume it is the same number of bits for all of the samples.
             bps_tuple = bps_tuple * bps_count
 
         samplesPerPixel = self.tag_v2.get(
