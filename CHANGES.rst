@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added get_photoshop_blocks() to parse Photoshop TIFF tag #6030
+  [radarhere]
+
+- Drop excess values in BITSPERSAMPLE #6041
+  [mikhail-iurkov]
+
 - Added unpacker from RGBA;15 to RGB #6031
   [radarhere]
 
