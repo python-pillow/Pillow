@@ -557,8 +557,9 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
-    size_t buffer_size = 0;
-    unsigned n;
+    size_t buffer_size = 0, tile_bytes = 0;
+    unsigned n, tile_height, tile_width;
+    int total_component_width = 0;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -702,6 +703,59 @@ j2k_decode_entry(Imaging im, ImagingCodecState state)
         tile_info.y0 = (tile_info.y0 + correction) >> context->reduce;
         tile_info.x1 = (tile_info.x1 + correction) >> context->reduce;
         tile_info.y1 = (tile_info.y1 + correction) >> context->reduce;
+
+        /* Check the tile bounds; if the tile is outside the image area,
+           or if it has a negative width or height (i.e. the coordinates are
+           swapped), bail. */
+        if (tile_info.x0 >= tile_info.x1 || tile_info.y0 >= tile_info.y1 ||
+            tile_info.x0 < 0 || tile_info.y0 < 0 ||
+            (OPJ_UINT32)tile_info.x0 < image->x0 ||
+            (OPJ_UINT32)tile_info.y0 < image->y0 ||
+            (OPJ_INT32)(tile_info.x1 - image->x0) > im->xsize ||
+            (OPJ_INT32)(tile_info.y1 - image->y0) > im->ysize) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        if (tile_info.nb_comps != image->numcomps) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        /* Sometimes the tile_info.datasize we get back from openjpeg
+           is less than sum(comp_bytes)*w*h, and we overflow in the
+           shuffle stage */
+
+        tile_width = tile_info.x1 - tile_info.x0;
+        tile_height = tile_info.y1 - tile_info.y0;
+
+        /* Total component width = sum (component_width) e.g, it's
+         legal for an la file to have a 1 byte width for l, and 4 for
+         a. and then a malicious file could have a smaller tile_bytes
+        */
+
+        for (n=0; n < tile_info.nb_comps; n++) {
+            // see csize /acsize calcs
+            int csize = (image->comps[n].prec + 7) >> 3;
+            csize = (csize == 3) ? 4 : csize;
+            total_component_width += csize;
+        }
+        if ((tile_width > UINT_MAX / total_component_width) ||
+            (tile_height > UINT_MAX / total_component_width) ||
+            (tile_width > UINT_MAX / (tile_height * total_component_width)) ||
+            (tile_height > UINT_MAX / (tile_width * total_component_width))) {
+            state->errcode = IMAGING_CODEC_BROKEN;
+            state->state = J2K_STATE_FAILED;
+            goto quick_exit;
+        }
+
+        tile_bytes = tile_width * tile_height * total_component_width;
+
+        if (tile_bytes > tile_info.data_size) {
+            tile_info.data_size = tile_bytes;
+        }
 
         if (buffer_size < tile_info.data_size) {
             /* malloc check ok, tile_info.data_size from openjpeg */

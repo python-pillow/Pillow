@@ -2,6 +2,14 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.2 (date TBD)
+------------------
+
+- This is the second Pillow release to support Python 2.7 from ActiveState
+
+- Fix OOB Read in Jpeg2KDecode. CVE 2021-25287, CVE 2021-25288
+  [emilieyyu]
+  
 6.2.2.1 (2021-10-08)
 ------------------
 
