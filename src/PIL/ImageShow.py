@@ -126,16 +126,6 @@ class Viewer:
         os.system(self.get_command(path, **options))
         return 1
 
-    def _remove_path_after_delay(self, path):
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-c",
-                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                path,
-            ]
-        )
-
 
 # --------------------------------------------------------------------
 
@@ -190,7 +180,14 @@ class MacViewer(Viewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.call(["open", "-a", "Preview.app", path])
-        self._remove_path_after_delay(path)
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                path,
+            ]
+        )
         return 1
 
 
@@ -235,7 +232,6 @@ class XDGViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["xdg-open", path])
-        self._remove_path_after_delay(path)
         return 1
 
 
@@ -274,7 +270,6 @@ class DisplayViewer(UnixViewer):
         args.append(path)
 
         subprocess.Popen(args)
-        os.remove(path)
         return 1
 
 
@@ -304,7 +299,6 @@ class GmDisplayViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["gm", "display", path])
-        os.remove(path)
         return 1
 
 
@@ -334,7 +328,6 @@ class EogViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["eog", "-n", path])
-        os.remove(path)
         return 1
 
 
@@ -375,7 +368,6 @@ class XVViewer(UnixViewer):
         args.append(path)
 
         subprocess.Popen(args)
-        os.remove(path)
         return 1
 
 
