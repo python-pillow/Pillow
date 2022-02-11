@@ -54,8 +54,8 @@ def show(image, title=None, **options):
     """
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
-            return 1
-    return 0
+            return True
+    return False
 
 
 class Viewer:
