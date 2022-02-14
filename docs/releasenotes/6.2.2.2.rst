@@ -1,0 +1,10 @@
+6.2.2.2
+-------
+
+Security
+========
+
+This release addresses several critical CVEs.
+
+CVE 2021-25287, CVE 2021-25288 has out-of-bounds read in J2kDecode, in 
+j2ku_graya_la.
