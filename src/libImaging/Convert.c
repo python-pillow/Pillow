@@ -1618,17 +1618,15 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
             break;
         }
 
-    if (!convert)
+    if (!convert) {
 #ifdef notdef
         return (Imaging) ImagingError_ValueError("conversion not supported");
 #else
-    {
-      static char buf[256];
-      /* FIXME: may overflow if mode is too large */
-      sprintf(buf, "conversion from %s to %s not supported", imIn->mode, mode);
-      return (Imaging) ImagingError_ValueError(buf);
-    }
+        static char buf[100];
+        snprintf(buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
+        return (Imaging)ImagingError_ValueError(buf);
 #endif
+    }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
     if (!imOut)
@@ -1681,10 +1679,14 @@ ImagingConvertTransparent(Imaging imIn, const char *mode,
     }
 #else
     {
-      static char buf[256];
-      /* FIXME: may overflow if mode is too large */
-      sprintf(buf, "conversion from %s to %s not supported in convert_transparent", imIn->mode, mode);
-      return (Imaging) ImagingError_ValueError(buf);
+        static char buf[100];
+        snprintf(
+            buf,
+            100,
+            "conversion from %.10s to %.10s not supported in convert_transparent",
+            imIn->mode,
+            mode);
+        return (Imaging)ImagingError_ValueError(buf);
     }
 #endif
 

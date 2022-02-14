@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.3 (2022-02-14)
+--------------------
+
+- Use snprintf instead of sprintf. CVE-2021-34552
+  [wooken]
+
 6.2.2.2 (date TBD)
 ------------------
 
