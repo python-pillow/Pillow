@@ -1641,7 +1641,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
     int bits;
 
-    char *rawmode;
+    char *rawmode, *palette_mode;
     UINT8 *palette;
     Py_ssize_t palettesize;
     if (!PyArg_ParseTuple(args, "sy#", &rawmode, &palette, &palettesize)) {
@@ -1654,7 +1654,8 @@ _putpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    unpack = ImagingFindUnpacker("RGB", rawmode, &bits);
+    palette_mode = strncmp("RGBA", rawmode, 4) == 0 ? "RGBA" : "RGB";
+    unpack = ImagingFindUnpacker(palette_mode, rawmode, &bits);
     if (!unpack) {
         PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
         return NULL;
@@ -1669,7 +1670,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     strcpy(self->image->mode, strlen(self->image->mode) == 2 ? "PA" : "P");
 
-    self->image->palette = ImagingPaletteNew("RGB");
+    self->image->palette = ImagingPaletteNew(palette_mode);
 
     unpack(self->image->palette->palette, palette, palettesize * 8 / bits);
 
