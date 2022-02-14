@@ -991,115 +991,115 @@ static struct {
 /* ------------------- */
 
 static void
-p2bit(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++) {
-        *out++ = (L(&palette[in[x] * 4]) >= 128000) ? 255 : 0;
+        *out++ = (L(&palette->palette[in[x] * 4]) >= 128000) ? 255 : 0;
     }
 }
 
 static void
-pa2bit(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = (L(&palette[in[0] * 4]) >= 128000) ? 255 : 0;
+        *out++ = (L(&palette->palette[in[0] * 4]) >= 128000) ? 255 : 0;
     }
 }
 
 static void
-p2l(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++) {
-        *out++ = L24(&palette[in[x] * 4]) >> 16;
+        *out++ = L24(&palette->palette[in[x] * 4]) >> 16;
     }
 }
 
 static void
-pa2l(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = L24(&palette[in[0] * 4]) >> 16;
+        *out++ = L24(&palette->palette[in[0] * 4]) >> 16;
     }
 }
 
 static void
-p2pa(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, in++) {
-        const UINT8 *rgba = &palette[in[0]];
+        const UINT8 *rgba = &palette->palette[in[0]];
         *out++ = in[0];
         *out++ = in[0];
         *out++ = in[0];
-        *out++ = rgba[3];
+        *out++ = strcmp(palette->mode, "RGB") == 0 ? 255 : rgba[3];
     }
 }
 
 static void
-p2la(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
-        const UINT8 *rgba = &palette[*in++ * 4];
+        const UINT8 *rgba = &palette->palette[*in++ * 4];
         out[0] = out[1] = out[2] = L24(rgba) >> 16;
         out[3] = rgba[3];
     }
 }
 
 static void
-pa2la(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-        out[0] = out[1] = out[2] = L24(&palette[in[0] * 4]) >> 16;
+        out[0] = out[1] = out[2] = L24(&palette->palette[in[0] * 4]) >> 16;
         out[3] = in[3];
     }
 }
 
 static void
-p2i(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2i(UINT8 *out_, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, out_ += 4) {
-        INT32 v = L24(&palette[in[x] * 4]) >> 16;
+        INT32 v = L24(&palette->palette[in[x] * 4]) >> 16;
         memcpy(out_, &v, sizeof(v));
     }
 }
 
 static void
-pa2i(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2i(UINT8 *out_, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     INT32 *out = (INT32 *)out_;
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = L24(&palette[in[0] * 4]) >> 16;
+        *out++ = L24(&palette->palette[in[0] * 4]) >> 16;
     }
 }
 
 static void
-p2f(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2f(UINT8 *out_, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, out_ += 4) {
-        FLOAT32 v = L(&palette[in[x] * 4]) / 1000.0F;
+        FLOAT32 v = L(&palette->palette[in[x] * 4]) / 1000.0F;
         memcpy(out_, &v, sizeof(v));
     }
 }
 
 static void
-pa2f(UINT8 *out_, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2f(UINT8 *out_, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     FLOAT32 *out = (FLOAT32 *)out_;
     for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = (float)L(&palette[in[0] * 4]) / 1000.0F;
+        *out++ = (float)L(&palette->palette[in[0] * 4]) / 1000.0F;
     }
 }
 
 static void
-p2rgb(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2rgb(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++) {
-        const UINT8 *rgb = &palette[*in++ * 4];
+        const UINT8 *rgb = &palette->palette[*in++ * 4];
         *out++ = rgb[0];
         *out++ = rgb[1];
         *out++ = rgb[2];
@@ -1108,10 +1108,10 @@ p2rgb(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
 }
 
 static void
-pa2rgb(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2rgb(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-        const UINT8 *rgb = &palette[in[0] * 4];
+        const UINT8 *rgb = &palette->palette[in[0] * 4];
         *out++ = rgb[0];
         *out++ = rgb[1];
         *out++ = rgb[2];
@@ -1120,30 +1120,30 @@ pa2rgb(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
 }
 
 static void
-p2hsv(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2hsv(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, out += 4) {
-        const UINT8 *rgb = &palette[*in++ * 4];
+        const UINT8 *rgb = &palette->palette[*in++ * 4];
         rgb2hsv_row(out, rgb);
         out[3] = 255;
     }
 }
 
 static void
-pa2hsv(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2hsv(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-        const UINT8 *rgb = &palette[in[0] * 4];
+        const UINT8 *rgb = &palette->palette[in[0] * 4];
         rgb2hsv_row(out, rgb);
         out[3] = 255;
     }
 }
 
 static void
-p2rgba(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2rgba(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++) {
-        const UINT8 *rgba = &palette[*in++ * 4];
+        const UINT8 *rgba = &palette->palette[*in++ * 4];
         *out++ = rgba[0];
         *out++ = rgba[1];
         *out++ = rgba[2];
@@ -1152,10 +1152,10 @@ p2rgba(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
 }
 
 static void
-pa2rgba(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2rgba(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-        const UINT8 *rgb = &palette[in[0] * 4];
+        const UINT8 *rgb = &palette->palette[in[0] * 4];
         *out++ = rgb[0];
         *out++ = rgb[1];
         *out++ = rgb[2];
@@ -1164,25 +1164,25 @@ pa2rgba(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
 }
 
 static void
-p2cmyk(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2cmyk(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     p2rgb(out, in, xsize, palette);
     rgb2cmyk(out, out, xsize);
 }
 
 static void
-pa2cmyk(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2cmyk(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     pa2rgb(out, in, xsize, palette);
     rgb2cmyk(out, out, xsize);
 }
 
 static void
-p2ycbcr(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+p2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     p2rgb(out, in, xsize, palette);
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
 static void
-pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, const UINT8 *palette) {
+pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     pa2rgb(out, in, xsize, palette);
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
@@ -1192,7 +1192,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
-    void (*convert)(UINT8 *, const UINT8 *, int, const UINT8 *);
+    void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
 
     /* Map palette image to L, RGB, RGBA, or CMYK */
 
@@ -1241,7 +1241,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
             (UINT8 *)imOut->image[y],
             (UINT8 *)imIn->image[y],
             imIn->xsize,
-            imIn->palette->palette);
+            imIn->palette);
     }
     ImagingSectionLeave(&cookie);
 
