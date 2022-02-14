@@ -1216,9 +1216,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
         convert = alpha ? pa2f : p2f;
     } else if (strcmp(mode, "RGB") == 0) {
         convert = alpha ? pa2rgb : p2rgb;
-    } else if (strcmp(mode, "RGBA") == 0) {
-        convert = alpha ? pa2rgba : p2rgba;
-    } else if (strcmp(mode, "RGBX") == 0) {
+    } else if (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBX") == 0) {
         convert = alpha ? pa2rgba : p2rgba;
     } else if (strcmp(mode, "CMYK") == 0) {
         convert = alpha ? pa2cmyk : p2cmyk;
