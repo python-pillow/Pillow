@@ -9,6 +9,9 @@ Changelog (Pillow)
 
 - Fix OOB Read in Jpeg2KDecode. CVE 2021-25287, CVE 2021-25288
   [emilieyyu]
+
+- Use snprintf instead of sprintf. CVE-2021-34552
+  [wooken]
   
 6.2.2.1 (2021-10-08)
 ------------------
