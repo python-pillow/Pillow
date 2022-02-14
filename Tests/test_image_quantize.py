@@ -1,8 +1,9 @@
 import pytest
+from packaging.version import parse as parse_version
 
-from PIL import Image
+from PIL import Image, features
 
-from .helper import assert_image_similar, hopper, is_ppc64le
+from .helper import assert_image_similar, hopper, is_ppc64le, skip_unless_feature
 
 
 def test_sanity():
@@ -17,16 +18,14 @@ def test_sanity():
     assert_image_similar(converted.convert("RGB"), image, 60)
 
 
-@pytest.mark.xfail(is_ppc64le(), reason="failing on ppc64le on GHA")
+@skip_unless_feature("libimagequant")
 def test_libimagequant_quantize():
     image = hopper()
-    try:
-        converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
-    except ValueError as ex:  # pragma: no cover
-        if "dependency" in str(ex).lower():
-            pytest.skip("libimagequant support not available")
-        else:
-            raise
+    if is_ppc64le():
+        libimagequant = parse_version(features.version_feature("libimagequant"))
+        if libimagequant < parse_version("4"):
+            pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
+    converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
     assert len(converted.getcolors()) == 100

@@ -90,11 +90,18 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_wrong_bits_per_sample(self):
-        with Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff") as im:
-            assert im.mode == "RGBA"
-            assert im.size == (52, 53)
-            assert im.tile == [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))]
+    @pytest.mark.parametrize(
+        "file_name,mode,size,offset",
+        [
+            ("tiff_wrong_bits_per_sample.tiff", "RGBA", (52, 53), 160),
+            ("tiff_wrong_bits_per_sample_2.tiff", "RGB", (16, 16), 8),
+        ],
+    )
+    def test_wrong_bits_per_sample(self, file_name, mode, size, offset):
+        with Image.open("Tests/images/" + file_name) as im:
+            assert im.mode == mode
+            assert im.size == size
+            assert im.tile == [("raw", (0, 0) + size, offset, (mode, 0, 1))]
             im.load()
 
     def test_set_legacy_api(self):
@@ -684,6 +691,32 @@ class TestFileTiff:
                 description = xmp["xmpmeta"]["RDF"]["Description"]
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
+
+    def test_get_photoshop_blocks(self):
+        with Image.open("Tests/images/lab.tif") as im:
+            assert list(im.get_photoshop_blocks().keys()) == [
+                1061,
+                1002,
+                1005,
+                1062,
+                1037,
+                1049,
+                1011,
+                1034,
+                10000,
+                1013,
+                1016,
+                1032,
+                1054,
+                1050,
+                1064,
+                1041,
+                1044,
+                1036,
+                1057,
+                4000,
+                4001,
+            ]
 
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
