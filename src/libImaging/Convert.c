@@ -1029,12 +1029,13 @@ pa2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
+    int rgb = strcmp(palette->mode, "RGB");
     for (x = 0; x < xsize; x++, in++) {
         const UINT8 *rgba = &palette->palette[in[0]];
         *out++ = in[0];
         *out++ = in[0];
         *out++ = in[0];
-        *out++ = strcmp(palette->mode, "RGB") == 0 ? 255 : rgba[3];
+        *out++ = rgb == 0 ? 255 : rgba[3];
     }
 }
 
