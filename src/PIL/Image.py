@@ -208,44 +208,14 @@ if sys.byteorder == "little":
 else:
     _ENDIAN = ">"
 
-_MODE_CONV = {
-    # official modes
-    "1": "|b1",  # Bits need to be extended to bytes
-    "L": "|u1",
-    "LA": "|u1",
-    "I": _ENDIAN + "i4",
-    "F": _ENDIAN + "f4",
-    "P": "|u1",
-    "RGB": "|u1",
-    "RGBX": "|u1",
-    "RGBA": "|u1",
-    "CMYK": "|u1",
-    "YCbCr": "|u1",
-    "LAB": "|u1",  # UNDONE - unsigned |u1i1i1
-    "HSV": "|u1",
-    # I;16 == I;16L, and I;32 == I;32L
-    "I;16": "<u2",
-    "I;16B": ">u2",
-    "I;16L": "<u2",
-    "I;16S": "<i2",
-    "I;16BS": ">i2",
-    "I;16LS": "<i2",
-    "I;32": "<u4",
-    "I;32B": ">u4",
-    "I;32L": "<u4",
-    "I;32S": "<i4",
-    "I;32BS": ">i4",
-    "I;32LS": "<i4",
-}
-
 
 def _conv_type_shape(im):
-    typ = _MODE_CONV[im.mode]
-    extra = len(im.getbands())
-    if extra == 1:
-        return (im.size[1], im.size[0]), typ
-    else:
-        return (im.size[1], im.size[0], extra), typ
+    m = ImageMode.getmode(im.mode)
+    shape = (im.size[1], im.size[0])
+    extra = len(m.bands)
+    if extra != 1:
+        shape += (extra,)
+    return shape, m.typestr
 
 
 MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
