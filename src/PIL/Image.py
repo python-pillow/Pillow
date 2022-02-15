@@ -210,38 +210,39 @@ else:
 
 _MODE_CONV = {
     # official modes
-    "1": ("|b1", None),  # Bits need to be extended to bytes
-    "L": ("|u1", None),
-    "LA": ("|u1", 2),
-    "I": (_ENDIAN + "i4", None),
-    "F": (_ENDIAN + "f4", None),
-    "P": ("|u1", None),
-    "RGB": ("|u1", 3),
-    "RGBX": ("|u1", 4),
-    "RGBA": ("|u1", 4),
-    "CMYK": ("|u1", 4),
-    "YCbCr": ("|u1", 3),
-    "LAB": ("|u1", 3),  # UNDONE - unsigned |u1i1i1
-    "HSV": ("|u1", 3),
+    "1": "|b1",  # Bits need to be extended to bytes
+    "L": "|u1",
+    "LA": "|u1",
+    "I": _ENDIAN + "i4",
+    "F": _ENDIAN + "f4",
+    "P": "|u1",
+    "RGB": "|u1",
+    "RGBX": "|u1",
+    "RGBA": "|u1",
+    "CMYK": "|u1",
+    "YCbCr": "|u1",
+    "LAB": "|u1",  # UNDONE - unsigned |u1i1i1
+    "HSV": "|u1",
     # I;16 == I;16L, and I;32 == I;32L
-    "I;16": ("<u2", None),
-    "I;16B": (">u2", None),
-    "I;16L": ("<u2", None),
-    "I;16S": ("<i2", None),
-    "I;16BS": (">i2", None),
-    "I;16LS": ("<i2", None),
-    "I;32": ("<u4", None),
-    "I;32B": (">u4", None),
-    "I;32L": ("<u4", None),
-    "I;32S": ("<i4", None),
-    "I;32BS": (">i4", None),
-    "I;32LS": ("<i4", None),
+    "I;16": "<u2",
+    "I;16B": ">u2",
+    "I;16L": "<u2",
+    "I;16S": "<i2",
+    "I;16BS": ">i2",
+    "I;16LS": "<i2",
+    "I;32": "<u4",
+    "I;32B": ">u4",
+    "I;32L": "<u4",
+    "I;32S": "<i4",
+    "I;32BS": ">i4",
+    "I;32LS": "<i4",
 }
 
 
 def _conv_type_shape(im):
-    typ, extra = _MODE_CONV[im.mode]
-    if extra is None:
+    typ = _MODE_CONV[im.mode]
+    extra = len(im.getbands())
+    if extra == 1:
         return (im.size[1], im.size[0]), typ
     else:
         return (im.size[1], im.size[0], extra), typ
