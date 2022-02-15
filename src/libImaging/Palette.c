@@ -40,6 +40,7 @@ ImagingPaletteNew(const char *mode) {
     palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
     /* Initialize to ramp */
+    palette->size = 256;
     for (i = 0; i < 256; i++) {
         palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
             palette->palette[i * 4 + 2] = (UINT8)i;
