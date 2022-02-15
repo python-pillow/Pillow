@@ -821,12 +821,6 @@ class Image:
         if self.im and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
-            if mode == "RGBA":
-                mode = "RGB"
-                self.info["transparency"] = arr[3::4]
-                arr = bytes(
-                    value for (index, value) in enumerate(arr) if index % 4 != 3
-                )
             palette_length = self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
@@ -837,8 +831,11 @@ class Image:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
             else:
-                self.palette.mode = "RGB"
-                self.palette.palette = self.im.getpalette()[: palette_length * 3]
+                palette_mode = "RGBA" if mode.startswith("RGBA") else "RGB"
+                self.palette.mode = palette_mode
+                self.palette.palette = self.im.getpalette(palette_mode, palette_mode)[
+                    : palette_length * len(palette_mode)
+                ]
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
@@ -1761,8 +1758,8 @@ class Image:
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a
-           mode that can be transformed to "RGB" (e.g. "R", "BGR;15", "RGBA;L").
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a mode
+           that can be transformed to "RGB" or "RGBA" (e.g. "R", "BGR;15", "RGBA;L").
         """
         from . import ImagePalette
 
