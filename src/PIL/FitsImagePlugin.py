@@ -2,44 +2,28 @@
 # The Python Imaging Library
 # $Id$
 #
-# FITS stub adapter
+# FITS file handling
 #
 # Copyright (c) 1998-2003 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
+import math
+
 from . import Image, ImageFile
-
-_handler = None
-
-
-def register_handler(handler):
-    """
-    Install application-specific FITS image handler.
-
-    :param handler: Handler object.
-    """
-    global _handler
-    _handler = handler
-
-
-# --------------------------------------------------------------------
-# Image adapter
 
 
 def _accept(prefix):
     return prefix[:6] == b"SIMPLE"
 
 
-class FITSStubImageFile(ImageFile.StubImageFile):
+class FitsImageFile(ImageFile.ImageFile):
 
     format = "FITS"
     format_description = "FITS"
 
     def _open(self):
-        offset = self.fp.tell()
-
         headers = {}
         while True:
             header = self.fp.read(80)
@@ -75,26 +59,13 @@ class FITSStubImageFile(ImageFile.StubImageFile):
             self.mode = "F"
             # rawmode = "F" if number_of_bits == -32 else "F;64F"
 
-        self.fp.seek(offset)
-
-        loader = self._load()
-        if loader:
-            loader.open(self)
-
-    def _load(self):
-        return _handler
-
-
-def _save(im, fp, filename):
-    if _handler is None or not hasattr("_handler", "save"):
-        raise OSError("FITS save handler not installed")
-    _handler.save(im, fp, filename)
+        offset = math.ceil(self.fp.tell() / 2880) * 2880
+        self.tile = [("raw", (0, 0) + self.size, offset, (self.mode, 0, -1))]
 
 
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open(FITSStubImageFile.format, FITSStubImageFile, _accept)
-Image.register_save(FITSStubImageFile.format, _save)
+Image.register_open(FitsImageFile.format, FitsImageFile, _accept)
 
-Image.register_extensions(FITSStubImageFile.format, [".fit", ".fits"])
+Image.register_extensions(FitsImageFile.format, [".fit", ".fits"])

@@ -1064,6 +1064,11 @@ is commonly used in fax applications. The DCX decoder can read files containing
 When the file is opened, only the first image is read. You can use
 :py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
 
+FITS
+^^^^
+
+Pillow identifies and reads FITS files, commonly used for astronomy.
+
 FLI, FLC
 ^^^^^^^^
 
@@ -1353,16 +1358,6 @@ Pillow provides a stub driver for BUFR files.
 
 To add read or write support to your application, use
 :py:func:`PIL.BufrStubImagePlugin.register_handler`.
-
-FITS
-^^^^
-
-.. versionadded:: 1.1.5
-
-Pillow provides a stub driver for FITS files.
-
-To add read or write support to your application, use
-:py:func:`PIL.FitsStubImagePlugin.register_handler`.
 
 GRIB
 ^^^^

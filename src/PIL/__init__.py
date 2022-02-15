@@ -30,7 +30,7 @@ _plugins = [
     "DcxImagePlugin",
     "DdsImagePlugin",
     "EpsImagePlugin",
-    "FitsStubImagePlugin",
+    "FitsImagePlugin",
     "FliImagePlugin",
     "FpxImagePlugin",
     "FtexImagePlugin",

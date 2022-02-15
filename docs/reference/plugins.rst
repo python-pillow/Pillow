@@ -41,10 +41,10 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.FitsStubImagePlugin` Module
+:mod:`~PIL.FitsImagePlugin` Module
 --------------------------------------
 
-.. automodule:: PIL.FitsStubImagePlugin
+.. automodule:: PIL.FitsImagePlugin
     :members:
     :undoc-members:
     :show-inheritance:
