@@ -57,13 +57,13 @@ def getmode(mode):
             "LAB": ("RGB", "L", ("L", "A", "B"), "|u1"),
             "HSV": ("RGB", "L", ("H", "S", "V"), "|u1"),
             # extra experimental modes
-            "RGBa": ("RGB", "L", ("R", "G", "B", "a"), None),
-            "BGR;15": ("RGB", "L", ("B", "G", "R"), None),
-            "BGR;16": ("RGB", "L", ("B", "G", "R"), None),
-            "BGR;24": ("RGB", "L", ("B", "G", "R"), None),
-            "BGR;32": ("RGB", "L", ("B", "G", "R"), None),
+            "RGBa": ("RGB", "L", ("R", "G", "B", "a"), "|u1"),
+            "BGR;15": ("RGB", "L", ("B", "G", "R"), endian + "u2"),
+            "BGR;16": ("RGB", "L", ("B", "G", "R"), endian + "u2"),
+            "BGR;24": ("RGB", "L", ("B", "G", "R"), endian + "u3"),
+            "BGR;32": ("RGB", "L", ("B", "G", "R"), endian + "u4"),
             "LA": ("L", "L", ("L", "A"), "|u1"),
-            "La": ("L", "L", ("L", "a"), None),
+            "La": ("L", "L", ("L", "a"), "|u1"),
             "PA": ("RGB", "L", ("P", "A"), "|u1"),
         }.items():
             modes[m] = ModeDescriptor(m, bands, basemode, basetype, typestr)
