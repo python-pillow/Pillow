@@ -208,7 +208,7 @@ _ENDIAN = "<" if sys.byteorder == "little" else ">"
 
 def _conv_type_shape(im):
     m = ImageMode.getmode(im.mode)
-    shape = (im.size[1], im.size[0])
+    shape = (im.height, im.width)
     extra = len(m.bands)
     if extra != 1:
         shape += (extra,)
