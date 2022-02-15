@@ -203,10 +203,7 @@ ENCODERS = {}
 # --------------------------------------------------------------------
 # Modes
 
-if sys.byteorder == "little":
-    _ENDIAN = "<"
-else:
-    _ENDIAN = ">"
+_ENDIAN = "<" if sys.byteorder == "little" else ">"
 
 
 def _conv_type_shape(im):
