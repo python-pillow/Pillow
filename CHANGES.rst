@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Attach RGBA palettes from putpalette() when suitable #6054
+  [radarhere]
+
 - Added get_photoshop_blocks() to parse Photoshop TIFF tag #6030
   [radarhere]
 
