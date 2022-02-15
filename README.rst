@@ -35,16 +35,6 @@ See the ``pre_build`` in ``config.sh`` and the ``fetch_unpack`` routine in
 ``multibuild/library_builders.sh`` for the filename to give to the downloaded
 archive.
 
-Dependencies
-------------
-
-NumPy
-~~~~~
-
-Check minimum NumPy versions to build against in ``.travis.yml`` file. Build against the
-earliest NumPy that Pillow is compatible with; see
-`forward, backward NumPy compatibility <https://stackoverflow.com/questions/17709641/valueerror-numpy-dtype-has-the-wrong-size-try-recompiling/18369312#18369312>`_
-
 Wheels
 ------
 
