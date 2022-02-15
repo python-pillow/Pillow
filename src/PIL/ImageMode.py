@@ -13,7 +13,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from PIL import Image
+import sys
 
 # mode descriptor cache
 _modes = None
@@ -39,13 +39,14 @@ def getmode(mode):
     if not _modes:
         # initialize mode cache
         modes = {}
+        endian = "<" if sys.byteorder == "little" else ">"
         for m, (basemode, basetype, bands, typestr) in {
             # core modes
             # Bits need to be extended to bytes
             "1": ("L", "L", ("1",), "|b1"),
             "L": ("L", "L", ("L",), "|u1"),
-            "I": ("L", "I", ("I",), Image._ENDIAN + "i4"),
-            "F": ("L", "F", ("F",), Image._ENDIAN + "f4"),
+            "I": ("L", "I", ("I",), endian + "i4"),
+            "F": ("L", "F", ("F",), endian + "f4"),
             "P": ("P", "L", ("P",), "|u1"),
             "RGB": ("RGB", "L", ("R", "G", "B"), "|u1"),
             "RGBX": ("RGB", "L", ("R", "G", "B", "X"), "|u1"),
@@ -75,8 +76,8 @@ def getmode(mode):
             "I;16LS": "<i2",
             "I;16B": ">u2",
             "I;16BS": ">i2",
-            "I;16N": Image._ENDIAN + "u2",
-            "I;16NS": Image._ENDIAN + "i2",
+            "I;16N": endian + "u2",
+            "I;16NS": endian + "i2",
             "I;32": "<u4",
             "I;32B": ">u4",
             "I;32L": "<u4",
