@@ -25,9 +25,10 @@ def test_palette_rawmode():
     im = Image.new("P", (1, 1))
     im.putpalette((1, 2, 3))
 
-    rgb = im.getpalette("RGB")
-    assert len(rgb) == 256 * 3
-    assert rgb[:3] == [1, 2, 3]
+    for rawmode in ("RGB", None):
+        rgb = im.getpalette(rawmode)
+        assert len(rgb) == 256 * 3
+        assert rgb[:3] == [1, 2, 3]
 
     # Convert the RGB palette to RGBA
     rgba = im.getpalette("RGBA")
@@ -41,6 +42,7 @@ def test_palette_rawmode():
     assert len(rgb) == 256 * 3
     assert rgb[:3] == [1, 2, 3]
 
-    rgba = im.getpalette("RGBA")
-    assert len(rgba) == 256 * 4
-    assert rgba[:4] == [1, 2, 3, 4]
+    for rawmode in ("RGBA", None):
+        rgba = im.getpalette(rawmode)
+        assert len(rgba) == 256 * 4
+        assert rgba[:4] == [1, 2, 3, 4]

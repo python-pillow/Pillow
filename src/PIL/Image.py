@@ -1405,7 +1405,8 @@ class Image:
         """
         Returns the image palette as a list.
 
-        :param rawmode: The mode in which to return the palette.
+        :param rawmode: The mode in which to return the palette. ``None`` will
+           return the palette in its current mode.
         :returns: A list of color values [r, g, b, ...], or None if the
            image has no palette.
         """
@@ -1415,6 +1416,8 @@ class Image:
             mode = self.im.getpalettemode()
         except ValueError:
             return None  # no palette
+        if rawmode is None:
+            rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
     def getpixel(self, xy):
