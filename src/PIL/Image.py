@@ -1401,19 +1401,21 @@ class Image:
         self.load()
         return self.im.ptr
 
-    def getpalette(self):
+    def getpalette(self, rawmode="RGB"):
         """
         Returns the image palette as a list.
 
+        :param rawmode: The mode in which to return the palette.
         :returns: A list of color values [r, g, b, ...], or None if the
            image has no palette.
         """
 
         self.load()
         try:
-            return list(self.im.getpalette())
+            mode = self.im.getpalettemode()
         except ValueError:
             return None  # no palette
+        return list(self.im.getpalette(mode, rawmode))
 
     def getpixel(self, xy):
         """

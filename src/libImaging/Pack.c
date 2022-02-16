@@ -574,6 +574,7 @@ static struct {
     /* true colour */
     {"RGB", "RGB", 24, ImagingPackRGB},
     {"RGB", "RGBX", 32, copy4},
+    {"RGB", "RGBA", 32, copy4},
     {"RGB", "XRGB", 32, ImagingPackXRGB},
     {"RGB", "BGR", 24, ImagingPackBGR},
     {"RGB", "BGRX", 32, ImagingPackBGRX},
