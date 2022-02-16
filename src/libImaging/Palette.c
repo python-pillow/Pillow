@@ -194,7 +194,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
 
     dmax = (unsigned int)~0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         int r, g, b;
         unsigned int tmin, tmax;
 
@@ -227,7 +227,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
         d[i] = (unsigned int)~0;
     }
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         if (dmin[i] <= dmax) {
             int rd, gd, bd;
             int ri, gi, bi;
