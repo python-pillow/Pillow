@@ -381,7 +381,6 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     * ``keep``: Only valid for JPEG files, will retain the original image setting.
     * ``4:4:4``, ``4:2:2``, ``4:2:0``: Specific sampling values
-    * ``-1``: equivalent to ``keep``
     * ``0``: equivalent to ``4:4:4``
     * ``1``: equivalent to ``4:2:2``
     * ``2``: equivalent to ``4:2:0``
