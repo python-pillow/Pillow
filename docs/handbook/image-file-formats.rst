@@ -385,6 +385,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     * ``1``: equivalent to ``4:2:2``
     * ``2``: equivalent to ``4:2:0``
 
+    If absent, the setting will be determined by libjpeg or libjpeg-turbo.
+
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
     advanced option for wizards in the JPEG documentation. Use with
