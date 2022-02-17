@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Ensure image is opaque after converting P to PA with RGB palette #6052
+  [radarhere]
+
 - Attach RGBA palettes from putpalette() when suitable #6054
   [radarhere]
 
