@@ -7,7 +7,6 @@ ARCHIVE_SDIR=pillow-depends-main
 FREETYPE_VERSION=2.11.1
 HARFBUZZ_VERSION=3.4.0
 LIBPNG_VERSION=1.6.37
-ZLIB_VERSION=1.2.11
 JPEGTURBO_VERSION=2.1.2
 OPENJPEG_VERSION=2.4.0
 XZ_VERSION=5.2.5
@@ -15,8 +14,10 @@ TIFF_VERSION=4.3.0
 LCMS2_VERSION=2.13.1
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.1.4
+    ZLIB_VERSION=1.2.11
 else
     GIFLIB_VERSION=5.2.1
+    ZLIB_VERSION=1.2.8
 fi
 LIBWEBP_VERSION=1.2.2
 BZIP2_VERSION=1.0.8
@@ -133,10 +134,6 @@ function pre_build {
 }
 
 function pip_wheel_cmd {
-    if [ -z "$IS_MACOS" ]; then
-        pipx install --force "auditwheel<5"
-    fi
-
     local abs_wheelhouse=$1
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
