@@ -76,6 +76,13 @@ def test_16bit_workaround():
         _test_float_conversion(im.convert("I"))
 
 
+def test_opaque():
+    alpha = hopper("P").convert("PA").getchannel("A")
+
+    solid = Image.new("L", (128, 128), 255)
+    assert_image_equal(alpha, solid)
+
+
 def test_rgba_p():
     im = hopper("RGBA")
     im.putalpha(hopper("L"))
