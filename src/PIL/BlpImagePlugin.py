@@ -245,7 +245,7 @@ class BlpImageFile(ImageFile.ImageFile):
 
         if self.magic == b"BLP1":
             decoder = "BLP1"
-            self.mode = "RGBA"
+            self.mode = "RGB"
         elif self.magic == b"BLP2":
             decoder = "BLP2"
             self.mode = "RGBA" if self._blp_alpha_depth else "RGB"
@@ -334,7 +334,7 @@ class BLP1Decoder(_BLPBaseDecoder):
                     except struct.error:
                         break
                     b, g, r, a = palette[offset]
-                    data.extend([r, g, b, 0xFF])  # is there a case where alpha is used?
+                    data.extend([r, g, b])
 
                 self.set_as_raw(bytes(data))
             else:
@@ -357,19 +357,8 @@ class BLP1Decoder(_BLPBaseDecoder):
         data = BytesIO(data)
         image = JpegImageFile(data)
         Image._decompression_bomb_check(image.size)
-        image.mode = "RGBA"
-        image.tile = [("jpeg", (0, 0) + self.size, 0, ("RGBA", ""))]
-
-        b, g, r, a = image.split()
-        if not any(
-            [a.getpixel((x, y)) for x in range(a.width) for y in range(a.height)]
-        ):
-            # try to unprotect completely transparent pictures
-            from PIL import ImageOps
-
-            a = ImageOps.invert(a)
-
-        image = Image.merge("RGBA", (r, g, b, a))
+        image.mode = "RGB"
+        image.tile = [("jpeg", (0, 0) + self.size, 0, ("BGRX", ""))]
         self.set_as_raw(image.tobytes())
 
 
