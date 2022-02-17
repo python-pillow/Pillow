@@ -291,7 +291,7 @@ tools.
 The easiest way to install external libraries is via `Homebrew
 <https://brew.sh/>`_. After you install Homebrew, run::
 
-    brew install libtiff libjpeg webp little-cms2
+    brew install libjpeg libtiff little-cms2 openjpeg webp
 
 To install libraqm on macOS use Homebrew to install its dependencies::
 
