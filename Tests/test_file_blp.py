@@ -5,6 +5,11 @@ from PIL import Image
 from .helper import assert_image_equal_tofile
 
 
+def test_load_blp1():
+    with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
+        assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
+
+
 def test_load_blp2_raw():
     with Image.open("Tests/images/blp/blp2_raw.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_raw.png")
@@ -18,13 +23,6 @@ def test_load_blp2_dxt1():
 def test_load_blp2_dxt1a():
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
-
-
-def test_load_blp1():
-    with Image.open("Tests/images/blp/war3mapMap.blp") as im:
-        png = im.copy()
-        png.save(fp="Tests/images/blp/war3mapMap.png")
-        assert_image_equal_tofile(im, "Tests/images/blp/war3mapMap.png")
 
 
 @pytest.mark.parametrize(
