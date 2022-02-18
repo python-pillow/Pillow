@@ -44,6 +44,12 @@ try:
 except ImportError:
     ElementTree = None
 
+try:
+    from importlib.metadata import entry_points
+except ImportError:
+    # NB: potentially try to load entry_points from backported importlib_metadata?
+    entry_points = None
+
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
@@ -373,6 +379,12 @@ def init():
             __import__(f"PIL.{plugin}", globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
+
+    if entry_points:
+        for decoder in entry_points(group='PIL.Image.decoder'):
+            # or, alternatively, register a decoder directly from here:
+            # DECODERS[decoder.name] = decoder.load()
+            decoder.load()
 
     if OPEN or SAVE:
         _initialized = 2
