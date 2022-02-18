@@ -1067,6 +1067,8 @@ When the file is opened, only the first image is read. You can use
 FITS
 ^^^^
 
+.. versionadded:: 9.1.0
+
 Pillow identifies and reads FITS files, commonly used for astronomy.
 
 FLI, FLC
