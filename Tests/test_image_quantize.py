@@ -25,7 +25,7 @@ def test_libimagequant_quantize():
         libimagequant = parse_version(features.version_feature("libimagequant"))
         if libimagequant < parse_version("4"):
             pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
-    converted = image.quantize(100, Image.LIBIMAGEQUANT)
+    converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
     assert len(converted.getcolors()) == 100
@@ -33,7 +33,7 @@ def test_libimagequant_quantize():
 
 def test_octree_quantize():
     image = hopper()
-    converted = image.quantize(100, Image.FASTOCTREE)
+    converted = image.quantize(100, Image.Quantize.FASTOCTREE)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 20)
     assert len(converted.getcolors()) == 100
@@ -96,10 +96,10 @@ def test_transparent_colors_equal():
 @pytest.mark.parametrize(
     "method, color",
     (
-        (Image.MEDIANCUT, (0, 0, 0)),
-        (Image.MAXCOVERAGE, (0, 0, 0)),
-        (Image.FASTOCTREE, (0, 0, 0)),
-        (Image.FASTOCTREE, (0, 0, 0, 0)),
+        (Image.Quantize.MEDIANCUT, (0, 0, 0)),
+        (Image.Quantize.MAXCOVERAGE, (0, 0, 0)),
+        (Image.Quantize.FASTOCTREE, (0, 0, 0)),
+        (Image.Quantize.FASTOCTREE, (0, 0, 0, 0)),
     ),
 )
 def test_palette(method, color):

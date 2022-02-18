@@ -143,7 +143,7 @@ def test_trns_l(tmp_path):
     assert "transparency" in im_p.info
     im_p.save(f)
 
-    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" in im_p.info
     im_p.save(f)
 
@@ -166,13 +166,13 @@ def test_trns_RGB(tmp_path):
     assert "transparency" not in im_rgba.info
     im_rgba.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
 
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
-    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert im_p.info["transparency"] == im_p.getpixel((0, 0))
     im_p.save(f)
 

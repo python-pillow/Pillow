@@ -37,6 +37,7 @@ import sys
 import tempfile
 import warnings
 from collections.abc import Callable, MutableMapping
+from enum import IntEnum
 from pathlib import Path
 
 try:
@@ -53,15 +54,57 @@ from ._util import deferred_error, isPath
 
 
 def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
     if name in categories:
         warnings.warn(
-            "Image categories are deprecated and will be removed in Pillow 10 "
-            "(2023-07-01). Use is_animated instead.",
+            "Image categories are " + deprecated + "Use is_animated instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         return categories[name]
+    elif name in ("NEAREST", "NONE"):
+        warnings.warn(
+            name
+            + " is "
+            + deprecated
+            + "Use Resampling.NEAREST or Dither.NONE instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return 0
+    old_resampling = {
+        "LINEAR": "BILINEAR",
+        "CUBIC": "BICUBIC",
+        "ANTIALIAS": "LANCZOS",
+    }
+    if name in old_resampling:
+        warnings.warn(
+            name
+            + " is "
+            + deprecated
+            + "Use Resampling."
+            + old_resampling[name]
+            + " instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return Resampling[old_resampling[name]]
+    for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
+        if name in enum.__members__:
+            warnings.warn(
+                name
+                + " is "
+                + deprecated
+                + "Use "
+                + enum.__name__
+                + "."
+                + name
+                + " instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -139,46 +182,64 @@ def isImageType(t):
 # Constants
 
 # transpose
-FLIP_LEFT_RIGHT = 0
-FLIP_TOP_BOTTOM = 1
-ROTATE_90 = 2
-ROTATE_180 = 3
-ROTATE_270 = 4
-TRANSPOSE = 5
-TRANSVERSE = 6
+class Transpose(IntEnum):
+    FLIP_LEFT_RIGHT = 0
+    FLIP_TOP_BOTTOM = 1
+    ROTATE_90 = 2
+    ROTATE_180 = 3
+    ROTATE_270 = 4
+    TRANSPOSE = 5
+    TRANSVERSE = 6
+
 
 # transforms (also defined in Imaging.h)
-AFFINE = 0
-EXTENT = 1
-PERSPECTIVE = 2
-QUAD = 3
-MESH = 4
+class Transform(IntEnum):
+    AFFINE = 0
+    EXTENT = 1
+    PERSPECTIVE = 2
+    QUAD = 3
+    MESH = 4
+
 
 # resampling filters (also defined in Imaging.h)
-NEAREST = NONE = 0
-BOX = 4
-BILINEAR = LINEAR = 2
-HAMMING = 5
-BICUBIC = CUBIC = 3
-LANCZOS = ANTIALIAS = 1
+class Resampling(IntEnum):
+    NEAREST = 0
+    BOX = 4
+    BILINEAR = 2
+    HAMMING = 5
+    BICUBIC = 3
+    LANCZOS = 1
 
-_filters_support = {BOX: 0.5, BILINEAR: 1.0, HAMMING: 1.0, BICUBIC: 2.0, LANCZOS: 3.0}
+
+_filters_support = {
+    Resampling.BOX: 0.5,
+    Resampling.BILINEAR: 1.0,
+    Resampling.HAMMING: 1.0,
+    Resampling.BICUBIC: 2.0,
+    Resampling.LANCZOS: 3.0,
+}
 
 
 # dithers
-NEAREST = NONE = 0
-ORDERED = 1  # Not yet implemented
-RASTERIZE = 2  # Not yet implemented
-FLOYDSTEINBERG = 3  # default
+class Dither(IntEnum):
+    NONE = 0
+    ORDERED = 1  # Not yet implemented
+    RASTERIZE = 2  # Not yet implemented
+    FLOYDSTEINBERG = 3  # default
+
 
 # palettes/quantizers
-WEB = 0
-ADAPTIVE = 1
+class Palette(IntEnum):
+    WEB = 0
+    ADAPTIVE = 1
 
-MEDIANCUT = 0
-MAXCOVERAGE = 1
-FASTOCTREE = 2
-LIBIMAGEQUANT = 3
+
+class Quantize(IntEnum):
+    MEDIANCUT = 0
+    MAXCOVERAGE = 1
+    FASTOCTREE = 2
+    LIBIMAGEQUANT = 3
+
 
 if hasattr(core, "DEFAULT_STRATEGY"):
     DEFAULT_STRATEGY = core.DEFAULT_STRATEGY
@@ -859,7 +920,9 @@ class Image:
         """
         pass
 
-    def convert(self, mode=None, matrix=None, dither=None, palette=WEB, colors=256):
+    def convert(
+        self, mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256
+    ):
         """
         Returns a converted copy of this image. For the "P" mode, this
         method translates pixels through the palette.  If mode is
@@ -878,7 +941,7 @@ class Image:
         The default method of converting a greyscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is :data:`NONE`, all values larger than 127 are set to 255 (white),
+        dither is ``None``, all values larger than 127 are set to 255 (white),
         all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
@@ -891,12 +954,13 @@ class Image:
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`NONE` or :data:`FLOYDSTEINBERG` (default).
-           Note that this is not used when ``matrix`` is supplied.
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
+           (default). Note that this is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
-           to "P".  Available palettes are :data:`WEB` or :data:`ADAPTIVE`.
-        :param colors: Number of colors to use for the :data:`ADAPTIVE` palette.
-           Defaults to 256.
+           to "P".  Available palettes are :data:`Palette.WEB` or
+           :data:`Palette.ADAPTIVE`.
+        :param colors: Number of colors to use for the :data:`Palette.ADAPTIVE`
+           palette. Defaults to 256.
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
@@ -1003,7 +1067,7 @@ class Image:
                 else:
                     raise ValueError("Transparency for P mode should be bytes or int")
 
-        if mode == "P" and palette == ADAPTIVE:
+        if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
             new = self._new(im)
             from . import ImagePalette
@@ -1025,7 +1089,7 @@ class Image:
 
         # colorspace conversion
         if dither is None:
-            dither = FLOYDSTEINBERG
+            dither = Dither.FLOYDSTEINBERG
 
         try:
             im = self.im.convert(mode, dither)
@@ -1038,7 +1102,7 @@ class Image:
                 raise ValueError("illegal conversion") from e
 
         new_im = self._new(im)
-        if mode == "P" and palette != ADAPTIVE:
+        if mode == "P" and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
@@ -1067,24 +1131,25 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: :data:`MEDIANCUT` (median cut),
-                       :data:`MAXCOVERAGE` (maximum coverage),
-                       :data:`FASTOCTREE` (fast octree),
-                       :data:`LIBIMAGEQUANT` (libimagequant; check support using
-                       :py:func:`PIL.features.check_feature`
-                       with ``feature="libimagequant"``).
+        :param method: :data:`Quantize.MEDIANCUT` (median cut),
+                       :data:`Quantize.MAXCOVERAGE` (maximum coverage),
+                       :data:`Quantize.FASTOCTREE` (fast octree),
+                       :data:`Quantize.LIBIMAGEQUANT` (libimagequant; check support
+                       using :py:func:`PIL.features.check_feature` with
+                       ``feature="libimagequant"``).
 
-                       By default, :data:`MEDIANCUT` will be used.
+                       By default, :data:`Quantize.MEDIANCUT` will be used.
 
-                       The exception to this is RGBA images. :data:`MEDIANCUT` and
-                       :data:`MAXCOVERAGE` do not support RGBA images, so
-                       :data:`FASTOCTREE` is used by default instead.
+                       The exception to this is RGBA images. :data:`Quantize.MEDIANCUT`
+                       and :data:`Quantize.MAXCOVERAGE` do not support RGBA images, so
+                       :data:`Quantize.FASTOCTREE` is used by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`NONE` or :data:`FLOYDSTEINBERG` (default).
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
+           (default).
            Default: 1 (legacy setting)
         :returns: A new image
 
@@ -1094,11 +1159,14 @@ class Image:
 
         if method is None:
             # defaults:
-            method = MEDIANCUT
+            method = Quantize.MEDIANCUT
             if self.mode == "RGBA":
-                method = FASTOCTREE
+                method = Quantize.FASTOCTREE
 
-        if self.mode == "RGBA" and method not in (FASTOCTREE, LIBIMAGEQUANT):
+        if self.mode == "RGBA" and method not in (
+            Quantize.FASTOCTREE,
+            Quantize.LIBIMAGEQUANT,
+        ):
             # Caller specified an invalid mode.
             raise ValueError(
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
@@ -1908,15 +1976,18 @@ class Image:
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height).
         :param resample: An optional resampling filter.  This can be
-           one of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BOX`,
-           :py:data:`PIL.Image.BILINEAR`, :py:data:`PIL.Image.HAMMING`,
-           :py:data:`PIL.Image.BICUBIC` or :py:data:`PIL.Image.LANCZOS`.
+           one of :py:data:`PIL.Image.Resampling.NEAREST`,
+           :py:data:`PIL.Image.Resampling.BOX`,
+           :py:data:`PIL.Image.Resampling.BILINEAR`,
+           :py:data:`PIL.Image.Resampling.HAMMING`,
+           :py:data:`PIL.Image.Resampling.BICUBIC` or
+           :py:data:`PIL.Image.Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`PIL.Image.NEAREST`.
+           :py:data:`PIL.Image.Resampling.NEAREST`.
            If the image mode specifies a number of bits, such as "I;16", then the
-           default filter is :py:data:`PIL.Image.NEAREST`.
-           Otherwise, the default filter is :py:data:`PIL.Image.BICUBIC`.
-           See: :ref:`concept-filters`.
+           default filter is :py:data:`PIL.Image.Resampling.NEAREST`.
+           Otherwise, the default filter is
+           :py:data:`PIL.Image.Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
            the source image region to be scaled.
            The values must be within (0, 0, width, height) rectangle.
@@ -1938,19 +2009,26 @@ class Image:
 
         if resample is None:
             type_special = ";" in self.mode
-            resample = NEAREST if type_special else BICUBIC
-        elif resample not in (NEAREST, BILINEAR, BICUBIC, LANCZOS, BOX, HAMMING):
+            resample = Resampling.NEAREST if type_special else Resampling.BICUBIC
+        elif resample not in (
+            Resampling.NEAREST,
+            Resampling.BILINEAR,
+            Resampling.BICUBIC,
+            Resampling.LANCZOS,
+            Resampling.BOX,
+            Resampling.HAMMING,
+        ):
             message = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
                 for filter in (
-                    (NEAREST, "Image.NEAREST"),
-                    (LANCZOS, "Image.LANCZOS"),
-                    (BILINEAR, "Image.BILINEAR"),
-                    (BICUBIC, "Image.BICUBIC"),
-                    (BOX, "Image.BOX"),
-                    (HAMMING, "Image.HAMMING"),
+                    (Resampling.NEAREST, "Image.Resampling.NEAREST"),
+                    (Resampling.LANCZOS, "Image.Resampling.LANCZOS"),
+                    (Resampling.BILINEAR, "Image.Resampling.BILINEAR"),
+                    (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
+                    (Resampling.BOX, "Image.Resampling.BOX"),
+                    (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
             raise ValueError(
@@ -1971,16 +2049,16 @@ class Image:
             return self.copy()
 
         if self.mode in ("1", "P"):
-            resample = NEAREST
+            resample = Resampling.NEAREST
 
-        if self.mode in ["LA", "RGBA"] and resample != NEAREST:
+        if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box)
             return im.convert(self.mode)
 
         self.load()
 
-        if reducing_gap is not None and resample != NEAREST:
+        if reducing_gap is not None and resample != Resampling.NEAREST:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
@@ -2035,7 +2113,7 @@ class Image:
     def rotate(
         self,
         angle,
-        resample=NEAREST,
+        resample=Resampling.NEAREST,
         expand=0,
         center=None,
         translate=None,
@@ -2048,12 +2126,12 @@ class Image:
 
         :param angle: In degrees counter clockwise.
         :param resample: An optional resampling filter.  This can be
-           one of :py:data:`PIL.Image.NEAREST` (use nearest neighbour),
+           one of :py:data:`PIL.Image.Resampling.NEAREST` (use nearest neighbour),
            :py:data:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), or :py:data:`PIL.Image.BICUBIC`
+           environment), or :py:data:`PIL.Image.Resampling.BICUBIC`
            (cubic spline interpolation in a 4x4 environment).
            If omitted, or if the image has mode "1" or "P", it is
-           set to :py:data:`PIL.Image.NEAREST`. See :ref:`concept-filters`.
+           set to :py:data:`PIL.Image.Resampling.NEAREST`. See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
@@ -2074,9 +2152,11 @@ class Image:
             if angle == 0:
                 return self.copy()
             if angle == 180:
-                return self.transpose(ROTATE_180)
+                return self.transpose(Transpose.ROTATE_180)
             if angle in (90, 270) and (expand or self.width == self.height):
-                return self.transpose(ROTATE_90 if angle == 90 else ROTATE_270)
+                return self.transpose(
+                    Transpose.ROTATE_90 if angle == 90 else Transpose.ROTATE_270
+                )
 
         # Calculate the affine matrix.  Note that this is the reverse
         # transformation (from destination image to source) because we
@@ -2145,7 +2225,9 @@ class Image:
             matrix[2], matrix[5] = transform(-(nw - w) / 2.0, -(nh - h) / 2.0, matrix)
             w, h = nw, nh
 
-        return self.transform((w, h), AFFINE, matrix, resample, fillcolor=fillcolor)
+        return self.transform(
+            (w, h), Transform.AFFINE, matrix, resample, fillcolor=fillcolor
+        )
 
     def save(self, fp, format=None, **params):
         """
@@ -2331,7 +2413,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=BICUBIC, reducing_gap=2.0):
+    def thumbnail(self, size, resample=Resampling.BICUBIC, reducing_gap=2.0):
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -2347,11 +2429,14 @@ class Image:
 
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
-           of :py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BOX`,
-           :py:data:`PIL.Image.BILINEAR`, :py:data:`PIL.Image.HAMMING`,
-           :py:data:`PIL.Image.BICUBIC` or :py:data:`PIL.Image.LANCZOS`.
-           If omitted, it defaults to :py:data:`PIL.Image.BICUBIC`.
-           (was :py:data:`PIL.Image.NEAREST` prior to version 2.5.0).
+           of :py:data:`PIL.Image.Resampling.NEAREST`,
+           :py:data:`PIL.Image.Resampling.BOX`,
+           :py:data:`PIL.Image.Resampling.BILINEAR`,
+           :py:data:`PIL.Image.Resampling.HAMMING`,
+           :py:data:`PIL.Image.Resampling.BICUBIC` or
+           :py:data:`PIL.Image.Resampling.LANCZOS`.
+           If omitted, it defaults to :py:data:`PIL.Image.Resampling.BICUBIC`.
+           (was :py:data:`PIL.Image.Resampling.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
@@ -2406,7 +2491,13 @@ class Image:
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
     def transform(
-        self, size, method, data=None, resample=NEAREST, fill=1, fillcolor=None
+        self,
+        size,
+        method,
+        data=None,
+        resample=Resampling.NEAREST,
+        fill=1,
+        fillcolor=None,
     ):
         """
         Transforms this image.  This method creates a new image with the
@@ -2415,11 +2506,11 @@ class Image:
 
         :param size: The output size.
         :param method: The transformation method.  This is one of
-          :py:data:`PIL.Image.EXTENT` (cut out a rectangular subregion),
-          :py:data:`PIL.Image.AFFINE` (affine transform),
-          :py:data:`PIL.Image.PERSPECTIVE` (perspective transform),
-          :py:data:`PIL.Image.QUAD` (map a quadrilateral to a rectangle), or
-          :py:data:`PIL.Image.MESH` (map a number of source quadrilaterals
+          :py:data:`PIL.Image.Transform.EXTENT` (cut out a rectangular subregion),
+          :py:data:`PIL.Image.Transform.AFFINE` (affine transform),
+          :py:data:`PIL.Image.Transform.PERSPECTIVE` (perspective transform),
+          :py:data:`PIL.Image.Transform.QUAD` (map a quadrilateral to a rectangle), or
+          :py:data:`PIL.Image.Transform.MESH` (map a number of source quadrilaterals
           in one operation).
 
           It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
@@ -2434,16 +2525,16 @@ class Image:
 
             class Example:
                 def getdata(self):
-                    method = Image.EXTENT
+                    method = Image.Transform.EXTENT
                     data = (0, 0, 100, 100)
                     return method, data
         :param data: Extra data to the transformation method.
         :param resample: Optional resampling filter.  It can be one of
-           :py:data:`PIL.Image.NEAREST` (use nearest neighbour),
-           :py:data:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
+           :py:data:`PIL.Image.Resampling.NEAREST` (use nearest neighbour),
+           :py:data:`PIL.Image.Resampling.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:data:`PIL.Image.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
-           has mode "1" or "P", it is set to :py:data:`PIL.Image.NEAREST`.
+           has mode "1" or "P", it is set to :py:data:`PIL.Image.Resampling.NEAREST`.
            See: :ref:`concept-filters`.
         :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
@@ -2453,7 +2544,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if self.mode in ("LA", "RGBA") and resample != NEAREST:
+        if self.mode in ("LA", "RGBA") and resample != Resampling.NEAREST:
             return (
                 self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
                 .transform(size, method, data, resample, fill, fillcolor)
@@ -2474,10 +2565,12 @@ class Image:
         if self.mode == "P" and self.palette:
             im.palette = self.palette.copy()
         im.info = self.info.copy()
-        if method == MESH:
+        if method == Transform.MESH:
             # list of quads
             for box, quad in data:
-                im.__transformer(box, self, QUAD, quad, resample, fillcolor is None)
+                im.__transformer(
+                    box, self, Transform.QUAD, quad, resample, fillcolor is None
+                )
         else:
             im.__transformer(
                 (0, 0) + size, self, method, data, resample, fillcolor is None
@@ -2485,25 +2578,27 @@ class Image:
 
         return im
 
-    def __transformer(self, box, image, method, data, resample=NEAREST, fill=1):
+    def __transformer(
+        self, box, image, method, data, resample=Resampling.NEAREST, fill=1
+    ):
         w = box[2] - box[0]
         h = box[3] - box[1]
 
-        if method == AFFINE:
+        if method == Transform.AFFINE:
             data = data[0:6]
 
-        elif method == EXTENT:
+        elif method == Transform.EXTENT:
             # convert extent to an affine transform
             x0, y0, x1, y1 = data
             xs = (x1 - x0) / w
             ys = (y1 - y0) / h
-            method = AFFINE
+            method = Transform.AFFINE
             data = (xs, 0, x0, 0, ys, y0)
 
-        elif method == PERSPECTIVE:
+        elif method == Transform.PERSPECTIVE:
             data = data[0:8]
 
-        elif method == QUAD:
+        elif method == Transform.QUAD:
             # quadrilateral warp.  data specifies the four corners
             # given as NW, SW, SE, and NE.
             nw = data[0:2]
@@ -2527,12 +2622,16 @@ class Image:
         else:
             raise ValueError("unknown transformation method")
 
-        if resample not in (NEAREST, BILINEAR, BICUBIC):
-            if resample in (BOX, HAMMING, LANCZOS):
+        if resample not in (
+            Resampling.NEAREST,
+            Resampling.BILINEAR,
+            Resampling.BICUBIC,
+        ):
+            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
                 message = {
-                    BOX: "Image.BOX",
-                    HAMMING: "Image.HAMMING",
-                    LANCZOS: "Image.LANCZOS/Image.ANTIALIAS",
+                    Resampling.BOX: "Image.Resampling.BOX",
+                    Resampling.HAMMING: "Image.Resampling.HAMMING",
+                    Resampling.LANCZOS: "Image.Resampling.LANCZOS",
                 }[resample] + f" ({resample}) cannot be used."
             else:
                 message = f"Unknown resampling filter ({resample})."
@@ -2540,9 +2639,9 @@ class Image:
             filters = [
                 f"{filter[1]} ({filter[0]})"
                 for filter in (
-                    (NEAREST, "Image.NEAREST"),
-                    (BILINEAR, "Image.BILINEAR"),
-                    (BICUBIC, "Image.BICUBIC"),
+                    (Resampling.NEAREST, "Image.Resampling.NEAREST"),
+                    (Resampling.BILINEAR, "Image.Resampling.BILINEAR"),
+                    (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
             raise ValueError(
@@ -2554,7 +2653,7 @@ class Image:
         self.load()
 
         if image.mode in ("1", "P"):
-            resample = NEAREST
+            resample = Resampling.NEAREST
 
         self.im.transform2(box, image.im, method, data, resample, fill)
 
@@ -2562,10 +2661,13 @@ class Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
-        :param method: One of :py:data:`PIL.Image.FLIP_LEFT_RIGHT`,
-          :py:data:`PIL.Image.FLIP_TOP_BOTTOM`, :py:data:`PIL.Image.ROTATE_90`,
-          :py:data:`PIL.Image.ROTATE_180`, :py:data:`PIL.Image.ROTATE_270`,
-          :py:data:`PIL.Image.TRANSPOSE` or :py:data:`PIL.Image.TRANSVERSE`.
+        :param method: One of :py:data:`PIL.Image.Transpose.FLIP_LEFT_RIGHT`,
+          :py:data:`PIL.Image.Transpose.FLIP_TOP_BOTTOM`,
+          :py:data:`PIL.Image.Transpose.ROTATE_90`,
+          :py:data:`PIL.Image.Transpose.ROTATE_180`,
+          :py:data:`PIL.Image.Transpose.ROTATE_270`,
+          :py:data:`PIL.Image.Transpose.TRANSPOSE` or
+          :py:data:`PIL.Image.Transpose.TRANSVERSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 
