@@ -381,7 +381,7 @@ def init():
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if entry_points:
-        for decoder in entry_points(group='PIL.Image.decoder'):
+        for decoder in entry_points(group="PIL.Image.decoder"):
             # or, alternatively, register a decoder directly from here:
             # DECODERS[decoder.name] = decoder.load()
             decoder.load()
