@@ -48,6 +48,13 @@ breaking backwards compatibility.
 Other Changes
 =============
 
+ImageShow temporary files on Unix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling :py:meth:`~PIL.Image.Image.show` or using :py:mod:`~PIL.ImageShow`,
+a temporary file is created from the image. On Unix, Pillow will no longer delete these
+files, and instead leave it to the operating system to do so.
+
 Image._repr_pretty_
 ^^^^^^^^^^^^^^^^^^^
 
