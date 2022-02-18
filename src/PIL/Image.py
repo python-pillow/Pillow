@@ -403,6 +403,9 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     elif not isinstance(args, tuple):
         args = (args,)
 
+    if _initialized < 2:
+        init()
+
     try:
         decoder = DECODERS[decoder_name]
     except KeyError:
