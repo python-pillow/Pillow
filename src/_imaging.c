@@ -1063,7 +1063,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
     PyObject *palette;
-    int palettesize = 256;
+    int palettesize;
     int bits;
     ImagingShuffler pack;
 
@@ -1084,6 +1084,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    palettesize = self->image->palette->size;
     palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
     if (!palette) {
         return NULL;
@@ -1672,9 +1673,11 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     self->image->palette = ImagingPaletteNew(palette_mode);
 
-    unpack(self->image->palette->palette, palette, palettesize * 8 / bits);
+    self->image->palette->size = palettesize * 8 / bits;
+    unpack(self->image->palette->palette, palette, self->image->palette->size);
 
-    return PyLong_FromLong(palettesize * 8 / bits);
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyObject *

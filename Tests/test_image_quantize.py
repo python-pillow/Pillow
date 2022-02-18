@@ -108,3 +108,18 @@ def test_palette(method, color):
     converted = im.quantize(method=method)
     converted_px = converted.load()
     assert converted_px[0, 0] == converted.palette.colors[color]
+
+
+def test_small_palette():
+    # Arrange
+    im = hopper()
+
+    colors = (255, 0, 0, 0, 0, 255)
+    p = Image.new("P", (1, 1))
+    p.putpalette(colors)
+
+    # Act
+    im = im.quantize(palette=p)
+
+    # Assert
+    assert len(im.getcolors()) == 2

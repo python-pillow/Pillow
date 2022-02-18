@@ -74,4 +74,5 @@ def test_putpalette_with_alpha_values():
 def test_rgba_palette(mode, palette):
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
+    assert im.getpalette() == [1, 2, 3]
     assert im.palette.colors == {(1, 2, 3, 4): 0}

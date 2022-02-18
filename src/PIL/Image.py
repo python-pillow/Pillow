@@ -882,7 +882,7 @@ class Image:
         if self.im and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
-            palette_length = self.im.putpalette(mode, arr)
+            self.im.putpalette(mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
             if "transparency" in self.info and mode in ("LA", "PA"):
@@ -894,9 +894,7 @@ class Image:
             else:
                 palette_mode = "RGBA" if mode.startswith("RGBA") else "RGB"
                 self.palette.mode = palette_mode
-                self.palette.palette = self.im.getpalette(palette_mode, palette_mode)[
-                    : palette_length * len(palette_mode)
-                ]
+                self.palette.palette = self.im.getpalette(palette_mode, palette_mode)
 
         if self.im:
             if cffi and USE_CFFI_ACCESS:
