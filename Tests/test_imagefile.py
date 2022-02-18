@@ -124,6 +124,23 @@ class TestImageFile:
         with pytest.raises(OSError):
             p.close()
 
+    def test_no_format(self):
+        buf = BytesIO(b"\x00" * 255)
+
+        class DummyImageFile(ImageFile.ImageFile):
+            def _open(self):
+                self.mode = "RGB"
+                self._size = (1, 1)
+
+        im = DummyImageFile(buf)
+        assert im.format is None
+        assert im.get_format_mimetype() is None
+
+    def test_oserror(self):
+        im = Image.new("RGB", (1, 1))
+        with pytest.raises(OSError):
+            im.save(BytesIO(), "JPEG2000", num_resolutions=2)
+
     def test_truncated(self):
         b = BytesIO(
             b"BM000000000000"  # head_data
@@ -258,15 +275,3 @@ class TestPyDecoder:
         im.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 32, None)]
         with pytest.raises(ValueError):
             im.load()
-
-    def test_no_format(self):
-        buf = BytesIO(b"\x00" * 255)
-
-        im = MockImageFile(buf)
-        assert im.format is None
-        assert im.get_format_mimetype() is None
-
-    def test_oserror(self):
-        im = Image.new("RGB", (1, 1))
-        with pytest.raises(OSError):
-            im.save(BytesIO(), "JPEG2000", num_resolutions=2)
