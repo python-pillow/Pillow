@@ -1123,7 +1123,14 @@ class Image:
                 new_im.info["transparency"] = trns
         return new_im
 
-    def quantize(self, colors=256, method=None, kmeans=0, palette=None, dither=1):
+    def quantize(
+        self,
+        colors=256,
+        method=None,
+        kmeans=0,
+        palette=None,
+        dither=Dither.FLOYDSTEINBERG,
+    ):
         """
         Convert the image to 'P' mode with the specified number
         of colors.
@@ -1148,7 +1155,6 @@ class Image:
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
            (default).
-           Default: 1 (legacy setting)
         :returns: A new image
 
         """
