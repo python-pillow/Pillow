@@ -1407,6 +1407,9 @@ class Image:
 
         :param rawmode: The mode in which to return the palette. ``None`` will
            return the palette in its current mode.
+
+           .. versionadded:: 9.1.0
+
         :returns: A list of color values [r, g, b, ...], or None if the
            image has no palette.
         """
