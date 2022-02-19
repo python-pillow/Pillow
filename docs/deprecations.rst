@@ -66,6 +66,15 @@ In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 ``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
 ``viewer.show_file(path="test.jpg")`` instead.
 
+FitsStubImagePlugin
+~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+
+The stub image plugin FitsStubImagePlugin has been deprecated and will be removed in
+Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
+FitsImagePlugin instead.
+
 Removed features
 ----------------
 
