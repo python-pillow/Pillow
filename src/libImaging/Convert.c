@@ -1447,7 +1447,7 @@ topalette(
 }
 
 static Imaging
-tobilevel(Imaging imOut, Imaging imIn, int dither) {
+tobilevel(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
@@ -1574,7 +1574,7 @@ convert(
     }
 
     if (dither && strcmp(mode, "1") == 0) {
-        return tobilevel(imOut, imIn, dither);
+        return tobilevel(imOut, imIn);
     }
 
     /* standard conversion machinery */

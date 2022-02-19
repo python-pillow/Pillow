@@ -60,7 +60,7 @@ def test_quantize_no_dither():
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
         palette = palette.convert("P")
 
-    converted = image.quantize(dither=0, palette=palette)
+    converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
     assert converted.mode == "P"
     assert converted.palette.palette == palette.palette.palette
 
@@ -70,8 +70,8 @@ def test_quantize_dither_diff():
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
         palette = palette.convert("P")
 
-    dither = image.quantize(dither=1, palette=palette)
-    nodither = image.quantize(dither=0, palette=palette)
+    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette)
+    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette)
 
     assert dither.tobytes() != nodither.tobytes()
 
