@@ -5,6 +5,11 @@ from PIL import BlpImagePlugin, Image
 from .helper import assert_image_equal_tofile
 
 
+def test_load_blp1():
+    with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
+        assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
+
+
 def test_load_blp2_raw():
     with Image.open("Tests/images/blp/blp2_raw.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_raw.png")

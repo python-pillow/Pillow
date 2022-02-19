@@ -392,9 +392,9 @@ class BLP1Decoder(_BLPBaseDecoder):
         data = BytesIO(data)
         image = JpegImageFile(data)
         Image._decompression_bomb_check(image.size)
-        self.tile = image.tile  # :/
-        self.fd = image.fp
-        self.mode = image.mode
+        image.mode = "RGB"
+        image.tile = [("jpeg", (0, 0) + self.size, 0, ("BGRX", ""))]
+        self.set_as_raw(image.tobytes())
 
 
 class BLP2Decoder(_BLPBaseDecoder):
