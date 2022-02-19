@@ -33,17 +33,17 @@ help:
 	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
 	@echo "  clean              remove build products"
 	@echo "  coverage           run coverage test (in progress)"
-	@echo "  doc                make html docs"
-	@echo "  docserve           run an http server on the docs directory"
+	@echo "  doc                make HTML docs"
+	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               to make standalone HTML files"
 	@echo "  inplace            make inplace extension"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  install-venv       (deprecated) install in virtualenv"
 	@echo "  lint               run the lint checks"
-	@echo "  lint-fix           run black and isort to (mostly) fix lint issues."
+	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
-	@echo "  test               run tests on installed pillow"
+	@echo "  test               run tests on installed Pillow"
 
 .PHONY: inplace
 inplace: clean
