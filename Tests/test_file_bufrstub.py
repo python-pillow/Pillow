@@ -45,3 +45,35 @@ def test_save(tmp_path):
     # Act / Assert: stub cannot save without an implemented handler
     with pytest.raises(OSError):
         im.save(tmpfile)
+
+
+def test_handler(tmp_path):
+    class TestHandler:
+        opened = False
+        loaded = False
+        saved = False
+
+        def open(self, im):
+            self.opened = True
+
+        def load(self, im):
+            self.loaded = True
+            return Image.new("RGB", (1, 1))
+
+        def save(self, im, fp, filename):
+            self.saved = True
+
+    handler = TestHandler()
+    BufrStubImagePlugin.register_handler(handler)
+    with Image.open(TEST_FILE) as im:
+        assert handler.opened
+        assert not handler.loaded
+
+        im.load()
+        assert handler.loaded
+
+        temp_file = str(tmp_path / "temp.bufr")
+        im.save(temp_file)
+        assert handler.saved
+
+    BufrStubImagePlugin._handler = None
