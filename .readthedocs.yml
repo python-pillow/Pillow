@@ -1,2 +1,8 @@
+version: 2
+
 python:
-    pip_install: true
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
