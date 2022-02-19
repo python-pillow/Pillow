@@ -271,7 +271,7 @@ class TestFileJpeg:
             del exif[0x8769]
 
             # Assert that it needs to be transposed
-            assert exif[0x0112] == Image.TRANSVERSE
+            assert exif[0x0112] == Image.Transpose.TRANSVERSE
 
             # Assert that the GPS IFD is present and empty
             assert exif.get_ifd(0x8825) == {}

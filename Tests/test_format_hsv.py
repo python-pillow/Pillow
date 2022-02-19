@@ -77,7 +77,7 @@ def to_rgb_colorsys(im):
 
 
 def test_wedge():
-    src = wedge().resize((3 * 32, 32), Image.BILINEAR)
+    src = wedge().resize((3 * 32, 32), Image.Resampling.BILINEAR)
     im = src.convert("HSV")
     comparable = to_hsv_colorsys(src)
 

@@ -5,6 +5,18 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Consider palette size when converting and in getpalette() #6060
+  [radarhere]
+
+- Added enums #5954
+  [radarhere]
+
+- Ensure image is opaque after converting P to PA with RGB palette #6052
+  [radarhere]
+
+- Attach RGBA palettes from putpalette() when suitable #6054
+  [radarhere]
+
 - Added get_photoshop_blocks() to parse Photoshop TIFF tag #6030
   [radarhere]
 

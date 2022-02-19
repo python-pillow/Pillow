@@ -69,7 +69,7 @@ def _save(im, fp, filename):
         if not tmp:
             # TODO: invent a more convenient method for proportional scalings
             tmp = im.copy()
-            tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
+            tmp.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
         bits = BmpImagePlugin.SAVE[tmp.mode][1] if bmp else 32
         fp.write(struct.pack("<H", bits))  # wBitCount(2)
 

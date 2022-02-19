@@ -40,6 +40,7 @@ ImagingPaletteNew(const char *mode) {
     palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
     /* Initialize to ramp */
+    palette->size = 256;
     for (i = 0; i < 256; i++) {
         palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
             palette->palette[i * 4 + 2] = (UINT8)i;
@@ -193,7 +194,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
 
     dmax = (unsigned int)~0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         int r, g, b;
         unsigned int tmin, tmax;
 
@@ -226,7 +227,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
         d[i] = (unsigned int)~0;
     }
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         if (dmin[i] <= dmax) {
             int rd, gd, bd;
             int ri, gi, bi;

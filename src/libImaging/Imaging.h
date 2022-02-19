@@ -143,6 +143,7 @@ struct ImagingPaletteInstance {
     char mode[IMAGING_MODE_LENGTH]; /* Band names */
 
     /* Data */
+    int size;
     UINT8 palette[1024]; /* Palette data (same format as image data) */
 
     INT16 *cache;   /* Palette cache (used for predefined palettes) */
