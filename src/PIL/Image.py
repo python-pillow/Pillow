@@ -264,48 +264,16 @@ ENCODERS = {}
 # --------------------------------------------------------------------
 # Modes
 
-if sys.byteorder == "little":
-    _ENDIAN = "<"
-else:
-    _ENDIAN = ">"
-
-_MODE_CONV = {
-    # official modes
-    "1": ("|b1", None),  # Bits need to be extended to bytes
-    "L": ("|u1", None),
-    "LA": ("|u1", 2),
-    "I": (_ENDIAN + "i4", None),
-    "F": (_ENDIAN + "f4", None),
-    "P": ("|u1", None),
-    "RGB": ("|u1", 3),
-    "RGBX": ("|u1", 4),
-    "RGBA": ("|u1", 4),
-    "CMYK": ("|u1", 4),
-    "YCbCr": ("|u1", 3),
-    "LAB": ("|u1", 3),  # UNDONE - unsigned |u1i1i1
-    "HSV": ("|u1", 3),
-    # I;16 == I;16L, and I;32 == I;32L
-    "I;16": ("<u2", None),
-    "I;16B": (">u2", None),
-    "I;16L": ("<u2", None),
-    "I;16S": ("<i2", None),
-    "I;16BS": (">i2", None),
-    "I;16LS": ("<i2", None),
-    "I;32": ("<u4", None),
-    "I;32B": (">u4", None),
-    "I;32L": ("<u4", None),
-    "I;32S": ("<i4", None),
-    "I;32BS": (">i4", None),
-    "I;32LS": ("<i4", None),
-}
+_ENDIAN = "<" if sys.byteorder == "little" else ">"
 
 
 def _conv_type_shape(im):
-    typ, extra = _MODE_CONV[im.mode]
-    if extra is None:
-        return (im.size[1], im.size[0]), typ
-    else:
-        return (im.size[1], im.size[0], extra), typ
+    m = ImageMode.getmode(im.mode)
+    shape = (im.height, im.width)
+    extra = len(m.bands)
+    if extra != 1:
+        shape += (extra,)
+    return shape, m.typestr
 
 
 MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
