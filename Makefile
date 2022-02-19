@@ -44,8 +44,6 @@ help:
 	@echo "  lint-fix           run black and isort to (mostly) fix lint issues."
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed pillow"
-	@echo "  upload             build and upload sdists to PyPI"
-	@echo "  upload-test        build and upload sdists to test.pythonpackages.com"
 
 .PHONY: inplace
 inplace: clean
