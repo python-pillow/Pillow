@@ -45,6 +45,13 @@ At present, the information within each block is merely returned as a dictionary
 "data" entry. This will allow more useful information to be added in the future without
 breaking backwards compatibility.
 
+Added rawmode argument to Image.getpalette()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, :py:meth:`~PIL.Image.Image.getpalette` returns RGB data from the palette.
+A ``rawmode`` argument has been added, to allow the mode to be chosen instead. ``None``
+can be used to return data in the current mode of the palette.
+
 Other Changes
 =============
 
