@@ -54,8 +54,8 @@ def show(image, title=None, **options):
     """
     for viewer in _viewers:
         if viewer.show(image, title=title, **options):
-            return 1
-    return 0
+            return True
+    return False
 
 
 class Viewer:
@@ -126,16 +126,6 @@ class Viewer:
         os.system(self.get_command(path, **options))
         return 1
 
-    def _remove_path_after_delay(self, path):
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-c",
-                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                path,
-            ]
-        )
-
 
 # --------------------------------------------------------------------
 
@@ -190,7 +180,14 @@ class MacViewer(Viewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.call(["open", "-a", "Preview.app", path])
-        self._remove_path_after_delay(path)
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                path,
+            ]
+        )
         return 1
 
 
@@ -204,7 +201,7 @@ class UnixViewer(Viewer):
 
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]
-        return f"({command} {quote(file)}; rm -f {quote(file)})&"
+        return f"({command} {quote(file)}"
 
 
 class XDGViewer(UnixViewer):
@@ -235,7 +232,6 @@ class XDGViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["xdg-open", path])
-        self._remove_path_after_delay(path)
         return 1
 
 
@@ -248,7 +244,7 @@ class DisplayViewer(UnixViewer):
     def get_command_ex(self, file, title=None, **options):
         command = executable = "display"
         if title:
-            command += f" -name {quote(title)}"
+            command += f" -title {quote(title)}"
         return command, executable
 
     def show_file(self, path=None, **options):
@@ -270,11 +266,10 @@ class DisplayViewer(UnixViewer):
                 raise TypeError("Missing required argument: 'path'")
         args = ["display"]
         if "title" in options:
-            args += ["-name", options["title"]]
+            args += ["-title", options["title"]]
         args.append(path)
 
         subprocess.Popen(args)
-        os.remove(path)
         return 1
 
 
@@ -304,7 +299,6 @@ class GmDisplayViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["gm", "display", path])
-        os.remove(path)
         return 1
 
 
@@ -334,7 +328,6 @@ class EogViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.Popen(["eog", "-n", path])
-        os.remove(path)
         return 1
 
 
@@ -375,7 +368,6 @@ class XVViewer(UnixViewer):
         args.append(path)
 
         subprocess.Popen(args)
-        os.remove(path)
         return 1
 
 

@@ -16,6 +16,8 @@
 # below for the original description.
 
 import sys
+import warnings
+from enum import IntEnum
 
 from PIL import Image
 
@@ -100,14 +102,42 @@ core = _imagingcms
 #
 # intent/direction values
 
-INTENT_PERCEPTUAL = 0
-INTENT_RELATIVE_COLORIMETRIC = 1
-INTENT_SATURATION = 2
-INTENT_ABSOLUTE_COLORIMETRIC = 3
 
-DIRECTION_INPUT = 0
-DIRECTION_OUTPUT = 1
-DIRECTION_PROOF = 2
+class Intent(IntEnum):
+    PERCEPTUAL = 0
+    RELATIVE_COLORIMETRIC = 1
+    SATURATION = 2
+    ABSOLUTE_COLORIMETRIC = 3
+
+
+class Direction(IntEnum):
+    INPUT = 0
+    OUTPUT = 1
+    PROOF = 2
+
+
+def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
+    for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                warnings.warn(
+                    prefix
+                    + name
+                    + " is "
+                    + deprecated
+                    + "Use "
+                    + enum.__name__
+                    + "."
+                    + name
+                    + " instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
 
 #
 # flags
@@ -211,9 +241,9 @@ class ImageCmsTransform(Image.ImagePointHandler):
         output,
         input_mode,
         output_mode,
-        intent=INTENT_PERCEPTUAL,
+        intent=Intent.PERCEPTUAL,
         proof=None,
-        proof_intent=INTENT_ABSOLUTE_COLORIMETRIC,
+        proof_intent=Intent.ABSOLUTE_COLORIMETRIC,
         flags=0,
     ):
         if proof is None:
@@ -295,7 +325,7 @@ def profileToProfile(
     im,
     inputProfile,
     outputProfile,
-    renderingIntent=INTENT_PERCEPTUAL,
+    renderingIntent=Intent.PERCEPTUAL,
     outputMode=None,
     inPlace=False,
     flags=0,
@@ -331,10 +361,10 @@ def profileToProfile(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the transform
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -412,7 +442,7 @@ def buildTransform(
     outputProfile,
     inMode,
     outMode,
-    renderingIntent=INTENT_PERCEPTUAL,
+    renderingIntent=Intent.PERCEPTUAL,
     flags=0,
 ):
     """
@@ -458,10 +488,10 @@ def buildTransform(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the transform
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -494,8 +524,8 @@ def buildProofTransform(
     proofProfile,
     inMode,
     outMode,
-    renderingIntent=INTENT_PERCEPTUAL,
-    proofRenderingIntent=INTENT_ABSOLUTE_COLORIMETRIC,
+    renderingIntent=Intent.PERCEPTUAL,
+    proofRenderingIntent=Intent.ABSOLUTE_COLORIMETRIC,
     flags=FLAGS["SOFTPROOFING"],
 ):
     """
@@ -550,20 +580,20 @@ def buildProofTransform(
     :param renderingIntent: Integer (0-3) specifying the rendering intent you
         wish to use for the input->proof (simulated) transform
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
     :param proofRenderingIntent: Integer (0-3) specifying the rendering intent
         you wish to use for proof->output transform
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
         they do.
@@ -922,10 +952,10 @@ def getDefaultIntent(profile):
     :returns: Integer 0-3 specifying the default rendering intent for this
         profile.
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
             they do.
@@ -960,19 +990,19 @@ def isIntentSupported(profile, intent, direction):
     :param intent: Integer (0-3) specifying the rendering intent you wish to
         use with this profile
 
-            ImageCms.INTENT_PERCEPTUAL            = 0 (DEFAULT)
-            ImageCms.INTENT_RELATIVE_COLORIMETRIC = 1
-            ImageCms.INTENT_SATURATION            = 2
-            ImageCms.INTENT_ABSOLUTE_COLORIMETRIC = 3
+            ImageCms.Intent.PERCEPTUAL            = 0 (DEFAULT)
+            ImageCms.Intent.RELATIVE_COLORIMETRIC = 1
+            ImageCms.Intent.SATURATION            = 2
+            ImageCms.Intent.ABSOLUTE_COLORIMETRIC = 3
 
         see the pyCMS documentation for details on rendering intents and what
             they do.
     :param direction: Integer specifying if the profile is to be used for
         input, output, or proof
 
-            INPUT  = 0 (or use ImageCms.DIRECTION_INPUT)
-            OUTPUT = 1 (or use ImageCms.DIRECTION_OUTPUT)
-            PROOF  = 2 (or use ImageCms.DIRECTION_PROOF)
+            INPUT  = 0 (or use ImageCms.Direction.INPUT)
+            OUTPUT = 1 (or use ImageCms.Direction.OUTPUT)
+            PROOF  = 2 (or use ImageCms.Direction.PROOF)
 
     :returns: 1 if the intent/direction are supported, -1 if they are not.
     :exception PyCMSError:

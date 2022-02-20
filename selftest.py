@@ -97,9 +97,9 @@ def testimage():
     10456
     >>> len(im.tobytes())
     49152
-    >>> _info(im.transform((512, 512), Image.AFFINE, (1,0,0,0,1,0)))
+    >>> _info(im.transform((512, 512), Image.Transform.AFFINE, (1,0,0,0,1,0)))
     (None, 'RGB', (512, 512))
-    >>> _info(im.transform((512, 512), Image.EXTENT, (32,32,96,96)))
+    >>> _info(im.transform((512, 512), Image.Transform.EXTENT, (32,32,96,96)))
     (None, 'RGB', (512, 512))
 
     The ImageDraw module lets you draw stuff in raster images:
