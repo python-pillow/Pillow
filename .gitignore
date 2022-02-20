@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 *~
+.idea
 build
-working
 downloads
+working
