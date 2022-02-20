@@ -94,13 +94,17 @@ class GifImageFile(ImageFile.ImageFile):
     @property
     def n_frames(self):
         if self._n_frames is None:
-            current = self.tell()
+            prev_offset = self.__prev_offset
+            current = self.__frame
             try:
                 while True:
-                    self.seek(self.tell() + 1)
+                    self._seek(self.__frame + 1)
             except EOFError:
-                self._n_frames = self.tell() + 1
-            self.seek(current)
+                self._n_frames = self.__frame
+
+            self.__offset = prev_offset
+            self.__frame = current - 1
+            self._seek(current)
         return self._n_frames
 
     @property
@@ -109,7 +113,8 @@ class GifImageFile(ImageFile.ImageFile):
             if self._n_frames is not None:
                 self._is_animated = self._n_frames != 1
             else:
-                current = self.tell()
+                prev_offset = self.__prev_offset
+                current = self.__frame
 
                 try:
                     self.seek(1)
@@ -117,7 +122,9 @@ class GifImageFile(ImageFile.ImageFile):
                 except EOFError:
                     self._is_animated = False
 
-                self.seek(current)
+                self.__offset = prev_offset
+                self.__frame = current - 1
+                self._seek(current)
         return self._is_animated
 
     def seek(self, frame):
@@ -127,12 +134,17 @@ class GifImageFile(ImageFile.ImageFile):
             self.im = None
             self._seek(0)
 
+        prev_offset = self.__prev_offset
         last_frame = self.__frame
         for f in range(self.__frame + 1, frame + 1):
             try:
                 self._seek(f)
             except EOFError as e:
-                self.seek(last_frame)
+                if not self._n_frames:
+                    self._n_frames = f
+                self.__offset = prev_offset
+                self.__frame = last_frame - 1
+                self._seek(last_frame)
                 raise EOFError("no more images in GIF file") from e
 
     def _seek(self, frame):
@@ -157,6 +169,7 @@ class GifImageFile(ImageFile.ImageFile):
         self.tile = []
 
         self.fp = self.__fp
+        self.__prev_offset = self.__offset
         if self.__offset:
             # backup to last frame
             self.fp.seek(self.__offset)
