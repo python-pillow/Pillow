@@ -121,6 +121,34 @@ can be used to return data in the current mode of the palette.
 Other Changes
 =============
 
+GifImagePlugin seek-related optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Optimized :py:meth:`~PIL.GifImagePlugin.seek()`,
+:py:property:`~PIL.GifImagePlugin.n_frames` and
+:py:property:`~PIL.GifImagePlugin.is_animated` when seeking back to the *current* frame
+before invoking the operation, after an ``EOFError`` is raised.
+
+These operations no longer have to seek back to **frame 0** before seeking forward,
+instead they seek back to the frame just before the *current* frame and then seek
+just one frame forward.
+
+Eliminated seek checks while computing :py:property:`~PIL.GifImagePlugin.n_frames`
+by using :py:meth:`PIL.GifImagePlugin._seek()` in place of
+:py:meth:`~PIL.GifImagePlugin.seek()` since the frame numbers cannot be invalid until
+the final one, which raises ``EOFError``.
+
+When an ``EOFError`` is raised within :py:meth:`~PIL.GifImagePlugin.seek()` i.e just
+seeked past the last frame, ``self._n_frames`` is updated if it hadn't been updated
+earlier, to prevent re-computation when :py:property:`~PIL.GifImagePlugin.n_frames` is
+later invoked.
+
+Added ``self.__prev_offset`` to always hold the offset of the frame just before the
+current frame.
+
+Replaced all internal calls to :py:meth:`~PIL.GifImagePlugin.tell()` with direct
+references to ``self.__frame``.
+
 ImageShow temporary files on Unix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
