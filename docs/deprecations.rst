@@ -133,6 +133,15 @@ Deprecated                                             Use instead
 ``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
 =====================================================  ============================================================
 
+FitsStubImagePlugin
+~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+
+The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
+Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
+:mod:`~PIL.FitsImagePlugin` instead.
+
 Removed features
 ----------------
 
