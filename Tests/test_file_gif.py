@@ -277,6 +277,7 @@ def test_seek():
                 img.seek(img.tell() + 1)
         except EOFError:
             assert frame_count == 5
+            assert img._n_frames == frame_count
 
 
 def test_seek_info():
