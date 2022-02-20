@@ -140,7 +140,7 @@ FitsStubImagePlugin
 
 The stub image plugin FitsStubImagePlugin has been deprecated and will be removed in
 Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
-FitsImagePlugin instead.
+:mod:`~PIL.FitsImagePlugin` instead.
 
 Removed features
 ----------------
