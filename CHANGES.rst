@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added FITS reading #6056
+  [radarhere, hugovk]
+
+- Added rawmode argument to Image.getpalette() #6061
+  [radarhere]
+
+- Fixed BUFR, GRIB and HDF5 stub saving #6071
+  [radarhere]
+
+- Do not automatically remove temporary ImageShow files on Unix #6045
+  [radarhere]
+
+- Correctly read JPEG compressed BLP images #4685
+  [Meithal, radarhere]
+
+- Merged _MODE_CONV typ into ImageMode as typestr #6057
+  [radarhere]
+
 - Consider palette size when converting and in getpalette() #6060
   [radarhere]
 
