@@ -23,6 +23,9 @@ All default viewers convert the image to be shown to PNG format.
     .. autoclass:: PIL.ImageShow.EogViewer
     .. autoclass:: PIL.ImageShow.XVViewer
 
+    To provide maximum functionality on Unix-based systems, temporary files created
+    from images will not be automatically removed by Pillow.
+
 .. autofunction:: PIL.ImageShow.register
 .. autoclass:: PIL.ImageShow.Viewer
     :member-order: bysource
