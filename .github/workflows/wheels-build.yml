@@ -1,0 +1,75 @@
+name: Build wheels
+
+on:
+  workflow_call:
+    inputs:
+      build-commit:
+        required: true
+        type: string
+      artifacts-name:
+        required: true
+        type: string
+
+env:
+  REPO_DIR: Pillow
+  BUILD_DEPENDS: ""
+  TEST_DEPENDS: "pytest pytest-cov pytest-timeout"
+  WHEEL_SDIR: wheelhouse
+
+jobs:
+  build:
+    name: ${{ matrix.os-name }} ${{ matrix.python }} ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "macos-latest", "ubuntu-20.04" ]
+        python: [ "pypy3.7-7.3.8", "pypy3.8-7.3.8", "3.7", "3.8", "3.9", "3.10" ]
+        platform: [ "x86_64", "i686" ]
+        macos-target: [ "10.10" ]
+        exclude:
+          - os: "macos-latest"
+            platform: "i686"
+        include:
+          - os: "macos-latest"
+            os-name: "osx"
+          - os: "ubuntu-20.04"
+            os-name: "focal"
+          - os: "macos-11"
+            os-name: "osx"
+            platform: "arm64"
+            python: "3.10"
+            macos-target: "11.0"
+          - os: "macos-11"
+            os-name: "osx"
+            platform: "arm64"
+            python: "3.9"
+            macos-target: "11.0"
+          - os: "macos-11"
+            os-name: "osx"
+            platform: "arm64"
+            python: "3.8"
+            macos-target: "11.0"
+    env:
+      BUILD_COMMIT: ${{ inputs.build-commit }}
+      PLAT: ${{ matrix.platform }}
+      MB_PYTHON_VERSION: ${{ matrix.python }}
+      TRAVIS_OS_NAME: ${{ matrix.os-name }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos-target }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Build Wheel
+        run: .github/workflows/build.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.artifacts-name }}
+          path: wheelhouse/*.whl
+      # Uncomment to get SSH access for testing
+      # - name: Setup tmate session
+      #   if: failure()
+      #   uses: mxschmitt/action-tmate@v3
