@@ -165,9 +165,7 @@ function run_tests {
         brew install openblas
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
     fi
-    if [[ "$MB_PYTHON_VERSION" == pypy3.7-* ]] && [[ $(uname -m) == "i686" ]]; then
-        python3 -m pip install numpy==1.20.3
-    elif [[ "$MB_PYTHON_VERSION" == 3.10 ]] && [[ $(uname -m) == "i686" ]]; then
+    if [[ "$MB_PYTHON_VERSION" == pypy3.* || "$MB_PYTHON_VERSION" == 3.10 ]] && [[ $(uname -m) == "i686" ]]; then
         python3 -m pip install numpy==1.21.4
     elif [[ "$MB_PYTHON_VERSION" == 3.8 || "$MB_PYTHON_VERSION" == 3.9 ]] && [[ $(uname -m) == "i686" ]]; then
         python3 -m pip install numpy==1.21.5
