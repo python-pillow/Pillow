@@ -1,5 +1,6 @@
 import io
 import os
+import warnings
 
 import pytest
 
@@ -19,9 +20,8 @@ def test_sanity():
     with Image.open(TEST_FILE) as im:
 
         # Assert that there is no unclosed file warning
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             im.load()
-        assert not record
 
         assert im.mode == "RGBA"
         assert im.size == (1024, 1024)
