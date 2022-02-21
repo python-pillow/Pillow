@@ -154,9 +154,6 @@ class GifImageFile(ImageFile.ImageFile):
 
         if frame != self.__frame + 1:
             raise ValueError(f"cannot seek to frame {frame}")
-        self.__frame = frame
-
-        self.tile = []
 
         self.fp = self.__fp
         if self.__offset:
@@ -165,6 +162,14 @@ class GifImageFile(ImageFile.ImageFile):
             while self.data():
                 pass
             self.__offset = 0
+
+        s = self.fp.read(1)
+        if not s or s == b";":
+            raise EOFError
+
+        self.__frame = frame
+
+        self.tile = []
 
         if self.__frame == 1:
             self.pyaccess = None
@@ -187,7 +192,8 @@ class GifImageFile(ImageFile.ImageFile):
         interlace = None
         while True:
 
-            s = self.fp.read(1)
+            if not s:
+                s = self.fp.read(1)
             if not s or s == b";":
                 break
 
@@ -225,6 +231,7 @@ class GifImageFile(ImageFile.ImageFile):
                         else:
                             info["comment"] = block
                         block = self.data()
+                    s = None
                     continue
                 elif s[0] == 255:
                     #
@@ -266,6 +273,7 @@ class GifImageFile(ImageFile.ImageFile):
             else:
                 pass
                 # raise OSError, "illegal GIF tag `%x`" % s[0]
+            s = None
 
         frame_palette = palette or self.global_palette
 
