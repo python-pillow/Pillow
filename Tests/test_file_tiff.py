@@ -1,4 +1,5 @@
 import os
+import warnings
 from io import BytesIO
 
 import pytest
@@ -64,19 +65,15 @@ class TestFileTiff:
         pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
 
-        assert not record
-
     def test_context_manager(self):
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
-
-        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]

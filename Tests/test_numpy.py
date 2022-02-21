@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import Image
@@ -237,6 +239,5 @@ def test_no_resource_warning_for_numpy_array():
     with Image.open(test_file) as im:
 
         # Act/Assert
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             array(im)
-        assert not record

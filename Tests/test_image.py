@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import tempfile
+import warnings
 
 import pytest
 
@@ -648,9 +649,8 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.save(temp_file)
-            assert not record
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
