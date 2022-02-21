@@ -308,6 +308,22 @@ def test_n_frames():
             assert im.is_animated == (n_frames != 1)
 
 
+def test_no_change():
+    # Test n_frames does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(1)
+        expected = im.copy()
+        assert im.n_frames == 5
+        assert_image_equal(im, expected)
+
+    # Test is_animated does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(3)
+        expected = im.copy()
+        assert im.is_animated
+        assert_image_equal(im, expected)
+
+
 def test_eoferror():
     with Image.open(TEST_GIF) as im:
         n_frames = im.n_frames
