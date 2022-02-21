@@ -110,14 +110,16 @@ class GifImageFile(ImageFile.ImageFile):
                 self._is_animated = self._n_frames != 1
             else:
                 current = self.tell()
-
-                try:
-                    self.seek(1)
+                if current:
                     self._is_animated = True
-                except EOFError:
-                    self._is_animated = False
+                else:
+                    try:
+                        self.seek(1)
+                        self._is_animated = True
+                    except EOFError:
+                        self._is_animated = False
 
-                self.seek(current)
+                    self.seek(current)
         return self._is_animated
 
     def seek(self, frame):
