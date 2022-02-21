@@ -6,7 +6,7 @@ on: [push, pull_request, workflow_dispatch]
 env:
   REPO_DIR: Pillow
   BUILD_DEPENDS: ""
-  TEST_DEPENDS: "pytest pytest-cov"
+  TEST_DEPENDS: "pytest pytest-cov pytest-timeout"
   WHEEL_SDIR: wheelhouse
 
 jobs:
