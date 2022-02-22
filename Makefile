@@ -81,8 +81,8 @@ release-test:
 	-rm dist/*.egg
 	-rmdir dist
 	python3 -m pytest -qq
-	check-manifest
-	pyroma .
+	python3 -m check-manifest
+	python3 -m pyroma .
 	$(MAKE) readme
 
 .PHONY: sdist
@@ -92,7 +92,7 @@ sdist:
 
 .PHONY: test
 test:
-	pytest -qq
+	python3 -m pytest -qq
 
 .PHONY: valgrind
 valgrind:
@@ -103,15 +103,15 @@ valgrind:
 
 .PHONY: readme
 readme:
-	markdown2 README.md > .long-description.html && open .long-description.html
+	python3 -m markdown2 README.md > .long-description.html && open .long-description.html
 
 
 .PHONY: lint
 lint:
-	tox --help > /dev/null || python3 -m pip install tox
-	tox -e lint
+	python3 -c "import tox" || python3 -m pip install tox
+	python3 -m tox -e lint
 
 .PHONY: lint-fix
 lint-fix:
-	black --target-version py37 .
-	isort .
+	python3 -m black --target-version py37 .
+	python3 -m isort .
