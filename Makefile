@@ -92,6 +92,7 @@ sdist:
 
 .PHONY: test
 test:
+	python3 -c "import pytest" || python3 -m pip install pytest
 	python3 -m pytest -qq
 
 .PHONY: valgrind
@@ -103,6 +104,7 @@ valgrind:
 
 .PHONY: readme
 readme:
+	python3 -c "import markdown2" || python3 -m pip install markdown2
 	python3 -m markdown2 README.md > .long-description.html && open .long-description.html
 
 
@@ -113,5 +115,7 @@ lint:
 
 .PHONY: lint-fix
 lint-fix:
+	python3 -c "import black" || python3 -m pip install black
+	python3 -c "import isort" || python3 -m pip install isort
 	python3 -m black --target-version py37 .
 	python3 -m isort .
