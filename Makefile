@@ -39,7 +39,6 @@ help:
 	@echo "  inplace            make inplace extension"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
-	@echo "  install-venv       (deprecated) install in virtualenv"
 	@echo "  lint               run the lint checks"
 	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
@@ -66,11 +65,6 @@ debug:
 # see any build failures.
 	make clean > /dev/null
 	CFLAGS='-g -O0' python3 -m pip install --global-option="build_ext" . > /dev/null
-
-.PHONY: install-venv
-install-venv:
-	echo "'install-venv' is deprecated and will be removed in a future Pillow release"
-	virtualenv .
 
 .PHONY: release-test
 release-test:
