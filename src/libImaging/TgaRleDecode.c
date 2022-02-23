@@ -42,14 +42,12 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
             return ptr - buf;
         }
 
+        n = depth * ((ptr[0] & 0x7f) + 1);
         if (ptr[0] & 0x80) {
             /* Run (1 + pixelsize bytes) */
-
             if (bytes < 1 + depth) {
                 break;
             }
-
-            n = depth * ((ptr[0] & 0x7f) + 1);
 
             if (state->x + n > state->bytes) {
                 state->errcode = IMAGING_CODEC_OVERRUN;
@@ -67,11 +65,8 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
 
             ptr += 1 + depth;
             bytes -= 1 + depth;
-
         } else {
             /* Literal (1+n+1 bytes block) */
-            n = depth * (ptr[0] + 1);
-
             if (bytes < 1 + n) {
                 break;
             }
