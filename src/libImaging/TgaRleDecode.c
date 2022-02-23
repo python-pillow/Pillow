@@ -20,6 +20,8 @@ int
 ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     int n, depth;
     UINT8 *ptr;
+    UINT8 extra_data = 0;
+    int extra_bytes = 0;
 
     ptr = buf;
 
@@ -72,8 +74,10 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
             }
 
             if (state->x + n > state->bytes) {
-                state->errcode = IMAGING_CODEC_OVERRUN;
-                return -1;
+                extra_bytes = n; /* full value */
+                n = state->bytes - state->x;
+                extra_bytes -= n;
+                extra_data = ptr[1];
             }
 
             memcpy(state->buffer + state->x, ptr + 1, n);
@@ -82,24 +86,43 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
             bytes -= 1 + n;
         }
 
-        state->x += n;
+        for (;;) {
+            state->x += n;
 
-        if (state->x >= state->bytes) {
-            /* Got a full line, unpack it */
-            state->shuffle(
-                (UINT8 *)im->image[state->y + state->yoff] +
-                    state->xoff * im->pixelsize,
-                state->buffer,
-                state->xsize);
+            if (state->x >= state->bytes) {
+                /* Got a full line, unpack it */
+                state->shuffle(
+                    (UINT8 *)im->image[state->y + state->yoff] +
+                        state->xoff * im->pixelsize,
+                    state->buffer,
+                    state->xsize);
 
-            state->x = 0;
+                state->x = 0;
 
-            state->y += state->ystep;
+                state->y += state->ystep;
 
-            if (state->y < 0 || state->y >= state->ysize) {
-                /* End of file (errcode = 0) */
-                return -1;
+                if (state->y < 0 || state->y >= state->ysize) {
+                    /* End of file (errcode = 0) */
+                    return -1;
+                }
             }
+
+            if (extra_bytes == 0) {
+                break;
+            }
+
+            if (state->x > 0) {
+                break;  // assert
+            }
+
+            if (extra_bytes >= state->bytes) {
+                n = state->bytes;
+            } else {
+                n = extra_bytes;
+            }
+            memcpy(state->buffer + state->x, ptr, n);
+            ptr += n;
+            extra_bytes -= n;
         }
     }
 
