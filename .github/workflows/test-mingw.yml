@@ -45,6 +45,7 @@ jobs:
               ${{ matrix.package }}-python-pyqt6 \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
+              ${{ matrix.package }}-gcc \
               ${{ matrix.package }}-ghostscript \
               ${{ matrix.package }}-lcms2 \
               ${{ matrix.package }}-libimagequant \
