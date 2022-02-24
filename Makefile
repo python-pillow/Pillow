@@ -9,9 +9,9 @@ clean:
 
 .PHONY: coverage
 coverage:
-	pytest -qq
+	python3 -m pytest -qq
 	rm -r htmlcov || true
-	coverage report
+	python3 -m coverage report
 
 .PHONY: doc
 doc:
