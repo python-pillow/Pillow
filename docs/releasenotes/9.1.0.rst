@@ -18,8 +18,31 @@ Rather than returning a ``SystemError``, passing the incorrect types of coordina
 a path will now raise a more specific ``ValueError``, with the message "incorrect
 coordinate type".
 
+Replace requirements.txt with extras
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than installing all dependencies for docs and tests via ``requirements.txt``,
+``extras_require`` is used instead. This installs only those needed and at the same
+time as installing Pillow.
+
+For example:
+
+.. code-block:: bash
+
+    # Install with dependencies for tests:
+    python3 -m pip install .[tests]
+
+    # Or for building docs:
+    python3 -m pip install .[docs]
+
+    # Or for all:
+    python3 -m pip install .[docs,tests]
+
+Therefore ``requirements.txt`` has been removed along with the ``make install-req``
+command for installing its contents.
+
 Deprecations
-^^^^^^^^^^^^
+============
 
 Constants
 ~~~~~~~~~
@@ -87,7 +110,7 @@ Deprecated                                             Use instead
 =====================================================  ============================================================
 
 ImageShow.Viewer.show_file file argument
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
 deprecated and  will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
