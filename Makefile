@@ -9,8 +9,10 @@ clean:
 
 .PHONY: coverage
 coverage:
+	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
 	python3 -m pytest -qq
 	rm -r htmlcov || true
+	python3 -c "import coverage" > /dev/null 2>&1 || python3 -m pip install coverage
 	python3 -m coverage report
 
 .PHONY: doc
@@ -86,30 +88,30 @@ sdist:
 
 .PHONY: test
 test:
-	python3 -c "import pytest" || python3 -m pip install pytest
+	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
 	python3 -m pytest -qq
 
 .PHONY: valgrind
 valgrind:
-	python3 -c "import pytest_valgrind" || python3 -m pip install pytest-valgrind
+	python3 -c "import pytest_valgrind" > /dev/null 2>&1 || python3 -m pip install pytest-valgrind
 	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
             --log-file=/tmp/valgrind-output \
             python3 -m pytest --no-memcheck -vv --valgrind --valgrind-log=/tmp/valgrind-output
 
 .PHONY: readme
 readme:
-	python3 -c "import markdown2" || python3 -m pip install markdown2
+	python3 -c "import markdown2" > /dev/null 2>&1 || python3 -m pip install markdown2
 	python3 -m markdown2 README.md > .long-description.html && open .long-description.html
 
 
 .PHONY: lint
 lint:
-	python3 -c "import tox" || python3 -m pip install tox
+	python3 -c "import tox" > /dev/null 2>&1 || python3 -m pip install tox
 	python3 -m tox -e lint
 
 .PHONY: lint-fix
 lint-fix:
-	python3 -c "import black" || python3 -m pip install black
-	python3 -c "import isort" || python3 -m pip install isort
+	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
+	python3 -c "import isort" > /dev/null 2>&1 || python3 -m pip install isort
 	python3 -m black --target-version py37 .
 	python3 -m isort .
