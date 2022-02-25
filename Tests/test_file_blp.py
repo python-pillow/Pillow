@@ -2,7 +2,12 @@ import pytest
 
 from PIL import BlpImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 
 def test_load_blp1():
@@ -32,6 +37,13 @@ def test_save(tmp_path):
 
     with Image.open(f) as reloaded:
         assert_image_equal(im.convert("RGB"), reloaded)
+
+    with Image.open("Tests/images/transparent.png") as im:
+        f = str(tmp_path / "temp.blp")
+        im.convert("P").save(f)
+
+        with Image.open(f) as reloaded:
+            assert_image_similar(im, reloaded, 8)
 
     im = hopper()
     with pytest.raises(ValueError):

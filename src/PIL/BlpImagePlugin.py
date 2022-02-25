@@ -406,7 +406,10 @@ class BLP2Decoder(_BLPBaseDecoder):
                     except struct.error:
                         break
                     b, g, r, a = palette[offset]
-                    data.extend((r, g, b))
+                    d = (r, g, b)
+                    if self._blp_alpha_depth:
+                        d += (a,)
+                    data.extend(d)
 
             elif self._blp_encoding == Encoding.DXT:
                 if self._blp_alpha_encoding == AlphaEncoding.DXT1:
