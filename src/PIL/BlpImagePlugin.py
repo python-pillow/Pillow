@@ -439,7 +439,7 @@ class BLP2Decoder(_BLPBaseDecoder):
         self.set_as_raw(bytes(data))
 
 
-class BLP2Encoder(ImageFile.PyEncoder):
+class BLPEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
     def _write_palette(self):
@@ -472,15 +472,20 @@ def _save(im, fp, filename, save_all=False):
     if im.mode != "P":
         raise ValueError("Unsupported BLP image mode")
 
-    fp.write(b"BLP2")
+    magic = b"BLP1" if im.encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
+    fp.write(magic)
+
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
     fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
     fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))
     fp.write(struct.pack("<b", 0))  # alpha encoding
     fp.write(struct.pack("<b", 0))  # mips
     fp.write(struct.pack("<II", *im.size))
+    if magic == b"BLP1":
+        fp.write(struct.pack("<i", 5))
+        fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [("BLP2", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [("BLP", (0, 0) + im.size, 0, im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)
@@ -489,4 +494,4 @@ Image.register_decoder("BLP1", BLP1Decoder)
 Image.register_decoder("BLP2", BLP2Decoder)
 
 Image.register_save(BlpImageFile.format, _save)
-Image.register_encoder("BLP2", BLP2Encoder)
+Image.register_encoder("BLP", BLPEncoder)

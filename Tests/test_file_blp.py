@@ -31,19 +31,21 @@ def test_load_blp2_dxt1a():
 
 
 def test_save(tmp_path):
-    im = hopper("P")
     f = str(tmp_path / "temp.blp")
-    im.save(f)
 
-    with Image.open(f) as reloaded:
-        assert_image_equal(im.convert("RGB"), reloaded)
-
-    with Image.open("Tests/images/transparent.png") as im:
-        f = str(tmp_path / "temp.blp")
-        im.convert("P").save(f)
+    for version in ("BLP1", "BLP2"):
+        im = hopper("P")
+        im.save(f, blp_version=version)
 
         with Image.open(f) as reloaded:
-            assert_image_similar(im, reloaded, 8)
+            assert_image_equal(im.convert("RGB"), reloaded)
+
+        with Image.open("Tests/images/transparent.png") as im:
+            f = str(tmp_path / "temp.blp")
+            im.convert("P").save(f, blp_version=version)
+
+            with Image.open(f) as reloaded:
+                assert_image_similar(im, reloaded, 8)
 
     im = hopper()
     with pytest.raises(ValueError):
