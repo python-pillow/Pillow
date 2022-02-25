@@ -29,6 +29,7 @@ BLP files come in many different flavours:
   - DXT5 compression is used if alpha_encoding == 7.
 """
 
+import os
 import struct
 import warnings
 from enum import IntEnum
@@ -276,7 +277,12 @@ class BlpImageFile(ImageFile.ImageFile):
 
     def _open(self):
         self.magic = self.fp.read(4)
-        self._read_blp_header()
+
+        self.fp.seek(5, os.SEEK_CUR)
+        (self._blp_alpha_depth,) = struct.unpack("<b", self.fp.read(1))
+
+        self.fp.seek(2, os.SEEK_CUR)
+        self._size = struct.unpack("<II", self.fp.read(8))
 
         if self.magic == b"BLP1":
             decoder = "BLP1"
@@ -289,32 +295,12 @@ class BlpImageFile(ImageFile.ImageFile):
 
         self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
-    def _read_blp_header(self):
-        (self._blp_compression,) = struct.unpack("<i", self.fp.read(4))
-
-        (self._blp_encoding,) = struct.unpack("<b", self.fp.read(1))
-        (self._blp_alpha_depth,) = struct.unpack("<b", self.fp.read(1))
-        (self._blp_alpha_encoding,) = struct.unpack("<b", self.fp.read(1))
-        (self._blp_mips,) = struct.unpack("<b", self.fp.read(1))
-
-        self._size = struct.unpack("<II", self.fp.read(8))
-
-        if self.magic == b"BLP1":
-            # Only present for BLP1
-            (self._blp_encoding,) = struct.unpack("<i", self.fp.read(4))
-            (self._blp_subtype,) = struct.unpack("<i", self.fp.read(4))
-
-        self._blp_offsets = struct.unpack("<16I", self.fp.read(16 * 4))
-        self._blp_lengths = struct.unpack("<16I", self.fp.read(16 * 4))
-
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer):
         try:
-            self.fd.seek(0)
-            self.magic = self.fd.read(4)
             self._read_blp_header()
             self._load()
         except struct.error as e:
@@ -335,19 +321,20 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         return ret
 
     def _read_blp_header(self):
+        self.fd.seek(4)
         (self._blp_compression,) = struct.unpack("<i", self._safe_read(4))
 
         (self._blp_encoding,) = struct.unpack("<b", self._safe_read(1))
         (self._blp_alpha_depth,) = struct.unpack("<b", self._safe_read(1))
         (self._blp_alpha_encoding,) = struct.unpack("<b", self._safe_read(1))
-        (self._blp_mips,) = struct.unpack("<b", self._safe_read(1))
+        self.fd.seek(1, os.SEEK_CUR)  # mips
 
         self.size = struct.unpack("<II", self._safe_read(8))
 
-        if self.magic == b"BLP1":
+        if isinstance(self, BLP1Decoder):
             # Only present for BLP1
             (self._blp_encoding,) = struct.unpack("<i", self._safe_read(4))
-            (self._blp_subtype,) = struct.unpack("<i", self._safe_read(4))
+            self.fd.seek(4, os.SEEK_CUR)  # subtype
 
         self._blp_offsets = struct.unpack("<16I", self._safe_read(16 * 4))
         self._blp_lengths = struct.unpack("<16I", self._safe_read(16 * 4))
