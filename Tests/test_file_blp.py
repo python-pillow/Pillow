@@ -2,7 +2,7 @@ import pytest
 
 from PIL import BlpImagePlugin, Image
 
-from .helper import assert_image_equal_tofile
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
 def test_load_blp1():
@@ -23,6 +23,19 @@ def test_load_blp2_dxt1():
 def test_load_blp2_dxt1a():
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def test_save(tmp_path):
+    im = hopper("P")
+    f = str(tmp_path / "temp.blp")
+    im.save(f)
+
+    with Image.open(f) as reloaded:
+        assert_image_equal(im.convert("RGB"), reloaded)
+
+    im = hopper()
+    with pytest.raises(ValueError):
+        im.save(f)
 
 
 @pytest.mark.parametrize(
