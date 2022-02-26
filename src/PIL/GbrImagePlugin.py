@@ -43,9 +43,9 @@ class GbrImageFile(ImageFile.ImageFile):
 
     def _open(self):
         header_size = i32(self.fp.read(4))
-        version = i32(self.fp.read(4))
         if header_size < 20:
             raise SyntaxError("not a GIMP brush")
+        version = i32(self.fp.read(4))
         if version not in (1, 2):
             raise SyntaxError(f"Unsupported GIMP brush version: {version}")
 
