@@ -26,7 +26,11 @@ from ._binary import o8
 
 
 def _accept(prefix):
-    return len(prefix) >= 6 and i16(prefix, 4) in [0xAF11, 0xAF12]
+    return (
+        len(prefix) >= 6
+        and i16(prefix, 4) in [0xAF11, 0xAF12]
+        and i16(prefix, 14) in [0, 3]  # flags
+    )
 
 
 ##
@@ -44,11 +48,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(128)
-        if not (
-            _accept(s)
-            and i16(s, 14) in [0, 3]  # flags
-            and s[20:22] == b"\x00\x00"  # reserved
-        ):
+        if not (_accept(s) and s[20:22] == b"\x00\x00"):
             raise SyntaxError("not an FLI/FLC file")
 
         # frames
