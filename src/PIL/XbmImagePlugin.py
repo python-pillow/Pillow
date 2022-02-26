@@ -52,18 +52,19 @@ class XbmImageFile(ImageFile.ImageFile):
 
         m = xbm_head.match(self.fp.read(512))
 
-        if m:
+        if not m:
+            raise SyntaxError("not a XBM file")
 
-            xsize = int(m.group("width"))
-            ysize = int(m.group("height"))
+        xsize = int(m.group("width"))
+        ysize = int(m.group("height"))
 
-            if m.group("hotspot"):
-                self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
+        if m.group("hotspot"):
+            self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
 
-            self.mode = "1"
-            self._size = xsize, ysize
+        self.mode = "1"
+        self._size = xsize, ysize
 
-            self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
+        self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
 
 
 def _save(im, fp, filename):
