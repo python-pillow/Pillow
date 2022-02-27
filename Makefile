@@ -9,9 +9,11 @@ clean:
 
 .PHONY: coverage
 coverage:
-	pytest -qq
+	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
+	python3 -m pytest -qq
 	rm -r htmlcov || true
-	coverage report
+	python3 -c "import coverage" > /dev/null 2>&1 || python3 -m pip install coverage
+	python3 -m coverage report
 
 .PHONY: doc
 doc:
@@ -33,20 +35,16 @@ help:
 	@echo "Welcome to Pillow development. Please use \`make <target>\` where <target> is one of"
 	@echo "  clean              remove build products"
 	@echo "  coverage           run coverage test (in progress)"
-	@echo "  doc                make html docs"
-	@echo "  docserve           run an http server on the docs directory"
+	@echo "  doc                make HTML docs"
+	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               to make standalone HTML files"
 	@echo "  inplace            make inplace extension"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
-	@echo "  install-req        install documentation and test dependencies"
-	@echo "  install-venv       (deprecated) install in virtualenv"
 	@echo "  lint               run the lint checks"
-	@echo "  lint-fix           run black and isort to (mostly) fix lint issues."
+	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
-	@echo "  test               run tests on installed pillow"
-	@echo "  upload             build and upload sdists to PyPI"
-	@echo "  upload-test        build and upload sdists to test.pythonpackages.com"
+	@echo "  test               run tests on installed Pillow"
 
 .PHONY: inplace
 inplace: clean
@@ -70,28 +68,17 @@ debug:
 	make clean > /dev/null
 	CFLAGS='-g -O0' python3 -m pip install --global-option="build_ext" . > /dev/null
 
-.PHONY: install-req
-install-req:
-	python3 -m pip install -r requirements.txt
-
-.PHONY: install-venv
-install-venv:
-	echo "'install-venv' is deprecated and will be removed in a future Pillow release"
-	virtualenv .
-	bin/pip install -r requirements.txt
-
 .PHONY: release-test
 release-test:
-	$(MAKE) install-req
-	python3 -m pip install -e .
+	python3 -m pip install -e .[tests]
 	python3 selftest.py
 	python3 -m pytest Tests
 	python3 -m pip install .
 	-rm dist/*.egg
 	-rmdir dist
 	python3 -m pytest -qq
-	check-manifest
-	pyroma .
+	python3 -m check-manifest
+	python3 -m pyroma .
 	$(MAKE) readme
 
 .PHONY: sdist
@@ -101,26 +88,30 @@ sdist:
 
 .PHONY: test
 test:
-	pytest -qq
+	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
+	python3 -m pytest -qq
 
 .PHONY: valgrind
 valgrind:
-	python3 -c "import pytest_valgrind" || python3 -m pip install pytest-valgrind
+	python3 -c "import pytest_valgrind" > /dev/null 2>&1 || python3 -m pip install pytest-valgrind
 	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
             --log-file=/tmp/valgrind-output \
             python3 -m pytest --no-memcheck -vv --valgrind --valgrind-log=/tmp/valgrind-output
 
 .PHONY: readme
 readme:
-	markdown2 README.md > .long-description.html && open .long-description.html
+	python3 -c "import markdown2" > /dev/null 2>&1 || python3 -m pip install markdown2
+	python3 -m markdown2 README.md > .long-description.html && open .long-description.html
 
 
 .PHONY: lint
 lint:
-	tox --help > /dev/null || python3 -m pip install tox
-	tox -e lint
+	python3 -c "import tox" > /dev/null 2>&1 || python3 -m pip install tox
+	python3 -m tox -e lint
 
 .PHONY: lint-fix
 lint-fix:
-	black --target-version py37 .
-	isort .
+	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
+	python3 -c "import isort" > /dev/null 2>&1 || python3 -m pip install isort
+	python3 -m black --target-version py37 .
+	python3 -m isort .

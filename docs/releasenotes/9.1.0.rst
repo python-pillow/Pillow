@@ -18,11 +18,37 @@ Rather than returning a ``SystemError``, passing the incorrect types of coordina
 a path will now raise a more specific ``ValueError``, with the message "incorrect
 coordinate type".
 
+Replace requirements.txt with extras
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than installing all dependencies for docs and tests via ``requirements.txt``,
+``extras_require`` is used instead. This installs only those needed and at the same
+time as installing Pillow.
+
+For example:
+
+.. code-block:: bash
+
+    # Install with dependencies for tests:
+    python3 -m pip install .[tests]
+
+    # Or for building docs:
+    python3 -m pip install .[docs]
+
+    # Or for all:
+    python3 -m pip install .[docs,tests]
+
+On macOS, the last argument may need to be wrapped in quotes, e.g.
+``python3 -m pip install ".[tests]"``
+
+Therefore ``requirements.txt`` has been removed along with the ``make install-req``
+command for installing its contents.
+
 Deprecations
-^^^^^^^^^^^^
+============
 
 Constants
-~~~~~~~~~
+^^^^^^^^^
 
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
 (2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
@@ -87,7 +113,7 @@ Deprecated                                             Use instead
 =====================================================  ============================================================
 
 ImageShow.Viewer.show_file file argument
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
 deprecated and  will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
@@ -98,7 +124,7 @@ In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 ``viewer.show_file(path="test.jpg")`` instead.
 
 FitsStubImagePlugin
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.1.0
 
