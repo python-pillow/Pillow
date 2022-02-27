@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added PyEncoder and support BLP saving #6069
+  [radarhere]
+
+- Handle TGA images with packets that cross scan lines #6087
+  [radarhere]
+
 - Added FITS reading #6056
   [radarhere, hugovk]
 
