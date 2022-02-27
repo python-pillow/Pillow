@@ -94,7 +94,8 @@ class FtexImageFile(ImageFile.ImageFile):
     format_description = "Texture File Format (IW2:EOC)"
 
     def _open(self):
-        struct.unpack("<I", self.fp.read(4))  # magic
+        if not _accept(self.fp.read(4)):
+            raise SyntaxError("not a FTEX file")
         struct.unpack("<i", self.fp.read(4))  # version
         self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
