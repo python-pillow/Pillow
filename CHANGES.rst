@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Replace requirements.txt with extras #6072
+  [hugovk, radarhere]
+
 - Added PyEncoder and support BLP saving #6069
   [radarhere]
 
