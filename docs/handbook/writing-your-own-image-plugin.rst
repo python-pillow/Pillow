@@ -4,10 +4,9 @@ Writing Your Own Image Plugin
 =============================
 
 Pillow uses a plugin model which allows you to add your own
-decoders to the library, without any changes to the library
-itself. Such plugins usually have names like
-:file:`XxxImagePlugin.py`, where ``Xxx`` is a unique format name
-(usually an abbreviation).
+decoders and encoders to the library, without any changes to the library
+itself. Such plugins usually have names like :file:`XxxImagePlugin.py`,
+where ``Xxx`` is a unique format name (usually an abbreviation).
 
 .. warning:: Pillow >= 2.1.0 no longer automatically imports any file
              in the Python path with a name ending in
@@ -413,23 +412,24 @@ value, or if there is a read error from the file. This function should
 free any allocated memory and release any resources from external
 libraries.
 
-.. _file-decoders-py:
+.. _file-codecs-py:
 
-Writing Your Own File Decoder in Python
-=======================================
+Writing Your Own File Codec in Python
+=====================================
 
-Python file decoders should derive from
-:py:class:`PIL.ImageFile.PyDecoder` and should at least override the
-decode method. File decoders should be registered using
-:py:meth:`PIL.Image.register_decoder`. As in the C implementation of
-the file decoders, there are three stages in the lifetime of a
-Python-based file decoder:
+Python file decoders and encoders should derive from
+:py:class:`PIL.ImageFile.PyDecoder` and :py:class:`PIL.ImageFile.PyEncoder`
+respectively, and should at least override the decode or encode method.
+They should be registered using :py:meth:`PIL.Image.register_decoder` and
+:py:meth:`PIL.Image.register_encoder`. As in the C implementation of
+the file codecs, there are three stages in the lifetime of a
+Python-based file codec:
 
 1. Setup: Pillow looks for the decoder in the registry, then
    instantiates the class.
 
-2. Decoding: The decoder instance's ``decode`` method is repeatedly
-   called with a buffer of data to be interpreted.
+2. Transforming: The instance's ``decode`` method is repeatedly called with
+   a buffer of data to be interpreted, or the ``encode`` method is repeatedly
+   called with the size of data to be output.
 
-3. Cleanup: The decoder instance's ``cleanup`` method is called.
-
+3. Cleanup: The instance's ``cleanup`` method is called.

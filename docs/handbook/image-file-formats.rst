@@ -26,6 +26,20 @@ Fully supported formats
 
 .. contents::
 
+BLP
+^^^
+
+BLP is the Blizzard Mipmap Format, a texture format used in World of
+Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
+images, and all types of ``BLP2`` images.
+
+Pillow supports writing BLP images. The :py:meth:`~PIL.Image.Image.save` method
+can take the following keyword arguments:
+
+**blp_version**
+    If present and set to "BLP1", images will be saved as BLP1. Otherwise, images
+    will be saved as BLP2.
+
 BMP
 ^^^
 
@@ -1041,13 +1055,6 @@ Pillow reads and writes X bitmap files (mode ``1``).
 
 Read-only formats
 -----------------
-
-BLP
-^^^
-
-BLP is the Blizzard Mipmap Format, a texture format used in World of
-Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
-images, and all types of ``BLP2`` images.
 
 CUR
 ^^^
