@@ -432,4 +432,7 @@ Python-based file codec:
    a buffer of data to be interpreted, or the ``encode`` method is repeatedly
    called with the size of data to be output.
 
+   In ``decode``, once the data has been interpreted, ``set_as_raw`` can be
+   used to populate the image.
+
 3. Cleanup: The instance's ``cleanup`` method is called.
