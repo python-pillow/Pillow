@@ -157,7 +157,8 @@ Added PyEncoder
 ^^^^^^^^^^^^^^^
 
 :py:class:`~PIL.ImageFile.PyEncoder` has been added, allowing for file encoders to be
-written in Python.
+written in Python. See :ref:`Writing Your Own File Codec in Python<file-codecs-py>` for
+more information.
 
 Other Changes
 =============
