@@ -725,6 +725,9 @@ class PyEncoder(PyCodec):
 
     def encode_to_pyfd(self):
         """
+        If ``pushes_fd`` is ``True``, then this method will be used,
+        and ``encode()`` will only be called once.
+
         :returns: A tuple of ``(bytes consumed, errcode)``.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """

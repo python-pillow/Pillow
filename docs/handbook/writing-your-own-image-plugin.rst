@@ -395,7 +395,9 @@ from the file like object.
 
 Alternatively, if ``pulls_fd`` is set, then the decode function is
 called once, with an empty buffer. It is the decoder's responsibility
-to decode the entire tile in that one call.
+to decode the entire tile in that one call.  Using this will provide a
+codec with more freedom, but that freedom may mean increased memory usage
+if entire tile is held in memory at once by the codec.
 
 If an error occurs, set ``state->errcode`` and return -1.
 
@@ -428,6 +430,13 @@ Python-based file codec:
 2. Transforming: The instance's ``decode`` method is repeatedly called with
    a buffer of data to be interpreted, or the ``encode`` method is repeatedly
    called with the size of data to be output.
+
+   Alternatively, if the decoder's ``_pulls_fd`` property (or the encoder's
+   ``_pushes_fd`` property) is set to ``True``, then ``decode`` and ``encode``
+   will only be called once. In the decoder, ``self.fd`` can be used to access
+   the file-like object. Using this will provide a codec with more freedom, but
+   that freedom may mean increased memory usage if entire file is held in
+   memory at once by the codec.
 
    In ``decode``, once the data has been interpreted, ``set_as_raw`` can be
    used to populate the image.
