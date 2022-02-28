@@ -153,6 +153,13 @@ By default, :py:meth:`~PIL.Image.Image.getpalette` returns RGB data from the pal
 A ``rawmode`` argument has been added, to allow the mode to be chosen instead. ``None``
 can be used to return data in the current mode of the palette.
 
+Added PyEncoder
+^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFile.PyEncoder` has been added, allowing for file encoders to be
+written in Python. See :ref:`Writing Your Own File Codec in Python<file-codecs-py>` for
+more information.
+
 Other Changes
 =============
 
@@ -169,3 +176,10 @@ Image._repr_pretty_
 ``im._repr_pretty_`` has been added to provide a representation of an image without the
 identity of the object. This allows Jupyter to describe an image and have that
 description stay the same on subsequent executions of the same code.
+
+Added BLP saving
+^^^^^^^^^^^^^^^^
+
+Support has been added for saving BLP images. ``blp_version`` can be used to specify
+whether the image should be saved as BLP1 or BLP2, e.g.
+``im.save("out.blp", blp_version="BLP1")``. By default, BLP2 will be used.
