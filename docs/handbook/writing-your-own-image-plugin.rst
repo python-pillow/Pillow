@@ -373,12 +373,10 @@ interest in this object are:
   any format specific state or options.
 
 **pulls_fd**
-  **EXPERIMENTAL** -- **WARNING**, interface may change. If set to 1,
-  ``state->fd`` will be a pointer to the Python file like object.  The
-  decoder may use the functions in ``codec_fd.c`` to read directly
-  from the file like object rather than have the data pushed through a
-  buffer.  Note that this implementation may be refactored until this
-  warning is removed.
+  If set to 1, ``state->fd`` will be a pointer to the Python file like
+  object. The decoder may use the functions in ``codec_fd.c`` to read
+  directly from the file like object rather than have the data pushed
+  through a buffer.
 
   .. versionadded:: 3.3.0
 
@@ -389,16 +387,15 @@ Decoding
 The decode function is called with the target (core) image, the
 decoder state structure, and a buffer of data to be decoded.
 
-**Experimental** -- If ``pulls_fd`` is set, then the decode function
-is called once, with an empty buffer. It is the decoder's
-responsibility to decode the entire tile in that one call.  The rest of
-this section only applies if ``pulls_fd`` is not set.
-
 It is the decoder's responsibility to pull as much data as possible
 out of the buffer and return the number of bytes consumed. The next
 call to the decoder will include the previous unconsumed tail. The
 decoder function will be called multiple times as the data is read
 from the file like object.
+
+Alternatively, if ``pulls_fd`` is set, then the decode function is
+called once, with an empty buffer. It is the decoder's responsibility
+to decode the entire tile in that one call.
 
 If an error occurs, set ``state->errcode`` and return -1.
 
