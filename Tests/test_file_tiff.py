@@ -87,6 +87,10 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
+    def test_bigtiff(self):
+        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+            assert_image_equal_tofile(im, "Tests/images/hopper.tif")
+
     @pytest.mark.parametrize(
         "file_name,mode,size,offset",
         [

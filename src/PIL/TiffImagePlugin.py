@@ -260,6 +260,8 @@ PREFIXES = [
     b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
     b"MM\x2A\x00",  # Invalid TIFF header, assume big-endian
     b"II\x00\x2A",  # Invalid TIFF header, assume little-endian
+    b"MM\x00\x2B",  # BigTIFF with big-endian byte order
+    b"II\x2B\x00",  # BigTIFF with little-endian byte order
 ]
 
 
@@ -502,11 +504,14 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self._bigtiff = ifh[2] == 43
         self.group = group
         self.tagtype = {}
         """ Dictionary of tag types """
         self.reset()
-        (self.next,) = self._unpack("L", ifh[4:])
+        (self.next,) = (
+            self._unpack("Q", ifh[8:]) if self._bigtiff else self._unpack("L", ifh[4:])
+        )
         self._legacy_api = False
 
     prefix = property(lambda self: self._prefix)
@@ -699,6 +704,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 (TiffTags.FLOAT, "f", "float"),
                 (TiffTags.DOUBLE, "d", "double"),
                 (TiffTags.IFD, "L", "long"),
+                (TiffTags.LONG8, "Q", "long8"),
             ],
         )
     )
@@ -776,8 +782,17 @@ class ImageFileDirectory_v2(MutableMapping):
         self._offset = fp.tell()
 
         try:
-            for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
-                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
+            tag_count = (
+                self._unpack("Q", self._ensure_read(fp, 8))
+                if self._bigtiff
+                else self._unpack("H", self._ensure_read(fp, 2))
+            )[0]
+            for i in range(tag_count):
+                tag, typ, count, data = (
+                    self._unpack("HHQ8s", self._ensure_read(fp, 20))
+                    if self._bigtiff
+                    else self._unpack("HHL4s", self._ensure_read(fp, 12))
+                )
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
@@ -789,9 +804,9 @@ class ImageFileDirectory_v2(MutableMapping):
                     logger.debug(msg + f" - unsupported type {typ}")
                     continue  # ignore unsupported type
                 size = count * unit_size
-                if size > 4:
+                if size > (8 if self._bigtiff else 4):
                     here = fp.tell()
-                    (offset,) = self._unpack("L", data)
+                    (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
@@ -820,7 +835,11 @@ class ImageFileDirectory_v2(MutableMapping):
                 )
                 logger.debug(msg)
 
-            (self.next,) = self._unpack("L", self._ensure_read(fp, 4))
+            (self.next,) = (
+                self._unpack("Q", self._ensure_read(fp, 8))
+                if self._bigtiff
+                else self._unpack("L", self._ensure_read(fp, 4))
+            )
         except OSError as msg:
             warnings.warn(str(msg))
             return
@@ -1042,6 +1061,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # Header
         ifh = self.fp.read(8)
+        if ifh[2] == 43:
+            ifh += self.fp.read(8)
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 

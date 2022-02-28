@@ -49,7 +49,7 @@ except ImportError:
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
-from ._binary import i32le
+from ._binary import i32le, o32be, o32le
 from ._util import deferred_error, isPath
 
 
@@ -1416,6 +1416,7 @@ class Image:
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
             elif hasattr(self, "tag_v2"):
+                self._exif.bigtiff = self.tag_v2._bigtiff
                 self._exif.endian = self.tag_v2._endian
                 self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
@@ -3423,6 +3424,7 @@ atexit.register(core.clear_cache)
 
 class Exif(MutableMapping):
     endian = None
+    bigtiff = False
 
     def __init__(self):
         self._data = {}
@@ -3458,10 +3460,15 @@ class Exif(MutableMapping):
             return self._fixup_dict(info)
 
     def _get_head(self):
+        version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
-            return b"II\x2A\x00\x08\x00\x00\x00"
+            head = b"II" + version + b"\x00" + o32le(8)
         else:
-            return b"MM\x00\x2A\x00\x00\x00\x08"
+            head = b"MM\x00" + version + o32be(8)
+        if self.bigtiff:
+            head += o32le(8) if self.endian == "<" else o32be(8)
+            head += b"\x00\x00\x00\x00"
+        return head
 
     def load(self, data):
         # Extract EXIF information.  This is highly experimental,
