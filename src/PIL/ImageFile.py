@@ -223,11 +223,11 @@ class ImageFile(Image.Image):
                 )
             ]
             for decoder_name, extents, offset, args in self.tile:
+                seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
                 )
                 try:
-                    seek(offset)
                     decoder.setimage(self.im, extents)
                     if decoder.pulls_fd:
                         decoder.setfd(self.fp)
@@ -502,10 +502,10 @@ def _save(im, fp, tile, bufsize=0):
     except (AttributeError, io.UnsupportedOperation) as exc:
         # compress to Python file-compatible object
         for e, b, o, a in tile:
+            if o > 0:
+                fp.seek(o)
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             try:
-                if o > 0:
-                    fp.seek(o)
                 e.setimage(im.im, b)
                 if e.pushes_fd:
                     e.setfd(fp)
@@ -523,10 +523,10 @@ def _save(im, fp, tile, bufsize=0):
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
+            if o > 0:
+                fp.seek(o)
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
             try:
-                if o > 0:
-                    fp.seek(o)
                 e.setimage(im.im, b)
                 if e.pushes_fd:
                     e.setfd(fp)
