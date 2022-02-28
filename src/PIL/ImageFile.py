@@ -503,36 +503,40 @@ def _save(im, fp, tile, bufsize=0):
         # compress to Python file-compatible object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
-            else:
-                while True:
-                    l, s, d = e.encode(bufsize)
-                    fp.write(d)
-                    if s:
-                        break
-            if s < 0:
-                raise OSError(f"encoder error {s} when writing image file") from exc
-            e.cleanup()
+            try:
+                if o > 0:
+                    fp.seek(o)
+                e.setimage(im.im, b)
+                if e.pushes_fd:
+                    e.setfd(fp)
+                    l, s = e.encode_to_pyfd()
+                else:
+                    while True:
+                        l, s, d = e.encode(bufsize)
+                        fp.write(d)
+                        if s:
+                            break
+                if s < 0:
+                    raise OSError(f"encoder error {s} when writing image file") from exc
+            finally:
+                e.cleanup()
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
             e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
-            else:
-                s = e.encode_to_file(fh, bufsize)
-            if s < 0:
-                raise OSError(f"encoder error {s} when writing image file")
-            e.cleanup()
+            try:
+                if o > 0:
+                    fp.seek(o)
+                e.setimage(im.im, b)
+                if e.pushes_fd:
+                    e.setfd(fp)
+                    l, s = e.encode_to_pyfd()
+                else:
+                    s = e.encode_to_file(fh, bufsize)
+                if s < 0:
+                    raise OSError(f"encoder error {s} when writing image file")
+            finally:
+                e.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
 
