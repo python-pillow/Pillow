@@ -441,4 +441,9 @@ Python-based file codec:
    In ``decode``, once the data has been interpreted, ``set_as_raw`` can be
    used to populate the image.
 
-3. Cleanup: The instance's ``cleanup`` method is called.
+3. Cleanup: The instance's ``cleanup`` method is called once the transformation
+   is complete. This can be used to clean up any resources used by the codec.
+
+   If you set ``_pulls_fd`` or ``_pushes_fd`` to ``True`` however, then you
+   probably chose to perform any cleanup tasks  at the end of ``decode`` or
+   ``encode``.
