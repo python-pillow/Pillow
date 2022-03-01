@@ -385,7 +385,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.im = self._prev_im
         self.mode = self.im.mode
-        if frame_im.mode == "RGBA":
+        if frame_im.mode in ("LA", "RGBA"):
             self.im.paste(frame_im, self.dispose_extent, frame_im)
         else:
             self.im.paste(frame_im, self.dispose_extent)

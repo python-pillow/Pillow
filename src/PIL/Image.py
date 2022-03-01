@@ -1566,8 +1566,8 @@ class Image:
         also use color strings as supported by the ImageColor module.
 
         If a mask is given, this method updates only the regions
-        indicated by the mask.  You can use either "1", "L" or "RGBA"
-        images (in the latter case, the alpha band is used as mask).
+        indicated by the mask. You can use either "1", "L", "LA", "RGBA"
+        or "RGBa" images (if present, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
         values will mix the two images together, including their alpha
@@ -1615,7 +1615,7 @@ class Image:
         elif isImageType(im):
             im.load()
             if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("RGBA", "RGBa"):
+                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             im = im.im

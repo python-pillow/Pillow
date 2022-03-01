@@ -68,6 +68,16 @@ class TestImagingPaste:
         )
 
     @cached_property
+    def gradient_LA(self):
+        return Image.merge(
+            "LA",
+            [
+                self.gradient_L,
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+            ],
+        )
+
+    @cached_property
     def gradient_RGBA(self):
         return Image.merge(
             "RGBA",
@@ -141,6 +151,28 @@ class TestImagingPaste:
                     (239, 239, 207, 207),
                     (128, 1, 128, 254),
                     (207, 113, 112, 207),
+                    (255, 191, 128, 191),
+                ],
+            )
+
+    def test_image_mask_LA(self):
+        for mode in ("RGBA", "RGB", "L"):
+            im = Image.new(mode, (200, 200), "white")
+            im2 = getattr(self, "gradient_" + mode)
+
+            self.assert_9points_paste(
+                im,
+                im2,
+                self.gradient_LA,
+                [
+                    (128, 191, 255, 191),
+                    (112, 207, 206, 111),
+                    (128, 254, 128, 1),
+                    (208, 208, 239, 239),
+                    (192, 191, 191, 191),
+                    (207, 207, 112, 113),
+                    (255, 255, 255, 255),
+                    (239, 207, 207, 239),
                     (255, 191, 128, 191),
                 ],
             )
