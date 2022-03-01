@@ -447,3 +447,9 @@ Python-based file codec:
    If you set ``_pulls_fd`` or ``_pushes_fd`` to ``True`` however, then you
    probably chose to perform any cleanup tasks  at the end of ``decode`` or
    ``encode``.
+
+For an example :py:class:`PIL.ImageFile.PyDecoder`, see `DdsImagePlugin
+<https://github.com/python-pillow/Pillow/blob/main/docs/example/DdsImagePlugin.py>`_.
+For a plugin that uses both :py:class:`PIL.ImageFile.PyDecoder` and
+:py:class:`PIL.ImageFile.PyEncoder`, see `BlpImagePlugin
+<https://github.com/python-pillow/Pillow/blob/main/src/PIL/BlpImagePlugin.py>`_
