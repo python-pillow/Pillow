@@ -59,6 +59,17 @@ def test_invalid_file():
         GifImagePlugin.GifImageFile(invalid_file)
 
 
+def test_l_mode_transparency():
+    with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 0
+        assert im.info["transparency"] == 255
+
+        im.seek(1)
+        assert im.mode == "LA"
+        assert im.load()[0, 0] == (0, 255)
+
+
 def test_optimize():
     def test_grayscale(optimize):
         im = Image.new("L", (1, 1), 0)

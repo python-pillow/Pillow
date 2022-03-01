@@ -167,9 +167,15 @@ class GifImageFile(ImageFile.ImageFile):
         if self.__frame == 1:
             self.pyaccess = None
             if "transparency" in self.info:
-                self.mode = "RGBA"
-                self.im.putpalettealpha(self.info["transparency"], 0)
-                self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                if self.mode == "P":
+                    self.im.putpalettealpha(self.info["transparency"], 0)
+                    self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                    self.mode = "RGBA"
+                else:
+                    self.im = self.im.convert_transparent(
+                        "LA", self.info["transparency"]
+                    )
+                    self.mode = "LA"
 
                 del self.info["transparency"]
             else:
@@ -368,8 +374,11 @@ class GifImageFile(ImageFile.ImageFile):
         if self.__frame == 0:
             return
         if self._frame_transparency is not None:
-            self.im.putpalettealpha(self._frame_transparency, 0)
-            frame_im = self.im.convert("RGBA")
+            if self.mode == "P":
+                self.im.putpalettealpha(self._frame_transparency, 0)
+                frame_im = self.im.convert("RGBA")
+            else:
+                frame_im = self.im.convert_transparent("LA", self._frame_transparency)
         else:
             frame_im = self.im.convert("RGB")
         frame_im = self._crop(frame_im, self.dispose_extent)
