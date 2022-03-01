@@ -135,6 +135,10 @@ def test_trns_l(tmp_path):
 
     f = str(tmp_path / "temp.png")
 
+    im_la = im.convert("LA")
+    assert "transparency" not in im_la.info
+    im_la.save(f)
+
     im_rgb = im.convert("RGB")
     assert im_rgb.info["transparency"] == (128, 128, 128)  # undone
     im_rgb.save(f)
