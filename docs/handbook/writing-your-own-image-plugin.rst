@@ -328,42 +328,42 @@ The fields are used as follows:
     Whether the first line in the image is the top line on the screen (1), or
     the bottom line (-1). If omitted, the orientation defaults to 1.
 
-.. _file-decoders:
+.. _file-codecs:
 
-Writing Your Own File Decoder in C
-==================================
+Writing Your Own File Codec in C
+================================
 
-There are 3 stages in a file decoder's lifetime:
+There are 3 stages in a file codec's lifetime:
 
-1. Setup: Pillow looks for a function in the decoder registry, falling
-   back to a function named ``[decodername]_decoder`` on the internal
-   core image object.  That function is called with the ``args`` tuple
-   from the ``tile`` setup in the ``_open`` method.
+1. Setup: Pillow looks for a function in the decoder or encoder registry,
+   falling back to a function named ``[codecname]_decoder`` or
+   ``[codecname]_encoder`` on the internal core image object. That function is
+   called with the ``args`` tuple from the ``tile``.
 
-2. Decoding: The decoder's decode function is repeatedly called with
-   chunks of image data.
+2. Transforming: The codec's ``decode`` or ``encode`` function is repeatedly
+   called with chunks of image data.
 
-3. Cleanup: If the decoder has registered a cleanup function, it will
-   be called at the end of the decoding process, even if there was an
+3. Cleanup: If the codec has registered a cleanup function, it will
+   be called at the end of the transformation process, even if there was an
    exception raised.
 
 
 Setup
 -----
 
-The current conventions are that the decoder setup function is named
-``PyImaging_[Decodername]DecoderNew`` and defined in ``decode.c``. The
-python binding for it is named ``[decodername]_decoder`` and is setup
-from within the ``_imaging.c`` file in the codecs section of the
-function array.
+The current conventions are that the codec setup function is named
+``PyImaging_[codecname]DecoderNew`` or ``PyImaging_[codecname]EncoderNew``
+and defined in ``decode.c`` or ``encode.c``. The Python binding for it is
+named ``[codecname]_decoder`` or ``[codecname]_encoder`` and is setup from
+within the ``_imaging.c`` file in the codecs section of the function array.
 
-The setup function needs to call ``PyImaging_DecoderNew`` and at the
-very least, set the ``decode`` function pointer. The fields of
-interest in this object are:
+The setup function needs to call ``PyImaging_DecoderNew`` or
+``PyImaging_EncoderNew`` and at the very least, set the ``decode`` or
+``encode`` function pointer. The fields of interest in this object are:
 
-**decode**
-  Function pointer to the decode function, which has access to
-  ``im``, ``state``, and the buffer of data to be added to the image.
+**decode**/**encode**
+  Function pointer to the decode or encode function, which has access to
+  ``im``, ``state``, and the buffer of data to be transformed.
 
 **cleanup**
   Function pointer to the cleanup function, has access to ``state``.
@@ -373,35 +373,34 @@ interest in this object are:
 
 **state**
   An ImagingCodecStateInstance, will be set by Pillow. The ``context``
-  member is an opaque struct that can be used by the decoder to store
+  member is an opaque struct that can be used by the codec to store
   any format specific state or options.
 
-**pulls_fd**
-  If set to 1, ``state->fd`` will be a pointer to the Python file like
-  object. The decoder may use the functions in ``codec_fd.c`` to read
-  directly from the file like object rather than have the data pushed
-  through a buffer.
+**pulls_fd**/**pushes_fd**
+  If the decoder has ``pulls_fd`` or the encoder has ``pushes_fd`` set to 1,
+  ``state->fd`` will be a pointer to the Python file like object. The codec may
+  use the functions in ``codec_fd.c`` to read or write directly with the file
+  like object rather than have the data pushed through a buffer.
 
   .. versionadded:: 3.3.0
 
 
-Decoding
---------
+Transforming
+------------
 
-The decode function is called with the target (core) image, the
-decoder state structure, and a buffer of data to be decoded.
+The decode or encode function is called with the target (core) image, the codec
+state structure, and a buffer of data to be transformed.
 
-It is the decoder's responsibility to pull as much data as possible
-out of the buffer and return the number of bytes consumed. The next
-call to the decoder will include the previous unconsumed tail. The
-decoder function will be called multiple times as the data is read
-from the file like object.
+It is the codec's responsibility to pull as much data as possible out of the
+buffer and return the number of bytes consumed. The next call to the codec will
+include the previous unconsumed tail. The codec function will be called
+multiple times as the data processed.
 
-Alternatively, if ``pulls_fd`` is set, then the decode function is
-called once, with an empty buffer. It is the decoder's responsibility
-to decode the entire tile in that one call.  Using this will provide a
-codec with more freedom, but that freedom may mean increased memory usage
-if entire tile is held in memory at once by the codec.
+Alternatively, if ``pulls_fd`` or ``pushes_fd`` is set, then the decode or
+encode function is called once, with an empty buffer. It is the codec's
+responsibility to transform the entire tile in that one call.  Using this will
+provide a codec with more freedom, but that freedom may mean increased memory
+usage if entire tile is held in memory at once by the codec.
 
 If an error occurs, set ``state->errcode`` and return -1.
 
@@ -410,10 +409,9 @@ Return -1 on success, without setting the errcode.
 Cleanup
 -------
 
-The cleanup function is called after the decoder returns a negative
-value, or if there is a read error from the file. This function should
-free any allocated memory and release any resources from external
-libraries.
+The cleanup function is called after the codec returns a negative
+value, or if there is an error. This function should free any allocated
+memory and release any resources from external libraries.
 
 .. _file-codecs-py:
 
@@ -428,7 +426,7 @@ They should be registered using :py:meth:`PIL.Image.register_decoder` and
 the file codecs, there are three stages in the lifetime of a
 Python-based file codec:
 
-1. Setup: Pillow looks for the decoder in the registry, then
+1. Setup: Pillow looks for the codec in the decoder or encoder registry, then
    instantiates the class.
 
 2. Transforming: The instance's ``decode`` method is repeatedly called with
