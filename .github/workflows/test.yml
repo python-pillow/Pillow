@@ -91,7 +91,7 @@ jobs:
         path: Tests/errors
 
     - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.9
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
       run: |
         python3 -m pip install sphinx-copybutton sphinx-issues sphinx-removed-in sphinx-rtd-theme sphinxext-opengraph
         make doccheck
