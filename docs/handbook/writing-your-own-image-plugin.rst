@@ -123,8 +123,12 @@ The ``tile`` attribute
 To be able to read the file as well as just identifying it, the ``tile``
 attribute must also be set. This attribute consists of a list of tile
 descriptors, where each descriptor specifies how data should be loaded to a
-given region in the image. In most cases, only a single descriptor is used,
-covering the full image.
+given region in the image.
+
+In most cases, only a single descriptor is used, covering the full image.
+:py:class:`.PsdImagePlugin.PsdImageFile` uses multiple tiles to combine
+channels within a single layer, given that the channels are stored separately,
+one after the other.
 
 The tile descriptor is a 4-tuple with the following contents::
 
