@@ -1183,6 +1183,23 @@ unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
+unpackI10B(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, pixel;
+    for (i = 0; i < pixels; i++) {
+        pixel = ((in[0] << 8) + in[1]) << 6;
+#ifdef WORDS_BIGENDIAN
+        out[2] = pixel >> 8;
+        out[3] = pixel;
+#else
+        out[0] = pixel;
+        out[1] = pixel >> 8;
+#endif
+        in += 2;
+        out += 4;
+    }
+}
+
+static void
 copy1(UINT8 *out, const UINT8 *in, int pixels) {
     /* L, P */
     memcpy(out, in, pixels);
@@ -1684,6 +1701,7 @@ static struct {
     {"I", "I", 32, copy4},
     {"I", "I;8", 8, unpackI8},
     {"I", "I;8S", 8, unpackI8S},
+    {"I", "I;10B", 16, unpackI10B},
     {"I", "I;16", 16, unpackI16},
     {"I", "I;16S", 16, unpackI16S},
     {"I", "I;16B", 16, unpackI16B},

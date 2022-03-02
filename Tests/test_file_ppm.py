@@ -20,6 +20,16 @@ def test_sanity():
         assert im.get_format_mimetype() == "image/x-portable-pixmap"
 
 
+def test_10bit_pgm():
+    with Image.open("Tests/images/10_bit_binary.pgm") as im:
+        im.load()
+        assert im.mode == "I"
+        assert im.size == (128, 128)
+        assert im.get_format_mimetype() == "image/x-portable-graymap"
+
+        assert_image_equal_tofile(im, "Tests/images/10_bit_binary_pgm.png")
+
+
 def test_16bit_pgm():
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         im.load()
