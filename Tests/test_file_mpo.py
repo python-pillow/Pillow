@@ -85,6 +85,9 @@ def test_frame_size():
         im.seek(1)
         assert im.size == (680, 480)
 
+        im.seek(0)
+        assert im.size == (640, 480)
+
 
 def test_ignore_frame_size():
     # Ignore the different size of the second frame
