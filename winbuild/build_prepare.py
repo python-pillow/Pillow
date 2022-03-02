@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/3.4.0.zip",
-        "filename": "harfbuzz-3.4.0.zip",
-        "dir": "harfbuzz-3.4.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
+        "filename": "harfbuzz-4.0.0.zip",
+        "dir": "harfbuzz-4.0.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
