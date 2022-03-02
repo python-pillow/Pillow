@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Reset size when seeking away from "Large Thumbnail" MPO frame #6101
+  [radarhere]
+
 - Replace requirements.txt with extras #6072
   [hugovk, radarhere]
 
