@@ -281,17 +281,23 @@ class BmpRleDecoder(ImageFile.PyDecoder):
 
     def decode(self, buffer):
         data = bytearray()
+        x = 0
         while True:
             num_pixels = self.fd.read(1)[0]
             byte = self.fd.read(1)
             if num_pixels:
                 # encoded mode
+                if x + num_pixels > self.state.xsize:
+                    # Too much data for row
+                    num_pixels = max(0, self.state.xsize - x)
                 data += byte * num_pixels
+                x += num_pixels
             else:
                 if byte[0] == 0:
                     # end of line
                     while len(data) % self.state.xsize != 0:
                         data += b"\x00"
+                    x = 0
                 elif byte[0] == 1:
                     # end of bitmap
                     break
@@ -299,9 +305,11 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     # delta
                     right, up = self.fd.read(2)
                     data += b"\x00" * (right + up * self.state.xsize)
+                    x = len(data) % self.state.xsize
                 else:
                     # absolute mode
                     data += self.fd.read(byte[0])
+                    x += byte[0]
 
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:

@@ -134,6 +134,11 @@ def test_rle8():
     with Image.open("Tests/images/hopper_rle8.bmp") as im:
         assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
 
+    # This test image has been manually hexedited
+    # to have rows with too much data
+    with Image.open("Tests/images/hopper_rle8_row_overflow.bmp") as im:
+        assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
+
 
 def test_offset():
     # This image has been hexedited
