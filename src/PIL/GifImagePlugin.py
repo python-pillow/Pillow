@@ -298,7 +298,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
             else:
                 # replace with previous contents
-                if self.im:
+                if self.im is not None:
                     # only dispose the extent in this frame
                     self.dispose = self._crop(self.im, self.dispose_extent)
                 elif frame_transparency is not None:

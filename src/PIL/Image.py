@@ -847,7 +847,7 @@ class Image:
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
         """
-        if self.im and self.palette and self.palette.dirty:
+        if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
             self.im.putpalette(mode, arr)
@@ -864,7 +864,7 @@ class Image:
                 self.palette.mode = palette_mode
                 self.palette.palette = self.im.getpalette(palette_mode, palette_mode)
 
-        if self.im:
+        if self.im is not None:
             if cffi and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
