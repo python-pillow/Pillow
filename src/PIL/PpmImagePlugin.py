@@ -20,7 +20,7 @@ from . import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-B_WHITESPACE = b"\x20\x09\x0a\x0b\x0c\x0d"
+b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
     # standard
@@ -52,7 +52,7 @@ class PpmImageFile(ImageFile.ImageFile):
     def _read_magic(self, magic=b""):
         while True:  # read until next whitespace
             c = self.fp.read(1)
-            if c in B_WHITESPACE:
+            if c in b_whitespace:
                 break
             magic += c
             if len(magic) > 6:  # exceeded max magic number length
@@ -69,7 +69,7 @@ class PpmImageFile(ImageFile.ImageFile):
             if c == b"#":  # found comment, ignore it
                 _ignore_comment()
                 continue
-            if c in B_WHITESPACE:  # found whitespace, ignore it
+            if c in b_whitespace:  # found whitespace, ignore it
                 if c == b"":  # reached EOF
                     raise ValueError("Reached EOF while reading header")
                 continue
@@ -82,7 +82,7 @@ class PpmImageFile(ImageFile.ImageFile):
             if c == b"#":
                 _ignore_comment()
                 continue
-            if c in B_WHITESPACE:  # token ended
+            if c in b_whitespace:  # token ended
                 break
             token += c
             if len(token) > 10:
