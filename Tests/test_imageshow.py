@@ -51,6 +51,16 @@ def test_show():
         assert ImageShow.show(im)
 
 
+def test_show_without_viewers():
+    viewers = ImageShow._viewers
+    ImageShow._viewers = []
+
+    im = hopper()
+    assert not ImageShow.show(im)
+
+    ImageShow._viewers = viewers
+
+
 def test_viewer():
     viewer = ImageShow.Viewer()
 
@@ -62,4 +72,37 @@ def test_viewer():
 
 def test_viewers():
     for viewer in ImageShow._viewers:
-        viewer.get_command("test.jpg")
+        try:
+            viewer.get_command("test.jpg")
+        except NotImplementedError:
+            pass
+
+
+def test_ipythonviewer():
+    pytest.importorskip("IPython", reason="IPython not installed")
+    for viewer in ImageShow._viewers:
+        if isinstance(viewer, ImageShow.IPythonViewer):
+            test_viewer = viewer
+            break
+    else:
+        assert False
+
+    im = hopper()
+    assert test_viewer.show(im) == 1
+
+
+@pytest.mark.skipif(
+    not on_ci() or is_win32(),
+    reason="Only run on CIs; hangs on Windows CIs",
+)
+def test_file_deprecated(tmp_path):
+    f = str(tmp_path / "temp.jpg")
+    for viewer in ImageShow._viewers:
+        hopper().save(f)
+        with pytest.warns(DeprecationWarning):
+            try:
+                viewer.show_file(file=f)
+            except NotImplementedError:
+                pass
+        with pytest.raises(TypeError):
+            viewer.show_file()

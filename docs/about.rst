@@ -12,14 +12,14 @@ The fork author's goal is to foster and support active development of PIL throug
 
 .. _GitHub Actions: https://github.com/python-pillow/Pillow/actions
 .. _AppVeyor: https://ci.appveyor.com/project/Python-pillow/pillow
-.. _Travis CI: https://travis-ci.com/github/python-pillow/pillow-wheels
+.. _Travis CI: https://app.travis-ci.com/github/python-pillow/pillow-wheels
 .. _GitHub: https://github.com/python-pillow/Pillow
 .. _Python Package Index: https://pypi.org/project/Pillow/
 
 License
 -------
 
-Like PIL, Pillow is `licensed under the open source HPND License <https://raw.githubusercontent.com/python-pillow/Pillow/master/LICENSE>`_
+Like PIL, Pillow is `licensed under the open source HPND License <https://raw.githubusercontent.com/python-pillow/Pillow/main/LICENSE>`_
 
 Why a fork?
 -----------

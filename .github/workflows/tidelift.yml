@@ -1,0 +1,26 @@
+name: Tidelift Align
+on:
+  schedule:
+    - cron: "30 2 * * *"  # daily at 02:30 UTC
+  push:
+    paths:
+      - ".github/workflows/tidelift.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/tidelift.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.repository_owner == 'python-pillow'
+    name: Run Tidelift to ensure approved open source packages are in use
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Scan
+        uses: tidelift/alignment-action@main
+        env:
+          TIDELIFT_API_KEY: ${{ secrets.TIDELIFT_API_KEY }}
+          TIDELIFT_ORGANIZATION: team/aclark4life
+          TIDELIFT_PROJECT: pillow

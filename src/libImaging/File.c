@@ -15,19 +15,15 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
 #include <ctype.h>
 
-
 int
-ImagingSaveRaw(Imaging im, FILE* fp)
-{
+ImagingSaveRaw(Imaging im, FILE *fp) {
     int x, y, i;
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
-
         /* @PIL227: FIXME: for mode "1", map != 0 to 255 */
 
         /* PGM "L" */
@@ -36,33 +32,29 @@ ImagingSaveRaw(Imaging im, FILE* fp)
         }
 
     } else {
-
         /* PPM "RGB" or other internal format */
         for (y = 0; y < im->ysize; y++) {
             for (x = i = 0; x < im->xsize; x++, i += im->pixelsize) {
-                fwrite(im->image[y]+i, 1, im->bands, fp);
+                fwrite(im->image[y] + i, 1, im->bands, fp);
             }
         }
-
     }
 
     return 1;
 }
 
-
 int
-ImagingSavePPM(Imaging im, const char* outfile)
-{
-    FILE* fp;
+ImagingSavePPM(Imaging im, const char *outfile) {
+    FILE *fp;
 
     if (!im) {
-        (void) ImagingError_ValueError(NULL);
+        (void)ImagingError_ValueError(NULL);
         return 0;
     }
 
     fp = fopen(outfile, "wb");
     if (!fp) {
-        (void) ImagingError_OSError();
+        (void)ImagingError_OSError();
         return 0;
     }
 
@@ -74,7 +66,7 @@ ImagingSavePPM(Imaging im, const char* outfile)
         fprintf(fp, "P6\n%d %d\n255\n", im->xsize, im->ysize);
     } else {
         fclose(fp);
-        (void) ImagingError_ModeError();
+        (void)ImagingError_ModeError();
         return 0;
     }
 
@@ -84,4 +76,3 @@ ImagingSavePPM(Imaging im, const char* outfile)
 
     return 1;
 }
-

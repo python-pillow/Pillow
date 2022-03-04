@@ -1,4 +1,5 @@
 import os
+import platform
 import shutil
 import struct
 import subprocess
@@ -93,6 +94,7 @@ SF_MIRROR = "http://iweb.dl.sourceforge.net"
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
+    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
 header = [
@@ -105,9 +107,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.0.6/libjpeg-turbo-2.0.6.tar.gz",
-        "filename": "libjpeg-turbo-2.0.6.tar.gz",
-        "dir": "libjpeg-turbo-2.0.6",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
+        "filename": "libjpeg-turbo-2.1.3.tar.gz",
+        "dir": "libjpeg-turbo-2.1.3",
         "build": [
             cmd_cmake(
                 [
@@ -141,22 +143,22 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz",
-        "filename": "tiff-4.1.0.tar.gz",
-        "dir": "tiff-4.1.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
+        "filename": "tiff-4.3.0.tar.gz",
+        "dir": "tiff-4.3.0",
         "build": [
-            cmd_copy(r"{winbuild_dir}\tiff.opt", "nmake.opt"),
-            cmd_nmake("makefile.vc", "clean"),
-            cmd_nmake("makefile.vc", "lib"),
+            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="tiff"),
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz",
-        "filename": "libwebp-1.1.0.tar.gz",
-        "dir": "libwebp-1.1.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.2.tar.gz",
+        "filename": "libwebp-1.2.2.tar.gz",
+        "dir": "libwebp-1.2.2",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -184,9 +186,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz",  # noqa: E501
-        "filename": "freetype-2.10.4.tar.gz",
-        "dir": "freetype-2.10.4",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.11.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.11.1.tar.gz",
+        "dir": "freetype-2.11.1",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -219,65 +221,68 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.11/lcms2-2.11.tar.gz",
-        "filename": "lcms2-2.11.tar.gz",
-        "dir": "lcms2-2.11",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz",
+        "filename": "lcms2-2.13.1.tar.gz",
+        "dir": "lcms2-2.13.1",
         "patch": {
-            r"Projects\VC2017\lcms2_static\lcms2_static.vcxproj": {
+            r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v141</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
+                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC2017\Release"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "Clean"),
-            cmd_msbuild(r"Projects\VC2017\lcms2.sln", "Release", "lcms2_static"),
+            cmd_rmdir(r"Projects\VC2019\Release"),
+            cmd_msbuild(r"Projects\VC2019\lcms2.sln", "Release", "Clean"),
+            cmd_msbuild(
+                r"Projects\VC2019\lcms2.sln", "Release", "lcms2_static:Rebuild"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz",
-        "filename": "openjpeg-2.3.1.tar.gz",
-        "dir": "openjpeg-2.3.1",
+        "url": "https://github.com/uclouvain/openjpeg/archive/v2.4.0.tar.gz",
+        "filename": "openjpeg-2.4.0.tar.gz",
+        "dir": "openjpeg-2.4.0",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
             cmd_nmake(target="openjp2"),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.3.1"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.3.1"),
+            cmd_mkdir(r"{inc_dir}\openjpeg-2.4.0"),
+            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.4.0"),
         ],
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # e5d454b: Merge tag '2.12.6' into msvc
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",  # noqa: E501
-        "filename": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4.zip",
-        "dir": "libimagequant-e5d454bc7f5eb63ee50c84a83a7fa5ac94f68ec4",
+        # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
+        "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "patch": {
             "CMakeLists.txt": {
-                "add_library": "add_compile_options(-openmp-)\r\nadd_library",
-                " SHARED": " STATIC",
+                "if(OPENMP_FOUND)": "if(false)",
+                "install": "#install",
             }
         },
         "build": [
             # lint: do not inline
             cmd_cmake(),
             cmd_nmake(target="clean"),
-            cmd_nmake(),
+            cmd_nmake(target="imagequant_a"),
+            cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
-        "libs": [r"*.lib"],
+        "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/2.7.2.zip",
-        "filename": "harfbuzz-2.7.2.zip",
-        "dir": "harfbuzz-2.7.2",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
+        "filename": "harfbuzz-4.0.0.zip",
+        "dir": "harfbuzz-4.0.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -287,30 +292,16 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.10.zip",
-        "filename": "fribidi-1.0.10.zip",
-        "dir": "fribidi-1.0.10",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.11.zip",
+        "filename": "fribidi-1.0.11.zip",
+        "dir": "fribidi-1.0.11",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
             cmd_nmake(target="clean"),
             cmd_nmake(target="fribidi"),
         ],
-        "headers": [r"lib\*.h"],
-        "libs": [r"*.lib"],
-    },
-    "libraqm": {
-        "url": "https://github.com/HOST-Oman/libraqm/archive/v0.7.1.zip",
-        "filename": "libraqm-0.7.1.zip",
-        "dir": "libraqm-0.7.1",
-        "build": [
-            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="libraqm"),
-        ],
-        "headers": [r"src\*.h"],
-        "bins": [r"libraqm.dll"],
+        "bins": [r"*.dll"],
     },
 }
 
@@ -449,6 +440,7 @@ def build_dep(name):
             assert patch_from in text
             text = text.replace(patch_from, patch_to)
         with open(patch_file, "w") as f:
+            print(f"Patching {patch_file}")
             f.write(text)
 
     banner = f"Building {name} ({dir})"
@@ -484,9 +476,7 @@ def build_pillow():
         cmd_cd("{pillow_dir}"),
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("MSSdk", "1"),  # for PyPy3.6
-        cmd_set("py_vcruntime_redist", "true"),  # use /MD, not /MT
-        r'"{python_dir}\{python_exe}" setup.py build_ext %*',
+        r'"{python_dir}\{python_exe}" setup.py build_ext --vendor-raqm --vendor-fribidi %*',  # noqa: E501
     ]
 
     write_script("build_pillow.cmd", lines)
@@ -502,7 +492,10 @@ if __name__ == "__main__":
     python_dir = os.environ.get("PYTHON")
     python_exe = os.environ.get("EXECUTABLE", "python.exe")
     architecture = os.environ.get(
-        "ARCHITECTURE", "x86" if struct.calcsize("P") == 4 else "x64"
+        "ARCHITECTURE",
+        "ARM64"
+        if platform.machine() == "ARM64"
+        else ("x86" if struct.calcsize("P") == 4 else "x64"),
     )
     build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
     sources_dir = ""
@@ -511,8 +504,8 @@ if __name__ == "__main__":
             verbose = True
         elif arg == "--no-imagequant":
             disabled += ["libimagequant"]
-        elif arg == "--no-raqm":
-            disabled += ["fribidi", "libraqm"]
+        elif arg == "--no-raqm" or arg == "--no-fribidi":
+            disabled += ["fribidi"]
         elif arg.startswith("--depends="):
             depends_dir = arg[10:]
         elif arg.startswith("--python="):

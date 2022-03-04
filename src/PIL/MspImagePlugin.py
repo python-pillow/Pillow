@@ -21,13 +21,12 @@
 # Figure 205. Windows Paint Version 1: "DanM" Format
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
-# See also: http://www.fileformat.info/format/mspaint/egff.htm
+# See also: https://www.fileformat.info/format/mspaint/egff.htm
 
 import io
 import struct
 
 from . import Image, ImageFile
-from ._binary import i8
 from ._binary import i16le as i16
 from ._binary import o16le as o16
 
@@ -59,12 +58,12 @@ class MspImageFile(ImageFile.ImageFile):
         # Header checksum
         checksum = 0
         for i in range(0, 32, 2):
-            checksum = checksum ^ i16(s[i : i + 2])
+            checksum = checksum ^ i16(s, i)
         if checksum != 0:
             raise SyntaxError("bad MSP checksum")
 
         self.mode = "1"
-        self._size = i16(s[4:]), i16(s[6:])
+        self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":
             self.tile = [("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
@@ -74,7 +73,7 @@ class MspImageFile(ImageFile.ImageFile):
 
 class MspDecoder(ImageFile.PyDecoder):
     # The algo for the MSP decoder is from
-    # http://www.fileformat.info/format/mspaint/egff.htm
+    # https://www.fileformat.info/format/mspaint/egff.htm
     # cc-by-attribution -- That page references is taken from the
     # Encyclopedia of Graphics File Formats and is licensed by
     # O'Reilly under the Creative Common/Attribution license
@@ -133,7 +132,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     )
                 idx = 0
                 while idx < rowlen:
-                    runtype = i8(row[idx])
+                    runtype = row[idx]
                     idx += 1
                     if runtype == 0:
                         (runcount, runval) = struct.unpack_from("Bc", row, idx)

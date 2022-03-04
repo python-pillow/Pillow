@@ -1,6 +1,6 @@
 name: Test Docker
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -19,14 +19,17 @@ jobs:
           amazon-2-amd64,
           arch,
           centos-7-amd64,
-          centos-8-amd64,
+          centos-stream-8-amd64,
+          centos-stream-9-amd64,
           debian-10-buster-x86,
-          fedora-32-amd64,
-          fedora-33-amd64,
+          debian-11-bullseye-x86,
+          fedora-34-amd64,
+          fedora-35-amd64,
+          gentoo,
           ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
         ]
-        dockerTag: [master]
+        dockerTag: [main]
         include:
           - docker: "ubuntu-20.04-focal-arm64v8"
             qemu-arch: "aarch64"
@@ -41,7 +44,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"

@@ -9,7 +9,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile
+import warnings
+
+from . import FitsImagePlugin, Image, ImageFile
 
 _handler = None
 
@@ -23,35 +25,39 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
+    warnings.warn(
+        "FitsStubImagePlugin is deprecated and will be removed in Pillow "
+        "10 (2023-07-01). FITS images can now be read without a handler through "
+        "FitsImagePlugin instead.",
+        DeprecationWarning,
+    )
 
-# --------------------------------------------------------------------
-# Image adapter
+    # Override FitsImagePlugin with this handler
+    # for backwards compatibility
+    try:
+        Image.ID.remove(FITSStubImageFile.format)
+    except ValueError:
+        pass
 
-
-def _accept(prefix):
-    return prefix[:6] == b"SIMPLE"
+    Image.register_open(
+        FITSStubImageFile.format, FITSStubImageFile, FitsImagePlugin._accept
+    )
 
 
 class FITSStubImageFile(ImageFile.StubImageFile):
 
-    format = "FITS"
-    format_description = "FITS"
+    format = FitsImagePlugin.FitsImageFile.format
+    format_description = FitsImagePlugin.FitsImageFile.format_description
 
     def _open(self):
-
         offset = self.fp.tell()
 
-        if not _accept(self.fp.read(6)):
-            raise SyntaxError("Not a FITS file")
-
-        # FIXME: add more sanity checks here; mandatory header items
-        # include SIMPLE, BITPIX, NAXIS, etc.
+        im = FitsImagePlugin.FitsImageFile(self.fp)
+        self._size = im.size
+        self.mode = im.mode
+        self.tile = []
 
         self.fp.seek(offset)
-
-        # make something up
-        self.mode = "F"
-        self._size = 1, 1
 
         loader = self._load()
         if loader:
@@ -62,15 +68,10 @@ class FITSStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im, fp, filename):
-    if _handler is None or not hasattr("_handler", "save"):
-        raise OSError("FITS save handler not installed")
-    _handler.save(im, fp, filename)
+    raise OSError("FITS save handler not installed")
 
 
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open(FITSStubImageFile.format, FITSStubImageFile, _accept)
 Image.register_save(FITSStubImageFile.format, _save)
-
-Image.register_extensions(FITSStubImageFile.format, [".fit", ".fits"])

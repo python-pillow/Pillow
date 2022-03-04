@@ -1,7 +1,7 @@
 /* Small excerpts from the Tcl / Tk 8.6 headers
  *
  * License terms copied from:
- * http://www.tcl.tk/software/tcltk/license.html
+ * https://www.tcl.tk/software/tcltk/license.html
  * as of 20 May 2016.
  *
  * Copyright (c) 1987-1994 The Regents of the University of California.
@@ -79,18 +79,20 @@ typedef struct Tcl_Interp Tcl_Interp;
 typedef struct Tcl_Command_ *Tcl_Command;
 typedef void *ClientData;
 
-typedef int (Tcl_CmdProc) (ClientData clientData, Tcl_Interp
-        *interp, int argc, const char *argv[]);
-typedef void (Tcl_CmdDeleteProc) (ClientData clientData);
+typedef int(Tcl_CmdProc)(
+    ClientData clientData, Tcl_Interp *interp, int argc, const char *argv[]);
+typedef void(Tcl_CmdDeleteProc)(ClientData clientData);
 
 /* Typedefs derived from function signatures in Tcl header */
 /* Tcl_CreateCommand */
-typedef Tcl_Command (*Tcl_CreateCommand_t)(Tcl_Interp *interp,
-        const char *cmdName, Tcl_CmdProc *proc,
-        ClientData clientData,
-        Tcl_CmdDeleteProc *deleteProc);
+typedef Tcl_Command (*Tcl_CreateCommand_t)(
+    Tcl_Interp *interp,
+    const char *cmdName,
+    Tcl_CmdProc *proc,
+    ClientData clientData,
+    Tcl_CmdDeleteProc *deleteProc);
 /* Tcl_AppendResult */
-typedef void (*Tcl_AppendResult_t) (Tcl_Interp *interp, ...);
+typedef void (*Tcl_AppendResult_t)(Tcl_Interp *interp, ...);
 
 /* Tk header excerpts */
 
@@ -107,8 +109,7 @@ typedef struct Tk_Window_ *Tk_Window;
 
 typedef void *Tk_PhotoHandle;
 
-typedef struct Tk_PhotoImageBlock
-{
+typedef struct Tk_PhotoImageBlock {
     unsigned char *pixelPtr;
     int width;
     int height;
@@ -119,23 +120,30 @@ typedef struct Tk_PhotoImageBlock
 
 /* Typedefs derived from function signatures in Tk header */
 /* Tk_PhotoPutBlock for Tk <= 8.4 */
-typedef void (*Tk_PhotoPutBlock_84_t) (Tk_PhotoHandle handle,
-        Tk_PhotoImageBlock *blockPtr, int x, int y,
-        int width, int height, int compRule);
+typedef void (*Tk_PhotoPutBlock_84_t)(
+    Tk_PhotoHandle handle,
+    Tk_PhotoImageBlock *blockPtr,
+    int x,
+    int y,
+    int width,
+    int height,
+    int compRule);
 /* Tk_PhotoPutBlock for Tk >= 8.5 */
-typedef int (*Tk_PhotoPutBlock_85_t) (Tcl_Interp * interp,
-        Tk_PhotoHandle handle,
-        Tk_PhotoImageBlock * blockPtr, int x, int y,
-        int width, int height, int compRule);
+typedef int (*Tk_PhotoPutBlock_85_t)(
+    Tcl_Interp *interp,
+    Tk_PhotoHandle handle,
+    Tk_PhotoImageBlock *blockPtr,
+    int x,
+    int y,
+    int width,
+    int height,
+    int compRule);
 /* Tk_PhotoSetSize for Tk <= 8.4 */
-typedef void (*Tk_PhotoSetSize_84_t) (Tk_PhotoHandle handle,
-        int width, int height);
+typedef void (*Tk_PhotoSetSize_84_t)(Tk_PhotoHandle handle, int width, int height);
 /* Tk_FindPhoto */
-typedef Tk_PhotoHandle (*Tk_FindPhoto_t) (Tcl_Interp *interp,
-        const char *imageName);
+typedef Tk_PhotoHandle (*Tk_FindPhoto_t)(Tcl_Interp *interp, const char *imageName);
 /* Tk_PhotoGetImage */
-typedef int (*Tk_PhotoGetImage_t) (Tk_PhotoHandle handle,
-        Tk_PhotoImageBlock * blockPtr);
+typedef int (*Tk_PhotoGetImage_t)(Tk_PhotoHandle handle, Tk_PhotoImageBlock *blockPtr);
 
 /*
  * end block for C++

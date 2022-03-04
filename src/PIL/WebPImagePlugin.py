@@ -96,7 +96,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _getexif(self):
         if "exif" not in self.info:
             return None
-        return dict(self.getexif())
+        return self.getexif()._get_merged_dict()
 
     def seek(self, frame):
         if not self._seek_check(frame):
@@ -192,7 +192,7 @@ def _save_all(im, fp, filename):
                 r, g, b = palette[background * 3 : (background + 1) * 3]
                 background = (r, g, b, 0)
 
-    duration = im.encoderinfo.get("duration", 0)
+    duration = im.encoderinfo.get("duration", im.info.get("duration"))
     loop = im.encoderinfo.get("loop", 0)
     minimize_size = im.encoderinfo.get("minimize_size", False)
     kmin = im.encoderinfo.get("kmin", None)
@@ -202,7 +202,7 @@ def _save_all(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     method = im.encoderinfo.get("method", 0)
-    icc_profile = im.encoderinfo.get("icc_profile", "")
+    icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
@@ -309,18 +309,18 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
-    icc_profile = im.encoderinfo.get("icc_profile", "")
+    icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
-    method = im.encoderinfo.get("method", 0)
+    method = im.encoderinfo.get("method", 4)
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
         alpha = (
             "A" in im.mode
             or "a" in im.mode
-            or (im.mode == "P" and "A" in im.im.getpalettemode())
+            or (im.mode == "P" and "transparency" in im.info)
         )
         im = im.convert("RGBA" if alpha else "RGB")
 

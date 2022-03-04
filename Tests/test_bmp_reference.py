@@ -1,6 +1,5 @@
 import os
-
-import pytest
+import warnings
 
 from PIL import Image
 
@@ -20,15 +19,13 @@ def test_bad():
     either"""
     for f in get_files("b"):
 
-        def open(f):
+        # Assert that there is no unclosed file warning
+        with warnings.catch_warnings():
             try:
                 with Image.open(f) as im:
                     im.load()
             except Exception:  # as msg:
                 pass
-
-        # Assert that there is no unclosed file warning
-        pytest.warns(None, open, f)
 
 
 def test_questionable():

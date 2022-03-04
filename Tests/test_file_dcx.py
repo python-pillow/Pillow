@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import DcxImagePlugin, Image
@@ -31,20 +33,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    def open():
+    with warnings.catch_warnings():
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
-    pytest.warns(None, open)
-
 
 def test_context_manager():
-    def open():
+    with warnings.catch_warnings():
         with Image.open(TEST_FILE) as im:
             im.load()
-
-    pytest.warns(None, open)
 
 
 def test_invalid_file():

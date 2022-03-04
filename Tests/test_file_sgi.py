@@ -2,7 +2,12 @@ import pytest
 
 from PIL import Image, SgiImagePlugin
 
-from .helper import assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 
 def test_rgb():
@@ -16,10 +21,7 @@ def test_rgb():
 
 
 def test_rgb16():
-    test_file = "Tests/images/hopper16.rgb"
-
-    with Image.open(test_file) as im:
-        assert_image_equal(im, hopper())
+    assert_image_equal_tofile(hopper(), "Tests/images/hopper16.rgb")
 
 
 def test_l():
@@ -38,8 +40,7 @@ def test_rgba():
     test_file = "Tests/images/transparent.sgi"
 
     with Image.open(test_file) as im:
-        with Image.open("Tests/images/transparent.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/transparent.png")
         assert im.get_format_mimetype() == "image/sgi"
 
 
@@ -49,16 +50,14 @@ def test_rle():
     test_file = "Tests/images/hopper.sgi"
 
     with Image.open(test_file) as im:
-        with Image.open("Tests/images/hopper.rgb") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/hopper.rgb")
 
 
 def test_rle16():
     test_file = "Tests/images/tv16.sgi"
 
     with Image.open(test_file) as im:
-        with Image.open("Tests/images/tv.rgb") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/tv.rgb")
 
 
 def test_invalid_file():
@@ -72,8 +71,14 @@ def test_write(tmp_path):
     def roundtrip(img):
         out = str(tmp_path / "temp.sgi")
         img.save(out, format="sgi")
-        with Image.open(out) as reloaded:
-            assert_image_equal(img, reloaded)
+        assert_image_equal_tofile(img, out)
+
+        out = str(tmp_path / "fp.sgi")
+        with open(out, "wb") as fp:
+            img.save(fp)
+            assert_image_equal_tofile(img, out)
+
+            assert not fp.closed
 
     for mode in ("L", "RGB", "RGBA"):
         roundtrip(hopper(mode))
@@ -89,8 +94,7 @@ def test_write16(tmp_path):
         out = str(tmp_path / "temp.sgi")
         im.save(out, format="sgi", bpc=2)
 
-        with Image.open(out) as reloaded:
-            assert_image_equal(im, reloaded)
+        assert_image_equal_tofile(im, out)
 
 
 def test_unsupported_mode(tmp_path):

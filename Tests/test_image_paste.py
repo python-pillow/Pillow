@@ -45,7 +45,7 @@ class TestImagingPaste:
 
     @cached_property
     def mask_L(self):
-        return self.gradient_L.transpose(Image.ROTATE_270)
+        return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
     @cached_property
     def gradient_L(self):
@@ -62,8 +62,8 @@ class TestImagingPaste:
             "RGB",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
             ],
         )
 
@@ -73,9 +73,9 @@ class TestImagingPaste:
             "RGBA",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
-                self.gradient_L.transpose(Image.ROTATE_270),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
             ],
         )
 
@@ -85,9 +85,9 @@ class TestImagingPaste:
             "RGBa",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
-                self.gradient_L.transpose(Image.ROTATE_270),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
             ],
         )
 
@@ -236,7 +236,7 @@ class TestImagingPaste:
                 [
                     (127, 191, 254, 191),
                     (111, 207, 206, 110),
-                    (255, 255, 255, 0) if mode == "RGBA" else (127, 254, 127, 0),
+                    (127, 254, 127, 0),
                     (207, 207, 239, 239),
                     (191, 191, 190, 191),
                     (207, 206, 111, 112),

@@ -40,8 +40,16 @@ Classes
 .. autoclass:: PIL.ImageFile.Parser()
     :members:
 
+.. autoclass:: PIL.ImageFile.PyCodec()
+    :members:
+
 .. autoclass:: PIL.ImageFile.PyDecoder()
     :members:
+    :show-inheritance:
+
+.. autoclass:: PIL.ImageFile.PyEncoder()
+    :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFile.ImageFile()
     :member-order: bysource

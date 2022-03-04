@@ -41,11 +41,15 @@ def test_sanity():
 def test_default():
 
     im = hopper("P")
-    assert_image(im, "P", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
-    im = im.convert()
-    assert_image(im, "RGB", im.size)
+    assert im.mode == "P"
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+    converted_im = im.convert()
+    assert_image(converted_im, "RGB", im.size)
+
+    im.info["transparency"] = 0
+    converted_im = im.convert()
+    assert_image(converted_im, "RGBA", im.size)
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274
@@ -72,6 +76,13 @@ def test_16bit_workaround():
         _test_float_conversion(im.convert("I"))
 
 
+def test_opaque():
+    alpha = hopper("P").convert("PA").getchannel("A")
+
+    solid = Image.new("L", (128, 128), 255)
+    assert_image_equal(alpha, solid)
+
+
 def test_rgba_p():
     im = hopper("RGBA")
     im.putalpha(hopper("L"))
@@ -89,29 +100,33 @@ def test_trns_p(tmp_path):
     f = str(tmp_path / "temp.png")
 
     im_l = im.convert("L")
-    assert im_l.info["transparency"] == 0  # undone
+    assert im_l.info["transparency"] == 1  # undone
     im_l.save(f)
 
     im_rgb = im.convert("RGB")
-    assert im_rgb.info["transparency"] == (0, 0, 0)  # undone
+    assert im_rgb.info["transparency"] == (0, 1, 2)  # undone
     im_rgb.save(f)
 
 
 # ref https://github.com/python-pillow/Pillow/issues/664
 
 
-def test_trns_p_rgba():
+@pytest.mark.parametrize("mode", ("LA", "PA", "RGBA"))
+def test_trns_p_transparency(mode):
     # Arrange
     im = hopper("P")
     im.info["transparency"] = 128
 
     # Act
-    im_rgba = im.convert("RGBA")
+    converted_im = im.convert(mode)
 
     # Assert
-    assert "transparency" not in im_rgba.info
-    # https://github.com/python-pillow/Pillow/issues/2702
-    assert im_rgba.palette is None
+    assert "transparency" not in converted_im.info
+    if mode == "PA":
+        assert converted_im.palette is not None
+    else:
+        # https://github.com/python-pillow/Pillow/issues/2702
+        assert converted_im.palette is None
 
 
 def test_trns_l(tmp_path):
@@ -128,8 +143,8 @@ def test_trns_l(tmp_path):
     assert "transparency" in im_p.info
     im_p.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
-    assert "transparency" not in im_p.info
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
+    assert "transparency" in im_p.info
     im_p.save(f)
 
 
@@ -151,9 +166,29 @@ def test_trns_RGB(tmp_path):
     assert "transparency" not in im_rgba.info
     im_rgba.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
+
+    im = Image.new("RGB", (1, 1))
+    im.info["transparency"] = im.getpixel((0, 0))
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
+    assert im_p.info["transparency"] == im_p.getpixel((0, 0))
+    im_p.save(f)
+
+
+@pytest.mark.parametrize("convert_mode", ("L", "LA", "I"))
+def test_l_macro_rounding(convert_mode):
+    for mode in ("P", "PA"):
+        im = Image.new(mode, (1, 1))
+        im.palette.getcolor((0, 1, 2))
+
+        converted_im = im.convert(convert_mode)
+        px = converted_im.load()
+        converted_color = px[0, 0]
+        if convert_mode == "LA":
+            converted_color = converted_color[0]
+        assert converted_color == 1
 
 
 def test_gif_with_rgba_palette_to_p():
@@ -161,7 +196,7 @@ def test_gif_with_rgba_palette_to_p():
     with Image.open("Tests/images/hopper.gif") as im:
         im.info["transparency"] = 255
         im.load()
-        assert im.palette.mode == "RGBA"
+        assert im.palette.mode == "RGB"
         im_p = im.convert("P")
 
     # Should not raise ValueError: unrecognized raw mode

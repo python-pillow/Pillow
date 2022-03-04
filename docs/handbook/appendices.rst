@@ -8,4 +8,4 @@ Appendices
 
   image-file-formats
   text-anchors
-  writing-your-own-file-decoder
+  writing-your-own-image-plugin

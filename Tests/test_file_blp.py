@@ -1,21 +1,82 @@
-from PIL import Image
+import pytest
 
-from .helper import assert_image_equal
+from PIL import BlpImagePlugin, Image
+
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
+
+
+def test_load_blp1():
+    with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
+        assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
 
 def test_load_blp2_raw():
     with Image.open("Tests/images/blp/blp2_raw.blp") as im:
-        with Image.open("Tests/images/blp/blp2_raw.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/blp/blp2_raw.png")
 
 
 def test_load_blp2_dxt1():
     with Image.open("Tests/images/blp/blp2_dxt1.blp") as im:
-        with Image.open("Tests/images/blp/blp2_dxt1.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1.png")
 
 
 def test_load_blp2_dxt1a():
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
-        with Image.open("Tests/images/blp/blp2_dxt1a.png") as target:
-            assert_image_equal(im, target)
+        assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def test_save(tmp_path):
+    f = str(tmp_path / "temp.blp")
+
+    for version in ("BLP1", "BLP2"):
+        im = hopper("P")
+        im.save(f, blp_version=version)
+
+        with Image.open(f) as reloaded:
+            assert_image_equal(im.convert("RGB"), reloaded)
+
+        with Image.open("Tests/images/transparent.png") as im:
+            f = str(tmp_path / "temp.blp")
+            im.convert("P").save(f, blp_version=version)
+
+            with Image.open(f) as reloaded:
+                assert_image_similar(im, reloaded, 8)
+
+    im = hopper()
+    with pytest.raises(ValueError):
+        im.save(f)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-060745d3f534ad6e4128c51d336ea5489182c69d.blp",
+        "Tests/images/timeout-31c8f86233ea728339c6e586be7af661a09b5b98.blp",
+        "Tests/images/timeout-60d8b7c8469d59fc9ffff6b3a3dc0faeae6ea8ee.blp",
+        "Tests/images/timeout-8073b430977660cdd48d96f6406ddfd4114e69c7.blp",
+        "Tests/images/timeout-bba4f2e026b5786529370e5dfe9a11b1bf991f07.blp",
+        "Tests/images/timeout-d6ec061c4afdef39d3edf6da8927240bb07fe9b7.blp",
+        "Tests/images/timeout-ef9112a065e7183fa7faa2e18929b03e44ee16bf.blp",
+    ],
+)
+def test_crashes(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        BlpImagePlugin.Format: "BLP_FORMAT_",
+        BlpImagePlugin.Encoding: "BLP_ENCODING_",
+        BlpImagePlugin.AlphaEncoding: "BLP_ALPHA_ENCODING_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(BlpImagePlugin, prefix + name) == enum[name]

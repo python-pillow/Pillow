@@ -12,33 +12,168 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-FreeType 2.7
-~~~~~~~~~~~~
+Tk/Tcl 8.4
+~~~~~~~~~~
 
-.. deprecated:: 8.1.0
+.. deprecated:: 8.2.0
 
-Support for FreeType 2.7 is deprecated and will be removed in Pillow 9.0.0 (2022-01-02),
-when FreeType 2.8 will be the minimum supported.
+Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
+when Tk/Tcl 8.5 will be the minimum supported.
 
-We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+Categories
+~~~~~~~~~~
 
-.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+.. deprecated:: 8.2.0
+
+``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
+along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
+``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
+
+JpegImagePlugin.convert_dict_qtables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.3.0
+
+JPEG ``quantization`` is now automatically converted, but still returned as a
+dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+performs any operations on the data given to it, has been deprecated and will be
+removed in Pillow 10.0.0 (2023-07-01).
+
+ImagePalette size parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.4.0
+
+The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
+
+Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
+default, and the size parameter could be used to override that. Pillow 8.3.0 removed
+the default required length, also removing the need for the size parameter.
+
+ImageShow.Viewer.show_file file argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+
+The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
+deprecated and will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
+``path``.
+
+In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
+``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
+``viewer.show_file(path="test.jpg")`` instead.
+
+Constants
+~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+A number of constants have been deprecated and will be removed in Pillow 10.0.0
+(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
+
+=====================================================  ============================================================
+Deprecated                                             Use instead
+=====================================================  ============================================================
+``Image.NONE``                                         Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
+``Image.NEAREST``                                      Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
+``Image.ORDERED``                                      ``Image.Dither.ORDERED``
+``Image.RASTERIZE``                                    ``Image.Dither.RASTERIZE``
+``Image.FLOYDSTEINBERG``                               ``Image.Dither.FLOYDSTEINBERG``
+``Image.WEB``                                          ``Image.Palette.WEB``
+``Image.ADAPTIVE``                                     ``Image.Palette.ADAPTIVE``
+``Image.AFFINE``                                       ``Image.Transform.AFFINE``
+``Image.EXTENT``                                       ``Image.Transform.EXTENT``
+``Image.PERSPECTIVE``                                  ``Image.Transform.PERSPECTIVE``
+``Image.QUAD``                                         ``Image.Transform.QUAD``
+``Image.MESH``                                         ``Image.Transform.MESH``
+``Image.FLIP_LEFT_RIGHT``                              ``Image.Transpose.FLIP_LEFT_RIGHT``
+``Image.FLIP_TOP_BOTTOM``                              ``Image.Transpose.FLIP_TOP_BOTTOM``
+``Image.ROTATE_90``                                    ``Image.Transpose.ROTATE_90``
+``Image.ROTATE_180``                                   ``Image.Transpose.ROTATE_180``
+``Image.ROTATE_270``                                   ``Image.Transpose.ROTATE_270``
+``Image.TRANSPOSE``                                    ``Image.Transpose.TRANSPOSE``
+``Image.TRANSVERSE``                                   ``Image.Transpose.TRANSVERSE``
+``Image.BOX``                                          ``Image.Resampling.BOX``
+``Image.BILINEAR``                                     ``Image.Resampling.BILNEAR``
+``Image.LINEAR``                                       ``Image.Resampling.BILNEAR``
+``Image.HAMMING``                                      ``Image.Resampling.HAMMING``
+``Image.BICUBIC``                                      ``Image.Resampling.BICUBIC``
+``Image.CUBIC``                                        ``Image.Resampling.BICUBIC``
+``Image.LANCZOS``                                      ``Image.Resampling.LANCZOS``
+``Image.ANTIALIAS``                                    ``Image.Resampling.LANCZOS``
+``Image.MEDIANCUT``                                    ``Image.Quantize.MEDIANCUT``
+``Image.MAXCOVERAGE``                                  ``Image.Quantize.MAXCOVERAGE``
+``Image.FASTOCTREE``                                   ``Image.Quantize.FASTOCTREE``
+``Image.LIBIMAGEQUANT``                                ``Image.Quantize.LIBIMAGEQUANT``
+``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
+``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
+``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``
+``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``              ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``
+``ImageCms.DIRECTION_INPUT``                           ``ImageCms.Direction.INPUT``
+``ImageCms.DIRECTION_OUTPUT``                          ``ImageCms.Direction.OUTPUT``
+``ImageCms.DIRECTION_PROOF``                           ``ImageCms.Direction.PROOF``
+``ImageFont.LAYOUT_BASIC``                             ``ImageFont.Layout.BASIC``
+``ImageFont.LAYOUT_RAQM``                              ``ImageFont.Layout.RAQM``
+``BlpImagePlugin.BLP_FORMAT_JPEG``                     ``BlpImagePlugin.Format.JPEG``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED``           ``BlpImagePlugin.Encoding.UNCOMPRESSED``
+``BlpImagePlugin.BLP_ENCODING_DXT``                    ``BlpImagePlugin.Encoding.DXT``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED_RAW_RGBA``  ``BlpImagePlugin.Encoding.UNCOMPRESSED_RAW_RGBA``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT1``             ``BlpImagePlugin.AlphaEncoding.DXT1``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT3``             ``BlpImagePlugin.AlphaEncoding.DXT3``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT5``             ``BlpImagePlugin.AlphaEncoding.DXT5``
+``FtexImagePlugin.FORMAT_DXT1``                        ``FtexImagePlugin.Format.DXT1``
+``FtexImagePlugin.FORMAT_UNCOMPRESSED``                ``FtexImagePlugin.Format.UNCOMPRESSED``
+``PngImagePlugin.APNG_DISPOSE_OP_NONE``                ``PngImagePlugin.Disposal.OP_NONE``
+``PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND``          ``PngImagePlugin.Disposal.OP_BACKGROUND``
+``PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS``            ``PngImagePlugin.Disposal.OP_PREVIOUS``
+``PngImagePlugin.APNG_BLEND_OP_SOURCE``                ``PngImagePlugin.Blend.OP_SOURCE``
+``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
+=====================================================  ============================================================
+
+FitsStubImagePlugin
+~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+
+The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
+Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
+:mod:`~PIL.FitsImagePlugin` instead.
+
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
+PILLOW_VERSION constant
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 5.2.0
+.. versionremoved:: 9.0.0
+
+Use ``__version__`` instead.
+
+It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
+to give projects more time to upgrade.
 
 Image.show command parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
 
-The ``command`` parameter will be removed in Pillow 9.0.0 (2022-01-02).
-Use a subclass of :py:class:`.ImageShow.Viewer` instead.
+The ``command`` parameter has been removed. Use a subclass of
+:py:class:`.ImageShow.Viewer` instead.
 
 Image._showxv
 ~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
 
-``Image._showxv`` will be removed in Pillow 9.0.0 (2022-01-02).
 Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
 :py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
@@ -46,27 +181,24 @@ ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 7.2.0
+.. versionremoved:: 9.0.0
 
 ``IOError`` was merged into ``OSError`` in Python 3.3.
-So, ``ImageFile.raise_ioerror`` will be removed in Pillow 9.0.0 (2022-01-02).
+So, ``ImageFile.raise_ioerror`` has been removed.
 Use ``ImageFile.raise_oserror`` instead.
 
-PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
+FreeType 2.7
+~~~~~~~~~~~~
 
-.. deprecated:: 5.2.0
+.. deprecated:: 8.1.0
+.. versionremoved:: 9.0.0
 
-``PILLOW_VERSION`` will be removed in Pillow 9.0.0 (2022-01-02).
-Use ``__version__`` instead.
+Support for FreeType 2.7 has been removed.
 
-It was initially removed in Pillow 7.0.0, but brought back in 7.1.0 to give projects
-more time to upgrade.
+We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
 
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
+.. _FreeType: https://www.freetype.org
 
 im.offset
 ~~~~~~~~~
@@ -105,7 +237,6 @@ Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6
 they issued a ``DeprecationWarning``:
 
 ========================  ===================================================
-
 Removed                   Use instead
 ========================  ===================================================
 ``color_space``           Padded :py:attr:`~.CmsProfile.xcolor_space`
@@ -231,7 +362,7 @@ PIL.OleFileIO
 .. deprecated:: 4.0.0
 .. versionremoved:: 6.0.0
 
-PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+PIL.OleFileIO was removed as a vendored file in Pillow 4.0.0 (2017-01) in favour of
 the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).

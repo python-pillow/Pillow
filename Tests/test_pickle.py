@@ -2,9 +2,12 @@ import pickle
 
 import pytest
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
-from .helper import skip_unless_feature
+from .helper import assert_image_equal, skip_unless_feature
+
+FONT_SIZE = 20
+FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
 
 
 def helper_pickle_file(tmp_path, pickle, protocol, test_file, mode):
@@ -85,10 +88,55 @@ def test_pickle_la_mode_with_palette(tmp_path):
 @skip_unless_feature("webp")
 def test_pickle_tell():
     # Arrange
-    image = Image.open("Tests/images/hopper.webp")
+    with Image.open("Tests/images/hopper.webp") as image:
 
-    # Act: roundtrip
-    unpickled_image = pickle.loads(pickle.dumps(image))
+        # Act: roundtrip
+        unpickled_image = pickle.loads(pickle.dumps(image))
 
     # Assert
     assert unpickled_image.tell() == 0
+
+
+def helper_assert_pickled_font_images(font1, font2):
+    # Arrange
+    im1 = Image.new(mode="RGBA", size=(300, 100))
+    im2 = Image.new(mode="RGBA", size=(300, 100))
+    draw1 = ImageDraw.Draw(im1)
+    draw2 = ImageDraw.Draw(im2)
+    txt = "Hello World!"
+
+    # Act
+    draw1.text((10, 10), txt, font=font1)
+    draw2.text((10, 10), txt, font=font2)
+
+    # Assert
+    assert_image_equal(im1, im2)
+
+
+@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+def test_pickle_font_string(protocol):
+    # Arrange
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+
+    # Act: roundtrip
+    pickled_font = pickle.dumps(font, protocol)
+    unpickled_font = pickle.loads(pickled_font)
+
+    # Assert
+    helper_assert_pickled_font_images(font, unpickled_font)
+
+
+@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+def test_pickle_font_file(tmp_path, protocol):
+    # Arrange
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    filename = str(tmp_path / "temp.pkl")
+
+    # Act: roundtrip
+    with open(filename, "wb") as f:
+        pickle.dump(font, f, protocol)
+    with open(filename, "rb") as f:
+        unpickled_font = pickle.load(f)
+
+    # Assert
+    helper_assert_pickled_font_images(font, unpickled_font)

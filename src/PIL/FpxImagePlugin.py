@@ -17,7 +17,6 @@
 import olefile
 
 from . import Image, ImageFile
-from ._binary import i8
 from ._binary import i32le as i32
 
 # we map from colour field tuples to (mode, rawmode) descriptors
@@ -181,8 +180,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
             elif compression == 2:
 
-                internal_color_conversion = i8(s[14])
-                jpeg_tables = i8(s[15])
+                internal_color_conversion = s[14]
+                jpeg_tables = s[15]
                 rawmode = self.rawmode
 
                 if internal_color_conversion:

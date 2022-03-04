@@ -32,17 +32,24 @@ class TestImageTransform:
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
 
+    def test_palette(self):
+        with Image.open("Tests/images/hopper.gif") as im:
+            transformed = im.transform(
+                im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
+            )
+            assert im.palette.palette == transformed.palette.palette
+
     def test_extent(self):
         im = hopper("RGB")
         (w, h) = im.size
         # fmt: off
-        transformed = im.transform(im.size, Image.EXTENT,
+        transformed = im.transform(im.size, Image.Transform.EXTENT,
                                    (0, 0,
                                     w//2, h//2),  # ul -> lr
-                                   Image.BILINEAR)
+                                   Image.Resampling.BILINEAR)
         # fmt: on
 
-        scaled = im.resize((w * 2, h * 2), Image.BILINEAR).crop((0, 0, w, h))
+        scaled = im.resize((w * 2, h * 2), Image.Resampling.BILINEAR).crop((0, 0, w, h))
 
         # undone -- precision?
         assert_image_similar(transformed, scaled, 23)
@@ -52,15 +59,18 @@ class TestImageTransform:
         im = hopper("RGB")
         (w, h) = im.size
         # fmt: off
-        transformed = im.transform(im.size, Image.QUAD,
+        transformed = im.transform(im.size, Image.Transform.QUAD,
                                    (0, 0, 0, h//2,
                                     # ul -> ccw around quad:
                                     w//2, h//2, w//2, 0),
-                                   Image.BILINEAR)
+                                   Image.Resampling.BILINEAR)
         # fmt: on
 
         scaled = im.transform(
-            (w, h), Image.AFFINE, (0.5, 0, 0, 0, 0.5, 0), Image.BILINEAR
+            (w, h),
+            Image.Transform.AFFINE,
+            (0.5, 0, 0, 0, 0.5, 0),
+            Image.Resampling.BILINEAR,
         )
 
         assert_image_equal(transformed, scaled)
@@ -75,9 +85,9 @@ class TestImageTransform:
             (w, h) = im.size
             transformed = im.transform(
                 im.size,
-                Image.EXTENT,
+                Image.Transform.EXTENT,
                 (0, 0, w * 2, h * 2),
-                Image.BILINEAR,
+                Image.Resampling.BILINEAR,
                 fillcolor="red",
             )
 
@@ -88,18 +98,21 @@ class TestImageTransform:
         im = hopper("RGBA")
         (w, h) = im.size
         # fmt: off
-        transformed = im.transform(im.size, Image.MESH,
+        transformed = im.transform(im.size, Image.Transform.MESH,
                                    [((0, 0, w//2, h//2),  # box
                                     (0, 0, 0, h,
                                      w, h, w, 0)),  # ul -> ccw around quad
                                     ((w//2, h//2, w, h),  # box
                                     (0, 0, 0, h,
                                      w, h, w, 0))],  # ul -> ccw around quad
-                                   Image.BILINEAR)
+                                   Image.Resampling.BILINEAR)
         # fmt: on
 
         scaled = im.transform(
-            (w // 2, h // 2), Image.AFFINE, (2, 0, 0, 0, 2, 0), Image.BILINEAR
+            (w // 2, h // 2),
+            Image.Transform.AFFINE,
+            (2, 0, 0, 0, 2, 0),
+            Image.Resampling.BILINEAR,
         )
 
         checker = Image.new("RGBA", im.size)
@@ -132,16 +145,55 @@ class TestImageTransform:
 
     def test_alpha_premult_resize(self):
         def op(im, sz):
-            return im.resize(sz, Image.BILINEAR)
+            return im.resize(sz, Image.Resampling.BILINEAR)
 
         self._test_alpha_premult(op)
 
     def test_alpha_premult_transform(self):
         def op(im, sz):
             (w, h) = im.size
-            return im.transform(sz, Image.EXTENT, (0, 0, w, h), Image.BILINEAR)
+            return im.transform(
+                sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.BILINEAR
+            )
 
         self._test_alpha_premult(op)
+
+    def _test_nearest(self, op, mode):
+        # create white image with half transparent,
+        # do op,
+        # the image should remain white with half transparent
+        transparent, opaque = {
+            "RGBA": ((255, 255, 255, 0), (255, 255, 255, 255)),
+            "LA": ((255, 0), (255, 255)),
+        }[mode]
+        im = Image.new(mode, (10, 10), transparent)
+        im2 = Image.new(mode, (5, 10), opaque)
+        im.paste(im2, (0, 0))
+
+        im = op(im, (40, 10))
+
+        colors = im.getcolors()
+        assert colors == [
+            (20 * 10, opaque),
+            (20 * 10, transparent),
+        ]
+
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    def test_nearest_resize(self, mode):
+        def op(im, sz):
+            return im.resize(sz, Image.Resampling.NEAREST)
+
+        self._test_nearest(op, mode)
+
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    def test_nearest_transform(self, mode):
+        def op(im, sz):
+            (w, h) = im.size
+            return im.transform(
+                sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.NEAREST
+            )
+
+        self._test_nearest(op, mode)
 
     def test_blank_fill(self):
         # attempting to hit
@@ -173,13 +225,15 @@ class TestImageTransform:
     def test_unknown_resampling_filter(self):
         with hopper() as im:
             (w, h) = im.size
-            for resample in (Image.BOX, "unknown"):
+            for resample in (Image.Resampling.BOX, "unknown"):
                 with pytest.raises(ValueError):
-                    im.transform((100, 100), Image.EXTENT, (0, 0, w, h), resample)
+                    im.transform(
+                        (100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample
+                    )
 
 
 class TestImageTransformAffine:
-    transform = Image.AFFINE
+    transform = Image.Transform.AFFINE
 
     def _test_image(self):
         im = hopper("RGB")
@@ -207,7 +261,11 @@ class TestImageTransformAffine:
         else:
             transposed = im
 
-        for resample in [Image.NEAREST, Image.BILINEAR, Image.BICUBIC]:
+        for resample in [
+            Image.Resampling.NEAREST,
+            Image.Resampling.BILINEAR,
+            Image.Resampling.BICUBIC,
+        ]:
             transformed = im.transform(
                 transposed.size, self.transform, matrix, resample
             )
@@ -217,13 +275,13 @@ class TestImageTransformAffine:
         self._test_rotate(0, None)
 
     def test_rotate_90_deg(self):
-        self._test_rotate(90, Image.ROTATE_90)
+        self._test_rotate(90, Image.Transpose.ROTATE_90)
 
     def test_rotate_180_deg(self):
-        self._test_rotate(180, Image.ROTATE_180)
+        self._test_rotate(180, Image.Transpose.ROTATE_180)
 
     def test_rotate_270_deg(self):
-        self._test_rotate(270, Image.ROTATE_270)
+        self._test_rotate(270, Image.Transpose.ROTATE_270)
 
     def _test_resize(self, scale, epsilonscale):
         im = self._test_image()
@@ -233,9 +291,9 @@ class TestImageTransformAffine:
         matrix_down = [scale, 0, 0, 0, scale, 0, 0, 0]
 
         for resample, epsilon in [
-            (Image.NEAREST, 0),
-            (Image.BILINEAR, 2),
-            (Image.BICUBIC, 1),
+            (Image.Resampling.NEAREST, 0),
+            (Image.Resampling.BILINEAR, 2),
+            (Image.Resampling.BICUBIC, 1),
         ]:
             transformed = im.transform(size_up, self.transform, matrix_up, resample)
             transformed = transformed.transform(
@@ -266,9 +324,9 @@ class TestImageTransformAffine:
         matrix_down = [1, 0, x, 0, 1, y, 0, 0]
 
         for resample, epsilon in [
-            (Image.NEAREST, 0),
-            (Image.BILINEAR, 1.5),
-            (Image.BICUBIC, 1),
+            (Image.Resampling.NEAREST, 0),
+            (Image.Resampling.BILINEAR, 1.5),
+            (Image.Resampling.BICUBIC, 1),
         ]:
             transformed = im.transform(size_up, self.transform, matrix_up, resample)
             transformed = transformed.transform(
@@ -288,4 +346,4 @@ class TestImageTransformAffine:
 
 class TestImageTransformPerspective(TestImageTransformAffine):
     # Repeat all tests for AFFINE transformations with PERSPECTIVE
-    transform = Image.PERSPECTIVE
+    transform = Image.Transform.PERSPECTIVE

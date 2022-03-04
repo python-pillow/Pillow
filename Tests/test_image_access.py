@@ -23,6 +23,11 @@ else:
     except ImportError:
         cffi = None
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 class AccessTest:
     # initial value
@@ -66,6 +71,10 @@ class TestImagePutPixel(AccessTest):
         pix1 = im1.load()
         pix2 = im2.load()
 
+        for x, y in ((0, "0"), ("0", 0)):
+            with pytest.raises(TypeError):
+                pix1[x, y]
+
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 pix2[x, y] = pix1[x, y]
@@ -108,6 +117,13 @@ class TestImagePutPixel(AccessTest):
                 pix2[x, y] = pix1[x, y]
 
         assert_image_equal(im1, im2)
+
+    @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
+    def test_numpy(self):
+        im = hopper()
+        pix = im.load()
+
+        assert pix[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
 
 class TestImageGetPixel(AccessTest):
@@ -338,6 +354,24 @@ class TestImagePutPixelError(AccessTest):
         for v in self.INVALID_TYPES:
             with pytest.raises(TypeError, match="color must be int or tuple"):
                 im.putpixel((0, 0), v)
+
+    @pytest.mark.parametrize(
+        ("mode", "band_numbers", "match"),
+        (
+            ("L", (0, 2), "color must be int or single-element tuple"),
+            ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
+            (
+                "RGB",
+                (0, 2, 5),
+                "color must be int, or tuple of one, three or four elements",
+            ),
+        ),
+    )
+    def test_putpixel_invalid_number_of_bands(self, mode, band_numbers, match):
+        im = hopper(mode)
+        for band_number in band_numbers:
+            with pytest.raises(TypeError, match=match):
+                im.putpixel((0, 0), (0,) * band_number)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES2)
     def test_putpixel_type_error2(self, mode):

@@ -8,7 +8,13 @@ import pytest
 
 from PIL import Image, ImageMode, features
 
-from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+from .helper import (
+    assert_image,
+    assert_image_equal,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 try:
     from PIL import ImageCms
@@ -134,7 +140,7 @@ def test_intent():
     skip_missing()
     assert ImageCms.getDefaultIntent(SRGB) == 0
     support = ImageCms.isIntentSupported(
-        SRGB, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC, ImageCms.DIRECTION_INPUT
+        SRGB, ImageCms.Intent.ABSOLUTE_COLORIMETRIC, ImageCms.Direction.INPUT
     )
     assert support == 1
 
@@ -147,7 +153,7 @@ def test_profile_object():
     #     ["sRGB built-in", "", "WhitePoint : D65 (daylight)", "", ""]
     assert ImageCms.getDefaultIntent(p) == 0
     support = ImageCms.isIntentSupported(
-        p, ImageCms.INTENT_ABSOLUTE_COLORIMETRIC, ImageCms.DIRECTION_INPUT
+        p, ImageCms.Intent.ABSOLUTE_COLORIMETRIC, ImageCms.Direction.INPUT
     )
     assert support == 1
 
@@ -240,8 +246,7 @@ def test_lab_color():
 
     # i.save('temp.lab.tif')  # visually verified vs PS.
 
-    with Image.open("Tests/images/hopper.Lab.tif") as target:
-        assert_image_similar(i, target, 3.5)
+    assert_image_similar_tofile(i, "Tests/images/hopper.Lab.tif", 3.5)
 
 
 def test_lab_srgb():
@@ -588,3 +593,13 @@ def test_auxiliary_channels_isolated():
                 )
 
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        ImageCms.Intent: "INTENT_",
+        ImageCms.Direction: "DIRECTION_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(ImageCms, prefix + name) == enum[name]

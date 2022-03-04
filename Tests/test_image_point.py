@@ -32,7 +32,7 @@ def test_16bit_lut():
 
 
 def test_f_lut():
-    """ Tests for floating point lut of 8bit gray image """
+    """Tests for floating point lut of 8bit gray image"""
     im = hopper("L")
     lut = [0.5 * float(x) for x in range(256)]
 

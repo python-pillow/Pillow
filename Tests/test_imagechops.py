@@ -368,11 +368,11 @@ def test_subtract_modulo_no_clip():
 
 def test_soft_light():
     # Arrange
-    im1 = Image.open("Tests/images/hopper.png")
-    im2 = Image.open("Tests/images/hopper-XYZ.png")
+    with Image.open("Tests/images/hopper.png") as im1:
+        with Image.open("Tests/images/hopper-XYZ.png") as im2:
 
-    # Act
-    new = ImageChops.soft_light(im1, im2)
+            # Act
+            new = ImageChops.soft_light(im1, im2)
 
     # Assert
     assert new.getpixel((64, 64)) == (163, 54, 32)
@@ -381,11 +381,11 @@ def test_soft_light():
 
 def test_hard_light():
     # Arrange
-    im1 = Image.open("Tests/images/hopper.png")
-    im2 = Image.open("Tests/images/hopper-XYZ.png")
+    with Image.open("Tests/images/hopper.png") as im1:
+        with Image.open("Tests/images/hopper-XYZ.png") as im2:
 
-    # Act
-    new = ImageChops.hard_light(im1, im2)
+            # Act
+            new = ImageChops.hard_light(im1, im2)
 
     # Assert
     assert new.getpixel((64, 64)) == (144, 50, 27)
@@ -394,11 +394,11 @@ def test_hard_light():
 
 def test_overlay():
     # Arrange
-    im1 = Image.open("Tests/images/hopper.png")
-    im2 = Image.open("Tests/images/hopper-XYZ.png")
+    with Image.open("Tests/images/hopper.png") as im1:
+        with Image.open("Tests/images/hopper-XYZ.png") as im2:
 
-    # Act
-    new = ImageChops.overlay(im1, im2)
+            # Act
+            new = ImageChops.overlay(im1, im2)
 
     # Assert
     assert new.getpixel((64, 64)) == (159, 50, 27)

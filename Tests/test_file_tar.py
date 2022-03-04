@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import Image, TarIO, features
@@ -31,16 +33,12 @@ def test_unclosed_file():
 
 
 def test_close():
-    def open():
+    with warnings.catch_warnings():
         tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
         tar.close()
 
-    pytest.warns(None, open)
-
 
 def test_contextmanager():
-    def open():
+    with warnings.catch_warnings():
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass
-
-    pytest.warns(None, open)

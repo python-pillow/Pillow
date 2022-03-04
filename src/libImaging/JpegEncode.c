@@ -19,10 +19,9 @@
  * See the README file for details on usage and redistribution.
  */
 
-
 #include "Imaging.h"
 
-#ifdef  HAVE_LIBJPEG
+#ifdef HAVE_LIBJPEG
 
 #undef HAVE_PROTOTYPES
 #undef HAVE_STDLIB_H
@@ -40,51 +39,42 @@
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
-stub(j_compress_ptr cinfo)
-{
-    /* empty */
-}
+stub(j_compress_ptr cinfo) { /* empty */ }
 
 METHODDEF(boolean)
-empty_output_buffer (j_compress_ptr cinfo)
-{
+empty_output_buffer(j_compress_ptr cinfo) {
     /* Suspension */
     return FALSE;
 }
 
 GLOBAL(void)
-jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION* destination)
-{
-    cinfo->dest = (void*) destination;
+jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION *destination) {
+    cinfo->dest = (void *)destination;
 
     destination->pub.init_destination = stub;
     destination->pub.empty_output_buffer = empty_output_buffer;
     destination->pub.term_destination = stub;
 }
 
-
 /* -------------------------------------------------------------------- */
 /* Error handler                                                        */
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
-error(j_common_ptr cinfo)
-{
-    JPEGERROR* error;
-    error = (JPEGERROR*) cinfo->err;
-    (*cinfo->err->output_message) (cinfo);
+error(j_common_ptr cinfo) {
+    JPEGERROR *error;
+    error = (JPEGERROR *)cinfo->err;
+    (*cinfo->err->output_message)(cinfo);
     longjmp(error->setjmp_buffer, 1);
 }
-
 
 /* -------------------------------------------------------------------- */
 /* Encoder                                                              */
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
-{
-    JPEGENCODERSTATE* context = (JPEGENCODERSTATE*) state->context;
+ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    JPEGENCODERSTATE *context = (JPEGENCODERSTATE *)state->context;
     int ok;
 
     if (setjmp(context->error.setjmp_buffer)) {
@@ -95,7 +85,6 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     }
 
     if (!state->state) {
-
         /* Setup compression context (very similar to the decoder) */
         context->cinfo.err = jpeg_std_error(&context->error.pub);
         context->error.pub.error_exit = error;
@@ -106,7 +95,6 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         /* Ready to encode */
         state->state = 1;
-
     }
 
     /* Load the destination buffer */
@@ -114,7 +102,6 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     context->destination.pub.free_in_buffer = bytes;
 
     switch (state->state) {
-
         case 1:
 
             context->cinfo.image_width = state->xsize;
@@ -136,11 +123,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 case 32:
                     context->cinfo.input_components = 4;
                     context->cinfo.in_color_space = JCS_CMYK;
-                #ifdef JCS_EXTENSIONS
+#ifdef JCS_EXTENSIONS
                     if (strcmp(context->rawmode, "RGBX") == 0) {
                         context->cinfo.in_color_space = JCS_EXT_RGBX;
                     }
-                #endif
+#endif
                     break;
                 default:
                     state->errcode = IMAGING_CODEC_CONFIG;
@@ -159,15 +146,20 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     quality = context->quality;
                 }
                 for (i = 0; i < context->qtablesLen; i++) {
-                    jpeg_add_quant_table(&context->cinfo, i, &context->qtables[i * DCTSIZE2],
-                                         quality, FALSE);
+                    jpeg_add_quant_table(
+                        &context->cinfo,
+                        i,
+                        &context->qtables[i * DCTSIZE2],
+                        quality,
+                        FALSE);
                     context->cinfo.comp_info[i].quant_tbl_no = i;
                     last_q = i;
                 }
                 if (context->qtablesLen == 1) {
-                    // jpeg_set_defaults created two qtables internally, but we only wanted one.
-                    jpeg_add_quant_table(&context->cinfo, 1, &context->qtables[0],
-                                         quality, FALSE);
+                    // jpeg_set_defaults created two qtables internally, but we only
+                    // wanted one.
+                    jpeg_add_quant_table(
+                        &context->cinfo, 1, &context->qtables[0], quality, FALSE);
                 }
                 for (i = last_q; i < context->cinfo.num_components; i++) {
                     context->cinfo.comp_info[i].quant_tbl_no = last_q;
@@ -177,9 +169,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             }
 
             /* Set subsampling options */
-            switch (context->subsampling)
-                {
-                case 0:  /* 1x1 1x1 1x1 (4:4:4) : None */
+            switch (context->subsampling) {
+                case 0: /* 1x1 1x1 1x1 (4:4:4) : None */
                 {
                     context->cinfo.comp_info[0].h_samp_factor = 1;
                     context->cinfo.comp_info[0].v_samp_factor = 1;
@@ -189,7 +180,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     context->cinfo.comp_info[2].v_samp_factor = 1;
                     break;
                 }
-                case 1:  /* 2x1, 1x1, 1x1 (4:2:2) : Medium */
+                case 1: /* 2x1, 1x1, 1x1 (4:2:2) : Medium */
                 {
                     context->cinfo.comp_info[0].h_samp_factor = 2;
                     context->cinfo.comp_info[0].v_samp_factor = 1;
@@ -199,7 +190,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     context->cinfo.comp_info[2].v_samp_factor = 1;
                     break;
                 }
-                case 2:  /* 2x2, 1x1, 1x1 (4:2:0) : High */
+                case 2: /* 2x2, 1x1, 1x1 (4:2:0) : High */
                 {
                     context->cinfo.comp_info[0].h_samp_factor = 2;
                     context->cinfo.comp_info[0].v_samp_factor = 2;
@@ -209,23 +200,22 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                     context->cinfo.comp_info[2].v_samp_factor = 1;
                     break;
                 }
-                default:
-                {
+                default: {
                     /* Use the lib's default */
                     break;
                 }
-                }
-                if (context->progressive) {
-                    jpeg_simple_progression(&context->cinfo);
-                }
-                context->cinfo.smoothing_factor = context->smooth;
-                context->cinfo.optimize_coding = (boolean) context->optimize;
-                if (context->xdpi > 0 && context->ydpi > 0) {
-                    context->cinfo.write_JFIF_header = TRUE;
-                    context->cinfo.density_unit = 1; /* dots per inch */
-                    context->cinfo.X_density = context->xdpi;
-                    context->cinfo.Y_density = context->ydpi;
-                }
+            }
+            if (context->progressive) {
+                jpeg_simple_progression(&context->cinfo);
+            }
+            context->cinfo.smoothing_factor = context->smooth;
+            context->cinfo.optimize_coding = (boolean)context->optimize;
+            if (context->xdpi > 0 && context->ydpi > 0) {
+                context->cinfo.write_JFIF_header = TRUE;
+                context->cinfo.density_unit = 1; /* dots per inch */
+                context->cinfo.X_density = context->xdpi;
+                context->cinfo.Y_density = context->ydpi;
+            }
             switch (context->streamtype) {
                 case 1:
                     /* tables only -- not yet implemented */
@@ -248,13 +238,16 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         case 2:
             // check for exif len + 'APP1' header bytes
-            if (context->rawExifLen + 5 >  context->destination.pub.free_in_buffer){
+            if (context->rawExifLen + 5 > context->destination.pub.free_in_buffer) {
                 break;
             }
-            //add exif header
-            if (context->rawExifLen > 0){
-                jpeg_write_marker(&context->cinfo, JPEG_APP0+1,
-                                  (unsigned char*)context->rawExif, context->rawExifLen);
+            // add exif header
+            if (context->rawExifLen > 0) {
+                jpeg_write_marker(
+                    &context->cinfo,
+                    JPEG_APP0 + 1,
+                    (unsigned char *)context->rawExif,
+                    context->rawExifLen);
             }
 
             state->state++;
@@ -267,8 +260,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
                 if (n > context->destination.pub.free_in_buffer) {
                     n = context->destination.pub.free_in_buffer;
                 }
-                memcpy(context->destination.pub.next_output_byte,
-                       context->extra + context->extra_offset, n);
+                memcpy(
+                    context->destination.pub.next_output_byte,
+                    context->extra + context->extra_offset,
+                    n);
                 context->destination.pub.next_output_byte += n;
                 context->destination.pub.free_in_buffer -= n;
                 context->extra_offset += n;
@@ -282,15 +277,17 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             }
 
         case 4:
-            if (1024 > context->destination.pub.free_in_buffer){
+            if (1024 > context->destination.pub.free_in_buffer) {
                 break;
             }
 
             ok = 1;
             while (state->y < state->ysize) {
-                state->shuffle(state->buffer,
-                       (UINT8*) im->image[state->y + state->yoff] +
-                       state->xoff * im->pixelsize, state->xsize);
+                state->shuffle(
+                    state->buffer,
+                    (UINT8 *)im->image[state->y + state->yoff] +
+                        state->xoff * im->pixelsize,
+                    state->xsize);
                 ok = jpeg_write_scanlines(&context->cinfo, &state->buffer, 1);
                 if (ok != 1) {
                     break;
@@ -330,17 +327,14 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
             /* if (jerr.pub.num_warnings) return BROKEN; */
             state->errcode = IMAGING_CODEC_END;
             break;
-
     }
 
     /* Return number of bytes in output buffer */
     return context->destination.pub.next_output_byte - buf;
-
 }
 
-const char*
-ImagingJpegVersion(void)
-{
+const char *
+ImagingJpegVersion(void) {
     static char version[20];
     sprintf(version, "%d.%d", JPEG_LIB_VERSION / 10, JPEG_LIB_VERSION % 10);
     return version;

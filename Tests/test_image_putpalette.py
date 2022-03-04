@@ -1,8 +1,8 @@
 import pytest
 
-from PIL import ImagePalette
+from PIL import Image, ImagePalette
 
-from .helper import hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
 def test_putpalette():
@@ -36,6 +36,43 @@ def test_putpalette():
 def test_imagepalette():
     im = hopper("P")
     im.putpalette(ImagePalette.negative())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_negative.png")
+
     im.putpalette(ImagePalette.random())
+
     im.putpalette(ImagePalette.sepia())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_sepia.png")
+
     im.putpalette(ImagePalette.wedge())
+    assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
+
+
+def test_putpalette_with_alpha_values():
+    with Image.open("Tests/images/transparent.gif") as im:
+        expected = im.convert("RGBA")
+
+        palette = im.getpalette()
+        transparency = im.info.pop("transparency")
+
+        palette_with_alpha_values = []
+        for i in range(256):
+            color = palette[i * 3 : i * 3 + 3]
+            alpha = 0 if i == transparency else 255
+            palette_with_alpha_values += color + [alpha]
+        im.putpalette(palette_with_alpha_values, "RGBA")
+
+        assert_image_equal(im.convert("RGBA"), expected)
+
+
+@pytest.mark.parametrize(
+    "mode, palette",
+    (
+        ("RGBA", (1, 2, 3, 4)),
+        ("RGBAX", (1, 2, 3, 4, 0)),
+    ),
+)
+def test_rgba_palette(mode, palette):
+    im = Image.new("P", (1, 1))
+    im.putpalette(palette, mode)
+    assert im.getpalette() == [1, 2, 3]
+    assert im.palette.colors == {(1, 2, 3, 4): 0}

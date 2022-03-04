@@ -1,0 +1,16 @@
+{
+   <py3_8_encode_current_locale>
+   Memcheck:Cond
+   ...
+   fun:encode_current_locale
+}
+
+
+{
+   <libtiff_zlib>
+   Memcheck:Cond
+   fun:inflate
+   fun:ZIPDecode
+   fun:_TIFFReadEncodedTileAndAllocBuffer
+   ...
+}

@@ -21,9 +21,8 @@
 from . import Image, ImageFile, JpegImagePlugin
 from ._binary import i16be as i16
 
-
-def _accept(prefix):
-    return JpegImagePlugin._accept(prefix)
+# def _accept(prefix):
+#     return JpegImagePlugin._accept(prefix)
 
 
 def _save(im, fp, filename):
@@ -47,6 +46,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self._after_jpeg_open()
 
     def _after_jpeg_open(self, mpheader=None):
+        self._initial_size = self.size
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
         self.n_frames = self.mpinfo[0xB001]
         self.__mpoffsets = [
@@ -78,13 +78,16 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         segment = self.fp.read(2)
         if not segment:
             raise ValueError("No data found for frame")
+        self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
 
-            exif = self.getexif()
-            if 40962 in exif and 40963 in exif:
-                self._size = (exif[40962], exif[40963])
+            mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
+            if mptype.startswith("Large Thumbnail"):
+                exif = self.getexif().get_ifd(0x8769)
+                if 40962 in exif and 40963 in exif:
+                    self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:
             del self.info["exif"]
 
