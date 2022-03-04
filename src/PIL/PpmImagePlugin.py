@@ -52,7 +52,7 @@ class PpmImageFile(ImageFile.ImageFile):
     def _read_magic(self, magic=b""):
         while True:  # read until next whitespace
             c = self.fp.read(1)
-            if c in b_whitespace:
+            if not c or c in b_whitespace:
                 break
             magic += c
             if len(magic) > 6:  # exceeded max magic number length
@@ -69,9 +69,9 @@ class PpmImageFile(ImageFile.ImageFile):
             if c == b"#":  # found comment, ignore it
                 _ignore_comment()
                 continue
+            if not c:
+                raise ValueError("Reached EOF while reading header")
             if c in b_whitespace:  # found whitespace, ignore it
-                if c == b"":  # reached EOF
-                    raise ValueError("Reached EOF while reading header")
                 continue
             break
 
