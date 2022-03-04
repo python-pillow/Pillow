@@ -139,6 +139,13 @@ def test_rle8():
     with Image.open("Tests/images/hopper_rle8_row_overflow.bmp") as im:
         assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
 
+    # Signal end of bitmap before the image is finished
+    with open("Tests/images/bmp/g/pal8rle.bmp", "rb") as fp:
+        data = fp.read(1063) + b"\x01"
+        with Image.open(io.BytesIO(data)) as im:
+            with pytest.raises(ValueError):
+                im.load()
+
 
 def test_offset():
     # This image has been hexedited

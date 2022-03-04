@@ -282,7 +282,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
         data = bytearray()
         x = 0
-        while True:
+        while len(data) < self.state.xsize * self.state.ysize:
             num_pixels = self.fd.read(1)[0]
             byte = self.fd.read(1)
             if num_pixels:
