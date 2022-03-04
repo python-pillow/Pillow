@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Improved handling of PPM header #5121
+  [Piolie, radarhere]
+
 - Reset size when seeking away from "Large Thumbnail" MPO frame #6101
   [radarhere]
 
