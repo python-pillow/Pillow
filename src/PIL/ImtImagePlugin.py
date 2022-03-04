@@ -22,7 +22,7 @@ from . import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-field = re.compile(br"([a-z]*) ([^ \r\n]*)")
+field = re.compile(rb"([a-z]*) ([^ \r\n]*)")
 
 
 ##

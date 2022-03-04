@@ -38,7 +38,7 @@ class GimpPaletteFile:
                 break
 
             # skip fields and comment lines
-            if re.match(br"\w+:|#", s):
+            if re.match(rb"\w+:|#", s):
                 continue
             if len(s) > 100:
                 raise SyntaxError("bad palette file")

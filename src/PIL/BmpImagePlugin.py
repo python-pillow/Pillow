@@ -102,7 +102,7 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["height"] = (
                 i32(header_data, 4)
                 if not file_info["y_flip"]
-                else 2 ** 32 - i32(header_data, 4)
+                else 2**32 - i32(header_data, 4)
             )
             file_info["planes"] = i16(header_data, 8)
             file_info["bits"] = i16(header_data, 10)
@@ -322,7 +322,7 @@ def _save(im, fp, filename, bitmap_header=True):
     if bitmap_header:
         offset = 14 + header + colors * 4
         file_size = offset + image
-        if file_size > 2 ** 32 - 1:
+        if file_size > 2**32 - 1:
             raise ValueError("File size is too large for the BMP format")
         fp.write(
             b"BM"  # file type (magic)

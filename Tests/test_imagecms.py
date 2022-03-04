@@ -303,7 +303,7 @@ def test_extended_information():
     def assert_truncated_tuple_equal(tup1, tup2, digits=10):
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
-        power = 10 ** digits
+        power = 10**digits
 
         def truncate_tuple(tuple_or_float):
             return tuple(

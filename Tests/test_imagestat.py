@@ -51,8 +51,8 @@ def test_constant():
     st = ImageStat.Stat(im)
 
     assert st.extrema[0] == (128, 128)
-    assert st.sum[0] == 128 ** 3
-    assert st.sum2[0] == 128 ** 4
+    assert st.sum[0] == 128**3
+    assert st.sum2[0] == 128**4
     assert st.mean[0] == 128
     assert st.median[0] == 128
     assert st.rms[0] == 128

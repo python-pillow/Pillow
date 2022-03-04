@@ -48,7 +48,7 @@ from ._binary import o32be as o32
 
 logger = logging.getLogger(__name__)
 
-is_cid = re.compile(br"\w\w\w\w").match
+is_cid = re.compile(rb"\w\w\w\w").match
 
 
 _MAGIC = b"\211PNG\r\n\032\n"
