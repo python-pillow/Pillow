@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import tempfile
+import warnings
 
 import pytest
 
@@ -648,9 +649,8 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.save(temp_file)
-            assert not record
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
@@ -812,6 +812,31 @@ class TestImage:
             assert Image.SEQUENCE == 1
         with pytest.warns(DeprecationWarning):
             assert Image.CONTAINER == 2
+
+    def test_constants_deprecation(self):
+        with pytest.warns(DeprecationWarning):
+            assert Image.NEAREST == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.NONE == 0
+
+        with pytest.warns(DeprecationWarning):
+            assert Image.LINEAR == Image.Resampling.BILINEAR
+        with pytest.warns(DeprecationWarning):
+            assert Image.CUBIC == Image.Resampling.BICUBIC
+        with pytest.warns(DeprecationWarning):
+            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
+
+        for enum in (
+            Image.Transpose,
+            Image.Transform,
+            Image.Resampling,
+            Image.Dither,
+            Image.Palette,
+            Image.Quantize,
+        ):
+            for name in enum.__members__:
+                with pytest.warns(DeprecationWarning):
+                    assert getattr(Image, name) == enum[name]
 
     @pytest.mark.parametrize(
         "path",

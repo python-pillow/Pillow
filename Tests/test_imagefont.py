@@ -29,7 +29,7 @@ pytestmark = skip_unless_feature("freetype2")
 
 
 class TestImageFont:
-    LAYOUT_ENGINE = ImageFont.LAYOUT_BASIC
+    LAYOUT_ENGINE = ImageFont.Layout.BASIC
 
     def get_font(self):
         return ImageFont.truetype(
@@ -87,19 +87,6 @@ class TestImageFont:
             pytest.skip("Non-ASCII path could not be created")
 
         ImageFont.truetype(tempfile, FONT_SIZE)
-
-    def test_unavailable_layout_engine(self):
-        have_raqm = ImageFont.core.HAVE_RAQM
-        ImageFont.core.HAVE_RAQM = False
-
-        try:
-            ttf = ImageFont.truetype(
-                FONT_PATH, FONT_SIZE, layout_engine=ImageFont.LAYOUT_RAQM
-            )
-        finally:
-            ImageFont.core.HAVE_RAQM = have_raqm
-
-        assert ttf.layout_engine == ImageFont.LAYOUT_BASIC
 
     def _render(self, font):
         txt = "Hello World!"
@@ -182,7 +169,7 @@ class TestImageFont:
         im = Image.new(mode, (1, 1), 0)
         d = ImageDraw.Draw(im)
 
-        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_BASIC:
+        if self.LAYOUT_ENGINE == ImageFont.Layout.BASIC:
             length = d.textlength(text, f)
             assert length == length_basic
         else:
@@ -294,7 +281,7 @@ class TestImageFont:
         word = "testing"
         font = self.get_font()
 
-        orientation = Image.ROTATE_90
+        orientation = Image.Transpose.ROTATE_90
         transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
         # Original font
@@ -333,7 +320,7 @@ class TestImageFont:
         # Arrange
         text = "mask this"
         font = self.get_font()
-        orientation = Image.ROTATE_90
+        orientation = Image.Transpose.ROTATE_90
         transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
         # Act
@@ -604,7 +591,7 @@ class TestImageFont:
         # Arrange
         t = self.get_font()
         # Act / Assert
-        if t.layout_engine == ImageFont.LAYOUT_BASIC:
+        if t.layout_engine == ImageFont.Layout.BASIC:
             with pytest.raises(KeyError):
                 t.getmask("абвг", direction="rtl")
             with pytest.raises(KeyError):
@@ -753,7 +740,7 @@ class TestImageFont:
         name, text = "quick", "Quick"
         path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-        if self.LAYOUT_ENGINE == ImageFont.LAYOUT_RAQM:
+        if self.LAYOUT_ENGINE == ImageFont.Layout.RAQM:
             width, height = (129, 44)
         else:
             width, height = (128, 44)
@@ -993,7 +980,7 @@ class TestImageFont:
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
-    LAYOUT_ENGINE = ImageFont.LAYOUT_RAQM
+    LAYOUT_ENGINE = ImageFont.Layout.RAQM
 
 
 def test_render_mono_size():
@@ -1004,7 +991,7 @@ def test_render_mono_size():
     ttf = ImageFont.truetype(
         "Tests/fonts/DejaVuSans/DejaVuSans.ttf",
         18,
-        layout_engine=ImageFont.LAYOUT_BASIC,
+        layout_engine=ImageFont.Layout.BASIC,
     )
 
     draw.text((10, 10), "r" * 10, "black", ttf)
@@ -1022,3 +1009,25 @@ def test_oom(test_file):
         font = ImageFont.truetype(BytesIO(f.read()))
         with pytest.raises(Image.DecompressionBombError):
             font.getmask("Test Text")
+
+
+def test_raqm_missing_warning(monkeypatch):
+    monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
+    with pytest.warns(UserWarning) as record:
+        font = ImageFont.truetype(
+            FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
+        )
+    assert font.layout_engine == ImageFont.Layout.BASIC
+    assert str(record[-1].message) == (
+        "Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout."
+    )
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        ImageFont.Layout: "LAYOUT_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(ImageFont, prefix + name) == enum[name]

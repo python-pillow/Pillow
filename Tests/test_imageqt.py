@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import ImageQt
@@ -56,7 +58,5 @@ def test_image():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         ImageQt.ImageQt("Tests/images/hopper.gif")
-
-    assert not record

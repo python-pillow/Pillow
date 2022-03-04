@@ -149,14 +149,13 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
+_encode_to_pyfd(ImagingEncoderObject *encoder) {
     PyObject *result;
     int status;
 
     if (!encoder->pushes_fd) {
         // UNDONE, appropriate errcode???
         result = Py_BuildValue("ii", 0, IMAGING_CODEC_CONFIG);
-        ;
         return result;
     }
 
@@ -307,7 +306,7 @@ static struct PyMethodDef methods[] = {
     {"encode", (PyCFunction)_encode, METH_VARARGS},
     {"cleanup", (PyCFunction)_encode_cleanup, METH_VARARGS},
     {"encode_to_file", (PyCFunction)_encode_to_file, METH_VARARGS},
-    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_VARARGS},
+    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_NOARGS},
     {"setimage", (PyCFunction)_setimage, METH_VARARGS},
     {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */

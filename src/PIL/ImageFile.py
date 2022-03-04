@@ -49,7 +49,11 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
-"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
+"""
+Dict of known error codes returned from :meth:`.PyDecoder.decode`,
+:meth:`.PyEncoder.encode` :meth:`.PyEncoder.encode_to_pyfd` and
+:meth:`.PyEncoder.encode_to_file`.
+"""
 
 
 #
@@ -577,16 +581,7 @@ class PyCodecState:
         return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
 
 
-class PyDecoder:
-    """
-    Python implementation of a format decoder. Override this class and
-    add the decoding logic in the :meth:`decode` method.
-
-    See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
-    """
-
-    _pulls_fd = False
-
+class PyCodec:
     def __init__(self, mode, *args):
         self.im = None
         self.state = PyCodecState()
@@ -596,31 +591,16 @@ class PyDecoder:
 
     def init(self, args):
         """
-        Override to perform decoder specific initialization
+        Override to perform codec specific initialization
 
         :param args: Array of args items from the tile entry
         :returns: None
         """
         self.args = args
 
-    @property
-    def pulls_fd(self):
-        return self._pulls_fd
-
-    def decode(self, buffer):
-        """
-        Override to perform the decoding process.
-
-        :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of ``(bytes consumed, errcode)``.
-            If finished with decoding return <0 for the bytes consumed.
-            Err codes are from :data:`.ImageFile.ERRORS`.
-        """
-        raise NotImplementedError()
-
     def cleanup(self):
         """
-        Override to perform decoder specific cleanup
+        Override to perform codec specific cleanup
 
         :returns: None
         """
@@ -628,16 +608,16 @@ class PyDecoder:
 
     def setfd(self, fd):
         """
-        Called from ImageFile to set the python file-like object
+        Called from ImageFile to set the Python file-like object
 
-        :param fd: A python file-like object
+        :param fd: A Python file-like object
         :returns: None
         """
         self.fd = fd
 
     def setimage(self, im, extents=None):
         """
-        Called from ImageFile to set the core output image for the decoder
+        Called from ImageFile to set the core output image for the codec
 
         :param im: A core image object
         :param extents: a 4 tuple of (x0, y0, x1, y1) defining the rectangle
@@ -670,6 +650,32 @@ class PyDecoder:
         ):
             raise ValueError("Tile cannot extend outside image")
 
+
+class PyDecoder(PyCodec):
+    """
+    Python implementation of a format decoder. Override this class and
+    add the decoding logic in the :meth:`decode` method.
+
+    See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
+    """
+
+    _pulls_fd = False
+
+    @property
+    def pulls_fd(self):
+        return self._pulls_fd
+
+    def decode(self, buffer):
+        """
+        Override to perform the decoding process.
+
+        :param buffer: A bytes object with the data to be decoded.
+        :returns: A tuple of ``(bytes consumed, errcode)``.
+            If finished with decoding return 0 for the bytes consumed.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        raise NotImplementedError()
+
     def set_as_raw(self, data, rawmode=None):
         """
         Convenience method to set the internal image from a stream of raw data
@@ -690,3 +696,57 @@ class PyDecoder:
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
+
+
+class PyEncoder(PyCodec):
+    """
+    Python implementation of a format encoder. Override this class and
+    add the decoding logic in the :meth:`encode` method.
+
+    See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
+    """
+
+    _pushes_fd = False
+
+    @property
+    def pushes_fd(self):
+        return self._pushes_fd
+
+    def encode(self, bufsize):
+        """
+        Override to perform the encoding process.
+
+        :param bufsize: Buffer size.
+        :returns: A tuple of ``(bytes encoded, errcode, bytes)``.
+            If finished with encoding return 1 for the error code.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        raise NotImplementedError()
+
+    def encode_to_pyfd(self):
+        """
+        :returns: A tuple of ``(bytes consumed, errcode)``.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        if not self.pushes_fd:
+            return 0, -8  # bad configuration
+        bytes_consumed, errcode, data = self.encode(0)
+        if data:
+            self.fd.write(data)
+        return bytes_consumed, errcode
+
+    def encode_to_file(self, fh, bufsize):
+        """
+        :param fh: File handle.
+        :param bufsize: Buffer size.
+
+        :returns: If finished successfully, return 0.
+            Otherwise, return an error code. Err codes are from
+            :data:`.ImageFile.ERRORS`.
+        """
+        errcode = 0
+        while errcode == 0:
+            status, errcode, buf = self.encode(bufsize)
+            if status > 0:
+                fh.write(buf[status:])
+        return errcode

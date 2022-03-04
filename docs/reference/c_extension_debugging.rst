@@ -53,7 +53,7 @@ Then ``sudo apt-get update && sudo apt-get install libtiff5-dbgsym``
 
     virtualenv -p python3.8-dbg ~/vpy38-dbg
     source ~/vpy38-dbg/bin/activate
-    cd ~/Pillow && pip install -r requirements.txt && make install
+    cd ~/Pillow && make install
 
 Test Case
 ---------

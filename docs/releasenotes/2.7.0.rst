@@ -111,16 +111,14 @@ downscaling with libjpeg, which uses supersampling internally, not convolutions.
 Image transposition
 -------------------
 
-A new method :py:data:`PIL.Image.TRANSPOSE` has been added for the
+A new method ``TRANSPOSE`` has been added for the
 :py:meth:`~PIL.Image.Image.transpose` operation in addition to
-:py:data:`~PIL.Image.FLIP_LEFT_RIGHT`, :py:data:`~PIL.Image.FLIP_TOP_BOTTOM`,
-:py:data:`~PIL.Image.ROTATE_90`, :py:data:`~PIL.Image.ROTATE_180`,
-:py:data:`~PIL.Image.ROTATE_270`. :py:data:`~PIL.Image.TRANSPOSE` is an algebra
-transpose, with an image reflected across its main diagonal.
+``FLIP_LEFT_RIGHT``, ``FLIP_TOP_BOTTOM``, ``ROTATE_90``, ``ROTATE_180``,
+``ROTATE_270``. ``TRANSPOSE`` is an algebra transpose, with an image reflected
+across its main diagonal.
 
-The speed of :py:data:`~PIL.Image.ROTATE_90`, :py:data:`~PIL.Image.ROTATE_270`
-and :py:data:`~PIL.Image.TRANSPOSE` has been significantly improved for large
-images which don't fit in the processor cache.
+The speed of ``ROTATE_90``, ``ROTATE_270`` and ``TRANSPOSE`` has been significantly
+improved for large images which don't fit in the processor cache.
 
 Gaussian blur and unsharp mask
 ------------------------------

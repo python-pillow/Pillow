@@ -169,7 +169,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.13**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.13.1**.
 
 * **libwebp** provides the WebP format.
 
@@ -215,7 +215,7 @@ Many of Pillow's features require external libraries:
 Once you have installed the prerequisites, run::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
@@ -225,7 +225,7 @@ those locations by editing :file:`setup.py` or
 :file:`setup.cfg`, or by adding environment variables on the command
 line::
 
-    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow
+    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
 
 If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
@@ -291,7 +291,7 @@ tools.
 The easiest way to install external libraries is via `Homebrew
 <https://brew.sh/>`_. After you install Homebrew, run::
 
-    brew install libtiff libjpeg webp little-cms2
+    brew install libjpeg libtiff little-cms2 openjpeg webp
 
 To install libraqm on macOS use Homebrew to install its dependencies::
 
@@ -302,7 +302,7 @@ Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 Now install Pillow with::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 or from within the uncompressed source directory::
 
@@ -349,7 +349,7 @@ Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
 Now install Pillow with::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 
 Building on FreeBSD
@@ -455,6 +455,8 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | CentOS Stream 8                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
+| CentOS Stream 9                  | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
 | Debian 10 Buster                 | 3.7                        | x86                 |
 +----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
@@ -462,6 +464,8 @@ These platforms are built and tested for every change.
 | Fedora 34                        | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Fedora 35                        | 3.10                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | macOS 10.15 Catalina             | 3.7, 3.8, 3.9, 3.10, PyPy3 | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -496,11 +500,11 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.0.0            |arm           |
+| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+
-|                                  | 3.7, 3.8, 3.9, 3.10       | 9.0.0            |x86-64        |
+|                                  | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |x86-64        |
 |                                  +---------------------------+------------------+--------------+
 |                                  | 3.6                       | 8.4.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+

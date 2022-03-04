@@ -1,4 +1,5 @@
 import filecmp
+import warnings
 
 import pytest
 
@@ -35,20 +36,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(TEST_IM)
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(TEST_IM) as im:
             im.load()
-
-    assert not record
 
 
 def test_tell():

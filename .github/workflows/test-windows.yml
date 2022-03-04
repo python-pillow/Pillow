@@ -137,10 +137,11 @@ jobs:
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
-    # failing with PyPy3
+    # skip PyPy for speed
     - name: Enable heap verification
       if: "!contains(matrix.python-version, 'pypy')"
-      run: "& 'C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x86\\gflags.exe' /p /enable $env:pythonLocation\\python.exe"
+      run: |
+        & reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
 
     - name: Test Pillow
       run: |

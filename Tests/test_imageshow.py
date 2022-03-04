@@ -51,6 +51,16 @@ def test_show():
         assert ImageShow.show(im)
 
 
+def test_show_without_viewers():
+    viewers = ImageShow._viewers
+    ImageShow._viewers = []
+
+    im = hopper()
+    assert not ImageShow.show(im)
+
+    ImageShow._viewers = viewers
+
+
 def test_viewer():
     viewer = ImageShow.Viewer()
 

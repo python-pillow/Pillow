@@ -107,9 +107,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.2/libjpeg-turbo-2.1.2.tar.gz",
-        "filename": "libjpeg-turbo-2.1.2.tar.gz",
-        "dir": "libjpeg-turbo-2.1.2",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
+        "filename": "libjpeg-turbo-2.1.3.tar.gz",
+        "dir": "libjpeg-turbo-2.1.3",
         "build": [
             cmd_cmake(
                 [
@@ -221,9 +221,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.tar.gz",
-        "filename": "lcms2-2.13.tar.gz",
-        "dir": "lcms2-2.13",
+        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz",
+        "filename": "lcms2-2.13.1.tar.gz",
+        "dir": "lcms2-2.13.1",
         "patch": {
             r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/3.3.1.zip",
-        "filename": "harfbuzz-3.3.1.zip",
-        "dir": "harfbuzz-3.3.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
+        "filename": "harfbuzz-4.0.0.zip",
+        "dir": "harfbuzz-4.0.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

@@ -169,12 +169,12 @@ class GifImageFile(ImageFile.ImageFile):
             if "transparency" in self.info:
                 self.mode = "RGBA"
                 self.im.putpalettealpha(self.info["transparency"], 0)
-                self.im = self.im.convert("RGBA", Image.FLOYDSTEINBERG)
+                self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
 
                 del self.info["transparency"]
             else:
                 self.mode = "RGB"
-                self.im = self.im.convert("RGB", Image.FLOYDSTEINBERG)
+                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)
 
@@ -425,7 +425,7 @@ def _normalize_mode(im, initial_call=False):
             palette_size = 256
             if im.palette:
                 palette_size = len(im.palette.getdata()[1]) // 3
-            im = im.convert("P", palette=Image.ADAPTIVE, colors=palette_size)
+            im = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=palette_size)
             if im.palette.mode == "RGBA":
                 for rgba in im.palette.colors.keys():
                     if rgba[3] == 0:

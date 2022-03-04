@@ -5,6 +5,60 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Improved handling of PPM header #5121
+  [Piolie, radarhere]
+
+- Reset size when seeking away from "Large Thumbnail" MPO frame #6101
+  [radarhere]
+
+- Replace requirements.txt with extras #6072
+  [hugovk, radarhere]
+
+- Added PyEncoder and support BLP saving #6069
+  [radarhere]
+
+- Handle TGA images with packets that cross scan lines #6087
+  [radarhere]
+
+- Added FITS reading #6056
+  [radarhere, hugovk]
+
+- Added rawmode argument to Image.getpalette() #6061
+  [radarhere]
+
+- Fixed BUFR, GRIB and HDF5 stub saving #6071
+  [radarhere]
+
+- Do not automatically remove temporary ImageShow files on Unix #6045
+  [radarhere]
+
+- Correctly read JPEG compressed BLP images #4685
+  [Meithal, radarhere]
+
+- Merged _MODE_CONV typ into ImageMode as typestr #6057
+  [radarhere]
+
+- Consider palette size when converting and in getpalette() #6060
+  [radarhere]
+
+- Added enums #5954
+  [radarhere]
+
+- Ensure image is opaque after converting P to PA with RGB palette #6052
+  [radarhere]
+
+- Attach RGBA palettes from putpalette() when suitable #6054
+  [radarhere]
+
+- Added get_photoshop_blocks() to parse Photoshop TIFF tag #6030
+  [radarhere]
+
+- Drop excess values in BITSPERSAMPLE #6041
+  [mikhail-iurkov]
+
+- Added unpacker from RGBA;15 to RGB #6031
+  [radarhere]
+
 - Enable arm64 for MSVC on Windows #5811
   [gaborkertesz-linaro, gaborkertesz]
 
@@ -23,7 +77,7 @@ Changelog (Pillow)
 - Ensure duplicated file pointer is closed #5946
   [radarhere]
 
-- Added specific error if ImagePath coordinate type is incorrect #5942
+- Added specific error if path coordinate type is incorrect #5942
   [radarhere]
 
 - Return an empty bytestring from tobytes() for an empty image #5938

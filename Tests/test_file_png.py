@@ -1,5 +1,6 @@
 import re
 import sys
+import warnings
 import zlib
 from io import BytesIO
 
@@ -331,9 +332,8 @@ class TestFilePng:
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.verify()
-            assert not record
 
         with Image.open(TEST_PNG_FILE) as im:
             im.load()

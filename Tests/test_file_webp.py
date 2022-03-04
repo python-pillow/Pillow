@@ -1,6 +1,7 @@
 import io
 import re
 import sys
+import warnings
 
 import pytest
 
@@ -161,9 +162,8 @@ class TestFileWebp:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             temp_file = str(tmp_path / "temp.webp")
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 image.save(temp_file)
-            assert not record
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"

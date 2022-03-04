@@ -97,7 +97,7 @@ def get_image(mode):
         bands = [gradients_image]
         for _ in mode_info.bands[1:]:
             # rotate previous image
-            band = bands[-1].transpose(Image.ROTATE_90)
+            band = bands[-1].transpose(Image.Transpose.ROTATE_90)
             bands.append(band)
         # Correct alpha channel by transforming completely transparent pixels.
         # Low alpha values also emphasize error after alpha multiplication.
@@ -138,24 +138,26 @@ def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1):
     reference = Image.new(im.mode, reduced.size)
     area_size = (im.size[0] // factor[0], im.size[1] // factor[1])
     area_box = (0, 0, area_size[0] * factor[0], area_size[1] * factor[1])
-    area = im.resize(area_size, Image.BOX, area_box)
+    area = im.resize(area_size, Image.Resampling.BOX, area_box)
     reference.paste(area, (0, 0))
 
     if area_size[0] < reduced.size[0]:
         assert reduced.size[0] - area_size[0] == 1
         last_column_box = (area_box[2], 0, im.size[0], area_box[3])
-        last_column = im.resize((1, area_size[1]), Image.BOX, last_column_box)
+        last_column = im.resize(
+            (1, area_size[1]), Image.Resampling.BOX, last_column_box
+        )
         reference.paste(last_column, (area_size[0], 0))
 
     if area_size[1] < reduced.size[1]:
         assert reduced.size[1] - area_size[1] == 1
         last_row_box = (0, area_box[3], area_box[2], im.size[1])
-        last_row = im.resize((area_size[0], 1), Image.BOX, last_row_box)
+        last_row = im.resize((area_size[0], 1), Image.Resampling.BOX, last_row_box)
         reference.paste(last_row, (0, area_size[1]))
 
     if area_size[0] < reduced.size[0] and area_size[1] < reduced.size[1]:
         last_pixel_box = (area_box[2], area_box[3], im.size[0], im.size[1])
-        last_pixel = im.resize((1, 1), Image.BOX, last_pixel_box)
+        last_pixel = im.resize((1, 1), Image.Resampling.BOX, last_pixel_box)
         reference.paste(last_pixel, area_size)
 
     assert_compare_images(reduced, reference, average_diff, max_diff)

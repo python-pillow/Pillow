@@ -1,5 +1,6 @@
 import io
 import os
+import warnings
 
 import pytest
 
@@ -19,9 +20,8 @@ def test_sanity():
     with Image.open(TEST_FILE) as im:
 
         # Assert that there is no unclosed file warning
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             im.load()
-        assert not record
 
         assert im.mode == "RGBA"
         assert im.size == (1024, 1024)
@@ -112,12 +112,9 @@ def test_older_icon():
 
 
 def test_jp2_icon():
-    # This icon was made by using Uli Kusterer's oldiconutil to replace
-    # the PNG images with JPEG 2000 ones.  The advantage of doing this is
-    # that OS X 10.5 supports JPEG 2000 but not PNG; some commercial
-    # software therefore does just this.
-
-    # (oldiconutil is here: https://github.com/uliwitness/oldiconutil)
+    # This icon uses JPEG 2000 images instead of the PNG images.
+    # The advantage of doing this is that OS X 10.5 supports JPEG 2000
+    # but not PNG; some commercial software therefore does just this.
 
     if not ENABLE_JPEG2K:
         return

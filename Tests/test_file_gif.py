@@ -1,3 +1,4 @@
+import warnings
 from io import BytesIO
 
 import pytest
@@ -39,20 +40,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
             im.load()
-
-    assert not record
 
 
 def test_invalid_file():
@@ -210,8 +207,8 @@ def test_palette_handling(tmp_path):
     with Image.open(TEST_GIF) as im:
         im = im.convert("RGB")
 
-        im = im.resize((100, 100), Image.LANCZOS)
-        im2 = im.convert("P", palette=Image.ADAPTIVE, colors=256)
+        im = im.resize((100, 100), Image.Resampling.LANCZOS)
+        im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
 
         f = str(tmp_path / "temp.gif")
         im2.save(f, optimize=True)
@@ -309,6 +306,22 @@ def test_n_frames():
         with Image.open(path) as im:
             assert im.n_frames == n_frames
             assert im.is_animated == (n_frames != 1)
+
+
+def test_no_change():
+    # Test n_frames does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(1)
+        expected = im.copy()
+        assert im.n_frames == 5
+        assert_image_equal(im, expected)
+
+    # Test is_animated does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(3)
+        expected = im.copy()
+        assert im.is_animated
+        assert_image_equal(im, expected)
 
 
 def test_eoferror():
@@ -911,7 +924,7 @@ def test_save_I(tmp_path):
 def test_getdata():
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
-    im = Image._wedge().resize((16, 16), Image.NEAREST)
+    im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 

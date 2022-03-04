@@ -1529,6 +1529,7 @@ static struct {
     {"RGB", "RGBX", 32, copy4},
     {"RGB", "RGBX;L", 32, unpackRGBAL},
     {"RGB", "RGBA;L", 32, unpackRGBAL},
+    {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
     {"RGB", "XRGB", 32, ImagingUnpackXRGB},
     {"RGB", "XBGR", 32, ImagingUnpackXBGR},

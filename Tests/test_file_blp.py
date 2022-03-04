@@ -1,8 +1,18 @@
 import pytest
 
-from PIL import Image
+from PIL import BlpImagePlugin, Image
 
-from .helper import assert_image_equal_tofile
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
+
+
+def test_load_blp1():
+    with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
+        assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
 
 def test_load_blp2_raw():
@@ -18,6 +28,28 @@ def test_load_blp2_dxt1():
 def test_load_blp2_dxt1a():
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def test_save(tmp_path):
+    f = str(tmp_path / "temp.blp")
+
+    for version in ("BLP1", "BLP2"):
+        im = hopper("P")
+        im.save(f, blp_version=version)
+
+        with Image.open(f) as reloaded:
+            assert_image_equal(im.convert("RGB"), reloaded)
+
+        with Image.open("Tests/images/transparent.png") as im:
+            f = str(tmp_path / "temp.blp")
+            im.convert("P").save(f, blp_version=version)
+
+            with Image.open(f) as reloaded:
+                assert_image_similar(im, reloaded, 8)
+
+    im = hopper()
+    with pytest.raises(ValueError):
+        im.save(f)
 
 
 @pytest.mark.parametrize(
@@ -37,3 +69,14 @@ def test_crashes(test_file):
         with Image.open(f) as im:
             with pytest.raises(OSError):
                 im.load()
+
+
+def test_constants_deprecation():
+    for enum, prefix in {
+        BlpImagePlugin.Format: "BLP_FORMAT_",
+        BlpImagePlugin.Encoding: "BLP_ENCODING_",
+        BlpImagePlugin.AlphaEncoding: "BLP_ALPHA_ENCODING_",
+    }.items():
+        for name in enum.__members__:
+            with pytest.warns(DeprecationWarning):
+                assert getattr(BlpImagePlugin, prefix + name) == enum[name]

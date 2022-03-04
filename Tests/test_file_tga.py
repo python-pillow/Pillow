@@ -97,6 +97,11 @@ def test_id_field_rle():
         assert im.size == (199, 199)
 
 
+def test_cross_scan_line():
+    with Image.open("Tests/images/cross_scan_line.tga") as im:
+        assert_image_equal_tofile(im, "Tests/images/cross_scan_line.png")
+
+
 def test_save(tmp_path):
     test_file = "Tests/images/tga_id_field.tga"
     with Image.open(test_file) as im:

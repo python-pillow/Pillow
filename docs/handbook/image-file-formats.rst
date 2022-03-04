@@ -26,6 +26,20 @@ Fully supported formats
 
 .. contents::
 
+BLP
+^^^
+
+BLP is the Blizzard Mipmap Format, a texture format used in World of
+Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
+images, and all types of ``BLP2`` images.
+
+Pillow supports writing BLP images. The :py:meth:`~PIL.Image.Image.save` method
+can take the following keyword arguments:
+
+**blp_version**
+    If present and set to "BLP1", images will be saved as BLP1. Otherwise, images
+    will be saved as BLP2.
+
 BMP
 ^^^
 
@@ -381,10 +395,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     * ``keep``: Only valid for JPEG files, will retain the original image setting.
     * ``4:4:4``, ``4:2:2``, ``4:2:0``: Specific sampling values
-    * ``-1``: equivalent to ``keep``
     * ``0``: equivalent to ``4:4:4``
     * ``1``: equivalent to ``4:2:2``
     * ``2``: equivalent to ``4:2:0``
+
+    If absent, the setting will be determined by libjpeg or libjpeg-turbo.
 
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
@@ -696,12 +711,12 @@ parameter must be set to ``True``. The following parameters can also be set:
     operation to be used for this frame before rendering the next frame.
     Defaults to 0.
 
-    * 0 (:py:data:`~PIL.PngImagePlugin.APNG_DISPOSE_OP_NONE`, default) -
+    * 0 (:py:data:`~PIL.PngImagePlugin.Disposal.OP_NONE`, default) -
       No disposal is done on this frame before rendering the next frame.
-    * 1 (:py:data:`PIL.PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND`) -
+    * 1 (:py:data:`PIL.PngImagePlugin.Disposal.OP_BACKGROUND`) -
       This frame's modified region is cleared to fully transparent black before
       rendering the next frame.
-    * 2 (:py:data:`~PIL.PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS`) -
+    * 2 (:py:data:`~PIL.PngImagePlugin.Disposal.OP_PREVIOUS`) -
       This frame's modified region is reverted to the previous frame's contents before
       rendering the next frame.
 
@@ -710,10 +725,10 @@ parameter must be set to ``True``. The following parameters can also be set:
     operation to be used for this frame before rendering the next frame.
     Defaults to 0.
 
-    * 0 (:py:data:`~PIL.PngImagePlugin.APNG_BLEND_OP_SOURCE`) -
+    * 0 (:py:data:`~PIL.PngImagePlugin.Blend.OP_SOURCE`) -
       All color components of this frame, including alpha, overwrite the previous output
       image contents.
-    * 1 (:py:data:`~PIL.PngImagePlugin.APNG_BLEND_OP_OVER`) -
+    * 1 (:py:data:`~PIL.PngImagePlugin.Blend.OP_OVER`) -
       This frame should be alpha composited with the previous output image contents.
 
 .. note::
@@ -1041,13 +1056,6 @@ Pillow reads and writes X bitmap files (mode ``1``).
 Read-only formats
 -----------------
 
-BLP
-^^^
-
-BLP is the Blizzard Mipmap Format, a texture format used in World of
-Warcraft. Pillow supports reading ``JPEG`` Compressed or raw ``BLP1``
-images, and all types of ``BLP2`` images.
-
 CUR
 ^^^
 
@@ -1063,6 +1071,13 @@ is commonly used in fax applications. The DCX decoder can read files containing
 
 When the file is opened, only the first image is read. You can use
 :py:meth:`~PIL.Image.Image.seek` or :py:mod:`~PIL.ImageSequence` to read other images.
+
+FITS
+^^^^
+
+.. versionadded:: 9.1.0
+
+Pillow identifies and reads FITS files, commonly used for astronomy.
 
 FLI, FLC
 ^^^^^^^^
@@ -1353,16 +1368,6 @@ Pillow provides a stub driver for BUFR files.
 
 To add read or write support to your application, use
 :py:func:`PIL.BufrStubImagePlugin.register_handler`.
-
-FITS
-^^^^
-
-.. versionadded:: 1.1.5
-
-Pillow provides a stub driver for FITS files.
-
-To add read or write support to your application, use
-:py:func:`PIL.FitsStubImagePlugin.register_handler`.
 
 GRIB
 ^^^^

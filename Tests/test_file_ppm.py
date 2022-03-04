@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
@@ -50,14 +50,69 @@ def test_pnm(tmp_path):
         assert_image_equal_tofile(im, f)
 
 
+def test_magic(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"PyInvalid")
+
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open(path):
+            pass
+
+
+def test_header_with_comments(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P6 #comment\n#comment\r12#comment\r8\n128 #comment\n255\n")
+
+    with Image.open(path) as im:
+        assert im.size == (128, 128)
+
+
+def test_non_integer_token(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P6\nTEST")
+
+    with pytest.raises(ValueError):
+        with Image.open(path):
+            pass
+
+
+def test_token_too_long(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P6\n 01234567890")
+
+    with pytest.raises(ValueError) as e:
+        with Image.open(path):
+            pass
+
+    assert str(e.value) == "Token too long in file header: b'01234567890'"
+
+
+def test_too_many_colors(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P6\n1 1\n1000\n")
+
+    with pytest.raises(ValueError) as e:
+        with Image.open(path):
+            pass
+
+    assert str(e.value) == "Too many colors for band: 1000"
+
+
 def test_truncated_file(tmp_path):
     path = str(tmp_path / "temp.pgm")
     with open(path, "w") as f:
         f.write("P6")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
+
+    assert str(e.value) == "Reached EOF while reading header"
 
 
 def test_neg_ppm():
