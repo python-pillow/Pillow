@@ -109,13 +109,7 @@ class PpmImageFile(ImageFile.ImageFile):
             self.mode = rawmode = mode
 
         for ix in range(3):
-            token = self._read_token()
-            try:  # check token sanity
-                token = int(token)
-            except ValueError:
-                raise ValueError(
-                    f"Non-decimal-ASCII found in header: {token}"
-                ) from None
+            token = int(self._read_token())
             if ix == 0:  # token is the x size
                 xsize = token
             elif ix == 1:  # token is the y size
