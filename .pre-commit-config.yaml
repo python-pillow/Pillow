@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: f1d4e742c91dd5179d742b0db9293c4472b765f8  # frozen: 21.12b0
+    rev: fc0be6eb1e2a96091e6f64009ee5e9081bf8b6c6  # frozen: 22.1.0
     hooks:
       - id: black
         args: ["--target-version", "py37"]
@@ -19,7 +19,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: 3592548bbd98528887eeed63486cf6c9bae00b98  # frozen: v1.1.10
+    rev: ca52c4245639abd55c970e6bbbca95cab3de22d8  # frozen: v1.1.13
     hooks:
       - id: remove-tabs
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)

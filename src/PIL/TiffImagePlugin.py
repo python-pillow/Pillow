@@ -577,9 +577,9 @@ class ImageFileDirectory_v2(MutableMapping):
                         else TiffTags.SIGNED_RATIONAL
                     )
                 elif all(isinstance(v, int) for v in values):
-                    if all(0 <= v < 2 ** 16 for v in values):
+                    if all(0 <= v < 2**16 for v in values):
                         self.tagtype[tag] = TiffTags.SHORT
-                    elif all(-(2 ** 15) < v < 2 ** 15 for v in values):
+                    elif all(-(2**15) < v < 2**15 for v in values):
                         self.tagtype[tag] = TiffTags.SIGNED_SHORT
                     else:
                         self.tagtype[tag] = (
@@ -734,7 +734,7 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(5)
     def write_rational(self, *values):
         return b"".join(
-            self._pack("2L", *_limit_rational(frac, 2 ** 32 - 1)) for frac in values
+            self._pack("2L", *_limit_rational(frac, 2**32 - 1)) for frac in values
         )
 
     @_register_loader(7, 1)
@@ -757,7 +757,7 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(10)
     def write_signed_rational(self, *values):
         return b"".join(
-            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -(2 ** 31)))
+            self._pack("2l", *_limit_signed_rational(frac, 2**31 - 1, -(2**31)))
             for frac in values
         )
 
@@ -1670,7 +1670,7 @@ def _save(im, fp, filename):
     strip_byte_counts = 1 if stride == 0 else stride * rows_per_strip
     strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
     ifd[ROWSPERSTRIP] = rows_per_strip
-    if strip_byte_counts >= 2 ** 16:
+    if strip_byte_counts >= 2**16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
     ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
         stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),

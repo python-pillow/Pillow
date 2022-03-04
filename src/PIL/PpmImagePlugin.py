@@ -115,7 +115,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 if maxval > 255:
                     if not mode == "L":
                         raise ValueError(f"Too many colors for band: {token}")
-                    if maxval < 2 ** 16:
+                    if maxval < 2**16:
                         self.mode = "I"
                         rawmode = "I;16B"
                     else:
@@ -136,7 +136,7 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2 ** 16:
+        if im.getextrema()[1] < 2**16:
             rawmode, head = "I;16B", b"P5"
         else:
             rawmode, head = "I;32B", b"P5"
