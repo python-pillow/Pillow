@@ -115,7 +115,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 if maxval > 255:
                     if not mode == "L":
                         raise ValueError(f"Too many colors for band: {token}")
-                    if token < 2 ** 16:
+                    if maxval < 2 ** 16:
                         self.mode = "I"
                         rawmode = "I;16B"
                     else:
