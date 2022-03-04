@@ -115,15 +115,13 @@ class PpmImageFile(ImageFile.ImageFile):
                 if maxval > 255:
                     if mode != "L":
                         raise ValueError(f"Too many colors for band: {token}")
-                    if maxval == 1023:
-                        self.mode = "I"
-                        rawmode = "I;10B"
-                    elif maxval < 2**16:
-                        self.mode = "I"
-                        rawmode = "I;16B"
+                    self.mode = "I"
+                    for bit in range(9, 16):
+                        if maxval == 2**bit - 1:
+                            break
                     else:
-                        self.mode = "I"
-                        rawmode = "I;32B"
+                        bit = 16 if maxval < 2**16 else 32
+                    rawmode = "I;" + str(bit) + "B"
 
         self._size = xsize, ysize
         self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]

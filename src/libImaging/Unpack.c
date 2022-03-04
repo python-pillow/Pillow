@@ -1182,22 +1182,39 @@ unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-static void
-unpackI10B(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, pixel;
-    for (i = 0; i < pixels; i++) {
-        pixel = ((in[0] << 8) + in[1]) << 6;
 #ifdef WORDS_BIGENDIAN
-        out[2] = pixel >> 8;
-        out[3] = pixel;
-#else
-        out[0] = pixel;
-        out[1] = pixel >> 8;
-#endif
-        in += 2;
-        out += 4;
+#define UNPACK_IXB(NAME, DEPTH)                                 \
+    static void NAME(UINT8 *out, const UINT8 *in, int pixels) { \
+        int i, pixel;                                           \
+        for (i = 0; i < pixels; i++) {                          \
+            pixel = ((in[0] << 8) + in[1]) << (16 - DEPTH);     \
+            out[2] = pixel >> 8;                                \
+            out[3] = pixel;                                     \
+            in += 2;                                            \
+            out += 4;                                           \
+        }                                                       \
     }
-}
+#else
+#define UNPACK_IXB(NAME, DEPTH)                                 \
+    static void NAME(UINT8 *out, const UINT8 *in, int pixels) { \
+        int i, pixel;                                           \
+        for (i = 0; i < pixels; i++) {                          \
+            pixel = ((in[0] << 8) + in[1]) << (16 - DEPTH);     \
+            out[0] = pixel;                                     \
+            out[1] = pixel >> 8;                                \
+            in += 2;                                            \
+            out += 4;                                           \
+        }                                                       \
+    }
+#endif
+
+UNPACK_IXB(unpackI9B, 9)
+UNPACK_IXB(unpackI10B, 10)
+UNPACK_IXB(unpackI11B, 11)
+UNPACK_IXB(unpackI12B, 12)
+UNPACK_IXB(unpackI13B, 13)
+UNPACK_IXB(unpackI14B, 14)
+UNPACK_IXB(unpackI15B, 15)
 
 static void
 copy1(UINT8 *out, const UINT8 *in, int pixels) {
@@ -1701,7 +1718,13 @@ static struct {
     {"I", "I", 32, copy4},
     {"I", "I;8", 8, unpackI8},
     {"I", "I;8S", 8, unpackI8S},
+    {"I", "I;9B", 16, unpackI9B},
     {"I", "I;10B", 16, unpackI10B},
+    {"I", "I;11B", 16, unpackI11B},
+    {"I", "I;12B", 16, unpackI12B},
+    {"I", "I;13B", 16, unpackI13B},
+    {"I", "I;14B", 16, unpackI14B},
+    {"I", "I;15B", 16, unpackI15B},
     {"I", "I;16", 16, unpackI16},
     {"I", "I;16S", 16, unpackI16S},
     {"I", "I;16B", 16, unpackI16B},
