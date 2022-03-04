@@ -49,44 +49,38 @@ class PpmImageFile(ImageFile.ImageFile):
     format = "PPM"
     format_description = "Pbmplus image"
 
-    def _read_magic(self, magic=b""):
-        while True:  # read until next whitespace
+    def _read_magic(self):
+        magic = b""
+        # read until whitespace or longest available magic number
+        for _ in range(6):
             c = self.fp.read(1)
             if not c or c in b_whitespace:
                 break
             magic += c
-            if len(magic) > 6:  # exceeded max magic number length
-                break
         return magic
 
-    def _read_token(self, token=b""):
-        def _ignore_comment():  # ignores rest of the line; stops at CR, LF or EOF
-            while self.fp.read(1) not in b"\r\n":
-                pass
-
-        while True:  # read until non-whitespace is found
+    def _read_token(self):
+        token = b""
+        while len(token) <= 10:  # read until next whitespace or limit of 10 characters
             c = self.fp.read(1)
-            if c == b"#":  # found comment, ignore it
-                _ignore_comment()
-                continue
             if not c:
-                raise ValueError("Reached EOF while reading header")
-            if c in b_whitespace:  # found whitespace, ignore it
-                continue
-            break
-
-        token += c
-
-        while True:  # read until next whitespace
-            c = self.fp.read(1)
-            if c == b"#":
-                _ignore_comment()
-                continue
-            if c in b_whitespace:  # token ended
                 break
+            elif c in b_whitespace:  # token ended
+                if not token:
+                    # skip whitespace at start
+                    continue
+                break
+            elif c == b"#":
+                # ignores rest of the line; stops at CR, LF or EOF
+                while self.fp.read(1) not in b"\r\n":
+                    pass
+                continue
             token += c
-            if len(token) > 10:
-                raise ValueError(f"Token too long in file header: {token}")
+        if not token:
+            # Token was not even 1 byte
+            raise ValueError("Reached EOF while reading header")
+        elif len(token) > 10:
+            raise ValueError(f"Token too long in file header: {token}")
         return token
 
     def _open(self):
