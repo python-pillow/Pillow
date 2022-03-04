@@ -94,7 +94,7 @@ class PpmImageFile(ImageFile.ImageFile):
         try:
             mode = MODES[magic_number]
         except KeyError:
-            raise SyntaxError("Not a PPM image file") from None
+            raise SyntaxError("not a PPM file")
 
         self.custom_mimetype = {
             b"P4": "image/x-portable-bitmap",
