@@ -111,7 +111,9 @@ class DdsImageFile(ImageFile.ImageFile):
     format_description = "DirectDraw Surface"
 
     def _open(self):
-        magic, header_size = struct.unpack("<II", self.fp.read(8))
+        if not _accept(self.fp.read(4)):
+            raise SyntaxError("not a DDS file")
+        (header_size,) = struct.unpack("<I", self.fp.read(4))
         if header_size != 124:
             raise OSError(f"Unsupported header size {repr(header_size)}")
         header_bytes = self.fp.read(header_size - 4)

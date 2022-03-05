@@ -493,7 +493,7 @@ class ImageFileDirectory_v2(MutableMapping):
               endianness.
         :param prefix: Override the endianness of the file.
         """
-        if ifh[:4] not in PREFIXES:
+        if not _accept(ifh):
             raise SyntaxError(f"not a TIFF file (header {repr(ifh)} not valid)")
         self._prefix = prefix if prefix is not None else ifh[:2]
         if self._prefix == MM:
