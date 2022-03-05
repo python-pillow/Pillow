@@ -1492,11 +1492,12 @@ class Image:
 
     def histogram(self, mask=None, extrema=None):
         """
-        Returns a histogram for the image. The histogram is returned as
-        a list of pixel counts, one for each pixel value in the source
-        image. If the image has more than one band, the histograms for
-        all bands are concatenated (for example, the histogram for an
-        "RGB" image contains 768 values).
+        Returns a histogram for the image. The histogram is returned as a
+        list of pixel counts, one for each pixel value in the source
+        image. Counts are grouped into 256 bins for each band, even if
+        the image has more than 8 bits per band. If the image has more
+        than one band, the histograms for all bands are concatenated (for
+        example, the histogram for an "RGB" image contains 768 values).
 
         A bilevel image (mode "1") is treated as a greyscale ("L") image
         by this method.
