@@ -354,7 +354,7 @@ Setup
 The current conventions are that the codec setup function is named
 ``PyImaging_[codecname]DecoderNew`` or ``PyImaging_[codecname]EncoderNew``
 and defined in ``decode.c`` or ``encode.c``. The Python binding for it is
-named ``[codecname]_decoder`` or ``[codecname]_encoder`` and is setup from
+named ``[codecname]_decoder`` or ``[codecname]_encoder`` and is set up from
 within the ``_imaging.c`` file in the codecs section of the function array.
 
 The setup function needs to call ``PyImaging_DecoderNew`` or
@@ -400,7 +400,7 @@ Alternatively, if ``pulls_fd`` or ``pushes_fd`` is set, then the decode or
 encode function is called once, with an empty buffer. It is the codec's
 responsibility to transform the entire tile in that one call.  Using this will
 provide a codec with more freedom, but that freedom may mean increased memory
-usage if entire tile is held in memory at once by the codec.
+usage if the entire tile is held in memory at once by the codec.
 
 If an error occurs, set ``state->errcode`` and return -1.
 
