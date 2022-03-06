@@ -223,11 +223,11 @@ class ImageFile(Image.Image):
                 )
             ]
             for decoder_name, extents, offset, args in self.tile:
+                seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
                 )
                 try:
-                    seek(offset)
                     decoder.setimage(self.im, extents)
                     if decoder.pulls_fd:
                         decoder.setfd(self.fp)
@@ -499,40 +499,33 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation) as exc:
-        # compress to Python file-compatible object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
+        exc = None
+    except (AttributeError, io.UnsupportedOperation) as e:
+        exc = e
+    for e, b, o, a in tile:
+        if o > 0:
+            fp.seek(o)
+        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+        try:
+            encoder.setimage(im.im, b)
+            if encoder.pushes_fd:
+                encoder.setfd(fp)
+                l, s = encoder.encode_to_pyfd()
             else:
-                while True:
-                    l, s, d = e.encode(bufsize)
-                    fp.write(d)
-                    if s:
-                        break
+                if exc:
+                    # compress to Python file-compatible object
+                    while True:
+                        l, s, d = encoder.encode(bufsize)
+                        fp.write(d)
+                        if s:
+                            break
+                else:
+                    # slight speedup: compress to real file object
+                    s = encoder.encode_to_file(fh, bufsize)
             if s < 0:
                 raise OSError(f"encoder error {s} when writing image file") from exc
-            e.cleanup()
-    else:
-        # slight speedup: compress to real file object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
-            else:
-                s = e.encode_to_file(fh, bufsize)
-            if s < 0:
-                raise OSError(f"encoder error {s} when writing image file")
-            e.cleanup()
+        finally:
+            encoder.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
 
