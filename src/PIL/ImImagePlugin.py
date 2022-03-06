@@ -100,7 +100,7 @@ for i in range(2, 33):
 # --------------------------------------------------------------------
 # Read IM directory
 
-split = re.compile(br"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
 def number(s):

@@ -218,7 +218,7 @@ class TestFileLibTiff(LibTiffTestCase):
             values = {
                 2: "test",
                 3: 1,
-                4: 2 ** 20,
+                4: 2**20,
                 5: TiffImagePlugin.IFDRational(100, 1),
                 12: 1.05,
             }
@@ -1019,7 +1019,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
-        TiffImagePlugin.STRIP_SIZE = 2 ** 18
+        TiffImagePlugin.STRIP_SIZE = 2**18
         try:
 
             im.save(out, compression="tiff_adobe_deflate")

@@ -16,6 +16,13 @@ def test_load_dxt1():
             assert_image_similar(im, target.convert("RGBA"), 15)
 
 
+def test_invalid_file():
+    invalid_file = "Tests/images/flower.jpg"
+
+    with pytest.raises(SyntaxError):
+        FtexImagePlugin.FtexImageFile(invalid_file)
+
+
 def test_constants_deprecation():
     for enum, prefix in {
         FtexImagePlugin.Format: "FORMAT_",
