@@ -145,7 +145,7 @@ class PpmImageFile(ImageFile.ImageFile):
 class PpmPlainDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def _read_block(self, block_size=10 ** 6):
+    def _read_block(self, block_size=10**6):
         return bytearray(self.fd.read(block_size))
 
     def _find_comment_end(self, block, start=0):
@@ -218,9 +218,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
     def _decode_blocks(self, channels=1, depth=8):
         decoded_data = bytearray()
         if depth == 32:
-            maxval = 2 ** 31 - 1  # HACK: 32-bit grayscale uses signed int
+            maxval = 2**31 - 1  # HACK: 32-bit grayscale uses signed int
         else:
-            maxval = 2 ** depth - 1  # FIXME: should be passed by _open
+            maxval = 2**depth - 1  # FIXME: should be passed by _open
         max_len = 10
         bytes_per_sample = depth // 8
         total_tokens = self.size * channels

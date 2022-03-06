@@ -86,7 +86,7 @@ def test_32bit_plain_pgm(tmp_path):
 def test_plain_pbm_data_with_comments(tmp_path):
     path1 = str(tmp_path / "temp1.ppm")
     path2 = str(tmp_path / "temp2.ppm")
-    comment = b"# veeery long comment" * 10 ** 6
+    comment = b"# veeery long comment" * 10**6
     with open(path1, "wb") as f1, open(path2, "wb") as f2:
         f1.write(b"P1\n2 2\n\n1010")
         f2.write(b"P1\n2 2\n" + comment + b"\n1010" + comment)
@@ -118,7 +118,7 @@ def test_plain_pbm_invalid_data(tmp_path):
 def test_plain_ppm_data_with_comments(tmp_path):
     path1 = str(tmp_path / "temp1.ppm")
     path2 = str(tmp_path / "temp2.ppm")
-    comment = b"# veeery long comment" * 10 ** 6
+    comment = b"# veeery long comment" * 10**6
     with open(path1, "wb") as f1, open(path2, "wb") as f2:
         f1.write(b"P3\n2 2\n255\n0 0 0 001 1 1 2 2 2 255 255 255")
         f2.write(
