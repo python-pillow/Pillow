@@ -306,7 +306,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             self._load()
         except struct.error as e:
             raise OSError("Truncated BLP file") from e
-        return 0, 0
+        return -1, 0
 
     def _read_blp_header(self):
         self.fd.seek(4)

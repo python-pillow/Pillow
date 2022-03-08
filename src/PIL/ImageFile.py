@@ -664,7 +664,7 @@ class PyDecoder(PyCodec):
 
         :param buffer: A bytes object with the data to be decoded.
         :returns: A tuple of ``(bytes consumed, errcode)``.
-            If finished with decoding return 0 for the bytes consumed.
+            If finished with decoding return -1 for the bytes consumed.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
