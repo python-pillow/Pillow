@@ -147,6 +147,25 @@ def test_rle8():
                 im.load()
 
 
+@pytest.mark.parametrize(
+    "file_name,length",
+    (
+        # EOF immediately after the header
+        ("Tests/images/hopper_rle8.bmp", 1078),
+        # EOF during delta
+        ("Tests/images/bmp/q/pal8rletrns.bmp", 3670),
+        # EOF when reading data in absolute mode
+        ("Tests/images/bmp/g/pal8rle.bmp", 1064),
+    ),
+)
+def test_rle8_eof(file_name, length):
+    with open(file_name, "rb") as fp:
+        data = fp.read(length)
+        with Image.open(io.BytesIO(data)) as im:
+            with pytest.raises(ValueError):
+                im.load()
+
+
 def test_offset():
     # This image has been hexedited
     # to exclude the palette size from the pixel data offset

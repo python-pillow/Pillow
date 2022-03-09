@@ -283,8 +283,11 @@ class BmpRleDecoder(ImageFile.PyDecoder):
         data = bytearray()
         x = 0
         while len(data) < self.state.xsize * self.state.ysize:
-            num_pixels = self.fd.read(1)[0]
+            pixels = self.fd.read(1)
             byte = self.fd.read(1)
+            if not pixels or not byte:
+                break
+            num_pixels = pixels[0]
             if num_pixels:
                 # encoded mode
                 if x + num_pixels > self.state.xsize:
@@ -303,12 +306,18 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     break
                 elif byte[0] == 2:
                     # delta
+                    bytes_read = self.fd.read(2)
+                    if len(bytes_read) < 2:
+                        break
                     right, up = self.fd.read(2)
                     data += b"\x00" * (right + up * self.state.xsize)
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
-                    data += self.fd.read(byte[0])
+                    bytes_read = self.fd.read(byte[0])
+                    data += bytes_read
+                    if len(bytes_read) < byte[0]:
+                        break
                     x += byte[0]
 
                     # align to 16-bit word boundary
