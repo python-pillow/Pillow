@@ -13,16 +13,64 @@ TEST_FILE = "Tests/images/hopper.ppm"
 
 def test_sanity():
     with Image.open(TEST_FILE) as im:
-        im.load()
         assert im.mode == "RGB"
         assert im.size == (128, 128)
-        assert im.format, "PPM"
+        assert im.format == "PPM"
         assert im.get_format_mimetype() == "image/x-portable-pixmap"
+
+
+def test_arbitrary_maxval():
+    # P5 L mode
+    fp = BytesIO(b"P5 3 1 4 \x00\x02\x04")
+    with Image.open(fp) as im:
+        assert im.size == (3, 1)
+        assert im.mode == "L"
+
+        px = im.load()
+        assert tuple(px[x, 0] for x in range(3)) == (0, 128, 255)
+
+    # P5 I mode
+    fp = BytesIO(b"P5 3 1 257 \x00\x00\x00\x80\x01\x01")
+    with Image.open(fp) as im:
+        assert im.size == (3, 1)
+        assert im.mode == "I"
+
+        px = im.load()
+        assert tuple(px[x, 0] for x in range(3)) == (0, 32640, 65535)
+
+    # P6 with maxval < 255
+    fp = BytesIO(b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11")
+    with Image.open(fp) as im:
+        assert im.size == (3, 1)
+        assert im.mode == "RGB"
+
+        px = im.load()
+        assert tuple(px[x, 0] for x in range(3)) == (
+            (0, 15, 30),
+            (120, 135, 150),
+            (225, 240, 255),
+        )
+
+    # P6 with maxval > 255
+    # Scale down to 255, since there is no RGB mode with more than 8-bit
+    fp = BytesIO(
+        b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
+        b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF"
+    )
+    with Image.open(fp) as im:
+        assert im.size == (3, 1)
+        assert im.mode == "RGB"
+
+        px = im.load()
+        assert tuple(px[x, 0] for x in range(3)) == (
+            (0, 1, 2),
+            (127, 128, 129),
+            (254, 255, 255),
+        )
 
 
 def test_16bit_pgm():
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
-        im.load()
         assert im.mode == "I"
         assert im.size == (20, 100)
         assert im.get_format_mimetype() == "image/x-portable-graymap"
@@ -32,8 +80,6 @@ def test_16bit_pgm():
 
 def test_16bit_pgm_write(tmp_path):
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
-        im.load()
-
         f = str(tmp_path / "temp.pgm")
         im.save(f, "PPM")
 
@@ -91,19 +137,8 @@ def test_token_too_long(tmp_path):
     assert str(e.value) == "Token too long in file header: b'01234567890'"
 
 
-def test_too_many_colors(tmp_path):
-    path = str(tmp_path / "temp.ppm")
-    with open(path, "wb") as f:
-        f.write(b"P6\n1 1\n1000\n")
-
-    with pytest.raises(ValueError) as e:
-        with Image.open(path):
-            pass
-
-    assert str(e.value) == "Too many colors for band: 1000"
-
-
 def test_truncated_file(tmp_path):
+    # Test EOF in header
     path = str(tmp_path / "temp.pgm")
     with open(path, "w") as f:
         f.write("P6")
@@ -113,6 +148,12 @@ def test_truncated_file(tmp_path):
             pass
 
     assert str(e.value) == "Reached EOF while reading header"
+
+    # Test EOF for PyDecoder
+    fp = BytesIO(b"P5 3 1 4")
+    with Image.open(fp) as im:
+        with pytest.raises(ValueError):
+            im.load()
 
 
 def test_neg_ppm():
