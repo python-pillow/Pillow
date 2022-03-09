@@ -4,7 +4,12 @@ import pytest
 
 from PIL import BmpImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 
 def test_sanity(tmp_path):
@@ -123,6 +128,11 @@ def test_rgba_bitfields():
         im = Image.merge("RGB", (r, g, b))
 
     assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
+
+
+def test_rle8():
+    with Image.open("Tests/images/hopper_rle8.bmp") as im:
+        assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
 
 
 def test_offset():

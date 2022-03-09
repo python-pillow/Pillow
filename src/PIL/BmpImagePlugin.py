@@ -24,6 +24,8 @@
 #
 
 
+import os
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
@@ -167,6 +169,7 @@ class BmpImageFile(ImageFile.ImageFile):
             raise OSError(f"Unsupported BMP pixel depth ({file_info['bits']})")
 
         # ---------------- Process BMP with Bitfields compression (not palette)
+        decoder_name = "raw"
         if file_info["compression"] == self.BITFIELDS:
             SUPPORTED = {
                 32: [
@@ -208,6 +211,8 @@ class BmpImageFile(ImageFile.ImageFile):
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
                 raw_mode, self.mode = "BGRA", "RGBA"
+        elif file_info["compression"] == self.RLE8:
+            decoder_name = "bmp_rle"
         else:
             raise OSError(f"Unsupported BMP compression ({file_info['compression']})")
 
@@ -247,7 +252,7 @@ class BmpImageFile(ImageFile.ImageFile):
         self.info["compression"] = file_info["compression"]
         self.tile = [
             (
-                "raw",
+                decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
                 (
@@ -269,6 +274,40 @@ class BmpImageFile(ImageFile.ImageFile):
         offset = i32(head_data, 10)
         # load bitmap information (offset=raster info)
         self._bitmap(offset=offset)
+
+
+class BmpRleDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        data = bytearray()
+        while True:
+            num_pixels = self.fd.read(1)[0]
+            byte = self.fd.read(1)
+            if num_pixels:
+                # encoded mode
+                data += byte * num_pixels
+            else:
+                if byte[0] == 0:
+                    # end of line
+                    while len(data) % self.state.xsize != 0:
+                        data += b"\x00"
+                elif byte[0] == 1:
+                    # end of bitmap
+                    break
+                elif byte[0] == 2:
+                    # delta
+                    right, up = self.fd.read(2)
+                    data += b"\x00" * (right + up * self.state.xsize)
+                else:
+                    # absolute mode
+                    data += self.fd.read(byte[0])
+
+                    # align to 16-bit word boundary
+                    if self.fd.tell() % 2 != 0:
+                        self.fd.seek(1, os.SEEK_CUR)
+        self.set_as_raw(bytes(data), ("P", 0, self.args[-1]))
+        return -1, 0
 
 
 # =============================================================================
@@ -371,6 +410,8 @@ Image.register_save(BmpImageFile.format, _save)
 Image.register_extension(BmpImageFile.format, ".bmp")
 
 Image.register_mime(BmpImageFile.format, "image/bmp")
+
+Image.register_decoder("bmp_rle", BmpRleDecoder)
 
 Image.register_open(DibImageFile.format, DibImageFile, _dib_accept)
 Image.register_save(DibImageFile.format, _dib_save)
