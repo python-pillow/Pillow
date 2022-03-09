@@ -743,7 +743,7 @@ parameter must be set to ``True``. The following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
+Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
 ``RGB`` data.
 
 SGI
