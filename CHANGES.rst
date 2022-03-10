@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- When converting, clip I;16 to be unsigned, not signed #6112
+  [radarhere]
+
+- Fixed loading L mode GIF with transparency #6086
+  [radarhere]
+
 - Improved handling of PPM header #5121
   [Piolie, radarhere]
 
