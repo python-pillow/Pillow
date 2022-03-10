@@ -231,7 +231,7 @@ class ImageFile(Image.Image):
                     decoder.setimage(self.im, extents)
                     if decoder.pulls_fd:
                         decoder.setfd(self.fp)
-                        status, err_code = decoder.decode(b"")
+                        err_code = decoder.decode(b"")[1]
                     else:
                         b = prefix
                         while True:
@@ -664,7 +664,7 @@ class PyDecoder(PyCodec):
 
         :param buffer: A bytes object with the data to be decoded.
         :returns: A tuple of ``(bytes consumed, errcode)``.
-            If finished with decoding return 0 for the bytes consumed.
+            If finished with decoding return -1 for the bytes consumed.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
