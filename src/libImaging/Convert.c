@@ -1634,29 +1634,15 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (!((strcmp(imIn->mode, "RGB") == 0 || strcmp(imIn->mode, "1") == 0 ||
-           strcmp(imIn->mode, "I") == 0 || strcmp(imIn->mode, "L") == 0) &&
-          strcmp(mode, "RGBA") == 0))
-#ifdef notdef
-    {
-        return (Imaging)ImagingError_ValueError("conversion not supported");
-    }
-#else
-    {
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
-            "conversion from %.10s to %.10s not supported in convert_transparent",
-            imIn->mode,
-            mode);
-        return (Imaging)ImagingError_ValueError(buf);
-    }
-#endif
-
-    if (strcmp(imIn->mode, "RGB") == 0) {
+    if (strcmp(imIn->mode, "RGB") == 0 && strcmp(mode, "RGBA") == 0) {
         convert = rgb2rgba;
-    } else {
+    } else if ((strcmp(imIn->mode, "1") == 0 ||
+                strcmp(imIn->mode, "I") == 0 ||
+                strcmp(imIn->mode, "L") == 0
+               ) && (
+                strcmp(mode, "RGBA") == 0 ||
+                strcmp(mode, "LA") == 0
+               )) {
         if (strcmp(imIn->mode, "1") == 0) {
             convert = bit2rgb;
         } else if (strcmp(imIn->mode, "I") == 0) {
@@ -1665,6 +1651,15 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
             convert = l2rgb;
         }
         g = b = r;
+    } else {
+        static char buf[100];
+        snprintf(
+            buf,
+            100,
+            "conversion from %.10s to %.10s not supported in convert_transparent",
+            imIn->mode,
+            mode);
+        return (Imaging)ImagingError_ValueError(buf);
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
