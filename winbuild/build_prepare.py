@@ -107,9 +107,9 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.2/libjpeg-turbo-2.1.2.tar.gz",
-        "filename": "libjpeg-turbo-2.1.2.tar.gz",
-        "dir": "libjpeg-turbo-2.1.2",
+        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
+        "filename": "libjpeg-turbo-2.1.3.tar.gz",
+        "dir": "libjpeg-turbo-2.1.3",
         "build": [
             cmd_cmake(
                 [
@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/3.4.0.zip",
-        "filename": "harfbuzz-3.4.0.zip",
-        "dir": "harfbuzz-3.4.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
+        "filename": "harfbuzz-4.0.0.zip",
+        "dir": "harfbuzz-4.0.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -464,7 +464,7 @@ def build_dep_all():
         if dep_name in disabled:
             continue
         script = build_dep(dep_name)
-        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}"')
+        lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)

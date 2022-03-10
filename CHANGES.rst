@@ -5,6 +5,27 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- When converting, clip I;16 to be unsigned, not signed #6112
+  [radarhere]
+
+- Fixed loading L mode GIF with transparency #6086
+  [radarhere]
+
+- Improved handling of PPM header #5121
+  [Piolie, radarhere]
+
+- Reset size when seeking away from "Large Thumbnail" MPO frame #6101
+  [radarhere]
+
+- Replace requirements.txt with extras #6072
+  [hugovk, radarhere]
+
+- Added PyEncoder and support BLP saving #6069
+  [radarhere]
+
+- Handle TGA images with packets that cross scan lines #6087
+  [radarhere]
+
 - Added FITS reading #6056
   [radarhere, hugovk]
 

@@ -1,3 +1,4 @@
+import warnings
 from io import BytesIO
 
 import pytest
@@ -39,20 +40,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
             im.load()
-
-    assert not record
 
 
 def test_invalid_file():
@@ -60,6 +57,17 @@ def test_invalid_file():
 
     with pytest.raises(SyntaxError):
         GifImagePlugin.GifImageFile(invalid_file)
+
+
+def test_l_mode_transparency():
+    with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 0
+        assert im.info["transparency"] == 255
+
+        im.seek(1)
+        assert im.mode == "LA"
+        assert im.load()[0, 0] == (0, 255)
 
 
 def test_optimize():
@@ -309,6 +317,22 @@ def test_n_frames():
         with Image.open(path) as im:
             assert im.n_frames == n_frames
             assert im.is_animated == (n_frames != 1)
+
+
+def test_no_change():
+    # Test n_frames does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(1)
+        expected = im.copy()
+        assert im.n_frames == 5
+        assert_image_equal(im, expected)
+
+    # Test is_animated does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(3)
+        expected = im.copy()
+        assert im.is_animated
+        assert_image_equal(im, expected)
 
 
 def test_eoferror():

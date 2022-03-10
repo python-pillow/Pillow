@@ -25,7 +25,12 @@ _viewers = []
 
 def register(viewer, order=1):
     """
-    The :py:func:`register` function is used to register additional viewers.
+    The :py:func:`register` function is used to register additional viewers::
+
+        from PIL import ImageShow
+        ImageShow.register(MyViewer())  # MyViewer will be used as a last resort
+        ImageShow.register(MySecondViewer(), 0)  # MySecondViewer will be prioritised
+        ImageShow.register(ImageShow.XVViewer(), 0)  # XVViewer will be prioritised
 
     :param viewer: The viewer to be registered.
     :param order:

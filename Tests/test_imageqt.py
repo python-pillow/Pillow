@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import ImageQt
@@ -30,10 +32,10 @@ def test_rgb():
 
     def checkrgb(r, g, b):
         val = ImageQt.rgb(r, g, b)
-        val = val % 2 ** 24  # drop the alpha
+        val = val % 2**24  # drop the alpha
         assert val >> 16 == r
-        assert ((val >> 8) % 2 ** 8) == g
-        assert val % 2 ** 8 == b
+        assert ((val >> 8) % 2**8) == g
+        assert val % 2**8 == b
 
     checkrgb(0, 0, 0)
     checkrgb(255, 0, 0)
@@ -56,7 +58,5 @@ def test_image():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         ImageQt.ImageQt("Tests/images/hopper.gif")
-
-    assert not record

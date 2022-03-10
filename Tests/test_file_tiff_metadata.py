@@ -258,7 +258,7 @@ def test_ifd_unsigned_rational(tmp_path):
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
-    max_long = 2 ** 32 - 1
+    max_long = 2**32 - 1
 
     # 4 bytes unsigned long
     numerator = max_long
@@ -290,8 +290,8 @@ def test_ifd_signed_rational(tmp_path):
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     # pair of 4 byte signed longs
-    numerator = 2 ** 31 - 1
-    denominator = -(2 ** 31)
+    numerator = 2**31 - 1
+    denominator = -(2**31)
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
@@ -302,8 +302,8 @@ def test_ifd_signed_rational(tmp_path):
         assert numerator == reloaded.tag_v2[37380].numerator
         assert denominator == reloaded.tag_v2[37380].denominator
 
-    numerator = -(2 ** 31)
-    denominator = 2 ** 31 - 1
+    numerator = -(2**31)
+    denominator = 2**31 - 1
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
@@ -315,7 +315,7 @@ def test_ifd_signed_rational(tmp_path):
         assert denominator == reloaded.tag_v2[37380].denominator
 
     # out of bounds of 4 byte signed long
-    numerator = -(2 ** 31) - 1
+    numerator = -(2**31) - 1
     denominator = 1
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
@@ -324,7 +324,7 @@ def test_ifd_signed_rational(tmp_path):
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
-        assert 2 ** 31 - 1 == reloaded.tag_v2[37380].numerator
+        assert 2**31 - 1 == reloaded.tag_v2[37380].numerator
         assert -1 == reloaded.tag_v2[37380].denominator
 
 

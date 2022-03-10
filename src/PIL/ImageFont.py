@@ -839,7 +839,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                  :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
                  macOS.
 
-    :param size: The requested size, in points.
+    :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Possible
                      encodings include (see the FreeType documentation for more

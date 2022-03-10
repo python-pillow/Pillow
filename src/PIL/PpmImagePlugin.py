@@ -49,26 +49,46 @@ class PpmImageFile(ImageFile.ImageFile):
     format = "PPM"
     format_description = "Pbmplus image"
 
-    def _token(self, s=b""):
-        while True:  # read until next whitespace
+    def _read_magic(self):
+        magic = b""
+        # read until whitespace or longest available magic number
+        for _ in range(6):
             c = self.fp.read(1)
             if not c or c in b_whitespace:
                 break
-            if c > b"\x79":
-                raise ValueError("Expected ASCII value, found binary")
-            s = s + c
-            if len(s) > 9:
-                raise ValueError("Expected int, got > 9 digits")
-        return s
+            magic += c
+        return magic
+
+    def _read_token(self):
+        token = b""
+        while len(token) <= 10:  # read until next whitespace or limit of 10 characters
+            c = self.fp.read(1)
+            if not c:
+                break
+            elif c in b_whitespace:  # token ended
+                if not token:
+                    # skip whitespace at start
+                    continue
+                break
+            elif c == b"#":
+                # ignores rest of the line; stops at CR, LF or EOF
+                while self.fp.read(1) not in b"\r\n":
+                    pass
+                continue
+            token += c
+        if not token:
+            # Token was not even 1 byte
+            raise ValueError("Reached EOF while reading header")
+        elif len(token) > 10:
+            raise ValueError(f"Token too long in file header: {token}")
+        return token
 
     def _open(self):
-
-        # check magic
-        s = self.fp.read(1)
-        if s != b"P":
+        magic_number = self._read_magic()
+        try:
+            mode = MODES[magic_number]
+        except KeyError:
             raise SyntaxError("not a PPM file")
-        magic_number = self._token(s)
-        mode = MODES[magic_number]
 
         self.custom_mimetype = {
             b"P4": "image/x-portable-bitmap",
@@ -83,29 +103,19 @@ class PpmImageFile(ImageFile.ImageFile):
             self.mode = rawmode = mode
 
         for ix in range(3):
-            while True:
-                while True:
-                    s = self.fp.read(1)
-                    if s not in b_whitespace:
-                        break
-                    if s == b"":
-                        raise ValueError("File does not extend beyond magic number")
-                if s != b"#":
-                    break
-                s = self.fp.readline()
-            s = int(self._token(s))
-            if ix == 0:
-                xsize = s
-            elif ix == 1:
-                ysize = s
+            token = int(self._read_token())
+            if ix == 0:  # token is the x size
+                xsize = token
+            elif ix == 1:  # token is the y size
+                ysize = token
                 if mode == "1":
                     break
-            elif ix == 2:
-                # maxgrey
-                if s > 255:
+            elif ix == 2:  # token is maxval
+                maxval = token
+                if maxval > 255:
                     if not mode == "L":
-                        raise ValueError(f"Too many colors for band: {s}")
-                    if s < 2 ** 16:
+                        raise ValueError(f"Too many colors for band: {token}")
+                    if maxval < 2**16:
                         self.mode = "I"
                         rawmode = "I;16B"
                     else:
@@ -126,7 +136,7 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2 ** 16:
+        if im.getextrema()[1] < 2**16:
             rawmode, head = "I;16B", b"P5"
         else:
             rawmode, head = "I;32B", b"P5"

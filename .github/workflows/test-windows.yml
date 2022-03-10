@@ -23,17 +23,17 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
@@ -137,10 +137,11 @@ jobs:
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
-    # failing with PyPy3
+    # skip PyPy for speed
     - name: Enable heap verification
       if: "!contains(matrix.python-version, 'pypy')"
-      run: "& 'C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x86\\gflags.exe' /p /enable $env:pythonLocation\\python.exe"
+      run: |
+        & reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
 
     - name: Test Pillow
       run: |
@@ -155,7 +156,7 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: errors
@@ -181,7 +182,7 @@ jobs:
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: "github.event_name != 'pull_request'"
       with:
         name: ${{ steps.wheel.outputs.dist }}

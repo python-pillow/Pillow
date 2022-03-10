@@ -167,7 +167,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != MAGIC:
+        if not _accept(sig):
             raise SyntaxError("not an icns file")
         i = HEADERSIZE
         while i < filesize:
@@ -287,7 +287,7 @@ class IcnsImageFile(ImageFile.ImageFile):
             )
 
         px = Image.Image.load(self)
-        if self.im and self.im.size == self.size:
+        if self.im is not None and self.im.size == self.size:
             # Already loaded
             return px
         self.load_prepare()

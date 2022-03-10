@@ -88,19 +88,6 @@ class TestImageFont:
 
         ImageFont.truetype(tempfile, FONT_SIZE)
 
-    def test_unavailable_layout_engine(self):
-        have_raqm = ImageFont.core.HAVE_RAQM
-        ImageFont.core.HAVE_RAQM = False
-
-        try:
-            ttf = ImageFont.truetype(
-                FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
-            )
-        finally:
-            ImageFont.core.HAVE_RAQM = have_raqm
-
-        assert ttf.layout_engine == ImageFont.Layout.BASIC
-
     def _render(self, font):
         txt = "Hello World!"
         ttf = ImageFont.truetype(font, FONT_SIZE, layout_engine=self.LAYOUT_ENGINE)

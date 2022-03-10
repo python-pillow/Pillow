@@ -1,6 +1,7 @@
 import io
 import re
 import sys
+import warnings
 
 import pytest
 
@@ -127,7 +128,7 @@ class TestFileWebp:
 
         self._roundtrip(tmp_path, "P", 50.0)
 
-    @pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="Requires 64-bit system")
+    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_message(self, tmp_path):
         temp_file = str(tmp_path / "temp.webp")
         im = Image.new("RGB", (15000, 15000))
@@ -161,9 +162,8 @@ class TestFileWebp:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             temp_file = str(tmp_path / "temp.webp")
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 image.save(temp_file)
-            assert not record
 
     def test_file_pointer_could_be_reused(self):
         file_path = "Tests/images/hopper.webp"

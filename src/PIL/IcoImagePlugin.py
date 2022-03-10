@@ -304,7 +304,7 @@ class IcoImageFile(ImageFile.ImageFile):
         self._size = value
 
     def load(self):
-        if self.im and self.im.size == self.size:
+        if self.im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
         im = self.ico.getimage(self.size)

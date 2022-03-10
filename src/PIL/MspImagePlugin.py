@@ -148,7 +148,7 @@ class MspDecoder(ImageFile.PyDecoder):
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
-        return 0, 0
+        return -1, 0
 
 
 Image.register_decoder("MSP", MspDecoder)

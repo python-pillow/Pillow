@@ -1,3 +1,4 @@
+import warnings
 from io import BytesIO
 
 import pytest
@@ -41,20 +42,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(test_files[0])
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(test_files[0]) as im:
             im.load()
-
-    assert not record
 
 
 def test_app():
@@ -87,6 +84,9 @@ def test_frame_size():
 
         im.seek(1)
         assert im.size == (680, 480)
+
+        im.seek(0)
+        assert im.size == (640, 480)
 
 
 def test_ignore_frame_size():

@@ -175,9 +175,15 @@ class GifImageFile(ImageFile.ImageFile):
             if self.__frame == 1:
                 self.pyaccess = None
                 if "transparency" in self.info:
-                    self.mode = "RGBA"
-                    self.im.putpalettealpha(self.info["transparency"], 0)
-                    self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                    if self.mode == "P":
+                        self.im.putpalettealpha(self.info["transparency"], 0)
+                        self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                        self.mode = "RGBA"
+                    else:
+                        self.im = self.im.convert_transparent(
+                            "LA", self.info["transparency"]
+                        )
+                        self.mode = "LA"
 
                     del self.info["transparency"]
                 else:
@@ -315,7 +321,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
             else:
                 # replace with previous contents
-                if self.im:
+                if self.im is not None:
                     # only dispose the extent in this frame
                     self.dispose = self._crop(self.im, self.dispose_extent)
                 elif frame_transparency is not None:
@@ -382,15 +388,18 @@ class GifImageFile(ImageFile.ImageFile):
         if self.__frame == 0:
             return
         if self._frame_transparency is not None:
-            self.im.putpalettealpha(self._frame_transparency, 0)
-            frame_im = self.im.convert("RGBA")
+            if self.mode == "P":
+                self.im.putpalettealpha(self._frame_transparency, 0)
+                frame_im = self.im.convert("RGBA")
+            else:
+                frame_im = self.im.convert_transparent("LA", self._frame_transparency)
         else:
             frame_im = self.im.convert("RGB")
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im
         self.mode = self.im.mode
-        if frame_im.mode == "RGBA":
+        if frame_im.mode in ("LA", "RGBA"):
             self.im.paste(frame_im, self.dispose_extent, frame_im)
         else:
             self.im.paste(frame_im, self.dispose_extent)
