@@ -56,7 +56,9 @@ def _save(im, fp, filename):
     fp.write(o16(len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
-    provided_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
+    provided_images = {
+        im.size: im for im in [im] + im.encoderinfo.get("append_images", [])
+    }
     for size in sizes:
         width, height = size
         # 0 means 256
