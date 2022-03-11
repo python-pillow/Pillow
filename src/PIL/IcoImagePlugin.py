@@ -51,7 +51,7 @@ def _save(im, fp, filename):
         else True,
         sizes,
     )
-    sizes = list(sizes)
+    sizes = set(sizes)
     fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"

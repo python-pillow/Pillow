@@ -1,4 +1,5 @@
 import io
+import os
 
 import pytest
 
@@ -68,6 +69,20 @@ def test_save_to_bytes():
         assert_image_equal(
             reloaded, hopper().resize((32, 32), Image.Resampling.LANCZOS)
         )
+
+
+def test_no_duplicates(tmp_path):
+    temp_file = str(tmp_path / "temp.ico")
+    temp_file2 = str(tmp_path / "temp2.ico")
+
+    im = hopper()
+    sizes = [(32, 32), (64, 64)]
+    im.save(temp_file, "ico", sizes=sizes)
+
+    sizes.append(sizes[-1])
+    im.save(temp_file2, "ico", sizes=sizes)
+
+    assert os.path.getsize(temp_file) == os.path.getsize(temp_file2)
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
