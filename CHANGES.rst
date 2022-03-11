@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added BigTIFF reading #6097
+  [radarhere]
+
 - When converting, clip I;16 to be unsigned, not signed #6112
   [radarhere]
 
