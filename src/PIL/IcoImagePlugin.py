@@ -22,7 +22,6 @@
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
-import struct
 import warnings
 from io import BytesIO
 from math import ceil, log
@@ -30,6 +29,8 @@ from math import ceil, log
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
 from ._binary import i32le as i32
+from ._binary import o8
+from ._binary import o16le as o16
 from ._binary import o32le as o32
 
 #
@@ -52,15 +53,15 @@ def _save(im, fp, filename):
         sizes,
     )
     sizes = set(sizes)
-    fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
+    fp.write(o16(len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes) * 16
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     provided_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
     for size in sizes:
         width, height = size
         # 0 means 256
-        fp.write(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
-        fp.write(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
+        fp.write(o8(width if width < 256 else 0))  # bWidth(1)
+        fp.write(o8(height if height < 256 else 0))  # bHeight(1)
         fp.write(b"\0")  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
@@ -71,7 +72,7 @@ def _save(im, fp, filename):
             tmp = im.copy()
             tmp.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
         bits = BmpImagePlugin.SAVE[tmp.mode][1] if bmp else 32
-        fp.write(struct.pack("<H", bits))  # wBitCount(2)
+        fp.write(o16(bits))  # wBitCount(2)
 
         image_io = BytesIO()
         if bmp:
@@ -89,8 +90,8 @@ def _save(im, fp, filename):
         if bmp:
             image_bytes = image_bytes[:8] + o32(height * 2) + image_bytes[12:]
         bytes_len = len(image_bytes)
-        fp.write(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
-        fp.write(struct.pack("<I", offset))  # dwImageOffset(4)
+        fp.write(o32(bytes_len))  # dwBytesInRes(4)
+        fp.write(o32(offset))  # dwImageOffset(4)
         current = fp.tell()
         fp.seek(offset)
         fp.write(image_bytes)
