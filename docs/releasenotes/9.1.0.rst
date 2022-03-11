@@ -177,6 +177,11 @@ Image._repr_pretty_
 identity of the object. This allows Jupyter to describe an image and have that
 description stay the same on subsequent executions of the same code.
 
+Added BigTIFF reading
+^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading BigTIFF images.
+
 Added BLP saving
 ^^^^^^^^^^^^^^^^
 

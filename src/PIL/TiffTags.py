@@ -74,6 +74,7 @@ SIGNED_RATIONAL = 10
 FLOAT = 11
 DOUBLE = 12
 IFD = 13
+LONG8 = 16
 
 TAGS_V2 = {
     254: ("NewSubfileType", LONG, 1),
