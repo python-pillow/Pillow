@@ -250,12 +250,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     raise ValueError(
                         f"Token too long found in data: {token[:max_len + 1]}"
                     )
-                try:
-                    token = int(token)
-                except ValueError:
-                    raise ValueError(
-                        f"Non-decimal-ASCII found in data: {token}"
-                    ) from None
+                token = int(token)
                 tokens_read += 1
                 if token > maxval:
                     raise ValueError(f"Channel value too large for this mode: {token}")
