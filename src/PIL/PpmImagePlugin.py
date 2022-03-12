@@ -196,16 +196,13 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             tokens = b"".join(block.split())
 
             for token in tokens:
-                if token in (48, 49):
-                    tokens_read += 1
-                else:
+                if token not in (48, 49):
                     raise ValueError(f"Invalid token for this mode: {bytes([token])}")
-
+                tokens_read += 1
                 decoded_data.append(token)
                 if tokens_read == total_tokens:  # finished!
                     invert = bytes.maketrans(b"01", b"\xFF\x00")
-                    decoded_data = decoded_data.translate(invert)
-                    return decoded_data
+                    return decoded_data.translate(invert)
 
     def _decode_blocks(self, channels=1, depth=8):
         decoded_data = bytearray()
@@ -215,14 +212,13 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         bytes_per_sample = depth // 8
         total_tokens = self.size * channels
 
-        token_spans = False
         comment_spans = False
         half_token = False
         tokens_read = 0
         while True:
             block = self._read_block()  # read next block
             if not block:
-                if token_spans:
+                if half_token:
                     block = bytearray(b" ")  # flush half_token
                 else:
                     raise ValueError("Reached EOF while reading data")
@@ -237,14 +233,12 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
             block, comment_spans = self._ignore_comments(block)
 
-            if token_spans:
+            if half_token:
                 block = half_token + block  # stitch half_token to new block
-                token_spans = False
 
             tokens = block.split()
 
             if block and not block[-1:].isspace():  # block might split token
-                token_spans = True
                 half_token = tokens.pop()  # save half token for later
                 if len(half_token) > max_len:  # prevent buildup of half_token
                     raise ValueError(
