@@ -253,7 +253,7 @@ class DXT1Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
             raise OSError("Truncated DDS file") from e
-        return 0, 0
+        return -1, 0
 
 
 class DXT5Decoder(ImageFile.PyDecoder):
@@ -264,7 +264,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
             raise OSError("Truncated DDS file") from e
-        return 0, 0
+        return -1, 0
 
 
 Image.register_decoder("DXT1", DXT1Decoder)
