@@ -51,35 +51,45 @@ def test_pnm(tmp_path):
 
 
 def test_plain_pbm(tmp_path):
+    # P1
     with Image.open("Tests/images/hopper_1bit_plain.pbm") as im:
+        # P4
         assert_image_equal_tofile(im, "Tests/images/hopper_1bit.pbm")
 
 
 def test_8bit_plain_pgm(tmp_path):
+    # P2
     with Image.open("Tests/images/hopper_8bit_plain.pgm") as im:
+        # P5
         assert_image_equal_tofile(im, "Tests/images/hopper_8bit.pgm")
 
 
 def test_8bit_plain_ppm(tmp_path):
+    # P3
     with Image.open("Tests/images/hopper_8bit_plain.ppm") as im:
+        # P6
         assert_image_equal_tofile(im, "Tests/images/hopper_8bit.ppm")
 
 
 def test_16bit_plain_pgm(tmp_path):
+    # P2 with maxval 2 ** 16 - 1
     with Image.open("Tests/images/hopper_16bit_plain.pgm") as im:
         assert im.mode == "I"
         assert im.size == (128, 128)
         assert im.get_format_mimetype() == "image/x-portable-graymap"
 
+        # P5 with maxval 2 ** 16 - 1
         assert_image_equal_tofile(im, "Tests/images/hopper_16bit.pgm")
 
 
 def test_32bit_plain_pgm(tmp_path):
+    # P2 with maxval 2 ** 31 - 1
     with Image.open("Tests/images/hopper_32bit_plain.pgm") as im:
         assert im.mode == "I"
         assert im.size == (128, 128)
         assert im.get_format_mimetype() == "image/x-portable-graymap"
 
+        # P5 with maxval 2 ** 31 - 1
         assert_image_equal_tofile(im, "Tests/images/hopper_32bit.pgm")
 
 
@@ -187,7 +197,7 @@ def test_magic(tmp_path):
 def test_header_with_comments(tmp_path):
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
-        f.write(b"P6 #comment\n#comment\r 12#comment\r8\n128 #comment\n255\n")
+        f.write(b"P6 #comment\n#comment\r12#comment\r8\n128 #comment\n255\n")
 
     with Image.open(path) as im:
         assert im.size == (128, 128)

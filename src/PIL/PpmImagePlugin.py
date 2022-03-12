@@ -23,20 +23,19 @@ from . import Image, ImageFile
 b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
 
 MODES = {
-    # standard, plain
-    b"P1": ("ppm_plain", "1"),
-    b"P2": ("ppm_plain", "L"),
-    b"P3": ("ppm_plain", "RGB"),
-    # standard, raw
-    b"P4": ("raw", "1"),
-    b"P5": ("raw", "L"),
-    b"P6": ("raw", "RGB"),
+    # standard
+    b"P1": "1",
+    b"P2": "L",
+    b"P3": "RGB",
+    b"P4": "1",
+    b"P5": "L",
+    b"P6": "RGB",
     # extensions
-    b"P0CMYK": ("raw", "CMYK"),
+    b"P0CMYK": "CMYK",
     # PIL extensions (for test purposes only)
-    b"PyP": ("raw", "P"),
-    b"PyRGBA": ("raw", "RGBA"),
-    b"PyCMYK": ("raw", "CMYK"),
+    b"PyP": "P",
+    b"PyRGBA": "RGBA",
+    b"PyCMYK": "CMYK",
 }
 
 
@@ -90,18 +89,16 @@ class PpmImageFile(ImageFile.ImageFile):
     def _open(self):
         magic_number = self._read_magic()
         try:
-            decoder, mode = MODES[magic_number]
+            mode = MODES[magic_number]
         except KeyError:
             raise SyntaxError("not a PPM file")
 
-        self.custom_mimetype = {
-            b"P1": "image/x-portable-bitmap",
-            b"P2": "image/x-portable-graymap",
-            b"P3": "image/x-portable-pixmap",
-            b"P4": "image/x-portable-bitmap",
-            b"P5": "image/x-portable-graymap",
-            b"P6": "image/x-portable-pixmap",
-        }.get(magic_number)
+        if magic_number in (b"P1", b"P4"):
+            self.custom_mimetype = "image/x-portable-bitmap"
+        elif magic_number in (b"P2", b"P5"):
+            self.custom_mimetype = "image/x-portable-graymap"
+        elif magic_number in (b"P3", b"P6"):
+            self.custom_mimetype = "image/x-portable-pixmap"
 
         for ix in range(3):
             token = int(self._read_token())
@@ -127,14 +124,12 @@ class PpmImageFile(ImageFile.ImageFile):
                         self.mode = "I"
                         rawmode = "I;32B"
 
+        decoder_name = "raw"
+        if magic_number in (b"P1", b"P2", b"P3"):
+            decoder_name = "ppm_plain"
         self._size = xsize, ysize
         self.tile = [
-            (
-                decoder,  # decoder
-                (0, 0, xsize, ysize),  # region: whole image
-                self.fp.tell(),  # offset to image data
-                (rawmode, 0, 1),  # parameters for decoder
-            )
+            (decoder_name, (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))
         ]
 
 
@@ -145,8 +140,8 @@ class PpmImageFile(ImageFile.ImageFile):
 class PpmPlainDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def _read_block(self, block_size=10**6):
-        return bytearray(self.fd.read(block_size))
+    def _read_block(self):
+        return self.fd.read(10**6)
 
     def _find_comment_end(self, block, start=0):
         a = block.find(b"\n", start)
@@ -155,10 +150,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _ignore_comments(self, block):
         """
-        Deletes comments from block. If comment does not end in this
-        block, raises a flag.
+        Deletes comments from block.
+        If comment does not end in this block, raises a flag.
         """
-
         comment_spans = False
         while True:
             comment_start = block.find(b"#")  # look for next comment
@@ -166,9 +160,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                 break
             comment_end = self._find_comment_end(block, comment_start)
             if comment_end != -1:  # comment ends in this block
-                block = (
-                    block[:comment_start] + block[comment_end + 1 :]
-                )  # delete comment
+                # delete comment
+                block = block[:comment_start] + block[comment_end + 1 :]
             else:  # last comment continues to next block(s)
                 block = block[:comment_start]
                 comment_spans = True
@@ -177,9 +170,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _decode_bitonal(self):
         """
-        The reason this is a separate method is that in the plain PBM
-        format all data tokens are exactly one byte, and so the
-        inter-token whitespace is optional.
+        This is a separate method because the plain PBM format all data tokens
+        are exactly one byte, and so the inter-token whitespace is optional.
         """
         decoded_data = bytearray()
         total_tokens = self.size
@@ -217,10 +209,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _decode_blocks(self, channels=1, depth=8):
         decoded_data = bytearray()
-        if depth == 32:
-            maxval = 2**31 - 1  # HACK: 32-bit grayscale uses signed int
-        else:
-            maxval = 2**depth - 1  # FIXME: should be passed by _open
+        # HACK: 32-bit grayscale uses signed int
+        maxval = 2 ** (31 if depth == 32 else depth) - 1
         max_len = 10
         bytes_per_sample = depth // 8
         total_tokens = self.size * channels
