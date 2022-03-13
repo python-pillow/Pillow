@@ -19,54 +19,43 @@ def test_sanity():
         assert im.get_format_mimetype() == "image/x-portable-pixmap"
 
 
-def test_arbitrary_maxval():
-    # P5 L mode
-    fp = BytesIO(b"P5 3 1 4 \x00\x02\x04")
+@pytest.mark.parametrize(
+    "data, mode, pixels",
+    (
+        (b"P5 3 1 4 \x00\x02\x04", "L", (0, 128, 255)),
+        (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
+        # P6 with maxval < 255
+        (
+            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11",
+            "RGB",
+            (
+                (0, 15, 30),
+                (120, 135, 150),
+                (225, 240, 255),
+            ),
+        ),
+        # P6 with maxval > 255
+        # Scale down to 255, since there is no RGB mode with more than 8-bit
+        (
+            b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
+            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
+            "RGB",
+            (
+                (0, 1, 2),
+                (127, 128, 129),
+                (254, 255, 255),
+            ),
+        ),
+    ),
+)
+def test_arbitrary_maxval(data, mode, pixels):
+    fp = BytesIO(data)
     with Image.open(fp) as im:
         assert im.size == (3, 1)
-        assert im.mode == "L"
+        assert im.mode == mode
 
         px = im.load()
-        assert tuple(px[x, 0] for x in range(3)) == (0, 128, 255)
-
-    # P5 I mode
-    fp = BytesIO(b"P5 3 1 257 \x00\x00\x00\x80\x01\x01")
-    with Image.open(fp) as im:
-        assert im.size == (3, 1)
-        assert im.mode == "I"
-
-        px = im.load()
-        assert tuple(px[x, 0] for x in range(3)) == (0, 32640, 65535)
-
-    # P6 with maxval < 255
-    fp = BytesIO(b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11")
-    with Image.open(fp) as im:
-        assert im.size == (3, 1)
-        assert im.mode == "RGB"
-
-        px = im.load()
-        assert tuple(px[x, 0] for x in range(3)) == (
-            (0, 15, 30),
-            (120, 135, 150),
-            (225, 240, 255),
-        )
-
-    # P6 with maxval > 255
-    # Scale down to 255, since there is no RGB mode with more than 8-bit
-    fp = BytesIO(
-        b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-        b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF"
-    )
-    with Image.open(fp) as im:
-        assert im.size == (3, 1)
-        assert im.mode == "RGB"
-
-        px = im.load()
-        assert tuple(px[x, 0] for x in range(3)) == (
-            (0, 1, 2),
-            (127, 128, 129),
-            (254, 255, 255),
-        )
+        assert tuple(px[x, 0] for x in range(3)) == pixels
 
 
 def test_16bit_pgm():
