@@ -174,13 +174,14 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         are exactly one byte, and so the inter-token whitespace is optional.
         """
         decoded_data = bytearray()
-        total_bytes = self.size
+        total_bytes = self.state.xsize * self.state.ysize
 
         comment_spans = False
         while len(decoded_data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
-                raise ValueError("Reached EOF while reading data")
+                # eof
+                break
 
             while block and comment_spans:
                 comment_end = self._find_comment_end(block)
@@ -206,7 +207,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         maxval = 2 ** (31 if depth == 32 else depth) - 1
         max_len = 10
         bytes_per_sample = depth // 8
-        total_bytes = self.size * channels * bytes_per_sample
+        total_bytes = self.state.xsize * self.state.ysize * channels * bytes_per_sample
 
         comment_spans = False
         half_token = False
@@ -216,7 +217,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                 if half_token:
                     block = bytearray(b" ")  # flush half_token
                 else:
-                    raise ValueError("Reached EOF while reading data")
+                    # eof
+                    break
 
             while block and comment_spans:
                 comment_end = self._find_comment_end(block)
@@ -254,7 +256,6 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return decoded_data
 
     def decode(self, buffer):
-        self.size = self.state.xsize * self.state.ysize
         rawmode = self.args[0]
 
         if self.mode == "1":
