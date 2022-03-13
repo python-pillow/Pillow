@@ -174,11 +174,10 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         are exactly one byte, and so the inter-token whitespace is optional.
         """
         decoded_data = bytearray()
-        total_tokens = self.size
+        total_bytes = self.size
 
         comment_spans = False
-        tokens_read = 0
-        while True:
+        while len(decoded_data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
                 raise ValueError("Reached EOF while reading data")
@@ -194,15 +193,12 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             block, comment_spans = self._ignore_comments(block)
 
             tokens = b"".join(block.split())
-
             for token in tokens:
                 if token not in (48, 49):
                     raise ValueError(f"Invalid token for this mode: {bytes([token])}")
-                tokens_read += 1
-                decoded_data.append(token)
-                if tokens_read == total_tokens:  # finished!
-                    invert = bytes.maketrans(b"01", b"\xFF\x00")
-                    return decoded_data.translate(invert)
+            decoded_data = (decoded_data + tokens)[:total_bytes]
+        invert = bytes.maketrans(b"01", b"\xFF\x00")
+        return decoded_data.translate(invert)
 
     def _decode_blocks(self, channels=1, depth=8):
         decoded_data = bytearray()
@@ -210,12 +206,11 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         maxval = 2 ** (31 if depth == 32 else depth) - 1
         max_len = 10
         bytes_per_sample = depth // 8
-        total_tokens = self.size * channels
+        total_bytes = self.size * channels * bytes_per_sample
 
         comment_spans = False
         half_token = False
-        tokens_read = 0
-        while True:
+        while len(decoded_data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
                 if half_token:
@@ -251,12 +246,12 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                         f"Token too long found in data: {token[:max_len + 1]}"
                     )
                 token = int(token)
-                tokens_read += 1
                 if token > maxval:
                     raise ValueError(f"Channel value too large for this mode: {token}")
                 decoded_data += token.to_bytes(bytes_per_sample, "big")
-                if tokens_read == total_tokens:  # finished!
-                    return decoded_data
+                if len(decoded_data) == total_bytes:  # finished!
+                    break
+        return decoded_data
 
     def decode(self, buffer):
         self.size = self.state.xsize * self.state.ysize
