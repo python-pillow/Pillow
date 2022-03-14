@@ -270,8 +270,9 @@ class DisplayViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         args = ["display"]
-        if "title" in options:
-            args += ["-title", options["title"]]
+        title = options.get("title")
+        if title:
+            args += ["-title", title]
         args.append(path)
 
         subprocess.Popen(args)
@@ -368,8 +369,9 @@ class XVViewer(UnixViewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         args = ["xv"]
-        if "title" in options:
-            args += ["-name", options["title"]]
+        title = options.get("title")
+        if title:
+            args += ["-name", title]
         args.append(path)
 
         subprocess.Popen(args)
