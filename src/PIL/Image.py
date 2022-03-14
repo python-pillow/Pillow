@@ -2286,7 +2286,9 @@ class Image:
         else:
             save_handler = SAVE[format.upper()]
 
+        created = False
         if open_fp:
+            created = not os.path.exists(filename)
             if params.get("append", False):
                 # Open also for reading ("+"), because TIFF save_all
                 # writer needs to go back and edit the written data.
@@ -2296,10 +2298,17 @@ class Image:
 
         try:
             save_handler(self, fp, filename)
-        finally:
-            # do what we can to clean up
+        except Exception:
             if open_fp:
                 fp.close()
+            if created:
+                try:
+                    os.remove(filename)
+                except PermissionError:
+                    pass
+            raise
+        if open_fp:
+            fp.close()
 
     def seek(self, frame):
         """
