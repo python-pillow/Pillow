@@ -100,6 +100,7 @@ class PpmImageFile(ImageFile.ImageFile):
         elif magic_number in (b"P3", b"P6"):
             self.custom_mimetype = "image/x-portable-pixmap"
 
+        maxval = None
         for ix in range(3):
             token = int(self._read_token())
             if ix == 0:  # token is the x size
@@ -127,10 +128,9 @@ class PpmImageFile(ImageFile.ImageFile):
         decoder_name = "raw"
         if magic_number in (b"P1", b"P2", b"P3"):
             decoder_name = "ppm_plain"
+        args = (rawmode, 0, 1) if decoder_name == "raw" else (rawmode, maxval)
         self._size = xsize, ysize
-        self.tile = [
-            (decoder_name, (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))
-        ]
+        self.tile = [(decoder_name, (0, 0, xsize, ysize), self.fp.tell(), args)]
 
 
 #
@@ -201,10 +201,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         invert = bytes.maketrans(b"01", b"\xFF\x00")
         return decoded_data.translate(invert)
 
-    def _decode_blocks(self, channels=1, depth=8):
+    def _decode_blocks(self, channels, depth, maxval):
         decoded_data = bytearray()
-        # HACK: 32-bit grayscale uses signed int
-        maxval = 2 ** (31 if depth == 32 else depth) - 1
         max_len = 10
         bytes_per_sample = depth // 8
         total_bytes = self.state.xsize * self.state.ysize * channels * bytes_per_sample
@@ -256,20 +254,20 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return decoded_data
 
     def decode(self, buffer):
-        rawmode = self.args[0]
+        rawmode, maxval = self.args
 
         if self.mode == "1":
             decoded_data = self._decode_bitonal()
             rawmode = "1;8"
         elif self.mode == "L":
-            decoded_data = self._decode_blocks(channels=1, depth=8)
+            decoded_data = self._decode_blocks(1, 8, maxval)
         elif self.mode == "I":
             if rawmode == "I;16B":
-                decoded_data = self._decode_blocks(channels=1, depth=16)
+                decoded_data = self._decode_blocks(1, 16, maxval)
             elif rawmode == "I;32B":
-                decoded_data = self._decode_blocks(channels=1, depth=32)
+                decoded_data = self._decode_blocks(1, 32, maxval)
         elif self.mode == "RGB":
-            decoded_data = self._decode_blocks(channels=3, depth=8)
+            decoded_data = self._decode_blocks(3, 8, maxval)
 
         self.set_as_raw(bytes(decoded_data), rawmode)
         return -1, 0
