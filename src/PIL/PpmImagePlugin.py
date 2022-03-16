@@ -141,7 +141,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def _read_block(self):
-        return self.fd.read(10**6)
+        return self.fd.read(ImageFile.SAFEBLOCK)
 
     def _find_comment_end(self, block, start=0):
         a = block.find(b"\n", start)
@@ -186,8 +186,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             while block and comment_spans:
                 comment_end = self._find_comment_end(block)
                 if comment_end != -1:  # comment ends in this block
-                    comment_spans = False
                     block = block[comment_end + 1 :]  # delete tail of previous comment
+                    comment_spans = False
                 else:  # comment spans whole block
                     block = self._read_block()
 
