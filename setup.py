@@ -252,8 +252,8 @@ def _cmd_exists(cmd):
 def _pkg_config(name):
     try:
         command = os.environ.get("PKG_CONFIG", "pkg-config")
-        command_libs = [command, "--libs-only-L", name]
-        command_cflags = [command, "--cflags-only-I", name]
+        command_libs = [command, "--libs-only-L", "--keep-system-libs", name]
+        command_cflags = [command, "--cflags-only-I", "--keep-system-cflags", name]
         if not DEBUG:
             command_libs.append("--silence-errors")
             command_cflags.append("--silence-errors")
