@@ -8,6 +8,7 @@ import pytest
 from PIL import Image, WebPImagePlugin, features
 
 from .helper import (
+    assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
@@ -105,6 +106,19 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
+    @skip_unless_feature("webp_anim")
+    def test_save_all(self, tmp_path):
+        temp_file = str(tmp_path / "temp.webp")
+        im = Image.new("RGB", (1, 1))
+        im2 = Image.new("RGB", (1, 1), "#f00")
+        im.save(temp_file, save_all=True, append_images=[im2])
+
+        with Image.open(temp_file) as reloaded:
+            assert_image_equal(im, reloaded)
+
+            reloaded.seek(1)
+            assert_image_similar(im2, reloaded, 1)
+
     def test_icc_profile(self, tmp_path):
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
         if _webp.HAVE_WEBPANIM:
@@ -171,7 +185,6 @@ class TestFileWebp:
             Image.open(blob).load()
             Image.open(blob).load()
 
-    @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
     def test_background_from_gif(self, tmp_path):
         with Image.open("Tests/images/chi.gif") as im:
@@ -191,7 +204,6 @@ class TestFileWebp:
         difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
         assert difference < 5
 
-    @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
     def test_duration(self, tmp_path):
         with Image.open("Tests/images/dispose_bgnd.gif") as im:
