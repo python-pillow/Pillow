@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added support for PPM arbitrary maxval #6119
+  [radarhere]
+
 - Added BigTIFF reading #6097
   [radarhere]
 
