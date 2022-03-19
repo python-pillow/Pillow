@@ -1,4 +1,3 @@
-import ctypes
 import os
 import subprocess
 import sys
@@ -404,6 +403,8 @@ class TestEmbeddable:
         "not from shell",
     )
     def test_embeddable(self):
+        import ctypes
+
         with open("embed_pil.c", "w") as fh:
             fh.write(
                 """
