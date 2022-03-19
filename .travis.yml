@@ -5,7 +5,7 @@ env:
       - PLAT=x86_64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
-      - TEST_DEPENDS="pytest pytest-cov"
+      - TEST_DEPENDS="pytest"
 
 language: python
 # Default Python version is usually 3.6
