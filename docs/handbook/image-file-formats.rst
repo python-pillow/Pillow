@@ -110,6 +110,13 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``RGB`` (or ``RGBA`` if the first frame had transparency). ``L`` images will
 stay in ``L`` mode (or change to ``LA`` if the first frame had transparency).
 
+If you would prefer the first ``P`` image frame to be ``RGB``, so that ``P``
+frames are always converted to ``RGB`` or ``RGBA`` mode, there is a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
+
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 

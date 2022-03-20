@@ -28,11 +28,20 @@ import itertools
 import math
 import os
 import subprocess
+from enum import IntEnum
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+
+
+class ModeStrategy(IntEnum):
+    AFTER_FIRST = 0
+    ALWAYS = 1
+
+
+PALETTE_TO_RGB = ModeStrategy.AFTER_FIRST
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -355,18 +364,22 @@ class GifImageFile(ImageFile.ImageFile):
                 del self.info[k]
 
         if frame == 0:
-            self.mode = "P" if frame_palette else "L"
+            if frame_palette:
+                self.mode = "RGB" if PALETTE_TO_RGB == ModeStrategy.ALWAYS else "P"
+            else:
+                self.mode = "L"
 
-            if self.mode == "P" and not palette:
+            if not palette and self.global_palette:
                 from copy import copy
 
                 palette = copy(self.global_palette)
             self.palette = palette
         else:
-            self._frame_palette = frame_palette
             self._frame_transparency = frame_transparency
+        self._frame_palette = frame_palette
 
     def load_prepare(self):
+        self.mode = "P" if self._frame_palette else "L"
         if self.__frame == 0:
             if "transparency" in self.info:
                 self.im = Image.core.fill(
@@ -375,18 +388,19 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self._prev_im = self.im
             if self._frame_palette:
-                self.mode = "P"
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
                 self.im.putpalette(*self._frame_palette.getdata())
-                self._frame_palette = None
             else:
-                self.mode = "L"
                 self.im = None
+        self._frame_palette = None
 
         super().load_prepare()
 
     def load_end(self):
         if self.__frame == 0:
+            if self.mode == "P" and PALETTE_TO_RGB == ModeStrategy.ALWAYS:
+                self.mode = "RGB"
+                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
             return
         if self.mode == "P":
             if self._frame_transparency is not None:

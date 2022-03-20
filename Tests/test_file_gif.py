@@ -78,6 +78,18 @@ def test_l_mode_subsequent_frames():
         assert im.load()[0, 0] == (0, 255)
 
 
+def test_strategy():
+    with Image.open(TEST_GIF) as im:
+        expected = im.convert("RGB")
+
+    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
+    with Image.open(TEST_GIF) as im:
+        assert im.mode == "RGB"
+        assert_image_equal(im, expected)
+
+    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.AFTER_FIRST
+
+
 def test_optimize():
     def test_grayscale(optimize):
         im = Image.new("L", (1, 1), 0)
