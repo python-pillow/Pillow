@@ -225,6 +225,15 @@ class TestFileTiff:
         assert b[0] == ord(b"\x01")
         assert b[1] == ord(b"\xe0")
 
+    def test_16bit_r(self):
+        with Image.open("Tests/images/16bit.r.tif") as im:
+            assert im.getpixel((0, 0)) == 480
+            assert im.mode == "I;16"
+
+            b = im.tobytes()
+        assert b[0] == ord(b"\xe0")
+        assert b[1] == ord(b"\x01")
+
     def test_16bit_s(self):
         with Image.open("Tests/images/16bit.s.tif") as im:
             im.load()
