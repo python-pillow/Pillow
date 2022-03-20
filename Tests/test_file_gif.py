@@ -59,7 +59,15 @@ def test_invalid_file():
         GifImagePlugin.GifImageFile(invalid_file)
 
 
-def test_l_mode_transparency():
+def test_l_mode_subsequent_frames():
+    with Image.open("Tests/images/no_palette.gif") as im:
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 0
+
+        im.seek(1)
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 0
+
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
         assert im.load()[0, 0] == 0

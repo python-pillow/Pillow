@@ -174,21 +174,22 @@ class GifImageFile(ImageFile.ImageFile):
         if update_image:
             if self.__frame == 1:
                 self.pyaccess = None
-                if "transparency" in self.info:
-                    if self.mode == "P":
+                if self.mode == "P":
+                    if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
                         self.mode = "RGBA"
+                        del self.info["transparency"]
                     else:
-                        self.im = self.im.convert_transparent(
-                            "LA", self.info["transparency"]
-                        )
-                        self.mode = "LA"
-
+                        self.mode = "RGB"
+                        self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+                elif "transparency" in self.info:
+                    self.im = self.im.convert_transparent(
+                        "LA", self.info["transparency"]
+                    )
+                    self.mode = "LA"
                     del self.info["transparency"]
-                else:
-                    self.mode = "RGB"
-                    self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+
             if self.dispose:
                 self.im.paste(self.dispose, self.dispose_extent)
 
@@ -387,14 +388,17 @@ class GifImageFile(ImageFile.ImageFile):
     def load_end(self):
         if self.__frame == 0:
             return
-        if self._frame_transparency is not None:
-            if self.mode == "P":
+        if self.mode == "P":
+            if self._frame_transparency is not None:
                 self.im.putpalettealpha(self._frame_transparency, 0)
                 frame_im = self.im.convert("RGBA")
             else:
-                frame_im = self.im.convert_transparent("LA", self._frame_transparency)
+                frame_im = self.im.convert("RGB")
         else:
-            frame_im = self.im.convert("RGB")
+            if self._frame_transparency is not None:
+                frame_im = self.im.convert_transparent("LA", self._frame_transparency)
+            else:
+                frame_im = self.im
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im

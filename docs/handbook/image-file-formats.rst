@@ -106,8 +106,9 @@ writes run-length encoded files in GIF87a by default, unless GIF89a features
 are used or GIF89a is already in use.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
-images, but seeking to later frames in an image will change the mode to either
-``RGB`` or ``RGBA``, depending on whether the first frame had transparency.
+images. Seeking to later frames in a ``P`` image will change the image to
+``RGB`` (or ``RGBA`` if the first frame had transparency). ``L`` images will
+stay in ``L`` mode (or change to ``LA`` if the first frame had transparency).
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
