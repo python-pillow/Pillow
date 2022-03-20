@@ -4,6 +4,12 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # curl from brew requires zstd, use system curl
   # if php is installed, brew tries to reinstall these after installing openblas
   brew remove --ignore-dependencies webp zstd xz libtiff libxcb curl php
+
+  if [[ "$PLAT" == "arm64" ]]; then
+    MACOSX_DEPLOYMENT_TARGET="11.0"
+  else
+    MACOSX_DEPLOYMENT_TARGET="10.10"
+  fi
 fi
 
 if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
