@@ -4,7 +4,6 @@ import itertools
 import os
 import re
 from collections import namedtuple
-from ctypes import c_float
 
 import pytest
 
@@ -168,14 +167,11 @@ class TestFileLibTiff(LibTiffTestCase):
                     val = original[tag]
                     if tag.endswith("Resolution"):
                         if legacy_api:
-                            assert (
-                                c_float(val[0][0] / val[0][1]).value
-                                == c_float(value[0][0] / value[0][1]).value
+                            assert val[0][0] / val[0][1] == (
+                                4294967295 / 113653537
                             ), f"{tag} didn't roundtrip"
                         else:
-                            assert (
-                                c_float(val).value == c_float(value).value
-                            ), f"{tag} didn't roundtrip"
+                            assert val == 37.79000115940079, f"{tag} didn't roundtrip"
                     else:
                         assert val == value, f"{tag} didn't roundtrip"
 
