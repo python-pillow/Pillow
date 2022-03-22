@@ -107,8 +107,7 @@ are used or GIF89a is already in use.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
 images. Seeking to later frames in a ``P`` image will change the image to
-``RGB`` (or ``RGBA`` if the first frame had transparency). ``L`` images will
-stay in ``L`` mode (or change to ``LA`` if the first frame had transparency).
+``RGB`` (or ``RGBA`` if the first frame had transparency).
 
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may
 introduce up to 256 colors. Because ``P`` can only have up to 256 colors, the

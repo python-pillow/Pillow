@@ -71,6 +71,12 @@ class GifImageFile(ImageFile.ImageFile):
             return self.fp.read(s[0])
         return None
 
+    def _is_palette_needed(self, p):
+        for i in range(0, len(p), 3):
+            if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
+                return True
+        return False
+
     def _open(self):
 
         # Screen
@@ -89,11 +95,9 @@ class GifImageFile(ImageFile.ImageFile):
             self.info["background"] = s[11]
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
-            for i in range(0, len(p), 3):
-                if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
-                    p = ImagePalette.raw("RGB", p)
-                    self.global_palette = self.palette = p
-                    break
+            if self._is_palette_needed(p):
+                p = ImagePalette.raw("RGB", p)
+                self.global_palette = self.palette = p
 
         self.__fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
@@ -259,7 +263,9 @@ class GifImageFile(ImageFile.ImageFile):
 
                 if flags & 128:
                     bits = (flags & 7) + 1
-                    palette = ImagePalette.raw("RGB", self.fp.read(3 << bits))
+                    p = self.fp.read(3 << bits)
+                    if self._is_palette_needed(p):
+                        palette = ImagePalette.raw("RGB", p)
 
                 # image data
                 bits = self.fp.read(1)[0]
@@ -305,11 +311,6 @@ class GifImageFile(ImageFile.ImageFile):
                     else:
                         self.mode = "RGB"
                         self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
-            elif self.mode == "L" and "transparency" in self.info:
-                self.pyaccess = None
-                self.im = self.im.convert_transparent("LA", self.info["transparency"])
-                self.mode = "LA"
-                del self.info["transparency"]
 
         def _rgb(color):
             if self._frame_palette:
@@ -369,7 +370,7 @@ class GifImageFile(ImageFile.ImageFile):
             if frame_transparency is not None:
                 if frame == 0:
                     self.info["transparency"] = frame_transparency
-                elif self.mode not in ("RGB", "RGBA", "LA"):
+                elif self.mode not in ("RGB", "RGBA"):
                     transparency = frame_transparency
             self.tile = [
                 (
@@ -394,7 +395,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.im = Image.core.fill(
                     temp_mode, self.size, self.info["transparency"]
                 )
-        elif self.mode in ("RGB", "RGBA", "LA"):
+        elif self.mode in ("RGB", "RGBA"):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
@@ -418,8 +419,6 @@ class GifImageFile(ImageFile.ImageFile):
                 frame_im = self.im.convert("RGBA")
             else:
                 frame_im = self.im.convert("RGB")
-        elif self.mode == "L" and self._frame_transparency is not None:
-            frame_im = self.im.convert_transparent("LA", self._frame_transparency)
         else:
             if not self._prev_im:
                 return
@@ -428,7 +427,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.im = self._prev_im
         self.mode = self.im.mode
-        if frame_im.mode in ("LA", "RGBA"):
+        if frame_im.mode == "RGBA":
             self.im.paste(frame_im, self.dispose_extent, frame_im)
         else:
             self.im.paste(frame_im, self.dispose_extent)

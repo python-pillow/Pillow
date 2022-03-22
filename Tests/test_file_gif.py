@@ -59,23 +59,15 @@ def test_invalid_file():
         GifImagePlugin.GifImageFile(invalid_file)
 
 
-def test_l_mode_subsequent_frames():
-    with Image.open("Tests/images/no_palette.gif") as im:
-        assert im.mode == "L"
-        assert im.load()[0, 0] == 0
-
-        im.seek(1)
-        assert im.mode == "L"
-        assert im.load()[0, 0] == 0
-
+def test_l_mode_transparency():
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
-        assert im.load()[0, 0] == 0
+        assert im.load()[0, 0] == 128
         assert im.info["transparency"] == 255
 
         im.seek(1)
-        assert im.mode == "LA"
-        assert im.load()[0, 0] == (0, 255)
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
 
 
 def test_strategy():
@@ -440,14 +432,6 @@ def test_dispose_background_transparency():
     "mode_strategy, expected_colors",
     (
         (
-            GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY,
-            (
-                (2, 1, 2),
-                (0, 1, 0),
-                (2, 1, 2),
-            ),
-        ),
-        (
             GifImagePlugin.ModeStrategy.AFTER_FIRST,
             (
                 (2, 1, 2),
@@ -455,16 +439,27 @@ def test_dispose_background_transparency():
                 ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
             ),
         ),
+        (
+            GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY,
+            (
+                (2, 1, 2),
+                (0, 1, 0),
+                (2, 1, 2),
+            ),
+        ),
     ),
 )
 def test_transparent_dispose(mode_strategy, expected_colors):
     GifImagePlugin.PALETTE_TO_RGB = mode_strategy
-    with Image.open("Tests/images/transparent_dispose.gif") as img:
-        for frame in range(3):
-            img.seek(frame)
-            for x in range(3):
-                color = img.getpixel((x, 0))
-                assert color == expected_colors[frame][x]
+    try:
+        with Image.open("Tests/images/transparent_dispose.gif") as img:
+            for frame in range(3):
+                img.seek(frame)
+                for x in range(3):
+                    color = img.getpixel((x, 0))
+                    assert color == expected_colors[frame][x]
+    finally:
+        GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.AFTER_FIRST
 
 
 def test_dispose_previous():
