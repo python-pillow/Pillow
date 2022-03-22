@@ -79,15 +79,37 @@ def test_l_mode_subsequent_frames():
 
 
 def test_strategy():
-    with Image.open(TEST_GIF) as im:
-        expected = im.convert("RGB")
+    with Image.open("Tests/images/chi.gif") as im:
+        expected_zero = im.convert("RGB")
 
-    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
-    with Image.open(TEST_GIF) as im:
-        assert im.mode == "RGB"
-        assert_image_equal(im, expected)
+        im.seek(1)
+        expected_one = im.convert("RGB")
 
-    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.AFTER_FIRST
+    try:
+        GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGB"
+            assert_image_equal(im, expected_zero)
+
+        GifImagePlugin.PALETTE_TO_RGB = (
+            GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY
+        )
+        # Stay in P mode with only a global palette
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "P"
+            assert_image_equal(im.convert("RGB"), expected_one)
+
+        # Change to RGB mode when a frame has an individual palette
+        with Image.open("Tests/images/iss634.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "RGB"
+    finally:
+        GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.AFTER_FIRST
 
 
 def test_optimize():
@@ -414,12 +436,29 @@ def test_dispose_background_transparency():
         assert px[35, 30][3] == 0
 
 
-def test_transparent_dispose():
-    expected_colors = [
-        (2, 1, 2),
-        ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
-        ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
-    ]
+@pytest.mark.parametrize(
+    "mode_strategy, expected_colors",
+    (
+        (
+            GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY,
+            (
+                (2, 1, 2),
+                (0, 1, 0),
+                (2, 1, 2),
+            ),
+        ),
+        (
+            GifImagePlugin.ModeStrategy.AFTER_FIRST,
+            (
+                (2, 1, 2),
+                ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
+                ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
+            ),
+        ),
+    ),
+)
+def test_transparent_dispose(mode_strategy, expected_colors):
+    GifImagePlugin.PALETTE_TO_RGB = mode_strategy
     with Image.open("Tests/images/transparent_dispose.gif") as img:
         for frame in range(3):
             img.seek(frame)

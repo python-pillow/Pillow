@@ -110,12 +110,24 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``RGB`` (or ``RGBA`` if the first frame had transparency). ``L`` images will
 stay in ``L`` mode (or change to ``LA`` if the first frame had transparency).
 
-If you would prefer the first ``P`` image frame to be ``RGB``, so that ``P``
-frames are always converted to ``RGB`` or ``RGBA`` mode, there is a setting
+``P`` mode images are changed to ``RGB`` because each frame of a GIF may
+introduce up to 256 colors. Because ``P`` can only have up to 256 colors, the
+image is converted to handle all of the colors.
+
+If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
+every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
 available::
 
     from PIL import GifImagePlugin
     GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
+
+GIF frames do not always contain individual palettes however. If there is only
+a global palette, then all of the colors can fit within ``P`` mode. If you would
+prefer the frames to be kept as ``P`` in that case, there is also a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
