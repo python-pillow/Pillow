@@ -424,7 +424,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im, initial_call=False):
+def _normalize_mode(im):
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -432,31 +432,20 @@ def _normalize_mode(im, initial_call=False):
     It may return the original image, or it may return an image converted to
     palette or 'L' mode.
 
-    UNDONE: What is the point of mucking with the initial call palette, for
-    an image that shouldn't have a palette, or it would be a mode 'P' and
-    get returned in the RAWMODE clause.
-
     :param im: Image object
-    :param initial_call: Default false, set to true for a single frame.
     :returns: Image object
     """
     if im.mode in RAWMODE:
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
-        if initial_call:
-            palette_size = 256
-            if im.palette:
-                palette_size = len(im.palette.getdata()[1]) // 3
-            im = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=palette_size)
-            if im.palette.mode == "RGBA":
-                for rgba in im.palette.colors.keys():
-                    if rgba[3] == 0:
-                        im.info["transparency"] = im.palette.colors[rgba]
-                        break
-            return im
-        else:
-            return im.convert("P")
+        im = im.convert("P", palette=Image.Palette.ADAPTIVE)
+        if im.palette.mode == "RGBA":
+            for rgba in im.palette.colors.keys():
+                if rgba[3] == 0:
+                    im.info["transparency"] = im.palette.colors[rgba]
+                    break
+        return im
     return im.convert("L")
 
 
@@ -514,7 +503,7 @@ def _normalize_palette(im, palette, info):
 
 
 def _write_single_frame(im, fp, palette):
-    im_out = _normalize_mode(im, True)
+    im_out = _normalize_mode(im)
     for k, v in im_out.info.items():
         im.encoderinfo.setdefault(k, v)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
@@ -646,11 +635,14 @@ def get_interlace(im):
 def _write_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
-        transparency = im.encoderinfo["transparency"]
-    except KeyError:
+        if "transparency" in im.encoderinfo:
+            transparency = im.encoderinfo["transparency"]
+        else:
+            transparency = im.info["transparency"]
+        transparency = int(transparency)
+    except (KeyError, ValueError):
         pass
     else:
-        transparency = int(transparency)
         # optimize the block away if transparent color is not used
         transparent_color_exists = True
 

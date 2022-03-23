@@ -842,6 +842,17 @@ def test_rgb_transparency(tmp_path):
         assert "transparency" not in reloaded.info
 
 
+def test_rgba_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = hopper("P")
+    im.save(out, save_all=True, append_images=[Image.new("RGBA", im.size)])
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+        assert_image_equal(hopper("P").convert("RGB"), reloaded)
+
+
 def test_bbox(tmp_path):
     out = str(tmp_path / "temp.gif")
 
