@@ -40,6 +40,7 @@ def test_questionable():
         "rgb32fakealpha.bmp",
         "rgb24largepal.bmp",
         "pal8os2sp.bmp",
+        "pal8rletrns.bmp",
         "rgb32bf-xbgr.bmp",
     ]
     for f in get_files("q"):
