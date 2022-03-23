@@ -3485,12 +3485,12 @@ class Exif(MutableMapping):
         self._loaded_exif = data
         self._data.clear()
         self._ifds.clear()
+        if data and data.startswith(b"Exif\x00\x00"):
+            data = data[6:]
         if not data:
             self._info = None
             return
 
-        if data.startswith(b"Exif\x00\x00"):
-            data = data[6:]
         self.fp = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary
