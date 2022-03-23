@@ -1,4 +1,5 @@
 import io
+import os
 
 import pytest
 
@@ -68,6 +69,53 @@ def test_save_to_bytes():
         assert_image_equal(
             reloaded, hopper().resize((32, 32), Image.Resampling.LANCZOS)
         )
+
+
+def test_no_duplicates(tmp_path):
+    temp_file = str(tmp_path / "temp.ico")
+    temp_file2 = str(tmp_path / "temp2.ico")
+
+    im = hopper()
+    sizes = [(32, 32), (64, 64)]
+    im.save(temp_file, "ico", sizes=sizes)
+
+    sizes.append(sizes[-1])
+    im.save(temp_file2, "ico", sizes=sizes)
+
+    assert os.path.getsize(temp_file) == os.path.getsize(temp_file2)
+
+
+def test_different_bit_depths(tmp_path):
+    temp_file = str(tmp_path / "temp.ico")
+    temp_file2 = str(tmp_path / "temp2.ico")
+
+    im = hopper()
+    im.save(temp_file, "ico", bitmap_format="bmp", sizes=[(128, 128)])
+
+    hopper("1").save(
+        temp_file2,
+        "ico",
+        bitmap_format="bmp",
+        sizes=[(128, 128)],
+        append_images=[im],
+    )
+
+    assert os.path.getsize(temp_file) != os.path.getsize(temp_file2)
+
+    # Test that only matching sizes of different bit depths are saved
+    temp_file3 = str(tmp_path / "temp3.ico")
+    temp_file4 = str(tmp_path / "temp4.ico")
+
+    im.save(temp_file3, "ico", bitmap_format="bmp", sizes=[(128, 128)])
+    im.save(
+        temp_file4,
+        "ico",
+        bitmap_format="bmp",
+        sizes=[(128, 128)],
+        append_images=[Image.new("P", (64, 64))],
+    )
+
+    assert os.path.getsize(temp_file3) == os.path.getsize(temp_file4)
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
