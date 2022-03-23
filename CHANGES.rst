@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Support Python distributions where _tkinter is compiled in #6006
+  [lukegb]
+
 - Added support for PPM arbitrary maxval #6119
   [radarhere]
 
