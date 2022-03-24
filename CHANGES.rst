@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- If an error occurs after creating a file, remove the file #6134
+  [radarhere]
+
+- Fixed calling DisplayViewer or XVViewer without a title #6136
+  [radarhere]
+
+- Retain RGBA transparency when saving multiple GIF frames #6128
+  [radarhere]
+
+- Save additional ICO frames with other bit depths if supplied #6122
+  [radarhere]
+
+- Handle EXIF data truncated to just the header #6124
+  [radarhere]
+
+- Added support for reading BMP images with RLE8 compression #6102
+  [radarhere]
+
 - Support Python distributions where _tkinter is compiled in #6006
   [lukegb]
 
