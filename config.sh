@@ -23,20 +23,6 @@ LIBWEBP_VERSION=1.2.2
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
 
-function build_libjpeg_turbo {
-    local cmake=$(get_modern_cmake)
-    fetch_unpack https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${JPEGTURBO_VERSION}.tar.gz
-    (cd libjpeg-turbo-${JPEGTURBO_VERSION} \
-        && $cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=/usr/local/lib . \
-        && make install)
-    if [ -n "$IS_MACOS" ]; then
-        rm /usr/local/lib/libjpeg.dylib
-    fi
-
-    # Prevent build_jpeg
-    touch jpeg-stamp
-}
-
 function build_giflib {
     local name=giflib
     local version=$GIFLIB_VERSION
@@ -92,8 +78,9 @@ function pre_build {
     fi
 
     build_libjpeg_turbo
-
     if [[ -n "$IS_MACOS" ]]; then
+        rm /usr/local/lib/libjpeg.dylib
+
         TIFF_VERSION=4.2.0
     fi
     build_tiff
