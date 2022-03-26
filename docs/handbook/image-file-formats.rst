@@ -369,7 +369,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     portions of the JPEG compression algorithm, and results in large files with
     hardly any gain in image quality. The value ``keep`` is only valid for JPEG
     files and will retain the original image quality level, subsampling, and
-    quantization tables.
+    qtables.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
