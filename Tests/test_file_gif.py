@@ -982,6 +982,11 @@ def test_lzw_bits():
 def test_extents():
     with Image.open("Tests/images/test_extents.gif") as im:
         assert im.size == (100, 100)
+
+        # Check that n_frames does not change the size
+        assert im.n_frames == 2
+        assert im.size == (100, 100)
+
         im.seek(1)
         assert im.size == (150, 150)
 
