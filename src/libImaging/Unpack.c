@@ -1124,6 +1124,16 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
         tmp += 2;
     }
 }
+static void
+unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[0] = BITFLIP[in[0]];
+        out[1] = BITFLIP[in[1]];
+        in += 2;
+        out += 2;
+    }
+}
 
 static void
 unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
@@ -1730,6 +1740,8 @@ static struct {
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.
     {"I;16B", "I;16N", 16, unpackI16N_I16B},
+
+    {"I;16", "I;16R", 16, unpackI16R_I16},
 
     {"I;16", "I;12", 12, unpackI12_I16},  // 12 bit Tiffs stored in 16bits.
 
