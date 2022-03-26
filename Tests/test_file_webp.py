@@ -187,6 +187,12 @@ class TestFileWebp:
 
     @skip_unless_feature("webp_anim")
     def test_background_from_gif(self, tmp_path):
+        # Save L mode GIF with background
+        with Image.open("Tests/images/no_palette_with_background.gif") as im:
+            out_webp = str(tmp_path / "temp.webp")
+            im.save(out_webp, save_all=True)
+
+        # Save P mode GIF with background
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
 

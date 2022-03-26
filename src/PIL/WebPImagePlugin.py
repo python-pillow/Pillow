@@ -190,7 +190,9 @@ def _save_all(im, fp, filename):
             palette = im.getpalette()
             if palette:
                 r, g, b = palette[background * 3 : (background + 1) * 3]
-                background = (r, g, b, 0)
+                background = (r, g, b, 255)
+            else:
+                background = (background, background, background, 255)
 
     duration = im.encoderinfo.get("duration", im.info.get("duration", 0))
     loop = im.encoderinfo.get("loop", 0)
