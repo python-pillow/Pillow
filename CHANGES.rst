@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added support for reading I;16R TIFF images #6132
+  [radarhere]
+
 - If an error occurs after creating a file, remove the file #6134
   [radarhere]
 
