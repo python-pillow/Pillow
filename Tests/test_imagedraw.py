@@ -1440,3 +1440,15 @@ def test_continuous_horizontal_edges_polygon():
     assert_image_equal_tofile(
         img, expected, "continuous horizontal edges polygon failed"
     )
+
+
+def test_discontiguous_corners_polygon():
+    img, draw = create_base_image_draw((84, 68))
+    draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
+    draw.polygon(
+        ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),
+        BLACK,
+    )
+    expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
+    assert_image_similar_tofile(img, expected, 1)
