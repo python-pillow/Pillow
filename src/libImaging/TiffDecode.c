@@ -551,7 +551,7 @@ ImagingLibTiffDecode(
     uint16_t planarconfig = 0;
     int planes = 1;
     ImagingShuffler unpackers[4];
-    UINT32 img_width, img_height;
+    INT32 img_width, img_height;
 
     memset(unpackers, 0, sizeof(ImagingShuffler) * 4);
 
