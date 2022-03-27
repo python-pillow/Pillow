@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Use screencapture arguments to crop on macOS #6152
+  [radarhere]
+
+- Do not mark L mode JPEG as 1 bit in PDF #6151
+  [radarhere]
+
 - Added support for reading I;16R TIFF images #6132
   [radarhere]
 
