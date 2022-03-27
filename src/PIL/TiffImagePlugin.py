@@ -1580,7 +1580,7 @@ def _save(im, fp, filename):
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
     # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = getattr(im, "_planar_configuration", 1)
+    ifd[PLANAR_CONFIGURATION] = 1
 
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]

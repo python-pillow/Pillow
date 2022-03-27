@@ -611,6 +611,17 @@ class TestFileTiff:
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
+    def test_planar_configuration_save(self, tmp_path):
+        infile = "Tests/images/tiff_tiled_planar_raw.tif"
+        with Image.open(infile) as im:
+            assert im._planar_configuration == 2
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile)
+
+            with Image.open(outfile) as reloaded:
+                assert_image_equal_tofile(reloaded, infile)
+
     def test_palette(self, tmp_path):
         def roundtrip(mode):
             outfile = str(tmp_path / "temp.tif")
