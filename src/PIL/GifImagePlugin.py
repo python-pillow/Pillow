@@ -37,11 +37,14 @@ from ._binary import o16le as o16
 
 
 class ModeStrategy(IntEnum):
+    """.. versionadded:: 9.1.0"""
+
     AFTER_FIRST = 0
     ALWAYS = 1
     DIFFERENT_PALETTE_ONLY = 2
 
 
+#: .. versionadded:: 9.1.0
 PALETTE_TO_RGB = ModeStrategy.AFTER_FIRST
 
 # --------------------------------------------------------------------
