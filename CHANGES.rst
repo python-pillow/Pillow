@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Always save TIFF with contiguous planar configuration #5973
+  [radarhere]
+
+- Connected discontiguous polygon corners #5980
+  [radarhere]
+
+- Ensure Tkinter hook is activated for getimage() #6032
+  [radarhere]
+
 - Use screencapture arguments to crop on macOS #6152
   [radarhere]
 
