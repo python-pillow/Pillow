@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Raise ValueError when trying to save empty JPEG #6159
+  [radarhere]
+
 - Always save TIFF with contiguous planar configuration #5973
   [radarhere]
 
