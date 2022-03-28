@@ -24,8 +24,6 @@ attribute will be ``None``.
 Fully supported formats
 -----------------------
 
-.. contents::
-
 BLP
 ^^^
 
