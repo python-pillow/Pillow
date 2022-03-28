@@ -656,7 +656,7 @@ class TestImage:
         temp_file = str(tmp_path / "temp.jpg")
 
         im = Image.new("RGB", (0, 0))
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError):
             im.save(temp_file)
 
         assert not os.path.exists(temp_file)
