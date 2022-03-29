@@ -129,6 +129,12 @@ available::
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
 
+To restore the default behavior, where ``P`` mode images are only converted to
+``RGB`` or ``RGBA`` after the first frame::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
+
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
