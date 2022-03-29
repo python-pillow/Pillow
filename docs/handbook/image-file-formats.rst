@@ -109,9 +109,10 @@ GIF files are initially read as grayscale (``L``) or palette mode (``P``)
 images. Seeking to later frames in a ``P`` image will change the image to
 ``RGB`` (or ``RGBA`` if the first frame had transparency).
 
-``P`` mode images are changed to ``RGB`` because each frame of a GIF may
-introduce up to 256 colors. Because ``P`` can only have up to 256 colors, the
-image is converted to handle all of the colors.
+``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
+its own individual palette of up to 256 colors. When a new frame is placed onto a
+previous frame, those colors may combine to exceed the ``P`` mode limit of 256
+colors. Instead, the image is converted to ``RGB`` handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
