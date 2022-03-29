@@ -89,7 +89,7 @@ def cmd_msbuild(
     )
 
 
-SF_MIRROR = "http://iweb.dl.sourceforge.net"
+SF_MIRROR = "https://iweb.dl.sourceforge.net"
 
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
@@ -131,9 +131,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "http://zlib.net/zlib1211.zip",
-        "filename": "zlib1211.zip",
-        "dir": "zlib-1.2.11",
+        "url": "https://zlib.net/zlib1212.zip",
+        "filename": "zlib1212.zip",
+        "dir": "zlib-1.2.12",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
