@@ -118,7 +118,7 @@ every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
 available::
 
     from PIL import GifImagePlugin
-    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.ALWAYS
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
 
 GIF frames do not always contain individual palettes however. If there is only
 a global palette, then all of the colors can fit within ``P`` mode. If you would
@@ -126,7 +126,7 @@ prefer the frames to be kept as ``P`` in that case, there is also a setting
 available::
 
     from PIL import GifImagePlugin
-    GifImagePlugin.PALETTE_TO_RGB = GifImagePlugin.ModeStrategy.DIFFERENT_PALETTE_ONLY
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:

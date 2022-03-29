@@ -36,16 +36,16 @@ from ._binary import o8
 from ._binary import o16le as o16
 
 
-class ModeStrategy(IntEnum):
+class LoadingStrategy(IntEnum):
     """.. versionadded:: 9.1.0"""
 
-    AFTER_FIRST = 0
-    ALWAYS = 1
-    DIFFERENT_PALETTE_ONLY = 2
+    RGB_AFTER_FIRST = 0
+    RGB_AFTER_DIFFERENT_PALETTE_ONLY = 1
+    RGB_ALWAYS = 2
 
 
 #: .. versionadded:: 9.1.0
-PALETTE_TO_RGB = ModeStrategy.AFTER_FIRST
+LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -292,7 +292,9 @@ class GifImageFile(ImageFile.ImageFile):
         self._frame_palette = palette or self.global_palette
         if frame == 0:
             if self._frame_palette:
-                self.mode = "RGB" if PALETTE_TO_RGB == ModeStrategy.ALWAYS else "P"
+                self.mode = (
+                    "RGB" if LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS else "P"
+                )
             else:
                 self.mode = "L"
 
@@ -304,7 +306,10 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self._frame_transparency = frame_transparency
             if self.mode == "P":
-                if PALETTE_TO_RGB != ModeStrategy.DIFFERENT_PALETTE_ONLY or palette:
+                if (
+                    LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+                    or palette
+                ):
                     self.pyaccess = None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
@@ -412,7 +417,7 @@ class GifImageFile(ImageFile.ImageFile):
 
     def load_end(self):
         if self.__frame == 0:
-            if self.mode == "P" and PALETTE_TO_RGB == ModeStrategy.ALWAYS:
+            if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 self.mode = "RGB"
                 self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
             return
