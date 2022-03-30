@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: [ "pypy3.7-7.3.8", "pypy3.8-7.3.8", "3.7", "3.8", "3.9", "3.10" ]
+        python: [ "pypy3.7-7.3.9", "pypy3.8-7.3.9", "3.7", "3.8", "3.9", "3.10" ]
         platform: [ "i686", "x86_64" ]
         mb-ml-libc: [ "manylinux" ]
         include:
