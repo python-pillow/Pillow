@@ -21,8 +21,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: [ "3.7", "3.8", "3.9", "3.10", "pypy3.7-7.3.8", "pypy3.8-7.3.8" ]
-        platform: [ "arm64", "x86_64" ]
+        python: [ "pypy3.7-7.3.8", "pypy3.8-7.3.8", "3.7", "3.8", "3.9", "3.10" ]
+        platform: [ "x86_64", "arm64" ]
         exclude:
           - python: "3.7"
             platform: "arm64"
