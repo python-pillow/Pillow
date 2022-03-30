@@ -1,4 +1,4 @@
-name: Build Ubuntu wheels
+name: Build Linux wheels
 
 on:
   workflow_call:

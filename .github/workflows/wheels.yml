@@ -9,8 +9,8 @@ jobs:
       build-commit: "HEAD"
       artifacts-name: "wheels"
 
-  ubuntu:
-    uses: ./.github/workflows/wheels-ubuntu.yml
+  linux:
+    uses: ./.github/workflows/wheels-linux.yml
     with:
       build-commit: "HEAD"
       artifacts-name: "wheels"
@@ -22,18 +22,18 @@ jobs:
       build-commit: "main"
       artifacts-name: "wheels-latest"
 
-  ubuntu-latest:
+  linux-latest:
     if: "!startsWith(github.ref, 'refs/tags/')"
-    uses: ./.github/workflows/wheels-ubuntu.yml
+    uses: ./.github/workflows/wheels-linux.yml
     with:
       build-commit: "main"
       artifacts-name: "wheels-latest"
 
   release:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: linux-latest
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [macos, ubuntu]
+    needs: [macos, linux]
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   success:
-    needs: [macos, ubuntu, macos-latest, ubuntu-latest]
+    needs: [macos, linux, macos-latest, linux-latest]
     runs-on: ubuntu-latest
     name: Wheels Successful
     steps:
