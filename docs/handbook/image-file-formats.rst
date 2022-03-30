@@ -107,8 +107,34 @@ writes run-length encoded files in GIF87a by default, unless GIF89a features
 are used or GIF89a is already in use.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
-images, but seeking to later frames in an image will change the mode to either
-``RGB`` or ``RGBA``, depending on whether the first frame had transparency.
+images. Seeking to later frames in a ``P`` image will change the image to
+``RGB`` (or ``RGBA`` if the first frame had transparency).
+
+``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
+its own individual palette of up to 256 colors. When a new frame is placed onto a
+previous frame, those colors may combine to exceed the ``P`` mode limit of 256
+colors. Instead, the image is converted to ``RGB`` handle this.
+
+If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
+every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+
+GIF frames do not always contain individual palettes however. If there is only
+a global palette, then all of the colors can fit within ``P`` mode. If you would
+prefer the frames to be kept as ``P`` in that case, there is also a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+
+To restore the default behavior, where ``P`` mode images are only converted to
+``RGB`` or ``RGBA`` after the first frame::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:

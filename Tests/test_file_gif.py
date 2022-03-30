@@ -62,12 +62,46 @@ def test_invalid_file():
 def test_l_mode_transparency():
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
-        assert im.load()[0, 0] == 0
+        assert im.load()[0, 0] == 128
         assert im.info["transparency"] == 255
 
         im.seek(1)
-        assert im.mode == "LA"
-        assert im.load()[0, 0] == (0, 255)
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
+
+
+def test_strategy():
+    with Image.open("Tests/images/chi.gif") as im:
+        expected_zero = im.convert("RGB")
+
+        im.seek(1)
+        expected_one = im.convert("RGB")
+
+    try:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGB"
+            assert_image_equal(im, expected_zero)
+
+        GifImagePlugin.LOADING_STRATEGY = (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+        )
+        # Stay in P mode with only a global palette
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "P"
+            assert_image_equal(im.convert("RGB"), expected_one)
+
+        # Change to RGB mode when a frame has an individual palette
+        with Image.open("Tests/images/iss634.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "RGB"
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_optimize():
@@ -394,18 +428,38 @@ def test_dispose_background_transparency():
         assert px[35, 30][3] == 0
 
 
-def test_transparent_dispose():
-    expected_colors = [
-        (2, 1, 2),
-        ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
-        ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
-    ]
-    with Image.open("Tests/images/transparent_dispose.gif") as img:
-        for frame in range(3):
-            img.seek(frame)
-            for x in range(3):
-                color = img.getpixel((x, 0))
-                assert color == expected_colors[frame][x]
+@pytest.mark.parametrize(
+    "loading_strategy, expected_colors",
+    (
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+            (
+                (2, 1, 2),
+                ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
+                ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
+            ),
+        ),
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+            (
+                (2, 1, 2),
+                (0, 1, 0),
+                (2, 1, 2),
+            ),
+        ),
+    ),
+)
+def test_transparent_dispose(loading_strategy, expected_colors):
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/transparent_dispose.gif") as img:
+            for frame in range(3):
+                img.seek(frame)
+                for x in range(3):
+                    color = img.getpixel((x, 0))
+                    assert color == expected_colors[frame][x]
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_dispose_previous():
