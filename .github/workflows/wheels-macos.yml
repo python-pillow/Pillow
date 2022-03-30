@@ -1,4 +1,4 @@
-name: Build wheels
+name: Build macOS wheels
 
 on:
   workflow_call:
@@ -12,44 +12,29 @@ on:
 
 env:
   REPO_DIR: Pillow
-  BUILD_DEPENDS: ""
   TEST_DEPENDS: "pytest pytest-timeout"
-  WHEEL_SDIR: wheelhouse
 
 jobs:
   build:
-    name: ${{ matrix.os-name }} ${{ matrix.python }} ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.python }} ${{ matrix.platform }}
+    runs-on: "macos-latest"
     strategy:
       fail-fast: false
       matrix:
-        os: [ "macos-latest", "ubuntu-20.04" ]
         python: [ "pypy3.7-7.3.8", "pypy3.8-7.3.8", "3.7", "3.8", "3.9", "3.10" ]
-        platform: [ "arm64", "x86_64", "i686" ]
+        platform: [ "x86_64", "arm64" ]
         exclude:
-          - os: "macos-latest"
-            platform: "i686"
-          - os: "macos-latest"
+          - python: "3.7"
             platform: "arm64"
-            python: "3.7"
-          - os: "macos-latest"
+          - python: "pypy3.7-7.3.8"
             platform: "arm64"
-            python: "pypy3.7-7.3.8"
-          - os: "macos-latest"
+          - python: "pypy3.8-7.3.8"
             platform: "arm64"
-            python: "pypy3.8-7.3.8"
-          - os: "ubuntu-20.04"
-            platform: "arm64"
-        include:
-          - os: "macos-latest"
-            os-name: "osx"
-          - os: "ubuntu-20.04"
-            os-name: "focal"
     env:
       BUILD_COMMIT: ${{ inputs.build-commit }}
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
-      TRAVIS_OS_NAME: ${{ matrix.os-name }}
+      TRAVIS_OS_NAME: "osx"
     steps:
       - uses: actions/checkout@v3
         with:

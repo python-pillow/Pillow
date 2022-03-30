@@ -1,0 +1,58 @@
+name: Build Linux wheels
+
+on:
+  workflow_call:
+    inputs:
+      build-commit:
+        required: true
+        type: string
+      artifacts-name:
+        required: true
+        type: string
+
+env:
+  REPO_DIR: Pillow
+  TEST_DEPENDS: "pytest pytest-timeout"
+
+jobs:
+  build:
+    name: ${{ matrix.python }} ${{ matrix.mb-ml-libc }} ${{ matrix.platform }}
+    runs-on: "ubuntu-20.04"
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ "pypy3.7-7.3.8", "pypy3.8-7.3.8", "3.7", "3.8", "3.9", "3.10" ]
+        platform: [ "i686", "x86_64" ]
+        mb-ml-libc: [ "manylinux" ]
+        include:
+          - python: "3.8"
+            platform: "x86_64"
+            mb-ml-libc: "musllinux"
+          - python: "3.9"
+            platform: "x86_64"
+            mb-ml-libc: "musllinux"
+          - python: "3.10"
+            platform: "x86_64"
+            mb-ml-libc: "musllinux"
+    env:
+      BUILD_COMMIT: ${{ inputs.build-commit }}
+      PLAT: ${{ matrix.platform }}
+      MB_PYTHON_VERSION: ${{ matrix.python }}
+      MB_ML_LIBC: ${{ matrix.mb-ml-libc }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Build Wheel
+        run: .github/workflows/build.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifacts-name }}
+          path: wheelhouse/*.whl
+      # Uncomment to get SSH access for testing
+      # - name: Setup tmate session
+      #   if: failure()
+      #   uses: mxschmitt/action-tmate@v3
