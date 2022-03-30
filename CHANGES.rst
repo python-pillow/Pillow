@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Allow 1 mode images to be inverted #6034
+  [radarhere]
+
 - Raise ValueError when trying to save empty JPEG #6159
   [radarhere]
 
