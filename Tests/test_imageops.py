@@ -63,6 +63,7 @@ def test_sanity():
     ImageOps.grayscale(hopper("L"))
     ImageOps.grayscale(hopper("RGB"))
 
+    ImageOps.invert(hopper("1"))
     ImageOps.invert(hopper("L"))
     ImageOps.invert(hopper("RGB"))
 

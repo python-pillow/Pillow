@@ -525,7 +525,7 @@ def invert(image):
     lut = []
     for i in range(256):
         lut.append(255 - i)
-    return _lut(image, lut)
+    return image.point(lut) if image.mode == "1" else _lut(image, lut)
 
 
 def mirror(image):
