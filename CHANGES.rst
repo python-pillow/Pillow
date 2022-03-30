@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Added setting for converting GIF P frames to RGB #6150
+  [radarhere]
+
 - Allow 1 mode images to be inverted #6034
   [radarhere]
 
