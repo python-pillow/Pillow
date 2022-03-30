@@ -3,15 +3,28 @@ name: Wheels
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build:
-    uses: ./.github/workflows/wheels-build.yml
+  macos:
+    uses: ./.github/workflows/wheels-macos.yml
     with:
       build-commit: "HEAD"
       artifacts-name: "wheels"
 
-  build-latest:
+  ubuntu:
+    uses: ./.github/workflows/wheels-ubuntu.yml
+    with:
+      build-commit: "HEAD"
+      artifacts-name: "wheels"
+
+  macos-latest:
     if: "!startsWith(github.ref, 'refs/tags/')"
-    uses: ./.github/workflows/wheels-build.yml
+    uses: ./.github/workflows/wheels-macos.yml
+    with:
+      build-commit: "main"
+      artifacts-name: "wheels-latest"
+
+  ubuntu-latest:
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    uses: ./.github/workflows/wheels-ubuntu.yml
     with:
       build-commit: "main"
       artifacts-name: "wheels-latest"
@@ -20,7 +33,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: build
+    needs: [macos, ubuntu]
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -32,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   success:
-    needs: [build, build-latest]
+    needs: [macos, ubuntu, macos-latest, ubuntu-latest]
     runs-on: ubuntu-latest
     name: Wheels Successful
     steps:

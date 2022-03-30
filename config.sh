@@ -51,7 +51,7 @@ function pre_build {
     untar pillow-depends-main.zip
 
     build_xz
-    if [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_new_zlib
@@ -140,7 +140,7 @@ function run_tests_in_repo {
 EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]] && [[ "$MACHTYPE" != aarch64* ]]; then
+if [ -z "$IS_MACOS" ] && [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]] && [[ "$MACHTYPE" != aarch64* ]]; then
   EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
 else
   # can't find FriBiDi
@@ -156,7 +156,7 @@ function run_tests {
         python3 -m pip install numpy==1.21.4
     elif [[ "$MB_PYTHON_VERSION" == 3.8 || "$MB_PYTHON_VERSION" == 3.9 ]] && [[ $(uname -m) == "i686" ]]; then
         python3 -m pip install numpy==1.21.5
-    else
+    elif [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
     fi
 
