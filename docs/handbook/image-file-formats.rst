@@ -391,10 +391,12 @@ The :py:meth:`~PIL.Image.open` method may set the following
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
-    The image quality, on a scale from 0 (worst) to 95 (best). The default is
-    75. Values above 95 should be avoided; 100 disables portions of the JPEG
-    compression algorithm, and results in large files with hardly any gain in
-    image quality.
+    The image quality, on a scale from 0 (worst) to 95 (best), or the string
+    ``keep``. The default is 75. Values above 95 should be avoided; 100 disables
+    portions of the JPEG compression algorithm, and results in large files with
+    hardly any gain in image quality. The value ``keep`` is only valid for JPEG
+    files and will retain the original image quality level, subsampling, and
+    qtables.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
