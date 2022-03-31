@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (unreleased)
 ------------------
 
+- Fix loading FriBiDi on Alpine #6165
+  [nulano]
+
 - Added setting for converting GIF P frames to RGB #6150
   [radarhere]
 
