@@ -7,7 +7,6 @@
 #endif
 
 #define FRIBIDI_SHIM_IMPLEMENTATION
-
 #include "fribidi.h"
 
 
@@ -86,7 +85,7 @@ int load_fribidi(void) {
 
 #ifndef _WIN32
     fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
-    if (dlerror() || error || (fribidi_version_info == 0)) {
+    if (error || (fribidi_version_info == 0)) {
         dlclose(p_fribidi);
         p_fribidi = 0;
         return 2;
