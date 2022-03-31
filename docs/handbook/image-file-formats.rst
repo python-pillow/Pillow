@@ -513,6 +513,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     Reversible Color Transformation. MCT works best with a ``mode`` of
     ``RGB`` and is only applicable when the image data has 3 components.
 
+    .. versionadded:: 9.1.0
+
 **progression**
     Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
     ``"RPCL"``, ``"PCRL"``, ``"CPRL"``.  The letters stand for Component,
@@ -535,6 +537,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If ``True`` then don't wrap the raw codestream in the JP2 file format when
     saving, otherwise the extension of the filename will be used to determine
     the format (default).
+
+    .. versionadded:: 9.1.0
 
 .. note::
 
