@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-9.1.0 (unreleased)
+9.1.0 (2022-04-01)
 ------------------
 
 - Fix loading FriBiDi on Alpine #6165
