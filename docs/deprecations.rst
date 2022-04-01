@@ -69,7 +69,7 @@ In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 Constants
 ~~~~~~~~~
 
-.. deprecated:: 9.2.0
+.. deprecated:: 9.1.0
 
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
 (2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
