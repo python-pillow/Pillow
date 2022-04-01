@@ -195,6 +195,12 @@ palette.
 Other Changes
 =============
 
+musllinux wheels
+^^^^^^^^^^^^^^^^
+
+Pillow now builds binary wheels for musllinux, suitable for Linux distributions based on the musl C standard library such as Alpine
+(rather than the glibc library used by manylinux wheels). See :pep:`656`.
+
 ImageShow temporary files on Unix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
