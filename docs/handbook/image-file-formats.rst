@@ -504,9 +504,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     and must be greater than the code-block size.
 
 **irreversible**
-    If ``True``, use the lossy Irreversible Color Transformation
-    followed by DWT 9-7.  Defaults to ``False``, which means to use the
-    Reversible Color Transformation with DWT 5-3.
+    If ``True``, use the lossy discrete waveform transformation DWT 9-7.
+    Defaults to ``False``, which uses the lossless DWT 5-3.
+
+**mct**
+    If ``1`` then enable multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). If MCT is
+    enabled and ``irreversible`` is ``True`` then the Irreversible Color
+    Transformation will be applied, otherwise encoding will use the
+    Reversible Color Transformation. MCT works best with a ``mode`` of
+    ``RGB`` and is only applicable when the image data has 3 components.
+
+    .. versionadded:: 9.1.0
 
 **progression**
     Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
@@ -525,6 +534,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *at least one* of your image dimensions must match 2048 x 1080, while
     for compliant 4K files, *at least one* of the dimensions must match
     4096 x 2160.
+
+**no_jp2**
+    If ``True`` then don't wrap the raw codestream in the JP2 file format when
+    saving, otherwise the extension of the filename will be used to determine
+    the format (default).
+
+    .. versionadded:: 9.1.0
 
 .. note::
 
