@@ -77,7 +77,7 @@ release-test:
 	-rm dist/*.egg
 	-rmdir dist
 	python3 -m pytest -qq
-	python3 -m check-manifest
+	check-manifest
 	python3 -m pyroma .
 	$(MAKE) readme
 
