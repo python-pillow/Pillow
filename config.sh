@@ -14,7 +14,7 @@ TIFF_VERSION=4.3.0
 LCMS2_VERSION=2.13.1
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.1.4
-    ZLIB_VERSION=1.2.11
+    ZLIB_VERSION=1.2.12
 else
     GIFLIB_VERSION=5.2.1
     ZLIB_VERSION=1.2.8
@@ -54,6 +54,9 @@ function pre_build {
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
+
+    # Workaround for zlib 1.2.12
+    export cc=$CC
     build_new_zlib
 
     if [ -n "$IS_MACOS" ]; then
