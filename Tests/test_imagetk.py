@@ -80,6 +80,13 @@ def test_photoimage_blank():
         assert_image_equal(reloaded.convert(mode), im)
 
 
+def test_box_deprecation():
+    im = hopper()
+    im_tk = ImageTk.PhotoImage(im)
+    with pytest.warns(DeprecationWarning):
+        im_tk.paste(im, (0, 0, 128, 128))
+
+
 def test_bitmapimage():
     im = hopper("1")
 
