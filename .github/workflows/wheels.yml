@@ -31,7 +31,7 @@ jobs:
 
   release:
     name: Create Release
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/')"
     needs: [macos, linux]
     steps:
