@@ -142,6 +142,13 @@ The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be re
 Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
 :mod:`~PIL.FitsImagePlugin` instead.
 
+PhotoImage.paste box parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
+
 Removed features
 ----------------
 
