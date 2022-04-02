@@ -66,7 +66,7 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
-  python3 -m twine --strict check dist/*
+  python3 -m twine check --strict dist/*
   python3 -m twine upload dist/Pillow-5.2.1*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
