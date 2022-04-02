@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.1.0 (2022-04-01)
 ------------------
 
+- Add support for multiple component transformation to JPEG2000 #5500
+  [scaramallion, radarhere, hugovk]
+
 - Fix loading FriBiDi on Alpine #6165
   [nulano]
 
