@@ -32,8 +32,6 @@ class ImagePalette:
         an array or a list of ints between 0-255. The list must consist of
         all channels for one color followed by the next color (e.g. RGBRGBRGB).
         Defaults to an empty palette.
-    :param size: An optional palette size. If given, an error is raised
-        if ``palette`` is not of equal length.
     """
 
     def __init__(self, mode="RGB", palette=None, size=0):
