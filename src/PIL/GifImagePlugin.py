@@ -573,10 +573,14 @@ def _write_multiple_frames(im, fp, palette):
             im_frame = _normalize_mode(im_frame.copy())
             if frame_count == 0:
                 for k, v in im_frame.info.items():
+                    if k == "transparency":
+                        continue
                     im.encoderinfo.setdefault(k, v)
-            im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
 
             encoderinfo = im.encoderinfo.copy()
+            if "transparency" in im_frame.info:
+                encoderinfo.setdefault("transparency", im_frame.info["transparency"])
+            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
             if isinstance(disposal, (list, tuple)):
