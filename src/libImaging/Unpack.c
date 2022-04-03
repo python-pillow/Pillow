@@ -705,7 +705,7 @@ ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
 void
 ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
-    /* RGB, reversed bytes, 5/5/5/1 bits per pixel */
+    /* RGB, rearranged channels, 5/5/5/1 bits per pixel */
     for (i = 0; i < pixels; i++) {
         pixel = in[0] + (in[1] << 8);
         out[B] = (pixel & 31) * 255 / 31;
@@ -1056,7 +1056,7 @@ unpackABGR(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* RGBA, reversed bytes */
+    /* RGBA, rearranged channels */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[2], in[1], in[0], in[3]);
         memcpy(_out, &iv, sizeof(iv));
@@ -1068,7 +1068,7 @@ unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* 16-bit RGBA, little-endian order, reversed words */
+    /* 16-bit RGBA, little-endian order, rearranged channels */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[5], in[3], in[1], in[7]);
         memcpy(_out, &iv, sizeof(iv));
@@ -1080,7 +1080,7 @@ unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* 16-bit RGBA, big-endian order, reversed words */
+    /* 16-bit RGBA, big-endian order, rearranged channels */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[4], in[2], in[0], in[6]);
         memcpy(_out, &iv, sizeof(iv));
