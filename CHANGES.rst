@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+9.2.0 (unreleased)
+------------------
+
+- Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
 9.1.0 (2022-04-01)
 ------------------
 
