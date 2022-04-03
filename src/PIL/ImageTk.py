@@ -26,6 +26,7 @@
 #
 
 import tkinter
+import warnings
 from io import BytesIO
 
 from . import Image
@@ -183,10 +184,14 @@ class PhotoImage:
         :param im: A PIL image. The size must match the target region.  If the
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
-        :param box: A 4-tuple defining the left, upper, right, and lower pixel
-                    coordinate. See :ref:`coordinate-system`. If None is given
-                    instead of a tuple, all of the image is assumed.
         """
+
+        if box is not None:
+            warnings.warn(
+                "The box parameter is deprecated and will be removed in Pillow 10 "
+                "(2023-07-01).",
+                DeprecationWarning,
+            )
 
         # convert to blittable
         im.load()
