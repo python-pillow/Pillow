@@ -49,6 +49,9 @@ int load_fribidi(void) {
     if (!p_fribidi) {
         p_fribidi = dlopen("libfribidi.dylib", RTLD_LAZY);
     }
+    if (!p_fribidi) {
+        p_fribidi = dlopen("/usr/local/lib/libfribidi.dylib", RTLD_LAZY);
+    }
 #else
 #define LOAD_FUNCTION(func) \
     func = (t_##func)GetProcAddress(p_fribidi, #func); \
