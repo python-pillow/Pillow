@@ -1,6 +1,6 @@
 /* For black-on-white/transparent images at handbook/text-anchors.html */
 body[data-theme="dark"] #text-anchors img {
-	filter: invert(1) brightness(0.85) hue-rotate(-60deg);
+    filter: invert(1) brightness(0.85) hue-rotate(-60deg);
 }
 @media (prefers-color-scheme: dark) {
     body[data-theme="auto"] #text-anchors img {
