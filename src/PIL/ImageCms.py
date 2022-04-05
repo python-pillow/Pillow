@@ -16,10 +16,11 @@
 # below for the original description.
 
 import sys
-import warnings
 from enum import IntEnum
 
 from PIL import Image
+
+from ._deprecate import deprecate
 
 try:
     from PIL import _imagingcms
@@ -117,24 +118,11 @@ class Direction(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 

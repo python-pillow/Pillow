@@ -45,6 +45,7 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._deprecate import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -131,24 +132,11 @@ class Blend(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 

@@ -45,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -603,11 +604,7 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    warnings.warn(
-        "convert_dict_qtables is deprecated and will be removed in Pillow 10"
-        "(2023-07-01). Conversion is no longer needed.",
-        DeprecationWarning,
-    )
+    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
     return qtables
 
 

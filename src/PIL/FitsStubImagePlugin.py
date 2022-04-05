@@ -9,9 +9,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-import warnings
-
 from . import FitsImagePlugin, Image, ImageFile
+from ._deprecate import deprecate
 
 _handler = None
 
@@ -25,11 +24,11 @@ def register_handler(handler):
     global _handler
     _handler = handler
 
-    warnings.warn(
-        "FitsStubImagePlugin is deprecated and will be removed in Pillow "
-        "10 (2023-07-01). FITS images can now be read without a handler through "
-        "FitsImagePlugin instead.",
-        DeprecationWarning,
+    deprecate(
+        "FitsStubImagePlugin",
+        10,
+        action="FITS images can now be read without "
+        "a handler through FitsImagePlugin instead",
     )
 
     # Override FitsImagePlugin with this handler
