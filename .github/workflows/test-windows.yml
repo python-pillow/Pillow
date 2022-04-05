@@ -52,8 +52,8 @@ jobs:
         7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9550w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.55.0\bin" >> $env:GITHUB_PATH
+        winbuild\depends\gs9561w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs9.56.1\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
