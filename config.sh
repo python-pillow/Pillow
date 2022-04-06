@@ -140,7 +140,7 @@ function run_tests_in_repo {
 EXP_CODECS="jpg jpg_2000"
 EXP_CODECS="$EXP_CODECS libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-if [ -z "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" != pypy3* ]] && [[ "$MACHTYPE" != aarch64* ]]; then
+if ([ -n "$IS_MACOS" ] || [[ "$MB_PYTHON_VERSION" != pypy3* ]]) && [[ "$MACHTYPE" != aarch64* ]]; then
   EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
 else
   # can't find FriBiDi
@@ -151,6 +151,9 @@ function run_tests {
     if [ -n "$IS_MACOS" ]; then
         brew install openblas
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
+
+        brew install fribidi
+        ln -s /usr/local/lib/libfribidi.dylib libfribidi.dylib
     elif [ -n "$IS_ALPINE" ]; then
         apk add fribidi
     fi
