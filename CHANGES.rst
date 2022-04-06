@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Load image before performing size calculations in thumbnail() #6186
+  [radarhere]
+
 - Deprecated PhotoImage.paste() box parameter #6178
   [radarhere]
 
