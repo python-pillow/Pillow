@@ -8,12 +8,12 @@ from PIL import _deprecate
     [
         (
             10,
-            r"Old thing is deprecated and will be removed in Pillow 10 "
+            "Old thing is deprecated and will be removed in Pillow 10 "
             r"\(2023-07-01\)\. Use new thing instead\.",
         ),
         (
             None,
-            r"Old thing is deprecated and will be removed in a future version. "
+            r"Old thing is deprecated and will be removed in a future version\. "
             r"Use new thing instead\.",
         ),
     ],
