@@ -2448,6 +2448,7 @@ class Image:
         :returns: None
         """
 
+        self.load()
         x, y = map(math.floor, size)
         if x >= self.width and y >= self.height:
             return
