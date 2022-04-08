@@ -2695,7 +2695,7 @@ class Image:
 
     def dhash(self) -> str:
         """
-        Calculate the dHash value of the picture. 
+        Calculate the dHash value of the picture.
         DHash value can be used to quickly determine the similarity of two pictures.
         """
         difference = self._difference(self)
