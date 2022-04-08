@@ -1720,6 +1720,8 @@ class Image:
             # FIXME: _imaging returns a confusing error message for this case
             raise ValueError("point operation not supported for this mode")
 
+        if mode != "F":
+            lut = [round(i) for i in lut]
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
