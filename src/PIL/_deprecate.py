@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import warnings
 
+from . import __version__
+
 
 def deprecate(
     deprecated: str,
@@ -38,10 +40,12 @@ def deprecate(
 
     is_ = "are" if plural else "is"
 
-    if when == 10:
-        removed = "Pillow 10 (2023-07-01)"
-    elif when is None:
+    if when is None:
         removed = "a future version"
+    elif when <= int(__version__.split(".")[0]):
+        raise RuntimeError(f"{deprecated} {is_} deprecated and should be removed.")
+    elif when == 10:
+        removed = "Pillow 10 (2023-07-01)"
     else:
         raise ValueError(f"Unknown removal version, update {__name__}?")
 
