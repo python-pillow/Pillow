@@ -2024,6 +2024,7 @@ class Image:
 
         size = tuple(size)
 
+        self.load()
         if box is None:
             box = (0, 0) + self.size
         else:
