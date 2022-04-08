@@ -2692,7 +2692,7 @@ class Image:
         if not ImageQt.qt_is_installed:
             raise ImportError("Qt bindings are not installed")
         return ImageQt.toqpixmap(self)
-    
+
     def dhash(self) -> str:
         """
         Calculate the dHash value of the picture. DHash value can be used to quickly determine the similarity of two pictures.
@@ -2749,7 +2749,7 @@ class Image:
         difference = []  # 64-bit boolean sequence
 
         # convert to 9*8 grayscale image
-        data = array(image.resize((resize_width, resize_height)).convert('L'))
+        data = array(image.resize((resize_width, resize_height)).convert("L"))
         for row in range(resize_height):
             for col in range(resize_width - 1):
                 difference.append(data[row, col] > data[row, col + 1])
