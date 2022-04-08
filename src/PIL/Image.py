@@ -2694,76 +2694,76 @@ class Image:
         return ImageQt.toqpixmap(self)
     
     def dhash(self) -> str:
-    """
-    Calculate the dHash value of the picture. DHash value can be used to quickly determine the similarity of two pictures.
-    """
-    difference = self._difference(self)
-    decimal_value = 0
-    hash_string = ""
-    for index, value in enumerate(difference):
-        if value:
-            decimal_value += value * (2 ** (index % 8))
-        if index % 8 == 7:
-            hash_string += str(hex(decimal_value)[2:].rjust(2, "0"))
-            decimal_value = 0
-    return hash_string
+        """
+        Calculate the dHash value of the picture. DHash value can be used to quickly determine the similarity of two pictures.
+        """
+        difference = self._difference(self)
+        decimal_value = 0
+        hash_string = ""
+        for index, value in enumerate(difference):
+            if value:
+                decimal_value += value * (2 ** (index % 8))
+            if index % 8 == 7:
+                hash_string += str(hex(decimal_value)[2:].rjust(2, "0"))
+                decimal_value = 0
+        return hash_string
 
-def is_similar_to(self, image, hamming_distance: int = 3) -> bool:
-    """
+    def is_similar_to(self, image, hamming_distance: int = 3) -> bool:
+        """
 
-    :param image: PIL.Image / dHash(str)
-    :param hamming_distance:
-    :return: bool
-    """
-    assert 0 <= hamming_distance <= 64
-    dis = self.hamming_distance(image)
-    return True if dis <= hamming_distance else False
+        :param image: PIL.Image / dHash(str)
+        :param hamming_distance:
+        :return: bool
+        """
+        assert 0 <= hamming_distance <= 64
+        dis = self.hamming_distance(image)
+        return True if dis <= hamming_distance else False
 
-def hamming_distance(self, image) -> int:
-    """
-    Calculate the Hamming distance between two pictures (based on dHash algorithm)
-    :param image: PIL.Image / dHash(str)
-    :return: hamming distance. The larger the value, the greater the difference between the two pictures;
-    otherwise, the more similar they are.
-    """
-    if isinstance(image, str):
-        return self._hamming_distance_with_hash(image)
+    def hamming_distance(self, image) -> int:
+        """
+        Calculate the Hamming distance between two pictures (based on dHash algorithm)
+        :param image: PIL.Image / dHash(str)
+        :return: hamming distance. The larger the value, the greater the difference between the two pictures;
+        otherwise, the more similar they are.
+        """
+        if isinstance(image, str):
+            return self._hamming_distance_with_hash(image)
 
-    image1_diff = self._difference(self)
-    image2_diff = self._difference(image)
+        image1_diff = self._difference(self)
+        image2_diff = self._difference(image)
 
-    return sum(image1_diff ^ image2_diff)
+        return sum(image1_diff ^ image2_diff)
 
-@staticmethod
-def _difference(image):
-    """
-    *Private method*
-    Calculate difference sequence
-    :param image: PIL.Image
-    :return: bool list
-    """
-    from numpy import array
+    @staticmethod
+    def _difference(image):
+        """
+        *Private method*
+        Calculate difference sequence
+        :param image: PIL.Image
+        :return: bool list
+        """
+        from numpy import array
 
-    resize_width = 9
-    resize_height = 8
-    difference = []  # 64-bit boolean sequence
+        resize_width = 9
+        resize_height = 8
+        difference = []  # 64-bit boolean sequence
 
-    # convert to 9*8 grayscale image
-    data = array(image.resize((resize_width, resize_height)).convert('L'))
-    for row in range(resize_height):
-        for col in range(resize_width - 1):
-            difference.append(data[row, col] > data[row, col + 1])
+        # convert to 9*8 grayscale image
+        data = array(image.resize((resize_width, resize_height)).convert('L'))
+        for row in range(resize_height):
+            for col in range(resize_width - 1):
+                difference.append(data[row, col] > data[row, col + 1])
 
-    return array(difference)
+        return array(difference)
 
-def _hamming_distance_with_hash(self, dhash: str) -> int:
-    """
-    *Private method*
-    calculate hamming distance with perceptual hash
-    :return: hamming_distance(int)
-    """
-    difference = (int(self.dhash(), 16)) ^ (int(dhash, 16))
-    return bin(difference).count("1")
+    def _hamming_distance_with_hash(self, dhash: str) -> int:
+        """
+        *Private method*
+        calculate hamming distance with perceptual hash
+        :return: hamming_distance(int)
+        """
+        difference = (int(self.dhash(), 16)) ^ (int(dhash, 16))
+        return bin(difference).count("1")
 
 
 # --------------------------------------------------------------------
