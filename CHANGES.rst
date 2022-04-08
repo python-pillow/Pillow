@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Round lut values where necessary #6188
+  [radarhere]
+
+- Load before getting size in resize() #6190
+  [radarhere]
+
 - Load image before performing size calculations in thumbnail() #6186
   [radarhere]
 
