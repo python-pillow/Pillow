@@ -2695,7 +2695,8 @@ class Image:
 
     def dhash(self) -> str:
         """
-        Calculate the dHash value of the picture. DHash value can be used to quickly determine the similarity of two pictures.
+        Calculate the dHash value of the picture. 
+        DHash value can be used to quickly determine the similarity of two pictures.
         """
         difference = self._difference(self)
         decimal_value = 0
@@ -2713,6 +2714,8 @@ class Image:
 
         :param image: PIL.Image / dHash(str)
         :param hamming_distance:
+        The larger the value, the greater difference between the two pictures;
+        otherwise, the more similar they are.
         :return: bool
         """
         assert 0 <= hamming_distance <= 64
@@ -2723,8 +2726,7 @@ class Image:
         """
         Calculate the Hamming distance between two pictures (based on dHash algorithm)
         :param image: PIL.Image / dHash(str)
-        :return: hamming distance. The larger the value, the greater the difference between the two pictures;
-        otherwise, the more similar they are.
+        :return: hamming distance.
         """
         if isinstance(image, str):
             return self._hamming_distance_with_hash(image)
