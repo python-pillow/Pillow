@@ -29,6 +29,27 @@ def test_unknown_version():
         _deprecate.deprecate("Old thing", 12345, "new thing")
 
 
+@pytest.mark.parametrize(
+    "deprecated, plural, expected",
+    [
+        (
+            "Old thing",
+            False,
+            r"Old thing is deprecated and should be removed\.",
+        ),
+        (
+            "Old things",
+            True,
+            r"Old things are deprecated and should be removed\.",
+        ),
+    ],
+)
+def test_old_version(deprecated, plural, expected):
+    expected = r""
+    with pytest.raises(RuntimeError, match=expected):
+        _deprecate.deprecate(deprecated, 1, plural=plural)
+
+
 def test_plural():
     expected = (
         r"Old things are deprecated and will be removed in Pillow 10 \(2023-07-01\)\. "
