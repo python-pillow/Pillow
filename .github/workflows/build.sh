@@ -6,9 +6,9 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   brew remove --ignore-dependencies webp zstd xz libtiff libxcb curl php
 
   if [[ "$PLAT" == "arm64" ]]; then
-    MACOSX_DEPLOYMENT_TARGET="11.0"
+    export MACOSX_DEPLOYMENT_TARGET="11.0"
   else
-    MACOSX_DEPLOYMENT_TARGET="10.10"
+    export MACOSX_DEPLOYMENT_TARGET="10.10"
   fi
 fi
 
