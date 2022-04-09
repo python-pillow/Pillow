@@ -160,7 +160,6 @@ function run_tests {
         echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
 
         brew install fribidi
-        ln -s /usr/local/lib/libfribidi.dylib libfribidi.dylib
     elif [ -n "$IS_ALPINE" ]; then
         apk add fribidi
     fi
