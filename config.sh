@@ -145,8 +145,7 @@ function run_tests_in_repo {
     pytest
 }
 
-EXP_CODECS="jpg jpg_2000"
-EXP_CODECS="$EXP_CODECS libtiff zlib"
+EXP_CODECS="jpg jpg_2000 libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
 if ([ -n "$IS_MACOS" ] || [[ "$MB_PYTHON_VERSION" != pypy3* ]]) && [[ "$MACHTYPE" != aarch64* ]]; then
   EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
