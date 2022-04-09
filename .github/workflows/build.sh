@@ -19,8 +19,6 @@ if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
   else
     DOCKER_TEST_IMAGE="multibuild/focal_$PLAT"
   fi
-elif [[ "$MB_ML_LIBC" == "manylinux" ]] && [[ "$PLAT" == "x86_64" ]]; then
-  DOCKER_TEST_IMAGE="matthewbrett/trusty:64"
 fi
 
 echo "::group::Install a virtualenv"
