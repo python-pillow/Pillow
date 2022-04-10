@@ -2992,11 +2992,10 @@ _fromarray_typemap = {
     ((1, 1, 2), "|u1"): ("LA", "LA"),
     ((1, 1, 3), "|u1"): ("RGB", "RGB"),
     ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
+    # shortcuts:
+    ((1, 1), _ENDIAN + "i4"): ("I", "I"),
+    ((1, 1), _ENDIAN + "f4"): ("F", "F"),
 }
-
-# shortcuts
-_fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
-_fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
 def _decompression_bomb_check(size):

@@ -1748,9 +1748,8 @@ def _save(im, fp, filename):
             SUBIFD,
         ]
 
-        atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
-        atts[BITSPERSAMPLE] = bits[0]
+        atts = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
