@@ -100,6 +100,7 @@ function pre_build {
     build_lcms2
     build_openjpeg
 
+    ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
