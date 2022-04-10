@@ -2,7 +2,7 @@ env:
   global:
       - REPO_DIR=Pillow
       - BUILD_COMMIT=HEAD
-      - PLAT=x86_64
+      - PLAT=aarch64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
       - TEST_DEPENDS="pytest pytest-timeout"
@@ -18,28 +18,24 @@ jobs:
     - name: "3.7 Focal aarch64"
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.7
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.8 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.8
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.9 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.9
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.10 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.10
         - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
 
