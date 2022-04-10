@@ -50,7 +50,7 @@ except ImportError:
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
-from ._util import deferred_error, isPath
+from ._util import deferred_error, is_path
 
 
 def __getattr__(name):
@@ -2251,7 +2251,7 @@ class Image:
         if isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
-        elif isPath(fp):
+        elif is_path(fp):
             filename = fp
             open_fp = True
         elif fp == sys.stdout:
@@ -2259,7 +2259,7 @@ class Image:
                 fp = sys.stdout.buffer
             except AttributeError:
                 pass
-        if not filename and hasattr(fp, "name") and isPath(fp.name):
+        if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
 
@@ -3065,7 +3065,7 @@ def open(fp, mode="r", formats=None):
     filename = ""
     if isinstance(fp, Path):
         filename = str(fp.resolve())
-    elif isPath(fp):
+    elif is_path(fp):
         filename = fp
 
     if filename:

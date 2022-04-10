@@ -33,7 +33,7 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image
-from ._util import isDirectory, isPath
+from ._util import is_directory, is_path
 
 
 class Layout(IntEnum):
@@ -212,7 +212,7 @@ class FreeTypeFont:
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
-        if isPath(font):
+        if is_path(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -877,7 +877,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except OSError:
-        if not isPath(font):
+        if not is_path(font):
             raise
         ttf_filename = os.path.basename(font)
 
@@ -931,7 +931,7 @@ def load_path(filename):
     :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
-        if isDirectory(directory):
+        if is_directory(directory):
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:
