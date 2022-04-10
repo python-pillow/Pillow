@@ -114,7 +114,7 @@ class FtexImageFile(ImageFile.ImageFile):
 
         if format == Format.DXT1:
             self.mode = "RGBA"
-            self.tile = [("bcn", (0, 0) + self.size, 0, (1))]
+            self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
         elif format == Format.UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:

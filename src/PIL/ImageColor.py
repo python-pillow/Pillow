@@ -45,7 +45,7 @@ def getrgb(color):
 
     # check for known string formats
     if re.match("#[a-f0-9]{3}$", color):
-        return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
+        return int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16)
 
     if re.match("#[a-f0-9]{4}$", color):
         return (
@@ -56,7 +56,7 @@ def getrgb(color):
         )
 
     if re.match("#[a-f0-9]{6}$", color):
-        return (int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16))
+        return int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
 
     if re.match("#[a-f0-9]{8}$", color):
         return (
@@ -68,7 +68,7 @@ def getrgb(color):
 
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
-        return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
     m = re.match(r"rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
@@ -114,7 +114,7 @@ def getrgb(color):
 
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
-        return (int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)))
+        return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
     raise ValueError(f"unknown color specifier: {repr(color)}")
 
 
@@ -140,7 +140,7 @@ def getcolor(color, mode):
         # scaled to 24 bits to match the convert's implementation.
         color = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
         if mode[-1] == "A":
-            return (color, alpha)
+            return color, alpha
     else:
         if mode[-1] == "A":
             return color + (alpha,)

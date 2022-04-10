@@ -353,10 +353,10 @@ class IFDRational(Rational):
         """
 
         if self.denominator == 0:
-            return (self.numerator, self.denominator)
+            return self.numerator, self.denominator
 
         f = self._val.limit_denominator(max_denominator)
-        return (f.numerator, f.denominator)
+        return f.numerator, f.denominator
 
     def __repr__(self):
         return str(float(self._val))

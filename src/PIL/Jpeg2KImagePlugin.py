@@ -124,7 +124,7 @@ def _parse_codestream(fp):
     else:
         mode = None
 
-    return (size, mode)
+    return size, mode
 
 
 def _res_to_dpi(num, denom, exp):
@@ -191,7 +191,7 @@ def _parse_jp2_header(fp):
     if size is None or mode is None:
         raise SyntaxError("Malformed JP2 header")
 
-    return (size, mode, mimetype, dpi)
+    return size, mode, mimetype, dpi
 
 
 ##

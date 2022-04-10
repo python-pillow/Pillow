@@ -162,7 +162,7 @@ FLAGS = {
     "SOFTPROOFING": 16384,  # Do softproofing
     "PRESERVEBLACK": 32768,  # Black preservation
     "NODEFAULTRESOURCEDEF": 16777216,  # CRD special
-    "GRIDPOINTS": lambda n: ((n) & 0xFF) << 16,  # Gridpoints
+    "GRIDPOINTS": lambda n: (n & 0xFF) << 16,  # Gridpoints
 }
 
 _MAX_FLAG = 0
@@ -1026,4 +1026,4 @@ def versions():
     (pyCMS) Fetches versions.
     """
 
-    return (VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__)
+    return VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__

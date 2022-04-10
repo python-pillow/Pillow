@@ -571,7 +571,7 @@ class PyCodecState:
         self.yoff = 0
 
     def extents(self):
-        return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
+        return self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize
 
 
 class PyCodec:
@@ -681,7 +681,7 @@ class PyDecoder(PyCodec):
 
         if not rawmode:
             rawmode = self.mode
-        d = Image._getdecoder(self.mode, "raw", (rawmode))
+        d = Image._getdecoder(self.mode, "raw", rawmode)
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
 
