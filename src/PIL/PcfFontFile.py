@@ -193,15 +193,15 @@ class PcfFontFile(FontFile.FontFile):
         for i in range(nbitmaps):
             offsets.append(i32(fp.read(4)))
 
-        bitmapSizes = []
+        bitmap_sizes = []
         for i in range(4):
-            bitmapSizes.append(i32(fp.read(4)))
+            bitmap_sizes.append(i32(fp.read(4)))
 
         # byteorder = format & 4  # non-zero => MSB
         bitorder = format & 8  # non-zero => MSB
         padindex = format & 3
 
-        bitmapsize = bitmapSizes[padindex]
+        bitmapsize = bitmap_sizes[padindex]
         offsets.append(bitmapsize)
 
         data = fp.read(bitmapsize)
@@ -225,22 +225,22 @@ class PcfFontFile(FontFile.FontFile):
 
         fp, format, i16, i32 = self._getformat(PCF_BDF_ENCODINGS)
 
-        firstCol, lastCol = i16(fp.read(2)), i16(fp.read(2))
-        firstRow, lastRow = i16(fp.read(2)), i16(fp.read(2))
+        first_col, last_col = i16(fp.read(2)), i16(fp.read(2))
+        first_row, last_row = i16(fp.read(2)), i16(fp.read(2))
 
         i16(fp.read(2))  # default
 
-        nencoding = (lastCol - firstCol + 1) * (lastRow - firstRow + 1)
+        nencoding = (last_col - first_col + 1) * (last_row - first_row + 1)
 
-        encodingOffsets = [i16(fp.read(2)) for _ in range(nencoding)]
+        encoding_offsets = [i16(fp.read(2)) for _ in range(nencoding)]
 
-        for i in range(firstCol, len(encoding)):
+        for i in range(first_col, len(encoding)):
             try:
-                encodingOffset = encodingOffsets[
+                encoding_offset = encoding_offsets[
                     ord(bytearray([i]).decode(self.charset_encoding))
                 ]
-                if encodingOffset != 0xFFFF:
-                    encoding[i] = encodingOffset
+                if encoding_offset != 0xFFFF:
+                    encoding[i] = encoding_offset
             except UnicodeDecodeError:
                 # character is not supported in selected encoding
                 pass
