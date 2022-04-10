@@ -64,7 +64,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         palette = [b"\0\0\0"] * 256
 
-        for i in range(pal):
+        for _ in range(pal):
 
             s = self.fp.readline()
             if s[-2:] == b"\r\n":
