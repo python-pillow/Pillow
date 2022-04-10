@@ -324,7 +324,7 @@ def is_mingw():
     return sysconfig.get_platform() == "mingw"
 
 
-class cached_property:
+class CachedProperty:
     def __init__(self, func):
         self.func = func
 
