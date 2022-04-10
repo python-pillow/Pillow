@@ -29,13 +29,13 @@ echo "::group::Install a virtualenv"
 echo "::endgroup::"
 
 echo "::group::Build wheel"
-  clean_code $REPO_DIR $BUILD_COMMIT
-  build_wheel $REPO_DIR $PLAT
+  clean_code
+  build_wheel
   ls -l "${GITHUB_WORKSPACE}/${WHEEL_SDIR}/"
 echo "::endgroup::"
 
 if [[ $MACOSX_DEPLOYMENT_TARGET != "11.0" ]]; then
   echo "::group::Test wheel"
-    install_run $PLAT
+    install_run
   echo "::endgroup::"
 fi
