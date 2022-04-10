@@ -338,12 +338,12 @@ class IFDRational(Rational):
             self._val = Fraction(value, denominator)
 
     @property
-    def numerator(a):
-        return a._numerator
+    def numerator(self):
+        return self._numerator
 
     @property
-    def denominator(a):
-        return a._denominator
+    def denominator(self):
+        return self._denominator
 
     def limit_rational(self, max_denominator):
         """

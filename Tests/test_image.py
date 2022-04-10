@@ -170,7 +170,7 @@ class TestImage:
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
-            def write(a, b):
+            def write(self, b):
                 pass
 
         fp = FP()
