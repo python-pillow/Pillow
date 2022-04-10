@@ -184,6 +184,7 @@ class PhotoImage:
         :param im: A PIL image. The size must match the target region.  If the
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
+        :param box: Deprecated.
         """
 
         if box is not None:

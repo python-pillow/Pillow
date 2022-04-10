@@ -75,7 +75,7 @@ def open(fp, mode="r"):
     """
     Load texture from a GD image file.
 
-    :param filename: GD file name, or an opened file handle.
+    :param fp: GD file name, or an opened file handle.
     :param mode: Optional mode.  In this version, if the mode argument
         is given, it must be "r".
     :returns: An image instance.

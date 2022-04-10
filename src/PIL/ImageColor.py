@@ -121,12 +121,13 @@ def getrgb(color):
 def getcolor(color, mode):
     """
     Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
-    greyscale value if the mode is not color or a palette image. If the string
+    greyscale value if ``mode`` is not color or a palette image. If the string
     cannot be parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
     :param color: A color string
+    :param mode: Convert result to this mode
     :return: ``(graylevel [, alpha]) or (red, green, blue[, alpha])``
     """
     # same as getrgb, but converts the result to the given mode

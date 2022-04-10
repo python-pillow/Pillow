@@ -634,6 +634,7 @@ class FreeTypeFont:
         should have mode ``RGBA``. Otherwise, it should have mode ``1``.
 
         :param text: Text to render.
+        :param fill: A fill function.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
