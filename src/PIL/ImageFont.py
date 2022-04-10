@@ -93,7 +93,7 @@ except ImportError:
 
 
 class ImageFont:
-    "PIL font wrapper"
+    """PIL font wrapper"""
 
     def _load_pilfont(self, filename):
 
@@ -181,7 +181,7 @@ class ImageFont:
 
 
 class FreeTypeFont:
-    "FreeType font wrapper (requires _imagingft service)"
+    """FreeType font wrapper (requires _imagingft service)"""
 
     def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
         # FIXME: use service provider instead
@@ -775,7 +775,7 @@ class FreeTypeFont:
 
 
 class TransposedFont:
-    "Wrapper for writing rotated or mirrored text"
+    """Wrapper for writing rotated or mirrored text"""
 
     def __init__(self, font, orientation=None):
         """
