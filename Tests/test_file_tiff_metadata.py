@@ -356,7 +356,7 @@ def test_empty_values():
     assert 33432 in info
 
 
-def test_PhotoshopInfo(tmp_path):
+def test_photoshop_info(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)

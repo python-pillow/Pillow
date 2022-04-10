@@ -131,10 +131,10 @@ def test_save_all(tmp_path):
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def imGenerator(ims):
+        def im_generator(ims):
             yield from ims
 
-        im.save(outfile, save_all=True, append_images=imGenerator(ims))
+        im.save(outfile, save_all=True, append_images=im_generator(ims))
 
     assert os.path.isfile(outfile)
     assert os.path.getsize(outfile) > 0
