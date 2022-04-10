@@ -225,8 +225,7 @@ def _save_all(im, fp, filename):
         or not all(0 <= v < 256 for v in background)
     ):
         raise OSError(
-            "Background color is not an RGBA tuple clamped to (0-255): %s"
-            % str(background)
+            f"Background color is not an RGBA tuple clamped to (0-255): {background}"
         )
 
     # Convert to packed uint
