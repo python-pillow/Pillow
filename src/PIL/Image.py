@@ -50,7 +50,7 @@ except ImportError:
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
-from ._util import deferred_error, is_path
+from ._util import DeferredError, is_path
 
 
 def __getattr__(name):
@@ -139,7 +139,7 @@ try:
         )
 
 except ImportError as v:
-    core = deferred_error(ImportError("The _imaging C module is not installed."))
+    core = DeferredError(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -613,7 +613,7 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = deferred_error(ValueError("Operation on closed image"))
+        self.im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self):
         self.load()

@@ -64,7 +64,7 @@ def __getattr__(name):
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-class _imagingft_not_installed:
+class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -73,7 +73,7 @@ class _imagingft_not_installed:
 try:
     from . import _imagingft as core
 except ImportError:
-    core = _imagingft_not_installed()
+    core = _ImagingFtNotInstalled()
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
