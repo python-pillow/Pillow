@@ -70,12 +70,12 @@ class TestDecompressionBomb:
 
 class TestDecompressionCrop:
     @classmethod
-    def setup_class(self):
+    def setup_class(cls):
         width, height = 128, 128
         Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
     @classmethod
-    def teardown_class(self):
+    def teardown_class(cls):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def testEnlargeCrop(self):
