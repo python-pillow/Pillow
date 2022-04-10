@@ -883,10 +883,10 @@ def _get_palette_bytes(im):
     return im.palette.palette
 
 
-def _get_background(im, infoBackground):
+def _get_background(im, info_background):
     background = 0
-    if infoBackground:
-        background = infoBackground
+    if info_background:
+        background = info_background
         if isinstance(background, tuple):
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
