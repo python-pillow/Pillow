@@ -26,7 +26,7 @@ def deprecate(
     Usually of the form:
 
         "[deprecated] is deprecated and will be removed in Pillow [when] (yyyy-mm-dd).
-        Use [new thing] instead."
+        Use [replacement] instead."
 
     You can leave out the replacement sentence:
 
@@ -35,7 +35,7 @@ def deprecate(
     Or with another call to action:
 
         "[deprecated] is deprecated and will be removed in Pillow [when] (yyyy-mm-dd).
-        [Upgrade to new thing]."
+        [action]."
     """
 
     is_ = "are" if plural else "is"
