@@ -5,6 +5,7 @@ env:
       - PLAT=aarch64
       - UNICODE_WIDTH=32
       - BUILD_DEPENDS=""
+      - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
       - TEST_DEPENDS="pytest pytest-timeout"
 
 language: python
@@ -19,25 +20,21 @@ jobs:
       arch: arm64
       env:
         - MB_PYTHON_VERSION=3.7
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.8 Focal aarch64"
       os: linux
       arch: arm64
       env:
         - MB_PYTHON_VERSION=3.8
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.9 Focal aarch64"
       os: linux
       arch: arm64
       env:
         - MB_PYTHON_VERSION=3.9
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.10 Focal aarch64"
       os: linux
       arch: arm64
       env:
         - MB_PYTHON_VERSION=3.10
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
 
 before_install:
     - source multibuild/common_utils.sh
