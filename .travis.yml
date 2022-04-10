@@ -2,9 +2,8 @@ env:
   global:
       - REPO_DIR=Pillow
       - BUILD_COMMIT=HEAD
-      - PLAT=x86_64
-      - UNICODE_WIDTH=32
-      - BUILD_DEPENDS=""
+      - PLAT=aarch64
+      - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
       - TEST_DEPENDS="pytest pytest-timeout"
 
 language: python
@@ -18,30 +17,22 @@ jobs:
     - name: "3.7 Focal aarch64"
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.7
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.8 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.8
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.9 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.9
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
     - name: "3.10 Focal aarch64"
       os: linux
       arch: arm64
       env:
-        - PLAT=aarch64
         - MB_PYTHON_VERSION=3.10
-        - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
 
 before_install:
     - source multibuild/common_utils.sh
@@ -50,13 +41,12 @@ before_install:
 
 install:
     # Maybe get and clean and patch source
-    - if [[ -n "$LATEST" ]]; then BUILD_COMMIT=main; fi
-    - clean_code $REPO_DIR $BUILD_COMMIT
-    - build_wheel $REPO_DIR $PLAT
+    - clean_code
+    - build_wheel
     - ls -l "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/"
 
 script:
-    - install_run $PLAT
+    - install_run
 
 # Upload wheels to GitHub Releases
 deploy:
@@ -65,6 +55,5 @@ deploy:
   file_glob: true
   file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
   on:
-    condition: -z "$LATEST"
     repo: python-pillow/pillow-wheels
   skip_cleanup: true
