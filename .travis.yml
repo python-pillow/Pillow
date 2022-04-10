@@ -4,7 +4,6 @@ env:
       - BUILD_COMMIT=HEAD
       - PLAT=aarch64
       - UNICODE_WIDTH=32
-      - BUILD_DEPENDS=""
       - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
       - TEST_DEPENDS="pytest pytest-timeout"
 
