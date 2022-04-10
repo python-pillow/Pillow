@@ -178,7 +178,7 @@ def _layerinfo(fp, ct_bytes):
     if ct_bytes < (abs(ct) * 20):
         raise SyntaxError("Layer block too short for number of layers requested")
 
-    for i in range(abs(ct)):
+    for _ in range(abs(ct)):
 
         # bounding box
         y0 = i32(read(4))
@@ -193,7 +193,7 @@ def _layerinfo(fp, ct_bytes):
         if len(types) > 4:
             continue
 
-        for i in types:
+        for _ in types:
             type = i16(read(2))
 
             if type == 65535:
