@@ -1527,7 +1527,6 @@ Changelog (Pillow)
 
 - Deprecate PIL.*ImagePlugin.__version__ attributes #3628
   [jdufresne]
-
 - Docs: Add note about ImageDraw operations that exceed image bounds #3620
   [radarhere]
 
@@ -3139,7 +3138,6 @@ Changelog (Pillow)
 
 - Changed depends/install_*.sh urls to point to github pillow-depends repo #1983
   [wiredfool]
-
 - Allow ICC profile from ``encoderinfo`` while saving PNGs #1909
   [homm]
 
@@ -3149,7 +3147,7 @@ Changelog (Pillow)
 - Change function declaration to match Tcl_CmdProc type #1966
   [homm]
 
-- Integer overflow checks on all calls to *alloc #1781
+- Integer overflow checks on all calls to alloc #1781
   [wiredfool]
 
 - Change equals method on Image so it short circuits #1967
