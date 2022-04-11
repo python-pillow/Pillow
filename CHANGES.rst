@@ -4989,8 +4989,7 @@ was last updated, see the repository revision history:
     Florian writes:
 
     It's a beta, so still needs some testing, but should allow you to:
-    - retain embedded ICC profiles when saving from/to JPEG, PNG, TIFF.
-        Existing code doesn't need to be changed.
+    - retain embedded ICC profiles when saving from/to JPEG, PNG, TIFF. Existing code doesn't need to be changed.
     - access embedded profiles in JPEG, PNG, PSD, TIFF.
 
     It also includes patches for TIFF to retain IPTC, Photoshop and XMP
@@ -5488,7 +5487,7 @@ was last updated, see the repository revision history:
 - Ignore Unicode characters in the BDF loader (from Graham Dumpleton)
 
 1.1.4a3 released; windows only
------------------------------
+---------------------------------
 
 - Added experimental RGBA-on-RGB drawing support.  To use RGBA
     colours on an RGB image, pass "RGBA" as the second string to
@@ -5671,7 +5670,7 @@ was last updated, see the repository revision history:
     for normal image operations.
 
 1.1.2c1 and 1.1.2 final
-----------------
+------------------------
 
 - Adapted to Python 2.1.  Among other things, all uses of the
     "regex" module have been replaced with "re".
@@ -5737,7 +5736,7 @@ was last updated, see the repository revision history:
     extension module, named "_imagingtk".
 
 0.3b2 to 1.0 final
-------
+-------------------
 
 - If there's no 16-bit integer (like on a Cray T3E), set
     INT16 to the smallest integer available.  Most of the
@@ -5746,7 +5745,7 @@ was last updated, see the repository revision history:
 - Tweaks to make drawing work on big-endian platforms.
 
 1.0c2
---------------
+-------
 
 - If PIL is built with the WITH_TKINTER flag, ImageTk can
     automatically hook into a standard Tkinter build.  You
@@ -6146,116 +6145,72 @@ The test suite includes 400 individual tests.
 - Added floating point packer (native 32-bit floats only).
 
 0.1b1 to 0.2 (b5)
-------------
+------------------
 
-- Modified "fromstring" and "tostring" methods to use file codecs.
-Also added "fromstring" factory method to create an image directly
-from data in a string.
+- Modified "fromstring" and "tostring" methods to use file codecs. Also added "fromstring" factory method to create an image directly from data in a string.
 
-- Added support for 32-bit floating point images (mode "F").  You
-can convert between "L" and "F" images, and apply a subset of the
-available image processing methods on the "F" image.  You can also
-read virtually any data format into a floating point image memory;
-see the section on "Decoding Floating Point Data" in the handbook
-for more information.
+- Added support for 32-bit floating point images (mode "F"). You can convert between "L" and "F" images, and apply a subset of the available image processing methods on the "F" image.  You can also read virtually any data format into a floating point image memory; see the section on "Decoding Floating Point Data" in the handbook for more information.
 
 0.2b5 released; on windows only
 -------------------------------
 
 - Fixed the tobitmap() method to work properly for small bitmaps.
 
-- Added RMS and standard deviation to the ImageStat.Stat class.  Also
-modified the constructor to take an optional feature mask, and also
-to accept either an image or a list containing the histogram data.
+- Added RMS and standard deviation to the ImageStat.Stat class.  Also modified the constructor to take an optional feature mask, and also to accept either an image or a list containing the histogram data.
 
-- The BitmapImage code in ImageTk can now use a special bitmap
-decoder, which has to be patched into Tk.  See the "Tk/pilbitmap.txt"
-file for details.  If not installed, bitmaps are transferred to Tk as
-XBM strings.
+- The BitmapImage code in ImageTk can now use a special bitmap decoder, which has to be patched into Tk.  See the "Tk/pilbitmap.txt" file for details.  If not installed, bitmaps are transferred to Tk as XBM strings.
 
-- The PhotoImage code in ImageTk now uses a Tcl command ("PyImagingPaste")
-instead of a special image type.  This gives somewhat better performance,
-and also allows PIL to support transparency.
+- The PhotoImage code in ImageTk now uses a Tcl command ("PyImagingPaste") instead of a special image type.  This gives somewhat better performance, and also allows PIL to support transparency.
+
 *** WARNING: TKAPPINIT MUST BE MODIFIED ***
 
-- ImageTk now honours the alpha layer in RGBA images.  Only fully
-transparent pixels are made transparent (that is, the alpha layer
-is treated as a mask).  To treat the alpha laters as a matte, you
-must paste the image on the background before handing it over to
-ImageTk.
+- ImageTk now honours the alpha layer in RGBA images.  Only fully transparent pixels are made transparent (that is, the alpha layer is treated as a mask).  To treat the alpha laters as a matte, you must paste the image on the background before handing it over to ImageTk.
 
 - Added McIdas reader (supports 8-bit images only).
 
-- PIL now preloads drivers for BMP, GIF, JPEG, PPM, and TIFF.  As
-long as you only load and save these formats, you don't have to
-wait for a full scan for drivers.  To force scanning, call the
-Image.init() function.
+- PIL now preloads drivers for BMP, GIF, JPEG, PPM, and TIFF.  As long as you only load and save these formats, you don't have to wait for a full scan for drivers.  To force scanning, call the Image.init() function.
 
-- The "seek" and "tell" methods are now always available, also for
-single-frame images.
+- The "seek" and "tell" methods are now always available, also for single-frame images.
 
-- Added optional mask argument to histogram method.  The mask may
-be an "1" or "L" image with the same size as the original image.
-Only pixels where the mask is non-zero are included in the
-histogram.
+- Added optional mask argument to histogram method.  The mask may be an "1" or "L" image with the same size as the original image. Only pixels where the mask is non-zero are included in the histogram.
 
-- The "paste" method now allows you to specify only the lower left
-corner (a 2-tuple), instead of the full region (a 4-tuple).
+- The "paste" method now allows you to specify only the lower left corner (a 2-tuple), instead of the full region (a 4-tuple).
 
-- Reverted to old plugin scanning model; now scans all directory
-names in the path when looking for plugins.
+- Reverted to old plugin scanning model; now scans all directory names in the path when looking for plugins.
 
-- Added PIXAR raster support.  Only uncompressed ("dumped") RGB
-images can currently be read (based on information provided
-by Greg Coats).
+- Added PIXAR raster support.  Only uncompressed ("dumped") RGB images can currently be read (based on information provided by Greg Coats).
 
-- Added FlashPix (FPX) read support.  Reads all pixel formats, but
-only the highest resolution is read, and the viewing transform is
-currently ignored.
+- Added FlashPix (FPX) read support.  Reads all pixel formats, but only the highest resolution is read, and the viewing transform is currently ignored.
 
-- Made PNG encoding somewhat more efficient in "optimize" mode; a
-bug in 0.2b4 didn't enable all predictor filters when optimized
-storage were requested.
+- Made PNG encoding somewhat more efficient in "optimize" mode; a bug in 0.2b4 didn't enable all predictor filters when optimized storage were requested.
 
-- Added Microsoft Image Composer (MIC) read support.  When opened,
-the first sprite in the file is loaded.  You can use the seek method
-to load additional sprites from the file.
+- Added Microsoft Image Composer (MIC) read support.  When opened, the first sprite in the file is loaded.  You can use the seek method to load additional sprites from the file.
 
 - Properly reads "P" and "CMYK" PSD images.
 
-- "pilconvert" no longer optimizes by default; use the -o option to
-make the file as small as possible (at the expense of speed); use
-the -q option to set the quality when compressing to JPEG.
+- "pilconvert" no longer optimizes by default; use the -o option to make the file as small as possible (at the expense of speed); use the -q option to set the quality when compressing to JPEG.
 
 - Fixed "crop" not to drop the palette for "P" images.
 
 - Added and verified FLC support.
 
-- Paste with "L" or "RGBA" alpha is now several times faster on most
-platforms.
+- Paste with "L" or "RGBA" alpha is now several times faster on most platforms.
 
-- Changed Image.new() to initialize the image to black, as described
-in the handbook.  To get an uninitialized image, use None as the
-colour.
+- Changed Image.new() to initialize the image to black, as described in the handbook.  To get an uninitialized image, use None as the colour.
 
-- Fixed the PDF encoder to produce a valid header; Acrobat no longer
-complains when you load PDF images created by PIL.
+- Fixed the PDF encoder to produce a valid header; Acrobat no longer complains when you load PDF images created by PIL.
 
-- PIL only scans fully-qualified directory names in the path when
-looking for plugins.
+- PIL only scans fully-qualified directory names in the path when looking for plugins.
+
 *** WARNING: MAY BREAK EXISTING CODE ***
 
-- Faster implementation of "save" used when filename is given,
-or when file object has "fileno" and "flush" methods.
+- Faster implementation of "save" used when filename is given, or when file object has "fileno" and "flush" methods.
 
 - Don't crash in "crop" if region extends outside the source image.
 
 - Eliminated a massive memory leak in the "save" function.
 
-- The GIF decoder doesn't crash if the code size is set to an illegal
-value.  This could happen since another bug didn't handle local
-palettes properly if they didn't have the same size as the
-global palette (not very common).
+- The GIF decoder doesn't crash if the code size is set to an illegal value.  This could happen since another bug didn't handle local palettes properly if they didn't have the same size as the global palette (not very common).
 
 - Added predictor support (TIFF 6.0 section 14) to the TIFF decoder.
 
@@ -6264,18 +6219,14 @@ writes "1", "L", "P" and "RGB" images.
 
 - Fixed getpixel()/getdata() to return correct pixel values.
 
-- Added PSD (PhotoShop) read support.  Reads both uncompressed
-and compressed images of most types.
+- Added PSD (PhotoShop) read support.  Reads both uncompressed and compressed images of most types.
 
-- Added GIF write support (writes "uncompressed" GIF files only,
-due to unresolvable licensing issues).  The "gifmaker.py" script
-can be used to create GIF animations.
+- Added GIF write support (writes "uncompressed" GIF files only, due to unresolvable licensing issues).  The "gifmaker.py" script can be used to create GIF animations.
 
 - Reads 8-bit "L" and "P" TGA images.  Also reads 16-bit "RGB"
 images.
 
-- Added FLI read support.  This driver has only been tested
-on a few FLI samples.
+- Added FLI read support.  This driver has only been tested on a few FLI samples.
 
 - Reads 2-bit and 4-bit PCX images.
 
