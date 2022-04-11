@@ -4838,7 +4838,7 @@ was last updated, see the repository revision history:
     loop extension is present, instead of always setting it to 1 (from
     Valentino Volonghi).
 
-1.1.7c1 released
+1.1.7c1
 ----------------
 
 - Improved PNG compression (from Alexey Borzenkov).
@@ -5041,14 +5041,14 @@ was last updated, see the repository revision history:
 
 - Fixed encoding issue in PIL/WalImageFile (from Santiago M. Mola).
 
-1.1.6 released
+1.1.6
 --------------
 
 - Fixed some 64-bit compatibility warnings for Python 2.5.
 
 - Added threading support for the Sane driver (from Abel Deuring).
 
-1.1.6b2 released
+1.1.6b2
 ----------------
 
 - Added experimental "floodfill" function to the ImageDraw module
@@ -5084,7 +5084,7 @@ was last updated, see the repository revision history:
     "Adobe CMYK" images. (thanks to Cesare Leonardi and Kevin Cazabon
     for samples, debugging, and patches).
 
-1.1.6b1 released
+1.1.6b1
 ----------------
 
 - Added 'expand' option to the Image 'rotate' method.  If true, the
@@ -5105,7 +5105,7 @@ was last updated, see the repository revision history:
     and "LA" modes.  Added 'getmodebandnames' helper that return the
     band names.
 
-1.1.6a2 released
+1.1.6a2
 ----------------
 
 - Added float/double support to the TIFF loader (from Russell
@@ -5121,7 +5121,7 @@ was last updated, see the repository revision history:
 - Added support for duplex scanning to the Sane interface (Abel
     Deuring).
 
-1.1.6a1 released
+1.1.6a1
 ----------------
 
 - Fixed a memory leak in "convert(mode)", when converting from
@@ -5154,7 +5154,7 @@ was last updated, see the repository revision history:
 
 - Fixed line width calculation.
 
-1.1.6a0 released
+1.1.6a0
 ----------------
 
 - Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
@@ -5173,13 +5173,13 @@ was last updated, see the repository revision history:
 
 - Fixed potential integer division in PSDraw.image (from Eric Etheridge).
 
-1.1.5c2 and 1.1.5 final released
+1.1.5c2 and 1.1.5 final
 --------------------------------
 
 - Added experimental PERSPECTIVE transform method (from Jeff Breiden-
     bach).
 
-1.1.5c1 released
+1.1.5c1
 ----------------
 
 - Make sure "thumbnail" never generates zero-wide or zero-high images
@@ -5192,7 +5192,7 @@ was last updated, see the repository revision history:
     round-tripping white source pixels (reported by Henryk Gerlach and
     Jeff Epler).
 
-1.1.5b3 released
+1.1.5b3
 ----------------
 
 - Don't crash in "quantize" method if the number of colors requested
@@ -5202,7 +5202,7 @@ was last updated, see the repository revision history:
 
 - Added WBMP read/write support (based on code by Duncan Booth).
 
-1.1.5b2 released
+1.1.5b2
 ----------------
 
 - Added DPI read/write support to the PNG codec.  The decoder sets
@@ -5223,7 +5223,7 @@ was last updated, see the repository revision history:
     comments in PIL/SpiderImagePlugin.py for more information on this
     format.
 
-1.1.5b1 released
+1.1.5b1
 ----------------
 
 - Added new Sane release (from Ralph Heinkel).  See the Sane/README
@@ -5244,7 +5244,7 @@ was last updated, see the repository revision history:
     tolist() or tolist(0) returns a list of 2-tuples, as before.
     tolist(1) returns a flattened list instead.
 
-1.1.5a5 released
+1.1.5a5
 ----------------
 
 - Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
@@ -5262,7 +5262,7 @@ was last updated, see the repository revision history:
     FreeType2 and Mac OS X framework libraries, and more.  Many thanks
     to everyone who helped test the new "setup.py" script!
 
-1.1.5a4 released
+1.1.5a4
 ----------------
 
 - The "save" method now looks for a file format driver before
@@ -5299,7 +5299,7 @@ was last updated, see the repository revision history:
     module can still be built with earlier versions; see comments
     in _imagingft.c for details.
 
-1.1.5a3 released
+1.1.5a3
 ----------------
 
 - Added 'getim' method, which returns a PyCObject wrapping an
@@ -5314,7 +5314,7 @@ was last updated, see the repository revision history:
 - Fixed division by zero "equalize" on very small images (from
     Douglas Bagnall).
 
-1.1.5a2 released
+1.1.5a2
 ----------------
 
 - The "paste" method now supports the alternative "paste(im, mask)"
@@ -5344,7 +5344,7 @@ was last updated, see the repository revision history:
 
         http://effbot.org/downloads#pilwmf
 
-1.1.5a1 released
+1.1.5a1
 ----------------
 
 - Replaced broken WMF driver with a WMF stub plugin (see below).
@@ -5430,12 +5430,12 @@ was last updated, see the repository revision history:
     "L", "P" and "RGB" images with non-standard FillOrder (based on
     input from Jeff Breidenbach).
 
-1.1.4 final released
+1.1.4 final
 --------------------
 
 - Fixed ImageTk build problem on Unix.
 
-1.1.4b2 released
+1.1.4b2
 ----------------
 
 - Improved building on Mac OS X (from Jack Jansen).
@@ -5448,7 +5448,7 @@ was last updated, see the repository revision history:
 - Added embedded default font to the ImageFont module (currently
     an 8-pixel Courier font, taken from the X window distribution).
 
-1.1.4b1 released
+1.1.4b1
 ----------------
 
 - Added experimental EXIF support for JPEG files.  To extract EXIF
@@ -5474,7 +5474,7 @@ was last updated, see the repository revision history:
     loader, import WalImageFile and call the "open" method in that
     module.
 
-1.1.4a4 released
+1.1.4a4
 ----------------
 
 - Added updated SANE driver (Andrew Kuchling, Abel Deuring)
@@ -5507,7 +5507,7 @@ was last updated, see the repository revision history:
     an ImageWin.HWND object, and pass in this object instead of the
     device context.
 
-1.1.4a2 released
+1.1.4a2
 ----------------
 
 - Improved support for 16-bit unsigned integer images (mode "I;16").
@@ -5526,7 +5526,7 @@ was last updated, see the repository revision history:
     The "grabclipboard" function returns an Image object, a list of
     filenames (not in 1.1.4), or None if neither was found.
 
-1.1.4a1 released
+1.1.4a1
 ----------------
 
 - Improved support for drawing RGB data in palette images.  You can
@@ -5576,13 +5576,13 @@ was last updated, see the repository revision history:
 
 - Improved decoder error messages.
 
-1.1.3 final released
+1.1.3 final
 -------------------
 
 - Made setup.py look for old versions of zlib.  For some back-
     ground, see: https://zlib.net/advisory-2002-03-11.txt
 
-1.1.3c2 released
+1.1.3c2
 -----------------
 
 - Added setup.py file (tested on Unix and Windows).  You still
@@ -5595,7 +5595,7 @@ was last updated, see the repository revision history:
 - Fixed segmentation violation in ANTIALIAS filter (an internal
     buffer wasn't properly allocated).
 
-1.1.3c1 released
+1.1.3c1
 ----------------
 
 - Added ANTIALIAS downsampling filter for high-quality "resize"
@@ -5672,7 +5672,7 @@ was last updated, see the repository revision history:
     Note that PIL doesn't always preserve the "info" attribute
     for normal image operations.
 
-1.1.2c1 and 1.1.2 final released
+1.1.2c1 and 1.1.2 final
 ----------------
 
 - Adapted to Python 2.1.  Among other things, all uses of the
@@ -5716,7 +5716,7 @@ was last updated, see the repository revision history:
 - Changed ImageChops operators to copy palette and info dictionary
     from the first image argument.
 
-1.1.1 released
+1.1.1
 --------------
 
 - Additional fixes for Python 1.6/2.0, including TIFF "save" bug.
@@ -5747,7 +5747,7 @@ was last updated, see the repository revision history:
 
 - Tweaks to make drawing work on big-endian platforms.
 
-1.0c2 released
+1.0c2
 --------------
 
 - If PIL is built with the WITH_TKINTER flag, ImageTk can
@@ -5764,7 +5764,7 @@ was last updated, see the repository revision history:
 - ImageFont "load_path" now scans directory mentioned in .pth
     files (from Richard Jones).
 
-1.0c1 released
+1.0c1
 --------------
 
 - The TIFF plugin has been rewritten.  The new plugin fully
@@ -5779,7 +5779,7 @@ was last updated, see the repository revision history:
     appropriate), rather than writing weird things to disk for
     "xv" to choke upon. (bug reported by Les Schaffer).
 
-1.0b2 released
+1.0b2
 --------------
 
 - Major speedups for rotate, transform(EXTENT), and transform(AFFINE)
@@ -5856,7 +5856,7 @@ was last updated, see the repository revision history:
 
 - Fixed -f option to "pilconvert.py" (from Anthony Baxter)
 
-1.0b1 released
+1.0b1
 --------------
 
 - Added Toby J. Sargeant's quantization package.  To enable
@@ -5931,7 +5931,7 @@ was last updated, see the repository revision history:
     "paste" (and other methods that modify an image in place) on a
     newly opened file.
 
-0.3b2 released
+0.3b2
 --------------
 
 The test suite includes 825 individual tests.
@@ -5983,7 +5983,7 @@ The test suite includes 825 individual tests.
     to "YCbCr" (!)
     *** WARNING: MAY BREAK EXISTING CODE ***
 
-0.3b1 released
+0.3b1
 --------------
 
 The test suite includes 750 individual tests.
@@ -6047,7 +6047,7 @@ The test suite includes 750 individual tests.
 
 - Various minor fixes.
 
-0.3a4 released
+0.3a4
 --------------
 
 - Added experimental IPTC/NAA support.
@@ -6068,7 +6068,7 @@ The test suite includes 750 individual tests.
 
 - Fixed "fromstring" and "tostring" for mode "I" images.
 
-0.3a3 released
+0.3a3
 --------------
 
 The test suite includes 530 individual tests.
@@ -6109,7 +6109,7 @@ The test suite includes 530 individual tests.
 
 - Fixed a potential buffer overrun in the GIF encoder.
 
-0.3a2 released
+0.3a2
 --------------
 
 The test suite includes 400 individual tests.
@@ -6140,7 +6140,7 @@ The test suite includes 400 individual tests.
 
 - Removed bogus references to the crack coder (ImagingCrack).
 
-0.3a1 released
+0.3a1
 --------------
 
 - Make sure image is loaded in "tostring".
@@ -6370,7 +6370,7 @@ Magenta, Yellow, Black).
 
 - Added XPM (X pixmap) read support.
 
-0.2b3 released
+0.2b3
 --------------
 
 - Added MNG (multi-image network graphics) read support.  "Ming"
@@ -6453,7 +6453,7 @@ Magenta, Yellow, Black).
 
 - More conversions, including "RGB" to "1" and more.
 
-0.2a1 released
+0.2a1
 --------------
 
 - Where earlier versions accepted lists, this version accepts arbitrary
