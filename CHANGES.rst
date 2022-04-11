@@ -6129,23 +6129,28 @@ The test suite includes 400 individual tests.
 
 - Added keyword options to the "save" method.  The following options are currently supported:
 
-    Format    Option          Description
-    --------------------------------------------------------
-    JPEG      optimize        Minimize output file at the
-                                expense of compression speed.
+    .. list-table::
+        :widths: 25 25 50
+        :header-rows: 1
 
-    JPEG      progressive     Enable progressive output.
-                                The option value is ignored.
-
-    JPEG      quality         Set compression quality (1-100).
-                                The default value is 75.
-
-    JPEG      smooth          Smooth dithered images.
-                                Value is strength (1-100).
-                                Default is off (0).
-
-    PNG       optimize        Minimize output file at the
-                                expense of compression speed.
+        *   - Format
+            - Option
+            - Description
+        *   - JPEG
+            - optimize
+            - Minimize output file at the expense of compression speed.
+        *   - JPEG
+            - progressive
+            - Enable progressive output. The option value is ignored.
+        *   - JPEG
+            - quality
+            - Set compression quality (1-100). The default value is 75.
+        *   - JPEG
+            - smooth
+            - Smooth dithered images. Value is strength (1-100). Default is off (0).
+        *   - PNG
+            - optimize
+            - Minimize output file at the expense of compression speed.
 
 Expect more options in future releases.  Also note that file writers silently ignore unknown options.
 
@@ -6307,7 +6312,7 @@ Expect more options in future releases.  Also note that file writers silently ig
 - Only the Image module imports _imaging directly.  Other modules should refer to the binding module as "Image.core".
 
 0.0 to 0.1 (b1)
-------------
+---------------
 
 - A handbook is available (distributed separately).
 
