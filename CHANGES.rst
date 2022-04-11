@@ -4834,34 +4834,34 @@ was last updated, see the repository revision history:
 1.1.7 final
 -----------
 
-+ Set GIF loop info property to the number of iterations if a NETSCAPE
+- Set GIF loop info property to the number of iterations if a NETSCAPE
     loop extension is present, instead of always setting it to 1 (from
     Valentino Volonghi).
 
 1.1.7c1 released
 ----------------
 
-+ Improved PNG compression (from Alexey Borzenkov).
+- Improved PNG compression (from Alexey Borzenkov).
 
-+ Read interlaced PNG files (from Conrado Porto Lopes Gouvêa)
+- Read interlaced PNG files (from Conrado Porto Lopes Gouvêa)
 
-+ Added various TGA improvements from Alexey Borzenkov, including
+- Added various TGA improvements from Alexey Borzenkov, including
     support for specifying image orientation.
 
-+ Bumped block threshold to 16 megabytes, made size estimation a bit
+- Bumped block threshold to 16 megabytes, made size estimation a bit
     more accurate.  This speeds up allocation of large images.
 
-+ Fixed rounding error in ImagingDrawWideLine.
+- Fixed rounding error in ImagingDrawWideLine.
 
     "gormish" writes: ImagingDrawWideLine() in Draw.c has a bug in every
     version I've seen, which leads to different width lines depending on
     the order of the points in the line. This is especially bad at some
     angles where a 'width=2' line can completely disappear.
 
-+ Added support for RGBA mode to the SGI module (based on code by
+- Added support for RGBA mode to the SGI module (based on code by
     Karsten Hiddemann).
 
-+ Handle repeated IPTC tags (adapted from a patch by Eric Bruning).
+- Handle repeated IPTC tags (adapted from a patch by Eric Bruning).
 
     Eric writes: According to the specification, some IPTC tags can be
     repeated, e.g., tag 2:25 (keywords). PIL 1.1.6 only retained the last
@@ -4869,39 +4869,39 @@ was last updated, see the repository revision history:
     multiple tag instances, they are stored in a (python) list. Single tag
     instances remain as strings.
 
-+ Fixed potential crash in ImageFilter for small target images
+- Fixed potential crash in ImageFilter for small target images
     (reported by Zac Burns and Daniel Fetchinson).
 
-+ Use BMP instead of JPEG as temporary show format on Mac OS X.
+- Use BMP instead of JPEG as temporary show format on Mac OS X.
 
-+ Fixed putpixel/new for I;16 with colors > 255.
+- Fixed putpixel/new for I;16 with colors > 255.
 
-+ Added integer power support to ImagingMath.
+- Added integer power support to ImagingMath.
 
-+ Added limited support for I;16L mode (explicit little endian).
+- Added limited support for I;16L mode (explicit little endian).
 
-+ Moved WMF support into Image.core; enable WMF rendering by default
+- Moved WMF support into Image.core; enable WMF rendering by default
     if renderer is available.
 
-+ Mark the ARG plugin as obsolete.
+- Mark the ARG plugin as obsolete.
 
-+ Added version query mechanism to ImageCms and ImageFont, for
+- Added version query mechanism to ImageCms and ImageFont, for
     debugging.
 
-+ Added (experimental) ImageCms function for fetching the ICC profile
+- Added (experimental) ImageCms function for fetching the ICC profile
     for the current display (currently Windows only).
 
     Added HWND/HDC support to ImageCms.get_display_profile().
 
-+ Added WMF renderer (Windows only).
+- Added WMF renderer (Windows only).
 
-+ Added ImagePointHandler and ImageTransformHandler mixins; made
+- Added ImagePointHandler and ImageTransformHandler mixins; made
     ImageCmsTransform work with im.point.
 
-+ Fixed potential endless loop in the XVThumbnail reader (from Nikolai
+- Fixed potential endless loop in the XVThumbnail reader (from Nikolai
     Ugelvik).
 
-+ Added Kevin Cazabon's pyCMS package.
+- Added Kevin Cazabon's pyCMS package.
 
     The C code has been moved to _imagingcms.c, the Python interface
     module is installed as PIL.ImageCMS.
@@ -4922,71 +4922,71 @@ was last updated, see the repository revision history:
     wording), so I changed variable names and docstrings where
     applicable. Patches are tested under Python 2.6.
 
-+ Improved support for layer names in PSD files (from Sylvain Baubeau)
+- Improved support for layer names in PSD files (from Sylvain Baubeau)
 
     Sylvain writes: I needed to be able to retrieve the names of the
     layers in a PSD files. But PsdImagePlugin.py didn't do the job so I
     wrote this very small patch.
 
-+ Improved RGBA support for ImageTk for 8.4 and newer (from Con
+- Improved RGBA support for ImageTk for 8.4 and newer (from Con
     Radchenko).
 
     This replaces the slow run-length based encoding model with true
     compositing at the Tk level.
 
-+ Added support for 16- and 32-bit images to McIdas loader.
+- Added support for 16- and 32-bit images to McIdas loader.
 
     Based on file samples and stand-alone reader code provided by Craig
     Swank.
 
-+ Added ImagePalette support to putpalette.
+- Added ImagePalette support to putpalette.
 
-+ Fixed problem with incremental parsing of PNG files.
+- Fixed problem with incremental parsing of PNG files.
 
-+ Make selftest.py report non-zero status on failure (from Mark
+- Make selftest.py report non-zero status on failure (from Mark
     Sienkiewicz)
 
-+ Add big endian save support and multipage infrastructure to the TIFF
+- Add big endian save support and multipage infrastructure to the TIFF
     writer (from Sebastian Haase).
 
-+ Handle files with GPS IFD but no basic EXIF IFD (reported by Kurt
+- Handle files with GPS IFD but no basic EXIF IFD (reported by Kurt
     Schwehr).
 
-+ Added zTXT support (from Andrew Kuchling via Lowell Alleman).
+- Added zTXT support (from Andrew Kuchling via Lowell Alleman).
 
-+ Fixed potential infinite loop bug in ImageFont (from Guilherme Polo).
+- Fixed potential infinite loop bug in ImageFont (from Guilherme Polo).
 
-+ Added sample ICC profiles (from Kevin Cazabon)
+- Added sample ICC profiles (from Kevin Cazabon)
 
-+ Fixed array interface for I, F, and RGBA/RGBX images.
+- Fixed array interface for I, F, and RGBA/RGBX images.
 
-+ Added Chroma subsampling support for JPEG (from Justin Huff).
+- Added Chroma subsampling support for JPEG (from Justin Huff).
 
     Justin writes: Attached is a patch (against PIL 1.1.6) to provide
     control over the chroma subsampling done by the JPEG encoder.  This
     is often useful for reducing compression artifacts around edges of
     clipart and text.
 
-+ Added USM/Gaussian Blur code from Kevin Cazabon.
+- Added USM/Gaussian Blur code from Kevin Cazabon.
 
-+ Fixed bug w. uninitialized image data when cropping outside the
+- Fixed bug w. uninitialized image data when cropping outside the
     source image.
 
-+ Use ImageShow to implement the Image.show method.
+- Use ImageShow to implement the Image.show method.
 
     Most notably, this picks the 'display' utility when available.  It
     also allows application code to register new display utilities via
     the ImageShow registry.
 
-+ Release the GIL in the PNG compressor (from Michael van Tellingen).
+- Release the GIL in the PNG compressor (from Michael van Tellingen).
 
-+ Revised JPEG CMYK handling.
+- Revised JPEG CMYK handling.
 
     Always assume Adobe behaviour, both when reading and writing (based on
     a patch by Kevin Cazabon, and test data by Tim V. and Charlie Clark, and
     additional debugging by Michael van Tellingen).
 
-+ Support for preserving ICC profiles (by Florian Böch via Tim Hatch).
+- Support for preserving ICC profiles (by Florian Böch via Tim Hatch).
 
     Florian writes:
 
@@ -4999,27 +4999,27 @@ was last updated, see the repository revision history:
     metadata when saving as TIFF again, read/write TIFF resolution
     information correctly, and to correct inverted CMYK JPEG files.
 
-+ Fixed potential memory leak in median cut quantizer (from Evgeny Salmin).
+- Fixed potential memory leak in median cut quantizer (from Evgeny Salmin).
 
-+ Fixed OverflowError when reading upside-down BMP images.
+- Fixed OverflowError when reading upside-down BMP images.
 
-+ Added resolution save option for PDF files.
+- Added resolution save option for PDF files.
 
     Andreas Kostyrka writes: I've included a patched PdfImagePlugin.py
     based on 1.1.6 as included in Ubuntu, that supports a "resolution"
     save option. Not great, but it makes the PDF saving more useful by
     allowing PDFs that are not exactly 72dpi.
 
-+ Look for Tcl/Tk include files in version-specific include directory
+- Look for Tcl/Tk include files in version-specific include directory
     (from Encolpe Degoute).
 
-+ Fixed grayscale rounding error in ImageColor.getcolor (from Tim
+- Fixed grayscale rounding error in ImageColor.getcolor (from Tim
     Hatch).
 
-+ Fixed calculation of mean value in ImageEnhance.Contrast (reported
+- Fixed calculation of mean value in ImageEnhance.Contrast (reported
     by "roop" and Scott David Daniels).
 
-+ Fixed truetype positioning when first character has a negative left
+- Fixed truetype positioning when first character has a negative left
     bearing (from Ned Batchelder):
 
     Ned writes: In PIL 1.1.6, ImageDraw.text will position the string
@@ -5028,33 +5028,33 @@ was last updated, see the repository revision history:
     first slash will be clipped at the left, and the string will be
     mis-positioned.
 
-+ Fixed resolution unit bug in tiff reader/writer (based on code by
+- Fixed resolution unit bug in tiff reader/writer (based on code by
     Florian Höch, Gary Bloom, and others).
 
-+ Added simple transparency support for RGB images (reported by
+- Added simple transparency support for RGB images (reported by
     Sebastian Spaeth).
 
-+ Added support for Unicode filenames in ImageFont.truetype (from Donn
+- Added support for Unicode filenames in ImageFont.truetype (from Donn
     Ingle).
 
-+ Fixed potential crash in ImageFont.getname method (from Donn Ingle).
+- Fixed potential crash in ImageFont.getname method (from Donn Ingle).
 
-+ Fixed encoding issue in PIL/WalImageFile (from Santiago M. Mola).
+- Fixed encoding issue in PIL/WalImageFile (from Santiago M. Mola).
 
 1.1.6 released
 --------------
 
-+ Fixed some 64-bit compatibility warnings for Python 2.5.
+- Fixed some 64-bit compatibility warnings for Python 2.5.
 
-+ Added threading support for the Sane driver (from Abel Deuring).
+- Added threading support for the Sane driver (from Abel Deuring).
 
 1.1.6b2 released
 ----------------
 
-+ Added experimental "floodfill" function to the ImageDraw module
+- Added experimental "floodfill" function to the ImageDraw module
     (based on code by Eric Raymond).
 
-+ The default arguments for "frombuffer" doesn't match "fromstring"
+- The default arguments for "frombuffer" doesn't match "fromstring"
     and the documentation; this is a bug, and will most likely be fixed
     in a future version.  In this release, PIL prints a warning message
     instead.  To silence the warning, change any calls of the form
@@ -5062,11 +5062,11 @@ was last updated, see the repository revision history:
 
         frombuffer(mode, size, data, "raw", mode, 0, 1)
 
-+ Added "fromarray" function, which takes an object implementing the
+- Added "fromarray" function, which takes an object implementing the
     NumPy array interface and creates a PIL Image from it. (from Travis
     Oliphant).
 
-+ Added NumPy array interface support (__array_interface__) to the
+- Added NumPy array interface support (__array_interface__) to the
     Image class (based on code by Travis Oliphant).
 
     This allows you to easily convert between PIL image memories and
@@ -5080,54 +5080,54 @@ was last updated, see the repository revision history:
 
     im = Image.fromarray(a)
 
-+ Fixed CMYK polarity for JPEG images, by treating all images as
+- Fixed CMYK polarity for JPEG images, by treating all images as
     "Adobe CMYK" images. (thanks to Cesare Leonardi and Kevin Cazabon
     for samples, debugging, and patches).
 
 1.1.6b1 released
 ----------------
 
-+ Added 'expand' option to the Image 'rotate' method.  If true, the
+- Added 'expand' option to the Image 'rotate' method.  If true, the
     output image is made large enough to hold the entire rotated image.
 
-+ Changed the ImageDraw 'line' method to always draw the last pixel in
+- Changed the ImageDraw 'line' method to always draw the last pixel in
     a polyline, independent of line angle.
 
-+ Fixed bearing calculation and clipping in the ImageFont truetype
+- Fixed bearing calculation and clipping in the ImageFont truetype
     renderer; this could lead to clipped text, or crashes in the low-
     level _imagingft module.  (based on input from Adam Twardoch and
     others).
 
-+ Added ImageQt wrapper module, for converting PIL Image objects to
+- Added ImageQt wrapper module, for converting PIL Image objects to
     QImage objects in an efficient way.
 
-+ Fixed 'getmodebands' to return the number of bands also for "PA"
+- Fixed 'getmodebands' to return the number of bands also for "PA"
     and "LA" modes.  Added 'getmodebandnames' helper that return the
     band names.
 
 1.1.6a2 released
 ----------------
 
-+ Added float/double support to the TIFF loader (from Russell
+- Added float/double support to the TIFF loader (from Russell
     Nelson).
 
-+ Fixed broken use of realloc() in path.c (from Jan Matejek)
+- Fixed broken use of realloc() in path.c (from Jan Matejek)
 
-+ Added save support for Spider images (from William Baxter).
+- Added save support for Spider images (from William Baxter).
 
-+ Fixed broken 'paste' and 'resize' operations in pildriver
+- Fixed broken 'paste' and 'resize' operations in pildriver
     (from Bill Janssen).
 
-+ Added support for duplex scanning to the Sane interface (Abel
+- Added support for duplex scanning to the Sane interface (Abel
     Deuring).
 
 1.1.6a1 released
 ----------------
 
-+ Fixed a memory leak in "convert(mode)", when converting from
+- Fixed a memory leak in "convert(mode)", when converting from
     L to P.
 
-+ Added pixel access object.  The "load" method now returns a
+- Added pixel access object.  The "load" method now returns a
     access object that can be used to directly get and set pixel
     values, using ordinary [x, y] notation:
 
@@ -5138,118 +5138,118 @@ was last updated, see the repository revision history:
     If you're accessing more than a few pixels, this is a lot
     faster than using getpixel/putpixel.
 
-+ Fixed building on Cygwin (from Miki Tebeka).
+- Fixed building on Cygwin (from Miki Tebeka).
 
-+ Fixed "point(callable)" on unloaded images (reported by Håkan
+- Fixed "point(callable)" on unloaded images (reported by Håkan
     Karlsson).
 
-+ Fixed size bug in ImageWin.ImageWindow constructor (from Victor
+- Fixed size bug in ImageWin.ImageWindow constructor (from Victor
     Reijs)
 
-+ Fixed ImageMath float() and int() operations for Python 2.4
+- Fixed ImageMath float() and int() operations for Python 2.4
     (reported by Don Rozenberg).
 
-+ Fixed "RuntimeError: encoder error -8 in tostring" problem for
+- Fixed "RuntimeError: encoder error -8 in tostring" problem for
     wide "RGB", "I", and "F" images.
 
-+ Fixed line width calculation.
+- Fixed line width calculation.
 
 1.1.6a0 released
 ----------------
 
-+ Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
+- Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
 
-+ Fixed off-by-0.5 errors in the ANTIALIAS code (based on input
+- Fixed off-by-0.5 errors in the ANTIALIAS code (based on input
     from Douglas Bagnall).
 
-+ Added buffer interface support to the Path constructor.  If
+- Added buffer interface support to the Path constructor.  If
     a buffer is provided, it is assumed to contain a flat array
     of float coordinates (e.g. array.array('f', seq)).
 
-+ Added new ImageMath module.
+- Added new ImageMath module.
 
-+ Fixed ImageOps.equalize when used with a small number of distinct
+- Fixed ImageOps.equalize when used with a small number of distinct
     values (reported by David Kirtley).
 
-+ Fixed potential integer division in PSDraw.image (from Eric Etheridge).
+- Fixed potential integer division in PSDraw.image (from Eric Etheridge).
 
 1.1.5c2 and 1.1.5 final released
 --------------------------------
 
-+ Added experimental PERSPECTIVE transform method (from Jeff Breiden-
+- Added experimental PERSPECTIVE transform method (from Jeff Breiden-
     bach).
 
 1.1.5c1 released
 ----------------
 
-+ Make sure "thumbnail" never generates zero-wide or zero-high images
+- Make sure "thumbnail" never generates zero-wide or zero-high images
     (reported by Gene Skonicki)
 
-+ Fixed a "getcolors" bug that could result in a zero count for some
+- Fixed a "getcolors" bug that could result in a zero count for some
     colors (reported by Richard Oudkerk).
 
-+ Changed default "convert" palette to avoid "rounding errors" when
+- Changed default "convert" palette to avoid "rounding errors" when
     round-tripping white source pixels (reported by Henryk Gerlach and
     Jeff Epler).
 
 1.1.5b3 released
 ----------------
 
-+ Don't crash in "quantize" method if the number of colors requested
+- Don't crash in "quantize" method if the number of colors requested
     is larger than 256.  This release raises a ValueError exception;
     future versions may return a mode "RGB" image instead (reported
     by Richard Oudkerk).
 
-+ Added WBMP read/write support (based on code by Duncan Booth).
+- Added WBMP read/write support (based on code by Duncan Booth).
 
 1.1.5b2 released
 ----------------
 
-+ Added DPI read/write support to the PNG codec.  The decoder sets
+- Added DPI read/write support to the PNG codec.  The decoder sets
     the info["dpi"] attribute for PNG files with appropriate resolution
     settings.  The encoder uses the "dpi" option (based on code by Niki
     Spahiev).
 
-+ Added limited support for "point" mappings from mode "I" to mode "L".
+- Added limited support for "point" mappings from mode "I" to mode "L".
     Only 16-bit values are supported (other values are clipped), the lookup
     table must contain exactly 65536 entries, and the mode argument must be
     set to "L".
 
-+ Added support for Mac OS X icns files (based on code by Bob Ippolito).
+- Added support for Mac OS X icns files (based on code by Bob Ippolito).
 
-+ Added "ModeFilter" support to the ImageFilter module.
+- Added "ModeFilter" support to the ImageFilter module.
 
-+ Added support for Spider images (from William Baxter).  See the
+- Added support for Spider images (from William Baxter).  See the
     comments in PIL/SpiderImagePlugin.py for more information on this
     format.
 
 1.1.5b1 released
 ----------------
 
-+ Added new Sane release (from Ralph Heinkel).  See the Sane/README
+- Added new Sane release (from Ralph Heinkel).  See the Sane/README
     and Sane/CHANGES files for more information.
 
-+ Added experimental PngInfo chunk container to the PngImageFile
+- Added experimental PngInfo chunk container to the PngImageFile
     module.  This can be used to add arbitrary chunks to a PNG file.
     Create a PngInfo instance, use "add" or "add_text" to add chunks,
     and pass the instance as the "pnginfo" option when saving the
     file.
 
-+ Added "getpalette" method.  This returns the palette as a list,
+- Added "getpalette" method.  This returns the palette as a list,
     or None if the image has no palette.  To modify the palette, use
     "getpalette" to fetch the current palette, modify the list, and
     put it back using "putpalette".
 
-+ Added optional flattening to the ImagePath "tolist" method.
+- Added optional flattening to the ImagePath "tolist" method.
     tolist() or tolist(0) returns a list of 2-tuples, as before.
     tolist(1) returns a flattened list instead.
 
 1.1.5a5 released
 ----------------
 
-+ Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
+- Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
 
-+ Added "getcolors()" method.  This is similar to the existing histo-
+- Added "getcolors()" method.  This is similar to the existing histo-
     gram method, but looks at color values instead of individual layers,
     and returns an unsorted list of (count, color) tuples.
 
@@ -5258,87 +5258,87 @@ was last updated, see the repository revision history:
     is used to allocate internal tables, so you probably don't want to
     pass in too large values).
 
-+ Build improvements: Fixed building under AIX, improved detection of
+- Build improvements: Fixed building under AIX, improved detection of
     FreeType2 and Mac OS X framework libraries, and more.  Many thanks
     to everyone who helped test the new "setup.py" script!
 
 1.1.5a4 released
 ----------------
 
-+ The "save" method now looks for a file format driver before
+- The "save" method now looks for a file format driver before
     creating the file.
 
-+ Don't use antialiased truetype fonts when drawing in mode "P", "I",
+- Don't use antialiased truetype fonts when drawing in mode "P", "I",
     and "F" images.
 
-+ Rewrote the "setup.py" file.  The new version scans for available
+- Rewrote the "setup.py" file.  The new version scans for available
     support libraries, and configures both the libImaging core library
     and the bindings in one step.
 
     To use specific versions of the libraries, edit the ROOT variables
     in the setup.py file.
 
-+ Removed threaded "show" viewer; use the old "show" implementation
+- Removed threaded "show" viewer; use the old "show" implementation
     instead (Windows).
 
-+ Added deprecation warnings to Image.offset, ImageDraw.setink, and
+- Added deprecation warnings to Image.offset, ImageDraw.setink, and
     ImageDraw.setfill.
 
-+ Added width option to ImageDraw.line().  The current implementation
+- Added width option to ImageDraw.line().  The current implementation
     works best for straight lines; it does not support line joins, so
     polylines won't look good.
 
-+ ImageDraw.Draw is now a factory function instead of a class.  If
+- ImageDraw.Draw is now a factory function instead of a class.  If
     you need to create custom draw classes, inherit from the ImageDraw
     class.    All other code should use the factory function.
 
-+ Fixed loading of certain PCX files (problem reported by Greg
+- Fixed loading of certain PCX files (problem reported by Greg
     Hamilton, who also provided samples).
 
-+ Changed _imagingft.c to require FreeType 2.1 or newer.  The
+- Changed _imagingft.c to require FreeType 2.1 or newer.  The
     module can still be built with earlier versions; see comments
     in _imagingft.c for details.
 
 1.1.5a3 released
 ----------------
 
-+ Added 'getim' method, which returns a PyCObject wrapping an
+- Added 'getim' method, which returns a PyCObject wrapping an
     Imaging pointer.  The description string is set to IMAGING_MAGIC.
     See Imaging.h for pointer and string declarations.
 
-+ Fixed reading of TIFF JPEG images (problem reported by Ulrik
+- Fixed reading of TIFF JPEG images (problem reported by Ulrik
     Svensson).
 
-+ Made ImageColor work under Python 1.5.2
+- Made ImageColor work under Python 1.5.2
 
-+ Fixed division by zero "equalize" on very small images (from
+- Fixed division by zero "equalize" on very small images (from
     Douglas Bagnall).
 
 1.1.5a2 released
 ----------------
 
-+ The "paste" method now supports the alternative "paste(im, mask)"
+- The "paste" method now supports the alternative "paste(im, mask)"
     syntax (in this case, the box defaults to im's bounding box).
 
-+ The "ImageFile.Parser" class now works also for PNG files with
+- The "ImageFile.Parser" class now works also for PNG files with
     more than one IDAT block.
 
-+ Added DPI read/write to the TIFF codec, and fixed writing of
+- Added DPI read/write to the TIFF codec, and fixed writing of
     rational values.  The decoder sets the info["dpi"] attribute
     for TIFF files with appropriate resolution settings.  The
     encoder uses the "dpi" option.
 
-+ Disable interlacing for small (or narrow) GIF images, to
+- Disable interlacing for small (or narrow) GIF images, to
     work around what appears to be a hard-to-find bug in PIL's
     GIF encoder.
 
-+ Fixed writing of mode "P" PDF images.  Made mode "1" PDF
+- Fixed writing of mode "P" PDF images.  Made mode "1" PDF
     images smaller.
 
-+ Made the XBM reader a bit more robust; the file may now start
+- Made the XBM reader a bit more robust; the file may now start
     with a few whitespace characters.
 
-+ Added support for enhanced metafiles to the WMF driver.  The
+- Added support for enhanced metafiles to the WMF driver.  The
     separate PILWMF kit lets you render both placeable WMF files
     and EMF files as raster images.  See
 
@@ -5347,22 +5347,22 @@ was last updated, see the repository revision history:
 1.1.5a1 released
 ----------------
 
-+ Replaced broken WMF driver with a WMF stub plugin (see below).
+- Replaced broken WMF driver with a WMF stub plugin (see below).
 
-+ Fixed writing of mode "1", "L", and "CMYK" PDF images (based on
+- Fixed writing of mode "1", "L", and "CMYK" PDF images (based on
     input from Nicholas Riley and others).
 
-+ Fixed adaptive palette conversion for zero-width or zero-height
+- Fixed adaptive palette conversion for zero-width or zero-height
     images (from Chris Cogdon)
 
-+ Fixed reading of PNG images from QuickTime 6 (from Paul Pharr)
+- Fixed reading of PNG images from QuickTime 6 (from Paul Pharr)
 
-+ Added support for StubImageFile plugins, including stub plugins
+- Added support for StubImageFile plugins, including stub plugins
     for BUFR, FITS, GRIB, and HDF5 files.  A stub plugin can identify
     a given file format, but relies on application code to open and
     save files in that format.
 
-+ Added optional "encoding" argument to the ImageFont.truetype
+- Added optional "encoding" argument to the ImageFont.truetype
     factory.  This argument can be used to specify non-Unicode character
     maps for fonts that support that.  For example, to draw text using
     the Microsoft Symbol font, use:
@@ -5377,33 +5377,33 @@ was last updated, see the repository revision history:
     "ADOB" (Adobe Standard), "ADBE" (Adobe Expert), and "armn" (Apple
     Roman).  See the FreeType documentation for more information.
 
-+ Made "putalpha" a bit more robust; you can now attach an alpha
+- Made "putalpha" a bit more robust; you can now attach an alpha
     layer to a plain "L" or "RGB" image, and you can also specify
     constant alphas instead of alpha layers (using integers or colour
     names).
 
-+ Added experimental "LA" mode support.
+- Added experimental "LA" mode support.
 
     An "LA" image is an "L" image with an attached transparency layer.
     Note that support for "LA" is not complete; some operations may
     fail or produce unexpected results.
 
-+ Added "RankFilter", "MinFilter", "MedianFilter", and "MaxFilter"
+- Added "RankFilter", "MinFilter", "MedianFilter", and "MaxFilter"
     classes to the ImageFilter module.
 
-+ Improved support for applications using multiple threads; PIL
+- Improved support for applications using multiple threads; PIL
     now releases the global interpreter lock for many CPU-intensive
     operations (based on work by Kevin Cazabon).
 
-+ Ignore Unicode characters in the PCF loader (from Andres Polit)
+- Ignore Unicode characters in the PCF loader (from Andres Polit)
 
-+ Fixed typo in OleFileIO.loadfat, which could affect loading of
+- Fixed typo in OleFileIO.loadfat, which could affect loading of
     FlashPix and Image Composer images (Daniel Haertle)
 
-+ Fixed building on platforms that have Freetype but don't have
+- Fixed building on platforms that have Freetype but don't have
     Tcl/Tk (Jack Jansen, Luciano Nocera, Piet van Oostrum and others)
 
-+ Added EXIF GPSInfo read support for JPEG files.  To extract
+- Added EXIF GPSInfo read support for JPEG files.  To extract
     GPSInfo information, open the file, extract the exif dictionary,
     and check for the key 0x8825 (GPSInfo).  If present, it contains
     a dictionary mapping GPS keys to GPS values.  For a list of keys,
@@ -5412,46 +5412,46 @@ was last updated, see the repository revision history:
     The "ExifTags" module contains a GPSTAGS dictionary mapping GPS
     tags to tag names.
 
-+ Added DPI read support to the PCX and DCX codecs (info["dpi"]).
+- Added DPI read support to the PCX and DCX codecs (info["dpi"]).
 
-+ The "show" methods now uses a built-in image viewer on Windows.
+- The "show" methods now uses a built-in image viewer on Windows.
     This viewer creates an instance of the ImageWindow class (see
     below) and keeps it running in a separate thread.  NOTE: This
     was disabled in 1.1.5a4.
 
-+ Added experimental "Window" and "ImageWindow" classes to the
+- Added experimental "Window" and "ImageWindow" classes to the
     ImageWin module.  These classes allow you to create a WCK-style
     toplevel window, and use it to display raster data.
 
-+ Fixed some Python 1.5.2 issues (to build under 1.5.2, use the
+- Fixed some Python 1.5.2 issues (to build under 1.5.2, use the
     Makefile.pre.in/Setup.in approach)
 
-+ Added support for the TIFF FillOrder tag.  PIL can read mode "1",
+- Added support for the TIFF FillOrder tag.  PIL can read mode "1",
     "L", "P" and "RGB" images with non-standard FillOrder (based on
     input from Jeff Breidenbach).
 
 1.1.4 final released
 --------------------
 
-+ Fixed ImageTk build problem on Unix.
+- Fixed ImageTk build problem on Unix.
 
 1.1.4b2 released
 ----------------
 
-+ Improved building on Mac OS X (from Jack Jansen).
+- Improved building on Mac OS X (from Jack Jansen).
 
-+ Improved building on Windows with MinGW (from Klamer Shutte).
+- Improved building on Windows with MinGW (from Klamer Shutte).
 
-+ If no font is specified, ImageDraw now uses the embedded default
+- If no font is specified, ImageDraw now uses the embedded default
     font.  Use the "load" or "truetype" methods to load a real font.
 
-+ Added embedded default font to the ImageFont module (currently
+- Added embedded default font to the ImageFont module (currently
     an 8-pixel Courier font, taken from the X window distribution).
 
 1.1.4b1 released
 ----------------
 
-+ Added experimental EXIF support for JPEG files.  To extract EXIF
+- Added experimental EXIF support for JPEG files.  To extract EXIF
     information from a JPEG file, open the file as usual, and call the
     "_getexif" method.  If successful, this method returns a dictionary
     mapping EXIF TIFF tags to values.  If the file does not contain EXIF
@@ -5462,47 +5462,47 @@ was last updated, see the repository revision history:
 
     This interface will most likely change in future versions.
 
-+ Fixed a bug when using the "transparency" option with the GIF
+- Fixed a bug when using the "transparency" option with the GIF
     writer.
 
-+ Added limited support for "bitfield compression" in BMP files
+- Added limited support for "bitfield compression" in BMP files
     and DIB buffers, for 15-bit, 16-bit, and 32-bit images.  This
     also fixes a problem with ImageGrab module when copying screen-
     dumps from the clipboard on 15/16/32-bit displays.
 
-+ Added experimental WAL (Quake 2 textures) loader.  To use this
+- Added experimental WAL (Quake 2 textures) loader.  To use this
     loader, import WalImageFile and call the "open" method in that
     module.
 
 1.1.4a4 released
 ----------------
 
-+ Added updated SANE driver (Andrew Kuchling, Abel Deuring)
+- Added updated SANE driver (Andrew Kuchling, Abel Deuring)
 
-+ Use Python's "mmap" module on non-Windows platforms to read some
+- Use Python's "mmap" module on non-Windows platforms to read some
     uncompressed formats using memory mapping.  Also added a "frombuffer"
     function that allows you to access the contents of an existing string
     or buffer object as if it were an image object.
 
-+ Fixed a memory leak that could appear when processing mode "P"
+- Fixed a memory leak that could appear when processing mode "P"
     images (from Pier Paolo Glave)
 
-+ Ignore Unicode characters in the BDF loader (from Graham Dumpleton)
+- Ignore Unicode characters in the BDF loader (from Graham Dumpleton)
 
 1.1.4a3 released; windows only
 -----------------------------
 
-+ Added experimental RGBA-on-RGB drawing support.  To use RGBA
+- Added experimental RGBA-on-RGB drawing support.  To use RGBA
     colours on an RGB image, pass "RGBA" as the second string to
     the ImageDraw.Draw constructor.
 
-+ Added support for non-ASCII strings (Latin-1) and Unicode
+- Added support for non-ASCII strings (Latin-1) and Unicode
     to the truetype font renderer.
 
-+ The ImageWin "Dib" object can now be constructed directly from
+- The ImageWin "Dib" object can now be constructed directly from
     an image object.
 
-+ The ImageWin module now allows you use window handles as well
+- The ImageWin module now allows you use window handles as well
     as device contexts.  To use a window handle, wrap the handle in
     an ImageWin.HWND object, and pass in this object instead of the
     device context.
@@ -5510,33 +5510,33 @@ was last updated, see the repository revision history:
 1.1.4a2 released
 ----------------
 
-+ Improved support for 16-bit unsigned integer images (mode "I;16").
+- Improved support for 16-bit unsigned integer images (mode "I;16").
     This includes TIFF reader support, and support for "getextrema"
     and "point" (from Klamer Shutte).
 
-+ Made the BdfFontFile reader a bit more robust (from Kevin Cazabon
+- Made the BdfFontFile reader a bit more robust (from Kevin Cazabon
     and Dmitry Vasiliev)
 
-+ Changed TIFF writer to always write Compression tag, even when
+- Changed TIFF writer to always write Compression tag, even when
     using the default compression (from Greg Couch).
 
-+ Added "show" support for Mac OS X (from Dan Wolfe).
+- Added "show" support for Mac OS X (from Dan Wolfe).
 
-+ Added clipboard support to the "ImageGrab" module (Windows only).
+- Added clipboard support to the "ImageGrab" module (Windows only).
     The "grabclipboard" function returns an Image object, a list of
     filenames (not in 1.1.4), or None if neither was found.
 
 1.1.4a1 released
 ----------------
 
-+ Improved support for drawing RGB data in palette images.  You can
+- Improved support for drawing RGB data in palette images.  You can
     now use RGB tuples or colour names (see below) when drawing in a
     mode "P" image.  The drawing layer automatically assigns color
     indexes, as long as you don't use more than 256 unique colours.
 
-+ Moved self test from MiniTest/test.py to ./selftest.py.
+- Moved self test from MiniTest/test.py to ./selftest.py.
 
-+ Added support for CSS3-style color strings to most places that
+- Added support for CSS3-style color strings to most places that
     accept colour codes/tuples.  This includes the "ImageDraw" module,
     the Image "new" function, and the Image "paste" method.
 
@@ -5545,123 +5545,123 @@ was last updated, see the repository revision history:
     or "red" (most X11-style colour names are supported).  See the
     documentation for the "ImageColor" module for more information.
 
-+ Fixed DCX decoder (based on input from Larry Bates)
+- Fixed DCX decoder (based on input from Larry Bates)
 
-+ Added "IptcImagePlugin.getiptcinfo" helper to extract IPTC/NAA
+- Added "IptcImagePlugin.getiptcinfo" helper to extract IPTC/NAA
     newsphoto properties from JPEG, TIFF, or IPTC files.
 
-+ Support for TrueType/OpenType fonts has been added to
+- Support for TrueType/OpenType fonts has been added to
     the standard distribution.  You need the freetype 2.0
     library.
 
-+ Made the PCX reader a bit more robust when reading 2-bit
+- Made the PCX reader a bit more robust when reading 2-bit
     and 4-bit PCX images with odd image sizes.
 
-+ Added "Kernel" class to the ImageFilter module.  This class
+- Added "Kernel" class to the ImageFilter module.  This class
     allows you to filter images with user-defined 3x3 and 5x5
     convolution kernels.
 
-+ Added "putdata" support for mode "I", "F" and "RGB".
+- Added "putdata" support for mode "I", "F" and "RGB".
 
-+ The GIF writer now supports the transparency option (from
+- The GIF writer now supports the transparency option (from
     Denis Benoit).
 
-+ A HTML version of the module documentation is now shipped
+- A HTML version of the module documentation is now shipped
     with the source code distribution.  You'll find the files in
     the Doc subdirectory.
 
-+ Added support for Palm pixmaps (from Bill Janssen).  This
+- Added support for Palm pixmaps (from Bill Janssen).  This
     change was listed for 1.1.3, but the "PalmImagePlugin" driver
     didn't make it into the distribution.
 
-+ Improved decoder error messages.
+- Improved decoder error messages.
 
 1.1.3 final released
 -------------------
 
-+ Made setup.py look for old versions of zlib.  For some back-
+- Made setup.py look for old versions of zlib.  For some back-
     ground, see: https://zlib.net/advisory-2002-03-11.txt
 
 1.1.3c2 released
 -----------------
 
-+ Added setup.py file (tested on Unix and Windows).  You still
+- Added setup.py file (tested on Unix and Windows).  You still
     need to build libImaging/imaging.lib in the traditional way,
     but the setup.py script takes care of the rest.
 
     The old Setup.in/Makefile.pre.in build method is still
     supported.
 
-+ Fixed segmentation violation in ANTIALIAS filter (an internal
+- Fixed segmentation violation in ANTIALIAS filter (an internal
     buffer wasn't properly allocated).
 
 1.1.3c1 released
 ----------------
 
-+ Added ANTIALIAS downsampling filter for high-quality "resize"
+- Added ANTIALIAS downsampling filter for high-quality "resize"
     and "thumbnail" operations.  Also added filter option to the
     "thumbnail" operation; the default value is NEAREST, but this
     will most likely change in future versions.
 
-+ Fixed plugin loader to be more robust if the __file__
+- Fixed plugin loader to be more robust if the __file__
     variable isn't set.
 
-+ Added seek/tell support (for layers) to the PhotoShop
+- Added seek/tell support (for layers) to the PhotoShop
     loader.  Layer 0 is the main image.
 
-+ Added new (but experimental) "ImageOps" module, which provides
+- Added new (but experimental) "ImageOps" module, which provides
     shortcuts for commonly used operations on entire images.
 
-+ Don't mess up when loading PNG images if the decoder leaves
+- Don't mess up when loading PNG images if the decoder leaves
     data in the output buffer.  This could cause internal errors
     on some PNG images, with some versions of ZLIB. (Bug report
     and patch provided by Bernhard Herzog.)
 
-+ Don't mess up on Unicode filenames.
+- Don't mess up on Unicode filenames.
 
-+ Don't mess up when drawing on big endian platforms.
+- Don't mess up when drawing on big endian platforms.
 
-+ Made the TIFF loader a bit more robust; it can now read some
+- Made the TIFF loader a bit more robust; it can now read some
     more slightly broken TIFF files (based on input from Ted Wright,
     Bob Klimek, and D. Alan Stewart)
 
-+ Added OS/2 EMX build files (from Andrew MacIntyre)
+- Added OS/2 EMX build files (from Andrew MacIntyre)
 
-+ Change "ImageFont" to reject image files if they don't have the
+- Change "ImageFont" to reject image files if they don't have the
     right mode.  Older versions could leak memory for "P" images.
     (Bug reported by Markus Gritsch).
 
-+ Renamed some internal functions to avoid potential build
+- Renamed some internal functions to avoid potential build
     problem on Mac OS X.
 
-+ Added DL_EXPORT where relevant (for Cygwin, based on input
+- Added DL_EXPORT where relevant (for Cygwin, based on input
     from Robert Yodlowski)
 
-+ (re)moved bogus __init__ call in BdfFontFile (bug spotted
+- (re)moved bogus __init__ call in BdfFontFile (bug spotted
     by Fred Clare)
 
-+ Added "ImageGrab" support (Windows only)
+- Added "ImageGrab" support (Windows only)
 
-+ Added support for XBM hotspots (based on code contributed by
+- Added support for XBM hotspots (based on code contributed by
     Bernhard Herzog).
 
-+ Added write support for more TIFF tags, namely the Artist,
+- Added write support for more TIFF tags, namely the Artist,
     Copyright, DateTime, ResolutionUnit, Software, XResolution and
     YResolution tags (from Greg Couch)
 
-+ Added TransposedFont wrapper to ImageFont module
+- Added TransposedFont wrapper to ImageFont module
 
-+ Added "optimize" flag to GIF encoder.  If optimize is present
+- Added "optimize" flag to GIF encoder.  If optimize is present
     and non-zero, PIL will work harder to create a small file.
 
-+ Raise "EOFError" (not IndexError) when reading beyond the
+- Raise "EOFError" (not IndexError) when reading beyond the
     end of a TIFF sequence.
 
-+ Support rewind ("seek(0)") for GIF and TIFF sequences.
+- Support rewind ("seek(0)") for GIF and TIFF sequences.
 
-+ Load grayscale GIF images as mode "L"
+- Load grayscale GIF images as mode "L"
 
-+ Added DPI read/write support to the JPEG codec.  The decoder
+- Added DPI read/write support to the JPEG codec.  The decoder
     sets the info["dpi"] attribute for JPEG files with JFIF dpi
     settings.  The encoder uses the "dpi" option:
 
@@ -5675,82 +5675,82 @@ was last updated, see the repository revision history:
 1.1.2c1 and 1.1.2 final released
 ----------------
 
-+ Adapted to Python 2.1.  Among other things, all uses of the
+- Adapted to Python 2.1.  Among other things, all uses of the
     "regex" module have been replaced with "re".
 
-+ Fixed attribute error when reading large PNG files (this bug
+- Fixed attribute error when reading large PNG files (this bug
     was introduced in maintenance code released after the 1.1.1
     release)
 
-+ Ignore non-string objects in sys.path
+- Ignore non-string objects in sys.path
 
-+ Fixed Image.transform(EXTENT) for negative xoffsets
+- Fixed Image.transform(EXTENT) for negative xoffsets
 
-+ Fixed loading of image plugins if PIL is installed as a package.
+- Fixed loading of image plugins if PIL is installed as a package.
     (The plugin loader now always looks in the directory where the
     Image.py module itself is found, even if that directory isn't on
     the standard search path)
 
-+ The Png plugin has been added to the list of preloaded standard
+- The Png plugin has been added to the list of preloaded standard
     formats
 
-+ Fixed bitmap/text drawing in fill mode.
+- Fixed bitmap/text drawing in fill mode.
 
-+ Fixed "getextrema" to work also for multiband images.
+- Fixed "getextrema" to work also for multiband images.
 
-+ Added transparency support for L and P images to the PNG codec.
+- Added transparency support for L and P images to the PNG codec.
 
-+ Improved support for read-only images.  The "load" method now
+- Improved support for read-only images.  The "load" method now
     sets the "readonly" attribute for memory-mapped images.  Operations
     that modifies an image in place (such as "paste" and drawing operations)
     creates an in-memory copy of the image, if necessary.  (before this
     change, any attempt to modify a memory-mapped image resulted in a
     core dump...)
 
-+ Added special cases for lists everywhere PIL expects a sequence.
+- Added special cases for lists everywhere PIL expects a sequence.
     This should speed up things like "putdata" and drawing operations.
 
-+ The Image.offset method is deprecated.  Use the ImageChops.offset
+- The Image.offset method is deprecated.  Use the ImageChops.offset
     function instead.
 
-+ Changed ImageChops operators to copy palette and info dictionary
+- Changed ImageChops operators to copy palette and info dictionary
     from the first image argument.
 
 1.1.1 released
 --------------
 
-+ Additional fixes for Python 1.6/2.0, including TIFF "save" bug.
+- Additional fixes for Python 1.6/2.0, including TIFF "save" bug.
 
-+ Changed "init" to properly load plugins when PIL is used as a
+- Changed "init" to properly load plugins when PIL is used as a
     package.
 
-+ Fixed broken "show" method (on Unix)
+- Fixed broken "show" method (on Unix)
 
 1.0 to 1.1
 ----------
 
-+ Adapted to Python 1.6 ("append" and other method changes)
+- Adapted to Python 1.6 ("append" and other method changes)
 
-+ Fixed Image.paste when pasting with solid colour and matte
+- Fixed Image.paste when pasting with solid colour and matte
     layers ("L" or "RGBA" masks) (bug reported by Robert Kern)
 
-+ To make it easier to distribute prebuilt versions of PIL,
+- To make it easier to distribute prebuilt versions of PIL,
     the tkinit binding stuff has been moved to a separate
     extension module, named "_imagingtk".
 
 0.3b2 to 1.0 final
 ------
 
-+ If there's no 16-bit integer (like on a Cray T3E), set
+- If there's no 16-bit integer (like on a Cray T3E), set
     INT16 to the smallest integer available.  Most of the
     library works just fine anyway (from Bill Crutchfield)
 
-+ Tweaks to make drawing work on big-endian platforms.
+- Tweaks to make drawing work on big-endian platforms.
 
 1.0c2 released
 --------------
 
-+ If PIL is built with the WITH_TKINTER flag, ImageTk can
+- If PIL is built with the WITH_TKINTER flag, ImageTk can
     automatically hook into a standard Tkinter build.  You
     no longer need to build your own Tkinter to use the
     ImageTk module.
@@ -5758,41 +5758,41 @@ was last updated, see the repository revision history:
     The old way still works, though.  For more information,
     see Tk/install.txt.
 
-+ Some tweaks to ImageTk to support multiple Tk interpreters
+- Some tweaks to ImageTk to support multiple Tk interpreters
     (from Greg Couch).
 
-+ ImageFont "load_path" now scans directory mentioned in .pth
+- ImageFont "load_path" now scans directory mentioned in .pth
     files (from Richard Jones).
 
 1.0c1 released
 --------------
 
-+ The TIFF plugin has been rewritten.  The new plugin fully
+- The TIFF plugin has been rewritten.  The new plugin fully
     supports all major PIL image modes (including F and I).
 
-+ The ImageFile module now includes a Parser class, which can
+- The ImageFile module now includes a Parser class, which can
     be used to incrementally decode an image file (while down-
     loading it from the net, for example).  See the handbook for
     details.
 
-+ "show" now converts non-standard modes to "L" or "RGB" (as
+- "show" now converts non-standard modes to "L" or "RGB" (as
     appropriate), rather than writing weird things to disk for
     "xv" to choke upon. (bug reported by Les Schaffer).
 
 1.0b2 released
 --------------
 
-+ Major speedups for rotate, transform(EXTENT), and transform(AFFINE)
+- Major speedups for rotate, transform(EXTENT), and transform(AFFINE)
     when using nearest neighbour resampling.
 
-+ Modified ImageDraw to be compatible with the Arrow graphics
+- Modified ImageDraw to be compatible with the Arrow graphics
     interface.  See the handbook for details.
 
-+ PIL now automatically loads file codecs when used as a package
+- PIL now automatically loads file codecs when used as a package
     (from The Dragon De Monsyne).  Also included an __init__.py file
     in the standard distribution.
 
-+ The GIF encoder has been modified to produce much smaller files.
+- The GIF encoder has been modified to produce much smaller files.
 
     PIL now uses a run-length encoding method to encode GIF files.
     On a random selection of GIF images grabbed from the web, this
@@ -5800,16 +5800,16 @@ was last updated, see the repository revision history:
     LZW files, where the earlier version made them over 5 times
     larger.  YMMV, of course.
 
-+ Added PCX write support (works with "1", "P", "L", and "RGB")
+- Added PCX write support (works with "1", "P", "L", and "RGB")
 
-+ Added "bitmap" and "textsize" methods to ImageDraw.
+- Added "bitmap" and "textsize" methods to ImageDraw.
 
-+ Improved font rendering code.  Fixed a bug or two, and moved
+- Improved font rendering code.  Fixed a bug or two, and moved
     most of the time critical stuff to C.
 
-+ Removed "bdf2pil.py".  Use "pilfont.py" instead!
+- Removed "bdf2pil.py".  Use "pilfont.py" instead!
 
-+ Improved 16-bit support (still experimental, though).
+- Improved 16-bit support (still experimental, though).
 
     The following methods now support "I;16" and "I;16B" images:
     "getpixel", "copy", "convert" (to and from mode "I"), "resize",
@@ -5820,7 +5820,7 @@ was last updated, see the repository revision history:
 
     NOTE: ALL other operations are still UNDEFINED on 16-bit images.
 
-+ The "paste" method now supports constant sources.
+- The "paste" method now supports constant sources.
 
     Just pass a colour value (a number or a tuple, depending on
     the target image mode) instead of the source image.
@@ -5830,7 +5830,7 @@ was last updated, see the repository revision history:
     source image if you passed it a colour instead of an image).
     In this version, this is handled on the C level instead.
 
-+ Added experimental "RGBa" mode support.
+- Added experimental "RGBa" mode support.
 
     An "RGBa" image is an RGBA image where the colour components
     have have been premultiplied with the alpha value.  PIL allows
@@ -5839,27 +5839,27 @@ was last updated, see the repository revision history:
     of multiplications and shifts, it is typically about twice
     as fast an ordinary RGBA paste.
 
-+ Eliminated extra conversion step when pasting "RGBA" or "RGBa"
+- Eliminated extra conversion step when pasting "RGBA" or "RGBa"
     images on top of "RGB" images.
 
-+ Fixed Image.BICUBIC resampling for "RGB" images.
+- Fixed Image.BICUBIC resampling for "RGB" images.
 
-+ Fixed PCX image file handler to properly read 8-bit PCX
+- Fixed PCX image file handler to properly read 8-bit PCX
     files (bug introduced in 1.0b1, reported by Bernhard
     Herzog)
 
-+ Fixed PSDraw "image" method to restore the coordinate
+- Fixed PSDraw "image" method to restore the coordinate
     system.
 
-+ Fixed "blend" problem when applied to images that was
+- Fixed "blend" problem when applied to images that was
     not already loaded (reported by Edward C. Jones)
 
-+ Fixed -f option to "pilconvert.py" (from Anthony Baxter)
+- Fixed -f option to "pilconvert.py" (from Anthony Baxter)
 
 1.0b1 released
 --------------
 
-+ Added Toby J. Sargeant's quantization package.  To enable
+- Added Toby J. Sargeant's quantization package.  To enable
     quantization, use the "palette" option to "convert":
 
     imOut = im.convert("P", palette=Image.ADAPTIVE)
@@ -5872,61 +5872,61 @@ was last updated, see the repository revision history:
     a maximum coverage quantizer, which will be supported by
     future versions of PIL.
 
-+ Added Eric S. Raymond's "pildriver" image calculator to the
+- Added Eric S. Raymond's "pildriver" image calculator to the
     distribution.  See the docstring for more information.
 
-+ The "offset" method no longer dumps core if given positive
+- The "offset" method no longer dumps core if given positive
     offsets (from Charles Waldman).
 
-+ Fixed a resource leak that could cause ImageWin to run out of
+- Fixed a resource leak that could cause ImageWin to run out of
     GDI resources (from Roger Burnham).
 
-+ Added "arc", "chord", and "pieslice" methods to ImageDraw (inspired
+- Added "arc", "chord", and "pieslice" methods to ImageDraw (inspired
     by code contributed by Richard Jones).
 
-+ Added experimental 16-bit support, via modes "I;16" (little endian
+- Added experimental 16-bit support, via modes "I;16" (little endian
     data) and "I;16B" (big endian).  Only a few methods properly support
     such images (see above).
 
-+ Added XV thumbnail file handler (from Gene Cash).
+- Added XV thumbnail file handler (from Gene Cash).
 
-+ Fixed BMP image file handler to handle palette images with small
+- Fixed BMP image file handler to handle palette images with small
     palettes (from Rob Hooft).
 
-+ Fixed Sun raster file handler for palette images (from Charles
+- Fixed Sun raster file handler for palette images (from Charles
     Waldman).
 
-+ Improved various internal error messages.
+- Improved various internal error messages.
 
-+ Fixed Path constructor to handle arbitrary sequence objects.  This
+- Fixed Path constructor to handle arbitrary sequence objects.  This
     also affects the ImageDraw class (from Richard Jones).
 
-+ Fixed a bug in JpegDecode that caused PIL to report "decoder error
+- Fixed a bug in JpegDecode that caused PIL to report "decoder error
     -2" for some progressive JPEG files (reported by Magnus Källström,
     who also provided samples).
 
-+ Fixed a bug in JpegImagePlugin that caused PIL to hang when loading
+- Fixed a bug in JpegImagePlugin that caused PIL to hang when loading
     JPEG files using 16-bit quantization tables.
 
-+ The Image "transform" method now supports Image.QUAD transforms.
+- The Image "transform" method now supports Image.QUAD transforms.
     The data argument is an 8-tuple giving the upper left, lower
     left, lower right, and upper right corner of the source quadri-
     lateral.  Also added Image.MESH transform which takes a list
     of quadrilaterals.
 
-+ The Image "resize", "rotate", and "transform" methods now support
+- The Image "resize", "rotate", and "transform" methods now support
     Image.BILINEAR (2x2) and Image.BICUBIC (4x4) resampling filters.
     Filters can be used with all transform methods.
 
-+ The ImageDraw "rectangle" method now includes both the right
+- The ImageDraw "rectangle" method now includes both the right
     and the bottom edges when drawing filled rectangles.
 
-+ The TGA decoder now works properly for runlength encoded images
+- The TGA decoder now works properly for runlength encoded images
     which have more than one byte per pixel.
 
-+ "getbands" on an YCbCr image now returns ("Y", "Cb", "Cr")
+- "getbands" on an YCbCr image now returns ("Y", "Cb", "Cr")
 
-+ Some file drivers didn't handle the optional "modify" argument
+- Some file drivers didn't handle the optional "modify" argument
     to the load method.  This resulted in exceptions when you used
     "paste" (and other methods that modify an image in place) on a
     newly opened file.
@@ -5936,39 +5936,39 @@ was last updated, see the repository revision history:
 
 The test suite includes 825 individual tests.
 
-+ An Image "getbands" method has been added.  It returns a tuple
+- An Image "getbands" method has been added.  It returns a tuple
     containing the individual band names for this image.  To figure
     out how many bands an image has, use "len(im.getbands())".
 
-+ An Image "putpixel" method has been added.
+- An Image "putpixel" method has been added.
 
-+ The Image "point" method can now be used to convert "L" images
+- The Image "point" method can now be used to convert "L" images
     to any other format, via a lookup table.  That table should
     contain 256 values for each band in the output image.
 
-+ Some file drivers (including FLI/FLC, GIF, and IM) accidentally
+- Some file drivers (including FLI/FLC, GIF, and IM) accidentally
     overwrote the offset method with an internal attribute.  All
     drivers have been updated to use private attributes where
     possible.
 
-+ The Image "histogram" method now works for "I" and "F" images.
+- The Image "histogram" method now works for "I" and "F" images.
     For these modes, PIL divides the range between the min and
     max values used in the image into 256 bins.  You can also
     pass in your own min and max values via the "extrema" option:
 
     h = im.histogram(extrema=(0, 255))
 
-+ An Image "getextrema" method has been added.  It returns the
+- An Image "getextrema" method has been added.  It returns the
     min and max values used in the image. In this release, this
     works for single band images only.
 
-+ Changed the PNG driver to load and save mode "I" images as
+- Changed the PNG driver to load and save mode "I" images as
     16-bit images.  When saving, values outside the range 0..65535
     are clipped.
 
-+ Fixed ImageFont.py to work with the new "pilfont" compiler.
+- Fixed ImageFont.py to work with the new "pilfont" compiler.
 
-+ Added JPEG "save" and "draft" support for mode "YCbCr" images.
+- Added JPEG "save" and "draft" support for mode "YCbCr" images.
     Note that if you save an "YCbCr" image as a JPEG file and read
     it back, it is read as an RGB file.  To get around this, you
     can use the "draft" method:
@@ -5976,10 +5976,10 @@ The test suite includes 825 individual tests.
     im = Image.open("color.jpg")
     im.draft("YCbCr", im.size)
 
-+ Read "RGBA" TGA images.  Also fixed the orientation bug; all
+- Read "RGBA" TGA images.  Also fixed the orientation bug; all
     images should now come out the right way.
 
-+ Changed mode name (and internal representation) from "YCrCb"
+- Changed mode name (and internal representation) from "YCrCb"
     to "YCbCr" (!)
     *** WARNING: MAY BREAK EXISTING CODE ***
 
@@ -5988,16 +5988,16 @@ The test suite includes 825 individual tests.
 
 The test suite includes 750 individual tests.
 
-+ The "pilfont" package is now included in the standard PIL
+- The "pilfont" package is now included in the standard PIL
     distribution.  The pilfont utility can be used to convert
     X BDF and PCF raster font files to a format understood by
     the ImageFont module.
 
-+ GIF files are now interlaced by default.  To write a
+- GIF files are now interlaced by default.  To write a
     non-interlaced file, pass interlace=0 to the "save"
     method.
 
-+ The default string format has changed for the "fromstring"
+- The default string format has changed for the "fromstring"
     and "tostring" methods.
     *** WARNING: MAY BREAK EXISTING CODE ***
 
@@ -6013,148 +6013,148 @@ The test suite includes 750 individual tests.
     data = im.tostring("raw", "RGBX", 0, -1)
     im.fromstring(data, "raw", "RGBX", 0, -1)
 
-+ "new" no longer gives a MemoryError if the width or height
+- "new" no longer gives a MemoryError if the width or height
     is zero (this only happened on platforms where malloc(0)
     or calloc(0) returns NULL).
 
-+ "new" now adds a default palette object to "P" images.
+- "new" now adds a default palette object to "P" images.
 
-+ You can now convert directly between all modes supported by
+- You can now convert directly between all modes supported by
     PIL.  When converting colour images to "P", PIL defaults to
     a "web" palette and dithering.  When converting greyscale
     images to "1", PIL uses a thresholding and dithering.
 
-+ Added a "dither" option to "convert".  By default, "convert"
+- Added a "dither" option to "convert".  By default, "convert"
     uses floyd-steinberg error diffusion for "P" and "1" targets,
     so this option is only used to *disable* dithering. Allowed
     values are NONE (no dithering) or FLOYDSTEINBERG (default).
 
     imOut = im.convert("P", dither=Image.NONE)
 
-+ Added a full set of "I" decoders.  You can use "fromstring"
+- Added a full set of "I" decoders.  You can use "fromstring"
     (and file decoders) to read any standard integer type as an
     "I" image.
 
-+ Added some support for "YCbCr" images (creation, conversion
+- Added some support for "YCbCr" images (creation, conversion
     from/to "L" and "RGB", IM YCC load/save)
 
-+ "getpixel" now works properly with fractional coordinates.
+- "getpixel" now works properly with fractional coordinates.
 
-+ ImageDraw "setink" now works with "I", "F", "RGB", "RGBA",
+- ImageDraw "setink" now works with "I", "F", "RGB", "RGBA",
     "RGBX", "CMYK", and "YCbCr" images.
 
-+ ImImagePlugin no longer attaches palettes to "RGB" images.
+- ImImagePlugin no longer attaches palettes to "RGB" images.
 
-+ Various minor fixes.
+- Various minor fixes.
 
 0.3a4 released
 --------------
 
-+ Added experimental IPTC/NAA support.
+- Added experimental IPTC/NAA support.
 
-+ Eliminated AttributeError exceptions after "crop" (from
+- Eliminated AttributeError exceptions after "crop" (from
     Skip Montanaro)
 
-+ Reads some uncompressed formats via memory mapping (this
+- Reads some uncompressed formats via memory mapping (this
     is currently supported on Win32 only)
 
-+ Fixed some last minute glitches in the last alpha release
+- Fixed some last minute glitches in the last alpha release
     (Types instead of types in Image.py, version numbers, etc.)
 
-+ Eliminated some more bogus compiler warnings.
+- Eliminated some more bogus compiler warnings.
 
-+ Various fixes to make PIL compile and run smoother on Macs
+- Various fixes to make PIL compile and run smoother on Macs
     (from Jack Jansen).
 
-+ Fixed "fromstring" and "tostring" for mode "I" images.
+- Fixed "fromstring" and "tostring" for mode "I" images.
 
 0.3a3 released
 --------------
 
 The test suite includes 530 individual tests.
 
-+ Eliminated unexpected side-effect in "paste" with matte.  "paste"
+- Eliminated unexpected side-effect in "paste" with matte.  "paste"
     now works properly also if compiled with "gcc".
 
-+ Adapted to Python 1.5 (build issues only)
+- Adapted to Python 1.5 (build issues only)
 
-+ Fixed the ImageDraw "point" method to draw also the last
+- Fixed the ImageDraw "point" method to draw also the last
     point (!).
 
-+ Added "I" and "RGBX" support to Image.new.
+- Added "I" and "RGBX" support to Image.new.
 
-+ The plugin path is now properly prepended to the module search
+- The plugin path is now properly prepended to the module search
     path when a plugin module is imported.
 
-+ Added "draw" method to the ImageWin.Dib class.  This is used by
+- Added "draw" method to the ImageWin.Dib class.  This is used by
     Topaz to print images on Windows printers.
 
-+ "convert" now supports conversions from "P" to "1" and "F".
+- "convert" now supports conversions from "P" to "1" and "F".
 
-+ "paste" can now take a colour instead of an image as the first argument.
+- "paste" can now take a colour instead of an image as the first argument.
     The colour must match the colour argument given to the new function, and
     match the mode of the target image.
 
-+ Fixed "paste" to allow a mask also for mode "F" images.
+- Fixed "paste" to allow a mask also for mode "F" images.
 
-+ The BMP driver now saves mode "1" images.  When loading images, the mode
+- The BMP driver now saves mode "1" images.  When loading images, the mode
     is set to "L" for 8-bit files with greyscale palettes, and to "P" for
     other 8-bit files.
 
-+ The IM driver now reads and saves "1" images (file modes "0 1" or "L 1").
+- The IM driver now reads and saves "1" images (file modes "0 1" or "L 1").
 
-+ The JPEG and GIF drivers now saves "1" images.  For JPEG, the image
+- The JPEG and GIF drivers now saves "1" images.  For JPEG, the image
     is saved as 8-bit greyscale (it will load as mode "L").  For GIF, the
     image will be loaded as a "P" image.
 
-+ Fixed a potential buffer overrun in the GIF encoder.
+- Fixed a potential buffer overrun in the GIF encoder.
 
 0.3a2 released
 --------------
 
 The test suite includes 400 individual tests.
 
-+ Improvements to the test suite revealed a number of minor bugs, which
+- Improvements to the test suite revealed a number of minor bugs, which
     are all fixed.  Note that crop/paste, 32-bit ImageDraw, and ImageFont
     are still weak spots in this release.
 
-+ Added "putpalette" method to the Image class.  You can use this
+- Added "putpalette" method to the Image class.  You can use this
     to add or modify the palette for "P" and "L" images.  If a palette
     is added to an "L" image, it is automatically converted to a "P"
     image.
 
-+ Fixed ImageDraw to properly handle 32-bit image memories
+- Fixed ImageDraw to properly handle 32-bit image memories
     ("RGB", "RGBA", "CMYK", "F")
 
-+ Fixed "fromstring" and "tostring" not to mess up the mode attribute
+- Fixed "fromstring" and "tostring" not to mess up the mode attribute
     in default mode.
 
-+ Changed ImPlatform.h to work on CRAY's (don't have one at home, so I
+- Changed ImPlatform.h to work on CRAY's (don't have one at home, so I
     haven't tried it).  The previous version assumed that either "short"
     or "int" were 16-bit wide. PIL still won't compile on platforms where
     neither "short", "int" nor "long" are 32-bit wide.
 
-+ Added file= and data= keyword arguments to PhotoImage and BitmapImage.
+- Added file= and data= keyword arguments to PhotoImage and BitmapImage.
     This allows you to use them as drop-in replacements for the corre-
     sponding Tkinter classes.
 
-+ Removed bogus references to the crack coder (ImagingCrack).
+- Removed bogus references to the crack coder (ImagingCrack).
 
 0.3a1 released
 --------------
 
-+ Make sure image is loaded in "tostring".
+- Make sure image is loaded in "tostring".
 
-+ Added floating point packer (native 32-bit floats only).
+- Added floating point packer (native 32-bit floats only).
 
 0.1b1 to 0.2 (b5)
 ------------
 
-+ Modified "fromstring" and "tostring" methods to use file codecs.
+- Modified "fromstring" and "tostring" methods to use file codecs.
 Also added "fromstring" factory method to create an image directly
 from data in a string.
 
-+ Added support for 32-bit floating point images (mode "F").  You
+- Added support for 32-bit floating point images (mode "F").  You
 can convert between "L" and "F" images, and apply a subset of the
 available image processing methods on the "F" image.  You can also
 read virtually any data format into a floating point image memory;
@@ -6164,141 +6164,141 @@ for more information.
 0.2b5 released; on windows only
 -------------------------------
 
-+ Fixed the tobitmap() method to work properly for small bitmaps.
+- Fixed the tobitmap() method to work properly for small bitmaps.
 
-+ Added RMS and standard deviation to the ImageStat.Stat class.  Also
+- Added RMS and standard deviation to the ImageStat.Stat class.  Also
 modified the constructor to take an optional feature mask, and also
 to accept either an image or a list containing the histogram data.
 
-+ The BitmapImage code in ImageTk can now use a special bitmap
+- The BitmapImage code in ImageTk can now use a special bitmap
 decoder, which has to be patched into Tk.  See the "Tk/pilbitmap.txt"
 file for details.  If not installed, bitmaps are transferred to Tk as
 XBM strings.
 
-+ The PhotoImage code in ImageTk now uses a Tcl command ("PyImagingPaste")
+- The PhotoImage code in ImageTk now uses a Tcl command ("PyImagingPaste")
 instead of a special image type.  This gives somewhat better performance,
 and also allows PIL to support transparency.
 *** WARNING: TKAPPINIT MUST BE MODIFIED ***
 
-+ ImageTk now honours the alpha layer in RGBA images.  Only fully
+- ImageTk now honours the alpha layer in RGBA images.  Only fully
 transparent pixels are made transparent (that is, the alpha layer
 is treated as a mask).  To treat the alpha laters as a matte, you
 must paste the image on the background before handing it over to
 ImageTk.
 
-+ Added McIdas reader (supports 8-bit images only).
+- Added McIdas reader (supports 8-bit images only).
 
-+ PIL now preloads drivers for BMP, GIF, JPEG, PPM, and TIFF.  As
+- PIL now preloads drivers for BMP, GIF, JPEG, PPM, and TIFF.  As
 long as you only load and save these formats, you don't have to
 wait for a full scan for drivers.  To force scanning, call the
 Image.init() function.
 
-+ The "seek" and "tell" methods are now always available, also for
+- The "seek" and "tell" methods are now always available, also for
 single-frame images.
 
-+ Added optional mask argument to histogram method.  The mask may
+- Added optional mask argument to histogram method.  The mask may
 be an "1" or "L" image with the same size as the original image.
 Only pixels where the mask is non-zero are included in the
 histogram.
 
-+ The "paste" method now allows you to specify only the lower left
+- The "paste" method now allows you to specify only the lower left
 corner (a 2-tuple), instead of the full region (a 4-tuple).
 
-+ Reverted to old plugin scanning model; now scans all directory
+- Reverted to old plugin scanning model; now scans all directory
 names in the path when looking for plugins.
 
-+ Added PIXAR raster support.  Only uncompressed ("dumped") RGB
+- Added PIXAR raster support.  Only uncompressed ("dumped") RGB
 images can currently be read (based on information provided
 by Greg Coats).
 
-+ Added FlashPix (FPX) read support.  Reads all pixel formats, but
+- Added FlashPix (FPX) read support.  Reads all pixel formats, but
 only the highest resolution is read, and the viewing transform is
 currently ignored.
 
-+ Made PNG encoding somewhat more efficient in "optimize" mode; a
+- Made PNG encoding somewhat more efficient in "optimize" mode; a
 bug in 0.2b4 didn't enable all predictor filters when optimized
 storage were requested.
 
-+ Added Microsoft Image Composer (MIC) read support.  When opened,
+- Added Microsoft Image Composer (MIC) read support.  When opened,
 the first sprite in the file is loaded.  You can use the seek method
 to load additional sprites from the file.
 
-+ Properly reads "P" and "CMYK" PSD images.
+- Properly reads "P" and "CMYK" PSD images.
 
-+ "pilconvert" no longer optimizes by default; use the -o option to
+- "pilconvert" no longer optimizes by default; use the -o option to
 make the file as small as possible (at the expense of speed); use
 the -q option to set the quality when compressing to JPEG.
 
-+ Fixed "crop" not to drop the palette for "P" images.
+- Fixed "crop" not to drop the palette for "P" images.
 
-+ Added and verified FLC support.
+- Added and verified FLC support.
 
-+ Paste with "L" or "RGBA" alpha is now several times faster on most
+- Paste with "L" or "RGBA" alpha is now several times faster on most
 platforms.
 
-+ Changed Image.new() to initialize the image to black, as described
+- Changed Image.new() to initialize the image to black, as described
 in the handbook.  To get an uninitialized image, use None as the
 colour.
 
-+ Fixed the PDF encoder to produce a valid header; Acrobat no longer
+- Fixed the PDF encoder to produce a valid header; Acrobat no longer
 complains when you load PDF images created by PIL.
 
-+ PIL only scans fully-qualified directory names in the path when
+- PIL only scans fully-qualified directory names in the path when
 looking for plugins.
 *** WARNING: MAY BREAK EXISTING CODE ***
 
-+ Faster implementation of "save" used when filename is given,
+- Faster implementation of "save" used when filename is given,
 or when file object has "fileno" and "flush" methods.
 
-+ Don't crash in "crop" if region extends outside the source image.
+- Don't crash in "crop" if region extends outside the source image.
 
-+ Eliminated a massive memory leak in the "save" function.
+- Eliminated a massive memory leak in the "save" function.
 
-+ The GIF decoder doesn't crash if the code size is set to an illegal
+- The GIF decoder doesn't crash if the code size is set to an illegal
 value.  This could happen since another bug didn't handle local
 palettes properly if they didn't have the same size as the
 global palette (not very common).
 
-+ Added predictor support (TIFF 6.0 section 14) to the TIFF decoder.
+- Added predictor support (TIFF 6.0 section 14) to the TIFF decoder.
 
-+ Fixed palette and padding problems in BMP driver.  Now properly
+- Fixed palette and padding problems in BMP driver.  Now properly
 writes "1", "L", "P" and "RGB" images.
 
-+ Fixed getpixel()/getdata() to return correct pixel values.
+- Fixed getpixel()/getdata() to return correct pixel values.
 
-+ Added PSD (PhotoShop) read support.  Reads both uncompressed
+- Added PSD (PhotoShop) read support.  Reads both uncompressed
 and compressed images of most types.
 
-+ Added GIF write support (writes "uncompressed" GIF files only,
+- Added GIF write support (writes "uncompressed" GIF files only,
 due to unresolvable licensing issues).  The "gifmaker.py" script
 can be used to create GIF animations.
 
-+ Reads 8-bit "L" and "P" TGA images.  Also reads 16-bit "RGB"
+- Reads 8-bit "L" and "P" TGA images.  Also reads 16-bit "RGB"
 images.
 
-+ Added FLI read support.  This driver has only been tested
+- Added FLI read support.  This driver has only been tested
 on a few FLI samples.
 
-+ Reads 2-bit and 4-bit PCX images.
+- Reads 2-bit and 4-bit PCX images.
 
-+ Added MSP read and write support.  Both version 1 and 2 can be
+- Added MSP read and write support.  Both version 1 and 2 can be
 read, but only version 1 (uncompressed) files are written.
 
-+ Fixed a bug in the FLI/FLC identification code that caused the
+- Fixed a bug in the FLI/FLC identification code that caused the
 driver to raise an exception when parsing valid FLI/FLC files.
 
-+ Improved performance when loading file format plugins, and when
+- Improved performance when loading file format plugins, and when
 opening files.
 
-+ Added GIF animation support, via the "seek" and "tell" methods.
+- Added GIF animation support, via the "seek" and "tell" methods.
 You can use "player.py" to play an animated GIF file.
 
-+ Removed MNG support, since the spec is changing faster than I
+- Removed MNG support, since the spec is changing faster than I
 can change the code.  I've added support for the experimental
 ARG format instead.  Contact me for more information on this
 format.
 
-+ Added keyword options to the "save" method.  The following options
+- Added keyword options to the "save" method.  The following options
 are currently supported:
 
     Format    Option          Description
@@ -6322,20 +6322,20 @@ are currently supported:
 Expect more options in future releases.  Also note that
 file writers silently ignore unknown options.
 
-+ Plugged memory leaks in the PNG and TIFF decoders.
+- Plugged memory leaks in the PNG and TIFF decoders.
 
-+ Added PNG write support.
+- Added PNG write support.
 
-+ (internal) RGB unpackers and converters now set the pad byte
+- (internal) RGB unpackers and converters now set the pad byte
 to 255 (full opacity).
 
-+ Properly handles the "transparency" property for GIF, PNG
+- Properly handles the "transparency" property for GIF, PNG
 and XPM files.
 
-+ Added a "putalpha" method, allowing you to attach a "1" or "L"
+- Added a "putalpha" method, allowing you to attach a "1" or "L"
 image as the alpha layer to an "RGBA" image.
 
-+ Various improvements to the sample scripts:
+- Various improvements to the sample scripts:
 
 "pilconvert"  Carries out some extra tricks in order to make
                 the resulting file as small as possible.
@@ -6364,16 +6364,16 @@ image as the alpha layer to an "RGBA" image.
             and "RGBA") are superimposed on the standard Tk back-
             ground.
 
-+ Fixed colour argument to "new".  For multilayer images, pass a
+- Fixed colour argument to "new".  For multilayer images, pass a
 tuple: (Red, Green, Blue), (Red, Green, Blue, Alpha), or (Cyan,
 Magenta, Yellow, Black).
 
-+ Added XPM (X pixmap) read support.
+- Added XPM (X pixmap) read support.
 
 0.2b3 released
 --------------
 
-+ Added MNG (multi-image network graphics) read support.  "Ming"
+- Added MNG (multi-image network graphics) read support.  "Ming"
     is a proposed animation standard, based on the PNG file format.
 
     You can use the "player" sample script to display some flavours
@@ -6381,224 +6381,224 @@ Magenta, Yellow, Black).
     as is this driver.  More information, including sample files,
     can be found at <ftp://swrinde.nde.swri.edu/pub/mng>
 
-+ Added a "verify" method to images loaded from file.  This method
+- Added a "verify" method to images loaded from file.  This method
     scans the file for errors, without actually decoding the image
     data, and raises a suitable exception if it finds any problems.
     Currently implemented for PNG and MNG files only.
 
-+ Added support for interlaced GIF images.
+- Added support for interlaced GIF images.
 
-+ Added PNG read support -- if linked with the ZLIB compression library,
+- Added PNG read support -- if linked with the ZLIB compression library,
     PIL reads all kinds of PNG images, except interlaced files.
 
-+ Improved PNG identification support -- doesn't mess up on unknown
+- Improved PNG identification support -- doesn't mess up on unknown
     chunks, identifies all possible PNG modes, and verifies checksum
     on PNG header chunks.
 
-+ Added an experimental reader for placable Windows Meta Files (WMF).
+- Added an experimental reader for placable Windows Meta Files (WMF).
     This reader is still very incomplete, but it illustrates how PIL's
     drawing capabilities can be used to render vector and metafile
     formats.
 
-+ Added restricted drivers for images from Image Tools (greyscale
+- Added restricted drivers for images from Image Tools (greyscale
     only) and LabEye/IFUNC (common interchange modes only).
 
-+ Some minor improvements to the sample scripts provided in the
+- Some minor improvements to the sample scripts provided in the
     "Scripts" directory.
 
-+ The test images have been moved to the "Images" directory.
+- The test images have been moved to the "Images" directory.
 
 0.2b2, 0.2b1 released; Windows only
 -----------------------------------
 
-+ Fixed filling of complex polygons.  The ImageDraw "line" and
+- Fixed filling of complex polygons.  The ImageDraw "line" and
     "polygon" methods also accept Path objects.
 
-+ The ImageTk "PhotoImage" object can now be constructed directly
+- The ImageTk "PhotoImage" object can now be constructed directly
     from an image.  You can also pass the object itself to Tkinter,
     instead of using the "image" attribute.  Finally, using "paste"
     on a displayed image automatically updates the display.
 
-+ The ImageTk "BitmapImage" object allows you to create transparent
+- The ImageTk "BitmapImage" object allows you to create transparent
     overlays from 1-bit images.  You can pass the object itself to
     Tkinter.  The constructor takes the same arguments as the Tkinter
     BitmapImage class; use the "foreground" option to set the colour
     of the overlay.
 
-+ Added a "putdata" method to the Image class.  This can be used to
+- Added a "putdata" method to the Image class.  This can be used to
     load a 1-layer image with data from a sequence object or a string.
     An optional floating point scale and offset can be used to adjust
     the data to fit into the 8-bit pixel range.  Also see the "getdata"
     method.
 
-+ Added the EXTENT method to the Image "transform" method.  This can
+- Added the EXTENT method to the Image "transform" method.  This can
     be used to quickly crop, stretch, shrink, or mirror a subregion
     from another image.
 
-+ Adapted to Python 1.4.
+- Adapted to Python 1.4.
 
-+ Added a project makefile for Visual C++ 4.x.  This allows you to
+- Added a project makefile for Visual C++ 4.x.  This allows you to
     easily build a dynamically linked version of PIL for Windows 95
     and NT.
 
-+ A Tk "booster" patch for Windows is available.  It gives dramatic
+- A Tk "booster" patch for Windows is available.  It gives dramatic
     performance improvements for some displays.  Has been tested with
     Tk 4.2 only, but is likely to work with Tk 4.1 as well.  See the Tk
     subdirectory for details.
 
-+ You can now save 1-bit images in the XBM format.  In addition, the
+- You can now save 1-bit images in the XBM format.  In addition, the
     Image class now provides a "tobitmap" method which returns a string
     containing an XBM representation of the image.  Quite handy to use
     with Tk.
 
-+ More conversions, including "RGB" to "1" and more.
+- More conversions, including "RGB" to "1" and more.
 
 0.2a1 released
 --------------
 
-+ Where earlier versions accepted lists, this version accepts arbitrary
+- Where earlier versions accepted lists, this version accepts arbitrary
     Python sequences (including strings, in some cases).  A few resource
     leaks were plugged in the process.
 
-+ The Image "paste" method now allows the box to extend outside
+- The Image "paste" method now allows the box to extend outside
     the target image.  The size of the box, the image to be pasted,
     and the optional mask must still match.
 
-+ The ImageDraw module now supports filled polygons, outlined and
+- The ImageDraw module now supports filled polygons, outlined and
     filled ellipses, and text.  Font support is rudimentary, though.
 
-+ The Image "point" method now takes an optional mode argument,
+- The Image "point" method now takes an optional mode argument,
     allowing you to convert the image while translating it.  Currently,
     this can only be used to convert "L" or "P" images to "1" images
     (creating thresholded images or "matte" masks).
 
-+ An Image "getpixel" method has been added.  For single band images,
+- An Image "getpixel" method has been added.  For single band images,
     it returns the pixel value at a given position as an integer.
     For n-band images, it returns an n-tuple of integers.
 
-+ An Image "getdata" method has been added.  It returns a sequence
+- An Image "getdata" method has been added.  It returns a sequence
     object representing the image as a 1-dimensional array.  Only len()
     and [] can be used with this sequence.  This method returns a
     reference to the existing image data, so changes in the image
     will be immediately reflected in the sequence object.
 
-+ Fixed alignment problems in the Windows BMP writer.
+- Fixed alignment problems in the Windows BMP writer.
 
-+ If converting an "RGB" image to "RGB" or "L", you can give a second
+- If converting an "RGB" image to "RGB" or "L", you can give a second
     argument containing a colour conversion matrix.
 
-+ An Image "getbbox" method has been added.  It returns the bounding
+- An Image "getbbox" method has been added.  It returns the bounding
     box of data in an image, considering the value 0 as background.
 
-+ An Image "offset" method has been added.  It returns a new image
+- An Image "offset" method has been added.  It returns a new image
     where the contents of the image have been offset the given distance
     in X and/or Y direction.  Data wraps between edges.
 
-+ Saves PDF images.  The driver creates a binary PDF 1.1 files, using
+- Saves PDF images.  The driver creates a binary PDF 1.1 files, using
     JPEG compression for "L", "RGB", and "CMYK" images, and hex encoding
     (same as for PostScript) for other formats.
 
-+ The "paste" method now accepts "1" masks.  Zero means transparent,
+- The "paste" method now accepts "1" masks.  Zero means transparent,
     any other pixel value means opaque.  This is faster than using an
     "L" transparency mask.
 
-+ Properly writes EPS files (and properly prints images to PostScript
+- Properly writes EPS files (and properly prints images to PostScript
     printers as well).
 
-+ Reads 4-bit BMP files, as well as 4 and 8-bit Windows ICO and CUR
+- Reads 4-bit BMP files, as well as 4 and 8-bit Windows ICO and CUR
     files.  Cursor animations are not supported.
 
-+ Fixed alignment problems in the Sun raster loader.
+- Fixed alignment problems in the Sun raster loader.
 
-+ Added "draft" and "thumbnail" methods.  The draft method is used
+- Added "draft" and "thumbnail" methods.  The draft method is used
     to optimize loading of JPEG and PCD files, the thumbnail method is
     used to create a thumbnail representation of an image.
 
-+ Added Windows display support, via the ImageWin class (see the
+- Added Windows display support, via the ImageWin class (see the
     handbook for details).
 
-+ Added raster conversion for EPS files.  This requires GNU or Aladdin
+- Added raster conversion for EPS files.  This requires GNU or Aladdin
     Ghostscript, and probably works on UNIX only.
 
-+ Reads PhotoCD (PCD) images.  The base resolution (768x512) can be
+- Reads PhotoCD (PCD) images.  The base resolution (768x512) can be
     read from a PhotoCD file.
 
-+ Eliminated some compiler warnings.  Bindings now compile cleanly in C++
+- Eliminated some compiler warnings.  Bindings now compile cleanly in C++
     mode.  Note that the Imaging library itself must be compiled in C mode.
 
-+ Added "bdf2pil.py", which converts BDF fonts into images with associated
+- Added "bdf2pil.py", which converts BDF fonts into images with associated
     metrics.  This is definitely work in progress.  For info, see description
     in script for details.
 
-+ Fixed a bug in the "ImageEnhance.py" module.
+- Fixed a bug in the "ImageEnhance.py" module.
 
-+ Fixed a bug in the netpbm save hack in "GifImagePlugin.py"
+- Fixed a bug in the netpbm save hack in "GifImagePlugin.py"
 
-+ Fixed 90 and 270 degree rotation of rectangular images.
+- Fixed 90 and 270 degree rotation of rectangular images.
 
-+ Properly reads 8-bit TIFF palette-color images.
+- Properly reads 8-bit TIFF palette-color images.
 
-+ Reads plane separated RGB and CMYK TIFF images.
+- Reads plane separated RGB and CMYK TIFF images.
 
-+ Added driver debug mode.  This is enabled by setting Image.DEBUG
+- Added driver debug mode.  This is enabled by setting Image.DEBUG
     to a non-zero value.  Try the -D option to "pilfile.py" and see what
     happens.
 
-+ Don't crash on "atend" constructs in PostScript files.
+- Don't crash on "atend" constructs in PostScript files.
 
-+ Only the Image module imports _imaging directly.  Other modules
+- Only the Image module imports _imaging directly.  Other modules
     should refer to the binding module as "Image.core".
 
 0.0 to 0.1 (b1)
 ------------
 
-+ A handbook is available (distributed separately).
+- A handbook is available (distributed separately).
 
-+ The coordinate system is changed so that (0,0) is now located
+- The coordinate system is changed so that (0,0) is now located
     in the upper left corner.  This is in compliancy with ISO 12087
     and 90% of all other image processing and graphics libraries.
 
-+ Modes "1" (bilevel) and "P" (palette) have been introduced.  Note
+- Modes "1" (bilevel) and "P" (palette) have been introduced.  Note
     that bilevel images are stored with one byte per pixel.
 
-+ The Image "crop" and "paste" methods now accepts None as the
+- The Image "crop" and "paste" methods now accepts None as the
     box argument, to refer to the full image (self, that is).
 
-+ The Image "crop" method now works properly.
+- The Image "crop" method now works properly.
 
-+ The Image "point" method is now available.  You can use either a
+- The Image "point" method is now available.  You can use either a
     lookup table or a function taking one argument.
 
-+ The Image join function has been renamed to "merge".
+- The Image join function has been renamed to "merge".
 
-+ An Image "composite" function has been added.  It is identical
+- An Image "composite" function has been added.  It is identical
     to copy() followed by paste(mask).
 
-+ An Image "eval" function has been added.  It is currently identical
+- An Image "eval" function has been added.  It is currently identical
     to point(function); that is, only a single image can be processed.
 
-+ A set of channel operations has been added.  See the "ImageChops"
+- A set of channel operations has been added.  See the "ImageChops"
     module, test_chops.py, and the handbook for details.
 
-+ Added the "pilconvert" utility, which converts image files.  Note
+- Added the "pilconvert" utility, which converts image files.  Note
     that the number of output formats are still quite restricted.
 
-+ Added the "pilfile" utility, which quickly identifies image files
+- Added the "pilfile" utility, which quickly identifies image files
     (without loading them, in most cases).
 
-+ Added the "pilprint" utility, which prints image files to PostScript
+- Added the "pilprint" utility, which prints image files to PostScript
     printers.
 
-+ Added a rudimentary version of the "pilview" utility, which is
+- Added a rudimentary version of the "pilview" utility, which is
     simple image viewer based on Tk.  Only File/Exit and Image/Next
     works properly.
 
-+ An interface to Tk has been added.  See "Lib/ImageTk.py" and README
+- An interface to Tk has been added.  See "Lib/ImageTk.py" and README
     for details.
 
-+ An interface to Jack Jansen's Img library has been added (thanks to
+- An interface to Jack Jansen's Img library has been added (thanks to
     Jack).  This allows you to read images through the Img extensions file
     format handlers.  See the file "Lib/ImgExtImagePlugin.py" for details.
 
-+ PostScript printing is provided through the PSDraw module.  See the
+- PostScript printing is provided through the PSDraw module.  See the
     handbook for details.
