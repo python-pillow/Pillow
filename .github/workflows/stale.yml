@@ -20,8 +20,9 @@ jobs:
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         debug-only: true
-        only-issue-labels: "Awaiting OP Action"
+        only-labels: "Awaiting OP Action"
         close-issue-message: "Closing this issue as no feedback has been received."
         days-before-stale: -1
-        days-before-close: 1
+        days-before-issue-close: 1
+        days-before-pr-close: -1
         labels-to-remove-when-unstale: "Awaiting OP Action"
