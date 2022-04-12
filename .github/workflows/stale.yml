@@ -1,0 +1,26 @@
+name: Close stale issues
+
+on:
+  schedule:
+  - cron: "10 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    if: github.repository_owner == 'python-pillow'
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Check issues"
+      uses: actions/stale@v4
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        only-issue-labels: "Awaiting OP Action"
+        close-issue-message: "Closing this issue as no feedback has been received."
+        days-before-stale: -1
+        days-before-close: 7
+        labels-to-remove-when-unstale: "Awaiting OP Action"
