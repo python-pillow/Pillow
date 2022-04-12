@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: "Check issues"
-      uses: actions/stale@v4
+      uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         debug-only: true
