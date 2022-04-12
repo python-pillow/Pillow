@@ -102,7 +102,7 @@ class GifImageFile(ImageFile.ImageFile):
                 p = ImagePalette.raw("RGB", p)
                 self.global_palette = self.palette = p
 
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
@@ -161,7 +161,7 @@ class GifImageFile(ImageFile.ImageFile):
             self.__offset = 0
             self.dispose = None
             self.__frame = -1
-            self.__fp.seek(self.__rewind)
+            self._fp.seek(self.__rewind)
             self.disposal_method = 0
         else:
             # ensure that the previous frame was loaded
@@ -171,7 +171,7 @@ class GifImageFile(ImageFile.ImageFile):
         if frame != self.__frame + 1:
             raise ValueError(f"cannot seek to frame {frame}")
 
-        self.fp = self.__fp
+        self.fp = self._fp
         if self.__offset:
             # backup to last frame
             self.fp.seek(self.__offset)
@@ -281,7 +281,7 @@ class GifImageFile(ImageFile.ImageFile):
             s = None
 
         if interlace is None:
-            # self.__fp = None
+            # self._fp = None
             raise EOFError
         if not update_image:
             return
@@ -443,14 +443,14 @@ class GifImageFile(ImageFile.ImageFile):
     def tell(self):
         return self.__frame
 
-    def _close__fp(self):
+    def _close_fp(self):
         try:
-            if self.__fp != self.fp:
-                self.__fp.close()
+            if self._fp != self.fp:
+                self._fp.close()
         except AttributeError:
             pass
         finally:
-            self.__fp = None
+            self._fp = None
 
 
 # --------------------------------------------------------------------

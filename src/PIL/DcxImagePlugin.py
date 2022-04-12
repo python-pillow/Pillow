@@ -57,7 +57,7 @@ class DcxImageFile(PcxImageFile):
                 break
             self._offset.append(offset)
 
-        self.__fp = self.fp
+        self._fp = self.fp
         self.frame = None
         self.n_frames = len(self._offset)
         self.is_animated = self.n_frames > 1
@@ -67,21 +67,21 @@ class DcxImageFile(PcxImageFile):
         if not self._seek_check(frame):
             return
         self.frame = frame
-        self.fp = self.__fp
+        self.fp = self._fp
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
 
     def tell(self):
         return self.frame
 
-    def _close__fp(self):
+    def _close_fp(self):
         try:
-            if self.__fp != self.fp:
-                self.__fp.close()
+            if self._fp != self.fp:
+                self._fp.close()
         except AttributeError:
             pass
         finally:
-            self.__fp = None
+            self._fp = None
 
 
 Image.register_open(DcxImageFile.format, DcxImageFile, _accept)

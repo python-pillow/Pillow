@@ -132,7 +132,7 @@ class PsdImageFile(ImageFile.ImageFile):
         self.tile = _maketile(self.fp, mode, (0, 0) + self.size, channels)
 
         # keep the file open
-        self.__fp = self.fp
+        self._fp = self.fp
         self.frame = 1
         self._min_frame = 1
 
@@ -146,7 +146,7 @@ class PsdImageFile(ImageFile.ImageFile):
             self.mode = mode
             self.tile = tile
             self.frame = layer
-            self.fp = self.__fp
+            self.fp = self._fp
             return name, bbox
         except IndexError as e:
             raise EOFError("no such layer") from e
@@ -155,14 +155,14 @@ class PsdImageFile(ImageFile.ImageFile):
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
-    def _close__fp(self):
+    def _close_fp(self):
         try:
-            if self.__fp != self.fp:
-                self.__fp.close()
+            if self._fp != self.fp:
+                self._fp.close()
         except AttributeError:
             pass
         finally:
-            self.__fp = None
+            self._fp = None
 
 
 def _layerinfo(fp, ct_bytes):

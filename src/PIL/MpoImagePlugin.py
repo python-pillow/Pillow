@@ -58,20 +58,20 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         assert self.n_frames == len(self.__mpoffsets)
         del self.info["mpoffset"]  # no longer needed
         self.is_animated = self.n_frames > 1
-        self.__fp = self.fp  # FIXME: hack
-        self.__fp.seek(self.__mpoffsets[0])  # get ready to read first frame
+        self._fp = self.fp  # FIXME: hack
+        self._fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
         self.offset = 0
         # for now we can only handle reading and individual frame extraction
         self.readonly = 1
 
     def load_seek(self, pos):
-        self.__fp.seek(pos)
+        self._fp.seek(pos)
 
     def seek(self, frame):
         if not self._seek_check(frame):
             return
-        self.fp = self.__fp
+        self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 
         self.fp.seek(self.offset + 2)  # skip SOI marker
@@ -97,14 +97,14 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def tell(self):
         return self.__frame
 
-    def _close__fp(self):
+    def _close_fp(self):
         try:
-            if self.__fp != self.fp:
-                self.__fp.close()
+            if self._fp != self.fp:
+                self._fp.close()
         except AttributeError:
             pass
         finally:
-            self.__fp = None
+            self._fp = None
 
     @staticmethod
     def adopt(jpeg_instance, mpheader=None):

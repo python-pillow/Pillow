@@ -689,7 +689,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         if not _accept(self.fp.read(8)):
             raise SyntaxError("not a PNG file")
-        self.__fp = self.fp
+        self._fp = self.fp
         self.__frame = 0
 
         #
@@ -746,7 +746,7 @@ class PngImageFile(ImageFile.ImageFile):
             self._close_exclusive_fp_after_loading = False
             self.png.save_rewind()
             self.__rewind_idat = self.__prepare_idat
-            self.__rewind = self.__fp.tell()
+            self.__rewind = self._fp.tell()
             if self.default_image:
                 # IDAT chunk contains default image and not first animation frame
                 self.n_frames += 1
@@ -801,7 +801,7 @@ class PngImageFile(ImageFile.ImageFile):
     def _seek(self, frame, rewind=False):
         if frame == 0:
             if rewind:
-                self.__fp.seek(self.__rewind)
+                self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
                 self.im = None
@@ -809,7 +809,7 @@ class PngImageFile(ImageFile.ImageFile):
                     self.pyaccess = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
-                self.fp = self.__fp
+                self.fp = self._fp
             self._prev_im = None
             self.dispose = None
             self.default_image = self.info.get("default_image", False)
@@ -828,7 +828,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.im.paste(self.dispose, self.dispose_extent)
             self._prev_im = self.im.copy()
 
-            self.fp = self.__fp
+            self.fp = self._fp
 
             # advance to the next frame
             if self.__prepare_idat:
@@ -1006,14 +1006,14 @@ class PngImageFile(ImageFile.ImageFile):
             else {}
         )
 
-    def _close__fp(self):
+    def _close_fp(self):
         try:
-            if self.__fp != self.fp:
-                self.__fp.close()
+            if self._fp != self.fp:
+                self._fp.close()
         except AttributeError:
             pass
         finally:
-            self.__fp = None
+            self._fp = None
 
 
 # --------------------------------------------------------------------
