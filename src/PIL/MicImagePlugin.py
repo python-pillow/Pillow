@@ -62,7 +62,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         if not self.images:
             raise SyntaxError("not an MIC file; no image entries")
 
-        self._fp = self.fp
         self.frame = None
         self._n_frames = len(self.images)
         self.is_animated = self._n_frames > 1
