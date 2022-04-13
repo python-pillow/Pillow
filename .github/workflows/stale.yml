@@ -19,7 +19,6 @@ jobs:
       uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        debug-only: true
         only-labels: "Awaiting OP Action"
         close-issue-message: "Closing this issue as no feedback has been received."
         days-before-stale: 1
