@@ -4837,7 +4837,7 @@ was last updated, see the repository revision history:
     Valentino Volonghi).
 
 1.1.7c1
-----------------
+-------
 
 - Improved PNG compression (from Alexey Borzenkov).
 
@@ -5039,14 +5039,14 @@ was last updated, see the repository revision history:
 - Fixed encoding issue in PIL/WalImageFile (from Santiago M. Mola).
 
 1.1.6
---------------
+-----
 
 - Fixed some 64-bit compatibility warnings for Python 2.5.
 
 - Added threading support for the Sane driver (from Abel Deuring).
 
 1.1.6b2
-----------------
+-------
 
 - Added experimental "floodfill" function to the ImageDraw module
     (based on code by Eric Raymond).
@@ -5082,7 +5082,7 @@ was last updated, see the repository revision history:
     for samples, debugging, and patches).
 
 1.1.6b1
-----------------
+-------
 
 - Added 'expand' option to the Image 'rotate' method.  If true, the
     output image is made large enough to hold the entire rotated image.
@@ -5103,7 +5103,7 @@ was last updated, see the repository revision history:
     band names.
 
 1.1.6a2
-----------------
+-------
 
 - Added float/double support to the TIFF loader (from Russell
     Nelson).
@@ -5119,7 +5119,7 @@ was last updated, see the repository revision history:
     Deuring).
 
 1.1.6a1
-----------------
+-------
 
 - Fixed a memory leak in "convert(mode)", when converting from
     L to P.
@@ -5152,7 +5152,7 @@ was last updated, see the repository revision history:
 - Fixed line width calculation.
 
 1.1.6a0
-----------------
+-------
 
 - Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
 
@@ -5171,13 +5171,13 @@ was last updated, see the repository revision history:
 - Fixed potential integer division in PSDraw.image (from Eric Etheridge).
 
 1.1.5c2 and 1.1.5 final
---------------------------------
+-----------------------
 
 - Added experimental PERSPECTIVE transform method (from Jeff Breiden-
     bach).
 
 1.1.5c1
-----------------
+-------
 
 - Make sure "thumbnail" never generates zero-wide or zero-high images
     (reported by Gene Skonicki)
@@ -5190,7 +5190,7 @@ was last updated, see the repository revision history:
     Jeff Epler).
 
 1.1.5b3
-----------------
+-------
 
 - Don't crash in "quantize" method if the number of colors requested
     is larger than 256.  This release raises a ValueError exception;
@@ -5200,7 +5200,7 @@ was last updated, see the repository revision history:
 - Added WBMP read/write support (based on code by Duncan Booth).
 
 1.1.5b2
-----------------
+-------
 
 - Added DPI read/write support to the PNG codec.  The decoder sets
     the info["dpi"] attribute for PNG files with appropriate resolution
@@ -5221,7 +5221,7 @@ was last updated, see the repository revision history:
     format.
 
 1.1.5b1
-----------------
+-------
 
 - Added new Sane release (from Ralph Heinkel).  See the Sane/README
     and Sane/CHANGES files for more information.
@@ -5242,7 +5242,7 @@ was last updated, see the repository revision history:
     tolist(1) returns a flattened list instead.
 
 1.1.5a5
-----------------
+-------
 
 - Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
 
@@ -5260,7 +5260,7 @@ was last updated, see the repository revision history:
     to everyone who helped test the new "setup.py" script!
 
 1.1.5a4
-----------------
+-------
 
 - The "save" method now looks for a file format driver before
     creating the file.
@@ -5297,7 +5297,7 @@ was last updated, see the repository revision history:
     in _imagingft.c for details.
 
 1.1.5a3
-----------------
+-------
 
 - Added 'getim' method, which returns a PyCObject wrapping an
     Imaging pointer.  The description string is set to IMAGING_MAGIC.
@@ -5312,7 +5312,7 @@ was last updated, see the repository revision history:
     Douglas Bagnall).
 
 1.1.5a2
-----------------
+-------
 
 - The "paste" method now supports the alternative "paste(im, mask)"
     syntax (in this case, the box defaults to im's bounding box).
@@ -5342,7 +5342,7 @@ was last updated, see the repository revision history:
         http://effbot.org/downloads#pilwmf
 
 1.1.5a1
-----------------
+-------
 
 - Replaced broken WMF driver with a WMF stub plugin (see below).
 
@@ -5428,12 +5428,12 @@ was last updated, see the repository revision history:
     input from Jeff Breidenbach).
 
 1.1.4 final
---------------------
+-----------
 
 - Fixed ImageTk build problem on Unix.
 
 1.1.4b2
-----------------
+-------
 
 - Improved building on Mac OS X (from Jack Jansen).
 
@@ -5446,7 +5446,7 @@ was last updated, see the repository revision history:
     an 8-pixel Courier font, taken from the X window distribution).
 
 1.1.4b1
-----------------
+-------
 
 - Added experimental EXIF support for JPEG files.  To extract EXIF
     information from a JPEG file, open the file as usual, and call the
@@ -5472,7 +5472,7 @@ was last updated, see the repository revision history:
     module.
 
 1.1.4a4
-----------------
+-------
 
 - Added updated SANE driver (Andrew Kuchling, Abel Deuring)
 
@@ -5487,7 +5487,7 @@ was last updated, see the repository revision history:
 - Ignore Unicode characters in the BDF loader (from Graham Dumpleton)
 
 1.1.4a3 released; windows only
----------------------------------
+------------------------------
 
 - Added experimental RGBA-on-RGB drawing support.  To use RGBA
     colours on an RGB image, pass "RGBA" as the second string to
@@ -5505,7 +5505,7 @@ was last updated, see the repository revision history:
     device context.
 
 1.1.4a2
-----------------
+-------
 
 - Improved support for 16-bit unsigned integer images (mode "I;16").
     This includes TIFF reader support, and support for "getextrema"
@@ -5524,7 +5524,7 @@ was last updated, see the repository revision history:
     filenames (not in 1.1.4), or None if neither was found.
 
 1.1.4a1
-----------------
+-------
 
 - Improved support for drawing RGB data in palette images.  You can
     now use RGB tuples or colour names (see below) when drawing in a
@@ -5574,13 +5574,13 @@ was last updated, see the repository revision history:
 - Improved decoder error messages.
 
 1.1.3 final
--------------------
+-----------
 
 - Made setup.py look for old versions of zlib.  For some back-
     ground, see: https://zlib.net/advisory-2002-03-11.txt
 
 1.1.3c2
------------------
+-------
 
 - Added setup.py file (tested on Unix and Windows).  You still
     need to build libImaging/imaging.lib in the traditional way,
@@ -5593,7 +5593,7 @@ was last updated, see the repository revision history:
     buffer wasn't properly allocated).
 
 1.1.3c1
-----------------
+-------
 
 - Added ANTIALIAS downsampling filter for high-quality "resize"
     and "thumbnail" operations.  Also added filter option to the
@@ -5670,7 +5670,7 @@ was last updated, see the repository revision history:
     for normal image operations.
 
 1.1.2c1 and 1.1.2 final
-------------------------
+-----------------------
 
 - Adapted to Python 2.1.  Among other things, all uses of the
     "regex" module have been replaced with "re".
@@ -5711,7 +5711,7 @@ was last updated, see the repository revision history:
 - Changed ImageChops operators to copy palette and info dictionary from the first image argument.
 
 1.1.1
---------------
+-----
 
 - Additional fixes for Python 1.6/2.0, including TIFF "save" bug.
 
@@ -5729,14 +5729,14 @@ was last updated, see the repository revision history:
 - To make it easier to distribute prebuilt versions of PIL, the tkinit binding stuff has been moved to a separate extension module, named "_imagingtk".
 
 0.3b2 to 1.0 final
--------------------
+------------------
 
 - If there's no 16-bit integer (like on a Cray T3E), set INT16 to the smallest integer available.  Most of the library works just fine anyway (from Bill Crutchfield)
 
 - Tweaks to make drawing work on big-endian platforms.
 
 1.0c2
--------
+-----
 
 - If PIL is built with the WITH_TKINTER flag, ImageTk can automatically hook into a standard Tkinter build.  You no longer need to build your own Tkinter to use the ImageTk module.
 
@@ -5747,7 +5747,7 @@ was last updated, see the repository revision history:
 - ImageFont "load_path" now scans directory mentioned in .pth files (from Richard Jones).
 
 1.0c1
---------------
+-----
 
 - The TIFF plugin has been rewritten.  The new plugin fully
     supports all major PIL image modes (including F and I).
@@ -5762,7 +5762,7 @@ was last updated, see the repository revision history:
     "xv" to choke upon. (bug reported by Les Schaffer).
 
 1.0b2
---------------
+-----
 
 - Major speedups for rotate, transform(EXTENT), and transform(AFFINE) when using nearest neighbour resampling.
 
@@ -5816,7 +5816,7 @@ was last updated, see the repository revision history:
 - Fixed -f option to "pilconvert.py" (from Anthony Baxter)
 
 1.0b1
---------------
+-----
 
 - Added Toby J. Sargeant's quantization package.  To enable quantization, use the "palette" option to "convert":
 
@@ -5863,7 +5863,7 @@ was last updated, see the repository revision history:
 - Some file drivers didn't handle the optional "modify" argument to the load method.  This resulted in exceptions when you used "paste" (and other methods that modify an image in place) on a newly opened file.
 
 0.3b2
---------------
+-----
 
 The test suite includes 825 individual tests.
 
@@ -5876,7 +5876,7 @@ The test suite includes 825 individual tests.
 - Some file drivers (including FLI/FLC, GIF, and IM) accidentally overwrote the offset method with an internal attribute.  All drivers have been updated to use private attributes where possible.
 
 - The Image "histogram" method now works for "I" and "F" images. For these modes, PIL divides the range between the min and max values used in the image into 256 bins.
-    
+
     You can also pass in your own min and max values via the "extrema" option:
 
     h = im.histogram(extrema=(0, 255))
@@ -5901,7 +5901,7 @@ The test suite includes 825 individual tests.
     *** WARNING: MAY BREAK EXISTING CODE ***
 
 0.3b1
---------------
+-----
 
 The test suite includes 750 individual tests.
 
@@ -5948,7 +5948,7 @@ The test suite includes 750 individual tests.
 - Various minor fixes.
 
 0.3a4
---------------
+-----
 
 - Added experimental IPTC/NAA support.
 
@@ -5965,7 +5965,7 @@ The test suite includes 750 individual tests.
 - Fixed "fromstring" and "tostring" for mode "I" images.
 
 0.3a3
---------------
+-----
 
 The test suite includes 530 individual tests.
 
@@ -5996,7 +5996,7 @@ The test suite includes 530 individual tests.
 - Fixed a potential buffer overrun in the GIF encoder.
 
 0.3a2
---------------
+-----
 
 The test suite includes 400 individual tests.
 
@@ -6027,14 +6027,14 @@ The test suite includes 400 individual tests.
 - Removed bogus references to the crack coder (ImagingCrack).
 
 0.3a1
---------------
+-----
 
 - Make sure image is loaded in "tostring".
 
 - Added floating point packer (native 32-bit floats only).
 
 0.1b1 to 0.2 (b5)
-------------------
+-----------------
 
 - Modified "fromstring" and "tostring" methods to use file codecs. Also added "fromstring" factory method to create an image directly from data in a string.
 
@@ -6198,7 +6198,7 @@ Expect more options in future releases.  Also note that file writers silently ig
 - Added XPM (X pixmap) read support.
 
 0.2b3
---------------
+-----
 
 - Added MNG (multi-image network graphics) read support.  "Ming" is a proposed animation standard, based on the PNG file format.
 
@@ -6251,7 +6251,7 @@ Expect more options in future releases.  Also note that file writers silently ig
 - More conversions, including "RGB" to "1" and more.
 
 0.2a1
---------------
+-----
 
 - Where earlier versions accepted lists, this version accepts arbitrary Python sequences (including strings, in some cases).  A few resource leaks were plugged in the process.
 
