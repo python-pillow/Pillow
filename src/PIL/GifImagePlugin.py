@@ -716,18 +716,6 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "loop" in im.encoderinfo:
-        number_of_loops = im.encoderinfo["loop"]
-        fp.write(
-            b"!"
-            + o8(255)  # extension intro
-            + o8(11)
-            + b"NETSCAPE2.0"
-            + o8(3)
-            + o8(1)
-            + o16(number_of_loops)  # number of loops
-            + o8(0)
-        )
     include_color_table = im.encoderinfo.get("include_color_table")
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
@@ -933,6 +921,17 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+    if "loop" in info:
+        header.append(
+            b"!"
+            + o8(255)  # extension intro
+            + o8(11)
+            + b"NETSCAPE2.0"
+            + o8(3)
+            + o8(1)
+            + o16(info["loop"])  # number of loops
+            + o8(0)
+        )
     if info.get("comment"):
         comment_block = b"!" + o8(254)  # extension intro
 
