@@ -544,8 +544,10 @@ class Image:
 
     def __exit__(self, *args):
         if hasattr(self, "fp") and getattr(self, "_exclusive_fp", False):
-            if hasattr(self, "_close_fp"):
-                self._close_fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = None
             if self.fp:
                 self.fp.close()
         self.fp = None
@@ -563,8 +565,10 @@ class Image:
         more information.
         """
         try:
-            if hasattr(self, "_close_fp"):
-                self._close_fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = None
             if self.fp:
                 self.fp.close()
             self.fp = None

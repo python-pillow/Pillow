@@ -155,15 +155,6 @@ class PsdImageFile(ImageFile.ImageFile):
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
-    def _close_fp(self):
-        try:
-            if self._fp != self.fp:
-                self._fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self._fp = None
-
 
 def _layerinfo(fp, ct_bytes):
     # read layerinfo block

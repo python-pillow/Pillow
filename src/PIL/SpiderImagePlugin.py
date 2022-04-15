@@ -191,15 +191,6 @@ class SpiderImageFile(ImageFile.ImageFile):
 
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
-    def _close_fp(self):
-        try:
-            if self._fp != self.fp:
-                self._fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self._fp = None
-
 
 # --------------------------------------------------------------------
 # Image series

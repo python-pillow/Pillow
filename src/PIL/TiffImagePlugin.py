@@ -1515,15 +1515,6 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self._tile_orientation = self.tag_v2.get(0x0112)
 
-    def _close_fp(self):
-        try:
-            if self._fp != self.fp:
-                self._fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self._fp = None
-
 
 #
 # --------------------------------------------------------------------

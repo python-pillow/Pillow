@@ -301,15 +301,6 @@ class ImImageFile(ImageFile.ImageFile):
     def tell(self):
         return self.frame
 
-    def _close_fp(self):
-        try:
-            if self._fp != self.fp:
-                self._fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self._fp = None
-
 
 #
 # --------------------------------------------------------------------
