@@ -652,6 +652,15 @@ class TestImage:
             with warnings.catch_warnings():
                 im.save(temp_file)
 
+    def test_no_new_file_on_error(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
+
+        im = Image.new("RGB", (0, 0))
+        with pytest.raises(ValueError):
+            im.save(temp_file)
+
+        assert not os.path.exists(temp_file)
+
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
 
@@ -665,6 +674,19 @@ class TestImage:
                 im.load()
 
             assert not fp.closed
+
+    def test_empty_exif(self):
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+        assert dict(exif) != {}
+
+        # Test that exif data is cleared after another load
+        exif.load(None)
+        assert dict(exif) == {}
+
+        # Test loading just the EXIF header
+        exif.load(b"Exif\x00\x00")
+        assert dict(exif) == {}
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"

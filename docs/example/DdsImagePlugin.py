@@ -210,7 +210,9 @@ class DdsImageFile(ImageFile.ImageFile):
     format_description = "DirectDraw Surface"
 
     def _open(self):
-        magic, header_size = struct.unpack("<II", self.fp.read(8))
+        if not _accept(self.fp.read(4)):
+            raise SyntaxError("not a DDS file")
+        (header_size,) = struct.unpack("<I", self.fp.read(4))
         if header_size != 124:
             raise OSError(f"Unsupported header size {repr(header_size)}")
         header_bytes = self.fp.read(header_size - 4)
@@ -251,7 +253,7 @@ class DXT1Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
             raise OSError("Truncated DDS file") from e
-        return 0, 0
+        return -1, 0
 
 
 class DXT5Decoder(ImageFile.PyDecoder):
@@ -262,7 +264,7 @@ class DXT5Decoder(ImageFile.PyDecoder):
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
             raise OSError("Truncated DDS file") from e
-        return 0, 0
+        return -1, 0
 
 
 Image.register_decoder("DXT1", DXT1Decoder)

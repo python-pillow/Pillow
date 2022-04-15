@@ -36,10 +36,10 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
         cache: pip
@@ -84,7 +84,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: errors
@@ -93,7 +93,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
       run: |
-        python3 -m pip install sphinx-copybutton sphinx-issues sphinx-removed-in sphinx-rtd-theme sphinxext-opengraph
+        python3 -m pip install furo sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph
         make doccheck
 
     - name: After success

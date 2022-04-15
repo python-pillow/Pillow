@@ -155,14 +155,6 @@ class PsdImageFile(ImageFile.ImageFile):
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
-    def load_prepare(self):
-        # create image memory if necessary
-        if not self.im or self.im.mode != self.mode or self.im.size != self.size:
-            self.im = Image.core.fill(self.mode, self.size, 0)
-        # create palette (optional)
-        if self.mode == "P":
-            Image.Image.load(self)
-
     def _close__fp(self):
         try:
             if self.__fp != self.fp:

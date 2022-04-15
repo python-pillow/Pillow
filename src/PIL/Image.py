@@ -49,7 +49,7 @@ except ImportError:
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
-from ._binary import i32le
+from ._binary import i32le, o32be, o32le
 from ._util import deferred_error, isPath
 
 
@@ -847,7 +847,7 @@ class Image:
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
         """
-        if self.im and self.palette and self.palette.dirty:
+        if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
             self.im.putpalette(mode, arr)
@@ -864,7 +864,7 @@ class Image:
                 self.palette.mode = palette_mode
                 self.palette.palette = self.im.getpalette(palette_mode, palette_mode)
 
-        if self.im:
+        if self.im is not None:
             if cffi and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
@@ -975,7 +975,9 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if self.mode in ("1", "L", "I", "RGB") and mode == "RGBA":
+            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+                self.mode == "RGB" and mode == "RGBA"
+            ):
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(
@@ -1416,6 +1418,7 @@ class Image:
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
             elif hasattr(self, "tag_v2"):
+                self._exif.bigtiff = self.tag_v2._bigtiff
                 self._exif.endian = self.tag_v2._endian
                 self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
@@ -1492,11 +1495,12 @@ class Image:
 
     def histogram(self, mask=None, extrema=None):
         """
-        Returns a histogram for the image. The histogram is returned as
-        a list of pixel counts, one for each pixel value in the source
-        image. If the image has more than one band, the histograms for
-        all bands are concatenated (for example, the histogram for an
-        "RGB" image contains 768 values).
+        Returns a histogram for the image. The histogram is returned as a
+        list of pixel counts, one for each pixel value in the source
+        image. Counts are grouped into 256 bins for each band, even if
+        the image has more than 8 bits per band. If the image has more
+        than one band, the histograms for all bands are concatenated (for
+        example, the histogram for an "RGB" image contains 768 values).
 
         A bilevel image (mode "1") is treated as a greyscale ("L") image
         by this method.
@@ -1564,8 +1568,8 @@ class Image:
         also use color strings as supported by the ImageColor module.
 
         If a mask is given, this method updates only the regions
-        indicated by the mask.  You can use either "1", "L" or "RGBA"
-        images (in the latter case, the alpha band is used as mask).
+        indicated by the mask. You can use either "1", "L", "LA", "RGBA"
+        or "RGBa" images (if present, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
         values will mix the two images together, including their alpha
@@ -1613,7 +1617,7 @@ class Image:
         elif isImageType(im):
             im.load()
             if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("RGBA", "RGBa"):
+                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             im = im.im
@@ -1716,6 +1720,8 @@ class Image:
             # FIXME: _imaging returns a confusing error message for this case
             raise ValueError("point operation not supported for this mode")
 
+        if mode != "F":
+            lut = [round(i) for i in lut]
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
@@ -2020,6 +2026,7 @@ class Image:
 
         size = tuple(size)
 
+        self.load()
         if box is None:
             box = (0, 0) + self.size
         else:
@@ -2282,7 +2289,9 @@ class Image:
         else:
             save_handler = SAVE[format.upper()]
 
+        created = False
         if open_fp:
+            created = not os.path.exists(filename)
             if params.get("append", False):
                 # Open also for reading ("+"), because TIFF save_all
                 # writer needs to go back and edit the written data.
@@ -2292,10 +2301,17 @@ class Image:
 
         try:
             save_handler(self, fp, filename)
-        finally:
-            # do what we can to clean up
+        except Exception:
             if open_fp:
                 fp.close()
+            if created:
+                try:
+                    os.remove(filename)
+                except PermissionError:
+                    pass
+            raise
+        if open_fp:
+            fp.close()
 
     def seek(self, frame):
         """
@@ -2435,6 +2451,7 @@ class Image:
         :returns: None
         """
 
+        self.load()
         x, y = map(math.floor, size)
         if x >= self.width and y >= self.height:
             return
@@ -2779,9 +2796,9 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
     In its simplest form, this function takes three arguments
     (mode, size, and unpacked pixel data).
 
-    You can also use any pixel decoder supported by PIL.  For more
+    You can also use any pixel decoder supported by PIL. For more
     information on available decoders, see the section
-    :ref:`Writing Your Own File Decoder <file-decoders>`.
+    :ref:`Writing Your Own File Codec <file-codecs>`.
 
     Note that this function decodes pixel data only, not entire images.
     If you have an entire image in a string, wrap it in a
@@ -3134,7 +3151,7 @@ def alpha_composite(im1, im2):
 def blend(im1, im2, alpha):
     """
     Creates a new image by interpolating between two input images, using
-    a constant alpha.::
+    a constant alpha::
 
         out = image1 * (1.0 - alpha) + image2 * alpha
 
@@ -3423,6 +3440,7 @@ atexit.register(core.clear_cache)
 
 class Exif(MutableMapping):
     endian = None
+    bigtiff = False
 
     def __init__(self):
         self._data = {}
@@ -3458,10 +3476,15 @@ class Exif(MutableMapping):
             return self._fixup_dict(info)
 
     def _get_head(self):
+        version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
-            return b"II\x2A\x00\x08\x00\x00\x00"
+            head = b"II" + version + b"\x00" + o32le(8)
         else:
-            return b"MM\x00\x2A\x00\x00\x00\x08"
+            head = b"MM\x00" + version + o32be(8)
+        if self.bigtiff:
+            head += o32le(8) if self.endian == "<" else o32be(8)
+            head += b"\x00\x00\x00\x00"
+        return head
 
     def load(self, data):
         # Extract EXIF information.  This is highly experimental,
@@ -3475,12 +3498,12 @@ class Exif(MutableMapping):
         self._loaded_exif = data
         self._data.clear()
         self._ifds.clear()
+        if data and data.startswith(b"Exif\x00\x00"):
+            data = data[6:]
         if not data:
             self._info = None
             return
 
-        if data.startswith(b"Exif\x00\x00"):
-            data = data[6:]
         self.fp = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary

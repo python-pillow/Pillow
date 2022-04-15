@@ -89,7 +89,7 @@ def cmd_msbuild(
     )
 
 
-SF_MIRROR = "http://iweb.dl.sourceforge.net"
+SF_MIRROR = "https://iweb.dl.sourceforge.net"
 
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
@@ -131,9 +131,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "http://zlib.net/zlib1211.zip",
-        "filename": "zlib1211.zip",
-        "dir": "zlib-1.2.11",
+        "url": "https://zlib.net/zlib1212.zip",
+        "filename": "zlib1212.zip",
+        "dir": "zlib-1.2.12",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
@@ -186,9 +186,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.11.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.11.1.tar.gz",
-        "dir": "freetype-2.11.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.0.tar.gz",  # noqa: E501
+        "filename": "freetype-2.12.0.tar.gz",
+        "dir": "freetype-2.12.0",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
-        "filename": "harfbuzz-4.0.0.zip",
-        "dir": "harfbuzz-4.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.2.0.zip",
+        "filename": "harfbuzz-4.2.0.zip",
+        "dir": "harfbuzz-4.2.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -464,7 +464,7 @@ def build_dep_all():
         if dep_name in disabled:
             continue
         script = build_dep(dep_name)
-        lines.append(fr'cmd.exe /c "{{build_dir}}\{script}"')
+        lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)

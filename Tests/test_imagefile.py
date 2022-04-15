@@ -200,6 +200,9 @@ class MockPyEncoder(ImageFile.PyEncoder):
     def encode(self, buffer):
         return 1, 1, b""
 
+    def cleanup(self):
+        self.cleanup_called = True
+
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
@@ -327,10 +330,12 @@ class TestPyEncoder(CodecsTest):
         im = MockImageFile(buf)
 
         fp = BytesIO()
+        self.encoder.cleanup_called = False
         with pytest.raises(ValueError):
             ImageFile._save(
                 im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
             )
+        assert self.encoder.cleanup_called
 
         with pytest.raises(ValueError):
             ImageFile._save(

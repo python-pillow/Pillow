@@ -30,14 +30,18 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(["screencapture", "-x", filepath])
+            args = ["screencapture"]
+            if bbox:
+                left, top, right, bottom = bbox
+                args += ["-R", f"{left},{right},{right-left},{bottom-top}"]
+            subprocess.call(args + ["-x", filepath])
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:
-                im_cropped = im.crop(bbox)
+                im_resized = im.resize((right - left, bottom - top))
                 im.close()
-                return im_cropped
+                return im_resized
             return im
         elif sys.platform == "win32":
             offset, size, data = Image.core.grabscreen_win32(

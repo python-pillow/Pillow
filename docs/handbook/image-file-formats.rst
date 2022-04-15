@@ -24,8 +24,6 @@ attribute will be ``None``.
 Fully supported formats
 -----------------------
 
-.. contents::
-
 BLP
 ^^^
 
@@ -44,8 +42,9 @@ BMP
 ^^^
 
 Pillow reads and writes Windows and OS/2 BMP files containing ``1``, ``L``, ``P``,
-or ``RGB`` data. 16-colour images are read as ``P`` images. Run-length encoding
-is not supported.
+or ``RGB`` data. 16-colour images are read as ``P`` images. 4-bit run-length encoding
+is not supported. Support for reading 8-bit run-length encoding was added in Pillow
+9.1.0.
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -106,8 +105,34 @@ writes run-length encoded files in GIF87a by default, unless GIF89a features
 are used or GIF89a is already in use.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
-images, but seeking to later frames in an image will change the mode to either
-``RGB`` or ``RGBA``, depending on whether the first frame had transparency.
+images. Seeking to later frames in a ``P`` image will change the image to
+``RGB`` (or ``RGBA`` if the first frame had transparency).
+
+``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
+its own individual palette of up to 256 colors. When a new frame is placed onto a
+previous frame, those colors may combine to exceed the ``P`` mode limit of 256
+colors. Instead, the image is converted to ``RGB`` handle this.
+
+If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
+every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+
+GIF frames do not always contain individual palettes however. If there is only
+a global palette, then all of the colors can fit within ``P`` mode. If you would
+prefer the frames to be kept as ``P`` in that case, there is also a setting
+available::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+
+To restore the default behavior, where ``P`` mode images are only converted to
+``RGB`` or ``RGBA`` after the first frame::
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
@@ -364,10 +389,12 @@ The :py:meth:`~PIL.Image.open` method may set the following
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
-    The image quality, on a scale from 0 (worst) to 95 (best). The default is
-    75. Values above 95 should be avoided; 100 disables portions of the JPEG
-    compression algorithm, and results in large files with hardly any gain in
-    image quality.
+    The image quality, on a scale from 0 (worst) to 95 (best), or the string
+    ``keep``. The default is 75. Values above 95 should be avoided; 100 disables
+    portions of the JPEG compression algorithm, and results in large files with
+    hardly any gain in image quality. The value ``keep`` is only valid for JPEG
+    files and will retain the original image quality level, subsampling, and
+    qtables.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
@@ -475,9 +502,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     and must be greater than the code-block size.
 
 **irreversible**
-    If ``True``, use the lossy Irreversible Color Transformation
-    followed by DWT 9-7.  Defaults to ``False``, which means to use the
-    Reversible Color Transformation with DWT 5-3.
+    If ``True``, use the lossy discrete waveform transformation DWT 9-7.
+    Defaults to ``False``, which uses the lossless DWT 5-3.
+
+**mct**
+    If ``1`` then enable multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). If MCT is
+    enabled and ``irreversible`` is ``True`` then the Irreversible Color
+    Transformation will be applied, otherwise encoding will use the
+    Reversible Color Transformation. MCT works best with a ``mode`` of
+    ``RGB`` and is only applicable when the image data has 3 components.
+
+    .. versionadded:: 9.1.0
 
 **progression**
     Controls the progression order; must be one of ``"LRCP"``, ``"RLCP"``,
@@ -496,6 +532,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *at least one* of your image dimensions must match 2048 x 1080, while
     for compliant 4K files, *at least one* of the dimensions must match
     4096 x 2160.
+
+**no_jp2**
+    If ``True`` then don't wrap the raw codestream in the JP2 file format when
+    saving, otherwise the extension of the filename will be used to determine
+    the format (default).
+
+    .. versionadded:: 9.1.0
 
 .. note::
 
@@ -743,7 +786,7 @@ parameter must be set to ``True``. The following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L`` or
+Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
 ``RGB`` data.
 
 SGI

@@ -450,7 +450,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
     int edge_count = 0;
     int ymin = im->ysize - 1;
     int ymax = 0;
-    int i;
+    int i, j, k;
+    float adjacent_line_x, adjacent_line_x_other_edge;
 
     if (n <= 0) {
         return 0;
@@ -493,16 +494,48 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
         return -1;
     }
     for (; ymin <= ymax; ymin++) {
-        int j = 0;
+        j = 0;
         for (i = 0; i < edge_count; i++) {
             Edge *current = edge_table[i];
             if (ymin >= current->ymin && ymin <= current->ymax) {
                 xx[j++] = (ymin - current->y0) * current->dx + current->x0;
-            }
-            /* Needed to draw consistent polygons */
-            if (ymin == current->ymax && ymin < ymax) {
-                xx[j] = xx[j - 1];
-                j++;
+
+                if (ymin == current->ymax && ymin < ymax) {
+                    // Needed to draw consistent polygons
+                    xx[j] = xx[j - 1];
+                    j++;
+                } else if (current->dx != 0 && roundf(xx[j-1]) == xx[j-1]) {
+                    // Connect discontiguous corners
+                    for (k = 0; k < i; k++) {
+                        Edge *other_edge = edge_table[k];
+                        if ((current->dx > 0 && other_edge->dx <= 0) ||
+                            (current->dx < 0 && other_edge->dx >= 0)) {
+                            continue;
+                        }
+                        // Check if the two edges join to make a corner
+                        if (xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                            // Determine points from the edges on the next row
+                            // Or if this is the last row, check the previous row
+                            int offset = ymin == ymax ? -1 : 1;
+                            adjacent_line_x = (ymin + offset - current->y0) * current->dx + current->x0;
+                            adjacent_line_x_other_edge = (ymin + offset - other_edge->y0) * other_edge->dx + other_edge->x0;
+                            if (ymin == current->ymax) {
+                                if (current->dx > 0) {
+                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                } else {
+                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge) - 1;
+                                }
+                            } else {
+                                if (current->dx > 0) {
+                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge);
+                                } else {
+                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
         qsort(xx, j, sizeof(float), x_cmp);

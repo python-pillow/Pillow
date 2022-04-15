@@ -1,4 +1,3 @@
-import ctypes
 import os
 import subprocess
 import sys
@@ -154,14 +153,17 @@ class TestImageGetPixel(AccessTest):
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
-        with pytest.raises(IndexError):
+        assert im.load() is not None
+
+        error = ValueError if self._need_cffi_access else IndexError
+        with pytest.raises(error):
             im.putpixel((0, 0), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.putpixel((-1, -1), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((-1, -1))
 
         # check initial color
@@ -176,10 +178,10 @@ class TestImageGetPixel(AccessTest):
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((-1, -1))
 
     def test_basic(self):
@@ -205,10 +207,10 @@ class TestImageGetPixel(AccessTest):
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
         for mode in ("I;16", "I;16B"):
-            self.check(mode, 2 ** 15 - 1)
-            self.check(mode, 2 ** 15)
-            self.check(mode, 2 ** 15 + 1)
-            self.check(mode, 2 ** 16 - 1)
+            self.check(mode, 2**15 - 1)
+            self.check(mode, 2**15)
+            self.check(mode, 2**15 + 1)
+            self.check(mode, 2**16 - 1)
 
     def test_p_putpixel_rgb_rgba(self):
         for color in [(255, 0, 0), (255, 0, 0, 255)]:
@@ -386,7 +388,7 @@ class TestImagePutPixelError(AccessTest):
     def test_putpixel_overflow_error(self, mode):
         im = hopper(mode)
         with pytest.raises(OverflowError):
-            im.putpixel((0, 0), 2 ** 80)
+            im.putpixel((0, 0), 2**80)
 
     def test_putpixel_unrecognized_mode(self):
         im = hopper("BGR;15")
@@ -401,6 +403,8 @@ class TestEmbeddable:
         "not from shell",
     )
     def test_embeddable(self):
+        import ctypes
+
         with open("embed_pil.c", "w") as fh:
             fh.write(
                 """

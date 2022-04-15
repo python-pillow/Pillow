@@ -10,6 +10,7 @@ def test_sanity():
         im.point(list(range(256)))
     im.point(list(range(256)) * 3)
     im.point(lambda x: x)
+    im.point(lambda x: x * 1.2)
 
     im = im.convert("I")
     with pytest.raises(ValueError):

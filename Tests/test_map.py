@@ -36,7 +36,7 @@ def test_tobytes():
     Image.MAX_IMAGE_PIXELS = max_pixels
 
 
-@pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="Requires 64-bit system")
+@pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
 def test_ysize():
     numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 

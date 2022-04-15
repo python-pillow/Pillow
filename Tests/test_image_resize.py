@@ -264,6 +264,13 @@ class TestImageResize:
             with pytest.raises(ValueError):
                 im.resize((10, 10), "unknown")
 
+    def test_load_first(self):
+        # load() may change the size of the image
+        # Test that resize() is calling it before getting the size
+        with Image.open("Tests/images/g4_orientation_5.tif") as im:
+            im = im.resize((64, 64))
+            assert im.size == (64, 64)
+
     def test_default_filter(self):
         for mode in "L", "RGB", "I", "F":
             im = hopper(mode)

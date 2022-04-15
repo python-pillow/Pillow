@@ -132,7 +132,7 @@ def _res_to_dpi(num, denom, exp):
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
     if denom != 0:
-        return (254 * num * (10 ** exp)) / (10000 * denom)
+        return (254 * num * (10**exp)) / (10000 * denom)
 
 
 def _parse_jp2_header(fp):
@@ -290,13 +290,13 @@ def _accept(prefix):
 
 
 def _save(im, fp, filename):
-    if filename.endswith(".j2k"):
+    # Get the keyword arguments
+    info = im.encoderinfo
+
+    if filename.endswith(".j2k") or info.get("no_jp2", False):
         kind = "j2k"
     else:
         kind = "jp2"
-
-    # Get the keyword arguments
-    info = im.encoderinfo
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)
@@ -320,6 +320,7 @@ def _save(im, fp, filename):
     irreversible = info.get("irreversible", False)
     progression = info.get("progression", "LRCP")
     cinema_mode = info.get("cinema_mode", "no")
+    mct = info.get("mct", 0)
     fd = -1
 
     if hasattr(fp, "fileno"):
@@ -340,6 +341,7 @@ def _save(im, fp, filename):
         irreversible,
         progression,
         cinema_mode,
+        mct,
         fd,
     )
 

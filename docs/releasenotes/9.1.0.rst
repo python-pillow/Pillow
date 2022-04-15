@@ -146,12 +146,24 @@ At present, the information within each block is merely returned as a dictionary
 "data" entry. This will allow more useful information to be added in the future without
 breaking backwards compatibility.
 
-Added rawmode argument to Image.getpalette()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added mct and no_jp2 options for saving JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, :py:meth:`~PIL.Image.Image.getpalette` returns RGB data from the palette.
-A ``rawmode`` argument has been added, to allow the mode to be chosen instead. ``None``
-can be used to return data in the current mode of the palette.
+The :py:meth:`PIL.Image.Image.save` method now supports the following options for
+JPEG 2000:
+
+**mct**
+    If ``1`` then enable multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). If MCT is
+    enabled and ``irreversible`` is ``True`` then the Irreversible Color
+    Transformation will be applied, otherwise encoding will use the
+    Reversible Color Transformation. MCT works best with a ``mode`` of
+    ``RGB`` and is only applicable when the image data has 3 components.
+
+**no_jp2**
+    If ``True`` then don't wrap the raw codestream in the JP2 file format when
+    saving, otherwise the extension of the filename will be used to determine
+    the format (default).
 
 Added PyEncoder
 ^^^^^^^^^^^^^^^
@@ -160,8 +172,34 @@ Added PyEncoder
 written in Python. See :ref:`Writing Your Own File Codec in Python<file-codecs-py>` for
 more information.
 
+GifImagePlugin loading strategy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 9.0.0 introduced the conversion of subsequent GIF frames to ``RGB`` or ``RGBA``. This
+behaviour can now be changed so that the first ``P`` frame is converted to ``RGB`` as
+well.
+
+.. code-block:: python
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+
+Or subsequent frames can be kept in ``P`` mode as long as there is only a single
+palette.
+
+.. code-block:: python
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+
 Other Changes
 =============
+
+musllinux wheels
+^^^^^^^^^^^^^^^^
+
+Pillow now builds binary wheels for musllinux, suitable for Linux distributions based on the musl C standard library such as Alpine
+(rather than the glibc library used by manylinux wheels). See :pep:`656`.
 
 ImageShow temporary files on Unix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -176,6 +214,11 @@ Image._repr_pretty_
 ``im._repr_pretty_`` has been added to provide a representation of an image without the
 identity of the object. This allows Jupyter to describe an image and have that
 description stay the same on subsequent executions of the same code.
+
+Added BigTIFF reading
+^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading BigTIFF images.
 
 Added BLP saving
 ^^^^^^^^^^^^^^^^

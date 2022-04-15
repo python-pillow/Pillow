@@ -88,6 +88,14 @@ def test_no_resize():
         assert im.size == (64, 64)
 
 
+def test_load_first():
+    # load() may change the size of the image
+    # Test that thumbnail() is calling it before performing size calculations
+    with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        im.thumbnail((64, 64))
+        assert im.size == (64, 10)
+
+
 # valgrind test is failing with memory allocated in libjpeg
 @pytest.mark.valgrind_known_error(reason="Known Failing")
 def test_DCT_scaling_edges():
@@ -130,4 +138,4 @@ def test_reducing_gap_for_DCT_scaling():
         with Image.open("Tests/images/hopper.jpg") as im:
             im.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=3.0)
 
-            assert_image_equal(ref, im)
+            assert_image_similar(ref, im, 1.4)

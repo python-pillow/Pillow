@@ -626,6 +626,8 @@ def get_sampling(im):
 
 
 def _save(im, fp, filename):
+    if im.width == 0 or im.height == 0:
+        raise ValueError("cannot write empty image as JPEG")
 
     try:
         rawmode = RAWMODE[im.mode]

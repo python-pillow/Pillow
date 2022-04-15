@@ -59,6 +59,51 @@ def test_invalid_file():
         GifImagePlugin.GifImageFile(invalid_file)
 
 
+def test_l_mode_transparency():
+    with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
+        assert im.info["transparency"] == 255
+
+        im.seek(1)
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
+
+
+def test_strategy():
+    with Image.open("Tests/images/chi.gif") as im:
+        expected_zero = im.convert("RGB")
+
+        im.seek(1)
+        expected_one = im.convert("RGB")
+
+    try:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGB"
+            assert_image_equal(im, expected_zero)
+
+        GifImagePlugin.LOADING_STRATEGY = (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+        )
+        # Stay in P mode with only a global palette
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "P"
+            assert_image_equal(im.convert("RGB"), expected_one)
+
+        # Change to RGB mode when a frame has an individual palette
+        with Image.open("Tests/images/iss634.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "RGB"
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
+
+
 def test_optimize():
     def test_grayscale(optimize):
         im = Image.new("L", (1, 1), 0)
@@ -383,18 +428,38 @@ def test_dispose_background_transparency():
         assert px[35, 30][3] == 0
 
 
-def test_transparent_dispose():
-    expected_colors = [
-        (2, 1, 2),
-        ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
-        ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
-    ]
-    with Image.open("Tests/images/transparent_dispose.gif") as img:
-        for frame in range(3):
-            img.seek(frame)
-            for x in range(3):
-                color = img.getpixel((x, 0))
-                assert color == expected_colors[frame][x]
+@pytest.mark.parametrize(
+    "loading_strategy, expected_colors",
+    (
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+            (
+                (2, 1, 2),
+                ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
+                ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
+            ),
+        ),
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+            (
+                (2, 1, 2),
+                (0, 1, 0),
+                (2, 1, 2),
+            ),
+        ),
+    ),
+)
+def test_transparent_dispose(loading_strategy, expected_colors):
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/transparent_dispose.gif") as img:
+            for frame in range(3):
+                img.seek(frame)
+                for x in range(3):
+                    color = img.getpixel((x, 0))
+                    assert color == expected_colors[frame][x]
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_dispose_previous():
@@ -831,6 +896,17 @@ def test_rgb_transparency(tmp_path):
         assert "transparency" not in reloaded.info
 
 
+def test_rgba_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = hopper("P")
+    im.save(out, save_all=True, append_images=[Image.new("RGBA", im.size)])
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+        assert_image_equal(hopper("P").convert("RGB"), reloaded)
+
+
 def test_bbox(tmp_path):
     out = str(tmp_path / "temp.gif")
 
@@ -960,6 +1036,11 @@ def test_lzw_bits():
 def test_extents():
     with Image.open("Tests/images/test_extents.gif") as im:
         assert im.size == (100, 100)
+
+        # Check that n_frames does not change the size
+        assert im.n_frames == 2
+        assert im.size == (100, 100)
+
         im.seek(1)
         assert im.size == (150, 150)
 

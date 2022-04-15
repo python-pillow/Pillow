@@ -196,6 +196,13 @@ def test__accept_false():
     assert not output
 
 
+def test_invalid_file():
+    invalid_file = "Tests/images/flower.jpg"
+
+    with pytest.raises(SyntaxError):
+        DdsImagePlugin.DdsImageFile(invalid_file)
+
+
 def test_short_header():
     """Check a short header"""
     with open(TEST_FILE_DXT5, "rb") as f:

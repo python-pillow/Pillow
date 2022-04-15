@@ -7,7 +7,6 @@
 #endif
 
 #define FRIBIDI_SHIM_IMPLEMENTATION
-
 #include "fribidi.h"
 
 
@@ -50,6 +49,9 @@ int load_fribidi(void) {
     if (!p_fribidi) {
         p_fribidi = dlopen("libfribidi.dylib", RTLD_LAZY);
     }
+    if (!p_fribidi) {
+        p_fribidi = dlopen("/usr/local/lib/libfribidi.dylib", RTLD_LAZY);
+    }
 #else
 #define LOAD_FUNCTION(func) \
     func = (t_##func)GetProcAddress(p_fribidi, #func); \
@@ -86,7 +88,7 @@ int load_fribidi(void) {
 
 #ifndef _WIN32
     fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
-    if (dlerror() || error || (fribidi_version_info == 0)) {
+    if (error || (fribidi_version_info == 0)) {
         dlclose(p_fribidi);
         p_fribidi = 0;
         return 2;

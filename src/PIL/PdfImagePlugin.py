@@ -127,7 +127,6 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
-                bits = 1
             elif im.mode == "L":
                 filter = "DCTDecode"
                 # params = f"<< /Predictor 15 /Columns {width-2} >>"

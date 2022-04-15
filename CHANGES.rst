@@ -2,8 +2,89 @@
 Changelog (Pillow)
 ==================
 
-9.1.0 (unreleased)
+9.2.0 (unreleased)
 ------------------
+
+- Round lut values where necessary #6188
+  [radarhere]
+
+- Load before getting size in resize() #6190
+  [radarhere]
+
+- Load image before performing size calculations in thumbnail() #6186
+  [radarhere]
+
+- Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
+9.1.0 (2022-04-01)
+------------------
+
+- Add support for multiple component transformation to JPEG2000 #5500
+  [scaramallion, radarhere, hugovk]
+
+- Fix loading FriBiDi on Alpine #6165
+  [nulano]
+
+- Added setting for converting GIF P frames to RGB #6150
+  [radarhere]
+
+- Allow 1 mode images to be inverted #6034
+  [radarhere]
+
+- Raise ValueError when trying to save empty JPEG #6159
+  [radarhere]
+
+- Always save TIFF with contiguous planar configuration #5973
+  [radarhere]
+
+- Connected discontiguous polygon corners #5980
+  [radarhere]
+
+- Ensure Tkinter hook is activated for getimage() #6032
+  [radarhere]
+
+- Use screencapture arguments to crop on macOS #6152
+  [radarhere]
+
+- Do not mark L mode JPEG as 1 bit in PDF #6151
+  [radarhere]
+
+- Added support for reading I;16R TIFF images #6132
+  [radarhere]
+
+- If an error occurs after creating a file, remove the file #6134
+  [radarhere]
+
+- Fixed calling DisplayViewer or XVViewer without a title #6136
+  [radarhere]
+
+- Retain RGBA transparency when saving multiple GIF frames #6128
+  [radarhere]
+
+- Save additional ICO frames with other bit depths if supplied #6122
+  [radarhere]
+
+- Handle EXIF data truncated to just the header #6124
+  [radarhere]
+
+- Added support for reading BMP images with RLE8 compression #6102
+  [radarhere]
+
+- Support Python distributions where _tkinter is compiled in #6006
+  [lukegb]
+
+- Added support for PPM arbitrary maxval #6119
+  [radarhere]
+
+- Added BigTIFF reading #6097
+  [radarhere]
+
+- When converting, clip I;16 to be unsigned, not signed #6112
+  [radarhere]
+
+- Fixed loading L mode GIF with transparency #6086
+  [radarhere]
 
 - Improved handling of PPM header #5121
   [Piolie, radarhere]
