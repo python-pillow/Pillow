@@ -244,7 +244,7 @@ class GifImageFile(ImageFile.ImageFile):
                         info["comment"] = comment
                     s = None
                     continue
-                elif s[0] == 255:
+                elif s[0] == 255 and frame == 0:
                     #
                     # application extension
                     #
@@ -252,7 +252,7 @@ class GifImageFile(ImageFile.ImageFile):
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
                         if len(block) >= 3 and block[0] == 1:
-                            info["loop"] = i16(block, 1)
+                            self.info["loop"] = i16(block, 1)
                 while self.data():
                     pass
 
@@ -399,7 +399,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         if info.get("comment"):
             self.info["comment"] = info["comment"]
-        for k in ["duration", "extension", "loop"]:
+        for k in ["duration", "extension"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
