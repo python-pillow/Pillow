@@ -68,7 +68,7 @@ def __getattr__(name):
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        deprecate(name, 10, old_resampling[name])
+        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
         return Resampling[old_resampling[name]]
     for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
         if name in enum.__members__:
