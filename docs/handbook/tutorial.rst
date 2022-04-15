@@ -504,6 +504,17 @@ image header. In addition, seek will also be used when the image data is read
 tar file, you can use the :py:class:`~PIL.ContainerIO` or
 :py:class:`~PIL.TarIO` modules to access it.
 
+Reading from URL
+^^^^^^^^^^^^^^^^
+
+::
+
+    from PIL import Image
+    from urllib.request import urlopen
+    url = "https://raw.githubusercontent.com/python-pillow/pillow-logo/main/pillow-logo-248x250.png"
+    img = Image.open(urlopen(url))
+
+
 Reading from a tar archive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
