@@ -1880,16 +1880,16 @@ class AppendingTiffWriter:
         self.whereToWriteNewIFDOffset = None
         self.offsetOfNewPage = 0
 
-        self.IIMM = IIMM = self.f.read(4)
-        if not IIMM:
+        self.IIMM = iimm = self.f.read(4)
+        if not iimm:
             # empty file - first page
             self.isFirst = True
             return
 
         self.isFirst = False
-        if IIMM == b"II\x2a\x00":
+        if iimm == b"II\x2a\x00":
             self.setEndian("<")
-        elif IIMM == b"MM\x00\x2a":
+        elif iimm == b"MM\x00\x2a":
             self.setEndian(">")
         else:
             raise RuntimeError("Invalid TIFF file header")
