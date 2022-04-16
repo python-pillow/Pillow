@@ -511,7 +511,7 @@ Reading from URL
 
     from PIL import Image
     from urllib.request import urlopen
-    url = "https://raw.githubusercontent.com/python-pillow/pillow-logo/main/pillow-logo-248x250.png"
+    url = "https://python-pillow.org/images/pillow-logo.png"
     img = Image.open(urlopen(url))
 
 
