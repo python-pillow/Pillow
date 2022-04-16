@@ -20,7 +20,7 @@ import sys
 from io import BytesIO
 
 from . import Image
-from ._util import isPath
+from ._util import is_path
 
 qt_versions = [
     ["6", "PyQt6"],
@@ -140,7 +140,7 @@ def _toqclass_helper(im):
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
         im = str(im.toUtf8(), "utf-8")
-    if isPath(im):
+    if is_path(im):
         im = Image.open(im)
         exclusive_fp = True
 

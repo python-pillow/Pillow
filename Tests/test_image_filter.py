@@ -99,10 +99,10 @@ def test_rankfilter_properties():
 
 
 def test_builtinfilter_p():
-    builtinFilter = ImageFilter.BuiltinFilter()
+    builtin_filter = ImageFilter.BuiltinFilter()
 
     with pytest.raises(ValueError):
-        builtinFilter.filter(hopper("P"))
+        builtin_filter.filter(hopper("P"))
 
 
 def test_kernel_not_enough_coefficients():

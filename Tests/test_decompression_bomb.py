@@ -78,7 +78,7 @@ class TestDecompressionCrop:
     def teardown_class(self):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
-    def testEnlargeCrop(self):
+    def test_enlarge_crop(self):
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
         with hopper() as src:

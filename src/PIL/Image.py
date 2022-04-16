@@ -51,7 +51,7 @@ except ImportError:
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
-from ._util import deferred_error, isPath
+from ._util import DeferredError, is_path
 
 
 def __getattr__(name):
@@ -108,7 +108,7 @@ try:
         )
 
 except ImportError as v:
-    core = deferred_error(ImportError("The _imaging C module is not installed."))
+    core = DeferredError(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -577,7 +577,7 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = deferred_error(ValueError("Operation on closed image"))
+        self.im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self):
         self.load()
@@ -2215,7 +2215,7 @@ class Image:
         if isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
-        elif isPath(fp):
+        elif is_path(fp):
             filename = fp
             open_fp = True
         elif fp == sys.stdout:
@@ -2223,7 +2223,7 @@ class Image:
                 fp = sys.stdout.buffer
             except AttributeError:
                 pass
-        if not filename and hasattr(fp, "name") and isPath(fp.name):
+        if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
 
@@ -3029,7 +3029,7 @@ def open(fp, mode="r", formats=None):
     filename = ""
     if isinstance(fp, Path):
         filename = str(fp.resolve())
-    elif isPath(fp):
+    elif is_path(fp):
         filename = fp
 
     if filename:

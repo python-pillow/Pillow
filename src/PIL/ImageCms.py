@@ -27,9 +27,9 @@ try:
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
-    from ._util import deferred_error
+    from ._util import DeferredError
 
-    _imagingcms = deferred_error(ex)
+    _imagingcms = DeferredError(ex)
 
 DESCRIPTION = """
 pyCMS

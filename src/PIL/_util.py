@@ -2,16 +2,16 @@ import os
 from pathlib import Path
 
 
-def isPath(f):
+def is_path(f):
     return isinstance(f, (bytes, str, Path))
 
 
-# Checks if an object is a string, and that it points to a directory.
-def isDirectory(f):
-    return isPath(f) and os.path.isdir(f)
+def is_directory(f):
+    """Checks if an object is a string, and that it points to a directory."""
+    return is_path(f) and os.path.isdir(f)
 
 
-class deferred_error:
+class DeferredError:
     def __init__(self, ex):
         self.ex = ex
 

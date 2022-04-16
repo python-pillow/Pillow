@@ -39,9 +39,9 @@ try:
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
-    from ._util import deferred_error
+    from ._util import DeferredError
 
-    FFI = ffi = deferred_error(ex)
+    FFI = ffi = DeferredError(ex)
 
 logger = logging.getLogger(__name__)
 

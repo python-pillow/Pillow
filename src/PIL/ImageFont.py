@@ -34,7 +34,7 @@ from io import BytesIO
 
 from . import Image
 from ._deprecate import deprecate
-from ._util import isDirectory, isPath
+from ._util import is_directory, is_path
 
 
 class Layout(IntEnum):
@@ -52,7 +52,7 @@ def __getattr__(name):
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-class _imagingft_not_installed:
+class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -61,7 +61,7 @@ class _imagingft_not_installed:
 try:
     from . import _imagingft as core
 except ImportError:
-    core = _imagingft_not_installed()
+    core = _ImagingFtNotInstalled()
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -198,7 +198,7 @@ class FreeTypeFont:
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
-        if isPath(font):
+        if is_path(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -863,7 +863,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except OSError:
-        if not isPath(font):
+        if not is_path(font):
             raise
         ttf_filename = os.path.basename(font)
 
@@ -917,7 +917,7 @@ def load_path(filename):
     :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
-        if isDirectory(directory):
+        if is_directory(directory):
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:
