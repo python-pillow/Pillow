@@ -602,7 +602,7 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=Image.core.fill,
+        fill=None,
         direction=None,
         features=None,
         language=None,
@@ -626,6 +626,8 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
+
+        :param fill: Fill function. Deprecated.
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -674,6 +676,10 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
+        if fill is not None:
+            deprecate("fill", 10)
+        else:
+            fill = Image.core.fill
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )

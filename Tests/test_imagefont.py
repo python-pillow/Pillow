@@ -977,6 +977,11 @@ class TestImageFont:
 
         assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
 
+    def test_fill_deprecation(self):
+        font = self.get_font()
+        with pytest.warns(DeprecationWarning):
+            font.getmask2("Hello world", fill=Image.core.fill)
+
 
 @skip_unless_feature("raqm")
 class TestImageFont_RaqmLayout(TestImageFont):
