@@ -182,7 +182,7 @@ def _save(im, fp, filename):
     fp.write(struct.pack(">l", pinmax))
     fp.write(struct.pack("4s", b""))  # dummy
     fp.write(struct.pack("79s", img_name))  # truncates to 79 chars
-    fp.write(struct.pack("s", b""))  # force null byte after imgname
+    fp.write(struct.pack("s", b""))  # force null byte after img_name
     fp.write(struct.pack(">l", colormap))
     fp.write(struct.pack("404s", b""))  # dummy
 
