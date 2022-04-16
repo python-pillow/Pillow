@@ -33,6 +33,7 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image
+from ._deprecate import deprecate
 from ._util import is_directory, is_path
 
 
@@ -42,24 +43,11 @@ class Layout(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Layout: "LAYOUT_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -196,8 +184,6 @@ class FreeTypeFont:
             if core.HAVE_RAQM:
                 layout_engine = Layout.RAQM
         elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
-            import warnings
-
             warnings.warn(
                 "Raqm layout was requested, but Raqm is not available. "
                 "Falling back to basic layout."

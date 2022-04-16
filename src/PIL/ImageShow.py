@@ -15,10 +15,11 @@ import os
 import shutil
 import subprocess
 import sys
-import warnings
 from shlex import quote
 
 from PIL import Image
+
+from ._deprecate import deprecate
 
 _viewers = []
 
@@ -120,11 +121,7 @@ class Viewer:
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -176,11 +173,7 @@ class MacViewer(Viewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -228,11 +221,7 @@ class XDGViewer(UnixViewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -261,11 +250,7 @@ class DisplayViewer(UnixViewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -296,11 +281,7 @@ class GmDisplayViewer(UnixViewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -325,11 +306,7 @@ class EogViewer(UnixViewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
@@ -360,11 +337,7 @@ class XVViewer(UnixViewer):
         """
         if path is None:
             if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
+                deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")

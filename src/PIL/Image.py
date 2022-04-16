@@ -50,28 +50,17 @@ except ImportError:
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
+from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
     if name in categories:
-        warnings.warn(
-            "Image categories are " + deprecated + "Use is_animated instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate("Image categories", 10, "is_animated", plural=True)
         return categories[name]
     elif name in ("NEAREST", "NONE"):
-        warnings.warn(
-            name
-            + " is "
-            + deprecated
-            + "Use Resampling.NEAREST or Dither.NONE instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate(name, 10, "Resampling.NEAREST or Dither.NONE")
         return 0
     old_resampling = {
         "LINEAR": "BILINEAR",
@@ -79,31 +68,11 @@ def __getattr__(name):
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        warnings.warn(
-            name
-            + " is "
-            + deprecated
-            + "Use Resampling."
-            + old_resampling[name]
-            + " instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
         return Resampling[old_resampling[name]]
     for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
         if name in enum.__members__:
-            warnings.warn(
-                name
-                + " is "
-                + deprecated
-                + "Use "
-                + enum.__name__
-                + "."
-                + name
-                + " instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+            deprecate(name, 10, f"{enum.__name__}.{name}")
             return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -538,12 +507,7 @@ class Image:
 
     def __getattr__(self, name):
         if name == "category":
-            warnings.warn(
-                "Image categories are deprecated and will be removed in Pillow 10 "
-                "(2023-07-01). Use is_animated instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+            deprecate("Image categories", 10, "is_animated", plural=True)
             return self._category
         raise AttributeError(name)
 
