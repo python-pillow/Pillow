@@ -53,6 +53,7 @@ jobs:
           bash.exe .ci/install.sh
 
       - name: Install a different NumPy
+        if: matrix.architecture == 'x86_64'
         run: |
           bash.exe -c "python3.${{ matrix.python-minor-version }} -m pip install -U 'numpy!=1.21.*'"
 
