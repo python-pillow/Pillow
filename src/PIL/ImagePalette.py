@@ -17,9 +17,9 @@
 #
 
 import array
-import warnings
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
+from ._deprecate import deprecate
 
 
 class ImagePalette:
@@ -40,11 +40,7 @@ class ImagePalette:
         self.palette = palette or bytearray()
         self.dirty = None
         if size != 0:
-            warnings.warn(
-                "The size parameter is deprecated and will be removed in Pillow 10 "
-                "(2023-07-01).",
-                DeprecationWarning,
-            )
+            deprecate("The size parameter", 10, None)
             if size != len(self.palette):
                 raise ValueError("wrong palette size")
 
