@@ -341,16 +341,23 @@ def test_seek_rewind():
             assert_image_equal(im, expected)
 
 
-def test_n_frames():
-    for path, n_frames in [[TEST_GIF, 1], ["Tests/images/iss634.gif", 42]]:
-        # Test is_animated before n_frames
-        with Image.open(path) as im:
-            assert im.is_animated == (n_frames != 1)
+@pytest.mark.parametrize(
+    "path, n_frames",
+    (
+        (TEST_GIF, 1),
+        ("Tests/images/comment_after_last_frame.gif", 2),
+        ("Tests/images/iss634.gif", 42),
+    ),
+)
+def test_n_frames(path, n_frames):
+    # Test is_animated before n_frames
+    with Image.open(path) as im:
+        assert im.is_animated == (n_frames != 1)
 
-        # Test is_animated after n_frames
-        with Image.open(path) as im:
-            assert im.n_frames == n_frames
-            assert im.is_animated == (n_frames != 1)
+    # Test is_animated after n_frames
+    with Image.open(path) as im:
+        assert im.n_frames == n_frames
+        assert im.is_animated == (n_frames != 1)
 
 
 def test_no_change():
