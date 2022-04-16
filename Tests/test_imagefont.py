@@ -981,6 +981,9 @@ class TestImageFont:
         font = self.get_font()
         with pytest.warns(DeprecationWarning):
             font.getmask2("Hello world", fill=Image.core.fill)
+        with pytest.raises(TypeError):
+            with pytest.warns(DeprecationWarning):
+                font.getmask2("Hello world", fill=None)
 
 
 @skip_unless_feature("raqm")

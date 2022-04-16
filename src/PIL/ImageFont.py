@@ -64,6 +64,9 @@ except ImportError:
     core = _imagingft_not_installed()
 
 
+_UNSPECIFIED = object()
+
+
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
 # --------------------------------------------------------------------
@@ -602,7 +605,7 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=None,
+        fill=_UNSPECIFIED,
         direction=None,
         features=None,
         language=None,
@@ -676,7 +679,7 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        if fill is not None:
+        if fill is not _UNSPECIFIED:
             deprecate("fill", 10)
         else:
             fill = Image.core.fill
