@@ -633,7 +633,8 @@ class FreeTypeFont:
         :param fill: Optional fill function. By default, an internal Pillow function
                      will be used.
 
-                     Deprecated.
+                     Deprecated. This parameter will be removed in Pillow 10
+                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
