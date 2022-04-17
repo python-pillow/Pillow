@@ -1,0 +1,49 @@
+9.2.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+FreeTypeFont.getmask2 fill parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2`
+has been deprecated and will be removed in Pillow 10 (2023-07-01).
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

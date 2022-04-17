@@ -149,6 +149,14 @@ PhotoImage.paste box parameter
 
 The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
 
+FreeTypeFont.getmask2 fill parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
+deprecated and will be removed in Pillow 10 (2023-07-01).
+
 Removed features
 ----------------
 
