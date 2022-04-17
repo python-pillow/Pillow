@@ -683,10 +683,10 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        if fill is not _UNSPECIFIED:
-            deprecate("fill", 10)
-        else:
+        if fill is _UNSPECIFIED:
             fill = Image.core.fill
+        else:
+            deprecate("fill", 10)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
