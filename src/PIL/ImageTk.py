@@ -184,7 +184,8 @@ class PhotoImage:
         :param im: A PIL image. The size must match the target region.  If the
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
-        :param box: Deprecated.
+        :param box: Deprecated. This parameter will be removed in Pillow 10
+                    (2023-07-01).
         """
 
         if box is not None:
