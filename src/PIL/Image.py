@@ -547,7 +547,7 @@ class Image:
             if getattr(self, "_fp", False):
                 if self._fp != self.fp:
                     self._fp.close()
-                self._fp = None
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
         self.fp = None
@@ -568,7 +568,7 @@ class Image:
             if getattr(self, "_fp", False):
                 if self._fp != self.fp:
                     self._fp.close()
-                self._fp = None
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
             self.fp = None

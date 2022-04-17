@@ -70,6 +70,15 @@ class TestFileTiff:
             im.load()
             im.close()
 
+    def test_seek_after_close(self):
+        im = Image.open("Tests/images/multipage.tiff")
+        im.close()
+
+        with pytest.raises(ValueError):
+            im.n_frames
+        with pytest.raises(ValueError):
+            im.seek(1)
+
     def test_context_manager(self):
         with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
