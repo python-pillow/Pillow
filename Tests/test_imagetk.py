@@ -75,8 +75,16 @@ def test_photoimage_blank():
         assert im_tk.width() == 100
         assert im_tk.height() == 100
 
-        # reloaded = ImageTk.getimage(im_tk)
-        # assert_image_equal(reloaded, im)
+        im = Image.new(mode, (100, 100))
+        reloaded = ImageTk.getimage(im_tk)
+        assert_image_equal(reloaded.convert(mode), im)
+
+
+def test_box_deprecation():
+    im = hopper()
+    im_tk = ImageTk.PhotoImage(im)
+    with pytest.warns(DeprecationWarning):
+        im_tk.paste(im, (0, 0, 128, 128))
 
 
 def test_bitmapimage():

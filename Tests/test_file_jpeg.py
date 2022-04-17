@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 from io import BytesIO
 
 import pytest
@@ -67,6 +68,13 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero(self, size, tmp_path):
+        f = str(tmp_path / "temp.jpg")
+        im = Image.new("RGB", size)
+        with pytest.raises(ValueError):
+            im.save(f)
+
     def test_app(self):
         # Test APP/COM reader (@PIL135)
         with Image.open(TEST_FILE) as im:
@@ -85,26 +93,26 @@ class TestFileJpeg:
         f = "Tests/images/pil_sample_cmyk.jpg"
         with Image.open(f) as im:
             # the source image has red pixels in the upper left corner.
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = [x / 255.0 for x in im.getpixel((0, 0))]
+            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = [
+            c, m, y, k = (
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            ]
+            )
             assert k > 0.9
 
     @pytest.mark.parametrize(
@@ -271,7 +279,7 @@ class TestFileJpeg:
             del exif[0x8769]
 
             # Assert that it needs to be transposed
-            assert exif[0x0112] == Image.TRANSVERSE
+            assert exif[0x0112] == Image.Transpose.TRANSVERSE
 
             # Assert that the GPS IFD is present and empty
             assert exif.get_ifd(0x8825) == {}
@@ -756,9 +764,8 @@ class TestFileJpeg:
             assert exif[282] == 180
 
             out = str(tmp_path / "out.jpg")
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.save(out, exif=exif)
-            assert not record
 
         with Image.open(out) as reloaded:
             assert reloaded.getexif()[282] == 180
@@ -869,6 +876,30 @@ class TestFileJpeg:
         if ElementTree is not None:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
+
+    @pytest.mark.timeout(timeout=1)
+    def test_eof(self):
+        # Even though this decoder never says that it is finished
+        # the image should still end when there is no new data
+        class InfiniteMockPyDecoder(ImageFile.PyDecoder):
+            def decode(self, buffer):
+                return 0, 0
+
+        decoder = InfiniteMockPyDecoder(None)
+
+        def closure(mode, *args):
+            decoder.__init__(mode, *args)
+            return decoder
+
+        Image.register_decoder("INFINITE", closure)
+
+        with Image.open(TEST_FILE) as im:
+            im.tile = [
+                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+            ]
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

@@ -235,7 +235,7 @@ _setfd(ImagingDecoderObject *decoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pulls_fd(ImagingDecoderObject *decoder) {
+_get_pulls_fd(ImagingDecoderObject *decoder, void *closure) {
     return PyBool_FromLong(decoder->pulls_fd);
 }
 

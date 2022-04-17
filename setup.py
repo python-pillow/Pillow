@@ -26,7 +26,6 @@ def get_version():
     return locals()["__version__"]
 
 
-NAME = "Pillow"
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
@@ -168,7 +167,7 @@ def _find_library_dirs_ldconfig():
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
         args = ["/sbin/ldconfig", "-p"]
-        expr = fr".*\({abi_type}.*\) => (.*)"
+        expr = rf".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
@@ -186,7 +185,7 @@ def _find_library_dirs_ldconfig():
         return []
     [data, _] = p.communicate()
     if isinstance(data, bytes):
-        data = data.decode()
+        data = data.decode("latin1")
 
     dirs = []
     for dll in re.findall(expr, data):
@@ -405,6 +404,27 @@ class pil_build_ext(build_ext):
                 self.extensions.remove(extension)
                 break
 
+    def get_macos_sdk_path(self):
+        try:
+            sdk_path = (
+                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            sdk_path = None
+        if (
+            not sdk_path
+            or sdk_path == "/Applications/Xcode.app/Contents/Developer"
+            "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+        ):
+            commandlinetools_sdk_path = (
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+            )
+            if os.path.exists(commandlinetools_sdk_path):
+                sdk_path = commandlinetools_sdk_path
+        return sdk_path
+
     def build_extensions(self):
 
         library_dirs = []
@@ -532,17 +552,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-            # SDK install path
-            sdk_path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
-            if not os.path.exists(sdk_path):
-                try:
-                    sdk_path = (
-                        subprocess.check_output(["xcrun", "--show-sdk-path"])
-                        .strip()
-                        .decode("latin1")
-                    )
-                except Exception:
-                    sdk_path = None
+            sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
@@ -561,7 +571,11 @@ class pil_build_ext(build_ext):
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
                 _add_directory(
-                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                    library_dirs,
+                    os.path.join(
+                        os.environ["ANDROID_ROOT"],
+                        "lib" if struct.calcsize("l") == 4 else "lib64",
+                    ),
                 )
 
         elif sys.platform.startswith("netbsd"):
@@ -884,7 +898,7 @@ class pil_build_ext(build_ext):
         else:
             self._remove_extension("PIL._webp")
 
-        tk_libs = ["psapi"] if sys.platform == "win32" else []
+        tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
 
         build_ext.build_extensions(self)
@@ -971,56 +985,14 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-with open("README.md") as f:
-    long_description = f.read()
-
 try:
     setup(
-        name=NAME,
         version=PILLOW_VERSION,
-        description="Python Imaging Library (Fork)",
-        long_description=long_description,
-        long_description_content_type="text/markdown",
-        license="HPND",
-        author="Alex Clark (PIL Fork Author)",
-        author_email="aclark@python-pillow.org",
-        url="https://python-pillow.org",
-        project_urls={
-            "Documentation": "https://pillow.readthedocs.io",
-            "Source": "https://github.com/python-pillow/Pillow",
-            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
-            "utm_source=pypi-pillow&utm_medium=pypi",
-            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
-            "index.html",
-            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
-            "CHANGES.rst",
-            "Twitter": "https://twitter.com/PythonPillow",
-        },
-        classifiers=[
-            "Development Status :: 6 - Mature",
-            "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
-            "Programming Language :: Python :: 3.7",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
-            "Programming Language :: Python :: 3.10",
-            "Programming Language :: Python :: 3 :: Only",
-            "Programming Language :: Python :: Implementation :: CPython",
-            "Programming Language :: Python :: Implementation :: PyPy",
-            "Topic :: Multimedia :: Graphics",
-            "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-            "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-            "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-            "Topic :: Multimedia :: Graphics :: Viewers",
-        ],
-        python_requires=">=3.6",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         include_package_data=True,
         packages=["PIL"],
         package_dir={"": "src"},
-        keywords=["Imaging"],
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:

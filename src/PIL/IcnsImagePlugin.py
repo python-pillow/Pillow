@@ -167,7 +167,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != MAGIC:
+        if not _accept(sig):
             raise SyntaxError("not an icns file")
         i = HEADERSIZE
         while i < filesize:
@@ -286,21 +286,22 @@ class IcnsImageFile(ImageFile.ImageFile):
                 self.best_size[1] * self.best_size[2],
             )
 
-        Image.Image.load(self)
-        if self.im and self.im.size == self.size:
+        px = Image.Image.load(self)
+        if self.im is not None and self.im.size == self.size:
             # Already loaded
-            return
+            return px
         self.load_prepare()
         # This is likely NOT the best way to do it, but whatever.
         im = self.icns.getimage(self.best_size)
 
         # If this is a PNG or JPEG 2000, it won't be loaded yet
-        im.load()
+        px = im.load()
 
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
-        self.load_end()
+
+        return px
 
 
 def _save(im, fp, filename):
@@ -337,23 +338,28 @@ def _save(im, fp, filename):
     entries = []
     for type, size in sizes.items():
         stream = size_streams[size]
-        entries.append({"type": type, "size": len(stream), "stream": stream})
+        entries.append(
+            {"type": type, "size": HEADERSIZE + len(stream), "stream": stream}
+        )
 
     # Header
     fp.write(MAGIC)
-    fp.write(struct.pack(">i", sum(entry["size"] for entry in entries)))
+    file_length = HEADERSIZE  # Header
+    file_length += HEADERSIZE + 8 * len(entries)  # TOC
+    file_length += sum(entry["size"] for entry in entries)
+    fp.write(struct.pack(">i", file_length))
 
     # TOC
     fp.write(b"TOC ")
     fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
     for entry in entries:
         fp.write(entry["type"])
-        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+        fp.write(struct.pack(">i", entry["size"]))
 
     # Data
     for entry in entries:
         fp.write(entry["type"])
-        fp.write(struct.pack(">i", HEADERSIZE + entry["size"]))
+        fp.write(struct.pack(">i", entry["size"]))
         fp.write(entry["stream"])
 
     if hasattr(fp, "flush"):

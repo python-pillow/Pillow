@@ -22,7 +22,6 @@
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
-import struct
 import warnings
 from io import BytesIO
 from math import ceil, log
@@ -30,6 +29,8 @@ from math import ceil, log
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
 from ._binary import i32le as i32
+from ._binary import o8
+from ._binary import o16le as o16
 from ._binary import o32le as o32
 
 #
@@ -40,57 +41,72 @@ _MAGIC = b"\0\0\1\0"
 
 def _save(im, fp, filename):
     fp.write(_MAGIC)  # (2+2)
+    bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     sizes = im.encoderinfo.get(
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
+    frames = []
+    provided_ims = [im] + im.encoderinfo.get("append_images", [])
     width, height = im.size
-    sizes = filter(
-        lambda x: False
-        if (x[0] > width or x[1] > height or x[0] > 256 or x[1] > 256)
-        else True,
-        sizes,
-    )
-    sizes = list(sizes)
-    fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
-    offset = fp.tell() + len(sizes) * 16
-    bmp = im.encoderinfo.get("bitmap_format") == "bmp"
-    provided_images = {im.size: im for im in im.encoderinfo.get("append_images", [])}
-    for size in sizes:
-        width, height = size
+    for size in sorted(set(sizes)):
+        if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
+            continue
+
+        for provided_im in provided_ims:
+            if provided_im.size != size:
+                continue
+            frames.append(provided_im)
+            if bmp:
+                bits = BmpImagePlugin.SAVE[provided_im.mode][1]
+                bits_used = [bits]
+                for other_im in provided_ims:
+                    if other_im.size != size:
+                        continue
+                    bits = BmpImagePlugin.SAVE[other_im.mode][1]
+                    if bits not in bits_used:
+                        # Another image has been supplied for this size
+                        # with a different bit depth
+                        frames.append(other_im)
+                        bits_used.append(bits)
+            break
+        else:
+            # TODO: invent a more convenient method for proportional scalings
+            frame = provided_im.copy()
+            frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
+            frames.append(frame)
+    fp.write(o16(len(frames)))  # idCount(2)
+    offset = fp.tell() + len(frames) * 16
+    for frame in frames:
+        width, height = frame.size
         # 0 means 256
-        fp.write(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
-        fp.write(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
-        fp.write(b"\0")  # bColorCount(1)
+        fp.write(o8(width if width < 256 else 0))  # bWidth(1)
+        fp.write(o8(height if height < 256 else 0))  # bHeight(1)
+
+        bits, colors = BmpImagePlugin.SAVE[frame.mode][1:] if bmp else (32, 0)
+        fp.write(o8(colors))  # bColorCount(1)
         fp.write(b"\0")  # bReserved(1)
         fp.write(b"\0\0")  # wPlanes(2)
-
-        tmp = provided_images.get(size)
-        if not tmp:
-            # TODO: invent a more convenient method for proportional scalings
-            tmp = im.copy()
-            tmp.thumbnail(size, Image.LANCZOS, reducing_gap=None)
-        bits = BmpImagePlugin.SAVE[tmp.mode][1] if bmp else 32
-        fp.write(struct.pack("<H", bits))  # wBitCount(2)
+        fp.write(o16(bits))  # wBitCount(2)
 
         image_io = BytesIO()
         if bmp:
-            tmp.save(image_io, "dib")
+            frame.save(image_io, "dib")
 
             if bits != 32:
-                and_mask = Image.new("1", tmp.size)
+                and_mask = Image.new("1", size)
                 ImageFile._save(
-                    and_mask, image_io, [("raw", (0, 0) + tmp.size, 0, ("1", 0, -1))]
+                    and_mask, image_io, [("raw", (0, 0) + size, 0, ("1", 0, -1))]
                 )
         else:
-            tmp.save(image_io, "png")
+            frame.save(image_io, "png")
         image_io.seek(0)
         image_bytes = image_io.read()
         if bmp:
             image_bytes = image_bytes[:8] + o32(height * 2) + image_bytes[12:]
         bytes_len = len(image_bytes)
-        fp.write(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
-        fp.write(struct.pack("<I", offset))  # dwImageOffset(4)
+        fp.write(o32(bytes_len))  # dwBytesInRes(4)
+        fp.write(o32(offset))  # dwImageOffset(4)
         current = fp.tell()
         fp.seek(offset)
         fp.write(image_bytes)
@@ -235,8 +251,8 @@ class IcoFile:
                 # the total mask data is
                 # padded row size * height / bits per char
 
-                and_mask_offset = o + int(im.size[0] * im.size[1] * (bpp / 8.0))
                 total_bytes = int((w * im.size[1]) / 8)
+                and_mask_offset = header["offset"] + header["size"] - total_bytes
 
                 self.buf.seek(and_mask_offset)
                 mask_data = self.buf.read(total_bytes)
@@ -304,9 +320,9 @@ class IcoImageFile(ImageFile.ImageFile):
         self._size = value
 
     def load(self):
-        if self.im and self.im.size == self.size:
+        if self.im is not None and self.im.size == self.size:
             # Already loaded
-            return
+            return Image.Image.load(self)
         im = self.ico.getimage(self.size)
         # if tile is PNG, it won't really be loaded yet
         im.load()

@@ -183,7 +183,7 @@ def test_bitmap():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.NEAREST)
+        small = small.resize((50, 50), Image.Resampling.NEAREST)
 
         # Act
         draw.bitmap((10, 10), small)
@@ -319,7 +319,7 @@ def test_ellipse_symmetric():
         im = Image.new("RGB", (width, 100))
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill="green", outline="blue")
-        assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
+        assert_image_equal(im, im.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
 
 
 def test_ellipse_width():
@@ -465,6 +465,23 @@ def test_shape2():
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_shape2.png")
+
+
+def test_transform():
+    # Arrange
+    im = Image.new("RGB", (100, 100), "white")
+    expected = im.copy()
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    s = ImageDraw.Outline()
+    s.line(0, 0)
+    s.transform((0, 0, 0, 0, 0, 0))
+
+    draw.shape(s, fill=1)
+
+    # Assert
+    assert_image_equal(im, expected)
 
 
 def helper_pieslice(bbox, start, end):
@@ -635,6 +652,19 @@ def test_polygon_1px_high():
     draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
 
     # Assert
+    assert_image_equal_tofile(im, expected)
+
+
+def test_polygon_translucent():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.polygon([(20, 80), (80, 80), (80, 20)], fill=(0, 255, 0, 127))
+
+    # Assert
+    expected = "Tests/images/imagedraw_polygon_translucent.png"
     assert_image_equal_tofile(im, expected)
 
 
@@ -929,6 +959,18 @@ def test_triangle_right():
     draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
     assert_image_equal_tofile(
         img, os.path.join(IMAGES_PATH, "triangle_right.png"), "triangle right failed"
+    )
+
+
+@pytest.mark.parametrize(
+    "fill, suffix",
+    ((BLACK, "width"), (None, "width_no_fill")),
+)
+def test_triangle_right_width(fill, suffix):
+    img, draw = create_base_image_draw((100, 100))
+    draw.polygon([(15, 25), (85, 25), (50, 60)], fill, WHITE, width=5)
+    assert_image_equal_tofile(
+        img, os.path.join(IMAGES_PATH, "triangle_right_" + suffix + ".png")
     )
 
 
@@ -1398,3 +1440,15 @@ def test_continuous_horizontal_edges_polygon():
     assert_image_equal_tofile(
         img, expected, "continuous horizontal edges polygon failed"
     )
+
+
+def test_discontiguous_corners_polygon():
+    img, draw = create_base_image_draw((84, 68))
+    draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
+    draw.polygon(
+        ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),
+        BLACK,
+    )
+    expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
+    assert_image_similar_tofile(img, expected, 1)

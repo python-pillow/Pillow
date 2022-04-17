@@ -30,7 +30,6 @@ if os.environ.get("SHOW_ERRORS", None):
             a.show()
             b.show()
 
-
 elif "GITHUB_ACTIONS" in os.environ:
     HAS_UPLOADER = True
 
@@ -43,7 +42,6 @@ elif "GITHUB_ACTIONS" in os.environ:
             a.save(os.path.join(tmpdir, "a.png"))
             b.save(os.path.join(tmpdir, "b.png"))
             return tmpdir
-
 
 else:
     try:
@@ -326,7 +324,7 @@ def is_mingw():
     return sysconfig.get_platform() == "mingw"
 
 
-class cached_property:
+class CachedProperty:
     def __init__(self, func):
         self.func = func
 

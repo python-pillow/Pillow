@@ -3,14 +3,14 @@
  * a Python / PIL interface to the littleCMS ICC Color Management System
  * Copyright (C) 2002-2003 Kevin Cazabon
  * kevin@cazabon.com
- * http://www.cazabon.com
+ * https://www.cazabon.com
  * Adapted/reworked for PIL by Fredrik Lundh
  * Copyright (c) 2009 Fredrik Lundh
  * Updated to LCMS2
  * Copyright (c) 2013 Eric Soroos
  *
- * pyCMS home page:  http://www.cazabon.com/pyCMS
- * littleCMS home page:  http://www.littlecms.com
+ * pyCMS home page:  https://www.cazabon.com/pyCMS
+ * littleCMS home page:  https://www.littlecms.com
  * (littleCMS is Copyright (C) 1998-2001 Marti Maria)
  *
  * Originally released under LGPL.  Graciously donated to PIL in
@@ -23,7 +23,7 @@ pyCMS\n\
 a Python / PIL interface to the littleCMS ICC Color Management System\n\
 Copyright (C) 2002-2003 Kevin Cazabon\n\
 kevin@cazabon.com\n\
-http://www.cazabon.com\n\
+https://www.cazabon.com\n\
 "
 
 #define PY_SSIZE_T_CLEAN

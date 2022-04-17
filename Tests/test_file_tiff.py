@@ -1,9 +1,10 @@
 import os
+import warnings
 from io import BytesIO
 
 import pytest
 
-from PIL import Image, TiffImagePlugin
+from PIL import Image, ImageFile, TiffImagePlugin
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
@@ -64,19 +65,15 @@ class TestFileTiff:
         pytest.warns(ResourceWarning, open)
 
     def test_closed_file(self):
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
 
-        assert not record
-
     def test_context_manager(self):
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
-
-        assert not record
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -90,11 +87,22 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_wrong_bits_per_sample(self):
-        with Image.open("Tests/images/tiff_wrong_bits_per_sample.tiff") as im:
-            assert im.mode == "RGBA"
-            assert im.size == (52, 53)
-            assert im.tile == [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))]
+    def test_bigtiff(self):
+        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+            assert_image_equal_tofile(im, "Tests/images/hopper.tif")
+
+    @pytest.mark.parametrize(
+        "file_name,mode,size,offset",
+        [
+            ("tiff_wrong_bits_per_sample.tiff", "RGBA", (52, 53), 160),
+            ("tiff_wrong_bits_per_sample_2.tiff", "RGB", (16, 16), 8),
+        ],
+    )
+    def test_wrong_bits_per_sample(self, file_name, mode, size, offset):
+        with Image.open("Tests/images/" + file_name) as im:
+            assert im.mode == mode
+            assert im.size == size
+            assert im.tile == [("raw", (0, 0) + size, offset, (mode, 0, 1))]
             im.load()
 
     def test_set_legacy_api(self):
@@ -143,14 +151,14 @@ class TestFileTiff:
             assert im.info["dpi"] == (71.0, 71.0)
 
     @pytest.mark.parametrize(
-        "resolutionUnit, dpi",
+        "resolution_unit, dpi",
         [(None, 72.8), (2, 72.8), (3, 184.912)],
     )
-    def test_load_float_dpi(self, resolutionUnit, dpi):
+    def test_load_float_dpi(self, resolution_unit, dpi):
         with Image.open(
-            "Tests/images/hopper_float_dpi_" + str(resolutionUnit) + ".tif"
+            "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
-            assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
+            assert im.tag_v2.get(RESOLUTION_UNIT) == resolution_unit
             assert im.info["dpi"] == (dpi, dpi)
 
     def test_save_float_dpi(self, tmp_path):
@@ -216,6 +224,15 @@ class TestFileTiff:
         # Bytes are in image native order (big endian)
         assert b[0] == ord(b"\x01")
         assert b[1] == ord(b"\xe0")
+
+    def test_16bit_r(self):
+        with Image.open("Tests/images/16bit.r.tif") as im:
+            assert im.getpixel((0, 0)) == 480
+            assert im.mode == "I;16"
+
+            b = im.tobytes()
+        assert b[0] == ord(b"\xe0")
+        assert b[1] == ord(b"\x01")
 
     def test_16bit_s(self):
         with Image.open("Tests/images/16bit.s.tif") as im:
@@ -403,10 +420,8 @@ class TestFileTiff:
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             assert 0x8825 in im.tag_v2
 
-    def test_exif(self):
-        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
-            exif = im.getexif()
-
+    def test_exif(self, tmp_path):
+        def check_exif(exif):
             assert sorted(exif.keys()) == [
                 256,
                 257,
@@ -438,6 +453,24 @@ class TestFileTiff:
             assert list(gps.keys()) == [0, 1, 2, 3, 4, 5, 6, 18]
             assert gps[0] == b"\x03\x02\x00\x00"
             assert gps[18] == "WGS-84"
+
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            exif = im.getexif()
+            check_exif(exif)
+
+            im.save(outfile, exif=exif)
+
+        outfile2 = str(tmp_path / "temp2.tif")
+        with Image.open(outfile) as im:
+            exif = im.getexif()
+            check_exif(exif)
+
+            im.save(outfile2, exif=exif.tobytes())
+
+        with Image.open(outfile2) as im:
+            exif = im.getexif()
+            check_exif(exif)
 
     def test_exif_frames(self):
         # Test that EXIF data can change across frames
@@ -578,6 +611,17 @@ class TestFileTiff:
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
+    def test_planar_configuration_save(self, tmp_path):
+        infile = "Tests/images/tiff_tiled_planar_raw.tif"
+        with Image.open(infile) as im:
+            assert im._planar_configuration == 2
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile)
+
+            with Image.open(outfile) as reloaded:
+                assert_image_equal_tofile(reloaded, infile)
+
     def test_palette(self, tmp_path):
         def roundtrip(mode):
             outfile = str(tmp_path / "temp.tif")
@@ -611,11 +655,11 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def imGenerator(ims):
+        def im_generator(ims):
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -669,6 +713,32 @@ class TestFileTiff:
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
 
+    def test_get_photoshop_blocks(self):
+        with Image.open("Tests/images/lab.tif") as im:
+            assert list(im.get_photoshop_blocks().keys()) == [
+                1061,
+                1002,
+                1005,
+                1062,
+                1037,
+                1049,
+                1011,
+                1034,
+                10000,
+                1013,
+                1016,
+                1032,
+                1054,
+                1050,
+                1064,
+                1041,
+                1044,
+                1036,
+                1057,
+                4000,
+                4001,
+            ]
+
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
@@ -698,6 +768,8 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+    # Ignore this UserWarning:
+    @pytest.mark.filterwarnings("ignore:Truncated File Read")
     @pytest.mark.skipif(
         not os.path.exists("Tests/images/string_dimension.tiff"),
         reason="Extra image files not installed",
@@ -707,6 +779,14 @@ class TestFileTiff:
         with Image.open("Tests/images/string_dimension.tiff") as im:
             with pytest.raises(OSError):
                 im.load()
+
+    @pytest.mark.timeout(6)
+    @pytest.mark.filterwarnings("ignore:Truncated File Read")
+    def test_timeout(self):
+        with Image.open("Tests/images/timeout-6646305047838720") as im:
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            im.load()
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

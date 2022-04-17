@@ -88,6 +88,14 @@ def test_no_resize():
         assert im.size == (64, 64)
 
 
+def test_load_first():
+    # load() may change the size of the image
+    # Test that thumbnail() is calling it before performing size calculations
+    with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        im.thumbnail((64, 64))
+        assert im.size == (64, 10)
+
+
 # valgrind test is failing with memory allocated in libjpeg
 @pytest.mark.valgrind_known_error(reason="Known Failing")
 def test_DCT_scaling_edges():
@@ -97,24 +105,24 @@ def test_DCT_scaling_edges():
 
     thumb = fromstring(tostring(im, "JPEG", quality=99, subsampling=0))
     # small reducing_gap to amplify the effect
-    thumb.thumbnail((32, 32), Image.BICUBIC, reducing_gap=1.0)
+    thumb.thumbnail((32, 32), Image.Resampling.BICUBIC, reducing_gap=1.0)
 
-    ref = im.resize((32, 32), Image.BICUBIC)
+    ref = im.resize((32, 32), Image.Resampling.BICUBIC)
     # This is still JPEG, some error is present. Without the fix it is 11.5
     assert_image_similar(thumb, ref, 1.5)
 
 
 def test_reducing_gap_values():
     im = hopper()
-    im.thumbnail((18, 18), Image.BICUBIC)
+    im.thumbnail((18, 18), Image.Resampling.BICUBIC)
 
     ref = hopper()
-    ref.thumbnail((18, 18), Image.BICUBIC, reducing_gap=2.0)
+    ref.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=2.0)
     # reducing_gap=2.0 should be the default
     assert_image_equal(ref, im)
 
     ref = hopper()
-    ref.thumbnail((18, 18), Image.BICUBIC, reducing_gap=None)
+    ref.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=None)
     with pytest.raises(AssertionError):
         assert_image_equal(ref, im)
 
@@ -125,9 +133,9 @@ def test_reducing_gap_for_DCT_scaling():
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
         ref.draft(None, (18 * 3, 18 * 3))
-        ref = ref.resize((18, 18), Image.BICUBIC)
+        ref = ref.resize((18, 18), Image.Resampling.BICUBIC)
 
         with Image.open("Tests/images/hopper.jpg") as im:
-            im.thumbnail((18, 18), Image.BICUBIC, reducing_gap=3.0)
+            im.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=3.0)
 
-            assert_image_equal(ref, im)
+            assert_image_similar(ref, im, 1.4)

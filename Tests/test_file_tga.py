@@ -97,6 +97,11 @@ def test_id_field_rle():
         assert im.size == (199, 199)
 
 
+def test_cross_scan_line():
+    with Image.open("Tests/images/cross_scan_line.tga") as im:
+        assert_image_equal_tofile(im, "Tests/images/cross_scan_line.png")
+
+
 def test_save(tmp_path):
     test_file = "Tests/images/tga_id_field.tga"
     with Image.open(test_file) as im:
@@ -169,6 +174,15 @@ def test_save_orientation(tmp_path):
         im.save(out, orientation=1)
     with Image.open(out) as test_im:
         assert test_im.info["orientation"] == 1
+
+
+def test_horizontal_orientations():
+    # These images have been manually hexedited to have the relevant orientations
+    with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
+        assert im.load()[90, 90][:3] == (0, 0, 0)
+
+    with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
+        assert im.load()[90, 90][:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path):

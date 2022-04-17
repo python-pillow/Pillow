@@ -1,0 +1,228 @@
+9.1.0
+-----
+
+API Changes
+===========
+
+Raise an error when performing a negative crop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performing a negative crop on an image previously just returned a ``(0, 0)`` image. Now
+it will raise a ``ValueError``, to help reduce confusion if a user has unintentionally
+provided the wrong arguments.
+
+Added specific error if path coordinate type is incorrect
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than returning a ``SystemError``, passing the incorrect types of coordinates into
+a path will now raise a more specific ``ValueError``, with the message "incorrect
+coordinate type".
+
+Replace requirements.txt with extras
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than installing all dependencies for docs and tests via ``requirements.txt``,
+``extras_require`` is used instead. This installs only those needed and at the same
+time as installing Pillow.
+
+For example:
+
+.. code-block:: bash
+
+    # Install with dependencies for tests:
+    python3 -m pip install .[tests]
+
+    # Or for building docs:
+    python3 -m pip install .[docs]
+
+    # Or for all:
+    python3 -m pip install .[docs,tests]
+
+On macOS, the last argument may need to be wrapped in quotes, e.g.
+``python3 -m pip install ".[tests]"``
+
+Therefore ``requirements.txt`` has been removed along with the ``make install-req``
+command for installing its contents.
+
+Deprecations
+============
+
+Constants
+^^^^^^^^^
+
+A number of constants have been deprecated and will be removed in Pillow 10.0.0
+(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
+
+=====================================================  ============================================================
+Deprecated                                             Use instead
+=====================================================  ============================================================
+``Image.NONE``                                         Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
+``Image.NEAREST``                                      Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
+``Image.ORDERED``                                      ``Image.Dither.ORDERED``
+``Image.RASTERIZE``                                    ``Image.Dither.RASTERIZE``
+``Image.FLOYDSTEINBERG``                               ``Image.Dither.FLOYDSTEINBERG``
+``Image.WEB``                                          ``Image.Palette.WEB``
+``Image.ADAPTIVE``                                     ``Image.Palette.ADAPTIVE``
+``Image.AFFINE``                                       ``Image.Transform.AFFINE``
+``Image.EXTENT``                                       ``Image.Transform.EXTENT``
+``Image.PERSPECTIVE``                                  ``Image.Transform.PERSPECTIVE``
+``Image.QUAD``                                         ``Image.Transform.QUAD``
+``Image.MESH``                                         ``Image.Transform.MESH``
+``Image.FLIP_LEFT_RIGHT``                              ``Image.Transpose.FLIP_LEFT_RIGHT``
+``Image.FLIP_TOP_BOTTOM``                              ``Image.Transpose.FLIP_TOP_BOTTOM``
+``Image.ROTATE_90``                                    ``Image.Transpose.ROTATE_90``
+``Image.ROTATE_180``                                   ``Image.Transpose.ROTATE_180``
+``Image.ROTATE_270``                                   ``Image.Transpose.ROTATE_270``
+``Image.TRANSPOSE``                                    ``Image.Transpose.TRANSPOSE``
+``Image.TRANSVERSE``                                   ``Image.Transpose.TRANSVERSE``
+``Image.BOX``                                          ``Image.Resampling.BOX``
+``Image.BILINEAR``                                     ``Image.Resampling.BILNEAR``
+``Image.LINEAR``                                       ``Image.Resampling.BILNEAR``
+``Image.HAMMING``                                      ``Image.Resampling.HAMMING``
+``Image.BICUBIC``                                      ``Image.Resampling.BICUBIC``
+``Image.CUBIC``                                        ``Image.Resampling.BICUBIC``
+``Image.LANCZOS``                                      ``Image.Resampling.LANCZOS``
+``Image.ANTIALIAS``                                    ``Image.Resampling.LANCZOS``
+``Image.MEDIANCUT``                                    ``Image.Quantize.MEDIANCUT``
+``Image.MAXCOVERAGE``                                  ``Image.Quantize.MAXCOVERAGE``
+``Image.FASTOCTREE``                                   ``Image.Quantize.FASTOCTREE``
+``Image.LIBIMAGEQUANT``                                ``Image.Quantize.LIBIMAGEQUANT``
+``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
+``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
+``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``
+``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``              ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``
+``ImageCms.DIRECTION_INPUT``                           ``ImageCms.Direction.INPUT``
+``ImageCms.DIRECTION_OUTPUT``                          ``ImageCms.Direction.OUTPUT``
+``ImageCms.DIRECTION_PROOF``                           ``ImageCms.Direction.PROOF``
+``ImageFont.LAYOUT_BASIC``                             ``ImageFont.Layout.BASIC``
+``ImageFont.LAYOUT_RAQM``                              ``ImageFont.Layout.RAQM``
+``BlpImagePlugin.BLP_FORMAT_JPEG``                     ``BlpImagePlugin.Format.JPEG``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED``           ``BlpImagePlugin.Encoding.UNCOMPRESSED``
+``BlpImagePlugin.BLP_ENCODING_DXT``                    ``BlpImagePlugin.Encoding.DXT``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED_RAW_RGBA``  ``BlpImagePlugin.Encoding.UNCOMPRESSED_RAW_RGBA``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT1``             ``BlpImagePlugin.AlphaEncoding.DXT1``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT3``             ``BlpImagePlugin.AlphaEncoding.DXT3``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT5``             ``BlpImagePlugin.AlphaEncoding.DXT5``
+``FtexImagePlugin.FORMAT_DXT1``                        ``FtexImagePlugin.Format.DXT1``
+``FtexImagePlugin.FORMAT_UNCOMPRESSED``                ``FtexImagePlugin.Format.UNCOMPRESSED``
+``PngImagePlugin.APNG_DISPOSE_OP_NONE``                ``PngImagePlugin.Disposal.OP_NONE``
+``PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND``          ``PngImagePlugin.Disposal.OP_BACKGROUND``
+``PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS``            ``PngImagePlugin.Disposal.OP_PREVIOUS``
+``PngImagePlugin.APNG_BLEND_OP_SOURCE``                ``PngImagePlugin.Blend.OP_SOURCE``
+``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
+=====================================================  ============================================================
+
+ImageShow.Viewer.show_file file argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
+deprecated and  will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
+``path``.
+
+In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
+``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
+``viewer.show_file(path="test.jpg")`` instead.
+
+FitsStubImagePlugin
+^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.1.0
+
+The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
+Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
+:mod:`~PIL.FitsImagePlugin` instead.
+
+API Additions
+=============
+
+Added get_photoshop_blocks() to parse Photoshop TIFF tag
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.TiffImagePlugin.TiffImageFile.get_photoshop_blocks` has been added, to
+allow users to determine what Photoshop "Image Resource Blocks" are contained within an
+image. The keys of the returned dictionary are the image resource IDs.
+
+At present, the information within each block is merely returned as a dictionary with a
+"data" entry. This will allow more useful information to be added in the future without
+breaking backwards compatibility.
+
+Added mct and no_jp2 options for saving JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The :py:meth:`PIL.Image.Image.save` method now supports the following options for
+JPEG 2000:
+
+**mct**
+    If ``1`` then enable multiple component transformation when encoding,
+    otherwise use ``0`` for no component transformation (default). If MCT is
+    enabled and ``irreversible`` is ``True`` then the Irreversible Color
+    Transformation will be applied, otherwise encoding will use the
+    Reversible Color Transformation. MCT works best with a ``mode`` of
+    ``RGB`` and is only applicable when the image data has 3 components.
+
+**no_jp2**
+    If ``True`` then don't wrap the raw codestream in the JP2 file format when
+    saving, otherwise the extension of the filename will be used to determine
+    the format (default).
+
+Added PyEncoder
+^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFile.PyEncoder` has been added, allowing for file encoders to be
+written in Python. See :ref:`Writing Your Own File Codec in Python<file-codecs-py>` for
+more information.
+
+GifImagePlugin loading strategy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow 9.0.0 introduced the conversion of subsequent GIF frames to ``RGB`` or ``RGBA``. This
+behaviour can now be changed so that the first ``P`` frame is converted to ``RGB`` as
+well.
+
+.. code-block:: python
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+
+Or subsequent frames can be kept in ``P`` mode as long as there is only a single
+palette.
+
+.. code-block:: python
+
+    from PIL import GifImagePlugin
+    GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+
+Other Changes
+=============
+
+musllinux wheels
+^^^^^^^^^^^^^^^^
+
+Pillow now builds binary wheels for musllinux, suitable for Linux distributions based on the musl C standard library such as Alpine
+(rather than the glibc library used by manylinux wheels). See :pep:`656`.
+
+ImageShow temporary files on Unix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling :py:meth:`~PIL.Image.Image.show` or using :py:mod:`~PIL.ImageShow`,
+a temporary file is created from the image. On Unix, Pillow will no longer delete these
+files, and instead leave it to the operating system to do so.
+
+Image._repr_pretty_
+^^^^^^^^^^^^^^^^^^^
+
+``im._repr_pretty_`` has been added to provide a representation of an image without the
+identity of the object. This allows Jupyter to describe an image and have that
+description stay the same on subsequent executions of the same code.
+
+Added BigTIFF reading
+^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading BigTIFF images.
+
+Added BLP saving
+^^^^^^^^^^^^^^^^
+
+Support has been added for saving BLP images. ``blp_version`` can be used to specify
+whether the image should be saved as BLP1 or BLP2, e.g.
+``im.save("out.blp", blp_version="BLP1")``. By default, BLP2 will be used.

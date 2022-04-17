@@ -16,10 +16,10 @@ def test_sanity():
 
 
 def test_reload():
-    im = Image.open("Tests/images/hopper.gif")
-    original = im.copy()
-    im.palette.dirty = 1
-    assert_image_equal(im.convert("RGB"), original.convert("RGB"))
+    with Image.open("Tests/images/hopper.gif") as im:
+        original = im.copy()
+        im.palette.dirty = 1
+        assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
 
 def test_getcolor():

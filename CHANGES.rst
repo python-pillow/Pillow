@@ -2,8 +2,299 @@
 Changelog (Pillow)
 ==================
 
-8.4.0 (unreleased)
+9.2.0 (unreleased)
 ------------------
+
+- Round lut values where necessary #6188
+  [radarhere]
+
+- Load before getting size in resize() #6190
+  [radarhere]
+
+- Load image before performing size calculations in thumbnail() #6186
+  [radarhere]
+
+- Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
+9.1.0 (2022-04-01)
+------------------
+
+- Add support for multiple component transformation to JPEG2000 #5500
+  [scaramallion, radarhere, hugovk]
+
+- Fix loading FriBiDi on Alpine #6165
+  [nulano]
+
+- Added setting for converting GIF P frames to RGB #6150
+  [radarhere]
+
+- Allow 1 mode images to be inverted #6034
+  [radarhere]
+
+- Raise ValueError when trying to save empty JPEG #6159
+  [radarhere]
+
+- Always save TIFF with contiguous planar configuration #5973
+  [radarhere]
+
+- Connected discontiguous polygon corners #5980
+  [radarhere]
+
+- Ensure Tkinter hook is activated for getimage() #6032
+  [radarhere]
+
+- Use screencapture arguments to crop on macOS #6152
+  [radarhere]
+
+- Do not mark L mode JPEG as 1 bit in PDF #6151
+  [radarhere]
+
+- Added support for reading I;16R TIFF images #6132
+  [radarhere]
+
+- If an error occurs after creating a file, remove the file #6134
+  [radarhere]
+
+- Fixed calling DisplayViewer or XVViewer without a title #6136
+  [radarhere]
+
+- Retain RGBA transparency when saving multiple GIF frames #6128
+  [radarhere]
+
+- Save additional ICO frames with other bit depths if supplied #6122
+  [radarhere]
+
+- Handle EXIF data truncated to just the header #6124
+  [radarhere]
+
+- Added support for reading BMP images with RLE8 compression #6102
+  [radarhere]
+
+- Support Python distributions where _tkinter is compiled in #6006
+  [lukegb]
+
+- Added support for PPM arbitrary maxval #6119
+  [radarhere]
+
+- Added BigTIFF reading #6097
+  [radarhere]
+
+- When converting, clip I;16 to be unsigned, not signed #6112
+  [radarhere]
+
+- Fixed loading L mode GIF with transparency #6086
+  [radarhere]
+
+- Improved handling of PPM header #5121
+  [Piolie, radarhere]
+
+- Reset size when seeking away from "Large Thumbnail" MPO frame #6101
+  [radarhere]
+
+- Replace requirements.txt with extras #6072
+  [hugovk, radarhere]
+
+- Added PyEncoder and support BLP saving #6069
+  [radarhere]
+
+- Handle TGA images with packets that cross scan lines #6087
+  [radarhere]
+
+- Added FITS reading #6056
+  [radarhere, hugovk]
+
+- Added rawmode argument to Image.getpalette() #6061
+  [radarhere]
+
+- Fixed BUFR, GRIB and HDF5 stub saving #6071
+  [radarhere]
+
+- Do not automatically remove temporary ImageShow files on Unix #6045
+  [radarhere]
+
+- Correctly read JPEG compressed BLP images #4685
+  [Meithal, radarhere]
+
+- Merged _MODE_CONV typ into ImageMode as typestr #6057
+  [radarhere]
+
+- Consider palette size when converting and in getpalette() #6060
+  [radarhere]
+
+- Added enums #5954
+  [radarhere]
+
+- Ensure image is opaque after converting P to PA with RGB palette #6052
+  [radarhere]
+
+- Attach RGBA palettes from putpalette() when suitable #6054
+  [radarhere]
+
+- Added get_photoshop_blocks() to parse Photoshop TIFF tag #6030
+  [radarhere]
+
+- Drop excess values in BITSPERSAMPLE #6041
+  [mikhail-iurkov]
+
+- Added unpacker from RGBA;15 to RGB #6031
+  [radarhere]
+
+- Enable arm64 for MSVC on Windows #5811
+  [gaborkertesz-linaro, gaborkertesz]
+
+- Keep IPython/Jupyter text/plain output stable #5891
+  [shamrin, radarhere]
+
+- Raise an error when performing a negative crop #5972
+  [radarhere, hugovk]
+
+- Deprecated show_file "file" argument in favour of "path" #5959
+  [radarhere]
+
+- Fixed SPIDER images for use with Bio-formats library #5956
+  [radarhere]
+
+- Ensure duplicated file pointer is closed #5946
+  [radarhere]
+
+- Added specific error if path coordinate type is incorrect #5942
+  [radarhere]
+
+- Return an empty bytestring from tobytes() for an empty image #5938
+  [radarhere]
+
+- Remove readonly from Image.__eq__ #5930
+  [hugovk]
+
+9.0.1 (2022-02-03)
+------------------
+
+- In show_file, use os.remove to remove temporary images. CVE-2022-24303 #6010
+  [radarhere, hugovk]
+
+- Restrict builtins within lambdas for ImageMath.eval. CVE-2022-22817 #6009
+  [radarhere]
+
+9.0.0 (2022-01-02)
+------------------
+
+- Restrict builtins for ImageMath.eval(). CVE-2022-22817 #5923
+  [radarhere]
+
+- Ensure JpegImagePlugin stops at the end of a truncated file #5921
+  [radarhere]
+
+- Fixed ImagePath.Path array handling. CVE-2022-22815, CVE-2022-22816 #5920
+  [radarhere]
+
+- Remove consecutive duplicate tiles that only differ by their offset #5919
+  [radarhere]
+
+- Improved I;16 operations on big endian #5901
+  [radarhere]
+
+- Limit quantized palette to number of colors #5879
+  [radarhere]
+
+- Fixed palette index for zeroed color in FASTOCTREE quantize #5869
+  [radarhere]
+
+- When saving RGBA to GIF, make use of first transparent palette entry #5859
+  [radarhere]
+
+- Pass SAMPLEFORMAT to libtiff #5848
+  [radarhere]
+
+- Added rounding when converting P and PA #5824
+  [radarhere]
+
+- Improved putdata() documentation and data handling #5910
+  [radarhere]
+
+- Exclude carriage return in PDF regex to help prevent ReDoS #5912
+  [hugovk]
+
+- Fixed freeing pointer in ImageDraw.Outline.transform #5909
+  [radarhere]
+
+- Added ImageShow support for xdg-open #5897
+  [m-shinder, radarhere]
+
+- Support 16-bit grayscale ImageQt conversion #5856
+  [cmbruns, radarhere]
+
+- Convert subsequent GIF frames to RGB or RGBA #5857
+  [radarhere]
+
+- Do not prematurely return in ImageFile when saving to stdout #5665
+  [infmagic2047, radarhere]
+
+- Added support for top right and bottom right TGA orientations #5829
+  [radarhere]
+
+- Corrected ICNS file length in header #5845
+  [radarhere]
+
+- Block tile TIFF tags when saving #5839
+  [radarhere]
+
+- Added line width argument to polygon #5694
+  [radarhere]
+
+- Do not redeclare class each time when converting to NumPy #5844
+  [radarhere]
+
+- Only prevent repeated polygon pixels when drawing with transparency #5835
+  [radarhere]
+
+- Add support for pickling TrueType fonts #5826
+  [hugovk, radarhere]
+
+- Only prefer command line tools SDK on macOS over default MacOSX SDK #5828
+  [radarhere]
+
+- Drop support for soon-EOL Python 3.6 #5768
+  [hugovk, nulano, radarhere]
+
+- Fix compilation on 64-bit Termux #5793
+  [landfillbaby]
+
+- Use title for display in ImageShow #5788
+  [radarhere]
+
+- Remove support for FreeType 2.7 and older #5777
+  [hugovk, radarhere]
+
+- Fix for PyQt6 #5775
+  [hugovk, radarhere]
+
+- Removed deprecated PILLOW_VERSION, Image.show command parameter, Image._showxv and ImageFile.raise_ioerror #5776
+  [radarhere]
+
+8.4.0 (2021-10-15)
+------------------
+
+- Prefer global transparency in GIF when replacing with background color #5756
+  [radarhere]
+
+- Added "exif" keyword argument to TIFF saving #5575
+  [radarhere]
+
+- Copy Python palette to new image in quantize() #5696
+  [radarhere]
+
+- Read ICO AND mask from end #5667
+  [radarhere]
+
+- Actually check the framesize in FliDecode.c #5659
+  [wiredfool]
+
+- Determine JPEG2000 mode purely from ihdr header box #5654
+  [radarhere]
+
+- Fixed using info dictionary when writing multiple APNG frames #5611
+  [radarhere]
 
 - Allow saving 1 and L mode TIFF with PhotometricInterpretation 0 #5655
   [radarhere]
@@ -59,11 +350,29 @@ Changelog (Pillow)
 - Fixed ImageOps expand with tuple border on P image #5615
   [radarhere]
 
-- Ensure TIFF RowsPerStrip is multiple of 8 for JPEG compression #5588
-  [kmilos, radarhere]
-
 - Fixed error saving APNG with duplicate frames and different duration times #5609
   [thak1411, radarhere]
+
+8.3.2 (2021-09-02)
+------------------
+
+- CVE-2021-23437 Raise ValueError if color specifier is too long
+  [hugovk, radarhere]
+
+- Fix 6-byte OOB read in FliDecode
+  [wiredfool]
+
+- Add support for Python 3.10 #5569, #5570
+  [hugovk, radarhere]
+
+- Ensure TIFF ``RowsPerStrip`` is multiple of 8 for JPEG compression #5588
+  [kmilos, radarhere]
+
+- Updates for ``ImagePalette`` channel order #5599
+  [radarhere]
+
+- Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library #5651
+  [nulano]
 
 8.3.1 (2021-07-06)
 ------------------
@@ -338,7 +647,7 @@ Changelog (Pillow)
 - Changed Image.open formats parameter to be case-insensitive #5250
   [Piolie, radarhere]
 
-- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-01-02) #5216
+- Deprecate Tk/Tcl 8.4, to be removed in Pillow 10 (2023-07-01) #5216
   [radarhere]
 
 - Added tk version to pilinfo #5226

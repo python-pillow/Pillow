@@ -21,6 +21,7 @@ def test_sanity():
     assert m.bands == ("1",)
     assert m.basemode == "L"
     assert m.basetype == "L"
+    assert m.typestr == "|b1"
 
     for mode in (
         "I;16",
@@ -45,6 +46,7 @@ def test_sanity():
     assert m.bands == ("R", "G", "B")
     assert m.basemode == "RGB"
     assert m.basetype == "L"
+    assert m.typestr == "|u1"
 
 
 def test_properties():
@@ -64,7 +66,6 @@ def test_properties():
     check("F", "L", "F", 1, ("F",))
     check("RGB", "RGB", "L", 3, ("R", "G", "B"))
     check("RGBA", "RGB", "L", 4, ("R", "G", "B", "A"))
-    check("RGBX", "RGB", "L", 4, ("R", "G", "B", "X"))
     check("RGBX", "RGB", "L", 4, ("R", "G", "B", "X"))
     check("CMYK", "RGB", "L", 4, ("C", "M", "Y", "K"))
     check("YCbCr", "RGB", "L", 3, ("Y", "Cb", "Cr"))

@@ -4,7 +4,12 @@ import pytest
 
 from PIL import BmpImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 
 def test_sanity(tmp_path):
@@ -123,3 +128,46 @@ def test_rgba_bitfields():
         im = Image.merge("RGB", (r, g, b))
 
     assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
+
+
+def test_rle8():
+    with Image.open("Tests/images/hopper_rle8.bmp") as im:
+        assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
+
+    # This test image has been manually hexedited
+    # to have rows with too much data
+    with Image.open("Tests/images/hopper_rle8_row_overflow.bmp") as im:
+        assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
+
+    # Signal end of bitmap before the image is finished
+    with open("Tests/images/bmp/g/pal8rle.bmp", "rb") as fp:
+        data = fp.read(1063) + b"\x01"
+        with Image.open(io.BytesIO(data)) as im:
+            with pytest.raises(ValueError):
+                im.load()
+
+
+@pytest.mark.parametrize(
+    "file_name,length",
+    (
+        # EOF immediately after the header
+        ("Tests/images/hopper_rle8.bmp", 1078),
+        # EOF during delta
+        ("Tests/images/bmp/q/pal8rletrns.bmp", 3670),
+        # EOF when reading data in absolute mode
+        ("Tests/images/bmp/g/pal8rle.bmp", 1064),
+    ),
+)
+def test_rle8_eof(file_name, length):
+    with open(file_name, "rb") as fp:
+        data = fp.read(length)
+        with Image.open(io.BytesIO(data)) as im:
+            with pytest.raises(ValueError):
+                im.load()
+
+
+def test_offset():
+    # This image has been hexedited
+    # to exclude the palette size from the pixel data offset
+    with Image.open("Tests/images/pal8_offset.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")

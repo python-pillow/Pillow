@@ -28,12 +28,12 @@
 #
 
 import io
+import itertools
 import struct
 import sys
-import warnings
 
 from . import Image
-from ._util import isPath
+from ._util import is_path
 
 MAXBLOCK = 65536
 
@@ -49,7 +49,11 @@ ERRORS = {
     -8: "bad configuration",
     -9: "out of memory error",
 }
-"""Dict of known error codes returned from :meth:`.PyDecoder.decode`."""
+"""
+Dict of known error codes returned from :meth:`.PyDecoder.decode`,
+:meth:`.PyEncoder.encode` :meth:`.PyEncoder.encode_to_pyfd` and
+:meth:`.PyEncoder.encode_to_file`.
+"""
 
 
 #
@@ -65,15 +69,6 @@ def raise_oserror(error):
     if not message:
         message = f"decoder error {error}"
     raise OSError(message + " when reading image file")
-
-
-def raise_ioerror(error):
-    warnings.warn(
-        "raise_ioerror is deprecated and will be removed in Pillow 9 (2022-01-02). "
-        "Use raise_oserror instead.",
-        DeprecationWarning,
-    )
-    return raise_oserror(error)
 
 
 def _tilesort(t):
@@ -104,7 +99,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if isPath(fp):
+        if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
@@ -220,16 +215,23 @@ class ImageFile(Image.Image):
             except AttributeError:
                 prefix = b""
 
+            # Remove consecutive duplicates that only differ by their offset
+            self.tile = [
+                list(tiles)[-1]
+                for _, tiles in itertools.groupby(
+                    self.tile, lambda tile: (tile[0], tile[1], tile[3])
+                )
+            ]
             for decoder_name, extents, offset, args in self.tile:
+                seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
                 )
                 try:
-                    seek(offset)
                     decoder.setimage(self.im, extents)
                     if decoder.pulls_fd:
                         decoder.setfd(self.fp)
-                        status, err_code = decoder.decode(b"")
+                        err_code = decoder.decode(b"")[1]
                     else:
                         b = prefix
                         while True:
@@ -330,6 +332,7 @@ class StubImageFile(ImageFile):
         # become the other object (!)
         self.__class__ = image.__class__
         self.__dict__ = image.__dict__
+        return image.load()
 
     def _load(self):
         """(Hook) Find actual image loader."""
@@ -494,49 +497,35 @@ def _save(im, fp, tile, bufsize=0):
     # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
     try:
-        stdout = fp == sys.stdout or fp == sys.stdout.buffer
-    except (OSError, AttributeError):
-        stdout = False
-    if stdout:
-        fp.flush()
-        return
-    try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation) as exc:
-        # compress to Python file-compatible object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
+        exc = None
+    except (AttributeError, io.UnsupportedOperation) as e:
+        exc = e
+    for e, b, o, a in tile:
+        if o > 0:
+            fp.seek(o)
+        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+        try:
+            encoder.setimage(im.im, b)
+            if encoder.pushes_fd:
+                encoder.setfd(fp)
+                l, s = encoder.encode_to_pyfd()
             else:
-                while True:
-                    l, s, d = e.encode(bufsize)
-                    fp.write(d)
-                    if s:
-                        break
+                if exc:
+                    # compress to Python file-compatible object
+                    while True:
+                        l, s, d = encoder.encode(bufsize)
+                        fp.write(d)
+                        if s:
+                            break
+                else:
+                    # slight speedup: compress to real file object
+                    s = encoder.encode_to_file(fh, bufsize)
             if s < 0:
                 raise OSError(f"encoder error {s} when writing image file") from exc
-            e.cleanup()
-    else:
-        # slight speedup: compress to real file object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
-            else:
-                s = e.encode_to_file(fh, bufsize)
-            if s < 0:
-                raise OSError(f"encoder error {s} when writing image file")
-            e.cleanup()
+        finally:
+            encoder.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
 
@@ -562,12 +551,13 @@ def _safe_read(fp, size):
             raise OSError("Truncated File Read")
         return data
     data = []
-    while size > 0:
-        block = fp.read(min(size, SAFEBLOCK))
+    remaining_size = size
+    while remaining_size > 0:
+        block = fp.read(min(remaining_size, SAFEBLOCK))
         if not block:
             break
         data.append(block)
-        size -= len(block)
+        remaining_size -= len(block)
     if sum(len(d) for d in data) < size:
         raise OSError("Truncated File Read")
     return b"".join(data)
@@ -584,16 +574,7 @@ class PyCodecState:
         return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
 
 
-class PyDecoder:
-    """
-    Python implementation of a format decoder. Override this class and
-    add the decoding logic in the :meth:`decode` method.
-
-    See :ref:`Writing Your Own File Decoder in Python<file-decoders-py>`
-    """
-
-    _pulls_fd = False
-
+class PyCodec:
     def __init__(self, mode, *args):
         self.im = None
         self.state = PyCodecState()
@@ -603,31 +584,16 @@ class PyDecoder:
 
     def init(self, args):
         """
-        Override to perform decoder specific initialization
+        Override to perform codec specific initialization
 
         :param args: Array of args items from the tile entry
         :returns: None
         """
         self.args = args
 
-    @property
-    def pulls_fd(self):
-        return self._pulls_fd
-
-    def decode(self, buffer):
-        """
-        Override to perform the decoding process.
-
-        :param buffer: A bytes object with the data to be decoded.
-        :returns: A tuple of ``(bytes consumed, errcode)``.
-            If finished with decoding return <0 for the bytes consumed.
-            Err codes are from :data:`.ImageFile.ERRORS`.
-        """
-        raise NotImplementedError()
-
     def cleanup(self):
         """
-        Override to perform decoder specific cleanup
+        Override to perform codec specific cleanup
 
         :returns: None
         """
@@ -635,16 +601,16 @@ class PyDecoder:
 
     def setfd(self, fd):
         """
-        Called from ImageFile to set the python file-like object
+        Called from ImageFile to set the Python file-like object
 
-        :param fd: A python file-like object
+        :param fd: A Python file-like object
         :returns: None
         """
         self.fd = fd
 
     def setimage(self, im, extents=None):
         """
-        Called from ImageFile to set the core output image for the decoder
+        Called from ImageFile to set the core output image for the codec
 
         :param im: A core image object
         :param extents: a 4 tuple of (x0, y0, x1, y1) defining the rectangle
@@ -677,6 +643,32 @@ class PyDecoder:
         ):
             raise ValueError("Tile cannot extend outside image")
 
+
+class PyDecoder(PyCodec):
+    """
+    Python implementation of a format decoder. Override this class and
+    add the decoding logic in the :meth:`decode` method.
+
+    See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
+    """
+
+    _pulls_fd = False
+
+    @property
+    def pulls_fd(self):
+        return self._pulls_fd
+
+    def decode(self, buffer):
+        """
+        Override to perform the decoding process.
+
+        :param buffer: A bytes object with the data to be decoded.
+        :returns: A tuple of ``(bytes consumed, errcode)``.
+            If finished with decoding return -1 for the bytes consumed.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        raise NotImplementedError()
+
     def set_as_raw(self, data, rawmode=None):
         """
         Convenience method to set the internal image from a stream of raw data
@@ -697,3 +689,60 @@ class PyDecoder:
             raise ValueError("not enough image data")
         if s[1] != 0:
             raise ValueError("cannot decode image data")
+
+
+class PyEncoder(PyCodec):
+    """
+    Python implementation of a format encoder. Override this class and
+    add the decoding logic in the :meth:`encode` method.
+
+    See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
+    """
+
+    _pushes_fd = False
+
+    @property
+    def pushes_fd(self):
+        return self._pushes_fd
+
+    def encode(self, bufsize):
+        """
+        Override to perform the encoding process.
+
+        :param bufsize: Buffer size.
+        :returns: A tuple of ``(bytes encoded, errcode, bytes)``.
+            If finished with encoding return 1 for the error code.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        raise NotImplementedError()
+
+    def encode_to_pyfd(self):
+        """
+        If ``pushes_fd`` is ``True``, then this method will be used,
+        and ``encode()`` will only be called once.
+
+        :returns: A tuple of ``(bytes consumed, errcode)``.
+            Err codes are from :data:`.ImageFile.ERRORS`.
+        """
+        if not self.pushes_fd:
+            return 0, -8  # bad configuration
+        bytes_consumed, errcode, data = self.encode(0)
+        if data:
+            self.fd.write(data)
+        return bytes_consumed, errcode
+
+    def encode_to_file(self, fh, bufsize):
+        """
+        :param fh: File handle.
+        :param bufsize: Buffer size.
+
+        :returns: If finished successfully, return 0.
+            Otherwise, return an error code. Err codes are from
+            :data:`.ImageFile.ERRORS`.
+        """
+        errcode = 0
+        while errcode == 0:
+            status, errcode, buf = self.encode(bufsize)
+            if status > 0:
+                fh.write(buf[status:])
+        return errcode

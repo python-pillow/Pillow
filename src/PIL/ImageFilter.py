@@ -421,8 +421,8 @@ class Color3DLUT(MultibandFilter):
         except TypeError:
             size = (size, size, size)
         size = [int(x) for x in size]
-        for size1D in size:
-            if not 2 <= size1D <= 65:
+        for size_1d in size:
+            if not 2 <= size_1d <= 65:
                 raise ValueError("Size should be in [2, 65] range.")
         return size
 
@@ -439,22 +439,22 @@ class Color3DLUT(MultibandFilter):
         :param target_mode: Passed to the constructor of the resulting
                             lookup table.
         """
-        size1D, size2D, size3D = cls._check_size(size)
+        size_1d, size_2d, size_3d = cls._check_size(size)
         if channels not in (3, 4):
             raise ValueError("Only 3 or 4 output channels are supported")
 
-        table = [0] * (size1D * size2D * size3D * channels)
+        table = [0] * (size_1d * size_2d * size_3d * channels)
         idx_out = 0
-        for b in range(size3D):
-            for g in range(size2D):
-                for r in range(size1D):
+        for b in range(size_3d):
+            for g in range(size_2d):
+                for r in range(size_1d):
                     table[idx_out : idx_out + channels] = callback(
-                        r / (size1D - 1), g / (size2D - 1), b / (size3D - 1)
+                        r / (size_1d - 1), g / (size_2d - 1), b / (size_3d - 1)
                     )
                     idx_out += channels
 
         return cls(
-            (size1D, size2D, size3D),
+            (size_1d, size_2d, size_3d),
             table,
             channels=channels,
             target_mode=target_mode,
@@ -484,20 +484,20 @@ class Color3DLUT(MultibandFilter):
             raise ValueError("Only 3 or 4 output channels are supported")
         ch_in = self.channels
         ch_out = channels or ch_in
-        size1D, size2D, size3D = self.size
+        size_1d, size_2d, size_3d = self.size
 
-        table = [0] * (size1D * size2D * size3D * ch_out)
+        table = [0] * (size_1d * size_2d * size_3d * ch_out)
         idx_in = 0
         idx_out = 0
-        for b in range(size3D):
-            for g in range(size2D):
-                for r in range(size1D):
+        for b in range(size_3d):
+            for g in range(size_2d):
+                for r in range(size_1d):
                     values = self.table[idx_in : idx_in + ch_in]
                     if with_normals:
                         values = callback(
-                            r / (size1D - 1),
-                            g / (size2D - 1),
-                            b / (size3D - 1),
+                            r / (size_1d - 1),
+                            g / (size_2d - 1),
+                            b / (size_3d - 1),
                             *values,
                         )
                     else:
@@ -529,7 +529,7 @@ class Color3DLUT(MultibandFilter):
 
         return image.color_lut_3d(
             self.mode or image.mode,
-            Image.LINEAR,
+            Image.Resampling.BILINEAR,
             self.channels,
             self.size[0],
             self.size[1],

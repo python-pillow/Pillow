@@ -61,8 +61,8 @@ repro_copy = (
 
 
 for path in repro_ss2 + repro_lc + repro_advance + repro_brun + repro_copy:
-    im = Image.open(path)
-    try:
-        im.load()
-    except Exception as msg:
-        print(msg)
+    with Image.open(path) as im:
+        try:
+            im.load()
+        except Exception as msg:
+            print(msg)

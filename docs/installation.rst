@@ -18,9 +18,11 @@ Pillow supports these Python versions.
 +----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
 |        Python        |3.10 | 3.9 | 3.8 | 3.7 | 3.6 | 3.5 | 3.4 | 2.7 |
 +======================+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow >= 8.4        | Yes | Yes | Yes | Yes | Yes |     |     |     |
+| Pillow >= 9.0        | Yes | Yes | Yes | Yes |     |     |     |     |
 +----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.0 - 8.3     |     | Yes | Yes | Yes | Yes |     |     |     |
+| Pillow 8.3.2 - 8.4   | Yes | Yes | Yes | Yes | Yes |     |     |     |
++----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+| Pillow 8.0 - 8.3.1   |     | Yes | Yes | Yes | Yes |     |     |     |
 +----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
 | Pillow 7.0 - 7.2     |     |     | Yes | Yes | Yes | Yes |     |     |
 +----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
@@ -167,7 +169,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.12**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.13.1**.
 
 * **libwebp** provides the WebP format.
 
@@ -185,7 +187,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-2.15.1**
+  * Pillow has been tested with libimagequant **2.6-4.0**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -213,7 +215,7 @@ Many of Pillow's features require external libraries:
 Once you have installed the prerequisites, run::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
@@ -223,7 +225,7 @@ those locations by editing :file:`setup.py` or
 :file:`setup.cfg`, or by adding environment variables on the command
 line::
 
-    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow
+    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
 
 If Pillow has been previously built without the required
 prerequisites, it may be necessary to manually clear the pip cache or
@@ -273,10 +275,6 @@ Build Options
 
 Sample usage::
 
-    MAX_CONCURRENCY=1 python3 setup.py build_ext --enable-[feature] install
-
-or using pip::
-
     python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 
@@ -293,7 +291,7 @@ tools.
 The easiest way to install external libraries is via `Homebrew
 <https://brew.sh/>`_. After you install Homebrew, run::
 
-    brew install libtiff libjpeg webp little-cms2
+    brew install libjpeg libtiff little-cms2 openjpeg webp
 
 To install libraqm on macOS use Homebrew to install its dependencies::
 
@@ -304,11 +302,11 @@ Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 Now install Pillow with::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 or from within the uncompressed source directory::
 
-    python3 setup.py install
+    python3 -m pip install .
 
 Building on Windows
 ^^^^^^^^^^^^^^^^^^^
@@ -351,7 +349,7 @@ Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
 Now install Pillow with::
 
     python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+    python3 -m pip install --upgrade Pillow --no-binary :all:
 
 
 Building on FreeBSD
@@ -396,7 +394,8 @@ Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
         libharfbuzz-dev libfribidi-dev libxcb1-dev
 
-Then see ``depends/install_raqm.sh`` to install libraqm.
+To install libraqm, ``sudo apt-get install meson`` and then see
+``depends/install_raqm.sh``.
 
 Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
 
@@ -443,41 +442,44 @@ Continuous Integration Targets
 
 These platforms are built and tested for every change.
 
-+----------------------------------+---------------------------+---------------------+
-| Operating system                 | Tested Python versions    | Tested architecture |
-+==================================+===========================+=====================+
-| Alpine                           | 3.8                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Arch                             | 3.8                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Amazon Linux 2                   | 3.7                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| CentOS 7                         | 3.6                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| CentOS 8                         | 3.6                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Debian 10 Buster                 | 3.7                       | x86                 |
-+----------------------------------+---------------------------+---------------------+
-| Fedora 33                        | 3.9                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Fedora 34                        | 3.9                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9, PyPy3 | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Ubuntu Linux 16.04 LTS (Xenial)  | 3.6, 3.7, 3.8, 3.9, PyPy3 | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Ubuntu Linux 18.04 LTS (Bionic)  | 3.6, 3.7, 3.8, 3.9, PyPy3 | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Ubuntu Linux 20.04 LTS (Focal)   | 3.8                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Windows Server 2016              | 3.6                       | x86-64              |
-+----------------------------------+---------------------------+---------------------+
-| Windows Server 2019              | 3.6, 3.7, 3.8, 3.9        | x86, x86-64         |
-|                                  +---------------------------+---------------------+
-|                                  | PyPy3                     | x86                 |
-|                                  +---------------------------+---------------------+
-|                                  | 3.9/MinGW                 | x86, x86-64         |
-+----------------------------------+---------------------------+---------------------+
++----------------------------------+----------------------------+---------------------+
+| Operating system                 | Tested Python versions     | Tested architecture |
++==================================+============================+=====================+
+| Alpine                           | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Amazon Linux 2                   | 3.7                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Arch                             | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| CentOS 7                         | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| CentOS Stream 8                  | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| CentOS Stream 9                  | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Debian 10 Buster                 | 3.7                        | x86                 |
++----------------------------------+----------------------------+---------------------+
+| Debian 11 Bullseye               | 3.9                        | x86                 |
++----------------------------------+----------------------------+---------------------+
+| Fedora 35                        | 3.10                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Gentoo                           | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| macOS 10.15 Catalina             | 3.7, 3.8, 3.9, 3.10, PyPy3 | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Ubuntu Linux 18.04 LTS (Bionic)  | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, PyPy3 | x86-64              |
+|                                  +----------------------------+---------------------+
+|                                  | 3.8                        | arm64v8, ppc64le,   |
+|                                  |                            | s390x               |
++----------------------------------+----------------------------+---------------------+
+| Windows Server 2016              | 3.7                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Windows Server 2019              | 3.7, 3.8, 3.9, 3.10, PyPy3 | x86, x86-64         |
+|                                  +----------------------------+---------------------+
+|                                  | 3.9/MinGW                  | x86, x86-64         |
++----------------------------------+----------------------------+---------------------+
 
 
 Other Platforms
@@ -494,11 +496,15 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 11.0 Big Sur               | 3.7, 3.8, 3.9             | 8.3.1            |arm           |
-|                                  +---------------------------+------------------+--------------+
-|                                  | 3.6, 3.7, 3.8, 3.9        | 8.3.1            |x86-64        |
+| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
-| macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9        | 8.3.1            |x86-64        |
+| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
+|                                  +---------------------------+------------------+--------------+
+|                                  | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |x86-64        |
+|                                  +---------------------------+------------------+--------------+
+|                                  | 3.6                       | 8.4.0            |x86-64        |
++----------------------------------+---------------------------+------------------+--------------+
+| macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9        | 8.3.2            |x86-64        |
 |                                  +---------------------------+------------------+              |
 |                                  | 3.5                       | 7.2.0            |              |
 +----------------------------------+---------------------------+------------------+--------------+
@@ -523,6 +529,8 @@ These platforms have been reported to work at the versions mentioned.
 | Redhat Linux 6                   | 2.6                       |                  |x86           |
 +----------------------------------+---------------------------+------------------+--------------+
 | CentOS 6.3                       | 2.7, 3.3                  |                  |x86           |
++----------------------------------+---------------------------+------------------+--------------+
+| CentOS 8                         | 3.9                       | 9.0.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | Fedora 23                        | 2.7, 3.4                  | 3.1.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+

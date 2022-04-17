@@ -1,3 +1,31 @@
+Overview of changes leading to 0.8.0
+Monday, December 13, 2021
+====================================
+
+Remove autotools build.
+
+Support using SheenBiDi instead of FriBiDi for Unicode BiDi support.
+
+Fix running tests with Python <= 3.6.
+
+New API:
+  * raqm_get_par_resolved_direction
+  * raqm_get_direction_at_index
+
+Overview of changes leading to 0.7.2
+Monday, September 27, 2021
+====================================
+
+Fix test failure with newer HarfBuzz versions.
+
+Apply FT_Face transformation matrix when built against FreeType 2.11 or later.
+
+Add meson build system. Autotools build system will be dropped in next release.
+
+Improve MSVC support.
+
+Build and documentation fixes.
+
 Overview of changes leading to 0.7.1
 Sunday, November 22, 2020
 ====================================

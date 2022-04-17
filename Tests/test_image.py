@@ -4,11 +4,11 @@ import pathlib
 import shutil
 import sys
 import tempfile
+import warnings
 
 import pytest
 
-import PIL
-from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
 
 from .helper import (
     assert_image_equal,
@@ -106,6 +106,17 @@ class TestImage:
             Image.new("", (100, 100))
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
+
+    def test_repr_pretty(self):
+        class Pretty:
+            def text(self, text):
+                self.pretty_output = text
+
+        im = Image.new("L", (100, 100))
+
+        p = Pretty()
+        im._repr_pretty_(p, None)
+        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"
@@ -219,6 +230,10 @@ class TestImage:
         assert not im.readonly
 
     @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    @pytest.mark.skipif(
+        sys.platform == "cygwin",
+        reason="Test requires opening an mmaped file for writing",
+    )
     def test_readonly_save(self, tmp_path):
         temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
@@ -651,22 +666,6 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_showxv_deprecation(self):
-        class TestViewer(ImageShow.Viewer):
-            def show_image(self, image, **options):
-                return True
-
-        viewer = TestViewer()
-        ImageShow.register(viewer, -1)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(DeprecationWarning):
-            Image._showxv(im)
-
-        # Restore original state
-        ImageShow._viewers.pop(0)
-
     def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -675,9 +674,17 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.save(temp_file)
-            assert not record
+
+    def test_no_new_file_on_error(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
+
+        im = Image.new("RGB", (0, 0))
+        with pytest.raises(ValueError):
+            im.save(temp_file)
+
+        assert not os.path.exists(temp_file)
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
@@ -692,6 +699,19 @@ class TestImage:
                 im.load()
 
             assert not fp.closed
+
+    def test_empty_exif(self):
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+        assert dict(exif) != {}
+
+        # Test that exif data is cleared after another load
+        exif.load(None)
+        assert dict(exif) == {}
+
+        # Test loading just the EXIF header
+        exif.load(b"Exif\x00\x00")
+        assert dict(exif) == {}
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -824,9 +844,11 @@ class TestImage:
                 34665: 196,
             }
 
-    @pytest.mark.skipif(
-        sys.version_info < (3, 7), reason="Python 3.7 or greater required"
-    )
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_tobytes(self, size):
+        im = Image.new("RGB", size)
+        assert im.tobytes() == b""
+
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0
@@ -838,34 +860,30 @@ class TestImage:
         with pytest.warns(DeprecationWarning):
             assert Image.CONTAINER == 2
 
-    @pytest.mark.parametrize(
-        "test_module",
-        [PIL, Image],
-    )
-    def test_pillow_version(self, test_module):
+    def test_constants_deprecation(self):
         with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION == PIL.__version__
+            assert Image.NEAREST == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.NONE == 0
 
         with pytest.warns(DeprecationWarning):
-            str(test_module.PILLOW_VERSION)
-
+            assert Image.LINEAR == Image.Resampling.BILINEAR
         with pytest.warns(DeprecationWarning):
-            assert int(test_module.PILLOW_VERSION[0]) >= 7
-
+            assert Image.CUBIC == Image.Resampling.BICUBIC
         with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION < "9.9.0"
+            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
 
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION <= "9.9.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION != "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION >= "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION > "7.0.0"
+        for enum in (
+            Image.Transpose,
+            Image.Transform,
+            Image.Resampling,
+            Image.Dither,
+            Image.Palette,
+            Image.Quantize,
+        ):
+            for name in enum.__members__:
+                with pytest.warns(DeprecationWarning):
+                    assert getattr(Image, name) == enum[name]
 
     @pytest.mark.parametrize(
         "path",
@@ -901,18 +919,6 @@ class TestImage:
                 assert False
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
-
-    def test_show_deprecation(self, monkeypatch):
-        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(None) as raised:
-            im.show()
-        assert not raised
-
-        with pytest.warns(DeprecationWarning):
-            im.show(command="mock")
 
 
 class MockEncoder:

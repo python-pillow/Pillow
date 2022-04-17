@@ -833,7 +833,7 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     im = (Imaging)id;
-    load_flags = FT_LOAD_DEFAULT;
+    load_flags = stroke_width ? FT_LOAD_NO_BITMAP : FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
@@ -933,11 +933,7 @@ font_render(FontObject *self, PyObject *args) {
             case FT_PIXEL_MODE_GRAY2:
             case FT_PIXEL_MODE_GRAY4:
                 if (!bitmap_converted_ready) {
-#if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 6)
                     FT_Bitmap_Init(&bitmap_converted);
-#else
-                    FT_Bitmap_New(&bitmap_converted);
-#endif
                     bitmap_converted_ready = 1;
                 }
                 error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);

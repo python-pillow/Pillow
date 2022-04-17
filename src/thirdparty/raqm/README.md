@@ -1,15 +1,14 @@
 Raqm
 ====
 
-[![Linux & macOS build](https://travis-ci.org/HOST-Oman/libraqm.svg?branch=master)](https://travis-ci.org/HOST-Oman/libraqm)
-[![Windows build](https://img.shields.io/appveyor/ci/HOSTOman/libraqm/master.svg)](https://ci.appveyor.com/project/HOSTOman/libraqm)
+[![Build](https://github.com/HOST-Oman/libraqm/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HOST-Oman/libraqm/actions)
 
 Raqm is a small library that encapsulates the logic for complex text layout and
 provides a convenient API.
 
-It currently provides bidirectional text support (using [FriBiDi][1]), shaping
-(using [HarfBuzz][2]), and proper script itemization. As a result,
-Raqm can support most writing systems covered by Unicode.
+It currently provides bidirectional text support (using [FriBiDi][1] or
+[SheenBidi][2]), shaping (using [HarfBuzz][3]), and proper script itemization.
+As a result, Raqm can support most writing systems covered by Unicode.
 
 The documentation can be accessed on the web at:
 > http://host-oman.github.io/libraqm/
@@ -21,40 +20,39 @@ Building
 --------
 
 Raqm depends on the following libraries:
-* [FreeType][3]
-* [HarfBuzz][2]
-* [FriBiDi][1]
+* [FreeType][4]
+* [HarfBuzz][3]
+* [FriBiDi][1] or [SheenBidi][2]
 
 To build the documentation you will also need:
-* [GTK-Doc][4]
+* [GTK-Doc][5]
 
 To install dependencies on Fedora:
 
-    sudo dnf install freetype-devel harfbuzz-devel fribidi-devel gtk-doc
+    sudo dnf install freetype-devel harfbuzz-devel fribidi-devel meson gtk-doc
 
 To install dependencies on Ubuntu:
 
-    sudo apt-get install libfreetype6-dev libharfbuzz-dev libfribidi-dev \
-                         gtk-doc-tools
+    sudo apt-get install libfreetype6-dev libharfbuzz-dev libfribidi-dev meson gtk-doc-tools
 
 On Mac OS X you can use Homebrew:
 
-    brew install freetype harfbuzz fribidi gtk-doc
+    brew install freetype harfbuzz fribidi meson gtk-doc
     export XML_CATALOG_FILES="/usr/local/etc/xml/catalog" # for the docs
 
 Once you have the source code and the dependencies, you can proceed to build.
 To do that, run the customary sequence of commands in the source code
 directory:
 
-    $ ./configure
-    $ make
-    $ make install
+    $ meson build
+    $ ninja -C build
+    $ ninja -C build install
 
-To build the documentation, pass `--enable-gtk-doc` to the `configure` script.
+To build the documentation, pass `-Ddocs=true` to the `meson`.
 
 To run the tests:
 
-    $ make check
+    $ ninja -C build test
 
 Contributing
 ------------
@@ -70,6 +68,7 @@ Projects using Raqm
 3. [FontView](https://github.com/googlei18n/fontview)
 4. [Pillow](https://github.com/python-pillow)
 5. [mplcairo](https://github.com/anntzer/mplcairo)
+6. [CEGUI](https://github.com/cegui/cegui)
 
 The following projects have patches to support complex text layout using Raqm:
 
@@ -79,7 +78,8 @@ The following projects have patches to support complex text layout using Raqm:
 
 
 
-[1]: http://fribidi.org
-[2]: http://harfbuzz.org
-[3]: https://www.freetype.org
-[4]: https://www.gtk.org/gtk-doc
+[1]: https://github.com/fribidi/fribidi
+[2]: https://github.com/Tehreer/SheenBidi
+[3]: https://github.com/harfbuzz/harfbuzz
+[4]: https://www.freetype.org
+[5]: https://www.gtk.org/gtk-doc

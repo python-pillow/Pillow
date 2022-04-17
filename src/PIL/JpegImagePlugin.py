@@ -45,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -401,9 +402,10 @@ class JpegImageFile(ImageFile.ImageFile):
         """
         s = self.fp.read(read_bytes)
 
-        if not s and ImageFile.LOAD_TRUNCATED_IMAGES:
+        if not s and ImageFile.LOAD_TRUNCATED_IMAGES and not hasattr(self, "_ended"):
             # Premature EOF.
             # Pretend file is finished adding EOI marker
+            self._ended = True
             return b"\xFF\xD9"
 
         return s
@@ -481,6 +483,7 @@ class JpegImageFile(ImageFile.ImageFile):
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
+
         :returns: XMP tags in a dictionary.
         """
 
@@ -601,11 +604,7 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    warnings.warn(
-        "convert_dict_qtables is deprecated and will be removed in Pillow 10"
-        "(2023-01-02). Conversion is no longer needed.",
-        DeprecationWarning,
-    )
+    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
     return qtables
 
 
@@ -624,6 +623,8 @@ def get_sampling(im):
 
 
 def _save(im, fp, filename):
+    if im.width == 0 or im.height == 0:
+        raise ValueError("cannot write empty image as JPEG")
 
     try:
         rawmode = RAWMODE[im.mode]

@@ -6,7 +6,13 @@
 The PixelAccess class provides read and write access to
 :py:class:`PIL.Image` data at a pixel level.
 
-.. note::  Accessing individual pixels is fairly slow. If you are looping over all of the pixels in an image, there is likely a faster way using other parts of the Pillow API.
+.. note:: Accessing individual pixels is fairly slow. If you are
+          looping over all of the pixels in an image, there is likely
+          a faster way using other parts of the Pillow API.
+
+          :mod:`~PIL.Image`, :mod:`~PIL.ImageChops` and :mod:`~PIL.ImageOps`
+          have methods for many standard operations. If you wish to perform
+          a custom mapping, check out :py:meth:`~PIL.Image.Image.point`.
 
 Example
 -------
@@ -17,11 +23,12 @@ changes it.
 .. code-block:: python
 
     from PIL import Image
-    with Image.open('hopper.jpg') as im:
+
+    with Image.open("hopper.jpg") as im:
         px = im.load()
-    print (px[4,4])
-    px[4,4] = (0,0,0)
-    print (px[4,4])
+    print(px[4, 4])
+    px[4, 4] = (0, 0, 0)
+    print(px[4, 4])
 
 Results in the following::
 
@@ -32,13 +39,13 @@ Access using negative indexes is also possible.
 
 .. code-block:: python
 
-    px[-1,-1] = (0,0,0)
-    print (px[-1,-1])
+    px[-1, -1] = (0, 0, 0)
+    print(px[-1, -1])
 
 
 
 :py:class:`PixelAccess` Class
------------------------------------
+-----------------------------
 
 .. class:: PixelAccess
 

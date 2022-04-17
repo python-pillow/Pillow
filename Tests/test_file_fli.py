@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from PIL import FliImagePlugin, Image
@@ -38,20 +40,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(static_test_file)
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(static_test_file) as im:
             im.load()
-
-    assert not record
 
 
 def test_tell():
@@ -134,6 +132,19 @@ def test_seek():
 )
 @pytest.mark.timeout(timeout=3)
 def test_timeouts(test_file):
+    with open(test_file, "rb") as f:
+        with Image.open(f) as im:
+            with pytest.raises(OSError):
+                im.load()
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/crash-5762152299364352.fli",
+    ],
+)
+def test_crash(test_file):
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):

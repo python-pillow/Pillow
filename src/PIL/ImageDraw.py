@@ -174,13 +174,11 @@ class ImageDraw:
                         angle -= 90
                         distance = width / 2 - 1
                         return tuple(
-                            [
-                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                                for p, p_d in (
-                                    (x, distance * math.cos(math.radians(angle))),
-                                    (y, distance * math.sin(math.radians(angle))),
-                                )
-                            ]
+                            p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                            for p, p_d in (
+                                (x, distance * math.cos(math.radians(angle))),
+                                (y, distance * math.sin(math.radians(angle))),
+                            )
                         )
 
                     flipped = (
@@ -199,18 +197,18 @@ class ImageDraw:
                     if width > 8:
                         # Cover potential gaps between the line and the joint
                         if flipped:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] + 90),
                                 point,
                                 coord_at_angle(point, angles[1] + 90),
                             ]
                         else:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] - 90),
                                 point,
                                 coord_at_angle(point, angles[1] - 90),
                             ]
-                        self.line(gapCoords, fill, width=3)
+                        self.line(gap_coords, fill, width=3)
 
     def shape(self, shape, fill=None, outline=None):
         """(Experimental) Draw a shape."""
@@ -235,13 +233,35 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_points(xy, ink)
 
-    def polygon(self, xy, fill=None, outline=None):
+    def polygon(self, xy, fill=None, outline=None, width=1):
         """Draw a polygon."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_polygon(xy, fill, 1)
-        if ink is not None and ink != fill:
-            self.draw.draw_polygon(xy, ink, 0)
+        if ink is not None and ink != fill and width != 0:
+            if width == 1:
+                self.draw.draw_polygon(xy, ink, 0, width)
+            else:
+                # To avoid expanding the polygon outwards,
+                # use the fill as a mask
+                mask = Image.new("1", self.im.size)
+                mask_ink = self._getink(1)[0]
+
+                fill_im = mask.copy()
+                draw = Draw(fill_im)
+                draw.draw.draw_polygon(xy, mask_ink, 1)
+
+                ink_im = mask.copy()
+                draw = Draw(ink_im)
+                width = width * 2 - 1
+                draw.draw.draw_polygon(xy, mask_ink, 0, width)
+
+                mask.paste(ink_im, mask=fill_im)
+
+                im = Image.new(self.mode, self.im.size)
+                draw = Draw(im)
+                draw.draw.draw_polygon(xy, ink, 0, width)
+                self.im.paste(im.im, (0, 0) + im.size, mask.im)
 
     def regular_polygon(
         self, bounding_circle, n_sides, rotation=0, fill=None, outline=None
@@ -979,6 +999,6 @@ def _color_diff(color1, color2):
     Uses 1-norm distance to calculate difference between two values.
     """
     if isinstance(color2, tuple):
-        return sum([abs(color1[i] - color2[i]) for i in range(0, len(color2))])
+        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
     else:
         return abs(color1 - color2)

@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016 Khaled Hosny <khaledhosny@eglug.org>
+ * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -28,6 +28,10 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifndef RAQM_API
+#define RAQM_API
 #endif
 
 #include <stdbool.h>
@@ -93,86 +97,102 @@ typedef struct raqm_glyph_t {
     FT_Face ftface;
 } raqm_glyph_t;
 
-raqm_t *
+RAQM_API raqm_t *
 raqm_create (void);
 
-raqm_t *
+RAQM_API raqm_t *
 raqm_reference (raqm_t *rq);
 
-void
+RAQM_API void
 raqm_destroy (raqm_t *rq);
 
-bool
+RAQM_API void
+raqm_clear_contents (raqm_t *rq);
+
+RAQM_API bool
 raqm_set_text (raqm_t         *rq,
                const uint32_t *text,
                size_t          len);
 
-bool
+RAQM_API bool
 raqm_set_text_utf8 (raqm_t     *rq,
                     const char *text,
                     size_t      len);
 
-bool
+RAQM_API bool
 raqm_set_par_direction (raqm_t          *rq,
                         raqm_direction_t dir);
 
-bool
+RAQM_API bool
 raqm_set_language (raqm_t       *rq,
                    const char   *lang,
                    size_t        start,
                    size_t        len);
 
-bool
+RAQM_API bool
 raqm_add_font_feature  (raqm_t     *rq,
                         const char *feature,
                         int         len);
 
-bool
+RAQM_API bool
 raqm_set_freetype_face (raqm_t *rq,
                         FT_Face face);
 
-bool
+RAQM_API bool
 raqm_set_freetype_face_range (raqm_t *rq,
                               FT_Face face,
                               size_t  start,
                               size_t  len);
 
-bool
+RAQM_API bool
 raqm_set_freetype_load_flags (raqm_t *rq,
                               int flags);
 
-bool
+RAQM_API bool
+raqm_set_freetype_load_flags_range (raqm_t *rq,
+                                    int     flags,
+                                    size_t  start,
+                                    size_t  len);
+
+RAQM_API bool
 raqm_set_invisible_glyph (raqm_t *rq,
                           int gid);
 
-bool
+RAQM_API bool
 raqm_layout (raqm_t *rq);
 
-raqm_glyph_t *
+RAQM_API raqm_glyph_t *
 raqm_get_glyphs (raqm_t *rq,
                  size_t *length);
 
-bool
+RAQM_API raqm_direction_t
+raqm_get_par_resolved_direction (raqm_t *rq);
+
+RAQM_API raqm_direction_t
+raqm_get_direction_at_index (raqm_t *rq,
+                             size_t index);
+
+RAQM_API bool
 raqm_index_to_position (raqm_t *rq,
                         size_t *index,
                         int *x,
                         int *y);
 
-bool
+RAQM_API bool
 raqm_position_to_index (raqm_t *rq,
                         int x,
                         int y,
                         size_t *index);
 
-void
+RAQM_API void
 raqm_version (unsigned int *major,
               unsigned int *minor,
               unsigned int *micro);
 
-const char *
+RAQM_API const char *
 raqm_version_string (void);
 
-bool
+RAQM_API bool
 raqm_version_atleast (unsigned int major,
                       unsigned int minor,
                       unsigned int micro);

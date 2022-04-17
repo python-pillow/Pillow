@@ -149,14 +149,13 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
+_encode_to_pyfd(ImagingEncoderObject *encoder) {
     PyObject *result;
     int status;
 
     if (!encoder->pushes_fd) {
         // UNDONE, appropriate errcode???
         result = Py_BuildValue("ii", 0, IMAGING_CODEC_CONFIG);
-        ;
         return result;
     }
 
@@ -299,7 +298,7 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pushes_fd(ImagingEncoderObject *encoder) {
+_get_pushes_fd(ImagingEncoderObject *encoder, void *closure) {
     return PyBool_FromLong(encoder->pushes_fd);
 }
 
@@ -307,7 +306,7 @@ static struct PyMethodDef methods[] = {
     {"encode", (PyCFunction)_encode, METH_VARARGS},
     {"cleanup", (PyCFunction)_encode_cleanup, METH_VARARGS},
     {"encode_to_file", (PyCFunction)_encode_to_file, METH_VARARGS},
-    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_VARARGS},
+    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_NOARGS},
     {"setimage", (PyCFunction)_setimage, METH_VARARGS},
     {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */
@@ -1188,11 +1187,12 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
+    char mct = 0;
     Py_ssize_t fd = -1;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssn",
+            "ss|OOOsOnOOOssbn",
             &mode,
             &format,
             &offset,
@@ -1206,6 +1206,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &irreversible,
             &progression,
             &cinema_mode,
+            &mct,
             &fd)) {
         return NULL;
     }
@@ -1303,6 +1304,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->irreversible = PyObject_IsTrue(irreversible);
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
+    context->mct = mct;
 
     return (PyObject *)encoder;
 }

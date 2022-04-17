@@ -30,7 +30,7 @@ typedef struct {
      */
     int interlace;
 
-    /* The transparent palette index, or -1 for no transparency. */
+    /* The transparent palette index, or -1 for no transparency */
     int transparency;
 
     /* PRIVATE CONTEXT (set by decoder) */

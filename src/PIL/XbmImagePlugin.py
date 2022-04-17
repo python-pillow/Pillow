@@ -25,7 +25,7 @@ from . import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
-    br"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    rb"\s*#define[ \t]+.*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
     b"#define[ \t]+.*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
     b"(?P<hotspot>"
     b"#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
@@ -52,18 +52,19 @@ class XbmImageFile(ImageFile.ImageFile):
 
         m = xbm_head.match(self.fp.read(512))
 
-        if m:
+        if not m:
+            raise SyntaxError("not a XBM file")
 
-            xsize = int(m.group("width"))
-            ysize = int(m.group("height"))
+        xsize = int(m.group("width"))
+        ysize = int(m.group("height"))
 
-            if m.group("hotspot"):
-                self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
+        if m.group("hotspot"):
+            self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
 
-            self.mode = "1"
-            self._size = xsize, ysize
+        self.mode = "1"
+        self._size = xsize, ysize
 
-            self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
+        self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
 
 
 def _save(im, fp, filename):

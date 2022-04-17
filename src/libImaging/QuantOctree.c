@@ -317,7 +317,7 @@ void
 add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long offset) {
     long i;
     Pixel p;
-    for (i = offset; i < offset + nColors; i++) {
+    for (i = offset + nColors - 1; i >= offset; i--) {
         avg_color_from_color_bucket(&palette[i], &p);
         set_lookup_value(cube, &p, i);
     }

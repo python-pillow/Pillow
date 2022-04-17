@@ -1,5 +1,6 @@
 import re
 import sys
+import warnings
 import zlib
 from io import BytesIO
 
@@ -13,7 +14,6 @@ from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
     hopper,
-    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -77,7 +77,6 @@ class TestFilePng:
                     png.crc(cid, s)
         return chunks
 
-    @pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
     def test_sanity(self, tmp_path):
 
         # internal version number
@@ -333,9 +332,8 @@ class TestFilePng:
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.verify()
-            assert not record
 
         with Image.open(TEST_PNG_FILE) as im:
             im.load()
@@ -757,8 +755,8 @@ class TestFilePng:
 
         if buffer:
             mystdout = mystdout.buffer
-        reloaded = Image.open(mystdout)
-        assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+        with Image.open(mystdout) as reloaded:
+            assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

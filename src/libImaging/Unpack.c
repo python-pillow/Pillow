@@ -705,7 +705,7 @@ ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
 void
 ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
-    /* RGB, reversed bytes, 5/5/5/1 bits per pixel */
+    /* RGB, rearranged channels, 5/5/5/1 bits per pixel */
     for (i = 0; i < pixels; i++) {
         pixel = in[0] + (in[1] << 8);
         out[B] = (pixel & 31) * 255 / 31;
@@ -1056,11 +1056,35 @@ unpackABGR(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* RGBA, reversed bytes */
+    /* RGBA, rearranged channels */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[2], in[1], in[0], in[3]);
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
+        _out += 4;
+    }
+}
+
+static void
+unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    /* 16-bit RGBA, little-endian order, rearranged channels */
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[5], in[3], in[1], in[7]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 8;
+        _out += 4;
+    }
+}
+
+static void
+unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    /* 16-bit RGBA, big-endian order, rearranged channels */
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[4], in[2], in[0], in[6]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 8;
         _out += 4;
     }
 }
@@ -1122,6 +1146,16 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
         C16L;
         in += 2;
         tmp += 2;
+    }
+}
+static void
+unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[0] = BITFLIP[in[0]];
+        out[1] = BITFLIP[in[1]];
+        in += 2;
+        out += 2;
     }
 }
 
@@ -1529,6 +1563,7 @@ static struct {
     {"RGB", "RGBX", 32, copy4},
     {"RGB", "RGBX;L", 32, unpackRGBAL},
     {"RGB", "RGBA;L", 32, unpackRGBAL},
+    {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
     {"RGB", "XRGB", 32, ImagingUnpackXRGB},
     {"RGB", "XBGR", 32, ImagingUnpackXBGR},
@@ -1563,6 +1598,8 @@ static struct {
     {"RGBA", "RGBA;16L", 64, unpackRGBA16L},
     {"RGBA", "RGBA;16B", 64, unpackRGBA16B},
     {"RGBA", "BGRA", 32, unpackBGRA},
+    {"RGBA", "BGRA;16L", 64, unpackBGRA16L},
+    {"RGBA", "BGRA;16B", 64, unpackBGRA16B},
     {"RGBA", "ARGB", 32, unpackARGB},
     {"RGBA", "ABGR", 32, unpackABGR},
     {"RGBA", "YCCA;P", 32, ImagingUnpackYCCA},
@@ -1729,6 +1766,8 @@ static struct {
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.
     {"I;16B", "I;16N", 16, unpackI16N_I16B},
+
+    {"I;16", "I;16R", 16, unpackI16R_I16},
 
     {"I;16", "I;12", 12, unpackI12_I16},  // 12 bit Tiffs stored in 16bits.
 

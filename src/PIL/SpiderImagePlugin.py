@@ -238,17 +238,18 @@ def makeSpiderHeader(im):
     if 1024 % lenbyt != 0:
         labrec += 1
     labbyt = labrec * lenbyt
-    hdr = []
     nvalues = int(labbyt / 4)
+    if nvalues < 23:
+        return []
+
+    hdr = []
     for i in range(nvalues):
         hdr.append(0.0)
-
-    if len(hdr) < 23:
-        return []
 
     # NB these are Fortran indices
     hdr[1] = 1.0  # nslice (=1 for an image)
     hdr[2] = float(nrow)  # number of rows per slice
+    hdr[3] = float(nrow)  # number of records in the image
     hdr[5] = 1.0  # iform for 2D image
     hdr[12] = float(nsam)  # number of pixels per line
     hdr[13] = float(labrec)  # number of records in file header
@@ -259,10 +260,7 @@ def makeSpiderHeader(im):
     hdr = hdr[1:]
     hdr.append(0.0)
     # pack binary data into a string
-    hdrstr = []
-    for v in hdr:
-        hdrstr.append(struct.pack("f", v))
-    return hdrstr
+    return [struct.pack("f", v) for v in hdr]
 
 
 def _save(im, fp, filename):
@@ -316,7 +314,7 @@ if __name__ == "__main__":
             outfile = sys.argv[2]
 
             # perform some image operation
-            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             print(
                 f"saving a flipped version of {os.path.basename(filename)} "
                 f"as {outfile} "

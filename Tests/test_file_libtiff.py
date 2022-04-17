@@ -4,12 +4,11 @@ import itertools
 import os
 import re
 from collections import namedtuple
-from ctypes import c_float
 
 import pytest
 
 from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import STRIPOFFSETS, SUBIFD
+from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -112,7 +111,7 @@ class TestFileLibTiff(LibTiffTestCase):
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
             out = str(tmp_path / "temp.tif")
-            rot = orig.transpose(Image.ROTATE_90)
+            rot = orig.transpose(Image.Transpose.ROTATE_90)
             assert rot.size == (500, 500)
             rot.save(out)
 
@@ -168,14 +167,11 @@ class TestFileLibTiff(LibTiffTestCase):
                     val = original[tag]
                     if tag.endswith("Resolution"):
                         if legacy_api:
-                            assert (
-                                c_float(val[0][0] / val[0][1]).value
-                                == c_float(value[0][0] / value[0][1]).value
+                            assert val[0][0] / val[0][1] == (
+                                4294967295 / 113653537
                             ), f"{tag} didn't roundtrip"
                         else:
-                            assert (
-                                c_float(val).value == c_float(value).value
-                            ), f"{tag} didn't roundtrip"
+                            assert val == 37.79000115940079, f"{tag} didn't roundtrip"
                     else:
                         assert val == value, f"{tag} didn't roundtrip"
 
@@ -218,7 +214,7 @@ class TestFileLibTiff(LibTiffTestCase):
             values = {
                 2: "test",
                 3: 1,
-                4: 2 ** 20,
+                4: 2**20,
                 5: TiffImagePlugin.IFDRational(100, 1),
                 12: 1.05,
             }
@@ -825,6 +821,17 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
 
+    def test_sampleformat_write(self, tmp_path):
+        im = Image.new("F", (1, 1))
+        out = str(tmp_path / "temp.tif")
+        TiffImagePlugin.WRITE_LIBTIFF = True
+        im.save(out)
+        TiffImagePlugin.WRITE_LIBTIFF = False
+
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == "F"
+            assert reloaded.getexif()[SAMPLEFORMAT] == 3
+
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:
             assert im.mode == "RGB"
@@ -920,6 +927,23 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
+    @pytest.mark.parametrize("compression", (None, "jpeg"))
+    def test_block_tile_tags(self, compression, tmp_path):
+        im = hopper()
+        out = str(tmp_path / "temp.tif")
+
+        tags = {
+            TiffImagePlugin.TILEWIDTH: 256,
+            TiffImagePlugin.TILELENGTH: 256,
+            TiffImagePlugin.TILEOFFSETS: 256,
+            TiffImagePlugin.TILEBYTECOUNTS: 256,
+        }
+        im.save(out, exif=tags, compression=compression)
+
+        with Image.open(out) as reloaded:
+            for tag in tags.keys():
+                assert tag not in reloaded.getexif()
+
     def test_old_style_jpeg(self):
         with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
@@ -986,3 +1010,24 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as im:
             # Assert that there are multiple strips
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
+
+    def test_save_single_strip(self, tmp_path):
+        im = hopper("RGB").resize((256, 256))
+        out = str(tmp_path / "temp.tif")
+
+        TiffImagePlugin.STRIP_SIZE = 2**18
+        try:
+
+            im.save(out, compression="tiff_adobe_deflate")
+
+            with Image.open(out) as im:
+                assert len(im.tag_v2[STRIPOFFSETS]) == 1
+        finally:
+            TiffImagePlugin.STRIP_SIZE = 65536
+
+    @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
+    def test_save_zero(self, compression, tmp_path):
+        im = Image.new("RGB", (0, 0))
+        out = str(tmp_path / "temp.tif")
+        with pytest.raises(SystemError):
+            im.save(out, compression=compression)

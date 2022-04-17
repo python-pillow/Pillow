@@ -29,16 +29,30 @@ import base64
 import os
 import sys
 import warnings
+from enum import IntEnum
 from io import BytesIO
 
-from . import Image, features
-from ._util import isDirectory, isPath
-
-LAYOUT_BASIC = 0
-LAYOUT_RAQM = 1
+from . import Image
+from ._deprecate import deprecate
+from ._util import is_directory, is_path
 
 
-class _imagingft_not_installed:
+class Layout(IntEnum):
+    BASIC = 0
+    RAQM = 1
+
+
+def __getattr__(name):
+    for enum, prefix in {Layout: "LAYOUT_"}.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -47,7 +61,7 @@ class _imagingft_not_installed:
 try:
     from . import _imagingft as core
 except ImportError:
-    core = _imagingft_not_installed()
+    core = _ImagingFtNotInstalled()
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -165,29 +179,16 @@ class FreeTypeFont:
         self.index = index
         self.encoding = encoding
 
-        try:
-            from packaging.version import parse as parse_version
-        except ImportError:
-            pass
-        else:
-            freetype_version = features.version_module("freetype2")
-            if freetype_version is not None and parse_version(
-                freetype_version
-            ) < parse_version("2.8"):
-                warnings.warn(
-                    "Support for FreeType 2.7 is deprecated and will be removed"
-                    " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
-                    "or newer, preferably FreeType 2.10.4 which fixes "
-                    "CVE-2020-15999.",
-                    DeprecationWarning,
-                )
-
-        if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
-            layout_engine = LAYOUT_BASIC
+        if layout_engine not in (Layout.BASIC, Layout.RAQM):
+            layout_engine = Layout.BASIC
             if core.HAVE_RAQM:
-                layout_engine = LAYOUT_RAQM
-        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
-            layout_engine = LAYOUT_BASIC
+                layout_engine = Layout.RAQM
+        elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
+            warnings.warn(
+                "Raqm layout was requested, but Raqm is not available. "
+                "Falling back to basic layout."
+            )
+            layout_engine = Layout.BASIC
 
         self.layout_engine = layout_engine
 
@@ -197,7 +198,7 @@ class FreeTypeFont:
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
-        if isPath(font):
+        if is_path(font):
             font = os.fspath(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
@@ -214,6 +215,13 @@ class FreeTypeFont:
             )
         else:
             load_from_bytes(font)
+
+    def __getstate__(self):
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state):
+        path, size, index, encoding, layout_engine = state
+        self.__init__(path, size, index, encoding, layout_engine)
 
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
@@ -763,15 +771,16 @@ class TransposedFont:
 
         :param font: A font object.
         :param orientation: An optional orientation.  If given, this should
-            be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
-            Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
+            be one of Image.Transpose.FLIP_LEFT_RIGHT, Image.Transpose.FLIP_TOP_BOTTOM,
+            Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_180, or
+            Image.Transpose.ROTATE_270.
         """
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text, *args, **kwargs):
         w, h = self.font.getsize(text)
-        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             return h, w
         return w, h
 
@@ -817,7 +826,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                  :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/`
                  on macOS.
 
-    :param size: The requested size, in points.
+    :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Possible
                      encodings include (see the FreeType documentation for more
@@ -839,7 +848,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     :data:`.ImageFont.LAYOUT_BASIC` or :data:`.ImageFont.LAYOUT_RAQM`.
+                     :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
 
                      You can check support for Raqm layout using
                      :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
@@ -855,7 +864,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except OSError:
-        if not isPath(font):
+        if not is_path(font):
             raise
         ttf_filename = os.fsdecode(os.path.basename(font))
 
@@ -909,7 +918,7 @@ def load_path(filename):
     :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
-        if isDirectory(directory):
+        if is_directory(directory):
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:

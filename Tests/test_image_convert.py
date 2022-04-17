@@ -41,7 +41,7 @@ def test_sanity():
 def test_default():
 
     im = hopper("P")
-    assert_image(im, "P", im.size)
+    assert im.mode == "P"
     converted_im = im.convert()
     assert_image(converted_im, "RGB", im.size)
     converted_im = im.convert()
@@ -70,10 +70,22 @@ def test_16bit():
     with Image.open("Tests/images/16bit.cropped.tif") as im:
         _test_float_conversion(im)
 
+    for color in (65535, 65536):
+        im = Image.new("I", (1, 1), color)
+        im_i16 = im.convert("I;16")
+        assert im_i16.getpixel((0, 0)) == 65535
+
 
 def test_16bit_workaround():
     with Image.open("Tests/images/16bit.cropped.tif") as im:
         _test_float_conversion(im.convert("I"))
+
+
+def test_opaque():
+    alpha = hopper("P").convert("PA").getchannel("A")
+
+    solid = Image.new("L", (128, 128), 255)
+    assert_image_equal(alpha, solid)
 
 
 def test_rgba_p():
@@ -93,7 +105,7 @@ def test_trns_p(tmp_path):
     f = str(tmp_path / "temp.png")
 
     im_l = im.convert("L")
-    assert im_l.info["transparency"] == 0  # undone
+    assert im_l.info["transparency"] == 1  # undone
     im_l.save(f)
 
     im_rgb = im.convert("RGB")
@@ -128,6 +140,10 @@ def test_trns_l(tmp_path):
 
     f = str(tmp_path / "temp.png")
 
+    im_la = im.convert("LA")
+    assert "transparency" not in im_la.info
+    im_la.save(f)
+
     im_rgb = im.convert("RGB")
     assert im_rgb.info["transparency"] == (128, 128, 128)  # undone
     im_rgb.save(f)
@@ -136,7 +152,7 @@ def test_trns_l(tmp_path):
     assert "transparency" in im_p.info
     im_p.save(f)
 
-    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" in im_p.info
     im_p.save(f)
 
@@ -159,15 +175,29 @@ def test_trns_RGB(tmp_path):
     assert "transparency" not in im_rgba.info
     im_rgba.save(f)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.ADAPTIVE)
+    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
 
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
-    im_p = im.convert("P", palette=Image.ADAPTIVE)
+    im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert im_p.info["transparency"] == im_p.getpixel((0, 0))
     im_p.save(f)
+
+
+@pytest.mark.parametrize("convert_mode", ("L", "LA", "I"))
+def test_l_macro_rounding(convert_mode):
+    for mode in ("P", "PA"):
+        im = Image.new(mode, (1, 1))
+        im.palette.getcolor((0, 1, 2))
+
+        converted_im = im.convert(convert_mode)
+        px = converted_im.load()
+        converted_color = px[0, 0]
+        if convert_mode == "LA":
+            converted_color = converted_color[0]
+        assert converted_color == 1
 
 
 def test_gif_with_rgba_palette_to_p():

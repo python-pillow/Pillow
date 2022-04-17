@@ -132,7 +132,7 @@ def _res_to_dpi(num, denom, exp):
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
     if denom != 0:
-        return (254 * num * (10 ** exp)) / (10000 * denom)
+        return (254 * num * (10**exp)) / (10000 * denom)
 
 
 def _parse_jp2_header(fp):
@@ -159,50 +159,23 @@ def _parse_jp2_header(fp):
     bpc = None
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
-    unkc = 0  # Colorspace information unknown
 
     while header.has_next_box():
         tbox = header.next_box_type()
 
         if tbox == b"ihdr":
-            height, width, nc, bpc, c, unkc, ipr = header.read_fields(">IIHBBBB")
+            height, width, nc, bpc = header.read_fields(">IIHB")
             size = (width, height)
-            if unkc:
-                if nc == 1 and (bpc & 0x7F) > 8:
-                    mode = "I;16"
-                elif nc == 1:
-                    mode = "L"
-                elif nc == 2:
-                    mode = "LA"
-                elif nc == 3:
-                    mode = "RGB"
-                elif nc == 4:
-                    mode = "RGBA"
-        elif tbox == b"colr":
-            meth, prec, approx = header.read_fields(">BBB")
-            if meth == 1 and unkc == 0:
-                cs = header.read_fields(">I")[0]
-                if cs == 16:  # sRGB
-                    if nc == 1 and (bpc & 0x7F) > 8:
-                        mode = "I;16"
-                    elif nc == 1:
-                        mode = "L"
-                    elif nc == 3:
-                        mode = "RGB"
-                    elif nc == 4:
-                        mode = "RGBA"
-                elif cs == 17:  # grayscale
-                    if nc == 1 and (bpc & 0x7F) > 8:
-                        mode = "I;16"
-                    elif nc == 1:
-                        mode = "L"
-                    elif nc == 2:
-                        mode = "LA"
-                elif cs == 18:  # sYCC
-                    if nc == 3:
-                        mode = "RGB"
-                    elif nc == 4:
-                        mode = "RGBA"
+            if nc == 1 and (bpc & 0x7F) > 8:
+                mode = "I;16"
+            elif nc == 1:
+                mode = "L"
+            elif nc == 2:
+                mode = "LA"
+            elif nc == 3:
+                mode = "RGB"
+            elif nc == 4:
+                mode = "RGBA"
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
@@ -317,13 +290,13 @@ def _accept(prefix):
 
 
 def _save(im, fp, filename):
-    if filename.endswith(".j2k"):
+    # Get the keyword arguments
+    info = im.encoderinfo
+
+    if filename.endswith(".j2k") or info.get("no_jp2", False):
         kind = "j2k"
     else:
         kind = "jp2"
-
-    # Get the keyword arguments
-    info = im.encoderinfo
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)
@@ -347,6 +320,7 @@ def _save(im, fp, filename):
     irreversible = info.get("irreversible", False)
     progression = info.get("progression", "LRCP")
     cinema_mode = info.get("cinema_mode", "no")
+    mct = info.get("mct", 0)
     fd = -1
 
     if hasattr(fp, "fileno"):
@@ -367,6 +341,7 @@ def _save(im, fp, filename):
         irreversible,
         progression,
         cinema_mode,
+        mct,
         fd,
     )
 

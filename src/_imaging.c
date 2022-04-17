@@ -1063,7 +1063,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
     PyObject *palette;
-    int palettesize = 256;
+    int palettesize;
     int bits;
     ImagingShuffler pack;
 
@@ -1084,6 +1084,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    palettesize = self->image->palette->size;
     palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
     if (!palette) {
         return NULL;
@@ -1494,6 +1495,14 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+#define set_value_to_item(seq, i) \
+op = PySequence_Fast_GET_ITEM(seq, i); \
+if (PySequence_Check(op)) { \
+    PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
+    return NULL; \
+} else { \
+    value = PyFloat_AsDouble(op); \
+}
     if (image->image8) {
         if (PyBytes_Check(data)) {
             unsigned char *p;
@@ -1522,11 +1531,12 @@ _putdata(ImagingObject *self, PyObject *args) {
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
+            double value;
             if (scale == 1.0 && offset == 0.0) {
                 /* Clipped data */
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
-                    image->image8[y][x] = (UINT8)CLIP8(PyLong_AsLong(op));
+                    set_value_to_item(seq, i);
+                    image->image8[y][x] = (UINT8)CLIP8(value);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1535,9 +1545,8 @@ _putdata(ImagingObject *self, PyObject *args) {
             } else {
                 /* Scaled and clipped data */
                 for (i = x = y = 0; i < n; i++) {
-                    PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
-                    image->image8[y][x] =
-                        CLIP8((int)(PyFloat_AsDouble(op) * scale + offset));
+                    set_value_to_item(seq, i);
+                    image->image8[y][x] = CLIP8(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1555,9 +1564,10 @@ _putdata(ImagingObject *self, PyObject *args) {
         switch (image->type) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    double value;
+                    set_value_to_item(seq, i);
                     IMAGING_PIXEL_INT32(image, x, y) =
-                        (INT32)(PyFloat_AsDouble(op) * scale + offset);
+                        (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1566,9 +1576,10 @@ _putdata(ImagingObject *self, PyObject *args) {
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
-                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    double value;
+                    set_value_to_item(seq, i);
                     IMAGING_PIXEL_FLOAT32(image, x, y) =
-                        (FLOAT32)(PyFloat_AsDouble(op) * scale + offset);
+                        (FLOAT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1631,7 +1642,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
     int bits;
 
-    char *rawmode;
+    char *rawmode, *palette_mode;
     UINT8 *palette;
     Py_ssize_t palettesize;
     if (!PyArg_ParseTuple(args, "sy#", &rawmode, &palette, &palettesize)) {
@@ -1644,7 +1655,8 @@ _putpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    unpack = ImagingFindUnpacker("RGB", rawmode, &bits);
+    palette_mode = strncmp("RGBA", rawmode, 4) == 0 ? "RGBA" : "RGB";
+    unpack = ImagingFindUnpacker(palette_mode, rawmode, &bits);
     if (!unpack) {
         PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
         return NULL;
@@ -1659,11 +1671,13 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     strcpy(self->image->mode, strlen(self->image->mode) == 2 ? "PA" : "P");
 
-    self->image->palette = ImagingPaletteNew("RGB");
+    self->image->palette = ImagingPaletteNew(palette_mode);
 
-    unpack(self->image->palette->palette, palette, palettesize * 8 / bits);
+    self->image->palette->size = palettesize * 8 / bits;
+    unpack(self->image->palette->palette, palette, self->image->palette->size);
 
-    return PyLong_FromLong(palettesize * 8 / bits);
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyObject *
@@ -3124,7 +3138,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     PyObject *data;
     int ink;
     int fill = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &fill)) {
+    int width = 0;
+    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
         return NULL;
     }
 
@@ -3153,7 +3168,7 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, self->blend) < 0) {
+    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) < 0) {
         free(ixy);
         return NULL;
     }

@@ -1,3 +1,4 @@
+import warnings
 from io import BytesIO
 
 import pytest
@@ -39,20 +40,16 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
 
-    assert not record
-
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
             im.load()
-
-    assert not record
 
 
 def test_invalid_file():
@@ -60,6 +57,51 @@ def test_invalid_file():
 
     with pytest.raises(SyntaxError):
         GifImagePlugin.GifImageFile(invalid_file)
+
+
+def test_l_mode_transparency():
+    with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
+        assert im.info["transparency"] == 255
+
+        im.seek(1)
+        assert im.mode == "L"
+        assert im.load()[0, 0] == 128
+
+
+def test_strategy():
+    with Image.open("Tests/images/chi.gif") as im:
+        expected_zero = im.convert("RGB")
+
+        im.seek(1)
+        expected_one = im.convert("RGB")
+
+    try:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGB"
+            assert_image_equal(im, expected_zero)
+
+        GifImagePlugin.LOADING_STRATEGY = (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+        )
+        # Stay in P mode with only a global palette
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "P"
+            assert_image_equal(im.convert("RGB"), expected_one)
+
+        # Change to RGB mode when a frame has an individual palette
+        with Image.open("Tests/images/iss634.gif") as im:
+            assert im.mode == "P"
+
+            im.seek(1)
+            assert im.mode == "RGB"
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_optimize():
@@ -163,6 +205,32 @@ def test_roundtrip_save_all(tmp_path):
         assert reread.n_frames == 5
 
 
+@pytest.mark.parametrize(
+    "path, mode",
+    (
+        ("Tests/images/dispose_bgnd.gif", "RGB"),
+        # Hexeditted copy of dispose_bgnd to add transparency
+        ("Tests/images/dispose_bgnd_rgba.gif", "RGBA"),
+    ),
+)
+def test_loading_multiple_palettes(path, mode):
+    with Image.open(path) as im:
+        assert im.mode == "P"
+        first_frame_colors = im.palette.colors.keys()
+        original_color = im.convert("RGB").load()[0, 0]
+
+        im.seek(1)
+        assert im.mode == mode
+        if mode == "RGBA":
+            im = im.convert("RGB")
+
+        # Check a color only from the old palette
+        assert im.load()[0, 0] == original_color
+
+        # Check a color from the new palette
+        assert im.load()[24, 24] not in first_frame_colors
+
+
 def test_headers_saving_for_animated_gifs(tmp_path):
     important_headers = ["background", "version", "duration", "loop"]
     # Multiframe image
@@ -184,8 +252,8 @@ def test_palette_handling(tmp_path):
     with Image.open(TEST_GIF) as im:
         im = im.convert("RGB")
 
-        im = im.resize((100, 100), Image.LANCZOS)
-        im2 = im.convert("P", palette=Image.ADAPTIVE, colors=256)
+        im = im.resize((100, 100), Image.Resampling.LANCZOS)
+        im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
 
         f = str(tmp_path / "temp.gif")
         im2.save(f, optimize=True)
@@ -285,6 +353,22 @@ def test_n_frames():
             assert im.is_animated == (n_frames != 1)
 
 
+def test_no_change():
+    # Test n_frames does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(1)
+        expected = im.copy()
+        assert im.n_frames == 5
+        assert_image_equal(im, expected)
+
+    # Test is_animated does not change the image
+    with Image.open("Tests/images/dispose_bgnd.gif") as im:
+        im.seek(3)
+        expected = im.copy()
+        assert im.is_animated
+        assert_image_equal(im, expected)
+
+
 def test_eoferror():
     with Image.open(TEST_GIF) as im:
         n_frames = im.n_frames
@@ -324,7 +408,7 @@ def test_dispose_none_load_end():
     with Image.open("Tests/images/dispose_none_load_end.gif") as img:
         img.seek(1)
 
-        assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.gif")
+        assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.png")
 
 
 def test_dispose_background():
@@ -337,14 +421,45 @@ def test_dispose_background():
             pass
 
 
-def test_transparent_dispose():
-    expected_colors = [(2, 1, 2), (0, 1, 0), (2, 1, 2)]
-    with Image.open("Tests/images/transparent_dispose.gif") as img:
-        for frame in range(3):
-            img.seek(frame)
-            for x in range(3):
-                color = img.getpixel((x, 0))
-                assert color == expected_colors[frame][x]
+def test_dispose_background_transparency():
+    with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
+        img.seek(2)
+        px = img.load()
+        assert px[35, 30][3] == 0
+
+
+@pytest.mark.parametrize(
+    "loading_strategy, expected_colors",
+    (
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+            (
+                (2, 1, 2),
+                ((0, 255, 24, 255), (0, 0, 255, 255), (0, 255, 24, 255)),
+                ((0, 0, 0, 0), (0, 0, 255, 255), (0, 0, 0, 0)),
+            ),
+        ),
+        (
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+            (
+                (2, 1, 2),
+                (0, 1, 0),
+                (2, 1, 2),
+            ),
+        ),
+    ),
+)
+def test_transparent_dispose(loading_strategy, expected_colors):
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/transparent_dispose.gif") as img:
+            for frame in range(3):
+                img.seek(frame)
+                for x in range(3):
+                    color = img.getpixel((x, 0))
+                    assert color == expected_colors[frame][x]
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_dispose_previous():
@@ -361,7 +476,7 @@ def test_dispose_previous_first_frame():
     with Image.open("Tests/images/dispose_prev_first_frame.gif") as im:
         im.seek(1)
         assert_image_equal_tofile(
-            im, "Tests/images/dispose_prev_first_frame_seeked.gif"
+            im, "Tests/images/dispose_prev_first_frame_seeked.png"
         )
 
 
@@ -501,7 +616,7 @@ def test_dispose2_background(tmp_path):
 
     with Image.open(out) as im:
         im.seek(1)
-        assert im.getpixel((0, 0)) == 0
+        assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
 def test_transparency_in_second_frame():
@@ -510,9 +625,9 @@ def test_transparency_in_second_frame():
 
         # Seek to the second frame
         im.seek(im.tell() + 1)
-        assert im.info["transparency"] == 0
+        assert "transparency" not in im.info
 
-        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.gif")
+        assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.png")
 
 
 def test_no_transparency_in_second_frame():
@@ -684,31 +799,31 @@ def test_zero_comment_subblocks():
 def test_version(tmp_path):
     out = str(tmp_path / "temp.gif")
 
-    def assertVersionAfterSave(im, version):
+    def assert_version_after_save(im, version):
         im.save(out)
         with Image.open(out) as reread:
             assert reread.info["version"] == version
 
     # Test that GIF87a is used by default
     im = Image.new("L", (100, 100), "#000")
-    assertVersionAfterSave(im, b"GIF87a")
+    assert_version_after_save(im, b"GIF87a")
 
     # Test setting the version to 89a
     im = Image.new("L", (100, 100), "#000")
     im.info["version"] = b"89a"
-    assertVersionAfterSave(im, b"GIF89a")
+    assert_version_after_save(im, b"GIF89a")
 
     # Test that adding a GIF89a feature changes the version
     im.info["transparency"] = 1
-    assertVersionAfterSave(im, b"GIF89a")
+    assert_version_after_save(im, b"GIF89a")
 
     # Test that a GIF87a image is also saved in that format
     with Image.open("Tests/images/test.colors.gif") as im:
-        assertVersionAfterSave(im, b"GIF87a")
+        assert_version_after_save(im, b"GIF87a")
 
         # Test that a GIF89a image is also saved in that format
         im.info["version"] = b"GIF89a"
-        assertVersionAfterSave(im, b"GIF87a")
+        assert_version_after_save(im, b"GIF87a")
 
 
 def test_append_images(tmp_path):
@@ -723,10 +838,10 @@ def test_append_images(tmp_path):
         assert reread.n_frames == 3
 
     # Tests appending using a generator
-    def imGenerator(ims):
+    def im_generator(ims):
         yield from ims
 
-    im.save(out, save_all=True, append_images=imGenerator(ims))
+    im.save(out, save_all=True, append_images=im_generator(ims))
 
     with Image.open(out) as reread:
         assert reread.n_frames == 3
@@ -781,6 +896,17 @@ def test_rgb_transparency(tmp_path):
         assert "transparency" not in reloaded.info
 
 
+def test_rgba_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = hopper("P")
+    im.save(out, save_all=True, append_images=[Image.new("RGBA", im.size)])
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+        assert_image_equal(hopper("P").convert("RGB"), reloaded)
+
+
 def test_bbox(tmp_path):
     out = str(tmp_path / "temp.gif")
 
@@ -811,7 +937,7 @@ def test_palette_save_P(tmp_path):
     # Forcing a non-straight grayscale palette.
 
     im = hopper("P")
-    palette = bytes([255 - i // 3 for i in range(768)])
+    palette = bytes(255 - i // 3 for i in range(768))
 
     out = str(tmp_path / "temp.gif")
     im.save(out, palette=palette)
@@ -856,7 +982,7 @@ def test_palette_save_ImagePalette(tmp_path):
 
     with Image.open(out) as reloaded:
         im.putpalette(palette)
-        assert_image_equal(reloaded, im)
+        assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
 
 def test_save_I(tmp_path):
@@ -874,11 +1000,11 @@ def test_save_I(tmp_path):
 def test_getdata():
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
-    im = Image._wedge().resize((16, 16), Image.NEAREST)
+    im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 
-    passed_palette = bytes([255 - i // 3 for i in range(768)])
+    passed_palette = bytes(255 - i // 3 for i in range(768))
 
     GifImagePlugin._FORCE_OPTIMIZE = True
     try:
@@ -910,6 +1036,11 @@ def test_lzw_bits():
 def test_extents():
     with Image.open("Tests/images/test_extents.gif") as im:
         assert im.size == (100, 100)
+
+        # Check that n_frames does not change the size
+        assert im.n_frames == 2
+        assert im.size == (100, 100)
+
         im.seek(1)
         assert im.size == (150, 150)
 
@@ -919,4 +1050,14 @@ def test_missing_background():
     # but the disposal method is "Restore to background color"
     with Image.open("Tests/images/missing_background.gif") as im:
         im.seek(1)
-        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.gif")
+        assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.png")
+
+
+def test_saving_rgba(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/transparent.png") as im:
+        im.save(out)
+
+    with Image.open(out) as reloaded:
+        reloaded_rgba = reloaded.convert("RGBA")
+        assert reloaded_rgba.load()[0, 0][3] == 0
