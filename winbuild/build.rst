@@ -91,7 +91,7 @@ Some binary dependencies (e.g. ``fribidi.dll``) will be stored in the
 ``winbuild\build\bin`` directory; this directory should be added to ``PATH``
 before running tests.
 
-Build and install Pillow, then run ``python -m pytest Tests``
+Build and install Pillow, then run ``python3 -m pytest Tests``
 from the root Pillow directory.
 
 Example
