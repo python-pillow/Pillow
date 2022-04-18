@@ -16,8 +16,6 @@ if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
   MB_PYTHON_OSX_VER="10.9"
   if [[ "$PLAT" == "i686" ]]; then
     DOCKER_TEST_IMAGE="multibuild/xenial_$PLAT"
-  else
-    DOCKER_TEST_IMAGE="multibuild/focal_$PLAT"
   fi
 fi
 

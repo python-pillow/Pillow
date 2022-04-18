@@ -3,7 +3,6 @@ env:
       - REPO_DIR=Pillow
       - BUILD_COMMIT=HEAD
       - PLAT=aarch64
-      - DOCKER_TEST_IMAGE=multibuild/focal_{PLAT}
       - TEST_DEPENDS="pytest pytest-timeout"
 
 language: python
