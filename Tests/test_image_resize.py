@@ -12,6 +12,7 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     hopper,
+    skip_unless_feature,
 )
 
 
@@ -264,6 +265,7 @@ class TestImageResize:
             with pytest.raises(ValueError):
                 im.resize((10, 10), "unknown")
 
+    @skip_unless_feature("libtiff")
     def test_load_first(self):
         # load() may change the size of the image
         # Test that resize() is calling it before getting the size
