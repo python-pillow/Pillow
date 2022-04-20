@@ -7,6 +7,7 @@ from .helper import (
     assert_image_similar,
     fromstring,
     hopper,
+    skip_unless_feature,
     tostring,
 )
 
@@ -88,6 +89,7 @@ def test_no_resize():
         assert im.size == (64, 64)
 
 
+@skip_unless_feature("libtiff")
 def test_load_first():
     # load() may change the size of the image
     # Test that thumbnail() is calling it before performing size calculations
