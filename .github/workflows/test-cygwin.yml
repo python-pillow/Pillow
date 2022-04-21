@@ -53,7 +53,7 @@ jobs:
       - name: pip cache
         uses: actions/cache@v3
         with:
-          path: 'C:\cygwin\home\runner\.cache\pip'
+          path: 'C:\cygwin\home\runneradmin\.cache\pip'
           key: ${{ runner.os }}-cygwin-pip-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
             ${{ runner.os }}-cygwin-pip-
