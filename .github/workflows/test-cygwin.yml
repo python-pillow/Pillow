@@ -47,15 +47,16 @@ jobs:
       - name: Get pip cache dir
         id: pip-cache
         run: |
-          bash.exe -c 'echo "::set-output name=dir::$(python -m pip cache dir)"'
+          bash.exe -c 'cygpath -wa $(python -m pip cache dir)'
+          bash.exe -c 'echo "::set-output name=dir::$(cygpath -wa $(python -m pip cache dir))"'
           
       - name: pip cache
         uses: actions/cache@v3
         with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          path: 'C:\cygwin\home\runner\.cache\pip'
+          key: ${{ runner.os }}-cygwin-pip-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-cygwin-pip-
 
       - name: Build system information
         run: |
