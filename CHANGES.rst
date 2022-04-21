@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Increase wait time of temporary file deletion on Windows #6224
+  [AlexTedeschi]
+
+- Deprecate FreeTypeFont.getmask2 fill parameter #6220
+  [nulano, radarhere, hugovk]
+
 - Round lut values where necessary #6188
   [radarhere]
 
