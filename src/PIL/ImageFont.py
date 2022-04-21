@@ -711,8 +711,13 @@ class FreeTypeFont:
 
         :return: A FreeTypeFont object.
         """
+        if font is None:
+            try:
+                font = BytesIO(self.font_bytes)
+            except AttributeError:
+                font = self.path
         return FreeTypeFont(
-            font=self.path if font is None else font,
+            font=font,
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
