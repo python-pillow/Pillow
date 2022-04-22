@@ -44,19 +44,13 @@ jobs:
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
           
-      - name: Get pip cache dir
-        id: pip-cache
-        run: |
-          bash.exe -c 'cygpath -wa $(python -m pip cache dir)'
-          bash.exe -c 'echo "::set-output name=dir::$(cygpath -wa $(python -m pip cache dir))"'
-          
       - name: pip cache
         uses: actions/cache@v3
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
-          key: ${{ runner.os }}-cygwin-pip-${{ hashFiles('.ci/install.sh') }}
+          key: ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-cygwin-pip-
+            ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
         run: |
