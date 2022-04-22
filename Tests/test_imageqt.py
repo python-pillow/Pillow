@@ -2,9 +2,12 @@ import warnings
 
 import pytest
 
-from PIL import ImageQt
-
 from .helper import assert_image_similar, hopper
+
+with warnings.catch_warnings() as w:
+    warnings.simplefilter("always", category=DeprecationWarning)
+    from PIL import ImageQt
+
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
