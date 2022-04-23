@@ -3138,6 +3138,7 @@ Changelog (Pillow)
 
 - Changed depends/install_*.sh urls to point to github pillow-depends repo #1983
   [wiredfool]
+
 - Allow ICC profile from ``encoderinfo`` while saving PNGs #1909
   [homm]
 
