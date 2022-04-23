@@ -250,28 +250,32 @@ def _cmd_exists(cmd):
 
 
 def _pkg_config(name):
-    try:
-        command = os.environ.get("PKG_CONFIG", "pkg-config")
-        command_libs = [command, "--libs-only-L", "--keep-system-libs", name]
-        command_cflags = [command, "--cflags-only-I", "--keep-system-cflags", name]
-        if not DEBUG:
-            command_libs.append("--silence-errors")
-            command_cflags.append("--silence-errors")
-        libs = (
-            subprocess.check_output(command_libs)
-            .decode("utf8")
-            .strip()
-            .replace("-L", "")
-        )
-        cflags = (
-            subprocess.check_output(command_cflags)
-            .decode("utf8")
-            .strip()
-            .replace("-I", "")
-        )
-        return libs, cflags
-    except Exception:
-        pass
+    command = os.environ.get("PKG_CONFIG", "pkg-config")
+    for keep_system in (True, False):
+        try:
+            command_libs = [command, "--libs-only-L", name]
+            command_cflags = [command, "--cflags-only-I", name]
+            if keep_system:
+                command_libs.append("--keep-system-libs")
+                command_cflags.append("--keep-system-cflags")
+            if not DEBUG:
+                command_libs.append("--silence-errors")
+                command_cflags.append("--silence-errors")
+            libs = (
+                subprocess.check_output(command_libs)
+                .decode("utf8")
+                .strip()
+                .replace("-L", "")
+            )
+            cflags = (
+                subprocess.check_output(command_cflags)
+                .decode("utf8")
+                .strip()
+                .replace("-I", "")
+            )
+            return libs, cflags
+        except Exception:
+            pass
 
 
 class pil_build_ext(build_ext):
