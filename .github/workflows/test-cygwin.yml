@@ -53,8 +53,9 @@ jobs:
             ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
+        shell: dash.exe -l "{0}"
         run: |
-          bash.exe -c "python3 .github/workflows/system-info.py"
+          python3 .github/workflows/system-info.py
 
       - name: Install dependencies
         run: |
@@ -62,20 +63,27 @@ jobs:
 
       - name: Install a different NumPy
         if: matrix.architecture == 'x86_64'
+        shell: dash.exe -l "{0}"
         run: |
-          bash.exe -c "python3.${{ matrix.python-minor-version }} -m pip install -U 'numpy!=1.21.*'"
+          python3.${{ matrix.python-minor-version }} -m pip install -U 'numpy!=1.21.*'
 
       - name: Check imports
+        shell: dash.exe -l "{0}"
         run: |
-          bash.exe -c "python3.${{ matrix.python-minor-version }} -c 'import numpy as np; print(np.__version__)'"
+          python3.${{ matrix.python-minor-version }} -c 'import numpy as np; print(np.__version__)'
 
       - name: Build
+        shell: bash.exe --login -eo pipefail "{0}"
         run: |
-          bash.exe .ci/build_cygwin.sh
+          python3 -m coverage erase
+          make clean
+          CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip install -v --global-option="build_ext" .
+          python3 selftest.py
 
       - name: Rebase dlls
+        shell: dash.exe -l "{0}"
         run: |
-          bash.exe -c '/usr/bin/rebase --database $(find /usr{,/local}/lib/python3.${{ matrix.python-minor-version }}/site-packages src/PIL ${HOME}/.local/lib/ /usr/lib/lapack /usr/bin -name \*.dll -o -name \*.exe)'
+          /usr/bin/rebase --database $(find /usr{,/local}/lib/python3.${{ matrix.python-minor-version }}/site-packages src/PIL ${HOME}/.local/lib/ /usr/lib/lapack /usr/bin -name \*.dll -o -name \*.exe)
 
       - name: Test
         run: |
