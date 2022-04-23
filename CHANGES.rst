@@ -1527,6 +1527,7 @@ Changelog (Pillow)
 
 - Deprecate PIL.*ImagePlugin.__version__ attributes #3628
   [jdufresne]
+
 - Docs: Add note about ImageDraw operations that exceed image bounds #3620
   [radarhere]
 
