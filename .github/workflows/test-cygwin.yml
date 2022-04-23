@@ -28,16 +28,18 @@ jobs:
         with:
           platform: ${{ matrix.architecture }}
           packages: >
-            ImageMagick jpeg python3${{ matrix.python-minor-version }}-cffi
+            ImageMagick gcc-g++ ghostscript jpeg libfreetype-devel
+            libimagequant-devel libjpeg-devel liblapack-devel
+            liblcms2-devel libopenjp2-devel libraqm-devel
+            libtiff-devel libwebp-devel libxcb-devel libxcb-xinerama0
+            make netpbm perl
+            python3${{ matrix.python-minor-version }}-cffi
+            python3${{ matrix.python-minor-version }}-cython
             python3${{ matrix.python-minor-version }}-devel
             python3${{ matrix.python-minor-version }}-numpy
-            python3${{ matrix.python-minor-version }}-cython liblapack-devel gcc-g++
             python3${{ matrix.python-minor-version }}-sip
-            python3${{ matrix.python-minor-version }}-tkinter ghostscript
-            libfreetype-devel libimagequant-devel libjpeg-devel liblcms2-devel
-            libopenjp2-devel libraqm-devel libtiff-devel libwebp-devel libxcb-devel
-            libxcb-xinerama0 netpbm perl qt5-devel-tools xorg-server-extra zlib-devel
-            subversion make
+            python3${{ matrix.python-minor-version }}-tkinter
+            qt5-devel-tools subversion xorg-server-extra zlib-devel
 
       - name: Add Lapack to PATH
         uses: egor-tensin/cleanup-path@v1
