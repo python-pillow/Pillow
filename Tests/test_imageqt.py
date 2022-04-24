@@ -5,7 +5,7 @@ import pytest
 from .helper import assert_image_similar, hopper
 
 with warnings.catch_warnings() as w:
-    warnings.simplefilter("always", category=DeprecationWarning)
+    warnings.simplefilter("ignore", category=DeprecationWarning)
     from PIL import ImageQt
 
 
