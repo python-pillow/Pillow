@@ -20,6 +20,7 @@ import sys
 from io import BytesIO
 
 from . import Image
+from ._deprecate import deprecate
 from ._util import is_path
 
 qt_versions = [
@@ -42,9 +43,13 @@ for qt_version, qt_module in qt_versions:
         elif qt_module == "PyQt5":
             from PyQt5.QtCore import QBuffer, QIODevice
             from PyQt5.QtGui import QImage, QPixmap, qRgba
+
+            deprecate("Support for PyQt5", 10, "PyQt6 or PySide6")
         elif qt_module == "PySide2":
             from PySide2.QtCore import QBuffer, QIODevice
             from PySide2.QtGui import QImage, QPixmap, qRgba
+
+            deprecate("Support for PySide2", 10, "PyQt6 or PySide6")
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True

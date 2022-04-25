@@ -34,12 +34,10 @@ python3 -m pip install pyroma
 python3 -m pip install test-image-results
 python3 -m pip install numpy
 
-# PyQt5 doesn't support PyPy3
+# PyQt6 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
-  # arm64, ppc64le, s390x CPUs:
-  # "ERROR: Could not find a version that satisfies the requirement pyqt5"
-    sudo apt-get -qq install libxcb-xinerama0 pyqt5-dev-tools
-    python3 -m pip install pyqt5
+    sudo apt-get -qq install libegl1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxkbcommon-x11-0
+    python3 -m pip install pyqt6
 fi
 
 # webp
