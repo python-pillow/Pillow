@@ -77,9 +77,9 @@ def test_consecutive():
 def test_palette_mmap():
     # Using mmap in ImageFile can require to reload the palette.
     with Image.open("Tests/images/multipage-mmap.tiff") as im:
-        color1 = im.getpalette()[0:3]
+        color1 = im.getpalette()[:3]
         im.seek(0)
-        color2 = im.getpalette()[0:3]
+        color2 = im.getpalette()[:3]
         assert color1 == color2
 
 

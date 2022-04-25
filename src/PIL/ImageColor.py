@@ -133,7 +133,7 @@ def getcolor(color, mode):
     # same as getrgb, but converts the result to the given mode
     color, alpha = getrgb(color), 255
     if len(color) == 4:
-        color, alpha = color[0:3], color[3]
+        color, alpha = color[:3], color[3]
 
     if Image.getmodebase(mode) == "L":
         r, g, b = color
