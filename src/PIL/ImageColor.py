@@ -128,7 +128,7 @@ def getcolor(color, mode):
 
     :param color: A color string
     :param mode: Convert result to this mode
-    :return: ``(graylevel [, alpha]) or (red, green, blue[, alpha])``
+    :return: ``(graylevel[, alpha]) or (red, green, blue[, alpha])``
     """
     # same as getrgb, but converts the result to the given mode
     color, alpha = getrgb(color), 255
