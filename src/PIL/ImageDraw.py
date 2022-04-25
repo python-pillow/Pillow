@@ -197,18 +197,18 @@ class ImageDraw:
                     if width > 8:
                         # Cover potential gaps between the line and the joint
                         if flipped:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] + 90),
                                 point,
                                 coord_at_angle(point, angles[1] + 90),
                             ]
                         else:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] - 90),
                                 point,
                                 coord_at_angle(point, angles[1] - 90),
                             ]
-                        self.line(gapCoords, fill, width=3)
+                        self.line(gap_coords, fill, width=3)
 
     def shape(self, shape, fill=None, outline=None):
         """(Experimental) Draw a shape."""

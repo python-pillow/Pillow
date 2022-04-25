@@ -90,14 +90,14 @@ def test_write_animation_RGB(tmp_path):
             check(temp_file1)
 
             # Tests appending using a generator
-            def imGenerator(ims):
+            def im_generator(ims):
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")
             frame1.copy().save(
                 temp_file2,
                 save_all=True,
-                append_images=imGenerator([frame2]),
+                append_images=im_generator([frame2]),
                 lossless=True,
             )
             check(temp_file2)

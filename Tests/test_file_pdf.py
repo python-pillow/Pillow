@@ -131,10 +131,10 @@ def test_save_all(tmp_path):
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def imGenerator(ims):
+        def im_generator(ims):
             yield from ims
 
-        im.save(outfile, save_all=True, append_images=imGenerator(ims))
+        im.save(outfile, save_all=True, append_images=im_generator(ims))
 
     assert os.path.isfile(outfile)
     assert os.path.getsize(outfile) > 0
@@ -253,9 +253,9 @@ def test_pdf_append(tmp_path):
         check_pdf_pages_consistency(pdf)
 
     # append two images
-    mode_CMYK = hopper("CMYK")
-    mode_P = hopper("P")
-    mode_CMYK.save(pdf_filename, append=True, save_all=True, append_images=[mode_P])
+    mode_cmyk = hopper("CMYK")
+    mode_p = hopper("P")
+    mode_cmyk.save(pdf_filename, append=True, save_all=True, append_images=[mode_p])
 
     # open the PDF again, check pages and info again
     with PdfParser.PdfParser(pdf_filename) as pdf:

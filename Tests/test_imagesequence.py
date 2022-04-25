@@ -65,12 +65,12 @@ def test_libtiff():
 
 def test_consecutive():
     with Image.open("Tests/images/multipage.tiff") as im:
-        firstFrame = None
+        first_frame = None
         for frame in ImageSequence.Iterator(im):
-            if firstFrame is None:
-                firstFrame = frame.copy()
+            if first_frame is None:
+                first_frame = frame.copy()
         for frame in ImageSequence.Iterator(im):
-            assert_image_equal(frame, firstFrame)
+            assert_image_equal(frame, first_frame)
             break
 
 

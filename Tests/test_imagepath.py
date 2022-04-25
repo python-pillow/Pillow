@@ -174,7 +174,7 @@ def test_overflow_segfault():
     # through to the sequence. Seeing this on 32-bit Windows.
     with pytest.raises((TypeError, MemoryError)):
         # post patch, this fails with a memory error
-        x = evil()
+        x = Evil()
 
         # This fails due to the invalid malloc above,
         # and segfaults
@@ -182,7 +182,7 @@ def test_overflow_segfault():
             x[i] = b"0" * 16
 
 
-class evil:
+class Evil:
     def __init__(self):
         self.corrupt = Image.core.path(0x4000000000000000)
 

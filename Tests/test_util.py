@@ -8,7 +8,7 @@ def test_is_path():
     fp = "filename.ext"
 
     # Act
-    it_is = _util.isPath(fp)
+    it_is = _util.is_path(fp)
 
     # Assert
     assert it_is
@@ -21,7 +21,7 @@ def test_path_obj_is_path():
     test_path = Path("filename.ext")
 
     # Act
-    it_is = _util.isPath(test_path)
+    it_is = _util.is_path(test_path)
 
     # Assert
     assert it_is
@@ -33,7 +33,7 @@ def test_is_not_path(tmp_path):
         pass
 
     # Act
-    it_is_not = _util.isPath(fp)
+    it_is_not = _util.is_path(fp)
 
     # Assert
     assert not it_is_not
@@ -44,7 +44,7 @@ def test_is_directory():
     directory = "Tests"
 
     # Act
-    it_is = _util.isDirectory(directory)
+    it_is = _util.is_directory(directory)
 
     # Assert
     assert it_is
@@ -55,7 +55,7 @@ def test_is_not_directory():
     text = "abc"
 
     # Act
-    it_is_not = _util.isDirectory(text)
+    it_is_not = _util.is_directory(text)
 
     # Assert
     assert not it_is_not
@@ -65,7 +65,7 @@ def test_deferred_error():
     # Arrange
 
     # Act
-    thing = _util.deferred_error(ValueError("Some error text"))
+    thing = _util.DeferredError(ValueError("Some error text"))
 
     # Assert
     with pytest.raises(ValueError):

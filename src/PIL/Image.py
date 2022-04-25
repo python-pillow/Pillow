@@ -50,28 +50,17 @@ except ImportError:
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
-from ._util import deferred_error, isPath
+from ._deprecate import deprecate
+from ._util import DeferredError, is_path
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
     if name in categories:
-        warnings.warn(
-            "Image categories are " + deprecated + "Use is_animated instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate("Image categories", 10, "is_animated", plural=True)
         return categories[name]
     elif name in ("NEAREST", "NONE"):
-        warnings.warn(
-            name
-            + " is "
-            + deprecated
-            + "Use Resampling.NEAREST or Dither.NONE instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate(name, 10, "Resampling.NEAREST or Dither.NONE")
         return 0
     old_resampling = {
         "LINEAR": "BILINEAR",
@@ -79,31 +68,11 @@ def __getattr__(name):
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        warnings.warn(
-            name
-            + " is "
-            + deprecated
-            + "Use Resampling."
-            + old_resampling[name]
-            + " instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
         return Resampling[old_resampling[name]]
     for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
         if name in enum.__members__:
-            warnings.warn(
-                name
-                + " is "
-                + deprecated
-                + "Use "
-                + enum.__name__
-                + "."
-                + name
-                + " instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+            deprecate(name, 10, f"{enum.__name__}.{name}")
             return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -139,7 +108,7 @@ try:
         )
 
 except ImportError as v:
-    core = deferred_error(ImportError("The _imaging C module is not installed."))
+    core = DeferredError(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -538,12 +507,7 @@ class Image:
 
     def __getattr__(self, name):
         if name == "category":
-            warnings.warn(
-                "Image categories are deprecated and will be removed in Pillow 10 "
-                "(2023-07-01). Use is_animated instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+            deprecate("Image categories", 10, "is_animated", plural=True)
             return self._category
         raise AttributeError(name)
 
@@ -613,7 +577,7 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = deferred_error(ValueError("Operation on closed image"))
+        self.im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self):
         self.load()
@@ -2251,7 +2215,7 @@ class Image:
         if isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
-        elif isPath(fp):
+        elif is_path(fp):
             filename = fp
             open_fp = True
         elif fp == sys.stdout:
@@ -2259,7 +2223,7 @@ class Image:
                 fp = sys.stdout.buffer
             except AttributeError:
                 pass
-        if not filename and hasattr(fp, "name") and isPath(fp.name):
+        if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
 
@@ -3065,7 +3029,7 @@ def open(fp, mode="r", formats=None):
     filename = ""
     if isinstance(fp, Path):
         filename = str(fp.resolve())
-    elif isPath(fp):
+    elif is_path(fp):
         filename = fp
 
     if filename:
@@ -3363,7 +3327,7 @@ def effect_mandelbrot(size, extent, quality):
     :param size: The requested size in pixels, as a 2-tuple:
        (width, height).
     :param extent: The extent to cover, as a 4-tuple:
-       (x0, y0, x1, y2).
+       (x0, y0, x1, y1).
     :param quality: Quality.
     """
     return Image()._new(core.effect_mandelbrot(size, extent, quality))

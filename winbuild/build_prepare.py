@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.2.0.zip",
-        "filename": "harfbuzz-4.2.0.zip",
-        "dir": "harfbuzz-4.2.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.2.1.zip",
+        "filename": "harfbuzz-4.2.1.zip",
+        "dir": "harfbuzz-4.2.1",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -292,9 +292,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.11.zip",
-        "filename": "fribidi-1.0.11.zip",
-        "dir": "fribidi-1.0.11",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.12.zip",
+        "filename": "fribidi-1.0.12.zip",
+        "dir": "fribidi-1.0.12",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),

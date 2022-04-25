@@ -15,27 +15,27 @@ except ImportError:
 class TestColorLut3DCoreAPI:
     def generate_identity_table(self, channels, size):
         if isinstance(size, tuple):
-            size1D, size2D, size3D = size
+            size_1d, size_2d, size_3d = size
         else:
-            size1D, size2D, size3D = (size, size, size)
+            size_1d, size_2d, size_3d = (size, size, size)
 
         table = [
             [
-                r / (size1D - 1) if size1D != 1 else 0,
-                g / (size2D - 1) if size2D != 1 else 0,
-                b / (size3D - 1) if size3D != 1 else 0,
-                r / (size1D - 1) if size1D != 1 else 0,
-                g / (size2D - 1) if size2D != 1 else 0,
+                r / (size_1d - 1) if size_1d != 1 else 0,
+                g / (size_2d - 1) if size_2d != 1 else 0,
+                b / (size_3d - 1) if size_3d != 1 else 0,
+                r / (size_1d - 1) if size_1d != 1 else 0,
+                g / (size_2d - 1) if size_2d != 1 else 0,
             ][:channels]
-            for b in range(size3D)
-            for g in range(size2D)
-            for r in range(size1D)
+            for b in range(size_3d)
+            for g in range(size_2d)
+            for r in range(size_1d)
         ]
         return (
             channels,
-            size1D,
-            size2D,
-            size3D,
+            size_1d,
+            size_2d,
+            size_3d,
             [item for sublist in table for item in sublist],
         )
 

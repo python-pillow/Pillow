@@ -799,31 +799,31 @@ def test_zero_comment_subblocks():
 def test_version(tmp_path):
     out = str(tmp_path / "temp.gif")
 
-    def assertVersionAfterSave(im, version):
+    def assert_version_after_save(im, version):
         im.save(out)
         with Image.open(out) as reread:
             assert reread.info["version"] == version
 
     # Test that GIF87a is used by default
     im = Image.new("L", (100, 100), "#000")
-    assertVersionAfterSave(im, b"GIF87a")
+    assert_version_after_save(im, b"GIF87a")
 
     # Test setting the version to 89a
     im = Image.new("L", (100, 100), "#000")
     im.info["version"] = b"89a"
-    assertVersionAfterSave(im, b"GIF89a")
+    assert_version_after_save(im, b"GIF89a")
 
     # Test that adding a GIF89a feature changes the version
     im.info["transparency"] = 1
-    assertVersionAfterSave(im, b"GIF89a")
+    assert_version_after_save(im, b"GIF89a")
 
     # Test that a GIF87a image is also saved in that format
     with Image.open("Tests/images/test.colors.gif") as im:
-        assertVersionAfterSave(im, b"GIF87a")
+        assert_version_after_save(im, b"GIF87a")
 
         # Test that a GIF89a image is also saved in that format
         im.info["version"] = b"GIF89a"
-        assertVersionAfterSave(im, b"GIF87a")
+        assert_version_after_save(im, b"GIF87a")
 
 
 def test_append_images(tmp_path):
@@ -838,10 +838,10 @@ def test_append_images(tmp_path):
         assert reread.n_frames == 3
 
     # Tests appending using a generator
-    def imGenerator(ims):
+    def im_generator(ims):
         yield from ims
 
-    im.save(out, save_all=True, append_images=imGenerator(ims))
+    im.save(out, save_all=True, append_images=im_generator(ims))
 
     with Image.open(out) as reread:
         assert reread.n_frames == 3

@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import assert_image_equal, cached_property
+from .helper import CachedProperty, assert_image_equal
 
 
 class TestImagingPaste:
@@ -34,7 +34,7 @@ class TestImagingPaste:
         im.paste(im2, mask)
         self.assert_9points_image(im, expected)
 
-    @cached_property
+    @CachedProperty
     def mask_1(self):
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
@@ -43,11 +43,11 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 2
         return mask
 
-    @cached_property
+    @CachedProperty
     def mask_L(self):
         return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
-    @cached_property
+    @CachedProperty
     def gradient_L(self):
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
@@ -56,7 +56,7 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 255
         return gradient
 
-    @cached_property
+    @CachedProperty
     def gradient_RGB(self):
         return Image.merge(
             "RGB",
@@ -67,7 +67,7 @@ class TestImagingPaste:
             ],
         )
 
-    @cached_property
+    @CachedProperty
     def gradient_LA(self):
         return Image.merge(
             "LA",
@@ -77,7 +77,7 @@ class TestImagingPaste:
             ],
         )
 
-    @cached_property
+    @CachedProperty
     def gradient_RGBA(self):
         return Image.merge(
             "RGBA",
@@ -89,7 +89,7 @@ class TestImagingPaste:
             ],
         )
 
-    @cached_property
+    @CachedProperty
     def gradient_RGBa(self):
         return Image.merge(
             "RGBa",

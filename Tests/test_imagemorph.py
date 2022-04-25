@@ -48,8 +48,8 @@ def img_string_normalize(im):
     return img_to_string(string_to_img(im))
 
 
-def assert_img_equal_img_string(A, Bstring):
-    assert img_to_string(A) == img_string_normalize(Bstring)
+def assert_img_equal_img_string(a, b_string):
+    assert img_to_string(a) == img_string_normalize(b_string)
 
 
 def test_str_to_img():

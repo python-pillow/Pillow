@@ -35,9 +35,9 @@ class TestImageFile:
 
             parser = ImageFile.Parser()
             parser.feed(data)
-            imOut = parser.close()
+            im_out = parser.close()
 
-            return im, imOut
+            return im, im_out
 
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")

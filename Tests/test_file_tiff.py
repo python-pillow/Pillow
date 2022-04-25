@@ -151,14 +151,14 @@ class TestFileTiff:
             assert im.info["dpi"] == (71.0, 71.0)
 
     @pytest.mark.parametrize(
-        "resolutionUnit, dpi",
+        "resolution_unit, dpi",
         [(None, 72.8), (2, 72.8), (3, 184.912)],
     )
-    def test_load_float_dpi(self, resolutionUnit, dpi):
+    def test_load_float_dpi(self, resolution_unit, dpi):
         with Image.open(
-            "Tests/images/hopper_float_dpi_" + str(resolutionUnit) + ".tif"
+            "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
-            assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
+            assert im.tag_v2.get(RESOLUTION_UNIT) == resolution_unit
             assert im.info["dpi"] == (dpi, dpi)
 
     def test_save_float_dpi(self, tmp_path):
@@ -655,11 +655,11 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def imGenerator(ims):
+        def im_generator(ims):
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:

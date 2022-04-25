@@ -26,10 +26,10 @@
 #
 
 import tkinter
-import warnings
 from io import BytesIO
 
 from . import Image
+from ._deprecate import deprecate
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -187,11 +187,7 @@ class PhotoImage:
         """
 
         if box is not None:
-            warnings.warn(
-                "The box parameter is deprecated and will be removed in Pillow 10 "
-                "(2023-07-01).",
-                DeprecationWarning,
-            )
+            deprecate("The box parameter", 10, None)
 
         # convert to blittable
         im.load()

@@ -33,7 +33,8 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image
-from ._util import isDirectory, isPath
+from ._deprecate import deprecate
+from ._util import is_directory, is_path
 
 
 class Layout(IntEnum):
@@ -42,29 +43,16 @@ class Layout(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Layout: "LAYOUT_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-class _imagingft_not_installed:
+class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -73,7 +61,10 @@ class _imagingft_not_installed:
 try:
     from . import _imagingft as core
 except ImportError:
-    core = _imagingft_not_installed()
+    core = _ImagingFtNotInstalled()
+
+
+_UNSPECIFIED = object()
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -196,8 +187,6 @@ class FreeTypeFont:
             if core.HAVE_RAQM:
                 layout_engine = Layout.RAQM
         elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
-            import warnings
-
             warnings.warn(
                 "Raqm layout was requested, but Raqm is not available. "
                 "Falling back to basic layout."
@@ -212,7 +201,7 @@ class FreeTypeFont:
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
-        if isPath(font):
+        if is_path(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -616,7 +605,7 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=Image.core.fill,
+        fill=_UNSPECIFIED,
         direction=None,
         features=None,
         language=None,
@@ -640,6 +629,12 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
+
+        :param fill: Optional fill function. By default, an internal Pillow function
+                     will be used.
+
+                     Deprecated. This parameter will be removed in Pillow 10
+                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -688,6 +683,10 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
+        if fill is _UNSPECIFIED:
+            fill = Image.core.fill
+        else:
+            deprecate("fill", 10)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -877,7 +876,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except OSError:
-        if not isPath(font):
+        if not is_path(font):
             raise
         ttf_filename = os.path.basename(font)
 
@@ -931,7 +930,7 @@ def load_path(filename):
     :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
-        if isDirectory(directory):
+        if is_directory(directory):
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:
