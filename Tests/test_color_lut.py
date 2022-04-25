@@ -567,7 +567,7 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
-        assert lut.table[0:10] == [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+        assert lut.table[:10] == [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
 
     def test_3_to_4_channels(self):
         source = ImageFilter.Color3DLUT.generate((6, 5, 4), lambda r, g, b: (r, g, b))
@@ -576,7 +576,7 @@ class TestTransformColorLut3D:
         assert len(lut.table) != len(source.table)
         assert lut.table != source.table
         # fmt: off
-        assert lut.table[0:16] == [
+        assert lut.table[:16] == [
             0.0, 0.0, 0.0, 1,  0.2**2, 0.0, 0.0, 1,
             0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1]
         # fmt: on
@@ -592,7 +592,7 @@ class TestTransformColorLut3D:
         assert len(lut.table) != len(source.table)
         assert lut.table != source.table
         # fmt: off
-        assert lut.table[0:18] == [
+        assert lut.table[:18] == [
             1.0, 1.0, 1.0,  0.75, 1.0, 1.0,  0.0, 1.0, 1.0,
             1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0]
         # fmt: on
@@ -606,7 +606,7 @@ class TestTransformColorLut3D:
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
         # fmt: off
-        assert lut.table[0:16] == [
+        assert lut.table[:16] == [
             0.0, 0.0, 0.0, 0.5,  0.2**2, 0.0, 0.0, 0.5,
             0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5]
         # fmt: on
@@ -622,7 +622,7 @@ class TestTransformColorLut3D:
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
         # fmt: off
-        assert lut.table[0:18] == [
+        assert lut.table[:18] == [
             0.0, 0.0, 0.0,  0.16, 0.0, 0.0,  0.24, 0.0, 0.0,
             0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0]
         # fmt: on
@@ -639,7 +639,7 @@ class TestTransformColorLut3D:
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
         # fmt: off
-        assert lut.table[0:16] == [
+        assert lut.table[:16] == [
             0.0, 0.0, 0.0, 0.5,  0.25, 0.0, 0.0, 0.5,
             0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5]
         # fmt: on

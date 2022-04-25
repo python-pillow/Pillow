@@ -83,7 +83,7 @@ class XpmImageFile(ImageFile.ImageFile):
                     rgb = s[i + 1]
                     if rgb == b"None":
                         self.info["transparency"] = c
-                    elif rgb[0:1] == b"#":
+                    elif rgb[:1] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = (
