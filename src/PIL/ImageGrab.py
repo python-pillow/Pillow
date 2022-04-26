@@ -33,7 +33,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             args = ["screencapture"]
             if bbox:
                 left, top, right, bottom = bbox
-                args += ["-R", f"{left},{right},{right-left},{bottom-top}"]
+                args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
             im = Image.open(filepath)
             im.load()
