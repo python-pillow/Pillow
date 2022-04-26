@@ -123,7 +123,7 @@ def test_token_too_long(tmp_path):
         with Image.open(path):
             pass
 
-    assert str(e.value) == "Token too long in file header: b'01234567890'"
+    assert str(e.value) == "Token too long in file header: 01234567890"
 
 
 def test_truncated_file(tmp_path):
