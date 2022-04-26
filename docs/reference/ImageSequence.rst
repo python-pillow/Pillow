@@ -25,3 +25,8 @@ The :py:class:`~PIL.ImageSequence.Iterator` class
 
 .. autoclass:: PIL.ImageSequence.Iterator
     :members:
+
+Functions
+---------
+
+.. autofunction:: PIL.ImageSequence.all_frames
