@@ -119,13 +119,13 @@ class LutBuilder:
         # mirror
         if "M" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
+            for pattern, res in patterns[:n]:
                 patterns.append((self._string_permute(pattern, MIRROR_MATRIX), res))
 
         # negate
         if "N" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
+            for pattern, res in patterns[:n]:
                 # Swap 0 and 1
                 pattern = pattern.replace("0", "Z").replace("1", "0").replace("Z", "1")
                 res = 1 - int(res)

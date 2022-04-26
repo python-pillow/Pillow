@@ -2546,7 +2546,7 @@ class Image:
         h = box[3] - box[1]
 
         if method == Transform.AFFINE:
-            data = data[0:6]
+            data = data[:6]
 
         elif method == Transform.EXTENT:
             # convert extent to an affine transform
@@ -2557,12 +2557,12 @@ class Image:
             data = (xs, 0, x0, 0, ys, y0)
 
         elif method == Transform.PERSPECTIVE:
-            data = data[0:8]
+            data = data[:8]
 
         elif method == Transform.QUAD:
             # quadrilateral warp.  data specifies the four corners
             # given as NW, SW, SE, and NE.
-            nw = data[0:2]
+            nw = data[:2]
             sw = data[2:4]
             se = data[4:6]
             ne = data[6:8]
@@ -2956,11 +2956,10 @@ _fromarray_typemap = {
     ((1, 1, 2), "|u1"): ("LA", "LA"),
     ((1, 1, 3), "|u1"): ("RGB", "RGB"),
     ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
+    # shortcuts:
+    ((1, 1), _ENDIAN + "i4"): ("I", "I"),
+    ((1, 1), _ENDIAN + "f4"): ("F", "F"),
 }
-
-# shortcuts
-_fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
-_fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 
 def _decompression_bomb_check(size):

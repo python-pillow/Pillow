@@ -69,7 +69,7 @@ def __getattr__(name):
 
 
 def unpack_565(i):
-    return (((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3)
+    return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
 def decode_dxt1(data, alpha=False):

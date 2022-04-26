@@ -269,7 +269,7 @@ def _pkg_config(name):
             .strip()
             .replace("-I", "")
         )
-        return (libs, cflags)
+        return libs, cflags
     except Exception:
         pass
 

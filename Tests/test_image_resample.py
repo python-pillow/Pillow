@@ -458,7 +458,7 @@ class TestCoreResampleBox:
         def split_range(size, tiles):
             scale = size / tiles
             for i in range(tiles):
-                yield (int(round(scale * i)), int(round(scale * (i + 1))))
+                yield int(round(scale * i)), int(round(scale * (i + 1)))
 
         tiled = Image.new(im.mode, dst_size)
         scale = (im.size[0] / tiled.size[0], im.size[1] / tiled.size[1])

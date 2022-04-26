@@ -990,8 +990,6 @@ def getheader(im, palette=None, info=None):
     return header, used_palette_colors
 
 
-# To specify duration, add the time in milliseconds to getdata(),
-# e.g. getdata(im_frame, duration=1000)
 def getdata(im, offset=(0, 0), **params):
     """
     Legacy Method
@@ -1000,10 +998,13 @@ def getdata(im, offset=(0, 0), **params):
     The first string is a local image header, the rest contains
     encoded image data.
 
+    To specify duration, add the time in milliseconds,
+    e.g. ``getdata(im_frame, duration=1000)``
+
     :param im: Image object
-    :param offset: Tuple of (x, y) pixels. Defaults to (0,0)
-    :param \\**params: E.g. duration or other encoder info parameters
-    :returns: List of Bytes containing gif encoded frame data
+    :param offset: Tuple of (x, y) pixels. Defaults to (0, 0)
+    :param \\**params: e.g. duration or other encoder info parameters
+    :returns: List of bytes containing GIF encoded frame data
 
     """
 

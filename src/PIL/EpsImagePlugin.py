@@ -325,7 +325,7 @@ class EpsImageFile(ImageFile.ImageFile):
         else:
             raise SyntaxError("not an EPS file")
 
-        return (length, offset)
+        return length, offset
 
     def load(self, scale=1, transparency=False):
         # Load EPS via Ghostscript

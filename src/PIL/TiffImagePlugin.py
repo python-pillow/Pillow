@@ -338,12 +338,12 @@ class IFDRational(Rational):
             self._val = Fraction(value, denominator)
 
     @property
-    def numerator(a):
-        return a._numerator
+    def numerator(self):
+        return self._numerator
 
     @property
-    def denominator(a):
-        return a._denominator
+    def denominator(self):
+        return self._denominator
 
     def limit_rational(self, max_denominator):
         """
@@ -353,10 +353,10 @@ class IFDRational(Rational):
         """
 
         if self.denominator == 0:
-            return (self.numerator, self.denominator)
+            return self.numerator, self.denominator
 
         f = self._val.limit_denominator(max_denominator)
-        return (f.numerator, f.denominator)
+        return f.numerator, f.denominator
 
     def __repr__(self):
         return str(float(self._val))
@@ -1748,9 +1748,8 @@ def _save(im, fp, filename):
             SUBIFD,
         ]
 
-        atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
-        atts[BITSPERSAMPLE] = bits[0]
+        atts = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
