@@ -76,8 +76,8 @@ Deprecated                                             Use instead
 ``Image.TRANSPOSE``                                    ``Image.Transpose.TRANSPOSE``
 ``Image.TRANSVERSE``                                   ``Image.Transpose.TRANSVERSE``
 ``Image.BOX``                                          ``Image.Resampling.BOX``
-``Image.BILINEAR``                                     ``Image.Resampling.BILNEAR``
-``Image.LINEAR``                                       ``Image.Resampling.BILNEAR``
+``Image.BILINEAR``                                     ``Image.Resampling.BILINEAR``
+``Image.LINEAR``                                       ``Image.Resampling.BILINEAR``
 ``Image.HAMMING``                                      ``Image.Resampling.HAMMING``
 ``Image.BICUBIC``                                      ``Image.Resampling.BICUBIC``
 ``Image.CUBIC``                                        ``Image.Resampling.BICUBIC``
