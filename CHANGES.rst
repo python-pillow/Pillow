@@ -6411,8 +6411,8 @@ The test suite includes 400 individual tests.
 
 - The test images have been moved to the "Images" directory.
 
-0.2b2, 0.2b1 released; Windows only
------------------------------------
+0.2b2 released. 0.2b1 released for Windows only
+-----------------------------------------------
 
 - Fixed filling of complex polygons.  The ImageDraw "line" and
   "polygon" methods also accept Path objects.
