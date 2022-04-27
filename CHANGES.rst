@@ -5976,7 +5976,7 @@ The test suite includes 825 individual tests.
 
 - Changed mode name (and internal representation) from "YCrCb"
   to "YCbCr" (!)
-  *** WARNING: MAY BREAK EXISTING CODE ***
+  **WARNING: MAY BREAK EXISTING CODE**
 
 0.3b1
 -----
@@ -5994,7 +5994,7 @@ The test suite includes 750 individual tests.
 
 - The default string format has changed for the "fromstring"
   and "tostring" methods.
-  *** WARNING: MAY BREAK EXISTING CODE ***
+  **WARNING: MAY BREAK EXISTING CODE**
 
   NOTE: If no extra arguments are given, the first line in
   the string buffer is the top line of the image, instead of
@@ -6174,7 +6174,7 @@ The test suite includes 400 individual tests.
 - The PhotoImage code in ImageTk now uses a Tcl command ("PyImagingPaste")
   instead of a special image type.  This gives somewhat better performance,
   and also allows PIL to support transparency.
-  *** WARNING: TKAPPINIT MUST BE MODIFIED ***
+  **WARNING: TKAPPINIT MUST BE MODIFIED**
 
 - ImageTk now honours the alpha layer in RGBA images.  Only fully
   transparent pixels are made transparent (that is, the alpha layer
@@ -6241,7 +6241,7 @@ The test suite includes 400 individual tests.
 
 - PIL only scans fully-qualified directory names in the path when
   looking for plugins.
-  *** WARNING: MAY BREAK EXISTING CODE ***
+  **WARNING: MAY BREAK EXISTING CODE**
 
 - Faster implementation of "save" used when filename is given,
   or when file object has "fileno" and "flush" methods.
