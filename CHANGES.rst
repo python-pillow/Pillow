@@ -5057,7 +5057,7 @@ http://svn.effbot.org/public/pil/
   and the documentation; this is a bug, and will most likely be fixed
   in a future version.  In this release, PIL prints a warning message
   instead.  To silence the warning, change any calls of the form
-  "frombuffer(mode, size, data)" to
+  "frombuffer(mode, size, data)" to::
 
       frombuffer(mode, size, data, "raw", mode, 0, 1)
 
@@ -5069,14 +5069,11 @@ http://svn.effbot.org/public/pil/
   Image class (based on code by Travis Oliphant).
 
   This allows you to easily convert between PIL image memories and
-  NumPy arrays:
+  NumPy arrays::
 
     import numpy, Image
-
     im = Image.open('hopper.jpg')
-
     a = numpy.asarray(im) # a is readonly
-
     im = Image.fromarray(a)
 
 - Fixed CMYK polarity for JPEG images, by treating all images as
@@ -5128,7 +5125,7 @@ http://svn.effbot.org/public/pil/
 
 - Added pixel access object.  The "load" method now returns a
   access object that can be used to directly get and set pixel
-  values, using ordinary [x, y] notation:
+  values, using ordinary [x, y] notation::
 
     pixel = im.load()
     v = pixel[x, y]
@@ -5363,7 +5360,7 @@ http://svn.effbot.org/public/pil/
 - Added optional "encoding" argument to the ImageFont.truetype
   factory.  This argument can be used to specify non-Unicode character
   maps for fonts that support that.  For example, to draw text using
-  the Microsoft Symbol font, use:
+  the Microsoft Symbol font, use::
 
       font = ImageFont.truetype("symbol.ttf", 16, encoding="symb")
       draw.text((0, 0), unichr(0xF000 + 0xAA))
@@ -5661,7 +5658,7 @@ http://svn.effbot.org/public/pil/
 
 - Added DPI read/write support to the JPEG codec.  The decoder
   sets the info["dpi"] attribute for JPEG files with JFIF dpi
-  settings.  The encoder uses the "dpi" option:
+  settings.  The encoder uses the "dpi" option::
 
       im = Image.open("file.jpg")
       dpi = im.info["dpi"] # raises KeyError if DPI not known
@@ -5858,7 +5855,7 @@ http://svn.effbot.org/public/pil/
 -----
 
 - Added Toby J. Sargeant's quantization package.  To enable
-  quantization, use the "palette" option to "convert":
+  quantization, use the "palette" option to "convert"::
 
     imOut = im.convert("P", palette=Image.ADAPTIVE)
 
@@ -5952,7 +5949,7 @@ The test suite includes 825 individual tests.
 - The Image "histogram" method now works for "I" and "F" images.
   For these modes, PIL divides the range between the min and
   max values used in the image into 256 bins.  You can also
-  pass in your own min and max values via the "extrema" option:
+  pass in your own min and max values via the "extrema" option::
 
     h = im.histogram(extrema=(0, 255))
 
@@ -5969,7 +5966,7 @@ The test suite includes 825 individual tests.
 - Added JPEG "save" and "draft" support for mode "YCbCr" images.
   Note that if you save an "YCbCr" image as a JPEG file and read
   it back, it is read as an RGB file.  To get around this, you
-  can use the "draft" method:
+  can use the "draft" method::
 
     im = Image.open("color.jpg")
     im.draft("YCbCr", im.size)
@@ -6006,7 +6003,7 @@ The test suite includes 750 individual tests.
   to make the methods compatible with the "fromstring"
   factory function.
 
-  To get the old behaviour, use the following syntax:
+  To get the old behaviour, use the following syntax::
 
     data = im.tostring("raw", "RGBX", 0, -1)
     im.fromstring(data, "raw", "RGBX", 0, -1)
@@ -6026,6 +6023,7 @@ The test suite includes 750 individual tests.
   uses floyd-steinberg error diffusion for "P" and "1" targets,
   so this option is only used to *disable* dithering. Allowed
   values are NONE (no dithering) or FLOYDSTEINBERG (default).
+  ::
 
     imOut = im.convert("P", dither=Image.NONE)
 
