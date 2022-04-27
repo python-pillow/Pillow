@@ -6300,27 +6300,27 @@ The test suite includes 400 individual tests.
   are currently supported:
 
   .. list-table::
-      :widths: 25 25 50
-      :header-rows: 1
+     :widths: 25 25 50
+     :header-rows: 1
 
-      *   - Format
-          - Option
-          - Description
-      *   - JPEG
-          - optimize
-          - Minimize output file at the expense of compression speed.
-      *   - JPEG
-          - progressive
-          - Enable progressive output. The option value is ignored.
-      *   - JPEG
-          - quality
-          - Set compression quality (1-100). The default value is 75.
-      *   - JPEG
-          - smooth
-          - Smooth dithered images. Value is strength (1-100). Default is off (0).
-      *   - PNG
-          - optimize
-          - Minimize output file at the expense of compression speed.
+     * - Format
+       - Option
+       - Description
+     * - JPEG
+       - optimize
+       - Minimize output file at the expense of compression speed.
+     * - JPEG
+       - progressive
+       - Enable progressive output. The option value is ignored.
+     * - JPEG
+       - quality
+       - Set compression quality (1-100). The default value is 75.
+     * - JPEG
+       - smooth
+       - Smooth dithered images. Value is strength (1-100). Default is off (0).
+     * - PNG
+       - optimize
+       - Minimize output file at the expense of compression speed.
 
   Expect more options in future releases.  Also note that
   file writers silently ignore unknown options.
@@ -6340,32 +6340,35 @@ The test suite includes 400 individual tests.
 
 - Various improvements to the sample scripts:
 
-  "pilconvert"  Carries out some extra tricks in order to make
-                the resulting file as small as possible.
+  .. list-table::
+     :widths: 25 75
 
-  "explode"     (NEW) Split an image sequence into individual frames.
+     * - pilconvert
+       - Carries out some extra tricks in order to make
+         the resulting file as small as possible.
+     * - explode
+       - (NEW) Split an image sequence into individual frames.
+     * - gifmaker
+       - (NEW) Convert a sequence file into a GIF animation.
+         Note that the GIF encoder create "uncompressed" GIF
+         files, so animations created by this script are
+         rather large (typically 2-5 times the compressed
+         sizes).
+     * - image2py
+       - (NEW) Convert a single image to a python module.  See
+         comments in this script for details.
+     * - player
+       - If multiple images are given on the command line,
+         they are interpreted as frames in a sequence.  The
+         script assumes that they all have the same size.
+         Also note that this script now can play FLI/FLC
+         and GIF animations.
 
-  "gifmaker"    (NEW) Convert a sequence file into a GIF animation.
-                Note that the GIF encoder create "uncompressed" GIF
-                files, so animations created by this script are
-                rather large (typically 2-5 times the compressed
-                sizes).
-
-  "image2py"    (NEW) Convert a single image to a python module.  See
-                comments in this script for details.
-
-  "player"      If multiple images are given on the command line,
-                they are interpreted as frames in a sequence.  The
-                script assumes that they all have the same size.
-                Also note that this script now can play FLI/FLC
-                and GIF animations.
-
-        This player can also execute embedded Python
-        animation applets (ARG format only).
-
-  "viewer"  Transparent images ("P" with transparency property,
-            and "RGBA") are superimposed on the standard Tk back-
-            ground.
+         This player can also execute embedded Python
+         animation applets (ARG format only).
+     * - viewer
+       - Transparent images ("P" with transparency property,
+         and "RGBA") are superimposed on the standard Tk background.
 
 - Fixed colour argument to "new".  For multilayer images, pass a
   tuple: (Red, Green, Blue), (Red, Green, Blue, Alpha), or (Cyan,
