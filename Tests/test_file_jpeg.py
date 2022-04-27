@@ -743,7 +743,7 @@ class TestFileJpeg:
 
             # Act / Assert
             # "When the image resolution is unknown, 72 [dpi] is designated."
-            # http://www.exiv2.org/tags.html
+            # https://exiv2.org/tags.html
             assert im.info.get("dpi") == (72, 72)
 
     def test_invalid_exif(self):
