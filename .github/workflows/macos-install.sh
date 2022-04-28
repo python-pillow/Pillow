@@ -15,7 +15,8 @@ python3 -m pip install pyroma
 python3 -m pip install test-image-results
 
 echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
-python3 -m pip install numpy
+# TODO Remove condition when NumPy supports 3.11
+if ! [ "$GHA_PYTHON_VERSION" == "3.11-dev" ]; then python3 -m pip install numpy ; fi
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
