@@ -83,7 +83,7 @@ jobs:
           python3 selftest.py
 
       - name: Rebase dlls
-        shell: dash.exe -l "{0}"
+        shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
           /usr/bin/rebase --database $(find /usr{,/local}/lib/python3.${{ matrix.python-minor-version }}/site-packages src/PIL ${HOME}/.local/lib/ /usr/lib/lapack /usr/bin -name \*.dll -o -name \*.exe)
 
