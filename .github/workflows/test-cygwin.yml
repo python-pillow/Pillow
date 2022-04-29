@@ -55,7 +55,7 @@ jobs:
             ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
-        shell: bash.exe --login -eo pipefail "{0}"
+        shell: dash.exe -l "{0}"
         run: |
           python3 .github/workflows/system-info.py
 
