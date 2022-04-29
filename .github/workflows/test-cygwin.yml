@@ -75,7 +75,7 @@ jobs:
           python3.${{ matrix.python-minor-version }} -c 'import numpy as np; print(np.__version__)'
 
       - name: Build
-        shell: bash.exe --login -eo pipefail "{0}"
+        shell: bash.exe --login -eo pipefail -o igncr "{0}"
         run: |
           python3 -m coverage erase
           make clean
