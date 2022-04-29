@@ -1,9 +1,12 @@
 import os
-from pathlib import Path
 
 
 def is_path(f):
-    return isinstance(f, (bytes, str, Path))
+    """
+    Checks whether the given object is a string or path-like object that
+    isn't also a file-like object
+    """
+    return isinstance(f, (bytes, str, os.PathLike)) and not hasattr(f, "read")
 
 
 def is_directory(f):

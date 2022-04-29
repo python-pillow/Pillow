@@ -4,6 +4,7 @@ import re
 import shutil
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from packaging.version import parse as parse_version
@@ -87,6 +88,7 @@ class TestImageFont:
             pytest.skip("Non-ASCII path could not be created")
 
         ImageFont.truetype(tempfile, FONT_SIZE)
+        ImageFont.truetype(Path(tempfile), FONT_SIZE)
 
     def _render(self, font):
         txt = "Hello World!"
