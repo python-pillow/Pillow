@@ -56,7 +56,7 @@ jobs:
 
       - name: Build system information
         run: |
-          dash.exe "python3 .github/workflows/system-info.py"
+          dash.exe -c "python3 .github/workflows/system-info.py"
 
       - name: Install dependencies
         run: |
