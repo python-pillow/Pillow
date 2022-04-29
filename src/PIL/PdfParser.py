@@ -590,7 +590,7 @@ class PdfParser:
         whitespace_mandatory
         + rb"trailer"
         + whitespace_optional
-        + rb"\<\<(.*\>\>)"
+        + rb"<<(.*>>)"
         + newline
         + rb"startxref"
         + newline
@@ -605,7 +605,7 @@ class PdfParser:
         whitespace_optional
         + rb"trailer"
         + whitespace_optional
-        + rb"\<\<(.*?\>\>)"
+        + rb"<<(.*?>>)"
         + newline
         + rb"startxref"
         + newline
@@ -659,8 +659,8 @@ class PdfParser:
         + delimiter_or_ws
         + rb")"
     )
-    re_dict_start = re.compile(whitespace_optional + rb"\<\<")
-    re_dict_end = re.compile(whitespace_optional + rb"\>\>" + whitespace_optional)
+    re_dict_start = re.compile(whitespace_optional + rb"<<")
+    re_dict_end = re.compile(whitespace_optional + rb">>" + whitespace_optional)
 
     @classmethod
     def interpret_trailer(cls, trailer_data):
@@ -719,7 +719,7 @@ class PdfParser:
     re_array_start = re.compile(whitespace_optional + rb"\[")
     re_array_end = re.compile(whitespace_optional + rb"]")
     re_string_hex = re.compile(
-        whitespace_optional + rb"\<(" + whitespace_or_hex + rb"*)\>"
+        whitespace_optional + rb"<(" + whitespace_or_hex + rb"*)>"
     )
     re_string_lit = re.compile(whitespace_optional + rb"\(")
     re_indirect_reference = re.compile(

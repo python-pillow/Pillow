@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Corrected screencapture argument in ImageGrab.grab() #6244
+  [axt-one]
+
+- Deprecate support for Qt 5 (PyQt5 and PySide2) #6237
+  [hugovk, radarhere]
+
 - Increase wait time of temporary file deletion on Windows #6224
   [AlexTedeschi]
 

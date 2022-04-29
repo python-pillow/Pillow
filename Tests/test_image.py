@@ -7,7 +7,7 @@ import warnings
 
 import pytest
 
-from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError, features
 
 from .helper import (
     assert_image_equal,
@@ -161,6 +161,8 @@ class TestImage:
             assert im.size == (128, 128)
 
             for ext in (".jpg", ".jp2"):
+                if ext == ".jp2" and not features.check_codec("jpg_2000"):
+                    pytest.skip("jpg_2000 not available")
                 temp_file = str(tmp_path / ("temp." + ext))
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
@@ -170,7 +172,7 @@ class TestImage:
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
-            def write(a, b):
+            def write(self, b):
                 pass
 
         fp = FP()

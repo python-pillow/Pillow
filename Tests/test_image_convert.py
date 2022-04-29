@@ -27,15 +27,15 @@ def test_sanity():
         "HSV",
     )
 
-    for mode in modes:
-        im = hopper(mode)
-        for mode in modes:
-            convert(im, mode)
+    for input_mode in modes:
+        im = hopper(input_mode)
+        for output_mode in modes:
+            convert(im, output_mode)
 
         # Check 0
-        im = Image.new(mode, (0, 0))
-        for mode in modes:
-            convert(im, mode)
+        im = Image.new(input_mode, (0, 0))
+        for output_mode in modes:
+            convert(im, output_mode)
 
 
 def test_default():

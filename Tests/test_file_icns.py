@@ -4,14 +4,12 @@ import warnings
 
 import pytest
 
-from PIL import IcnsImagePlugin, Image, _binary, features
+from PIL import IcnsImagePlugin, Image, _binary
 
-from .helper import assert_image_equal, assert_image_similar_tofile
+from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless_feature
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
-
-ENABLE_JPEG2K = features.check_codec("jpg_2000")
 
 
 def test_sanity():
@@ -111,13 +109,11 @@ def test_older_icon():
                 assert im2.size == (wr, hr)
 
 
+@skip_unless_feature("jpg_2000")
 def test_jp2_icon():
     # This icon uses JPEG 2000 images instead of the PNG images.
     # The advantage of doing this is that OS X 10.5 supports JPEG 2000
     # but not PNG; some commercial software therefore does just this.
-
-    if not ENABLE_JPEG2K:
-        return
 
     with Image.open("Tests/images/pillow3.icns") as im:
         for w, h, r in im.info["sizes"]:
@@ -149,6 +145,7 @@ def test_not_an_icns_file():
             IcnsImagePlugin.IcnsFile(fp)
 
 
+@skip_unless_feature("jpg_2000")
 def test_icns_decompression_bomb():
     with Image.open(
         "Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns"

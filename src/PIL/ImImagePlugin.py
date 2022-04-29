@@ -210,7 +210,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[0:1] != b"\x1A":
+        while s and s[:1] != b"\x1A":
             s = self.fp.read(1)
         if not s:
             raise SyntaxError("File truncated")
