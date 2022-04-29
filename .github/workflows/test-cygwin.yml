@@ -55,9 +55,8 @@ jobs:
             ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
-        shell: dash.exe "{0}"
         run: |
-          python3 .github/workflows/system-info.py
+          dash.exe "python3 .github/workflows/system-info.py"
 
       - name: Install dependencies
         run: |
