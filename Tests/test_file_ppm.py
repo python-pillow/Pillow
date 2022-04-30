@@ -145,6 +145,19 @@ def test_truncated_file(tmp_path):
             im.load()
 
 
+@pytest.mark.parametrize("maxval", (0, 65536))
+def test_invalid_maxval(maxval, tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "w") as f:
+        f.write("P6\n3 1 " + str(maxval))
+
+    with pytest.raises(ValueError) as e:
+        with Image.open(path):
+            pass
+
+    assert str(e.value) == "maxval must be greater than 0 and less than 65536"
+
+
 def test_neg_ppm():
     # Storage.c accepted negative values for xsize, ysize.  the
     # internal open_ppm function didn't check for sanity but it
