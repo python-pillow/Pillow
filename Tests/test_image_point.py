@@ -18,10 +18,18 @@ def test_sanity():
     im.point(lambda x: x * 1)
     im.point(lambda x: x + 1)
     im.point(lambda x: x * 1 + 1)
+    im.point(lambda x: 0.1 + 0.2 * x)
+    im.point(lambda x: -x)
+    im.point(lambda x: x - 0.5)
+    im.point(lambda x: 1 - x / 2)
+    im.point(lambda x: (2 + x) / 3)
+    im.point(lambda x: 0.5)
     with pytest.raises(TypeError):
-        im.point(lambda x: x - 1)
+        im.point(lambda x: x * x)
     with pytest.raises(TypeError):
-        im.point(lambda x: x / 1)
+        im.point(lambda x: 1 / x)
+    with pytest.raises(TypeError):
+        im.point(lambda x: x // 2)
 
 
 def test_16bit_lut():
