@@ -1577,6 +1577,7 @@ quantize2(
     data.new.c.b = (int)(.5 + (double)mean[2] / (double)nPixels);
     for (i = 0; i < nQuantPixels; i++) {
         data.furthestDistance = 0;
+        data.furthestV = pixelData[0].v;
         data.secondPixel = (i == 1) ? 1 : 0;
         hashtable_foreach_update(h, compute_distances, &data);
         p[i].v = data.furthestV;
