@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Raise ValueError for invalid PPM maxval #6242
+  [radarhere]
+
 - Corrected screencapture argument in ImageGrab.grab() #6244
   [axt-one]
 
