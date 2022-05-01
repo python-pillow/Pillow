@@ -1519,7 +1519,7 @@ error_0:
 
 typedef struct {
     Pixel new;
-    Pixel furthest;
+    uint32_t furthestV;
     uint32_t furthestDistance;
     int secondPixel;
 } DistanceData;
@@ -1536,7 +1536,7 @@ compute_distances(const HashTable *h, const Pixel pixel, uint32_t *dist, void *u
     }
     if (oldDist > data->furthestDistance) {
         data->furthestDistance = oldDist;
-        data->furthest.v = pixel.v;
+        data->furthestV = pixel.v;
     }
 }
 
@@ -1579,8 +1579,8 @@ quantize2(
         data.furthestDistance = 0;
         data.secondPixel = (i == 1) ? 1 : 0;
         hashtable_foreach_update(h, compute_distances, &data);
-        p[i].v = data.furthest.v;
-        data.new.v = data.furthest.v;
+        p[i].v = data.furthestV;
+        data.new.v = data.furthestV;
     }
     hashtable_free(h);
 
