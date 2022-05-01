@@ -635,6 +635,17 @@ class TestFilePng:
 
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
+    @pytest.mark.parametrize("cid", (b"IHDR", b"pHYs", b"acTL", b"fcTL", b"fdAT"))
+    def test_truncated_chunks(self, cid):
+        fp = BytesIO()
+        with PngImagePlugin.PngStream(fp) as png:
+            with pytest.raises(ValueError):
+                png.call(cid, 0, 0)
+
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            png.call(cid, 0, 0)
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
     def test_specify_bits(self, tmp_path):
         im = hopper("P")
 
