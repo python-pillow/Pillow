@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Search pkgconf system libs/cflags #6138
+  [jameshilliard, radarhere]
+
 - Raise ValueError for invalid PPM maxval #6242
   [radarhere]
 
