@@ -29,7 +29,6 @@ import builtins
 import io
 import logging
 import math
-import numbers
 import os
 import re
 import struct
@@ -431,19 +430,23 @@ def _getencoder(mode, encoder_name, args, extra=()):
 # Simple expression analyzer
 
 
-# _Affine(m, b) represents the polynomial m x + b
-class _Affine:
-    def __init__(self, m, b):
-        self.m = m
-        self.b = b
+def coerce_e(value):
+    deprecate("coerce_e", 10)
+    return value if isinstance(value, _E) else _E(1, value)
+
+
+class _E:
+    def __init__(self, scale, data):
+        self.scale = scale
+        self.data = data
 
     def __neg__(self):
-        return _Affine(-self.m, -self.b)
+        return _E(-self.scale, -self.data)
 
     def __add__(self, other):
-        if isinstance(other, _Affine):
-            return _Affine(self.m + other.m, self.b + other.b)
-        return _Affine(self.m, self.b + other)
+        if isinstance(other, _E):
+            return _E(self.scale + other.scale, self.data + other.data)
+        return _E(self.scale, self.data + other)
 
     __radd__ = __add__
 
@@ -454,21 +457,21 @@ class _Affine:
         return other + -self
 
     def __mul__(self, other):
-        if isinstance(other, _Affine):
+        if isinstance(other, _E):
             return NotImplemented
-        return _Affine(self.m * other, self.b * other)
+        return _E(self.scale * other, self.data * other)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        if isinstance(other, _Affine):
+        if isinstance(other, _E):
             return NotImplemented
-        return _Affine(self.m / other, self.b / other)
+        return _E(self.scale / other, self.data / other)
 
 
 def _getscaleoffset(expr):
-    a = expr(_Affine(1.0, 0.0))
-    return (a.m, a.b) if isinstance(a, _Affine) else (0.0, a)
+    a = expr(_E(1, 0))
+    return (a.scale, a.data) if isinstance(a, _E) else (0, a)
 
 
 # --------------------------------------------------------------------
