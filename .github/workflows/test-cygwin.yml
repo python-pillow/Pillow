@@ -60,7 +60,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dash.exe -c "python3.${{ matrix.python-minor-version }} -m pip install -U pip"
           bash.exe .ci/install.sh
 
       - name: Install a different NumPy
