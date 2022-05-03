@@ -53,10 +53,18 @@ jobs:
           key: ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
             ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
+            
+      - name: Ensure correct python minor version used in scripts
+        shell: bash.exe -eo pipefail -o igncr "{0}"
+        run: |
+          /usr/sbin/alternatives --set python3 /usr/bin/python3.${{ matrix.python-minor-version }}
+          /usr/sbin/alternatives --display python3
+          /usr/sbin/alternatives --set python /usr/bin/python3.${{ matrix.python-minor-version }}
+          /usr/sbin/alternatives --display python
 
       - name: Build system information
         run: |
-          dash.exe -c "python3.${{ matrix.python-minor-version }} .github/workflows/system-info.py"
+          dash.exe -c "python3 .github/workflows/system-info.py"
 
       - name: Install dependencies
         run: |
@@ -66,20 +74,20 @@ jobs:
         if: matrix.architecture == 'x86_64'
         shell: dash.exe -l "{0}"
         run: |
-          python3.${{ matrix.python-minor-version }} -m pip install -U 'numpy!=1.21.*'
+          python3 -m pip install -U 'numpy!=1.21.*'
 
       - name: Check imports
         shell: dash.exe -l "{0}"
         run: |
-          python3.${{ matrix.python-minor-version }} -c 'import numpy as np; print(np.__version__)'
+          python3 -c 'import numpy as np; print(np.__version__)'
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
-          python3.${{ matrix.python-minor-version }} -m coverage erase
+          python3 -m coverage erase
           make clean
-          CFLAGS="-coverage -Werror=implicit-function-declaration" python3.${{ matrix.python-minor-version }} -m pip install -v --global-option="build_ext" .
-          python3.${{ matrix.python-minor-version }} selftest.py
+          CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip install -v --global-option="build_ext" .
+          python3 selftest.py
 
       - name: Rebase dlls
         shell: bash.exe -eo pipefail -o igncr "{0}"
