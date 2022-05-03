@@ -561,7 +561,7 @@ def _write_single_frame(im, fp, palette):
 
 def _write_multiple_frames(im, fp, palette):
 
-    duration = im.encoderinfo.get("duration", im.info.get("duration"))
+    duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
     im_frames = []
@@ -579,6 +579,8 @@ def _write_multiple_frames(im, fp, palette):
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
+            elif duration is None and "duration" in im_frame.info:
+                encoderinfo["duration"] = im_frame.info["duration"]
             if isinstance(disposal, (list, tuple)):
                 encoderinfo["disposal"] = disposal[frame_count]
             frame_count += 1
