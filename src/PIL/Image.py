@@ -435,6 +435,9 @@ def coerce_e(value):
     return value if isinstance(value, _E) else _E(1, value)
 
 
+# _E(scale, offset) represents the affine transformation scale * x + offset.
+# The "data" field is named for compatibility with the old implementation,
+# and should be renamed once coerce_e is removed.
 class _E:
     def __init__(self, scale, data):
         self.scale = scale
