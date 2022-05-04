@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         python-minor-version: [7, 8, 9]
-        architecture: ["x86", "x86_64"]
+        architecture: ["x86_64"]
 
     timeout-minutes: 40
 
