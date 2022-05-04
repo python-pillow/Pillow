@@ -123,7 +123,7 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0:
+            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
                 raise SyntaxError("not identified by this driver")
         except BaseException:
             # close the file only if we have opened it this constructor
