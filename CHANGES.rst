@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Do not open images with zero or negative height #6269
+  [radarhere]
+
 - Search pkgconf system libs/cflags #6138
   [jameshilliard, radarhere]
 
