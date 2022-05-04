@@ -2,7 +2,15 @@ from io import BytesIO
 
 import pytest
 
-from PIL import BmpImagePlugin, EpsImagePlugin, Image, ImageFile, _binary, features
+from PIL import (
+    BmpImagePlugin,
+    EpsImagePlugin,
+    Image,
+    ImageFile,
+    UnidentifiedImageError,
+    _binary,
+    features,
+)
 
 from .helper import (
     assert_image,
@@ -377,3 +385,7 @@ class TestPyEncoder(CodecsTest):
 
         with pytest.raises(NotImplementedError):
             encoder.encode_to_file(None, None)
+
+    def test_zero_height(self):
+        with pytest.raises(UnidentifiedImageError):
+            Image.open("Tests/images/zero_height.j2k")
