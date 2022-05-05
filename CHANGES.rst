@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
+  [radarhere]
+
 - Do not open images with zero or negative height #6269
   [radarhere]
 
