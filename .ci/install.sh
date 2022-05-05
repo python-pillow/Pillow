@@ -25,10 +25,7 @@ if [[ $(uname) != CYGWIN* ]]; then
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev
 fi
 
-if [[ $(uname -mo) != i*86" Cygwin" ]]; then
-    python3 -m pip install --upgrade pip
-fi
-
+python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
 python3 -m pip install coverage
 python3 -m pip install defusedxml

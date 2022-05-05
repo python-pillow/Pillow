@@ -9,11 +9,10 @@ jobs:
       fail-fast: false
       matrix:
         python-minor-version: [7, 8, 9]
-        architecture: ["x86_64"]
 
     timeout-minutes: 40
 
-    name: Python 3.${{ matrix.python-minor-version }} ${{ matrix.architecture }}
+    name: Python 3.${{ matrix.python-minor-version }}
 
     steps:
       - name: Fix line endings
@@ -26,7 +25,7 @@ jobs:
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v2
         with:
-          platform: ${{ matrix.architecture }}
+          platform: x86_64
           packages: >
             ImageMagick gcc-g++ ghostscript jpeg libfreetype-devel
             libimagequant-devel libjpeg-devel liblapack-devel
@@ -50,9 +49,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
-          key: ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
+          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-cygwin-${{ matrix.architecture }}-pip3.${{ matrix.python-minor-version }}-
+            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
             
       - name: Ensure correct python minor version used in scripts
         shell: bash.exe -eo pipefail -o igncr "{0}"
@@ -71,7 +70,6 @@ jobs:
           bash.exe .ci/install.sh
 
       - name: Install a different NumPy
-        if: matrix.architecture == 'x86_64'
         shell: dash.exe -l "{0}"
         run: |
           python3 -m pip install -U 'numpy!=1.21.*'
@@ -119,7 +117,7 @@ jobs:
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
-          name: Cygwin Python 3.${{ matrix.python-minor-version }} ${{ matrix.architecture }}
+          name: Cygwin Python 3.${{ matrix.python-minor-version }}
 
   success:
     needs: build
