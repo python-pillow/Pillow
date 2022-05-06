@@ -1355,19 +1355,19 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_count = 1
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        if bps_count < bps_actual_count:
-            # If a file has more values in bps_tuple than expected,
-            # remove the excess.
-            bps_tuple = bps_tuple[:bps_count]
-        elif bps_count > bps_actual_count and bps_actual_count == 1:
-            # If a file has only one value in bps_tuple, when it should have more,
-            # presume it is the same number of bits for all of the samples.
-            bps_tuple = bps_tuple * bps_count
-
         samples_per_pixel = self.tag_v2.get(
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
+        if samples_per_pixel < bps_actual_count:
+            # If a file has more values in bps_tuple than expected,
+            # remove the excess.
+            bps_tuple = bps_tuple[:samples_per_pixel]
+        elif samples_per_pixel > bps_actual_count and bps_actual_count == 1:
+            # If a file has only one value in bps_tuple, when it should have more,
+            # presume it is the same number of bits for all of the samples.
+            bps_tuple = bps_tuple * samples_per_pixel
+
         if len(bps_tuple) != samples_per_pixel:
             raise SyntaxError("unknown data organization")
 

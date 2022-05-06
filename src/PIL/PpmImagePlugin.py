@@ -116,6 +116,10 @@ class PpmImageFile(ImageFile.ImageFile):
                     break
             elif ix == 2:  # token is maxval
                 maxval = token
+                if not 0 < maxval < 65536:
+                    raise ValueError(
+                        "maxval must be greater than 0 and less than 65536"
+                    )
                 if maxval > 255 and mode == "L":
                     self.mode = "I"
 

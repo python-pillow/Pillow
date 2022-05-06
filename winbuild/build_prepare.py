@@ -186,9 +186,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.0.tar.gz",  # noqa: E501
-        "filename": "freetype-2.12.0.tar.gz",
-        "dir": "freetype-2.12.0",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.12.1.tar.gz",
+        "dir": "freetype-2.12.1",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
