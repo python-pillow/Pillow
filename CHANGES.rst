@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Raise ValueError if PNG chunks are truncated #6253
+  [radarhere]
+
+- Use durations from each frame by default when saving GIFs #6265
+  [radarhere]
+
 - Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
   [radarhere]
 
