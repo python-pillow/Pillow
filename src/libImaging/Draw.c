@@ -419,7 +419,7 @@ draw_horizontal_lines(
         if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
             int xmax;
             int xmin = e[i].xmin;
-            if (*x_pos < xmin) {
+            if (*x_pos != -1 && *x_pos < xmin) {
                 // Line would be after the current position
                 continue;
             }
@@ -540,7 +540,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
         }
         qsort(xx, j, sizeof(float), x_cmp);
         if (hasAlpha == 1) {
-            int x_pos = 0;
+            int x_pos = j == 0 ? -1 : 0;
             for (i = 1; i < j; i += 2) {
                 int x_end = ROUND_DOWN(xx[i]);
                 if (x_end < x_pos) {
