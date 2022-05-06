@@ -424,6 +424,10 @@ class PngStream(ChunkStream):
 
         # image header
         s = ImageFile._safe_read(self.fp, length)
+        if length < 13:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("Truncated IHDR chunk")
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
@@ -512,6 +516,10 @@ class PngStream(ChunkStream):
 
         # pixels per unit
         s = ImageFile._safe_read(self.fp, length)
+        if length < 9:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("Truncated pHYs chunk")
         px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
         if unit == 1:  # meter
@@ -624,6 +632,10 @@ class PngStream(ChunkStream):
     # APNG chunks
     def chunk_acTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
+        if length < 8:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("APNG contains truncated acTL chunk")
         if self.im_n_frames is not None:
             self.im_n_frames = None
             warnings.warn("Invalid APNG, will use default PNG image if possible")
@@ -639,6 +651,10 @@ class PngStream(ChunkStream):
 
     def chunk_fcTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
+        if length < 26:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("APNG contains truncated fcTL chunk")
         seq = i32(s)
         if (self._seq_num is None and seq != 0) or (
             self._seq_num is not None and self._seq_num != seq - 1
@@ -660,6 +676,11 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_fdAT(self, pos, length):
+        if length < 4:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                s = ImageFile._safe_read(self.fp, length)
+                return s
+            raise ValueError("APNG contains truncated fDAT chunk")
         s = ImageFile._safe_read(self.fp, 4)
         seq = i32(s)
         if self._seq_num != seq - 1:
