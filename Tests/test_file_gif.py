@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, features
+from PIL import GifImagePlugin, Image, ImageDraw, ImagePalette, ImageSequence, features
 
 from .helper import (
     assert_image_equal,
@@ -689,6 +689,23 @@ def test_multiple_duration(tmp_path):
                 reread.seek(reread.tell() + 1)
             except EOFError:
                 pass
+
+
+def test_roundtrip_info_duration(tmp_path):
+    duration_list = [100, 500, 500]
+
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/transparent_dispose.gif") as im:
+        assert [
+            frame.info["duration"] for frame in ImageSequence.Iterator(im)
+        ] == duration_list
+
+        im.save(out, save_all=True)
+
+    with Image.open(out) as reloaded:
+        assert [
+            frame.info["duration"] for frame in ImageSequence.Iterator(reloaded)
+        ] == duration_list
 
 
 def test_identical_frames(tmp_path):
