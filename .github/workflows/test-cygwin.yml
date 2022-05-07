@@ -53,14 +53,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
 
-      - name: Ensure correct Python minor version is used in scripts
-        shell: bash.exe -eo pipefail -o igncr "{0}"
-        run: |
-          /usr/sbin/alternatives --set python3 /usr/bin/python3.${{ matrix.python-minor-version }}
-          /usr/sbin/alternatives --display python3
-          /usr/sbin/alternatives --set python /usr/bin/python3.${{ matrix.python-minor-version }}
-          /usr/sbin/alternatives --display python
-
       - name: Build system information
         run: |
           dash.exe -c "python3 .github/workflows/system-info.py"
