@@ -73,12 +73,6 @@ jobs:
         shell: dash.exe -l "{0}"
         run: |
           python3 -m pip install -U 'numpy!=1.21.*'
-
-      - name: Check imports
-        shell: dash.exe -l "{0}"
-        run: |
-          python3 -c 'import numpy as np; print(np.__version__)'
-
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
