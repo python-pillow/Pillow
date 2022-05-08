@@ -69,10 +69,7 @@ jobs:
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
-          python3 -m coverage erase
-          make clean
-          CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip install -v --global-option="build_ext" .
-          python3 selftest.py
+          bash.exe .ci/build.sh
 
       - name: Test
         run: |
