@@ -162,7 +162,7 @@ function run_tests {
     else
         apt-get install libfribidi0
     fi
-    if [[ "$MB_PYTHON_VERSION" != 3.7 ]] && [[ $(uname -m) == "i686" ]]; then
+    if [[ $(uname -m) == "i686" ]]; then
         python3 -m pip install numpy==1.21
     elif [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
