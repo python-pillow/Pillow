@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Populate Python palette in fromarray() #6283
+  [radarhere]
+
 - Raise ValueError if PNG chunks are truncated #6253
   [radarhere]
 
