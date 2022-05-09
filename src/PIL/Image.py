@@ -2838,6 +2838,10 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
+            if mode == "P":
+                from . import ImagePalette
+
+                im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
             im.readonly = 1
             return im
 
