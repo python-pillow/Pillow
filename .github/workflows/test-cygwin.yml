@@ -69,7 +69,7 @@ jobs:
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
-          bash.exe .ci/build.sh
+          .ci/build.sh
 
       - name: Test
         run: |
