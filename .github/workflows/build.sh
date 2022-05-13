@@ -3,7 +3,9 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # webp, zstd, xz, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
   # curl from brew requires zstd, use system curl
   # if php is installed, brew tries to reinstall these after installing openblas
-  brew remove --ignore-dependencies webp zstd xz libtiff libxcb curl php
+  # remove lcms2 to fix building openjpeg on arm64
+  # remove xmlto to skip building giflib docs
+  brew remove --ignore-dependencies webp zstd xz libtiff libxcb curl php lcms2 xmlto
 
   if [[ "$PLAT" == "arm64" ]]; then
     export MACOSX_DEPLOYMENT_TARGET="11.0"
