@@ -813,6 +813,29 @@ def test_zero_comment_subblocks():
         assert_image_equal_tofile(im, TEST_GIF)
 
 
+def test_write_comment(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/multiple_comments.gif") as im:
+        im.save(out, save_all=True, comment="Test")
+        with Image.open(out) as reread:
+            # Comments written should appear only in first frame
+            assert reread.info["comment"] == b"Test"
+            for i, frame in enumerate(ImageSequence.Iterator(reread)):
+                assert (i == 0 and frame.info["comment"] == b"Test" or
+                        i != 0 and "comment" not in frame.info)
+
+
+def test_write_no_comment(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/multiple_comments.gif") as im:
+        # Empty comment="" arg should suppress all comments
+        im.save(out, save_all=True, comment="")
+        with Image.open(out) as reread:
+            assert "comment" not in reread.info
+            for frame in ImageSequence.Iterator(reread):
+                assert "comment" not in frame.info
+
+
 def test_version(tmp_path):
     out = str(tmp_path / "temp.gif")
 

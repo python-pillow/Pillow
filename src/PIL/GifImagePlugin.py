@@ -715,15 +715,6 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
-        fp.write(b"!" + o8(254))  # extension intro
-        comment = im.encoderinfo["comment"]
-        if isinstance(comment, str):
-            comment = comment.encode()
-        for i in range(0, len(comment), 255):
-            subblock = comment[i : i + 255]
-            fp.write(o8(len(subblock)) + subblock)
-        fp.write(o8(0))
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(
@@ -929,7 +920,7 @@ def _get_global_header(im, info):
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
 
-    return [
+    header = [
         b"GIF"  # signature
         + version  # version
         + o16(im.size[0])  # canvas width
@@ -942,6 +933,18 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+
+    if "comment" in info and len(info["comment"]):
+        comment = info["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        header.append(b"!" + o8(254))  # extension intro
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
+            header.append(o8(len(subblock)) + subblock)
+        header.append(o8(0))
+
+    return header
 
 
 def _write_frame_data(fp, im_frame, offset, params):
