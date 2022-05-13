@@ -915,7 +915,7 @@ def _get_global_header(im, info):
     for extensionKey in ["transparency", "duration", "loop", "comment"]:
         if info and extensionKey in info:
             if (extensionKey == "duration" and info[extensionKey] == 0) or (
-                extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255)
+                extensionKey == "comment" and len(info[extensionKey]) == 0
             ):
                 continue
             version = b"89a"
