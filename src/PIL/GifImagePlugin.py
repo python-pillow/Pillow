@@ -228,12 +228,17 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
+                    # Collect one comment block
+                    comment = b""
                     while block:
-                        if "comment" in info:
-                            info["comment"] += block
-                        else:
-                            info["comment"] = block
+                        comment += block
                         block = self.data()
+
+                    # If multiple comments in frame, separate in info with \r\n
+                    if "comment" in info:
+                        info["comment"] += b"\r\n" + comment
+                    else:
+                        info["comment"] = comment
                     s = None
                     continue
                 elif s[0] == 255:
