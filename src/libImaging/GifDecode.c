@@ -125,7 +125,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 
                     context->blocksize--;
 
-                    /* New bits are shifted in from from the left. */
+                    /* New bits are shifted in from the left. */
                     context->bitbuffer |= (INT32)c << context->bitcount;
                     context->bitcount += 8;
 

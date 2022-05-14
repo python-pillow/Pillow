@@ -1324,7 +1324,7 @@ class Image:
 
     def getextrema(self):
         """
-        Gets the the minimum and maximum pixel values for each band in
+        Gets the minimum and maximum pixel values for each band in
         the image.
 
         :returns: For a single-band image, a 2-tuple containing the

@@ -15,7 +15,7 @@
 #
 
 ##
-# Image plugin for the Spider image format.  This format is is used
+# Image plugin for the Spider image format. This format is used
 # by the SPIDER software, in processing image data from electron
 # microscopy and tomography.
 ##
