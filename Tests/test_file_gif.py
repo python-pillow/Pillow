@@ -815,7 +815,7 @@ def test_zero_comment_subblocks():
 
 def test_write_comment(tmp_path):
     out = str(tmp_path / "temp.gif")
-    with Image.open("Tests/images/multiple_comments.gif") as im:
+    with Image.open("Tests/images/dispose_prev.gif") as im:
         im.save(out, save_all=True, comment="Test")
         with Image.open(out) as reread:
             # Comments written should appear only in first frame
@@ -831,7 +831,7 @@ def test_write_comment(tmp_path):
 
 def test_write_no_comment(tmp_path):
     out = str(tmp_path / "temp.gif")
-    with Image.open("Tests/images/multiple_comments.gif") as im:
+    with Image.open("Tests/images/dispose_prev.gif") as im:
         # Empty comment="" arg should suppress all comments
         im.save(out, save_all=True, comment="")
         with Image.open(out) as reread:
