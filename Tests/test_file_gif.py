@@ -821,8 +821,12 @@ def test_write_comment(tmp_path):
             # Comments written should appear only in first frame
             assert reread.info["comment"] == b"Test"
             for i, frame in enumerate(ImageSequence.Iterator(reread)):
-                assert (i == 0 and frame.info["comment"] == b"Test" or
-                        i != 0 and "comment" not in frame.info)
+                assert (
+                    i == 0
+                    and frame.info["comment"] == b"Test"
+                    or i != 0
+                    and "comment" not in frame.info
+                )
 
 
 def test_write_no_comment(tmp_path):
