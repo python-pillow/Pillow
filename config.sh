@@ -8,11 +8,7 @@ FREETYPE_VERSION=2.12.1
 HARFBUZZ_VERSION=4.2.1
 LIBPNG_VERSION=1.6.37
 JPEGTURBO_VERSION=2.1.3
-if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
-    OPENJPEG_VERSION=2.4.0
-else
-    OPENJPEG_VERSION=2.5.0
-fi
+OPENJPEG_VERSION=2.5.0
 XZ_VERSION=5.2.5
 TIFF_VERSION=4.3.0
 LCMS2_VERSION=2.13.1
@@ -50,6 +46,16 @@ function build_giflib {
         touch "${name}-stamp"
     fi
 }
+
+if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
+    function build_openjpeg {
+        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz)
+        (cd $out_dir \
+            && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
+            && make install)
+        touch openjpeg-stamp
+    }
+fi
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
