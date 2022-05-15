@@ -15,10 +15,6 @@ Changelog (Pillow)
   [radarhere]
 
 - Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
-  [radarhere]
-
-- Do not open images with zero or negative height #6269
-  [radarhere]
 
 - Search pkgconf system libs/cflags #6138
   [jameshilliard, radarhere]
@@ -48,6 +44,15 @@ Changelog (Pillow)
   [radarhere]
 
 - Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
+9.1.1 (2022-05-17)
+------------------
+
+- When reading past the end of a TGA scan line, reduce bytes left. CVE-2022-30595
+  [radarhere]
+
+- Do not open images with zero or negative height #6269
   [radarhere]
 
 9.1.0 (2022-04-01)
