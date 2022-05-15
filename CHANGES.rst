@@ -2,6 +2,15 @@
 Changelog (Pillow)
 ==================
 
+9.1.1 (unreleased)
+------------------
+
+- When reading past the end of a TGA scan line, reduce bytes left. CVE-2022-30595
+  [radarhere]
+
+- Do not open images with zero or negative height #6269
+  [radarhere]
+
 9.1.0 (2022-04-01)
 ------------------
 
