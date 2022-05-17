@@ -31,6 +31,14 @@ FreeTypeFont.getmask2 fill parameter
 The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2`
 has been deprecated and will be removed in Pillow 10 (2023-07-01).
 
+Image.coerce_e
+~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+This undocumented method has been deprecated and will be removed in Pillow 10
+(2023-07-01).
+
 API Changes
 ===========
 
