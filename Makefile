@@ -85,6 +85,8 @@ release-test:
 sdist:
 	python3 -m build --help > /dev/null 2>&1 || python3 -m pip install build
 	python3 -m build --sdist
+	python3 -m twine --help > /dev/null 2>&1 || python3 -m pip install twine
+	python3 -m twine check --strict dist/*
 
 .PHONY: test
 test:
