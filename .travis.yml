@@ -55,4 +55,5 @@ deploy:
   file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
   on:
     repo: python-pillow/pillow-wheels
+    tags: true
   skip_cleanup: true
