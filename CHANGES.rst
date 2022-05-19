@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Support more affine expression forms in im.point() #6254
+  [benrg, radarhere]
+
 - Populate Python palette in fromarray() #6283
   [radarhere]
 
@@ -15,6 +18,7 @@ Changelog (Pillow)
   [radarhere]
 
 - Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
+  [radarhere]
 
 - Search pkgconf system libs/cflags #6138
   [jameshilliard, radarhere]
