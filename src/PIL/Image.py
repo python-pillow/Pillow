@@ -400,8 +400,10 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
     except AttributeError as e:
-        valid_decoders = ', '.join(DECODERS.keys())
-        raise OSError(f"decoder {decoder_name} not available. Valid decoders: {valid_decoders}") from e
+        valid_decoders = ", ".join(DECODERS.keys())
+        raise OSError(
+            f"decoder {decoder_name} not available. Valid decoders: {valid_decoders}"
+        ) from e
     return decoder(mode, *args + extra)
 
 
@@ -424,8 +426,10 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
     except AttributeError as e:
-        valid_encoders = ', '.join(ENCODERS.keys())
-        raise OSError(f"encoder {encoder_name} not available. Valid encoders: {valid_encoders}") from e
+        valid_encoders = ", ".join(ENCODERS.keys())
+        raise OSError(
+            f"encoder {encoder_name} not available. Valid encoders: {valid_encoders}"
+        ) from e
     return encoder(mode, *args + extra)
 
 
