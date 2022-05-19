@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- If font is file-like object, do not re-read from object to get variant #6234
+  [radarhere]
+
+- Raise ValueError when trying to access internal fp after close #6213
+  [radarhere]
+
 - Support more affine expression forms in im.point() #6254
   [benrg, radarhere]
 
