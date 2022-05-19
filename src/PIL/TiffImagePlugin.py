@@ -1073,7 +1073,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
-        self.__fp = self.fp
+        self._fp = self.fp
         self._frame_pos = []
         self._n_frames = None
 
@@ -1106,7 +1106,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.im = Image.core.new(self.mode, self.size)
 
     def _seek(self, frame):
-        self.fp = self.__fp
+        self.fp = self._fp
 
         # reset buffered io handle in case fp
         # was passed to libtiff, invalidating the buffer
@@ -1514,15 +1514,6 @@ class TiffImageFile(ImageFile.ImageFile):
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 
         self._tile_orientation = self.tag_v2.get(0x0112)
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 #

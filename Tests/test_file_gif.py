@@ -46,6 +46,19 @@ def test_closed_file():
         im.close()
 
 
+def test_seek_after_close():
+    im = Image.open("Tests/images/iss634.gif")
+    im.load()
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.is_animated
+    with pytest.raises(ValueError):
+        im.n_frames
+    with pytest.raises(ValueError):
+        im.seek(1)
+
+
 def test_context_manager():
     with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
