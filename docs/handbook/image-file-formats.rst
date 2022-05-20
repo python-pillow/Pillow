@@ -101,8 +101,8 @@ GIF
 ^^^
 
 Pillow reads GIF87a and GIF89a versions of the GIF file format. The library
-writes LZW encoded files in GIF87a by default, unless GIF89a features
-are used or GIF89a is already in use.
+writes files in GIF87a by default, unless GIF89a features are used or GIF89a is
+already in use. Files are written with LZW encoding.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
 images. Seeking to later frames in a ``P`` image will change the image to
