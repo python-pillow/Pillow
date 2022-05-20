@@ -912,17 +912,16 @@ def _get_global_header(im, info):
     # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop", "comment"]:
-        if info and extensionKey in info:
-            if (extensionKey == "duration" and info[extensionKey] == 0) or (
-                extensionKey == "comment" and len(info[extensionKey]) == 0
-            ):
-                continue
-            version = b"89a"
-            break
-    else:
-        if im.info.get("version") == b"89a":
-            version = b"89a"
+    if im.info.get("version") == b"89a" or (
+        info
+        and (
+            "transparency" in info
+            or "loop" in info
+            or info.get("duration")
+            or info.get("comment")
+        )
+    ):
+        version = b"89a"
 
     background = _get_background(im, info.get("background"))
 
