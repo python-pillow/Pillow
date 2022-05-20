@@ -245,17 +245,14 @@ Reading local images
 
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
-image. If you only want the actual pixel rectangle, you can manipulate the
-:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.ImageFile.ImageFile.tile`
-attributes before loading the file::
+image. If you only want the actual pixel rectangle, you can crop the image::
 
     im = Image.open(...)
 
     if im.tile[0][0] == "gif":
         # only read the first "local image" from this GIF file
-        tag, (x0, y0, x1, y1), offset, extra = im.tile[0]
-        im.size = (x1 - x0, y1 - y0)
-        im.tile = [(tag, (0, 0) + im.size, offset, extra)]
+        box = im.tile[0][1]
+        im = im.crop(box)
 
 ICNS
 ^^^^
