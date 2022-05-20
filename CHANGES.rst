@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Ignore compression value from BMP info dictionary when saving as TIFF #6231
+  [radarhere]
+
 - If font is file-like object, do not re-read from object to get variant #6234
   [radarhere]
 
