@@ -715,6 +715,13 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert reloaded.info["icc_profile"] == icc_profile
 
+    def test_save_bmp_compression(self, tmp_path):
+        with Image.open("Tests/images/hopper.bmp") as im:
+            assert im.info["compression"] == 0
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile)
+
     def test_discard_icc_profile(self, tmp_path):
         outfile = str(tmp_path / "temp.tif")
 

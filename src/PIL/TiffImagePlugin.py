@@ -1559,7 +1559,13 @@ def _save(im, fp, filename):
 
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
-    compression = encoderinfo.get("compression", im.info.get("compression"))
+    try:
+        compression = encoderinfo["compression"]
+    except KeyError:
+        compression = im.info.get("compression")
+        if isinstance(compression, int):
+            # compression value may be from BMP. Ignore it
+            compression = None
     if compression is None:
         compression = "raw"
     elif compression == "tiff_jpeg":
