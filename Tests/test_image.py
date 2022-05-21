@@ -607,6 +607,20 @@ class TestImage:
             with pytest.raises(ValueError):
                 im.remap_palette(None)
 
+    def test_remap_palette_transparency(self):
+        im = Image.new("P", (1, 2))
+        im.putpixel((0, 1), 1)
+        im.info["transparency"] = 0
+
+        im_remapped = im.remap_palette([1, 0])
+        assert im_remapped.info["transparency"] == 1
+
+        # Test unused transparency
+        im.info["transparency"] = 2
+
+        im_remapped = im.remap_palette([1, 0])
+        assert "transparency" not in im_remapped.info
+
     def test__new(self):
         im = hopper("RGB")
         im_p = hopper("P")
