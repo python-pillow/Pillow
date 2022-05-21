@@ -143,9 +143,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
-        "filename": "tiff-4.3.0.tar.gz",
-        "dir": "tiff-4.3.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
+        "filename": "tiff-4.4.0.tar.gz",
+        "dir": "tiff-4.4.0",
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_nmake(target="clean"),
