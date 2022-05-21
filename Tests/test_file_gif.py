@@ -807,6 +807,9 @@ def test_comment(tmp_path):
     with Image.open(out) as reread:
         assert reread.info["comment"] == im.info["comment"].encode()
 
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
+
 
 def test_comment_over_255(tmp_path):
     out = str(tmp_path / "temp.gif")
@@ -817,8 +820,10 @@ def test_comment_over_255(tmp_path):
     im.info["comment"] = comment
     im.save(out)
     with Image.open(out) as reread:
-
         assert reread.info["comment"] == comment
+
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
 
 
 def test_zero_comment_subblocks():
