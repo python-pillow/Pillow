@@ -620,6 +620,7 @@ def test_dispose2_background(tmp_path):
 
 
 def test_transparency_in_second_frame(tmp_path):
+    out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
         assert im.info["transparency"] == 0
 
@@ -629,14 +630,13 @@ def test_transparency_in_second_frame(tmp_path):
 
         assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.png")
 
-        out = str(tmp_path / "temp.gif")
         im.save(out, save_all=True)
 
-        with Image.open(out) as reread:
-            reread.seek(reread.tell() + 1)
-            assert_image_equal_tofile(
-                reread, "Tests/images/different_transparency_merged.png"
-            )
+    with Image.open(out) as reread:
+        reread.seek(reread.tell() + 1)
+        assert_image_equal_tofile(
+            reread, "Tests/images/different_transparency_merged.png"
+        )
 
 
 def test_no_transparency_in_second_frame():
@@ -647,6 +647,22 @@ def test_no_transparency_in_second_frame():
 
         # All transparent pixels should be replaced with the color from the first frame
         assert img.histogram()[255] == 0
+
+
+def test_remapped_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (1, 2))
+    im2 = im.copy()
+
+    # Add transparency at a higher index
+    # so that it will be optimized to a lower index
+    im.putpixel((0, 1), 5)
+    im.info["transparency"] = 5
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((0, 1))
 
 
 def test_duration(tmp_path):

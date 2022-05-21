@@ -1934,6 +1934,9 @@ class Image:
         m_im.putpalette(new_palette_bytes)
         m_im.palette = ImagePalette.ImagePalette("RGB", palette=palette_bytes)
 
+        if "transparency" in self.info:
+            m_im.info["transparency"] = new_positions[self.info["transparency"]]
+
         return m_im
 
     def _get_safe_box(self, size, resample, box):
