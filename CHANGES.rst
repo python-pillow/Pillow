@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Always use GIF89a for comments #6292
+  [raygard, radarhere]
+
 - Ignore compression value from BMP info dictionary when saving as TIFF #6231
   [radarhere]
 
