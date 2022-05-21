@@ -853,15 +853,17 @@ def test_write_comment(tmp_path):
                 )
 
 
-def test_write_no_comment(tmp_path):
+def test_empty_string_comment(tmp_path):
     out = str(tmp_path / "temp.gif")
-    with Image.open("Tests/images/dispose_prev.gif") as im:
-        # Empty comment="" arg should suppress all comments
+    with Image.open("Tests/images/chi.gif") as im:
+        assert "comment" in im.info
+
+        # Empty string comment should suppress existing comment
         im.save(out, save_all=True, comment="")
-        with Image.open(out) as reread:
-            assert "comment" not in reread.info
-            for frame in ImageSequence.Iterator(reread):
-                assert "comment" not in frame.info
+
+    with Image.open(out) as reread:
+        for frame in ImageSequence.Iterator(reread):
+            assert "comment" not in frame.info
 
 
 def test_version(tmp_path):
