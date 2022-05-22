@@ -163,6 +163,8 @@ class GifImageFile(ImageFile.ImageFile):
             self.__frame = -1
             self._fp.seek(self.__rewind)
             self.disposal_method = 0
+            if "comment" in self.info:
+                del self.info["comment"]
         else:
             # ensure that the previous frame was loaded
             if self.tile and update_image:
@@ -230,7 +232,7 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     comment = b""
 
-                    # Collect one comment block
+                    # Read this comment block
                     while block:
                         comment += block
                         block = self.data()
@@ -395,7 +397,9 @@ class GifImageFile(ImageFile.ImageFile):
                 )
             ]
 
-        for k in ["duration", "comment", "extension", "loop"]:
+        if info.get("comment"):
+            self.info["comment"] = info["comment"]
+        for k in ["duration", "extension", "loop"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
@@ -929,17 +933,18 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+    if info.get("comment"):
+        comment_block = b"!" + o8(254)  # extension intro
 
-    if "comment" in info and len(info["comment"]):
         comment = info["comment"]
         if isinstance(comment, str):
             comment = comment.encode()
-        header.append(b"!" + o8(254))  # extension intro
         for i in range(0, len(comment), 255):
             subblock = comment[i : i + 255]
-            header.append(o8(len(subblock)) + subblock)
-        header.append(o8(0))
+            comment_block += o8(len(subblock)) + subblock
 
+        comment_block += o8(0)
+        header.append(comment_block)
     return header
 
 
