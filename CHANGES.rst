@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Separate multiple GIF comment blocks with newlines #6294
+  [raygard, radarhere]
+
 - Always use GIF89a for comments #6292
   [raygard, radarhere]
 
