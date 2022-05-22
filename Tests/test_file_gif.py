@@ -831,6 +831,12 @@ def test_zero_comment_subblocks():
         assert_image_equal_tofile(im, TEST_GIF)
 
 
+def test_read_multiple_comment_blocks():
+    with Image.open("Tests/images/multiple_comments.gif") as im:
+        # Multiple comment blocks in a frame are separated not concatenated
+        assert im.info["comment"] == b"Test comment 1\nTest comment 2"
+
+
 def test_version(tmp_path):
     out = str(tmp_path / "temp.gif")
 
