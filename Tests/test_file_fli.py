@@ -46,6 +46,15 @@ def test_closed_file():
         im.close()
 
 
+def test_seek_after_close():
+    im = Image.open(animated_test_file)
+    im.seek(1)
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.seek(0)
+
+
 def test_context_manager():
     with warnings.catch_warnings():
         with Image.open(static_test_file) as im:

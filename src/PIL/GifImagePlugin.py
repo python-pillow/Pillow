@@ -102,7 +102,7 @@ class GifImageFile(ImageFile.ImageFile):
                 p = ImagePalette.raw("RGB", p)
                 self.global_palette = self.palette = p
 
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
@@ -161,7 +161,7 @@ class GifImageFile(ImageFile.ImageFile):
             self.__offset = 0
             self.dispose = None
             self.__frame = -1
-            self.__fp.seek(self.__rewind)
+            self._fp.seek(self.__rewind)
             self.disposal_method = 0
         else:
             # ensure that the previous frame was loaded
@@ -171,7 +171,7 @@ class GifImageFile(ImageFile.ImageFile):
         if frame != self.__frame + 1:
             raise ValueError(f"cannot seek to frame {frame}")
 
-        self.fp = self.__fp
+        self.fp = self._fp
         if self.__offset:
             # backup to last frame
             self.fp.seek(self.__offset)
@@ -228,12 +228,18 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
+                    comment = b""
+
+                    # Collect one comment block
                     while block:
-                        if "comment" in info:
-                            info["comment"] += block
-                        else:
-                            info["comment"] = block
+                        comment += block
                         block = self.data()
+
+                    if "comment" in info:
+                        # If multiple comment blocks in frame, separate with \n
+                        info["comment"] += b"\n" + comment
+                    else:
+                        info["comment"] = comment
                     s = None
                     continue
                 elif s[0] == 255:
@@ -281,7 +287,7 @@ class GifImageFile(ImageFile.ImageFile):
             s = None
 
         if interlace is None:
-            # self.__fp = None
+            # self._fp = None
             raise EOFError
         if not update_image:
             return
@@ -442,15 +448,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 # --------------------------------------------------------------------
@@ -903,17 +900,16 @@ def _get_global_header(im, info):
     # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop", "comment"]:
-        if info and extensionKey in info:
-            if (extensionKey == "duration" and info[extensionKey] == 0) or (
-                extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255)
-            ):
-                continue
-            version = b"89a"
-            break
-    else:
-        if im.info.get("version") == b"89a":
-            version = b"89a"
+    if im.info.get("version") == b"89a" or (
+        info
+        and (
+            "transparency" in info
+            or "loop" in info
+            or info.get("duration")
+            or info.get("comment")
+        )
+    ):
+        version = b"89a"
 
     background = _get_background(im, info.get("background"))
 

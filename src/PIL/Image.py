@@ -29,7 +29,6 @@ import builtins
 import io
 import logging
 import math
-import numbers
 import os
 import re
 import struct
@@ -432,44 +431,50 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
 
 def coerce_e(value):
-    return value if isinstance(value, _E) else _E(value)
+    deprecate("coerce_e", 10)
+    return value if isinstance(value, _E) else _E(1, value)
 
 
+# _E(scale, offset) represents the affine transformation scale * x + offset.
+# The "data" field is named for compatibility with the old implementation,
+# and should be renamed once coerce_e is removed.
 class _E:
-    def __init__(self, data):
+    def __init__(self, scale, data):
+        self.scale = scale
         self.data = data
 
+    def __neg__(self):
+        return _E(-self.scale, -self.data)
+
     def __add__(self, other):
-        return _E((self.data, "__add__", coerce_e(other).data))
+        if isinstance(other, _E):
+            return _E(self.scale + other.scale, self.data + other.data)
+        return _E(self.scale, self.data + other)
+
+    __radd__ = __add__
+
+    def __sub__(self, other):
+        return self + -other
+
+    def __rsub__(self, other):
+        return other + -self
 
     def __mul__(self, other):
-        return _E((self.data, "__mul__", coerce_e(other).data))
+        if isinstance(other, _E):
+            return NotImplemented
+        return _E(self.scale * other, self.data * other)
+
+    __rmul__ = __mul__
+
+    def __truediv__(self, other):
+        if isinstance(other, _E):
+            return NotImplemented
+        return _E(self.scale / other, self.data / other)
 
 
 def _getscaleoffset(expr):
-    stub = ["stub"]
-    data = expr(_E(stub)).data
-    try:
-        (a, b, c) = data  # simplified syntax
-        if a is stub and b == "__mul__" and isinstance(c, numbers.Number):
-            return c, 0.0
-        if a is stub and b == "__add__" and isinstance(c, numbers.Number):
-            return 1.0, c
-    except TypeError:
-        pass
-    try:
-        ((a, b, c), d, e) = data  # full syntax
-        if (
-            a is stub
-            and b == "__mul__"
-            and isinstance(c, numbers.Number)
-            and d == "__add__"
-            and isinstance(e, numbers.Number)
-        ):
-            return c, e
-    except TypeError:
-        pass
-    raise ValueError("illegal expression")
+    a = expr(_E(1, 0))
+    return (a.scale, a.data) if isinstance(a, _E) else (0, a)
 
 
 # --------------------------------------------------------------------
@@ -544,8 +549,10 @@ class Image:
 
     def __exit__(self, *args):
         if hasattr(self, "fp") and getattr(self, "_exclusive_fp", False):
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
         self.fp = None
@@ -563,8 +570,10 @@ class Image:
         more information.
         """
         try:
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
             self.fp = None
@@ -1324,7 +1333,7 @@ class Image:
 
     def getextrema(self):
         """
-        Gets the the minimum and maximum pixel values for each band in
+        Gets the minimum and maximum pixel values for each band in
         the image.
 
         :returns: For a single-band image, a 2-tuple containing the

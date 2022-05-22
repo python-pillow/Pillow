@@ -18,6 +18,7 @@ from .helper import (
     hopper,
     mark_if_feature_version,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 
@@ -991,6 +992,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as im:
             im.load()
 
+    @skip_unless_feature_version("libtiff", "4.0.4")
     def test_realloc_overflow(self):
         TiffImagePlugin.READ_LIBTIFF = True
         with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:

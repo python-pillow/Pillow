@@ -246,15 +246,15 @@ deps = {
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.4.0.tar.gz",
-        "filename": "openjpeg-2.4.0.tar.gz",
-        "dir": "openjpeg-2.4.0",
+        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
+        "filename": "openjpeg-2.5.0.tar.gz",
+        "dir": "openjpeg-2.5.0",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
             cmd_nmake(target="openjp2"),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.4.0"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.4.0"),
+            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
+            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
         "libs": [r"bin\*.lib"],
     },
@@ -280,9 +280,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.2.1.zip",
-        "filename": "harfbuzz-4.2.1.zip",
-        "dir": "harfbuzz-4.2.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.3.0.zip",
+        "filename": "harfbuzz-4.3.0.zip",
+        "dir": "harfbuzz-4.3.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

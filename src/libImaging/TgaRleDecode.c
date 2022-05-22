@@ -120,6 +120,7 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
             }
             memcpy(state->buffer + state->x, ptr, n);
             ptr += n;
+            bytes -= n;
             extra_bytes -= n;
         }
     }

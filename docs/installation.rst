@@ -181,7 +181,8 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1** and **2.4.0**.
+  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
+    **2.4.0** and **2.5.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
@@ -474,11 +475,9 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
 |                                  | PyPy3                      |                     |
-|                                  +----------------------------+---------------------+
-|                                  | 3.8                        | arm64v8, ppc64le,   |
-|                                  |                            | s390x               |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | x86-64              |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x, x86-64       |
 +----------------------------------+----------------------------+---------------------+
 | Windows Server 2016              | 3.7                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+

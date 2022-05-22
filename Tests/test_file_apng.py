@@ -637,6 +637,15 @@ def test_apng_save_blend(tmp_path):
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
 
 
+def test_seek_after_close():
+    im = Image.open("Tests/images/apng/delay.png")
+    im.seek(1)
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.seek(0)
+
+
 def test_constants_deprecation():
     for enum, prefix in {
         PngImagePlugin.Disposal: "APNG_DISPOSE_",

@@ -46,6 +46,19 @@ def test_closed_file():
         im.close()
 
 
+def test_seek_after_close():
+    im = Image.open("Tests/images/iss634.gif")
+    im.load()
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.is_animated
+    with pytest.raises(ValueError):
+        im.n_frames
+    with pytest.raises(ValueError):
+        im.seek(1)
+
+
 def test_context_manager():
     with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
@@ -794,6 +807,9 @@ def test_comment(tmp_path):
     with Image.open(out) as reread:
         assert reread.info["comment"] == im.info["comment"].encode()
 
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
+
 
 def test_comment_over_255(tmp_path):
     out = str(tmp_path / "temp.gif")
@@ -804,13 +820,21 @@ def test_comment_over_255(tmp_path):
     im.info["comment"] = comment
     im.save(out)
     with Image.open(out) as reread:
-
         assert reread.info["comment"] == comment
+
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
 
 
 def test_zero_comment_subblocks():
     with Image.open("Tests/images/hopper_zero_comment_subblocks.gif") as im:
         assert_image_equal_tofile(im, TEST_GIF)
+
+
+def test_read_multiple_comment_blocks():
+    with Image.open("Tests/images/multiple_comments.gif") as im:
+        # Multiple comment blocks in a frame are separated not concatenated
+        assert im.info["comment"] == b"Test comment 1\nTest comment 2"
 
 
 def test_write_comment(tmp_path):

@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Separate multiple GIF comment blocks with newlines #6294
+  [raygard, radarhere]
+
+- Always use GIF89a for comments #6292
+  [raygard, radarhere]
+
+- Ignore compression value from BMP info dictionary when saving as TIFF #6231
+  [radarhere]
+
+- If font is file-like object, do not re-read from object to get variant #6234
+  [radarhere]
+
+- Raise ValueError when trying to access internal fp after close #6213
+  [radarhere]
+
+- Support more affine expression forms in im.point() #6254
+  [benrg, radarhere]
+
 - Populate Python palette in fromarray() #6283
   [radarhere]
 
@@ -15,9 +33,6 @@ Changelog (Pillow)
   [radarhere]
 
 - Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
-  [radarhere]
-
-- Do not open images with zero or negative height #6269
   [radarhere]
 
 - Search pkgconf system libs/cflags #6138
@@ -48,6 +63,15 @@ Changelog (Pillow)
   [radarhere]
 
 - Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
+9.1.1 (2022-05-17)
+------------------
+
+- When reading past the end of a TGA scan line, reduce bytes left. CVE-2022-30595
+  [radarhere]
+
+- Do not open images with zero or negative height #6269
   [radarhere]
 
 9.1.0 (2022-04-01)

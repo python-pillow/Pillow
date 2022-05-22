@@ -65,9 +65,12 @@ class TestImageFont:
         return font_bytes
 
     def test_font_with_filelike(self):
-        ImageFont.truetype(
+        ttf = ImageFont.truetype(
             self._font_as_bytes(), FONT_SIZE, layout_engine=self.LAYOUT_ENGINE
         )
+        ttf_copy = ttf.font_variant()
+        assert ttf_copy.font_bytes == ttf.font_bytes
+
         self._render(self._font_as_bytes())
         # Usage note:  making two fonts from the same buffer fails.
         # shared_bytes = self._font_as_bytes()
