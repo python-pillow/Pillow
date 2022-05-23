@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Only write GIF comments at the beginning of the file #6300
+  [raygard, radarhere]
+
 - Separate multiple GIF comment blocks with newlines #6294
   [raygard, radarhere]
 
