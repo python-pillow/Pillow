@@ -17,9 +17,9 @@ When an image is opened from a file, only that instance of the image is consider
 have the format. Copies of the image will contain data loaded from the file, but not
 the file itself, meaning that it can no longer be considered to be in the original
 format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
-internally creates a copy of the image, the ``fp`` (file pointer), along with any
-methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
-attribute will be ``None``.
+internally creates a copy of the image, then any methods or attributes specific to the
+format will no longer be present. The ``fp`` (file pointer) attribute will no longer be
+present, and the :py:attr:`~PIL.Image.Image.format` attribute will be ``None``.
 
 Fully supported formats
 -----------------------
@@ -101,8 +101,8 @@ GIF
 ^^^
 
 Pillow reads GIF87a and GIF89a versions of the GIF file format. The library
-writes LZW encoded files in GIF87a by default, unless GIF89a features
-are used or GIF89a is already in use.
+writes files in GIF87a by default, unless GIF89a features are used or GIF89a is
+already in use. Files are written with LZW encoding.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
 images. Seeking to later frames in a ``P`` image will change the image to
@@ -245,17 +245,14 @@ Reading local images
 
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
-image. If you only want the actual pixel rectangle, you can manipulate the
-:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.ImageFile.ImageFile.tile`
-attributes before loading the file::
+image. If you only want the actual pixel rectangle, you can crop the image::
 
     im = Image.open(...)
 
     if im.tile[0][0] == "gif":
         # only read the first "local image" from this GIF file
-        tag, (x0, y0, x1, y1), offset, extra = im.tile[0]
-        im.size = (x1 - x0, y1 - y0)
-        im.tile = [(tag, (0, 0) + im.size, offset, extra)]
+        box = im.tile[0][1]
+        im = im.crop(box)
 
 ICNS
 ^^^^
