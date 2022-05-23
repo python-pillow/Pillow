@@ -163,6 +163,8 @@ class GifImageFile(ImageFile.ImageFile):
             self.__frame = -1
             self._fp.seek(self.__rewind)
             self.disposal_method = 0
+            if "comment" in self.info:
+                del self.info["comment"]
         else:
             # ensure that the previous frame was loaded
             if self.tile and update_image:
@@ -230,7 +232,7 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     comment = b""
 
-                    # Collect one comment block
+                    # Read this comment block
                     while block:
                         comment += block
                         block = self.data()
@@ -395,7 +397,9 @@ class GifImageFile(ImageFile.ImageFile):
                 )
             ]
 
-        for k in ["duration", "comment", "extension", "loop"]:
+        if info.get("comment"):
+            self.info["comment"] = info["comment"]
+        for k in ["duration", "extension", "loop"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
@@ -712,15 +716,6 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
-        fp.write(b"!" + o8(254))  # extension intro
-        comment = im.encoderinfo["comment"]
-        if isinstance(comment, str):
-            comment = comment.encode()
-        for i in range(0, len(comment), 255):
-            subblock = comment[i : i + 255]
-            fp.write(o8(len(subblock)) + subblock)
-        fp.write(o8(0))
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
         fp.write(
@@ -925,7 +920,7 @@ def _get_global_header(im, info):
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
 
-    return [
+    header = [
         b"GIF"  # signature
         + version  # version
         + o16(im.size[0])  # canvas width
@@ -938,6 +933,19 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+    if info.get("comment"):
+        comment_block = b"!" + o8(254)  # extension intro
+
+        comment = info["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
+            comment_block += o8(len(subblock)) + subblock
+
+        comment_block += o8(0)
+        header.append(comment_block)
+    return header
 
 
 def _write_frame_data(fp, im_frame, offset, params):

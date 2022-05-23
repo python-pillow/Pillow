@@ -837,6 +837,50 @@ def test_read_multiple_comment_blocks():
         assert im.info["comment"] == b"Test comment 1\nTest comment 2"
 
 
+def test_empty_string_comment(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/chi.gif") as im:
+        assert "comment" in im.info
+
+        # Empty string comment should suppress existing comment
+        im.save(out, save_all=True, comment="")
+
+    with Image.open(out) as reread:
+        for frame in ImageSequence.Iterator(reread):
+            assert "comment" not in frame.info
+
+
+def test_retain_comment_in_subsequent_frames(tmp_path):
+    # Test that a comment block at the beginning is kept
+    with Image.open("Tests/images/chi.gif") as im:
+        for frame in ImageSequence.Iterator(im):
+            assert frame.info["comment"] == b"Created with GIMP"
+
+    with Image.open("Tests/images/second_frame_comment.gif") as im:
+        assert "comment" not in im.info
+
+        # Test that a comment in the middle is read
+        im.seek(1)
+        assert im.info["comment"] == b"Comment in the second frame"
+
+        # Test that it is still present in a later frame
+        im.seek(2)
+        assert im.info["comment"] == b"Comment in the second frame"
+
+        # Test that rewinding removes the comment
+        im.seek(0)
+        assert "comment" not in im.info
+
+    # Test that a saved image keeps the comment
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/dispose_prev.gif") as im:
+        im.save(out, save_all=True, comment="Test")
+
+    with Image.open(out) as reread:
+        for frame in ImageSequence.Iterator(reread):
+            assert frame.info["comment"] == b"Test"
+
+
 def test_version(tmp_path):
     out = str(tmp_path / "temp.gif")
 
