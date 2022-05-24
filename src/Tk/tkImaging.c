@@ -372,7 +372,9 @@ fname2char(PyObject *fname) {
     if (bytes == NULL) {
         return NULL;
     }
-    return PyBytes_AsString(bytes);
+    char* libname = PyBytes_AsString(bytes);
+    Py_DECREF(bytes);
+    return libname;
 }
 
 #include <dlfcn.h>
