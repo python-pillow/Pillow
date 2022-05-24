@@ -303,7 +303,7 @@ text_layout_raqm(
             goto failed;
         }
 
-        len = PySequence_Size(seq);
+        len = PySequence_Fast_GET_SIZE(seq);
         for (j = 0; j < len; j++) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
             char *feature = NULL;
@@ -311,23 +311,26 @@ text_layout_raqm(
             PyObject *bytes;
 
             if (!PyUnicode_Check(item)) {
+                Py_DECREF(seq);
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-
-            if (PyUnicode_Check(item)) {
-                bytes = PyUnicode_AsUTF8String(item);
-                if (bytes == NULL) {
-                    goto failed;
-                }
-                feature = PyBytes_AS_STRING(bytes);
-                size = PyBytes_GET_SIZE(bytes);
+            bytes = PyUnicode_AsUTF8String(item);
+            if (bytes == NULL) {
+                Py_DECREF(seq);
+                goto failed;
             }
+            feature = PyBytes_AS_STRING(bytes);
+            size = PyBytes_GET_SIZE(bytes);
             if (!raqm_add_font_feature(rq, feature, size)) {
+                Py_DECREF(seq);
+                Py_DECREF(bytes);
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
+            Py_DECREF(bytes);
         }
+        Py_DECREF(seq);
     }
 
     if (!raqm_set_freetype_face(rq, self->face)) {
